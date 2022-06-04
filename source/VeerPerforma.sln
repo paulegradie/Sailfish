@@ -1,0 +1,28 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VeerPerforma", "VeerPerforma\VeerPerforma.csproj", "{3EA535A8-147C-4CD8-83E4-28A2BF0B25A3}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Test.API", "Test.API\Test.API.csproj", "{2B832E9F-13DC-482C-8391-6E3ADA2CA49B}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Test", "Test\Test.csproj", "{A42A41D3-7A3F-4475-B245-A2E896A2589F}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{3EA535A8-147C-4CD8-83E4-28A2BF0B25A3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3EA535A8-147C-4CD8-83E4-28A2BF0B25A3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3EA535A8-147C-4CD8-83E4-28A2BF0B25A3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3EA535A8-147C-4CD8-83E4-28A2BF0B25A3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2B832E9F-13DC-482C-8391-6E3ADA2CA49B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2B832E9F-13DC-482C-8391-6E3ADA2CA49B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2B832E9F-13DC-482C-8391-6E3ADA2CA49B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2B832E9F-13DC-482C-8391-6E3ADA2CA49B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A42A41D3-7A3F-4475-B245-A2E896A2589F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A42A41D3-7A3F-4475-B245-A2E896A2589F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A42A41D3-7A3F-4475-B245-A2E896A2589F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A42A41D3-7A3F-4475-B245-A2E896A2589F}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+EndGlobal
