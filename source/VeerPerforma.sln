@@ -6,6 +6,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Test.API", "Test.API\Test.A
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Test", "Test\Test.csproj", "{A42A41D3-7A3F-4475-B245-A2E896A2589F}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VeerPerforma.Tool", "VeerPerforma.Tool\VeerPerforma.Tool.csproj", "{B0C277A0-D2EC-4ABF-B342-C7F46A30EA2E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -24,5 +26,9 @@ Global
 		{A42A41D3-7A3F-4475-B245-A2E896A2589F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A42A41D3-7A3F-4475-B245-A2E896A2589F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A42A41D3-7A3F-4475-B245-A2E896A2589F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B0C277A0-D2EC-4ABF-B342-C7F46A30EA2E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B0C277A0-D2EC-4ABF-B342-C7F46A30EA2E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B0C277A0-D2EC-4ABF-B342-C7F46A30EA2E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B0C277A0-D2EC-4ABF-B342-C7F46A30EA2E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

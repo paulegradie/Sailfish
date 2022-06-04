@@ -3,6 +3,7 @@ using System.Linq;
 using System.Reflection;
 using Shouldly;
 using VeerPerforma;
+using VeerPerforma.Attributes;
 using Xunit;
 
 namespace Test.AttributeCollection;

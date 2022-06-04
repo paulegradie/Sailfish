@@ -1,19 +1,4 @@
-﻿namespace VeerPerforma;
-
-[AttributeUsage(AttributeTargets.Class, Inherited = false, AllowMultiple = true)]
-public class VeerPerformaAttribute : Attribute
-{
-    internal VeerPerformaAttribute()
-    {
-    }
-
-    public VeerPerformaAttribute(int numIterations = 3)
-    {
-        NumIterations = numIterations;
-    }
-
-    public int NumIterations { get; set; }
-}
+namespace VeerPerforma.Attributes;
 
 /// <summary>
 /// This is used to decorate a property that will be referenced within the test.
@@ -30,9 +15,4 @@ public class IterationVariable : Attribute
     }
 
     public int[] N { get; set; }
-}
-
-[AttributeUsage(AttributeTargets.Method, Inherited = false, AllowMultiple = false)]
-public class ExecutePerformanceCheck : Attribute
-{
 }

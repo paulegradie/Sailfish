@@ -13,7 +13,7 @@ public class WhenTalkingToTheApi : ApiTestBase
     public async Task AResponseIsReturned()
     {
         var response = await Client.GetStringAsync("/");
-        response.ShouldBe(TestController.Response);
+        response.ShouldBe(TestController.TestResponse);
     }
 
     public WhenTalkingToTheApi(WebApplicationFactory<MyApp> factory) : base(factory)

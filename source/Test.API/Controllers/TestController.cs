@@ -4,7 +4,7 @@ namespace Test.API.Controllers;
 
 public class TestController : VeerBaseController
 {
-    public const string Response = "Hello there!";
+    public const string TestResponse = "Hello there!";
     public TestController()
     {
     }
@@ -12,6 +12,6 @@ public class TestController : VeerBaseController
     [HttpGet()]
     public string Get()
     {
-        return Response;
+        return TestResponse;
     }
 }
