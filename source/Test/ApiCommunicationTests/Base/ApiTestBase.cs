@@ -14,10 +14,7 @@ public class ApiTestBase : IClassFixture<WebApplicationFactory<MyApp>>
     public ApiTestBase(WebApplicationFactory<MyApp> factory)
     {
         WebHostFactory = factory.WithWebHostBuilder(
-            builder =>
-            {
-                // builder.UseTestServer();
-            });
+            builder => { builder.UseTestServer(); });
         Client = WebHostFactory.CreateClient();
     }
 }

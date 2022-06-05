@@ -1,5 +1,4 @@
 using Microsoft.AspNetCore.Mvc.Testing;
-using Test.API;
 using Test.API.Controllers;
 using Test.ApiCommunicationTests.Base;
 using VeerPerforma.Attributes;
@@ -13,7 +12,7 @@ public class CountToAMillionPerformance : ApiTestBase
     [IterationVariable(1, 2, 3)]
     public int NTries { get; set; }
 
-    [IterationVariable(2, 4, 6)]
+    [IterationVariable(200, 400, 1200)]
     public int WaitPeriod { get; set; }
 
     [VeerGlobalSetup]
@@ -49,23 +48,25 @@ public class CountToAMillionPerformance : ApiTestBase
     [ExecutePerformanceCheck]
     public async Task NTriesPerfTest() // must be parameterless
     {
+        Console.WriteLine("Executing NTries Perf Test");
         for (var i = 0; i < NTries; i++) // don't need to provide all property variables in each execution method
         {
-            var response = await Client.GetStringAsync(CountToTenMillionController.Route);
-            Console.WriteLine("Iteration Complete");
+            await Client.GetStringAsync(CountToTenMillionController.Route);
+            Console.WriteLine($"NTries - Iteration Complete: {NTries}-{i}");
         }
     }
 
     [ExecutePerformanceCheck]
     public async Task WaitPeriodPerfTest()
     {
+        Console.WriteLine("Executing WaitPeriod Perf Test");
         for (var i = 0; i < NTries; i++)
         {
             Thread.Sleep(WaitPeriod);
             await Client.GetStringAsync("/");
-        }
+            Console.WriteLine($"Wait Period - Iteration Complete: {NTries}-{i}");
 
-        Console.WriteLine("WAIT PERIOD DONE");
+        }
     }
 
     public CountToAMillionPerformance(WebApplicationFactory<MyApp> factory) : base(factory)

@@ -97,30 +97,66 @@ public class TestExecutor : ITestExecutor
 
         var instances = CreateInstances(test, combos, propNames);
 
+        // should just grab all methods of the same type (types already assembled)
+        // then call each method is the right order
+
+        var methodMap = FormMethodGroups(instances);
+        foreach (var methodName in methodMap.Keys.OrderBy(x => x))
+        {
+            if (methodMap.TryGetValue(methodName, out var methodPairs))
+            {
+                foreach (var pair in methodPairs)
+                {
+                    var (method, instance) = pair;
+                    Console.WriteLine($"Executing performance test: {methodName}");
+                    if (IsAsyncMethodInfo(method))
+                    {
+                        var task = (Task)method.Invoke(instance, null)!;
+                        task.Wait();
+                    }
+                    else
+                    {
+                        method.Invoke(instance, null);
+                    }
+                }
+            }
+        }
+        return 0;
+    }
+
+    private static Dictionary<string, List<(MethodInfo, object)>> FormMethodGroups(List<object> instances)
+    {
+        var methodInstancePairs = new Dictionary<string, List<(MethodInfo, object)>>();
+
         foreach (var instance in instances)
         {
-            var stopwatch = new Stopwatch();
             var methods = instance
                 .GetType()
                 .GetMethodsWithAttribute<ExecutePerformanceCheckAttribute>();
+
             foreach (var method in methods)
             {
-                stopwatch.Start();
-                if (IsAsyncMethodInfo(method))
+                if (methodInstancePairs.TryGetValue(method.Name, out var methodObjectPairs))
                 {
-                    var task = (Task)method.Invoke(instance, null)!;
-                    await task;
+                    if (methodObjectPairs is not null)
+                    {
+                        methodObjectPairs.Add((method, instance));
+                    }
+                    else
+                        throw new Exception("What the hell - whys this list null");
                 }
                 else
                 {
-                    method.Invoke(instance, null);
+                    methodInstancePairs.Add(
+                        method.Name, new List<(MethodInfo, object)>()
+                        {
+                            (method, instance)
+                        });
                 }
-
-                Console.WriteLine(stopwatch.ElapsedMilliseconds / 1000 / 60);
             }
         }
 
-        return 0;
+        return methodInstancePairs;
     }
 
     private bool IsAsyncMethodInfo(MethodInfo method)
