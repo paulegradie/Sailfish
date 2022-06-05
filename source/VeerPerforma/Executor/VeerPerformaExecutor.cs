@@ -20,4 +20,9 @@ public class VeerPerformaExecutor
         // TODO: Call the test executor 
         return await testExecutor.Execute(testNames);
     }
+
+    public async Task<int> Run(string[] testNames, params Type[] testLocationTypes)
+    {
+        return await testExecutor.Execute(testNames, testLocationTypes);
+    }
 }

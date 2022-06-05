@@ -1,5 +1,6 @@
 using Microsoft.AspNetCore.Mvc.Testing;
 using Test.API;
+using Test.API.Controllers;
 using Test.ApiCommunicationTests.Base;
 using VeerPerforma.Attributes;
 using VeerPerforma.Attributes.TestHarness;
@@ -50,7 +51,7 @@ public class CountToAMillionPerformance : ApiTestBase
     {
         for (var i = 0; i < NTries; i++) // don't need to provide all property variables in each execution method
         {
-            var response = await Client.GetStringAsync("/");
+            var response = await Client.GetStringAsync(CountToTenMillionController.Route);
             Console.WriteLine("Iteration Complete");
         }
     }

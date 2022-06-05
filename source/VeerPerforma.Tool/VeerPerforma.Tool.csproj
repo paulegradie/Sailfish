@@ -19,7 +19,6 @@
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\VeerPerforma.Executor\VeerPerforma.Executor.csproj" />
       <ProjectReference Include="..\VeerPerforma\VeerPerforma.csproj" />
     </ItemGroup>
 

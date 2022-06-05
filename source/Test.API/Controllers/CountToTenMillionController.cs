@@ -5,7 +5,8 @@ namespace Test.API.Controllers;
 
 public class CountToTenMillionController : VeerBaseController
 {
-    [HttpGet("million")]
+    public const string Route = "million";
+    [HttpGet(Route)]
     public string CountToAMillion()
     {
         var start = 0;

@@ -1,7 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using Shouldly;
-using VeerPerforma.Executor;
 using VeerPerforma.Executor.Prep;
 using Xunit;
 
@@ -12,12 +11,13 @@ public class WhenCompilingIterationVariables
     [Fact]
     public void AllCombinationsAreFound_TwoProperties()
     {
-        var combos = InstanceConstructor.GetAllPossibleCombos(
-            new List<List<string>>
+        var combinator = new ParameterCombinationMaker();
+        var combos = combinator.GetAllPossibleCombos(
+            new List<List<int>>
             {
-                new List<string> { "a", "b", "c" },
-                new List<string> { "x", "y" },
-                new List<string> { "1", "2", "3", "4" }
+                new() { 1, 2, 3 },
+                new() { 4, 5 },
+                new() { 6, 7, 8, 9 }
             });
         var result = combos.Select(c => c.ToArray()).ToArray();
 
