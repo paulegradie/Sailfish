@@ -5,6 +5,18 @@
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
         <RootNamespace>VeerPerforma</RootNamespace>
+
+        <IsTestProject>true</IsTestProject>
+        <TestProject>true</TestProject>
+
     </PropertyGroup>
+
+    <ItemGroup>
+      <PackageReference Include="Autofac" Version="6.4.0" />
+      <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="6.0.0" />
+      <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.2.0" />
+      <PackageReference Include="MSTest.TestFramework" Version="2.2.10" />
+      <PackageReference Include="Serilog" Version="2.11.0" />
+    </ItemGroup>
 
 </Project>

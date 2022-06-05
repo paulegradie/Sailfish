@@ -7,9 +7,9 @@ namespace VeerPerforma.Attributes;
 /// VeerPerforma attribute
 /// </summary>
 [AttributeUsage(AttributeTargets.Property, Inherited = false, AllowMultiple = false)]
-public class IterationVariable : Attribute
+public class IterationVariableAttribute : Attribute
 {
-    public IterationVariable(params int[] n)
+    public IterationVariableAttribute(params int[] n)
     {
         N = n;
     }

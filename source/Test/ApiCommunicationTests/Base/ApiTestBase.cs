@@ -1,9 +1,10 @@
 ﻿using System.Net.Http;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
+using Test.API;
 using Xunit;
 
-namespace Test.Behavior.Base;
+namespace Test.ApiCommunicationTests.Base;
 
 public class ApiTestBase : IClassFixture<WebApplicationFactory<MyApp>>
 {

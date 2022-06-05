@@ -1,27 +1,21 @@
-using System;
 using System.Linq;
 using System.Reflection;
 using Shouldly;
-using VeerPerforma;
-using VeerPerforma.Attributes;
+using VeerPerforma.Attributes.TestHarness;
+using VeerPerforma.Utils.Discovery;
 using Xunit;
 
 namespace Test.AttributeCollection;
 
 public class WhenCollectingAttributes
 {
-    private static bool HasAttribute<TAttribute>(Type type) where TAttribute : Attribute
-    {
-        return type.GetCustomAttributes(typeof(TAttribute), false).Length > 0;
-    }
-
     [Fact]
     public void AllAttributesCanBeFound()
     {
         var allTypesWithAttribute = Assembly
             .GetAssembly(typeof(WhenCollectingAttributes))!
             .GetTypes()
-            .Where(t => HasAttribute<VeerPerformaAttribute>(t))
+            .Where(t => t.HasAttribute<VeerPerformaAttribute>())
             .ToArray();
 
         allTypesWithAttribute.Length.ShouldBeGreaterThan(0);

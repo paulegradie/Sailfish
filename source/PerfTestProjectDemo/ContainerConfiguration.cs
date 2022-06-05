@@ -1,7 +1,7 @@
-﻿using Autofac;
-using VeerPerforma.Executor;
+using Autofac;
+using VeerPerforma.Registration;
 
-namespace VeerPerforma.Tool.Framework.DIContainer;
+namespace PerfTestProjectDemo;
 
 public static class ContainerConfiguration
 {
@@ -9,7 +9,9 @@ public static class ContainerConfiguration
     {
         var builder = new ContainerBuilder();
         builder = CustomizeContainer(builder);
-        builder.RegisterType<VeerPerformaExecutor>();
+
+        builder.RegisterVeerPerformaTypes();
+
         return builder.Build();
     }
 

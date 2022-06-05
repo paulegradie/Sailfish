@@ -1,7 +1,6 @@
-﻿// See https://aka.ms/new-console-template for more information
-
-using Autofac;
+﻿using Autofac;
 using McMaster.Extensions.CommandLineUtils;
+using VeerPerforma.Executor;
 using VeerPerforma.Tool.Framework.DIContainer;
 
 namespace VeerPerforma.Tool;
@@ -10,15 +9,21 @@ class Program
 {
     public static int Main(string[] args)
     {
-        Console.WriteLine("Hello, World!");
         return CommandLineApplication.Execute<Program>(args);
     }
 
     public void OnExecute()
     {
-        ContainerConfiguration.CompositionRoot().Resolve<VeerPerformaExecutor>().Run(TestNames);
+        if (TestNames is null) throw new Exception("Program failed to start...");
+        ContainerConfiguration
+            .CompositionRoot()
+            .Resolve<VeerPerformaExecutor>()
+            .Run(
+                TestNames
+                    .Where(x => !string.IsNullOrEmpty(x) && !string.IsNullOrWhiteSpace(x))
+                    .ToArray());
     }
 
     [Option("-t|--tests", CommandOptionType.MultipleValue, Description = "List of tests to execute")]
-    public string[]? TestNames { get; set; }
+    public string[]? TestNames { get; set; } = new[] { "" };
 }

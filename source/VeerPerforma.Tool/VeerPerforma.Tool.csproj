@@ -7,7 +7,7 @@
         <Nullable>enable</Nullable>
 
         <PackAsTool>true</PackAsTool>
-        <ToolCommandName>botsay</ToolCommandName>
+        <ToolCommandName>perf</ToolCommandName>
         <PackageOutputPath>./nupkg</PackageOutputPath>
     </PropertyGroup>
 
@@ -19,6 +19,7 @@
     </ItemGroup>
 
     <ItemGroup>
+      <ProjectReference Include="..\VeerPerforma.Executor\VeerPerforma.Executor.csproj" />
       <ProjectReference Include="..\VeerPerforma\VeerPerforma.csproj" />
     </ItemGroup>
 
