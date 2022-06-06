@@ -1,4 +1,4 @@
-namespace VeerPerforma.Executor.Prep;
+namespace VeerPerforma.Execution;
 
 public interface ITestCollector
 {

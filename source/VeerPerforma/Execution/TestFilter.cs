@@ -1,4 +1,4 @@
-﻿namespace VeerPerforma.Executor.Prep;
+﻿namespace VeerPerforma.Execution;
 
 public class TestFilter : ITestFilter
 {
@@ -21,9 +21,8 @@ public class TestFilter : ITestFilter
         return tests;
     }
 
-    public async Task<Type[]> FilterAndValidate(Type[] tests, string[] testsRequestedByUser)
+    public Type[] FilterAndValidate(Type[] tests, string[] testsRequestedByUser)
     {
-        await Task.CompletedTask;
         var filtered = FilterTests(tests, testsRequestedByUser);
         var result = testListValidator.ValidateTests(testsRequestedByUser, filtered);
         if (!result.IsValid) throw new Exception("Couldn't find all tests"); // TODO: make use of the result errors

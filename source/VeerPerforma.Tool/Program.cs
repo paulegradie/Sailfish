@@ -1,6 +1,5 @@
 ﻿using Autofac;
 using McMaster.Extensions.CommandLineUtils;
-using VeerPerforma.Executor;
 using VeerPerforma.Tool.Framework.DIContainer;
 
 namespace VeerPerforma.Tool;

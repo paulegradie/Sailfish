@@ -2,7 +2,7 @@ using System.Linq;
 using System.Reflection;
 using Shouldly;
 using VeerPerforma.Attributes.TestHarness;
-using VeerPerforma.Utils.Discovery;
+using VeerPerforma.Utils;
 using Xunit;
 
 namespace Test.AttributeCollection;

@@ -15,6 +15,9 @@ app.MapControllers();
 app.Run();
 
 
-public class MyApp
+namespace Test.API
 {
+    public class MyApp
+    {
+    }
 }

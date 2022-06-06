@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc.Testing;
+using Test.API;
 using Test.API.Controllers;
 using Test.ApiCommunicationTests.Base;
 using VeerPerforma.Attributes;
@@ -6,67 +7,70 @@ using VeerPerforma.Attributes.TestHarness;
 
 namespace PerfTestProjectDemo;
 
-[VeerPerforma]
+[VeerPerforma(numIterations: 2)]
 public class CountToAMillionPerformance : ApiTestBase
 {
-    [IterationVariable(1, 2, 3)]
-    public int NTries { get; set; }
-
-    [IterationVariable(200, 400, 1200)]
-    public int WaitPeriod { get; set; }
-
     [VeerGlobalSetup]
     public void GlobalSetup()
     {
+        Console.WriteLine("This is the Global Setup");
     }
 
     [VeerGlobalTeardown]
     public void GlobalTeardown()
     {
+        Console.WriteLine("This is the Global Teardown");
     }
 
     [VeerExecutionMethodSetup]
     public void ExecutionMethodSetup()
     {
+        Console.WriteLine("This is the Execution Method Setup");
     }
 
     [VeerExecutionMethodTeardown]
     public void ExecutionMethodTeardown()
     {
+        Console.WriteLine("This is the Execution Method Teardown");
     }
 
     [VeerExecutionIterationSetup]
     public void IterationSetup()
     {
+        Console.WriteLine("This is the Iteration Setup - use sparingly");
     }
 
     [VeerExecutionIterationTeardown]
     public void IterationTeardown()
     {
+        Console.WriteLine("This is the Iteration Teardown - use sparingly");
     }
+
+    [IterationVariable(1, 2, 3)]
+    public int NTries { get; set; }
+
+    [IterationVariable(200, 300)]
+    public int WaitPeriod { get; set; }
+
 
     [ExecutePerformanceCheck]
     public async Task NTriesPerfTest() // must be parameterless
     {
-        Console.WriteLine("Executing NTries Perf Test");
-        for (var i = 0; i < NTries; i++) // don't need to provide all property variables in each execution method
-        {
-            await Client.GetStringAsync(CountToTenMillionController.Route);
-            Console.WriteLine($"NTries - Iteration Complete: {NTries}-{i}");
-        }
+        await Client.GetStringAsync(CountToTenMillionController.Route);
+        WriteSomething();
     }
 
     [ExecutePerformanceCheck]
     public async Task WaitPeriodPerfTest()
     {
-        Console.WriteLine("Executing WaitPeriod Perf Test");
-        for (var i = 0; i < NTries; i++)
-        {
-            Thread.Sleep(WaitPeriod);
-            await Client.GetStringAsync("/");
-            Console.WriteLine($"Wait Period - Iteration Complete: {NTries}-{i}");
+        Thread.Sleep(WaitPeriod);
+        await Client.GetStringAsync("/");
+        WriteSomething();
+    }
 
-        }
+    private void WriteSomething()
+    {
+        Console.WriteLine($"Wait Period - Iteration Complete: {NTries}-{WaitPeriod}");
     }
 
     public CountToAMillionPerformance(WebApplicationFactory<MyApp> factory) : base(factory)

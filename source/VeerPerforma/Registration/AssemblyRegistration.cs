@@ -1,8 +1,7 @@
 ﻿using Autofac;
 using Microsoft.Extensions.DependencyInjection;
 using Serilog;
-using VeerPerforma.Executor;
-using VeerPerforma.Executor.Prep;
+using VeerPerforma.Execution;
 
 namespace VeerPerforma.Registration;
 
@@ -39,7 +38,13 @@ public static class AssemblyRegistrationExtensionMethods
         serviceCollection.AddTransient<ITestFilter, TestFilter>();
         serviceCollection.AddTransient<ITestListValidator, TestListValidator>();
         serviceCollection.AddTransient<ITestCollector, TestCollector>();
-        serviceCollection.AddTransient<IParameterCombinationMaker, ParameterCombinationMaker>();
+        serviceCollection.AddTransient<IParameterCombinator, ParameterCombinator>();
+        serviceCollection.AddTransient<IParameterGridCreator, ParameterGridCreator>();
+        serviceCollection.AddTransient<IInstanceCreator, InstanceCreator>();
+        serviceCollection.AddTransient<ITypeResolver, TypeResolver>();
+        serviceCollection.AddTransient<IMethodOrganizer, MethodOrganizer>();
+        serviceCollection.AddTransient<IMethodIterator, MethodIterator>();
+        serviceCollection.AddTransient<ITestRunPreparation, TestRunPreparation>();
     }
 }
 
@@ -60,6 +65,12 @@ public class ExecutorModule : Module
         builder.RegisterType<TestFilter>().As<ITestFilter>();
         builder.RegisterType<TestListValidator>().As<ITestListValidator>();
         builder.RegisterType<TestCollector>().As<ITestCollector>();
-        builder.RegisterType<ParameterCombinationMaker>().As<IParameterCombinationMaker>();
+        builder.RegisterType<ParameterCombinator>().As<IParameterCombinator>();
+        builder.RegisterType<ParameterGridCreator>().As<IParameterGridCreator>();
+        builder.RegisterType<InstanceCreator>().As<IInstanceCreator>();
+        builder.RegisterType<TypeResolver>().As<ITypeResolver>();
+        builder.RegisterType<MethodOrganizer>().As<IMethodOrganizer>();
+        builder.RegisterType<MethodIterator>().As<IMethodIterator>();
+        builder.RegisterType<TestRunPreparation>().As<ITestRunPreparation>();
     }
 }

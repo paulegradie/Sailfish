@@ -1,19 +1,19 @@
 ﻿using Autofac;
 using McMaster.Extensions.CommandLineUtils;
-using VeerPerforma.Executor;
+using VeerPerforma;
 
 namespace PerfTestProjectDemo;
 
 internal class Program
 {
-    private static void Main(string[] userRequestedTestNames)
+    private static async Task Main(string[] userRequestedTestNames)
     {
-        CommandLineApplication.Execute<Program>(userRequestedTestNames);
+        await CommandLineApplication.ExecuteAsync<Program>(userRequestedTestNames);
     }
 
-    public void OnExecute()
+    public async Task OnExecute()
     {
-        ContainerConfiguration.CompositionRoot().Resolve<VeerPerformaExecutor>().Run(TestNames, typeof(CountToAMillionPerformance));
+        await ContainerConfiguration.CompositionRoot().Resolve<VeerPerformaExecutor>().Run(TestNames, typeof(CountToAMillionPerformance));
     }
 
     [Option("-t|--tests", CommandOptionType.MultipleValue, Description = "List of tests to execute")]

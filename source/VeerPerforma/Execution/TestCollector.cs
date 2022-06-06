@@ -1,8 +1,8 @@
 ﻿using System.Reflection;
 using VeerPerforma.Attributes.TestHarness;
-using VeerPerforma.Utils.Discovery;
+using VeerPerforma.Utils;
 
-namespace VeerPerforma.Executor.Prep;
+namespace VeerPerforma.Execution;
 
 public class TestCollector : ITestCollector
 {

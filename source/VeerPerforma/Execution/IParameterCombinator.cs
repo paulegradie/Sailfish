@@ -1,6 +1,6 @@
-﻿namespace VeerPerforma.Executor.Prep;
+﻿namespace VeerPerforma.Execution;
 
-public interface IParameterCombinationMaker
+public interface IParameterCombinator
 {
     IEnumerable<IEnumerable<int>> GetAllPossibleCombos(
         IEnumerable<IEnumerable<int>> ints);
