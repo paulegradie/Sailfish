@@ -33,9 +33,9 @@ public class TestExecutor : ITestExecutor
 
     private async Task Execute(Type test)
     {
-        var methodMap = testRunPreparation.GenerateTestInstances(test);
         var numIterations = test.GetNumIterations();
         var numWarmupIterations = test.GetWarmupIterations();
+        var methodMap = testRunPreparation.GenerateTestInstances(test);
 
         foreach (var methodName in methodMap.Keys.OrderBy(x => x))
         {
