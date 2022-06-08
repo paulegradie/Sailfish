@@ -13,7 +13,7 @@ internal class Program
 
     public async Task OnExecute()
     {
-        await ContainerConfiguration.CompositionRoot().Resolve<VeerPerformaExecutor>().Run(TestNames, typeof(CountToAMillionPerformance));
+        await ContainerConfiguration.CompositionRoot().Resolve<VeerPerformaExecutor>().Run(TestNames, typeof(DemoPerfTest));
     }
 
     [Option("-t|--tests", CommandOptionType.MultipleValue, Description = "List of tests to execute")]

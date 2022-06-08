@@ -13,7 +13,7 @@ public static class ContainerConfiguration
         builder = CustomizeContainer(builder);
 
         builder.RegisterVeerPerformaTypes();
-        builder.RegisterPerformanceTypes(typeof(CountToAMillionPerformance));
+        builder.RegisterPerformanceTypes(typeof(DemoPerfTest));
         return builder.Build();
     }
 

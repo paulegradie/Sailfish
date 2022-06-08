@@ -27,7 +27,7 @@ public class TestListValidator : ITestListValidator
             erroredTests.AddRange(invalidTests.Select(x => x.Name));
         }
 
-        return erroredTests.Count > 0 ? TestValidationResult.CreateFailure(erroredTests.Distinct().ToList()) : TestValidationResult.CreateSuccess();
+        return erroredTests.Count > 0 ? TestValidationResult.CreateFailure(filteredTestNames, erroredTests.Distinct().ToList()) : TestValidationResult.CreateSuccess(filteredTestNames);
     }
 
     private bool AnyTestStructuresAreNotValid(Type[] testClasses, out List<Type> invalidlyStructuredTests)

@@ -25,11 +25,24 @@ public class VeerPerformaExecutor
 
     public async Task<int> Run(string[] testNames, params Type[] testLocationTypes)
     {
-        var tests = CollectTests(testNames, testLocationTypes);
-        return await veerTestExecutor.Execute(tests);
+        var testRun = CollectTests(testNames, testLocationTypes);
+        if (testRun.IsValid)
+        {
+            return await veerTestExecutor.Execute(testRun.Tests);
+        }
+        else
+        {
+            Console.WriteLine("Validation Error encountered\n");
+            foreach (var error in testRun.Errors)
+            {
+                Console.WriteLine(error);
+            }
+
+            return 0;
+        }
     }
 
-    public Type[] CollectTests(string[] testNames, params Type[] locationTypes)
+    public TestValidationResult CollectTests(string[] testNames, params Type[] locationTypes)
     {
         var perfTests = testCollector.CollectTestTypes(locationTypes);
         return testFilter.FilterAndValidate(perfTests, testNames);

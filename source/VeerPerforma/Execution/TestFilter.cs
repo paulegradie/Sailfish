@@ -21,11 +21,10 @@ public class TestFilter : ITestFilter
         return tests;
     }
 
-    public Type[] FilterAndValidate(Type[] tests, string[] testsRequestedByUser)
+    public TestValidationResult FilterAndValidate(Type[] tests, string[] testsRequestedByUser)
     {
         var filtered = FilterTests(tests, testsRequestedByUser);
         var result = testListValidator.ValidateTests(testsRequestedByUser, filtered);
-        if (!result.IsValid) throw new Exception("Couldn't find all tests"); // TODO: make use of the result errors
-        return filtered;
+        return result;
     }
 }

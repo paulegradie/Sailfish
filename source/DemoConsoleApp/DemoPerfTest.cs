@@ -1,14 +1,13 @@
 using Microsoft.AspNetCore.Mvc.Testing;
 using Test.API;
-using Test.API.Controllers;
 using Test.ApiCommunicationTests.Base;
 using VeerPerforma.Attributes;
 using VeerPerforma.Attributes.TestHarness;
 
 namespace PerfTestProjectDemo;
 
-[VeerPerforma(numIterations: 2)]
-public class CountToAMillionPerformance : ApiTestBase
+[VeerPerforma(2)]
+public class DemoPerfTest : ApiTestBase
 {
     [VeerGlobalSetup]
     public void GlobalSetup()
@@ -67,7 +66,7 @@ public class CountToAMillionPerformance : ApiTestBase
         Console.WriteLine($"Wait Period - Iteration Complete: {NTries}-{WaitPeriod}");
     }
 
-    public CountToAMillionPerformance(WebApplicationFactory<MyApp> factory) : base(factory)
+    public DemoPerfTest(WebApplicationFactory<MyApp> factory) : base(factory)
     {
     }
 }

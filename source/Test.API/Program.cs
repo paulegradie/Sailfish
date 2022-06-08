@@ -14,7 +14,6 @@ if (app.Environment.IsDevelopment())
 app.MapControllers();
 app.Run();
 
-
 namespace Test.API
 {
     public class MyApp
