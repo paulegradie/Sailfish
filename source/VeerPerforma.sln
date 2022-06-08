@@ -14,8 +14,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "VPTestAdapter", "VPTestAdap
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VPTestAdapter", "VPTestAdapter\VPTestAdapter.csproj", "{71C488BD-3668-4D53-A5BD-6E9307215B5E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "VPTestAdapterVSix", "VPTestAdapter\VPTestAdapterVSix\VPTestAdapterVSix.csproj", "{34F7F1A3-8A0F-4FE2-AF28-BD7F06E9BF28}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -46,13 +44,8 @@ Global
 		{71C488BD-3668-4D53-A5BD-6E9307215B5E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{71C488BD-3668-4D53-A5BD-6E9307215B5E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{71C488BD-3668-4D53-A5BD-6E9307215B5E}.Release|Any CPU.Build.0 = Release|Any CPU
-		{34F7F1A3-8A0F-4FE2-AF28-BD7F06E9BF28}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{34F7F1A3-8A0F-4FE2-AF28-BD7F06E9BF28}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{34F7F1A3-8A0F-4FE2-AF28-BD7F06E9BF28}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{34F7F1A3-8A0F-4FE2-AF28-BD7F06E9BF28}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{71C488BD-3668-4D53-A5BD-6E9307215B5E} = {7288A41A-C4A3-40B7-91B6-5F14A656A4BE}
-		{34F7F1A3-8A0F-4FE2-AF28-BD7F06E9BF28} = {7288A41A-C4A3-40B7-91B6-5F14A656A4BE}
 	EndGlobalSection
 EndGlobal

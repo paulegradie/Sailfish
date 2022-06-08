@@ -51,18 +51,12 @@ public class CountToAMillionPerformance : ApiTestBase
 
     [IterationVariable(200, 300)]
     public int WaitPeriod { get; set; }
-
-
-    [ExecutePerformanceCheck]
-    public async Task NTriesPerfTest() // must be parameterless
-    {
-        await Client.GetStringAsync(CountToTenMillionController.Route);
-        WriteSomething();
-    }
+    
 
     [ExecutePerformanceCheck]
     public async Task WaitPeriodPerfTest()
     {
+        var test = new TestCollector();
         Thread.Sleep(WaitPeriod);
         await Client.GetStringAsync("/");
         WriteSomething();

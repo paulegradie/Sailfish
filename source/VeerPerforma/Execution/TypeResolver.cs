@@ -24,7 +24,7 @@ public class TypeResolver : ITypeResolver
         else if (serviceProvider is not null)
         {
             var resolved = serviceProvider.GetService(type);
-            if (resolved is null) throw new Exception($"Could not test type: {type.Name}");
+            if (resolved is null) throw new Exception($"Could not resolve test type: {type.Name}. Make sure you register this type in a autofac or service collection container.");
             return resolved;
         }
         else

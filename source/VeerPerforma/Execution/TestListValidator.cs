@@ -30,12 +30,12 @@ public class TestListValidator : ITestListValidator
         return erroredTests.Count > 0 ? TestValidationResult.CreateFailure(erroredTests.Distinct().ToList()) : TestValidationResult.CreateSuccess();
     }
 
-    private bool AnyTestStructuresAreNotValid(Type[] filteredTests, out List<Type> invalidlyStructuredTests)
+    private bool AnyTestStructuresAreNotValid(Type[] testClasses, out List<Type> invalidlyStructuredTests)
     {
         invalidlyStructuredTests = new List<Type>();
-        foreach (var test in filteredTests)
+        foreach (var test in testClasses)
         {
-            if (!TypeHasExecutionMethod(test))
+            if (!TypeHasOneExecutionMethod(test))
             {
                 invalidlyStructuredTests.Add(test);
             }
@@ -44,14 +44,12 @@ public class TestListValidator : ITestListValidator
         return invalidlyStructuredTests.Count > 0;
     }
 
-
-    private static bool TypeHasExecutionMethod(Type type)
+    private static bool TypeHasOneExecutionMethod(Type type)
     {
-        var methods = type
-            .GetMethods()
-            .Where(x => x.IsPublic)
-            .Where(x => x.HasMethodWithAttribute<ExecutePerformanceCheckAttribute>());
-        return methods.Count() > 0;
+        return type
+            .GetMethodsWithAttribute<ExecutePerformanceCheckAttribute>()
+            .ToArray()
+            .Length == 1;
     }
 
     private bool TestsAreRequestedButCannotFindAllOfThem(string[] testsRequestedByUser, string[] filteredTestNames, out List<string> missingTests)

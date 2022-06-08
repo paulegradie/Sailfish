@@ -34,7 +34,7 @@ public static class AssemblyRegistrationExtensionMethods
             });
 
         serviceCollection.AddTransient<VeerPerformaExecutor>();
-        serviceCollection.AddTransient<ITestExecutor, TestExecutor>();
+        serviceCollection.AddTransient<IVeerTestExecutor, VeerTestExecutor>();
         serviceCollection.AddTransient<ITestFilter, TestFilter>();
         serviceCollection.AddTransient<ITestListValidator, TestListValidator>();
         serviceCollection.AddTransient<ITestCollector, TestCollector>();
@@ -61,7 +61,7 @@ public class ExecutorModule : Module
             }).SingleInstance();
 
         builder.RegisterType<VeerPerformaExecutor>().AsSelf();
-        builder.RegisterType<TestExecutor>().As<ITestExecutor>();
+        builder.RegisterType<VeerTestExecutor>().As<IVeerTestExecutor>();
         builder.RegisterType<TestFilter>().As<ITestFilter>();
         builder.RegisterType<TestListValidator>().As<ITestListValidator>();
         builder.RegisterType<TestCollector>().As<ITestCollector>();

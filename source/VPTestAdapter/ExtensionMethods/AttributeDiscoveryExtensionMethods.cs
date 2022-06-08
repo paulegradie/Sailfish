@@ -1,10 +1,7 @@
 ﻿using System.Reflection;
-using System.Runtime.CompilerServices;
-using VeerPerforma.Attributes.TestHarness;
 
-namespace VeerPerforma.Utils;
 
-public static class ExtensionMethods
+public static class AttributeDiscoveryExtensionMethods
 {
     internal static bool HasAttribute<TAttribute>(this Type type, bool inherit = false) where TAttribute : Attribute
     {
@@ -21,7 +18,7 @@ public static class ExtensionMethods
         return property.GetCustomAttributes(typeof(TAttribute), inherit).Length > 0;
     }
 
-    internal static bool IsMethodWithAttribute<TAttribute>(this MethodInfo method) where TAttribute : Attribute
+    internal static bool HasMethodWithAttribute<TAttribute>(this MethodInfo method) where TAttribute : Attribute
     {
         return method.GetCustomAttributes(typeof(TAttribute), false).Length > 0;
     }
@@ -33,7 +30,7 @@ public static class ExtensionMethods
 
     internal static IEnumerable<MethodInfo> GetMethodsWithAttribute<TAttribute>(this Type type) where TAttribute : Attribute
     {
-        return type.GetMethods().Where(x => x.IsPublic).Where(x => x.HasAttribute<TAttribute>());
+        return type.GetMethods().Where(x => x.HasAttribute<TAttribute>());
     }
 
     internal static IEnumerable<MethodInfo> GetMethodsWithAttribute<TAttribute>(this object instance) where TAttribute : Attribute
@@ -44,36 +41,5 @@ public static class ExtensionMethods
     internal static MethodInfo? GetMethodWithAttribute<TAttribute>(this object instance) where TAttribute : Attribute
     {
         return instance.GetType().GetMethodsWithAttribute<TAttribute>().SingleOrDefault();
-    }
-
-    internal static bool IsAsyncMethod(this MethodInfo method)
-    {
-        return method.HasAttribute<AsyncStateMachineAttribute>();
-    }
-
-    public static async Task InvokeWith(this MethodInfo method, object instance)
-    {
-        if (method.IsAsyncMethod()) await (Task)method.Invoke(instance, null)!;
-        else method.Invoke(instance, null);
-    }
-
-    internal static int GetNumIterations(this Type type)
-    {
-        var numIterations = type
-            .GetCustomAttributes(true)
-            .OfType<VeerPerformaAttribute>()
-            .Single()
-            .NumIterations;
-        return numIterations;
-    }
-
-    internal static int GetWarmupIterations(this Type type)
-    {
-        var numWarmupIterations = type
-            .GetCustomAttributes(true)
-            .OfType<VeerPerformaAttribute>()
-            .Single()
-            .NumWarmupIterations;
-        return numWarmupIterations;
     }
 }

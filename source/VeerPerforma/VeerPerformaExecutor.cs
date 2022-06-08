@@ -8,17 +8,17 @@ namespace VeerPerforma;
 /// </summary>
 public class VeerPerformaExecutor
 {
-    private readonly ITestExecutor testExecutor;
+    private readonly IVeerTestExecutor veerTestExecutor;
     private readonly ITestCollector testCollector;
     private readonly ITestFilter testFilter;
 
     public VeerPerformaExecutor(
-        ITestExecutor testExecutor,
+        IVeerTestExecutor veerTestExecutor,
         ITestCollector testCollector,
         ITestFilter testFilter
     )
     {
-        this.testExecutor = testExecutor;
+        this.veerTestExecutor = veerTestExecutor;
         this.testCollector = testCollector;
         this.testFilter = testFilter;
     }
@@ -26,7 +26,7 @@ public class VeerPerformaExecutor
     public async Task<int> Run(string[] testNames, params Type[] testLocationTypes)
     {
         var tests = CollectTests(testNames, testLocationTypes);
-        return await testExecutor.Execute(tests);
+        return await veerTestExecutor.Execute(tests);
     }
 
     public Type[] CollectTests(string[] testNames, params Type[] locationTypes)
