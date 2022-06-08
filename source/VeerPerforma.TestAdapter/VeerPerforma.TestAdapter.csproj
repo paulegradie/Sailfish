@@ -1,0 +1,30 @@
+<Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup>
+        <PackageId>VeerPerformaTestAdapter</PackageId>
+        <Version>0.0.1</Version>
+        <Authors>Paul E. Gradie</Authors>
+        <Description>
+            VeerPerforma is a simple, unambitious, low resolution performace test framework for writing clean, manageable performance tests
+            against your component or API. The general intention is to provide a simple tool that teams can use to write straight forward
+            tests that assess the speed of your code, without weighing you down with all the extra ceremony.
+        </Description>
+        <RootNamespace>VeerPerforma.TestAdapter</RootNamespace>
+    </PropertyGroup>
+
+    <PropertyGroup>
+        <TargetFramework>net6.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <PackageReference Include="NuGet.Build.Tasks.Pack" Version="5.2.0" />
+        <PackageReference Include="Microsoft.VisualStudio.TestPlatform.ObjectModel" Version="14.0.0" />
+        <PackageReference Include="Microsoft.VisualStudio.TestWindow.Interfaces" Version="11.0.61030" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\VeerPerforma\VeerPerforma.csproj" />
+    </ItemGroup>
+
+</Project>

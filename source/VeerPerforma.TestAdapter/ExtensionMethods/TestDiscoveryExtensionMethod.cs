@@ -4,7 +4,7 @@ using VeerPerforma.Attributes.TestHarness;
 using VeerPerforma.Execution;
 using VeerPerforma.Utils;
 
-namespace VPTestAdapter;
+namespace VeerPerforma.TestAdapter.ExtensionMethods;
 
 internal static class TestDiscoveryExtensionMethod
 {
@@ -60,7 +60,7 @@ internal static class TestDiscoveryExtensionMethod
             paramSet =>
             {
                 var randomId = Guid.NewGuid();
-                var paramsCombo = DisplayNameHelper.CreateParamsDisplay(paramSet);//
+                var paramsCombo = DisplayNameHelper.CreateParamsDisplay(paramSet); //
                 return new TestCase // a test case is a method
                 {
                     CodeFilePath = sourceFileLocation,

@@ -7,11 +7,11 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Microsoft.VisualStudio.TestPlatform.ObjectModel" Version="14.0.0" />
+      <ProjectReference Include="..\VeerPerforma\VeerPerforma.csproj" />
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\VeerPerforma\VeerPerforma.csproj" />
+      <PackageReference Include="VeerPerformaTestAdapter" Version="0.0.1" />
     </ItemGroup>
 
 </Project>

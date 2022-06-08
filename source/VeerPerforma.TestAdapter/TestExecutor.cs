@@ -5,9 +5,10 @@ using Microsoft.VisualStudio.TestPlatform.ObjectModel.Adapter;
 using VeerPerforma.Attributes.TestHarness;
 using VeerPerforma.Execution;
 using VeerPerforma.Registration;
+using VeerPerforma.TestAdapter.ExtensionMethods;
 using VeerPerforma.Utils;
 
-namespace VPTestAdapter;
+namespace VeerPerforma.TestAdapter;
 
 [ExtensionUri(ExecutorUriString)]
 public class TestExecutor : ITestExecutor
