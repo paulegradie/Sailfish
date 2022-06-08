@@ -25,7 +25,7 @@ public class MethodIterator : IMethodIterator
     private async Task MainExecution(AncillaryInvocation invoker, List<double> elapsedMilliseconds)
     {
         var stopwatch = new Stopwatch();
-
+        
         stopwatch.Start();
         await invoker.ExecutionMethod();
         stopwatch.Stop();
@@ -36,7 +36,7 @@ public class MethodIterator : IMethodIterator
         stopwatch.Reset();
     }
 
-    public async Task IterateMethodNTimesAsync(AncillaryInvocation invoker, int numIterations, int numWarmupIterations)
+    public async Task<List<string>> IterateMethodNTimesAsync(AncillaryInvocation invoker, int numIterations, int numWarmupIterations)
     {
         await invoker.MethodSetup();
         await WarmupIterations(invoker, numIterations);
@@ -52,5 +52,6 @@ public class MethodIterator : IMethodIterator
         }
 
         await invoker.MethodTearDown();
+        return new List<string>(); // TODO: provide any messages or delete  
     }
 }

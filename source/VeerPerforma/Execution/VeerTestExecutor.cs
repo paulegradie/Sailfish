@@ -1,4 +1,5 @@
-﻿using Serilog;
+﻿using System.Diagnostics;
+using Serilog;
 using VeerPerforma.Utils;
 
 namespace VeerPerforma.Execution;
@@ -20,7 +21,7 @@ public class VeerTestExecutor : IVeerTestExecutor
         this.methodIterator = methodIterator;
     }
 
-    public async Task<int> Execute(Type[] tests, Action<Type, int, int>? callback = null)
+    public async Task<int> Execute(Type[] tests, AdapterCallbackAction? callback = null)
     {
         try
         {
@@ -37,7 +38,7 @@ public class VeerTestExecutor : IVeerTestExecutor
         return await Task.FromResult(0);
     }
 
-    public async Task Execute(Type test, Action<Type, int, int>? callback = null)
+    public async Task Execute(Type test, AdapterCallbackAction? callback = null)
     {
         var numIterations = test.GetNumIterations();
         var numWarmupIterations = test.GetWarmupIterations();
@@ -51,24 +52,41 @@ public class VeerTestExecutor : IVeerTestExecutor
             {
                 var (method, instance) = methodPairs[testCaseIndex];
                 var invoker = new AncillaryInvocation(instance, method);
+                var statusCode = 0;
+                var startTime = DateTimeOffset.Now;
+                var endTime = DateTimeOffset.Now;
+                var duration = TimeSpan.Zero;
+                Exception exception = null!;
+                var messages = new List<string>();
+
                 try
                 {
+                    var timer = new Stopwatch();
+                    timer.Start();
+                    startTime = DateTimeOffset.Now.LocalDateTime;
+
+
                     await invoker.GlobalSetup();
-                    await methodIterator.IterateMethodNTimesAsync(invoker, numIterations, numWarmupIterations);
+                    messages = await methodIterator.IterateMethodNTimesAsync(invoker, numIterations, numWarmupIterations);
                     await invoker.GlobalTeardown();
-                    if (callback is not null)
-                        callback(test, testCaseIndex, 1);
+
+                    timer.Stop();
+                    endTime = DateTimeOffset.Now.LocalDateTime;
+                    duration = endTime - startTime;
+                    statusCode = 1;
                 }
                 catch (Exception ex)
                 {
-                    if (callback is not null)
-                        callback(test, testCaseIndex, 0);
+                    exception = ex;
                 }
-
-                logger.Debug($"------ Method {method.Name} is finished!");
+                finally
+                {
+                    if (callback is not null)
+                        callback(test, testCaseIndex, statusCode, exception, messages.ToArray(), startTime, endTime, duration);
+                }
             }
 
-            ;
+            logger.Debug($"------ Method {methodName} is finished!");
         }
     }
 }

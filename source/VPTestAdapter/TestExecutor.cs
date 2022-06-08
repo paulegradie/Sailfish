@@ -43,24 +43,71 @@ public class TestExecutor : ITestExecutor
         var paramGridCreator = new ParameterGridCreator(new ParameterCombinator());
         var executor = CompositionRoot().Resolve<IVeerTestExecutor>();
 
-        var displayNameToTypeMap = CreateTypeToTestCaseArrayMap(perfTestTypes, paramGridCreator, testCases);
+        var displayNameToTypeMap = MapTypesToTheirTestCaseArrays(perfTestTypes, paramGridCreator, testCases);
         foreach (var perfTestType in perfTestTypes)
         {
             var result = executor.Execute(
-                perfTestType, (testType, testCaseIndex, result) =>
+                perfTestType,
+                (
+                    testType,
+                    testCaseIndex,
+                    statusCode,
+                    exception,
+                    messages,
+                    startTime,
+                    endTime,
+                    duration) =>
                 {
-                    var cases = displayNameToTypeMap[testType];
-                    var currentTestCase = cases[testCaseIndex];
-                    var testResult = new TestResult(currentTestCase);
-
-                    frameworkHandle.RecordResult(testResult);
+                    TestResultCallback(
+                        frameworkHandle,
+                        displayNameToTypeMap[testType],
+                        testType,
+                        testCaseIndex,
+                        statusCode,
+                        exception,
+                        messages,
+                        startTime,
+                        endTime,
+                        duration);
                 });
             result.GetAwaiter().GetResult();
         }
     }
 
+    public void TestResultCallback(
+        IFrameworkHandle frameworkHandle,
+        TestCase[] cases,
+        Type testType,
+        int caseIndex,
+        int statusCode,
+        Exception? exception,
+        string[] messages,
+        DateTimeOffset startTime,
+        DateTimeOffset endTime,
+        TimeSpan duration
+    )
+    {
+        var currentTestCase = cases[caseIndex];
+        var testResult = new TestResult(currentTestCase);
 
-    private static Dictionary<Type, TestCase[]> CreateTypeToTestCaseArrayMap(Type[] perfTestTypes, ParameterGridCreator paramGridCreator, TestCase[] testCases)
+        if (exception is not null)
+        {
+            testResult.ErrorMessage = exception.Message;
+            testResult.ErrorStackTrace = exception.StackTrace;
+        }
+
+        testResult.Outcome = statusCode == 1 ? TestOutcome.Passed : TestOutcome.Failed;
+        testResult.DisplayName = currentTestCase.DisplayName;
+
+        testResult.StartTime = startTime;
+        testResult.EndTime = endTime;
+        testResult.Duration = duration;
+
+        frameworkHandle.RecordResult(testResult);
+    }
+
+
+    private static Dictionary<Type, TestCase[]> MapTypesToTheirTestCaseArrays(Type[] perfTestTypes, ParameterGridCreator paramGridCreator, TestCase[] testCases)
     {
         var testCaseMap = new Dictionary<Type, TestCase[]>();
         foreach (var testType in perfTestTypes)
