@@ -5,11 +5,10 @@ using VeerPerforma.TestAdapter.ExtensionMethods;
 
 namespace VeerPerforma.TestAdapter;
 
-// example test adapter!
-// https://github.com/brunolm/TSTestExtension
-// More examples!
-// https://stackoverflow.com/questions/21646104/how-do-i-get-visual-studios-test-window-to-use-my-itestcontainerdiscoverer
+// https://github.com/Microsoft/vstest-docs/blob/main/RFCs/0004-Adapter-Extensibility.md
 [FileExtension(".dll")]
+[FileExtension(".cs")]
+[FileExtension(".exe")]
 public class TestDiscoverer : ITestDiscoverer
 {
     public void DiscoverTests(IEnumerable<string> sources, IDiscoveryContext discoveryContext, IMessageLogger logger, ITestCaseDiscoverySink discoverySink)
@@ -17,6 +16,7 @@ public class TestDiscoverer : ITestDiscoverer
         var testCases = sources.DiscoverTests();
         foreach (var testCase in testCases)
         {
+            Console.WriteLine($"OMG WE FOUND A TEST: {testCase.DisplayName}");
             discoverySink.SendTestCase(testCase);
         }
     }

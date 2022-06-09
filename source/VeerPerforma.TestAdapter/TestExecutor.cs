@@ -71,7 +71,7 @@ public class TestExecutor : ITestExecutor
                         endTime,
                         duration);
                 });
-            result.GetAwaiter().GetResult();
+            result.GetAwaiter().GetResult(); // There is no async method on the interface
         }
     }
 

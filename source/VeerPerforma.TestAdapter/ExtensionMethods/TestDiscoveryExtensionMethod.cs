@@ -20,7 +20,7 @@ internal static class TestDiscoveryExtensionMethod
         AppDomain.CurrentDomain.Load(assembly.GetName());
 
         var correspondingCsFiles = AlldotCSFilesWithinThis(project);
-        var perfTestTypes = assembly
+        var perfTestTypes = assembly                               // mvp only supports test discovery in current assembly 
             .GetTypes()
             .Where(x => x.HasAttribute<VeerPerformaAttribute>());
 

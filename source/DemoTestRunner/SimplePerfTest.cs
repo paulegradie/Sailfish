@@ -4,7 +4,7 @@ using VeerPerforma.Attributes.TestHarness;
 namespace DemoTestRunner;
 
 [VeerPerforma]
-public class SetOutPerformance
+public class SimplePerfTest
 {
     [IterationVariable(1, 2, 3)]
     public int VariableA { get; set; }
