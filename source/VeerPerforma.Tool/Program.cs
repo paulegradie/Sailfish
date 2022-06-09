@@ -6,21 +6,18 @@ namespace VeerPerforma.Tool;
 
 class Program
 {
-    public static int Main(string[] args)
+    public static async Task<int> Main(string[] args)
     {
-        return CommandLineApplication.Execute<Program>(args);
+        return await CommandLineApplication.ExecuteAsync<Program>(args);
     }
 
-    public void OnExecute()
+    public async Task OnExecute()
     {
         if (TestNames is null) throw new Exception("Program failed to start...");
-        ContainerConfiguration
+        await ContainerConfiguration
             .CompositionRoot()
             .Resolve<VeerPerformaExecutor>()
-            .Run(
-                TestNames
-                    .Where(x => !string.IsNullOrEmpty(x) && !string.IsNullOrWhiteSpace(x))
-                    .ToArray());
+            .Run(TestNames.Where(x => !string.IsNullOrEmpty(x) && !string.IsNullOrWhiteSpace(x)).ToArray());
     }
 
     [Option("-t|--tests", CommandOptionType.MultipleValue, Description = "List of tests to execute")]

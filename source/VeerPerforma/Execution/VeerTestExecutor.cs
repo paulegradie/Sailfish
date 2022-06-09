@@ -66,7 +66,7 @@ public class VeerTestExecutor : IVeerTestExecutor
                     startTime = DateTimeOffset.Now.LocalDateTime;
 
 
-                    await invoker.GlobalSetup();
+                    await invoker.GlobalSetup(); // TODO: This does the same thing as the method setup!
                     messages = await methodIterator.IterateMethodNTimesAsync(invoker, numIterations, numWarmupIterations);
                     await invoker.GlobalTeardown();
 
