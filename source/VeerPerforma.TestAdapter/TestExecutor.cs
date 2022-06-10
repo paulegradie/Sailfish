@@ -2,7 +2,8 @@
 using Autofac;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.Adapter;
-using VeerPerforma.Attributes.TestHarness;
+using Serilog;
+using VeerPerforma.Attributes;
 using VeerPerforma.Execution;
 using VeerPerforma.Registration;
 using VeerPerforma.TestAdapter.ExtensionMethods;
@@ -20,12 +21,21 @@ public class TestExecutor : ITestExecutor
 
     public void RunTests(IEnumerable<string> sources, IRunContext runContext, IFrameworkHandle frameworkHandle)
     {
-        var testCases = sources.DiscoverTests(); // veer performa test cases are the class. Internal execution logic will handle calling methods.
+        var serilogger = new LoggerConfiguration()
+            .WriteTo.File("C:\\Users\\paule\\code\\VeerPerformaRelated\\TestingLogs\\ExecutorLogs.txt")
+            .CreateLogger();
+        var testCases = sources.DiscoverTests(serilogger); // veer performa test cases are the class. Internal execution logic will handle calling methods.
         RunTests(testCases, runContext, frameworkHandle);
     }
 
     public void RunTests(IEnumerable<TestCase> tests, IRunContext runContext, IFrameworkHandle frameworkHandle)
     {
+        var serilogger = new LoggerConfiguration()
+            .WriteTo.File("C:\\Users\\paule\\code\\VeerPerformaRelated\\TestingLogs\\ExecutorLogs.txt")
+            .CreateLogger();
+
+        serilogger.Information("OMegerd, we ran a test!");
+        
         var testCases = tests.ToArray();
         // test cases are pointing at a class, which is only allowed to 1 execution method.
         // This iteration is not finding methods in the adapter to keep iteration 1 simple as a POC.

@@ -3,14 +3,19 @@
     <PropertyGroup>
         <TargetFramework>net6.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
+        <LangVersion>10</LangVersion>
         <Nullable>enable</Nullable>
+        <IsTestProject>true</IsTestProject>
+        <TestProject>true</TestProject>
     </PropertyGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\VeerPerforma\VeerPerforma.csproj" />
+        <PackageReference Include="Serilog" Version="2.11.0"/>
+        <PackageReference Include="VeerPerforma.TestAdapter" Version="0.0.1" />
+        <ProjectReference Include="..\VeerPerforma\VeerPerforma.csproj"/>
     </ItemGroup>
 
     <ItemGroup>
-      <PackageReference Include="VeerPerforma.TestAdapter" Version="0.0.1" />
     </ItemGroup>
+
 </Project>

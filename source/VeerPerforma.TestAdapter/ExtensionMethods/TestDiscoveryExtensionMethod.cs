@@ -1,6 +1,7 @@
 ﻿using System.Reflection;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel;
-using VeerPerforma.Attributes.TestHarness;
+using Serilog.Core;
+using VeerPerforma.Attributes;
 using VeerPerforma.Execution;
 using VeerPerforma.Utils;
 
@@ -8,9 +9,11 @@ namespace VeerPerforma.TestAdapter.ExtensionMethods;
 
 internal static class TestDiscoveryExtensionMethod
 {
-    public static IEnumerable<TestCase> DiscoverTests(this IEnumerable<string> sourceFiles)
+    public static IEnumerable<TestCase> DiscoverTests(this IEnumerable<string> sourceFiles, Logger logger)
     {
         var sources = sourceFiles.ToList();
+        logger.Information(string.Join(",", sources));
+
         var referenceFile = sources.ToList().First();
 
         var project = RecurseUpwardsUntilTheProjectFileIsFoundStartingFromThis(referenceFile, 5);
@@ -61,16 +64,14 @@ internal static class TestDiscoveryExtensionMethod
             {
                 var randomId = Guid.NewGuid();
                 var paramsCombo = DisplayNameHelper.CreateParamsDisplay(paramSet); //
-                return new TestCase // a test case is a method
+                var fullyQualifiedName = string.Join(".", Assembly.CreateQualifiedName(Assembly.GetCallingAssembly().ToString(), testType.Name), paramsCombo);
+                return new TestCase(fullyQualifiedName, TestExecutor.ExecutorUri, string.Join("/r", fileContentArray)) // a test case is a method
                 {
                     CodeFilePath = sourceFileLocation,
                     DisplayName = DisplayNameHelper.CreateDisplayName(testType, method.Name, paramsCombo),
                     ExecutorUri = TestExecutor.ExecutorUri,
-                    FullyQualifiedName = string.Join(".", Assembly.CreateQualifiedName(Assembly.GetCallingAssembly().ToString(), testType.Name), paramsCombo),
                     Id = randomId,
                     LineNumber = classNameLine,
-                    // LocalExtensionData = new object(),
-                    Source = string.Join("/r", fileContentArray),
                 };
             });
 

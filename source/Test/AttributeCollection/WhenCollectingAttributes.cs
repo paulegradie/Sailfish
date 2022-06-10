@@ -1,7 +1,7 @@
 using System.Linq;
 using System.Reflection;
 using Shouldly;
-using VeerPerforma.Attributes.TestHarness;
+using VeerPerforma.Attributes;
 using VeerPerforma.Utils;
 using Xunit;
 

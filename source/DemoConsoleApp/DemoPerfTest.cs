@@ -2,7 +2,6 @@ using Microsoft.AspNetCore.Mvc.Testing;
 using Test.API;
 using Test.ApiCommunicationTests.Base;
 using VeerPerforma.Attributes;
-using VeerPerforma.Attributes.TestHarness;
 
 namespace PerfTestProjectDemo;
 
@@ -55,7 +54,6 @@ public class DemoPerfTest : ApiTestBase
     [ExecutePerformanceCheck]
     public async Task WaitPeriodPerfTest()
     {
-        var test = new TestCollector();
         Thread.Sleep(WaitPeriod);
         await Client.GetStringAsync("/");
         WriteSomething();

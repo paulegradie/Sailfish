@@ -1,22 +1,26 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
+        <PackageId>VeerPerforma</PackageId>
+        <Version>0.0.3</Version>
+        <Authors>Paul E. Gradie</Authors>
+        <Description>
+            VeerPerforma is a simple, unambitious, low resolution performace test framework for writing clean, manageable performance tests
+            against your component or API. The general intention is to provide a simple tool that teams can use to write straight forward
+            tests that assess the speed of your code, without weighing you down with all the extra ceremony.
+        </Description>
         <TargetFramework>net6.0</TargetFramework>
+        <LangVersion>10</LangVersion>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
         <RootNamespace>VeerPerforma</RootNamespace>
-
-        <IsTestProject>true</IsTestProject>
-        <TestProject>true</TestProject>
-
+        <IsPackable>true</IsPackable>
     </PropertyGroup>
 
     <ItemGroup>
-      <PackageReference Include="Autofac" Version="6.4.0" />
-      <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="6.0.0" />
-      <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.2.0" />
-      <PackageReference Include="MSTest.TestFramework" Version="2.2.10" />
-      <PackageReference Include="Serilog" Version="2.11.0" />
+        <PackageReference Include="Autofac" Version="6.4.0" />
+        <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="6.0.0" />
+        <PackageReference Include="Serilog" Version="2.11.0" />
     </ItemGroup>
 
 </Project>
