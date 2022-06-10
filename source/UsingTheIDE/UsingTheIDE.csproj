@@ -7,12 +7,13 @@
         <Nullable>enable</Nullable>
         <IsTestProject>true</IsTestProject>
         <TestProject>true</TestProject>
+        <RootNamespace>UsingTheIDE</RootNamespace>
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Serilog" Version="2.11.0"/>
-        <PackageReference Include="VeerPerforma.TestAdapter" Version="0.0.1" />
-        <ProjectReference Include="..\VeerPerforma\VeerPerforma.csproj"/>
+        <PackageReference Include="Serilog" Version="2.11.0" />
+        <PackageReference Include="VeerPerforma.TestAdapter" Version="0.0.4" />
+        <ProjectReference Include="..\VeerPerforma\VeerPerforma.csproj" />
     </ItemGroup>
 
     <ItemGroup>

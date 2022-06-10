@@ -2,7 +2,7 @@
 using McMaster.Extensions.CommandLineUtils;
 using VeerPerforma;
 
-namespace PerfTestProjectDemo;
+namespace AsAConsoleApp;
 
 internal class Program
 {
@@ -13,6 +13,8 @@ internal class Program
 
     public async Task OnExecute()
     {
+        var logger = Logging.CreateLogger("ConsoleAppLogs.log");
+        logger.Information("Oh mai - we have the logging to seq finally.");
         await ContainerConfiguration.CompositionRoot().Resolve<VeerPerformaExecutor>().Run(TestNames, typeof(DemoPerfTest));
     }
 

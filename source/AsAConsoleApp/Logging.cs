@@ -1,15 +1,15 @@
 ﻿using Serilog;
 using Serilog.Core;
 
-namespace VeerPerforma.TestAdapter.Utils;
+namespace AsAConsoleApp;
 
 public static class Logging
 {
     public static Logger CreateLogger(string fileName)
     {
         var currentDirInfo = new DirectoryInfo(Directory.GetCurrentDirectory());
-        var logfileDirName = "ADAPTER_LOGS";
-        
+        var logfileDirName = "ConsoleAppLogs";
+
         var projectRoot = FindProjectRootDir(currentDirInfo, 5);
 
         var logDirPath = projectRoot is null
@@ -41,5 +41,20 @@ public static class Logging
         }
 
         return csprojFile.Directory;
+    }
+}
+
+public static class ExtensionMethods
+{
+    public static bool ThereIsAParentDirectory(this DirectoryInfo dir, out DirectoryInfo parentDir)
+    {
+        if (dir.Parent is not null)
+        {
+            parentDir = dir.Parent;
+            return dir.Parent.Exists;
+        }
+
+        parentDir = dir;
+        return false;
     }
 }

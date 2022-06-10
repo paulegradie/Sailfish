@@ -7,9 +7,12 @@ using VeerPerforma.TestAdapter.Utils;
 namespace VeerPerforma.TestAdapter;
 
 // https://github.com/Microsoft/vstest-docs/blob/main/RFCs/0004-Adapter-Extensibility.md
+
+
 [FileExtension(".dll")]
 [FileExtension(".cs")]
 [FileExtension(".exe")]
+[DefaultExecutorUri(TestExecutor.ExecutorUriString)]
 public class TestDiscoverer : ITestDiscoverer
 {
     private Logger Serilogger => Logging.CreateLogger(nameof(TestDiscoverer));

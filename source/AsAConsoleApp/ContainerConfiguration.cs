@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Mvc.Testing;
 using Test.API;
 using VeerPerforma.Registration;
 
-namespace PerfTestProjectDemo;
+namespace AsAConsoleApp;
 
 public static class ContainerConfiguration
 {

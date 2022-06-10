@@ -2,7 +2,6 @@
 using Autofac;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.Adapter;
-using Serilog;
 using Serilog.Core;
 using VeerPerforma.Attributes;
 using VeerPerforma.Execution;
@@ -15,8 +14,8 @@ namespace VeerPerforma.TestAdapter;
 [ExtensionUri(ExecutorUriString)]
 public class TestExecutor : ITestExecutor
 {
-    public const string ExecutorUriString = "executor://veerperformaexecutor/v1";
-    public static readonly Uri ExecutorUri = new(TestExecutor.ExecutorUriString);
+    public const string ExecutorUriString = "executor://vpexecutorv1";
+    public static readonly Uri ExecutorUri = new(ExecutorUriString);
 
     public bool Cancelled = false;
     private Logger Serilogger => Logging.CreateLogger(nameof(TestExecutor));
@@ -32,8 +31,8 @@ public class TestExecutor : ITestExecutor
         Serilogger.Information("OMuhgerd, we ran a test!");
 
         var testCases = tests.ToArray();
-        // test cases are pointing at a class, which is only allowed to 1 execution method.
-        // This iteration is not finding methods in the adapter to keep iteration 1 simple as a POC.
+        // test cases are pointing at a class, which is only allowed 1 execution method.
+        // This version is not looking for multiple methods in the adapter in order to keep this version a simple POC.
 
         if (testCases.Length == 0) return;
         var referenceCase = testCases[0];

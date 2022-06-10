@@ -3,7 +3,7 @@ using Test.API;
 using Test.ApiCommunicationTests.Base;
 using VeerPerforma.Attributes;
 
-namespace PerfTestProjectDemo;
+namespace AsAConsoleApp;
 
 [VeerPerforma(2)]
 public class DemoPerfTest : ApiTestBase

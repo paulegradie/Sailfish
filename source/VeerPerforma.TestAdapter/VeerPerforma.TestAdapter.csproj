@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
     <PropertyGroup>
         <PackageId>VeerPerforma.TestAdapter</PackageId>
-        <Version>0.0.3</Version>
+        <Version>0.0.5</Version>
         <Authors>Paul E. Gradie</Authors>
         <Description>
             VeerPerforma is a simple, unambitious, low resolution performace test framework for writing clean, manageable performance tests
@@ -20,6 +20,7 @@
           <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
         <PackageReference Include="Serilog.Sinks.File" Version="5.0.0" />
+        <PackageReference Include="Serilog.Sinks.Seq" Version="5.1.1" />
         <PackageReference Include="System.ComponentModel.Composition" Version="6.0.0" />
         <PackageReference Include="Microsoft.VisualStudio.TestPlatform.ObjectModel" Version="14.0.0" />
     </ItemGroup>

@@ -1,4 +1,4 @@
-$version = "0.0.4";
+$version = "0.0.5";
 $packagepath = "../../../LocalPackages/VeerPerforma.TestAdapter.${version}.nupkg"
 
 if (Test-Path -Path $packagepath -PathType Leaf)

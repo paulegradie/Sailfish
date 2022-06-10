@@ -1,6 +1,6 @@
 ﻿using VeerPerforma.Attributes;
 
-namespace DemoTestRunner
+namespace UsingTheIDE
 {
     [VeerPerforma]
     public class SimplePerfTest
