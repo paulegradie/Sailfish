@@ -5,7 +5,7 @@ using VeerPerforma.Attributes;
 using VeerPerforma.Execution;
 using VeerPerforma.Utils;
 
-namespace VeerPerforma.TestAdapter.ExtensionMethods;
+namespace VeerPerforma.TestAdapter.Utils;
 
 internal static class TestDiscoveryExtensionMethod
 {
@@ -110,7 +110,7 @@ internal static class TestDiscoveryExtensionMethod
         return !(path.Contains($"{sep}bin{sep}") || path.Contains($"{sep}obj{sep}"));
     }
 
-    private static bool ThereIsAParentDirectory(DirectoryInfo dir, out DirectoryInfo parentDir)
+    public static bool ThereIsAParentDirectory(this DirectoryInfo dir, out DirectoryInfo parentDir)
     {
         if (dir.Parent is not null)
         {
@@ -122,12 +122,12 @@ internal static class TestDiscoveryExtensionMethod
         return false;
     }
 
-    private static FileInfo? RecurseUpwardsUntilTheProjectFileIsFoundStartingFromThis(string source, int maxParentDirLevel)
+    public static FileInfo? RecurseUpwardsUntilTheProjectFileIsFoundStartingFromThis(string sourceFile, int maxParentDirLevel)
     {
-        if (maxParentDirLevel == 0) return null;
+        if (maxParentDirLevel == 0) return null; // try and stave off disaster
 
         // get the directory of the source
-        var dirName = Path.GetDirectoryName(source);
+        var dirName = Path.GetDirectoryName(sourceFile);
         if (dirName is null) return null;
         var currentDirectory = new DirectoryInfo(dirName);
 

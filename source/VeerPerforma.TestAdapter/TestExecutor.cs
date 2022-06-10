@@ -3,10 +3,11 @@ using Autofac;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.Adapter;
 using Serilog;
+using Serilog.Core;
 using VeerPerforma.Attributes;
 using VeerPerforma.Execution;
 using VeerPerforma.Registration;
-using VeerPerforma.TestAdapter.ExtensionMethods;
+using VeerPerforma.TestAdapter.Utils;
 using VeerPerforma.Utils;
 
 namespace VeerPerforma.TestAdapter;
@@ -18,24 +19,18 @@ public class TestExecutor : ITestExecutor
     public static readonly Uri ExecutorUri = new(TestExecutor.ExecutorUriString);
 
     public bool Cancelled = false;
+    private Logger Serilogger => Logging.CreateLogger(nameof(TestExecutor));
 
     public void RunTests(IEnumerable<string> sources, IRunContext runContext, IFrameworkHandle frameworkHandle)
     {
-        var serilogger = new LoggerConfiguration()
-            .WriteTo.File("C:\\Users\\paule\\code\\VeerPerformaRelated\\TestingLogs\\ExecutorLogs.txt")
-            .CreateLogger();
-        var testCases = sources.DiscoverTests(serilogger); // veer performa test cases are the class. Internal execution logic will handle calling methods.
+        var testCases = sources.DiscoverTests(Serilogger); // veer performa test cases are the class. Internal execution logic will handle calling methods.
         RunTests(testCases, runContext, frameworkHandle);
     }
 
     public void RunTests(IEnumerable<TestCase> tests, IRunContext runContext, IFrameworkHandle frameworkHandle)
     {
-        var serilogger = new LoggerConfiguration()
-            .WriteTo.File("C:\\Users\\paule\\code\\VeerPerformaRelated\\TestingLogs\\ExecutorLogs.txt")
-            .CreateLogger();
+        Serilogger.Information("OMuhgerd, we ran a test!");
 
-        serilogger.Information("OMegerd, we ran a test!");
-        
         var testCases = tests.ToArray();
         // test cases are pointing at a class, which is only allowed to 1 execution method.
         // This iteration is not finding methods in the adapter to keep iteration 1 simple as a POC.

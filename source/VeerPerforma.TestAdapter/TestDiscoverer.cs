@@ -1,8 +1,8 @@
 ﻿using Microsoft.VisualStudio.TestPlatform.ObjectModel;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.Adapter;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.Logging;
-using Serilog;
-using VeerPerforma.TestAdapter.ExtensionMethods;
+using Serilog.Core;
+using VeerPerforma.TestAdapter.Utils;
 
 namespace VeerPerforma.TestAdapter;
 
@@ -12,16 +12,14 @@ namespace VeerPerforma.TestAdapter;
 [FileExtension(".exe")]
 public class TestDiscoverer : ITestDiscoverer
 {
+    private Logger Serilogger => Logging.CreateLogger(nameof(TestDiscoverer));
+
     public void DiscoverTests(IEnumerable<string> containers, IDiscoveryContext discoveryContext, IMessageLogger logger, ITestCaseDiscoverySink discoverySink)
     {
-        var serilogger = new LoggerConfiguration()
-            .WriteTo.File("C:\\Users\\paule\\code\\VeerPerformaRelated\\TestingLogs\\TestDiscovererLogs.txt")
-            .CreateLogger();
-        
-        var testCases = containers.DiscoverTests(serilogger);
+        var testCases = containers.DiscoverTests(Serilogger);
         foreach (var testCase in testCases)
         {
-            Console.WriteLine($"OMG WE FOUND A TEST: {testCase.DisplayName}");
+            Serilogger.Information($"OMG WE FOUND A TEST: {testCase.DisplayName}");
             discoverySink.SendTestCase(testCase);
         }
     }

@@ -1,6 +1,6 @@
 ﻿using System.Reflection;
 
-namespace VeerPerforma.TestAdapter.ExtensionMethods;
+namespace VeerPerforma.TestAdapter.Utils;
 
 public static class AttributeDiscoveryExtensionMethods
 {
