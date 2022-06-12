@@ -21,35 +21,38 @@ public class TestExecutor : ITestExecutor
     public static readonly Uri ExecutorUri = new(ExecutorUriString);
 
     public bool Cancelled = false;
-    private Logger Serilogger => Logging.CreateLogger($"YOUR_MOM.txt");
 
     public void RunTests(IEnumerable<string> sources, IRunContext runContext, IFrameworkHandle frameworkHandle)
     {
-        Serilogger.Verbose("Hitting the first RunTests Method");
-        foreach (var source in sources)
-        {
-            Serilogger.Verbose("A SOURCE: {Source}", source);
-        }
+        // CustomLoggerOKAY Serilogger = CustomLoggerOKAY.CreateLogger($"C:\\Users\\paule\\code\\VeerPerformaRelated\\TestingLogs\\CustomLogger_EXECUTOR_Logs-OUTER-{Guid.NewGuid().ToString()}.txt");
+        // Serilogger.Verbose("Hitting the first RunTests Method");
+        // foreach (var source in sources)
+        // {
+        //     Serilogger.Verbose("A SOURCE: {Source}", source);
+        // }
 
-        var testCases = sources.DiscoverTests(Serilogger); // veer performa test cases are the class. Internal execution logic will handle calling methods.
-
-        Serilogger.Verbose("FOUND THE ");
+        var testCases = sources.DiscoverTests(null); // veer performa test cases are the class. Internal execution logic will handle calling methods.
         RunTests(testCases, runContext, frameworkHandle);
     }
 
     public void RunTests(IEnumerable<TestCase> tests, IRunContext runContext, IFrameworkHandle frameworkHandle)
     {
+        CustomLoggerOKAY Serilogger = CustomLoggerOKAY.CreateLogger($"C:\\Users\\paule\\code\\VeerPerformaRelated\\TestingLogs\\CustomLogger_EXECUTOR_Logs-INNER-{Guid.NewGuid().ToString()}.txt");
         Serilogger.Verbose("Hitting the second RunTests method");
         var testCases = tests.ToArray();
         // test cases are pointing at a class, which is only allowed 1 execution method.
         // This version is not looking for multiple methods in the adapter in order to keep this version a simple POC.
         Serilogger.Verbose("How many Test Cases? {0}", testCases.Length.ToString());
+        foreach (var testCase in testCases)
+        {
+            Serilogger.Verbose("TestCase Details: {0} - {1} - {2} - {3} - {4} - {5}", testCase.DisplayName, testCase.Source, testCase.LineNumber.ToString(), testCase.CodeFilePath, testCase.FullyQualifiedName, testCase.Id.ToString());
+        }
+
         if (testCases.Length == 0) return;
         var referenceCase = testCases[0];
 
         Serilogger.Verbose("TRYING TO LOAD THIS: {Source}", referenceCase.Source); // source is a dll!
 
-        // var assembly = referenceCase.
         var assembly = Assembly.LoadFile(referenceCase.Source); // source is a  dll!!!!
         AppDomain.CurrentDomain.Load(assembly.GetName());
 
@@ -60,13 +63,13 @@ public class TestExecutor : ITestExecutor
 
         var paramGridCreator = new ParameterGridCreator(new ParameterCombinator());
         var executor = CompositionRoot().Resolve<IVeerTestExecutor>();
- 
+
         var displayNameToTypeMap = MapTypesToTheirTestCaseArrays(perfTestTypes, paramGridCreator, testCases, Serilogger);
         foreach (var (type, testCasesArray) in displayNameToTypeMap)
         {
-            Serilogger.Verbose("This type {Type} has this many testCases: {Count}", type.Name, testCasesArray.Length);
+            Serilogger.Verbose("This type {Type} has this many testCases: {Count}", type.Name, testCasesArray.Length.ToString());
         }
-        
+
         foreach (var perfTestType in perfTestTypes)
         {
             Serilogger.Verbose("Working on this perf test: {0}", perfTestType.Name);
@@ -111,15 +114,16 @@ public class TestExecutor : ITestExecutor
         DateTimeOffset startTime,
         DateTimeOffset endTime,
         TimeSpan duration,
-        Logger logger
+        CustomLoggerOKAY logger
     )
     {
-        logger.Verbose("Case Index: {index}", caseIndex);
+        logger.Verbose("Case Index: {index}", caseIndex.ToString());
         logger.Verbose("This many cases though: {length}", cases.Length.ToString());
         foreach (var testCase in cases)
         {
             logger.Verbose("Display Name -- {display}", testCase.DisplayName);
         }
+
         var currentTestCase = cases[caseIndex];
         var testResult = new TestResult(currentTestCase);
 
@@ -140,12 +144,13 @@ public class TestExecutor : ITestExecutor
         frameworkHandle.RecordResult(testResult);
     }
 
-    private static Dictionary<Type, TestCase[]> MapTypesToTheirTestCaseArrays(Type[] perfTestTypes, ParameterGridCreator paramGridCreator, TestCase[] testCases, Logger logger)
+    private static Dictionary<Type, TestCase[]> MapTypesToTheirTestCaseArrays(Type[] perfTestTypes, ParameterGridCreator paramGridCreator, TestCase[] testCases, CustomLoggerOKAY logger)
     {
         var testCaseMap = new Dictionary<Type, TestCase[]>();
         foreach (var testType in perfTestTypes)
         {
             logger.Verbose("Working on: {0}", testType.Name);
+            logger.Verbose("Creating the param grid now -----");
             var combos = paramGridCreator.GenerateParameterGrid(testType);
             logger.Verbose("Logging the param Grid now -----");
             foreach (var item in combos.Item1)
@@ -164,7 +169,8 @@ public class TestExecutor : ITestExecutor
                             DisplayNameHelper.CreateDisplayName(
                                 testType,
                                 methodName,
-                                DisplayNameHelper.CreateParamsDisplay(combo)));
+                                DisplayNameHelper.CreateParamsDisplay(combo)))
+                    .ToArray();
 
             foreach (var typeDisplayName in typeDisplayNames)
             {

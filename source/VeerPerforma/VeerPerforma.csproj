@@ -2,7 +2,7 @@
 
     <PropertyGroup>
         <PackageId>VeerPerforma</PackageId>
-        <Version>0.0.5</Version>
+        <Version>0.0.16</Version>
         <Authors>Paul E. Gradie</Authors>
         <Description>
             VeerPerforma is a simple, unambitious, low resolution performace test framework for writing clean, manageable performance tests

@@ -10,7 +10,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\Test\Test.csproj" />
+      <ProjectReference Include="..\Tests.VeerPerforma\Tests.VeerPerforma.csproj" />
       <ProjectReference Include="..\VeerPerforma\VeerPerforma.csproj" />
     </ItemGroup>
 

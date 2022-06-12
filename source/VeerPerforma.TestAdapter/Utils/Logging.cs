@@ -1,5 +1,7 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using System.Linq;
+using System.Text.RegularExpressions;
 using Serilog;
 using Serilog.Core;
 
@@ -18,13 +20,13 @@ public static class Logging
             ? Path.Combine(".", logfileDirName)
             : Path.Combine(projectRoot.FullName, logfileDirName);
 
-        var hardCodedDir = "C:\\Users\\paule\\code\\VeerPerformaRelated\\TestingLogs";
+        var hardCodedDir = "C:\\Users\\paule\\code\\VeerPerformaRelated\\TestingLogs\\WORK_DAMNYOU.txt";
 
         return new LoggerConfiguration()
             .MinimumLevel.Verbose()
             .WriteTo.Console()
-            .WriteTo.Seq("http://localhost:5341")
-            .WriteTo.File(Path.Combine(hardCodedDir, fileName))
+            // .WriteTo.Seq("http://localhost:5341")
+            .WriteTo.File(hardCodedDir) //Path.Combine(hardCodedDir, fileName))
             .CreateLogger();
     }
 

@@ -1,10 +1,10 @@
-$version = "0.0.5";
-$packagepath = "../../../LocalPackages/VeerPerforma.TestAdapter.${version}.nupkg"
+$packagepath = "../../../LocalPackages/VeerPerforma.TestAdapter.nupkg"
 
 if (Test-Path -Path $packagepath -PathType Leaf)
 {
     Remove-Item -Force $packagepath
 }
-dotnet pack -c Release -o ../../../LocalPackages --version-suffix $version
+dotnet build
+dotnet pack -c Release -o ../../../LocalPackages
 
-# 'C:\Users\paule\code\Veer-Performa\source\VeerPerforma.TestAdapter\bin\Debug\VeerPerforma.TestAdapter.0.0.1.nupkg
+# 'C:\Users\paule\code\Veer-Performa\source\VeerPerforma.TestAdapter\bin\Debug\VeerPerforma.TestAdapter.nupkg

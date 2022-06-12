@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel;
+using Serilog;
 using Serilog.Core;
 using VeerPerforma.Attributes;
 using VeerPerforma.Execution;
@@ -34,8 +35,9 @@ internal static class TestDiscoveryExtensionMethod
 {
     public static IParameterGridCreator ParameterGridCreator = new ParameterGridCreator(new ParameterCombinator());
 
-    public static IEnumerable<TestCase> DiscoverTests(this IEnumerable<string> sourceDlls, Logger logger)
+    public static IEnumerable<TestCase> DiscoverTests(this IEnumerable<string> sourceDlls, CustomLoggerOKAY? logy = null)
     {
+        var logger = CustomLoggerOKAY.CreateLogger($"C:\\Users\\paule\\code\\VeerPerformaRelated\\TestingLogs\\CustomLogger_EXECUTOR_Logs-DiscoverTests-{Guid.NewGuid().ToString()}.txt");
         logger.Verbose("Entering into the DiscoverTests method!");
         var sourceDllPaths = sourceDlls.ToList();
         var referenceFile = sourceDllPaths.ToList().First();
@@ -108,7 +110,7 @@ internal static class TestDiscoveryExtensionMethod
         return testCases;
     }
 
-    private static IEnumerable<TestCase> AssembleClassTestCases(DataMap bag, string sourceDll, Logger logger)
+    private static IEnumerable<TestCase> AssembleClassTestCases(DataMap bag, string sourceDll, CustomLoggerOKAY logger)
     {
         var classNameLine = bag.ContentString.Split("\r")
             .Select(
@@ -116,7 +118,7 @@ internal static class TestDiscoveryExtensionMethod
             .Single(x => x >= 0);
 
         var method = bag.Type.GetMethodsWithAttribute<ExecutePerformanceCheckAttribute>().Single(); // should never be null
-        var parameterGrid = ParameterGridCreator.GenerateParameterGrid(bag.Type);
+        var parameterGrid = ParameterGridCreator.GenerateParameterGrid(bag.Type, logger);
 
         var testCaseSet = parameterGrid.Item2.Select(
             paramz =>
@@ -169,11 +171,11 @@ internal static class TestDiscoveryExtensionMethod
         return !(path.Contains($"{sep}bin{sep}") || path.Contains($"{sep}obj{sep}"));
     }
 
-    public static bool ThereIsAParentDirectory(this DirectoryInfo dir, Logger logger, out DirectoryInfo parentDir)
+    public static bool ThereIsAParentDirectory(this DirectoryInfo dir, CustomLoggerOKAY logger, out DirectoryInfo parentDir)
     {
         if (dir.Parent is not null)
         {
-            logger.Verbose("CurrentDir: {0} --- Parent Directory: {1}", dir.Name, dir.Parent);
+            logger.Verbose("CurrentDir: {0} --- Parent Directory: {1}", dir.Name, dir.Parent.Name);
             parentDir = dir.Parent;
             return dir.Parent.Exists;
         }
@@ -182,13 +184,13 @@ internal static class TestDiscoveryExtensionMethod
         return false;
     }
 
-    public static FileInfo? RecurseUpwardsUntilTheProjectFileIsFoundStartingFromThis(string suffixToMatch, string sourceFile, int maxParentDirLevel, Logger logger)
+    public static FileInfo? RecurseUpwardsUntilTheProjectFileIsFoundStartingFromThis(string suffixToMatch, string sourceFile, int maxParentDirLevel, CustomLoggerOKAY logger)
     {
         if (maxParentDirLevel == 0) return null; // try and stave off disaster
 
         // get the directory of the source
         var dirName = Path.GetDirectoryName(sourceFile);
-        logger.Verbose("The Current Dir at level {0} was {1}", maxParentDirLevel.ToString(), dirName);
+        logger.Verbose("The Current Dir at level {0} was {1}", maxParentDirLevel.ToString(), dirName ?? "dirName Was NULL!?");
         if (dirName is null) return null;
 
         var csprojFile = Directory.GetFiles(dirName).Where(x => x.EndsWith(suffixToMatch)).SingleOrDefault();

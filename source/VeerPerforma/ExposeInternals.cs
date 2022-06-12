@@ -1,5 +1,5 @@
 ﻿using System.Runtime.CompilerServices;
 
-[assembly: InternalsVisibleTo("Test")]
+[assembly: InternalsVisibleTo("Tests.VeerPerforma")]
 namespace VeerPerforma;
 
