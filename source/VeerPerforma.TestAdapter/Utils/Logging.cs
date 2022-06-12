@@ -7,6 +7,18 @@ using Serilog.Core;
 
 namespace VeerPerforma.TestAdapter.Utils;
 
+public static class LogExtensions
+{
+    public static string AppendTimeStamp(this string fileName)
+    {
+        return string.Concat(
+            Path.GetFileNameWithoutExtension(fileName),
+            DateTime.Now.ToString("yyyyMMddHHmmssfff"),
+            Path.GetExtension(fileName)
+        );
+    }
+}
+
 public static class Logging
 {
     public static Logger CreateLogger(string fileName)
@@ -51,15 +63,15 @@ public static class Logging
         return csprojFile.Directory;
     }
 
-    public static bool ThereIsAParentDirectory(this DirectoryInfo dir, out DirectoryInfo parentDir)
-    {
-        if (dir.Parent is not null)
-        {
-            parentDir = dir.Parent;
-            return dir.Parent.Exists;
-        }
-
-        parentDir = dir;
-        return false;
-    }
+    // public static bool ThereIsAParentDirectory(this DirectoryInfo dir, out DirectoryInfo parentDir)
+    // {
+    //     if (dir.Parent is not null)
+    //     {
+    //         parentDir = dir.Parent;
+    //         return dir.Parent.Exists;
+    //     }
+    //
+    //     parentDir = dir;
+    //     return false;
+    // }
 }

@@ -12,7 +12,8 @@
 
     <ItemGroup>
         <PackageReference Include="Serilog" Version="2.11.0" />
-        <PackageReference Include="VeerPerforma.TestAdapter" Version="0.0.4" />
+        <PackageReference Include="VeerPerforma" Version="0.0.64" />
+        <PackageReference Include="VeerPerforma.TestAdapter" Version="0.0.64" />
         <ProjectReference Include="..\VeerPerforma\VeerPerforma.csproj" />
     </ItemGroup>
 

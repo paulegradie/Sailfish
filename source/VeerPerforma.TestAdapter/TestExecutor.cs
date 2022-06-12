@@ -5,7 +5,6 @@ using System.Reflection;
 using Autofac;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.Adapter;
-using Serilog.Core;
 using VeerPerforma.Attributes;
 using VeerPerforma.Execution;
 using VeerPerforma.Registration;
@@ -24,34 +23,26 @@ public class TestExecutor : ITestExecutor
 
     public void RunTests(IEnumerable<string> sources, IRunContext runContext, IFrameworkHandle frameworkHandle)
     {
-        // CustomLoggerOKAY Serilogger = CustomLoggerOKAY.CreateLogger($"C:\\Users\\paule\\code\\VeerPerformaRelated\\TestingLogs\\CustomLogger_EXECUTOR_Logs-OUTER-{Guid.NewGuid().ToString()}.txt");
-        // Serilogger.Verbose("Hitting the first RunTests Method");
-        // foreach (var source in sources)
-        // {
-        //     Serilogger.Verbose("A SOURCE: {Source}", source);
-        // }
-
-        var testCases = sources.DiscoverTests(null); // veer performa test cases are the class. Internal execution logic will handle calling methods.
+        var testCases = sources.DiscoverTests(); // veer performa test cases are the class. Internal execution logic will handle calling methods.
         RunTests(testCases, runContext, frameworkHandle);
     }
 
     public void RunTests(IEnumerable<TestCase> tests, IRunContext runContext, IFrameworkHandle frameworkHandle)
     {
-        CustomLoggerOKAY Serilogger = CustomLoggerOKAY.CreateLogger($"C:\\Users\\paule\\code\\VeerPerformaRelated\\TestingLogs\\CustomLogger_EXECUTOR_Logs-INNER-{Guid.NewGuid().ToString()}.txt");
-        Serilogger.Verbose("Hitting the second RunTests method");
+        logger.Verbose("Hitting the second RunTests method");
         var testCases = tests.ToArray();
         // test cases are pointing at a class, which is only allowed 1 execution method.
         // This version is not looking for multiple methods in the adapter in order to keep this version a simple POC.
-        Serilogger.Verbose("How many Test Cases? {0}", testCases.Length.ToString());
+        logger.Verbose("How many Test Cases? {0}", testCases.Length.ToString());
         foreach (var testCase in testCases)
         {
-            Serilogger.Verbose("TestCase Details: {0} - {1} - {2} - {3} - {4} - {5}", testCase.DisplayName, testCase.Source, testCase.LineNumber.ToString(), testCase.CodeFilePath, testCase.FullyQualifiedName, testCase.Id.ToString());
+            logger.Verbose("TestCase Details: {0} - {1} - {2} - {3} - {4} - {5}", testCase.DisplayName, testCase.Source, testCase.LineNumber.ToString(), testCase.CodeFilePath, testCase.FullyQualifiedName, testCase.Id.ToString());
         }
 
         if (testCases.Length == 0) return;
         var referenceCase = testCases[0];
 
-        Serilogger.Verbose("TRYING TO LOAD THIS: {Source}", referenceCase.Source); // source is a dll!
+        logger.Verbose("TRYING TO LOAD THIS: {Source}", referenceCase.Source); // source is a dll!
 
         var assembly = Assembly.LoadFile(referenceCase.Source); // source is a  dll!!!!
         AppDomain.CurrentDomain.Load(assembly.GetName());
@@ -64,15 +55,15 @@ public class TestExecutor : ITestExecutor
         var paramGridCreator = new ParameterGridCreator(new ParameterCombinator());
         var executor = CompositionRoot().Resolve<IVeerTestExecutor>();
 
-        var displayNameToTypeMap = MapTypesToTheirTestCaseArrays(perfTestTypes, paramGridCreator, testCases, Serilogger);
+        var displayNameToTypeMap = MapTypesToTheirTestCaseArrays(perfTestTypes, paramGridCreator, testCases);
         foreach (var (type, testCasesArray) in displayNameToTypeMap)
         {
-            Serilogger.Verbose("This type {Type} has this many testCases: {Count}", type.Name, testCasesArray.Length.ToString());
+            logger.Verbose("This type {Type} has this many testCases: {Count}", type.Name, testCasesArray.Length.ToString());
         }
 
         foreach (var perfTestType in perfTestTypes)
         {
-            Serilogger.Verbose("Working on this perf test: {0}", perfTestType.Name);
+            logger.Verbose("Working on this perf test: {0}", perfTestType.Name);
 
             var result = executor.Execute(
                 perfTestType,
@@ -96,8 +87,7 @@ public class TestExecutor : ITestExecutor
                         messages,
                         startTime,
                         endTime,
-                        duration,
-                        Serilogger);
+                        duration);
                 });
             result.Wait(); // There is no async method on the interface
         }
@@ -113,8 +103,7 @@ public class TestExecutor : ITestExecutor
         string[] messages,
         DateTimeOffset startTime,
         DateTimeOffset endTime,
-        TimeSpan duration,
-        CustomLoggerOKAY logger
+        TimeSpan duration
     )
     {
         logger.Verbose("Case Index: {index}", caseIndex.ToString());
@@ -144,23 +133,44 @@ public class TestExecutor : ITestExecutor
         frameworkHandle.RecordResult(testResult);
     }
 
-    private static Dictionary<Type, TestCase[]> MapTypesToTheirTestCaseArrays(Type[] perfTestTypes, ParameterGridCreator paramGridCreator, TestCase[] testCases, CustomLoggerOKAY logger)
+    private static Dictionary<Type, TestCase[]> MapTypesToTheirTestCaseArrays(Type[] perfTestTypes, ParameterGridCreator paramGridCreator, TestCase[] testCases)
     {
+        logger.Verbose("\r------Mapping types to their test cases ----\r ");
         var testCaseMap = new Dictionary<Type, TestCase[]>();
         foreach (var testType in perfTestTypes)
         {
             logger.Verbose("Working on: {0}", testType.Name);
             logger.Verbose("Creating the param grid now -----");
             var combos = paramGridCreator.GenerateParameterGrid(testType);
+
             logger.Verbose("Logging the param Grid now -----");
             foreach (var item in combos.Item1)
             {
-                logger.Verbose("Method Name From Grid combos: {Item}", item);
+                logger.Verbose("Property Name From Grid combos: {Item}", item);
             }
 
-            var methodName = combos.Item1.First();
+            logger.Verbose("About to grab the method...");
+            logger.Verbose("This is the damn type: {type}", testType.ToString());
+            var methods = testType.GetMethods();
+            logger.Verbose("Here are the methods...");
+            foreach (var meth in methods)
+            {
+                logger.Verbose("Method found: {methodName}", meth.Name);
+                var attys = meth.GetCustomAttributes().ToArray();
+                logger.Verbose("Num attys found: {0}", attys.Length.ToString());
+                foreach (var atty in attys)
+                {
+                    logger.Verbose("Attribute: {0}", atty.TypeId.ToString());
+                }
+            }
 
-            logger.Verbose("Method name: {MethodName}", methodName);
+            logger.Verbose("\r-------\r\r");
+
+            // TODO - currently we only support a single execution method
+            var method = methods.Single(x => x.Name == "Go"); // hard coding for test with local demo project that has a test file with a method called "public void Go()"
+            logger.Verbose("Method Name: {MethodName}", method.Name);
+
+            logger.Verbose("Attempting to compile typeDisplayNames");
             var typeDisplayNames =
                 combos
                     .Item2
@@ -168,7 +178,7 @@ public class TestExecutor : ITestExecutor
                         combo =>
                             DisplayNameHelper.CreateDisplayName(
                                 testType,
-                                methodName,
+                                method.Name,
                                 DisplayNameHelper.CreateParamsDisplay(combo)))
                     .ToArray();
 
@@ -177,7 +187,22 @@ public class TestExecutor : ITestExecutor
                 logger.Verbose("Full Display Name with combo: {Name}", typeDisplayName);
             }
 
+
+            logger.Verbose("\rNow to get the test Cases using this type: {Type}", testType.Name);
+            foreach (var testCase in testCases)
+            {
+                logger.Verbose("testCase display Name: {0}", testCase.DisplayName);
+            }
+
+            logger.Verbose("\r And these are the type display names we created---");
+            foreach (var displayName in typeDisplayNames)
+            {
+                logger.Verbose("Type DisplayName: {0}", displayName);
+            }
+
             var testCasesUsingThisType = testCases.IntersectBy(typeDisplayNames, c => c.DisplayName).ToArray();
+            logger.Verbose("We did an intersect - so how many intersections did we actually find?: {intersect}", testCasesUsingThisType.Length.ToString());
+
             testCaseMap.Add(testType, testCasesUsingThisType);
         }
 

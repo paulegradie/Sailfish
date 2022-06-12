@@ -66,7 +66,7 @@ public class VeerTestExecutor : IVeerTestExecutor
                     startTime = DateTimeOffset.Now.LocalDateTime;
 
 
-                    await invoker.GlobalSetup(); // TODO: This does the same thing as the method setup!
+                    await invoker.GlobalSetup(); // TODO: This does the same thing as the method setup! When we allow multiple methods, we'll do a group by and this will make more sense.
                     messages = await methodIterator.IterateMethodNTimesAsync(invoker, numIterations, numWarmupIterations);
                     await invoker.GlobalTeardown();
 
@@ -88,5 +88,10 @@ public class VeerTestExecutor : IVeerTestExecutor
 
             logger.Debug($"------ Method {methodName} is finished!");
         }
+    }
+
+    public class VeerPerformaMethodExecutor
+    {
+        
     }
 }

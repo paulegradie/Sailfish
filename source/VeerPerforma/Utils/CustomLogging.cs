@@ -1,30 +1,43 @@
 ﻿using System.Text.RegularExpressions;
-using Serilog;
-using Serilog.Events;
 
 namespace VeerPerforma.Utils;
 
-public class CustomLoggerOKAY
+public static class logger
 {
-    private readonly string filePath;
-    private Regex Regex = new("{(.+?)}");
+    public static string? filePath = null;
 
-    private object obj = new();
-
-    public CustomLoggerOKAY(string filePath)
+    public static void Verbose(string messageLine, params string[] properties)
     {
-        this.filePath = filePath;
+        if (filePath is null)
+        {
+            filePath = filePath ?? $"C:\\Users\\paule\\code\\VeerPerformaRelated\\TestingLogs\\crazy_logs-{Guid.NewGuid().ToString()}.txt";
+        }
+
+        if (!File.Exists(filePath))
+        {
+            File.Create(filePath);
+        }
+
+        try
+        {
+            DoWrite(filePath, messageLine, properties);
+        }
+        catch (Exception ex)
+        {
+            filePath = $"C:\\Users\\paule\\code\\VeerPerformaRelated\\TestingLogs\\crazy_logs-{Guid.NewGuid().ToString()}.txt";
+            DoWrite(filePath, messageLine, properties);
+        }
     }
 
-    public void Verbose(string messageLine, params string[] properties)
+    private static void DoWrite(string fp, string messageLine, params string[] properties)
     {
         using (var mutex = new Mutex(false, "THE_ONLY_VEER_MUTEX"))
         {
             mutex.WaitOne();
 
-            using var writer = new StreamWriter(filePath, append: true);
-
-            var matches = Regex
+            using var writer = new StreamWriter(fp, append: true);
+            var regex = new Regex("{(.+?)}");
+            var matches = regex
                 .Matches(messageLine)
                 .Select(x => x.ToString())
                 .ToArray();
@@ -41,15 +54,5 @@ public class CustomLoggerOKAY
 
             mutex.ReleaseMutex();
         }
-    }
-
-    public static CustomLoggerOKAY CreateLogger(string filePath)
-    {
-        if (!File.Exists(filePath))
-        {
-            File.Create(filePath);
-        }
-
-        return new CustomLoggerOKAY(filePath);
     }
 }

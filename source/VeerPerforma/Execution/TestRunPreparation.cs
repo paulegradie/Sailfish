@@ -21,7 +21,7 @@ public class TestRunPreparation : ITestRunPreparation
 
     public Dictionary<string, List<(MethodInfo, object)>> GenerateTestInstances(Type test)
     {
-        var (propNames, combos) = parameterGridCreator.GenerateParameterGrid(test, null);
+        var (propNames, combos) = parameterGridCreator.GenerateParameterGrid(test);
         var instances = instanceCreator.CreateInstances(test, combos, propNames);
         var methodMap = methodOrganizer.FormMethodGroups(instances);
         return methodMap;

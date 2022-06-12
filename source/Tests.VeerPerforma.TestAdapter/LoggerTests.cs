@@ -9,7 +9,7 @@ public class LoggerTests
     public void ReplaceWorksCorrectly()
     {
         var tempFile = Path.GetTempFileName();
-        var logger = CustomLoggerOKAY.CreateLogger(tempFile);
+        logger.filePath = tempFile;
 
         logger.Verbose("What an amazing logger");
         logger.Verbose("This is a {0} test of {wow} the {amazing} logging system", "terrible", "silly", "horrigle");

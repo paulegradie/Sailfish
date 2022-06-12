@@ -31,33 +31,32 @@ public class ParameterGridCreator : IParameterGridCreator
         return dict;
     }
 
-    public (List<string>, IEnumerable<IEnumerable<int>>) GenerateParameterGrid(Type test, CustomLoggerOKAY? logger = null)
+    public (List<string>, IEnumerable<IEnumerable<int>>) GenerateParameterGrid(Type test)
     {
-        if (logger is not null) logger.Verbose("Getting Params from test type");
+        logger.Verbose("Getting Params from test type");
         var variableProperties = GetParams(test);
-
-
+        
         var propNames = new List<string>();
         var propValues = new List<List<int>>();
-        if (logger is not null) logger.Verbose("Variable props gotten. Logging them here:");
+        logger.Verbose("Variable props gotten. Logging them here:");
         foreach (var (propertyName, values) in variableProperties)
         {
-            if (logger is not null) logger.Verbose("Property Name: {0}", propertyName);
-            if (logger is not null) logger.Verbose("Property Values = : {0}", string.Join(", ", values.Select(x => x.ToString())));
+            logger.Verbose("Property Name: {0}", propertyName);
+            logger.Verbose("Property Values = : {0}", string.Join(", ", values.Select(x => x.ToString())));
             propNames.Add(propertyName);
             propValues.Add(values.ToList());
         }
 
         var combos = parameterCombinator.GetAllPossibleCombos(propValues);
         var testA = combos.ToList();
-        if (logger is not null) logger.Verbose("Num Combos: {0}", testA.Count.ToString());
+        logger.Verbose("Num Combos: {0}", testA.Count.ToString());
 
         foreach (var testCombos in testA)
         {
             var combs = testCombos.ToList();
-            if (logger is not null) logger.Verbose("Combos: {0}", string.Join(", ", combs.Select(x => x. ToString())));
+            logger.Verbose("Combos: {0}", string.Join(", ", combs.Select(x => x.ToString())));
         }
-        
+
         // Propnames = ["PropA", "PropB"]
         // combos = [[1, 2], [1, 4], [2, 2], [2, 4]
         return (propNames, combos);

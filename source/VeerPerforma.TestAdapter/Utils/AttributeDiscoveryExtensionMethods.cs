@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using Autofac.Core.Activators;
 
 namespace VeerPerforma.TestAdapter.Utils;
 
@@ -45,5 +46,10 @@ public static class AttributeDiscoveryExtensionMethods
     internal static MethodInfo? GetMethodWithAttribute<TAttribute>(this object instance) where TAttribute : Attribute
     {
         return instance.GetType().GetMethodsWithAttribute<TAttribute>().SingleOrDefault();
+    }
+
+    internal static MethodInfo? GetMethodWithAttribute<TAttribute>(this Type type) where TAttribute : Attribute
+    {
+        return type.GetMethodsWithAttribute<TAttribute>().SingleOrDefault();
     }
 }

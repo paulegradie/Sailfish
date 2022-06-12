@@ -5,8 +5,6 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel;
-using Serilog;
-using Serilog.Core;
 using VeerPerforma.Attributes;
 using VeerPerforma.Execution;
 using VeerPerforma.Utils;
@@ -35,9 +33,8 @@ internal static class TestDiscoveryExtensionMethod
 {
     public static IParameterGridCreator ParameterGridCreator = new ParameterGridCreator(new ParameterCombinator());
 
-    public static IEnumerable<TestCase> DiscoverTests(this IEnumerable<string> sourceDlls, CustomLoggerOKAY? logy = null)
+    public static IEnumerable<TestCase> DiscoverTests(this IEnumerable<string> sourceDlls)
     {
-        var logger = CustomLoggerOKAY.CreateLogger($"C:\\Users\\paule\\code\\VeerPerformaRelated\\TestingLogs\\CustomLogger_EXECUTOR_Logs-DiscoverTests-{Guid.NewGuid().ToString()}.txt");
         logger.Verbose("Entering into the DiscoverTests method!");
         var sourceDllPaths = sourceDlls.ToList();
         var referenceFile = sourceDllPaths.ToList().First();
@@ -49,7 +46,7 @@ internal static class TestDiscoveryExtensionMethod
             logger.Verbose("File sources: {0}", sourceDllPath.ToString());
             logger.Verbose("Ref File: {0}", referenceFile);
             logger.Verbose("Attempting to discover project...");
-            var project = RecurseUpwardsUntilTheProjectFileIsFoundStartingFromThis(".csproj", referenceFile, 5, logger);
+            var project = RecurseUpwardsUntilTheProjectFileIsFoundStartingFromThis(".csproj", referenceFile, 5);
 
             if (project is null) throw new Exception("Couldn't locate a csproj file in this project.");
             logger.Verbose("Project that was found: {0}", project.FullName);
@@ -103,14 +100,14 @@ internal static class TestDiscoveryExtensionMethod
 
             if (bags.Count < 1) throw new Exception("Failed to find any test type file paths");
 
-            var currentTestCases = bags.SelectMany(bag => AssembleClassTestCases(bag, sourceDllPath, logger));
+            var currentTestCases = bags.SelectMany(bag => AssembleClassTestCases(bag, sourceDllPath));
             testCases.AddRange(currentTestCases);
         }
 
         return testCases;
     }
 
-    private static IEnumerable<TestCase> AssembleClassTestCases(DataMap bag, string sourceDll, CustomLoggerOKAY logger)
+    private static IEnumerable<TestCase> AssembleClassTestCases(DataMap bag, string sourceDll)
     {
         var classNameLine = bag.ContentString.Split("\r")
             .Select(
@@ -118,7 +115,7 @@ internal static class TestDiscoveryExtensionMethod
             .Single(x => x >= 0);
 
         var method = bag.Type.GetMethodsWithAttribute<ExecutePerformanceCheckAttribute>().Single(); // should never be null
-        var parameterGrid = ParameterGridCreator.GenerateParameterGrid(bag.Type, logger);
+        var parameterGrid = ParameterGridCreator.GenerateParameterGrid(bag.Type);
 
         var testCaseSet = parameterGrid.Item2.Select(
             paramz =>
@@ -171,7 +168,7 @@ internal static class TestDiscoveryExtensionMethod
         return !(path.Contains($"{sep}bin{sep}") || path.Contains($"{sep}obj{sep}"));
     }
 
-    public static bool ThereIsAParentDirectory(this DirectoryInfo dir, CustomLoggerOKAY logger, out DirectoryInfo parentDir)
+    public static bool ThereIsAParentDirectory(this DirectoryInfo dir, out DirectoryInfo parentDir)
     {
         if (dir.Parent is not null)
         {
@@ -184,7 +181,7 @@ internal static class TestDiscoveryExtensionMethod
         return false;
     }
 
-    public static FileInfo? RecurseUpwardsUntilTheProjectFileIsFoundStartingFromThis(string suffixToMatch, string sourceFile, int maxParentDirLevel, CustomLoggerOKAY logger)
+    public static FileInfo? RecurseUpwardsUntilTheProjectFileIsFoundStartingFromThis(string suffixToMatch, string sourceFile, int maxParentDirLevel)
     {
         if (maxParentDirLevel == 0) return null; // try and stave off disaster
 
@@ -196,9 +193,9 @@ internal static class TestDiscoveryExtensionMethod
         var csprojFile = Directory.GetFiles(dirName).Where(x => x.EndsWith(suffixToMatch)).SingleOrDefault();
         if (csprojFile is null)
         {
-            if (ThereIsAParentDirectory(new DirectoryInfo(sourceFile), logger, out var parentDir))
+            if (ThereIsAParentDirectory(new DirectoryInfo(sourceFile), out var parentDir))
             {
-                return RecurseUpwardsUntilTheProjectFileIsFoundStartingFromThis(suffixToMatch, parentDir.FullName, maxParentDirLevel - 1, logger);
+                return RecurseUpwardsUntilTheProjectFileIsFoundStartingFromThis(suffixToMatch, parentDir.FullName, maxParentDirLevel - 1);
             }
             else
             {
