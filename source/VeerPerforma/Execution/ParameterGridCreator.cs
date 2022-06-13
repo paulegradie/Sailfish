@@ -33,7 +33,7 @@ public class ParameterGridCreator : IParameterGridCreator
 
     public (List<string>, IEnumerable<IEnumerable<int>>) GenerateParameterGrid(Type test)
     {
-        logger.Verbose("Getting Params from test type");
+        logger.Verbose("Getting Params from test type: {0}", test.Name);
         var variableProperties = GetParams(test);
         
         var propNames = new List<string>();

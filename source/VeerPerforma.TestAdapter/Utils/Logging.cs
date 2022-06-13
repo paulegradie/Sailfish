@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using Serilog;
 using Serilog.Core;
+using VeerPerforma.Utils;
 
 namespace VeerPerforma.TestAdapter.Utils;
 
@@ -61,6 +62,19 @@ public static class Logging
         }
 
         return csprojFile.Directory;
+    }
+
+    public static bool ThereIsAParentDirectory(this DirectoryInfo dir, out DirectoryInfo parentDir)
+    {
+        if (dir.Parent is not null)
+        {
+            logger.Verbose("CurrentDir: {0} --- Parent Directory: {1}", dir.Name, dir.Parent.Name);
+            parentDir = dir.Parent;
+            return dir.Parent.Exists;
+        }
+
+        parentDir = dir;
+        return false;
     }
 
     // public static bool ThereIsAParentDirectory(this DirectoryInfo dir, out DirectoryInfo parentDir)

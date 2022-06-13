@@ -11,13 +11,10 @@
     </PropertyGroup>
 
     <ItemGroup>
+        <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.2.0" />
         <PackageReference Include="Serilog" Version="2.11.0" />
-        <PackageReference Include="VeerPerforma" Version="0.0.64" />
-        <PackageReference Include="VeerPerforma.TestAdapter" Version="0.0.64" />
-        <ProjectReference Include="..\VeerPerforma\VeerPerforma.csproj" />
-    </ItemGroup>
-
-    <ItemGroup>
+        <PackageReference Include="VeerPerforma" Version="0.0.88" />
+        <PackageReference Include="VeerPerforma.TestAdapter" Version="0.0.88" />
     </ItemGroup>
 
 </Project>

@@ -21,9 +21,11 @@ public class TestExecutor : ITestExecutor
 
     public bool Cancelled = false;
 
-    public void RunTests(IEnumerable<string> sources, IRunContext runContext, IFrameworkHandle frameworkHandle)
+    public void RunTests(IEnumerable<string> sourceDlls, IRunContext runContext, IFrameworkHandle frameworkHandle)
     {
-        var testCases = sources.DiscoverTests(); // veer performa test cases are the class. Internal execution logic will handle calling methods.
+        // veer performa test cases are the class. Internal execution logic will handle calling methods.
+        var testCases = new CustomTestDiscovery().DiscoverTests(sourceDlls);
+
         RunTests(testCases, runContext, frameworkHandle);
     }
 
@@ -179,7 +181,7 @@ public class TestExecutor : ITestExecutor
                             DisplayNameHelper.CreateDisplayName(
                                 testType,
                                 method.Name,
-                                DisplayNameHelper.CreateParamsDisplay(combo)))
+                                DisplayNameHelper.CreateParamsDisplay(combos.Item1.ToArray(), combo.ToArray())))
                     .ToArray();
 
             foreach (var typeDisplayName in typeDisplayNames)

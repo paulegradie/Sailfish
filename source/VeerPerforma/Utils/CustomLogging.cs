@@ -25,6 +25,7 @@ public static class logger
         catch (Exception ex)
         {
             filePath = $"C:\\Users\\paule\\code\\VeerPerformaRelated\\TestingLogs\\crazy_logs-{Guid.NewGuid().ToString()}.txt";
+            DoWrite(filePath, $"What a crazy exception!: {ex.Message}", properties);
             DoWrite(filePath, messageLine, properties);
         }
     }

@@ -7,8 +7,17 @@ public static class DisplayNameHelper
         return string.Join(".", testType.Name, methodName) + paramsCombo;
     }
 
-    public static string CreateParamsDisplay(IEnumerable<int> paramSet)
+    public static string CreateParamsDisplay(string[] variableNames, int[] paramSet)
     {
-        return "(" + string.Join(", ", paramSet) + ")";
+        if (variableNames.Length != paramSet.Length) throw new Exception("Number of variables and number of params does not match");
+        var namedParams = variableNames.Zip(paramSet);
+        
+        
+        return "(" + string.Join(", ", namedParams.Select(pair => FormNameString(pair)).ToArray()) + ")";
+    }
+
+    private static string FormNameString((string First, int Second) pair)
+    {
+        return $"{pair.First}: {pair.Second}";
     }
 }
