@@ -2,6 +2,5 @@
 
 public interface IParameterCombinator
 {
-    IEnumerable<IEnumerable<int>> GetAllPossibleCombos(
-        IEnumerable<IEnumerable<int>> ints);
+    int[][] GetAllPossibleCombos(IEnumerable<IEnumerable<int>> ints);
 }

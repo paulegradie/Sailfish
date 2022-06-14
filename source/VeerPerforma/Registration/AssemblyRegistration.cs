@@ -40,11 +40,10 @@ public static class AssemblyRegistrationExtensionMethods
         serviceCollection.AddTransient<ITestCollector, TestCollector>();
         serviceCollection.AddTransient<IParameterCombinator, ParameterCombinator>();
         serviceCollection.AddTransient<IParameterGridCreator, ParameterGridCreator>();
-        serviceCollection.AddTransient<IInstanceCreator, InstanceCreator>();
+        serviceCollection.AddTransient<ITestObjectCreator, TestObjectCreator>();
         serviceCollection.AddTransient<ITypeResolver, TypeResolver>();
         serviceCollection.AddTransient<IMethodOrganizer, MethodOrganizer>();
         serviceCollection.AddTransient<IMethodIterator, MethodIterator>();
-        serviceCollection.AddTransient<ITestRunPreparation, TestRunPreparation>();
     }
 }
 
@@ -67,10 +66,9 @@ public class ExecutorModule : Module
         builder.RegisterType<TestCollector>().As<ITestCollector>();
         builder.RegisterType<ParameterCombinator>().As<IParameterCombinator>();
         builder.RegisterType<ParameterGridCreator>().As<IParameterGridCreator>();
-        builder.RegisterType<InstanceCreator>().As<IInstanceCreator>();
+        builder.RegisterType<TestObjectCreator>().As<ITestObjectCreator>();
         builder.RegisterType<TypeResolver>().As<ITypeResolver>();
         builder.RegisterType<MethodOrganizer>().As<IMethodOrganizer>();
         builder.RegisterType<MethodIterator>().As<IMethodIterator>();
-        builder.RegisterType<TestRunPreparation>().As<ITestRunPreparation>();
     }
 }

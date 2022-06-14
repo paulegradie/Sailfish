@@ -2,7 +2,7 @@
 
 public class ParameterCombinator : IParameterCombinator
 {
-    public IEnumerable<IEnumerable<int>> GetAllPossibleCombos(IEnumerable<IEnumerable<int>> ints)
+    public int[][] GetAllPossibleCombos(IEnumerable<IEnumerable<int>> ints)
     {
         var strings = ints.Select(x => x.Select(x => x.ToString()));
         IEnumerable<IEnumerable<string>> combos = new[] { new string[0] };
@@ -12,7 +12,7 @@ public class ParameterCombinator : IParameterCombinator
                 from i in inner
                 select c.Append(i);
 
-        return combos.Select(x => x.Select(int.Parse));
+        return combos.Select(x => x.Select(int.Parse).ToArray()).ToArray();
     }
 }
 

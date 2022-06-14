@@ -22,8 +22,10 @@ public class ParameterGridCreator : IParameterGridCreator
             var variableValues = property
                 .GetCustomAttributes()
                 .OfType<IterationVariableAttribute>()
-                .Single() // multiple is false, so this shouldn't throw - we validate first to give feedback
+                .Single() // multiple prop on the attribute is false, so this shouldn't throw - we validate first to give feedback
                 .N
+                .Distinct() // Duplicate values are currently allowed until we have an analyzer that prevents folks from providing duplicate values
+                .OrderBy(x => x)
                 .ToArray();
             dict.Add(property.Name, variableValues);
         }
@@ -31,33 +33,27 @@ public class ParameterGridCreator : IParameterGridCreator
         return dict;
     }
 
-    public (List<string>, IEnumerable<IEnumerable<int>>) GenerateParameterGrid(Type test)
+    public (List<string>, int[][]) GenerateParameterGrid(Type test)
     {
-        logger.Verbose("Getting Params from test type: {0}", test.Name);
         var variableProperties = GetParams(test);
-        
+
         var propNames = new List<string>();
         var propValues = new List<List<int>>();
-        logger.Verbose("Variable props gotten. Logging them here:");
         foreach (var (propertyName, values) in variableProperties)
         {
-            logger.Verbose("Property Name: {0}", propertyName);
-            logger.Verbose("Property Values = : {0}", string.Join(", ", values.Select(x => x.ToString())));
             propNames.Add(propertyName);
             propValues.Add(values.ToList());
         }
 
         var combos = parameterCombinator.GetAllPossibleCombos(propValues);
-        var testA = combos.ToList();
-        logger.Verbose("Num Combos: {0}", testA.Count.ToString());
 
-        foreach (var testCombos in testA)
+        foreach (var testCombos in combos)
         {
             var combs = testCombos.ToList();
-            logger.Verbose("Combos: {0}", string.Join(", ", combs.Select(x => x.ToString())));
         }
 
-        // Propnames = ["PropA", "PropB"]
+        // Propnames = ["A", "B"]
+        //           A   B    A  B    A  B    A  B
         // combos = [[1, 2], [1, 4], [2, 2], [2, 4]
         return (propNames, combos);
     }

@@ -2,7 +2,7 @@ namespace VeerPerforma.Execution;
 
 public class TestValidationResult
 {
-    private TestValidationResult(bool isValid, Type[] tests, List<string> errors)
+    private TestValidationResult(bool isValid, Type[] tests, Dictionary<string, List<string>> errors)
     {
         IsValid = isValid;
         Errors = errors;
@@ -11,15 +11,15 @@ public class TestValidationResult
 
     public Type[] Tests { get; set; }
     public bool IsValid { get; set; }
-    public List<string> Errors { get; }
+    public Dictionary<string, List<string>> Errors { get; }
 
     public static TestValidationResult CreateSuccess(Type[] tests)
     {
-        return new TestValidationResult(true, tests, new List<string>());
+        return new TestValidationResult(true, tests, new Dictionary<string, List<string>>());
     }
 
-    public static TestValidationResult CreateFailure(Type[] tests, List<string> errors)
+    public static TestValidationResult CreateFailure(Type[] tests, Dictionary<string, List<string>> errors)
     {
-        return new TestValidationResult(false,  tests, errors);
+        return new TestValidationResult(false, tests, errors);
     }
 }

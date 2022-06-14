@@ -1,5 +1,4 @@
-﻿using System.Diagnostics;
-using Serilog;
+﻿using Serilog;
 
 namespace VeerPerforma.Execution;
 
@@ -12,46 +11,30 @@ public class MethodIterator : IMethodIterator
         this.logger = logger;
     }
 
-    private async Task WarmupIterations(AncillaryInvocation invoker, int numWarmupIterations)
+    private async Task WarmupIterations(TestInstanceContainer testInstanceContainer)
     {
-        for (var i = 0; i < numWarmupIterations; i++)
+        for (var i = 0; i < testInstanceContainer.NumWarmupIterations; i++)
         {
-            await invoker.IterationSetup();
-            await invoker.ExecutionMethod();
-            await invoker.IterationTearDown();
+            await testInstanceContainer.Invocation.IterationSetup();
+            await testInstanceContainer.Invocation.ExecutionMethod();
+            await testInstanceContainer.Invocation.IterationTearDown();
         }
     }
 
-    private async Task MainExecution(AncillaryInvocation invoker, List<double> elapsedMilliseconds)
+    public async Task<List<string>> IterateMethodNTimesAsync(TestInstanceContainer testInstanceContainer)
     {
-        var stopwatch = new Stopwatch();
-        
-        stopwatch.Start();
-        await invoker.ExecutionMethod();
-        stopwatch.Stop();
+        await WarmupIterations(testInstanceContainer);
 
-        logger.Debug($"Elapsed Ms: {stopwatch.ElapsedMilliseconds}");
-        elapsedMilliseconds.Add(stopwatch.ElapsedMilliseconds);
-
-        stopwatch.Reset();
-    }
-
-    public async Task<List<string>> IterateMethodNTimesAsync(AncillaryInvocation invoker, int numIterations, int numWarmupIterations)
-    {
-        await invoker.MethodSetup();
-        await WarmupIterations(invoker, numIterations);
-
-        var elapsedMilliseconds = new List<double>();
-        for (var i = 0; i < numIterations; i++)
+        var messages = new List<string>();
+        for (var i = 0; i < testInstanceContainer.NumIterations; i++)
         {
-            await invoker.IterationSetup();
+            await testInstanceContainer.Invocation.IterationSetup();
 
-            await MainExecution(invoker, elapsedMilliseconds);
+            await testInstanceContainer.Invocation.ExecutionMethod();
 
-            await invoker.IterationTearDown();
+            await testInstanceContainer.Invocation.IterationTearDown();
         }
 
-        await invoker.MethodTearDown();
-        return new List<string>(); // TODO: provide any messages or delete  
+        return messages; // TODO: use this?
     }
 }

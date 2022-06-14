@@ -1,28 +1,26 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel;
-using VeerPerforma.Attributes;
 using VeerPerforma.Utils;
 
 namespace VeerPerforma.TestAdapter.Utils;
 
 internal class CustomTestDiscovery
 {
-    private readonly DllIterator dllIterator;
     private readonly FileIo fileIo;
     private readonly TestFilter testFilter;
     private readonly DirectoryRecursion dirRecursor;
     private readonly TestCaseItemCreator testCaseCreator;
+    private readonly TypeLoader typeLoader;
 
     public CustomTestDiscovery()
     {
-        dllIterator = new DllIterator();
         fileIo = new FileIo();
         testFilter = new TestFilter();
         dirRecursor = new DirectoryRecursion();
         testCaseCreator = new TestCaseItemCreator();
+        typeLoader = new TypeLoader();
     }
 
     public IEnumerable<TestCase> DiscoverTests(IEnumerable<string> sourceDlls)
@@ -40,14 +38,13 @@ internal class CustomTestDiscovery
                 referenceFile,
                 maxParentDirLevel: 5);
 
-            var assembly = LoadAssemblyFromDll(sourceDllPath);
+            var perfTestTypes = typeLoader.LoadTypes(sourceDllPath);
 
             var correspondingCsFiles = fileIo.FindAllFilesRecursively(
                 project,
                 "*.cs",
                 s => fileIo.FilePathDoesNotContainBinOrObjDirs(s));
 
-            var perfTestTypes = CollectTestTypesFromAssembly(assembly);
 
             logger.Verbose("Beginning assembly of test cases!");
 
@@ -67,7 +64,7 @@ internal class CustomTestDiscovery
 
             foreach (var bag in bags)
             {
-                var cases = testCaseCreator.AssembleClassTestCases(bag, sourceDllPath);
+                var cases = testCaseCreator.AssembleTestCases(bag, sourceDllPath);
                 testCases.AddRange(cases);
             }
         }
@@ -75,28 +72,5 @@ internal class CustomTestDiscovery
         return testCases;
     }
 
-    public Type[] CollectTestTypesFromAssembly(Assembly assembly)
-    {
-        var perfTestTypes = assembly // mvp only supports test discovery in current assembly 
-            .GetTypes()
-            .Where(x => x.HasAttribute<VeerPerformaAttribute>())
-            .ToArray();
 
-        if (perfTestTypes.Length < 1) throw new Exception("No perf test types found");
-
-        logger.Verbose("\rTests Types Discovered:\r");
-        foreach (var testType in perfTestTypes)
-        {
-            logger.Verbose("--- Perf tests: {0}", testType.Name);
-        }
-
-        return perfTestTypes;
-    }
-
-    private Assembly LoadAssemblyFromDll(string dllPath)
-    {
-        var assembly = Assembly.LoadFile(dllPath);
-        AppDomain.CurrentDomain.Load(assembly.GetName()); // is this necessary?
-        return assembly;
-    }
 }

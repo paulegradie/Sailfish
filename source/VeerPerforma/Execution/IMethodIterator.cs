@@ -4,5 +4,5 @@ namespace VeerPerforma.Execution;
 
 public interface IMethodIterator
 {
-    Task<List<string>> IterateMethodNTimesAsync(AncillaryInvocation invoker, int numIterations, int numWarmupIterations);
+    Task<List<string>> IterateMethodNTimesAsync(TestInstanceContainer testInstanceContainer);
 }

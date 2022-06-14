@@ -1,33 +1,31 @@
-﻿using System.Diagnostics;
-using Serilog;
-using VeerPerforma.Utils;
+﻿using Serilog;
 
 namespace VeerPerforma.Execution;
 
 public class VeerTestExecutor : IVeerTestExecutor
 {
-    private readonly ITestRunPreparation testRunPreparation;
     private readonly ILogger logger;
+    private readonly ITestObjectCreator testObjectCreator;
     private readonly IMethodIterator methodIterator;
 
     public VeerTestExecutor(
         ILogger logger,
-        ITestRunPreparation testRunPreparation,
+        ITestObjectCreator testObjectCreator,
         IMethodIterator methodIterator
     )
     {
         this.logger = logger;
-        this.testRunPreparation = testRunPreparation;
+        this.testObjectCreator = testObjectCreator;
         this.methodIterator = methodIterator;
     }
 
-    public async Task<int> Execute(Type[] tests, AdapterCallbackAction? callback = null)
+    public async Task<int> Execute(Type[] testTypes, Action<TestInstanceContainer, TestExecutionResult>? callback = null)
     {
         try
         {
-            foreach (var test in tests)
+            foreach (var testType in testTypes)
             {
-                await Execute(test, callback);
+                await Execute(testType, callback);
             }
         }
         catch (Exception ex)
@@ -38,60 +36,45 @@ public class VeerTestExecutor : IVeerTestExecutor
         return await Task.FromResult(0);
     }
 
-    public async Task Execute(Type test, AdapterCallbackAction? callback = null)
+    public async Task Execute(Type test, Action<TestInstanceContainer, TestExecutionResult>? callback = null)
     {
-        var numIterations = test.GetNumIterations();
-        var numWarmupIterations = test.GetWarmupIterations();
-        var methodMap = testRunPreparation.GenerateTestInstances(test);
+        var testInstanceContainers = testObjectCreator.CreateTestContainerInstances(test);
+        await Execute(testInstanceContainers);
+    }
 
-        foreach (var methodName in methodMap.Keys.OrderBy(x => x))
+    public async Task Execute(List<TestInstanceContainer> testInstanceContainers, Action<TestInstanceContainer, TestExecutionResult>? callback = null)
+    {
+        foreach (var testInstanceContainer in testInstanceContainers) // a test container has all the things need to create a test. All derived from the type.
         {
-            var methodPairs = methodMap[methodName];
-
-            for (var testCaseIndex = 0; testCaseIndex < methodPairs.Count; testCaseIndex++)
-            {
-                var (method, instance) = methodPairs[testCaseIndex];
-                var invoker = new AncillaryInvocation(instance, method);
-                var statusCode = 0;
-                var startTime = DateTimeOffset.Now;
-                var endTime = DateTimeOffset.Now;
-                var duration = TimeSpan.Zero;
-                Exception exception = null!;
-                var messages = new List<string>();
-
-                try
-                {
-                    var timer = new Stopwatch();
-                    timer.Start();
-                    startTime = DateTimeOffset.Now.LocalDateTime;
-
-
-                    await invoker.GlobalSetup(); // TODO: This does the same thing as the method setup! When we allow multiple methods, we'll do a group by and this will make more sense.
-                    messages = await methodIterator.IterateMethodNTimesAsync(invoker, numIterations, numWarmupIterations);
-                    await invoker.GlobalTeardown();
-
-                    timer.Stop();
-                    endTime = DateTimeOffset.Now.LocalDateTime;
-                    duration = endTime - startTime;
-                    statusCode = 1;
-                }
-                catch (Exception ex)
-                {
-                    exception = ex;
-                }
-                finally
-                {
-                    if (callback is not null)
-                        callback(test, testCaseIndex, statusCode, exception, messages.ToArray(), startTime, endTime, duration);
-                }
-            }
-
-            logger.Debug($"------ Method {methodName} is finished!");
+            await Execute(testInstanceContainer, callback);
         }
     }
 
-    public class VeerPerformaMethodExecutor
+    // This will be called in the adapter
+    public async Task Execute(TestInstanceContainer testInstanceContainer, Action<TestInstanceContainer, TestExecutionResult>? callback = null)
     {
-        
+        var result = await Iterate(testInstanceContainer);
+        if (callback is not null)
+            callback(testInstanceContainer, result);
+    }
+
+    private async Task<TestExecutionResult> Iterate(TestInstanceContainer testInstanceContainer)
+    {
+        Exception? exception = null;
+        var messages = new List<string>();
+        try
+        {
+            await testInstanceContainer.Invocation.GlobalSetup();
+            messages = await methodIterator.IterateMethodNTimesAsync(testInstanceContainer);
+            await testInstanceContainer.Invocation.GlobalTeardown();
+        }
+        catch (Exception ex)
+        {
+            exception = ex;
+        }
+
+        return exception is null
+            ? TestExecutionResult.CreateSuccess(testInstanceContainer, messages)
+            : TestExecutionResult.CreateFailure(testInstanceContainer, messages, exception);
     }
 }

@@ -44,7 +44,7 @@ public class DemoPerfTest : ApiTestBase
         Console.WriteLine("This is the Iteration Teardown - use sparingly");
     }
 
-    [IterationVariable(1, 2, 3)]
+    [IterationVariable(1, 1, 2, 3)]
     public int NTries { get; set; }
 
     [IterationVariable(200, 300)]
@@ -57,6 +57,13 @@ public class DemoPerfTest : ApiTestBase
         Thread.Sleep(WaitPeriod);
         await Client.GetStringAsync("/");
         WriteSomething();
+    }
+
+    [ExecutePerformanceCheck]
+    public async Task Other()
+    {
+        await Task.CompletedTask;
+        Console.WriteLine("WOW");
     }
 
     private void WriteSomething()

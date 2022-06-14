@@ -32,10 +32,14 @@ public class VeerPerformaExecutor
         }
         else
         {
-            Console.WriteLine("Validation Error encountered\n");
-            foreach (var error in testRun.Errors)
+            Console.WriteLine("\r----------- Error ------------\r");
+            foreach (var (reason, names) in testRun.Errors)
             {
-                Console.WriteLine(error);
+                Console.WriteLine(reason);
+                foreach (var testName in names)
+                {
+                    Console.WriteLine($"--- {testName}");
+                }
             }
 
             return 0;
