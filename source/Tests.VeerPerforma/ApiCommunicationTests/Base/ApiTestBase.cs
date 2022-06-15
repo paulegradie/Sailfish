@@ -4,17 +4,18 @@ using Microsoft.AspNetCore.TestHost;
 using Test.API;
 using Xunit;
 
-namespace Test.ApiCommunicationTests.Base;
-
-public class ApiTestBase : IClassFixture<WebApplicationFactory<MyApp>>
+namespace Test.ApiCommunicationTests.Base
 {
-    public WebApplicationFactory<MyApp> WebHostFactory { get; set; }
-    public HttpClient Client { get; }
-
-    public ApiTestBase(WebApplicationFactory<MyApp> factory)
+    public class ApiTestBase : IClassFixture<WebApplicationFactory<MyApp>>
     {
-        WebHostFactory = factory.WithWebHostBuilder(
-            builder => { builder.UseTestServer(); });
-        Client = WebHostFactory.CreateClient();
+        public ApiTestBase(WebApplicationFactory<MyApp> factory)
+        {
+            WebHostFactory = factory.WithWebHostBuilder(
+                builder => { builder.UseTestServer(); });
+            Client = WebHostFactory.CreateClient();
+        }
+
+        public WebApplicationFactory<MyApp> WebHostFactory { get; set; }
+        public HttpClient Client { get; }
     }
 }

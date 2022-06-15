@@ -1,7 +1,10 @@
-namespace VeerPerforma.Execution;
+using System;
 
-public interface ITestCollector
+namespace VeerPerforma.Execution
 {
-    Type[] CollectTestTypes(params Type[] sourceTypes);
-    Type[] CollectTestTypes();
+    public interface ITestCollector
+    {
+        Type[] CollectTestTypes(params Type[] sourceTypes);
+        Type[] CollectTestTypes();
+    }
 }

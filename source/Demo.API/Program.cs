@@ -1,3 +1,7 @@
+﻿using Microsoft.AspNetCore.Builder;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddControllers();
@@ -13,10 +17,3 @@ if (app.Environment.IsDevelopment())
 
 app.MapControllers();
 app.Run();
-
-namespace Test.API
-{
-    public class MyApp
-    {
-    }
-}

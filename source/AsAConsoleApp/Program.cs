@@ -1,22 +1,24 @@
-﻿using Autofac;
+﻿using System.Threading.Tasks;
+using Autofac;
 using McMaster.Extensions.CommandLineUtils;
 using VeerPerforma;
 
-namespace AsAConsoleApp;
-
-internal class Program
+namespace AsAConsoleApp
 {
-    private static async Task Main(string[] userRequestedTestNames)
+    internal class Program
     {
-        await CommandLineApplication.ExecuteAsync<Program>(userRequestedTestNames);
-    }
+        [Option("-t|--tests", CommandOptionType.MultipleValue, Description = "List of tests to execute")]
+        public string[] TestNames { get; set; } = { };
 
-    public async Task OnExecute()
-    {
-        var logger = Logging.CreateLogger("ConsoleAppLogs.log");
-        await ContainerConfiguration.CompositionRoot().Resolve<VeerPerformaExecutor>().Run(TestNames, typeof(DemoPerfTest));
-    }
+        private static async Task Main(string[] userRequestedTestNames)
+        {
+            await CommandLineApplication.ExecuteAsync<Program>(userRequestedTestNames);
+        }
 
-    [Option("-t|--tests", CommandOptionType.MultipleValue, Description = "List of tests to execute")]
-    public string[] TestNames { get; set; } = new string[] { };
+        public async Task OnExecute()
+        {
+            var logger = Logging.CreateLogger("ConsoleAppLogs.log");
+            await ContainerConfiguration.CompositionRoot().Resolve<VeerPerformaExecutor>().Run(TestNames, typeof(DemoPerfTest));
+        }
+    }
 }

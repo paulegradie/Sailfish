@@ -1,7 +1,8 @@
-﻿namespace VeerPerforma.Execution;
-
-public enum TestRunResultEnum
+﻿namespace VeerPerforma.Execution
 {
-    Failure = 0,
-    Success = 1
+    public enum TestRunResultEnum
+    {
+        Failure = 0,
+        Success = 1
+    }
 }

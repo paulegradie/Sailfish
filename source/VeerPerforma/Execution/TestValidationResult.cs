@@ -1,25 +1,29 @@
-namespace VeerPerforma.Execution;
+using System;
+using System.Collections.Generic;
 
-public class TestValidationResult
+namespace VeerPerforma.Execution
 {
-    private TestValidationResult(bool isValid, Type[] tests, Dictionary<string, List<string>> errors)
+    public class TestValidationResult
     {
-        IsValid = isValid;
-        Errors = errors;
-        Tests = tests;
-    }
+        private TestValidationResult(bool isValid, Type[] tests, Dictionary<string, List<string>> errors)
+        {
+            IsValid = isValid;
+            Errors = errors;
+            Tests = tests;
+        }
 
-    public Type[] Tests { get; set; }
-    public bool IsValid { get; set; }
-    public Dictionary<string, List<string>> Errors { get; }
+        public Type[] Tests { get; set; }
+        public bool IsValid { get; set; }
+        public Dictionary<string, List<string>> Errors { get; }
 
-    public static TestValidationResult CreateSuccess(Type[] tests)
-    {
-        return new TestValidationResult(true, tests, new Dictionary<string, List<string>>());
-    }
+        public static TestValidationResult CreateSuccess(Type[] tests)
+        {
+            return new TestValidationResult(true, tests, new Dictionary<string, List<string>>());
+        }
 
-    public static TestValidationResult CreateFailure(Type[] tests, Dictionary<string, List<string>> errors)
-    {
-        return new TestValidationResult(false, tests, errors);
+        public static TestValidationResult CreateFailure(Type[] tests, Dictionary<string, List<string>> errors)
+        {
+            return new TestValidationResult(false, tests, errors);
+        }
     }
 }

@@ -4,35 +4,33 @@ using Microsoft.VisualStudio.TestPlatform.ObjectModel.Adapter;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.Logging;
 using VeerPerforma.TestAdapter.Utils;
 
-namespace VeerPerforma.TestAdapter;
-
+namespace VeerPerforma.TestAdapter
+{
 // https://github.com/Microsoft/vstest-docs/blob/main/RFCs/0004-Adapter-Extensibility.md
 
-[FileExtension(".dll")]
-[FileExtension(".cs")]
-[FileExtension(".exe")]
-[DefaultExecutorUri(TestExecutor.ExecutorUriString)]
-public class TestDiscoverer : ITestDiscoverer
-{
-    private readonly object obj = new();
-
-    public void DiscoverTests(IEnumerable<string> containers, IDiscoveryContext discoveryContext, IMessageLogger logger, ITestCaseDiscoverySink discoverySink)
+    [FileExtension(".dll")]
+    [FileExtension(".cs")]
+    [FileExtension(".exe")]
+    [DefaultExecutorUri(TestExecutor.ExecutorUriString)]
+    public class TestDiscoverer : ITestDiscoverer
     {
-        ValidateArg.NotNull(containers, "containers");
-        ValidateArg.NotNull(logger, "logger");
-        ValidateArg.NotNull(discoverySink, "discoverySink");
+        private readonly object obj = new object();
 
-
-        logger.SendMessage(TestMessageLevel.Informational, "THIS IS A TEST MESSAGE LEVEL");
-        logger.SendMessage(TestMessageLevel.Warning, "THIS IS A WARNING");
-        logger.SendMessage(TestMessageLevel.Error, "OOPSIE - THIS IS AN ERROR");
-
-        lock (obj)
+        public void DiscoverTests(IEnumerable<string> containers, IDiscoveryContext discoveryContext, IMessageLogger logger, ITestCaseDiscoverySink discoverySink)
         {
-            var testCases = new CustomTestDiscovery().DiscoverTests(containers);
-            foreach (var testCase in testCases)
+            ValidateArg.NotNull(containers, "containers");
+            ValidateArg.NotNull(logger, "logger");
+            ValidateArg.NotNull(discoverySink, "discoverySink");
+
+
+            logger.SendMessage(TestMessageLevel.Informational, "THIS IS A TEST MESSAGE LEVEL");
+            logger.SendMessage(TestMessageLevel.Warning, "THIS IS A WARNING");
+            logger.SendMessage(TestMessageLevel.Error, "OOPSIE - THIS IS AN ERROR");
+
+            lock (obj)
             {
-                discoverySink.SendTestCase(testCase);
+                var testCases = new CustomTestDiscovery().DiscoverTests(containers);
+                foreach (var testCase in testCases) discoverySink.SendTestCase(testCase);
             }
         }
     }

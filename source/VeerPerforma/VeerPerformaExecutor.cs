@@ -1,54 +1,52 @@
+using System;
+using System.Threading.Tasks;
 using VeerPerforma.Execution;
 
-namespace VeerPerforma;
-
-/// <summary>
-/// This class can be used in a project that is intended to define a bunch of perf tests
-/// For example, create a project, and execute this run command. That will allow you to
-/// </summary>
-public class VeerPerformaExecutor
+namespace VeerPerforma
 {
-    private readonly IVeerTestExecutor veerTestExecutor;
-    private readonly ITestCollector testCollector;
-    private readonly ITestFilter testFilter;
-
-    public VeerPerformaExecutor(
-        IVeerTestExecutor veerTestExecutor,
-        ITestCollector testCollector,
-        ITestFilter testFilter
-    )
+    /// <summary>
+    ///     This class can be used in a project that is intended to define a bunch of perf tests
+    ///     For example, create a project, and execute this run command. That will allow you to
+    /// </summary>
+    public class VeerPerformaExecutor
     {
-        this.veerTestExecutor = veerTestExecutor;
-        this.testCollector = testCollector;
-        this.testFilter = testFilter;
-    }
+        private readonly ITestCollector testCollector;
+        private readonly ITestFilter testFilter;
+        private readonly IVeerTestExecutor veerTestExecutor;
 
-    public async Task<int> Run(string[] testNames, params Type[] testLocationTypes)
-    {
-        var testRun = CollectTests(testNames, testLocationTypes);
-        if (testRun.IsValid)
+        public VeerPerformaExecutor(
+            IVeerTestExecutor veerTestExecutor,
+            ITestCollector testCollector,
+            ITestFilter testFilter
+        )
         {
-            return await veerTestExecutor.Execute(testRun.Tests);
+            this.veerTestExecutor = veerTestExecutor;
+            this.testCollector = testCollector;
+            this.testFilter = testFilter;
         }
-        else
+
+        public async Task<int> Run(string[] testNames, params Type[] testLocationTypes)
         {
+            var testRun = CollectTests(testNames, testLocationTypes);
+            if (testRun.IsValid)
+            {
+                return await veerTestExecutor.Execute(testRun.Tests);
+            }
+
             Console.WriteLine("\r----------- Error ------------\r");
             foreach (var (reason, names) in testRun.Errors)
             {
                 Console.WriteLine(reason);
-                foreach (var testName in names)
-                {
-                    Console.WriteLine($"--- {testName}");
-                }
+                foreach (var testName in names) Console.WriteLine($"--- {testName}");
             }
 
             return 0;
         }
-    }
 
-    public TestValidationResult CollectTests(string[] testNames, params Type[] locationTypes)
-    {
-        var perfTests = testCollector.CollectTestTypes(locationTypes);
-        return testFilter.FilterAndValidate(perfTests, testNames);
+        public TestValidationResult CollectTests(string[] testNames, params Type[] locationTypes)
+        {
+            var perfTests = testCollector.CollectTestTypes(locationTypes);
+            return testFilter.FilterAndValidate(perfTests, testNames);
+        }
     }
 }

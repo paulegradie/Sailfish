@@ -1,6 +1,9 @@
-namespace VeerPerforma.Execution;
+using System;
 
-public interface ITestFilter
+namespace VeerPerforma.Execution
 {
-    TestValidationResult FilterAndValidate(Type[] tests, string[] testsRequestedByUser);
+    public interface ITestFilter
+    {
+        TestValidationResult FilterAndValidate(Type[] tests, string[] testsRequestedByUser);
+    }
 }

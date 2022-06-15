@@ -1,18 +1,16 @@
 using Microsoft.AspNetCore.Mvc;
 using Test.API.Controllers.Base;
 
-namespace Test.API.Controllers;
-
-public class TestController : VeerBaseController
+namespace Test.API.Controllers
 {
-    public const string TestResponse = "Hello there!";
-    public TestController()
+    public class TestController : VeerBaseController
     {
-    }
+        public const string TestResponse = "Hello there!";
 
-    [HttpGet()]
-    public string Get()
-    {
-        return TestResponse;
+        [HttpGet]
+        public string Get()
+        {
+            return TestResponse;
+        }
     }
 }

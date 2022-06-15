@@ -1,33 +1,35 @@
+using System;
 using Autofac;
 
-namespace VeerPerforma.Execution;
-
-public class TypeResolver : ITypeResolver
+namespace VeerPerforma.Execution
 {
-    private readonly IServiceProvider? serviceProvider;
-    private readonly ILifetimeScope? lifetimeScope;
-
-    public TypeResolver(ILifetimeScope lifetimeScope)
+    public class TypeResolver : ITypeResolver
     {
-        this.lifetimeScope = lifetimeScope;
-    }
+        private readonly ILifetimeScope? lifetimeScope;
+        private readonly IServiceProvider? serviceProvider;
 
-    public TypeResolver(IServiceProvider serviceProvider)
-    {
-        this.serviceProvider = serviceProvider;
-    }
-
-    public object ResolveType(Type type)
-    {
-        if (lifetimeScope is not null)
-            return lifetimeScope.Resolve(type);
-        else if (serviceProvider is not null)
+        public TypeResolver(ILifetimeScope lifetimeScope)
         {
-            var resolved = serviceProvider.GetService(type);
-            if (resolved is null) throw new Exception($"Could not resolve test type: {type.Name}. Make sure you register this type in a autofac or service collection container.");
-            return resolved;
+            this.lifetimeScope = lifetimeScope;
         }
-        else
+
+        public TypeResolver(IServiceProvider serviceProvider)
+        {
+            this.serviceProvider = serviceProvider;
+        }
+
+        public object ResolveType(Type type)
+        {
+            if (lifetimeScope is not null) return lifetimeScope.Resolve(type);
+
+            if (serviceProvider is not null)
+            {
+                var resolved = serviceProvider.GetService(type);
+                if (resolved is null) throw new Exception($"Could not resolve test type: {type.Name}. Make sure you register this type in a autofac or service collection container.");
+                return resolved;
+            }
+
             throw new Exception("Service provider not found from whence to resolve objects");
+        }
     }
 }

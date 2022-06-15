@@ -1,8 +1,11 @@
+using System;
+using System.Collections.Generic;
 using System.Reflection;
 
-namespace VeerPerforma.Execution;
-
-public interface ITestRunPreparation
+namespace VeerPerforma.Execution
 {
-    Dictionary<string, List<(MethodInfo, object)>> GenerateTestInstances(Type test);
+    public interface ITestRunPreparation
+    {
+        Dictionary<string, List<(MethodInfo, object)>> GenerateTestInstances(Type test);
+    }
 }

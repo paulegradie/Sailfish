@@ -1,6 +1,10 @@
-namespace VeerPerforma.Execution;
+using System;
+using System.Collections.Generic;
 
-public interface ITestObjectCreator
+namespace VeerPerforma.Execution
 {
-    List<TestInstanceContainer> CreateTestContainerInstances(Type test);
+    public interface ITestObjectCreator
+    {
+        List<TestInstanceContainer> CreateTestContainerInstances(Type test);
+    }
 }

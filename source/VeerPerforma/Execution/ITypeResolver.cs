@@ -1,6 +1,9 @@
-namespace VeerPerforma.Execution;
+using System;
 
-public interface ITypeResolver
+namespace VeerPerforma.Execution
 {
-    object ResolveType(Type type);
+    public interface ITypeResolver
+    {
+        object ResolveType(Type type);
+    }
 }

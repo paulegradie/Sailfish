@@ -1,6 +1,9 @@
-namespace VeerPerforma.Attributes;
+using System;
 
-[AttributeUsage(AttributeTargets.Method, AllowMultiple = false)]
-public class VeerGlobalTeardownAttribute : Attribute
+namespace VeerPerforma.Attributes
 {
+    [AttributeUsage(AttributeTargets.Method, AllowMultiple = false)]
+    public class VeerGlobalTeardownAttribute : Attribute
+    {
+    }
 }

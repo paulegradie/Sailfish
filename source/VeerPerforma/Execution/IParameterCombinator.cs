@@ -1,6 +1,9 @@
-﻿namespace VeerPerforma.Execution;
+﻿using System.Collections.Generic;
 
-public interface IParameterCombinator
+namespace VeerPerforma.Execution
 {
-    int[][] GetAllPossibleCombos(IEnumerable<IEnumerable<int>> ints);
+    public interface IParameterCombinator
+    {
+        int[][] GetAllPossibleCombos(IEnumerable<IEnumerable<int>> ints);
+    }
 }

@@ -1,9 +1,0 @@
-﻿<wpf:ResourceDictionary xml:space="preserve" xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml" xmlns:s="clr-namespace:System;assembly=mscorlib" xmlns:ss="urn:shemas-jetbrains-com:settings-storage-xaml" xmlns:wpf="http://schemas.microsoft.com/winfx/2006/xaml/presentation">
-	<s:String x:Key="/Default/Environment/UnitTesting/UnitTestSessionStore/Sessions/=f10338e9_002D5800_002D43ed_002Db437_002D6b82b4b488ae/@EntryIndexedValue">&lt;SessionState ContinuousTestingMode="0" IsActive="True" Name="AllPerfWatcherAttributesCanBeFound" xmlns="urn:schemas-jetbrains-com:jetbrains-ut-session"&gt;&#xD;
-  &lt;TestAncestor&gt;&#xD;
-    &lt;TestId&gt;xUnit::A42A41D3-7A3F-4475-B245-A2E896A2589F::net6.0::Test.WhenCollectingAttributes.AllPerfWatcherAttributesCanBeFound&lt;/TestId&gt;&#xD;
-    &lt;TestId&gt;xUnit::A42A41D3-7A3F-4475-B245-A2E896A2589F::net6.0::BasicTestBase.CanTalkToTheApi&lt;/TestId&gt;&#xD;
-    &lt;TestId&gt;xUnit::A42A41D3-7A3F-4475-B245-A2E896A2589F::net6.0::Test.WhenCollectingAttributes&lt;/TestId&gt;&#xD;
-    &lt;TestId&gt;xUnit::A42A41D3-7A3F-4475-B245-A2E896A2589F::net6.0::Test.Behavior.BasicTestBase.CanTalkToTheApi&lt;/TestId&gt;&#xD;
-  &lt;/TestAncestor&gt;&#xD;
-&lt;/SessionState&gt;</s:String></wpf:ResourceDictionary>

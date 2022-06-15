@@ -1,4 +1,8 @@
-﻿namespace VeerPerforma.Execution;
+﻿using System;
+
+namespace VeerPerforma.Execution
+{
+    
 
 public static class InstanceConstructor
 {
@@ -10,4 +14,5 @@ public static class InstanceConstructor
         if (instance is null) throw new Exception("Weird program error encountered");
         return instance;
     }
+}
 }

@@ -1,80 +1,79 @@
-﻿using Serilog;
+﻿using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
+using Serilog;
 
-namespace VeerPerforma.Execution;
-
-public class VeerTestExecutor : IVeerTestExecutor
+namespace VeerPerforma.Execution
 {
-    private readonly ILogger logger;
-    private readonly ITestObjectCreator testObjectCreator;
-    private readonly IMethodIterator methodIterator;
-
-    public VeerTestExecutor(
-        ILogger logger,
-        ITestObjectCreator testObjectCreator,
-        IMethodIterator methodIterator
-    )
+    public class VeerTestExecutor : IVeerTestExecutor
     {
-        this.logger = logger;
-        this.testObjectCreator = testObjectCreator;
-        this.methodIterator = methodIterator;
-    }
+        private readonly ILogger logger;
+        private readonly IMethodIterator methodIterator;
+        private readonly ITestObjectCreator testObjectCreator;
 
-    public async Task<int> Execute(Type[] testTypes, Action<TestInstanceContainer, TestExecutionResult>? callback = null)
-    {
-        try
+        public VeerTestExecutor(
+            ILogger logger,
+            ITestObjectCreator testObjectCreator,
+            IMethodIterator methodIterator
+        )
         {
-            foreach (var testType in testTypes)
+            this.logger = logger;
+            this.testObjectCreator = testObjectCreator;
+            this.methodIterator = methodIterator;
+        }
+
+        public async Task<int> Execute(Type[] testTypes, Action<TestInstanceContainer, TestExecutionResult>? callback = null)
+        {
+            try
             {
-                await Execute(testType, callback);
+                foreach (var testType in testTypes) await Execute(testType, callback);
             }
+            catch (Exception ex)
+            {
+                logger.Fatal("The Test runner encountered a fatal error: {0}", ex.Message);
+            }
+
+            return await Task.FromResult(0);
         }
-        catch (Exception ex)
+
+        public async Task Execute(Type test, Action<TestInstanceContainer, TestExecutionResult>? callback = null)
         {
-            logger.Fatal("The Test runner encountered a fatal error: {0}", ex.Message);
+            var testInstanceContainers = testObjectCreator.CreateTestContainerInstances(test);
+            await Execute(testInstanceContainers);
         }
 
-        return await Task.FromResult(0);
-    }
-
-    public async Task Execute(Type test, Action<TestInstanceContainer, TestExecutionResult>? callback = null)
-    {
-        var testInstanceContainers = testObjectCreator.CreateTestContainerInstances(test);
-        await Execute(testInstanceContainers);
-    }
-
-    public async Task Execute(List<TestInstanceContainer> testInstanceContainers, Action<TestInstanceContainer, TestExecutionResult>? callback = null)
-    {
-        foreach (var testInstanceContainer in testInstanceContainers) // a test container has all the things need to create a test. All derived from the type.
+        public async Task Execute(List<TestInstanceContainer> testInstanceContainers, Action<TestInstanceContainer, TestExecutionResult>? callback = null)
         {
-            await Execute(testInstanceContainer, callback);
+            foreach (var testInstanceContainer in testInstanceContainers) // a test container has all the things need to create a test. All derived from the type.
+                await Execute(testInstanceContainer, callback);
         }
-    }
 
-    // This will be called in the adapter
-    public async Task Execute(TestInstanceContainer testInstanceContainer, Action<TestInstanceContainer, TestExecutionResult>? callback = null)
-    {
-        var result = await Iterate(testInstanceContainer);
-        if (callback is not null)
-            callback(testInstanceContainer, result);
-    }
-
-    private async Task<TestExecutionResult> Iterate(TestInstanceContainer testInstanceContainer)
-    {
-        Exception? exception = null;
-        var messages = new List<string>();
-        try
+        // This will be called in the adapter
+        public async Task Execute(TestInstanceContainer testInstanceContainer, Action<TestInstanceContainer, TestExecutionResult>? callback = null)
         {
-            await testInstanceContainer.Invocation.GlobalSetup();
-            messages = await methodIterator.IterateMethodNTimesAsync(testInstanceContainer);
-            await testInstanceContainer.Invocation.GlobalTeardown();
-        }
-        catch (Exception ex)
-        {
-            exception = ex;
+            var result = await Iterate(testInstanceContainer);
+            if (callback is not null)
+                callback(testInstanceContainer, result);
         }
 
-        return exception is null
-            ? TestExecutionResult.CreateSuccess(testInstanceContainer, messages)
-            : TestExecutionResult.CreateFailure(testInstanceContainer, messages, exception);
+        private async Task<TestExecutionResult> Iterate(TestInstanceContainer testInstanceContainer)
+        {
+            Exception? exception = null;
+            var messages = new List<string>();
+            try
+            {
+                await testInstanceContainer.Invocation.GlobalSetup();
+                messages = await methodIterator.IterateMethodNTimesAsync(testInstanceContainer);
+                await testInstanceContainer.Invocation.GlobalTeardown();
+            }
+            catch (Exception ex)
+            {
+                exception = ex;
+            }
+
+            return exception is null
+                ? TestExecutionResult.CreateSuccess(testInstanceContainer, messages)
+                : TestExecutionResult.CreateFailure(testInstanceContainer, messages, exception);
+        }
     }
 }

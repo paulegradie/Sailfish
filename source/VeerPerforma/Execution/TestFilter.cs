@@ -1,30 +1,32 @@
-﻿namespace VeerPerforma.Execution;
+﻿using System;
+using System.Linq;
 
-public class TestFilter : ITestFilter
+namespace VeerPerforma.Execution
 {
-    private readonly ITestListValidator testListValidator;
-
-    public TestFilter(ITestListValidator testListValidator)
+    public class TestFilter : ITestFilter
     {
-        this.testListValidator = testListValidator;
-    }
+        private readonly ITestListValidator testListValidator;
 
-    Type[] FilterTests(Type[] tests, string[] testsRequestedByUser)
-    {
-        if (testsRequestedByUser.Length > 0)
+        public TestFilter(ITestListValidator testListValidator)
         {
-            return tests
-                .Where(test => testsRequestedByUser.Contains(test.Name))
-                .ToArray();
+            this.testListValidator = testListValidator;
         }
 
-        return tests;
-    }
+        public TestValidationResult FilterAndValidate(Type[] tests, string[] testsRequestedByUser)
+        {
+            var filtered = FilterTests(tests, testsRequestedByUser);
+            var result = testListValidator.ValidateTests(testsRequestedByUser, filtered);
+            return result;
+        }
 
-    public TestValidationResult FilterAndValidate(Type[] tests, string[] testsRequestedByUser)
-    {
-        var filtered = FilterTests(tests, testsRequestedByUser);
-        var result = testListValidator.ValidateTests(testsRequestedByUser, filtered);
-        return result;
+        private Type[] FilterTests(Type[] tests, string[] testsRequestedByUser)
+        {
+            if (testsRequestedByUser.Length > 0)
+                return tests
+                    .Where(test => testsRequestedByUser.Contains(test.Name))
+                    .ToArray();
+
+            return tests;
+        }
     }
 }

@@ -1,6 +1,10 @@
-namespace VeerPerforma.Execution;
+using System;
+using System.Collections.Generic;
 
-public interface IParameterGridCreator
+namespace VeerPerforma.Execution
 {
-    (List<string>, int[][]) GenerateParameterGrid(Type test);
+    public interface IParameterGridCreator
+    {
+        (List<string>, int[][]) GenerateParameterGrid(Type test);
+    }
 }

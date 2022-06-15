@@ -4,23 +4,24 @@ using Shouldly;
 using VeerPerforma.Execution;
 using Xunit;
 
-namespace Test.VeerPerforma.Executor.Tests;
-
-public class WhenCompilingIterationVariables
+namespace Test.VeerPerforma.Executor.Tests
 {
-    [Fact]
-    public void AllCombinationsAreFound_TwoProperties()
+    public class WhenCompilingIterationVariables
     {
-        var combinator = new ParameterCombinator();
-        var combos = combinator.GetAllPossibleCombos(
-            new List<List<int>>
-            {
-                new() { 1, 2, 3 },
-                new() { 4, 5 },
-                new() { 6, 7, 8, 9 }
-            });
-        var result = combos.Select(c => c.ToArray()).ToArray();
+        [Fact]
+        public void AllCombinationsAreFound_TwoProperties()
+        {
+            var combinator = new ParameterCombinator();
+            var combos = combinator.GetAllPossibleCombos(
+                new List<List<int>>
+                {
+                    new List<int>() {1, 2, 3},
+                    new List<int>() {4, 5},
+                    new List<int>() {6, 7, 8, 9}
+                });
+            var result = combos.Select(c => c.ToArray()).ToArray();
 
-        result.Length.ShouldBe(24);
+            result.Length.ShouldBe(24);
+        }
     }
 }

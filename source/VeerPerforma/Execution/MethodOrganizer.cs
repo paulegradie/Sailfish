@@ -1,35 +1,31 @@
-﻿using System.Reflection;
+﻿using System.Collections.Generic;
+using System.Reflection;
 using VeerPerforma.Attributes;
 using VeerPerforma.Utils;
 
-namespace VeerPerforma.Execution;
-
-public class MethodOrganizer : IMethodOrganizer
+namespace VeerPerforma.Execution
 {
-    public Dictionary<string, List<(MethodInfo, object)>> FormMethodGroups(List<object> instances)
+    public class MethodOrganizer : IMethodOrganizer
     {
-        var methodInstancePairs = new Dictionary<string, List<(MethodInfo, object)>>();
-
-        foreach (var instance in instances)
+        public Dictionary<string, List<(MethodInfo, object)>> FormMethodGroups(List<object> instances)
         {
-            var methods = instance.GetMethodsWithAttribute<ExecutePerformanceCheckAttribute>();
-            foreach (var method in methods)
-            {
-                if (methodInstancePairs.TryGetValue(method.Name, out var methodObjectPairs))
-                {
-                    methodObjectPairs!.Add((method, instance));
-                }
-                else
-                {
-                    methodInstancePairs.Add(
-                        method.Name, new List<(MethodInfo, object)>()
-                        {
-                            (method, instance)
-                        });
-                }
-            }
-        }
+            var methodInstancePairs = new Dictionary<string, List<(MethodInfo, object)>>();
 
-        return methodInstancePairs;
+            foreach (var instance in instances)
+            {
+                var methods = instance.GetMethodsWithAttribute<ExecutePerformanceCheckAttribute>();
+                foreach (var method in methods)
+                    if (methodInstancePairs.TryGetValue(method.Name, out var methodObjectPairs))
+                        methodObjectPairs!.Add((method, instance));
+                    else
+                        methodInstancePairs.Add(
+                            method.Name, new List<(MethodInfo, object)>
+                            {
+                                (method, instance)
+                            });
+            }
+
+            return methodInstancePairs;
+        }
     }
 }

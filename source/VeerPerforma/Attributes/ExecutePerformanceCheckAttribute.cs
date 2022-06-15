@@ -1,6 +1,9 @@
-namespace VeerPerforma.Attributes;
+using System;
 
-[AttributeUsage(AttributeTargets.Method, Inherited = false, AllowMultiple = false)]
-public class ExecutePerformanceCheckAttribute : Attribute
+namespace VeerPerforma.Attributes
 {
+    [AttributeUsage(AttributeTargets.Method, Inherited = false)]
+    public class ExecutePerformanceCheckAttribute : Attribute
+    {
+    }
 }

@@ -1,77 +1,79 @@
+using System;
+using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Test.API;
 using Test.ApiCommunicationTests.Base;
 using VeerPerforma.Attributes;
 
-namespace AsAConsoleApp;
-
-[VeerPerforma(2)]
-public class DemoPerfTest : ApiTestBase
+namespace AsAConsoleApp
 {
-    [VeerGlobalSetup]
-    public void GlobalSetup()
+    [VeerPerforma(2)]
+    public class DemoPerfTest : ApiTestBase
     {
-        Console.WriteLine("This is the Global Setup");
-    }
+        public DemoPerfTest(WebApplicationFactory<MyApp> factory) : base(factory)
+        {
+        }
 
-    [VeerGlobalTeardown]
-    public void GlobalTeardown()
-    {
-        Console.WriteLine("This is the Global Teardown");
-    }
+        [IterationVariable(1, 1, 2, 3)] public int NTries { get; set; }
 
-    [VeerExecutionMethodSetup]
-    public void ExecutionMethodSetup()
-    {
-        Console.WriteLine("This is the Execution Method Setup");
-    }
+        [IterationVariable(200, 300)] public int WaitPeriod { get; set; }
 
-    [VeerExecutionMethodTeardown]
-    public void ExecutionMethodTeardown()
-    {
-        Console.WriteLine("This is the Execution Method Teardown");
-    }
+        [VeerGlobalSetup]
+        public void GlobalSetup()
+        {
+            Console.WriteLine("This is the Global Setup");
+        }
 
-    [VeerExecutionIterationSetup]
-    public void IterationSetup()
-    {
-        Console.WriteLine("This is the Iteration Setup - use sparingly");
-    }
+        [VeerGlobalTeardown]
+        public void GlobalTeardown()
+        {
+            Console.WriteLine("This is the Global Teardown");
+        }
 
-    [VeerExecutionIterationTeardown]
-    public void IterationTeardown()
-    {
-        Console.WriteLine("This is the Iteration Teardown - use sparingly");
-    }
+        [VeerExecutionMethodSetup]
+        public void ExecutionMethodSetup()
+        {
+            Console.WriteLine("This is the Execution Method Setup");
+        }
 
-    [IterationVariable(1, 1, 2, 3)]
-    public int NTries { get; set; }
+        [VeerExecutionMethodTeardown]
+        public void ExecutionMethodTeardown()
+        {
+            Console.WriteLine("This is the Execution Method Teardown");
+        }
 
-    [IterationVariable(200, 300)]
-    public int WaitPeriod { get; set; }
-    
+        [VeerExecutionIterationSetup]
+        public void IterationSetup()
+        {
+            Console.WriteLine("This is the Iteration Setup - use sparingly");
+        }
 
-    [ExecutePerformanceCheck]
-    public async Task WaitPeriodPerfTest()
-    {
-        Thread.Sleep(WaitPeriod);
-        await Client.GetStringAsync("/");
-        WriteSomething();
-    }
+        [VeerExecutionIterationTeardown]
+        public void IterationTeardown()
+        {
+            Console.WriteLine("This is the Iteration Teardown - use sparingly");
+        }
 
-    [ExecutePerformanceCheck]
-    public async Task Other()
-    {
-        await Task.CompletedTask;
-        Console.WriteLine("WOW");
-    }
 
-    private void WriteSomething()
-    {
-        Console.WriteLine($"Wait Period - Iteration Complete: {NTries}-{WaitPeriod}");
-    }
+        [ExecutePerformanceCheck]
+        public async Task WaitPeriodPerfTest()
+        {
+            Thread.Sleep(WaitPeriod);
+            await Client.GetStringAsync("/");
+            WriteSomething();
+        }
 
-    public DemoPerfTest(WebApplicationFactory<MyApp> factory) : base(factory)
-    {
+        [ExecutePerformanceCheck]
+        public async Task Other()
+        {
+            await Task.CompletedTask;
+            Console.WriteLine("WOW");
+        }
+
+        private void WriteSomething()
+        {
+            Console.WriteLine($"Wait Period - Iteration Complete: {NTries}-{WaitPeriod}");
+        }
     }
 }

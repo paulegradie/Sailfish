@@ -1,25 +1,29 @@
-﻿using Autofac;
+﻿using System;
+using System.Linq;
+using System.Threading.Tasks;
+using Autofac;
 using McMaster.Extensions.CommandLineUtils;
 using VeerPerforma.Tool.Framework.DIContainer;
 
-namespace VeerPerforma.Tool;
-
-class Program
+namespace VeerPerforma.Tool
 {
-    public static async Task<int> Main(string[] args)
+    internal class Program
     {
-        return await CommandLineApplication.ExecuteAsync<Program>(args);
-    }
+        [Option("-t|--tests", CommandOptionType.MultipleValue, Description = "List of tests to execute")]
+        public string[]? TestNames { get; set; } = {""};
 
-    public async Task OnExecute()
-    {
-        if (TestNames is null) throw new Exception("Program failed to start...");
-        await ContainerConfiguration
-            .CompositionRoot()
-            .Resolve<VeerPerformaExecutor>()
-            .Run(TestNames.Where(x => !string.IsNullOrEmpty(x) && !string.IsNullOrWhiteSpace(x)).ToArray());
-    }
+        public static async Task<int> Main(string[] args)
+        {
+            return await CommandLineApplication.ExecuteAsync<Program>(args);
+        }
 
-    [Option("-t|--tests", CommandOptionType.MultipleValue, Description = "List of tests to execute")]
-    public string[]? TestNames { get; set; } = new[] { "" };
+        public async Task OnExecute()
+        {
+            if (TestNames is null) throw new Exception("Program failed to start...");
+            await ContainerConfiguration
+                .CompositionRoot()
+                .Resolve<VeerPerformaExecutor>()
+                .Run(TestNames.Where(x => !string.IsNullOrEmpty(x) && !string.IsNullOrWhiteSpace(x)).ToArray());
+        }
+    }
 }

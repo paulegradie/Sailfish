@@ -4,60 +4,58 @@ using System.IO;
 using System.Linq;
 using VeerPerforma.Utils;
 
-namespace VeerPerforma.TestAdapter.Utils;
-
-internal class FileIo
+namespace VeerPerforma.TestAdapter.Utils
 {
-    public List<string> FindAllFilesRecursively(FileInfo originReferenceFile, string searchPattern, Func<string, bool>? where = null)
+    internal class FileIo
     {
-        var filePaths = Directory.GetFiles(
-            Path.GetDirectoryName(originReferenceFile.FullName)!,
-            searchPattern,
-            SearchOption.AllDirectories);
-
-        if (where is not null)
+        public List<string> FindAllFilesRecursively(FileInfo originReferenceFile, string searchPattern, Func<string, bool>? where = null)
         {
-            filePaths = filePaths.Where(FilePathDoesNotContainBinOrObjDirs).ToArray();
+            var filePaths = Directory.GetFiles(
+                Path.GetDirectoryName(originReferenceFile.FullName)!,
+                searchPattern,
+                SearchOption.AllDirectories);
+
+            if (where is not null) filePaths = filePaths.Where(FilePathDoesNotContainBinOrObjDirs).ToArray();
+
+            foreach (var filePath in filePaths)
+            {
+                logger.Verbose($"Corresponding {searchPattern} files in this assembly project");
+                logger.Verbose("--- {filePath}", filePath);
+            }
+
+            return filePaths.ToList();
         }
-        
-        foreach (var filePath in filePaths)
+
+        public bool FilePathDoesNotContainBinOrObjDirs(string path)
         {
-            logger.Verbose($"Corresponding {searchPattern} files in this assembly project");
-            logger.Verbose("--- {filePath}", filePath);
+            var sep = Path.DirectorySeparatorChar;
+            return !(path.Contains($"{sep}bin{sep}") || path.Contains($"{sep}obj{sep}"));
         }
 
-        return filePaths.ToList();
-    }
+        // public string[]? ReadAndSplitFileContents(string sourceFile) // hmmm do I use this?
+        // {
+        //     var content = ReadFile(sourceFile);
+        //     return content.Split("\r");
+        // }
 
-    public bool FilePathDoesNotContainBinOrObjDirs(string path)
-    {
-        var sep = Path.DirectorySeparatorChar;
-        return !(path.Contains($"{sep}bin{sep}") || path.Contains($"{sep}obj{sep}"));
-    }
-
-    // public string[]? ReadAndSplitFileContents(string sourceFile) // hmmm do I use this?
-    // {
-    //     var content = ReadFile(sourceFile);
-    //     return content.Split("\r");
-    // }
-
-    public string ReadFileContents(string sourceFile)
-    {
-        var content = ReadFile(sourceFile);
-        return content;
-    }
-
-    private string ReadFile(string filePath)
-    {
-        try
+        public string ReadFileContents(string sourceFile)
         {
-            using var fileStream = new StreamReader(filePath);
-            var content = fileStream.ReadToEnd();
+            var content = ReadFile(sourceFile);
             return content;
         }
-        catch
+
+        private string ReadFile(string filePath)
         {
-            throw new Exception($"Could not read the file provided: {filePath}");
+            try
+            {
+                using var fileStream = new StreamReader(filePath);
+                var content = fileStream.ReadToEnd();
+                return content;
+            }
+            catch
+            {
+                throw new Exception($"Could not read the file provided: {filePath}");
+            }
         }
     }
 }

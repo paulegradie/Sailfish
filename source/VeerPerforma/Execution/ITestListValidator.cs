@@ -1,6 +1,9 @@
-namespace VeerPerforma.Execution;
+using System;
 
-public interface ITestListValidator
+namespace VeerPerforma.Execution
 {
-    TestValidationResult ValidateTests(string[] testsRequestedByUser, Type[] filteredTestNames);
+    public interface ITestListValidator
+    {
+        TestValidationResult ValidateTests(string[] testsRequestedByUser, Type[] filteredTestNames);
+    }
 }

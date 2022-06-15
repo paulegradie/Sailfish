@@ -10,7 +10,6 @@
         </Description>
     <TargetFramework>net6.0</TargetFramework>
     <LangVersion>10</LangVersion>
-    <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <RootNamespace>VeerPerforma</RootNamespace>
     <IsPackable>true</IsPackable>

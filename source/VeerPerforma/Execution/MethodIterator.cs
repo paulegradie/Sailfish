@@ -1,40 +1,43 @@
-﻿using Serilog;
+﻿using System.Collections.Generic;
+using System.Threading.Tasks;
+using Serilog;
 
-namespace VeerPerforma.Execution;
-
-public class MethodIterator : IMethodIterator
+namespace VeerPerforma.Execution
 {
-    private readonly ILogger logger;
-
-    public MethodIterator(ILogger logger)
+    public class MethodIterator : IMethodIterator
     {
-        this.logger = logger;
-    }
+        private readonly ILogger logger;
 
-    private async Task WarmupIterations(TestInstanceContainer testInstanceContainer)
-    {
-        for (var i = 0; i < testInstanceContainer.NumWarmupIterations; i++)
+        public MethodIterator(ILogger logger)
         {
-            await testInstanceContainer.Invocation.IterationSetup();
-            await testInstanceContainer.Invocation.ExecutionMethod();
-            await testInstanceContainer.Invocation.IterationTearDown();
-        }
-    }
-
-    public async Task<List<string>> IterateMethodNTimesAsync(TestInstanceContainer testInstanceContainer)
-    {
-        await WarmupIterations(testInstanceContainer);
-
-        var messages = new List<string>();
-        for (var i = 0; i < testInstanceContainer.NumIterations; i++)
-        {
-            await testInstanceContainer.Invocation.IterationSetup();
-
-            await testInstanceContainer.Invocation.ExecutionMethod();
-
-            await testInstanceContainer.Invocation.IterationTearDown();
+            this.logger = logger;
         }
 
-        return messages; // TODO: use this?
+        public async Task<List<string>> IterateMethodNTimesAsync(TestInstanceContainer testInstanceContainer)
+        {
+            await WarmupIterations(testInstanceContainer);
+
+            var messages = new List<string>();
+            for (var i = 0; i < testInstanceContainer.NumIterations; i++)
+            {
+                await testInstanceContainer.Invocation.IterationSetup();
+
+                await testInstanceContainer.Invocation.ExecutionMethod();
+
+                await testInstanceContainer.Invocation.IterationTearDown();
+            }
+
+            return messages; // TODO: use this?
+        }
+
+        private async Task WarmupIterations(TestInstanceContainer testInstanceContainer)
+        {
+            for (var i = 0; i < testInstanceContainer.NumWarmupIterations; i++)
+            {
+                await testInstanceContainer.Invocation.IterationSetup();
+                await testInstanceContainer.Invocation.ExecutionMethod();
+                await testInstanceContainer.Invocation.IterationTearDown();
+            }
+        }
     }
 }

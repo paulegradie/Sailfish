@@ -1,19 +1,20 @@
 ﻿using Autofac;
 
-namespace VeerPerforma.Tool.Framework.DIContainer;
-
-public static class ContainerConfiguration
+namespace VeerPerforma.Tool.Framework.DIContainer
 {
-    public static IContainer CompositionRoot()
+    public static class ContainerConfiguration
     {
-        var builder = new ContainerBuilder();
-        builder = CustomizeContainer(builder);
-        builder.RegisterType<VeerPerformaExecutor>();
-        return builder.Build();
-    }
+        public static IContainer CompositionRoot()
+        {
+            var builder = new ContainerBuilder();
+            builder = CustomizeContainer(builder);
+            builder.RegisterType<VeerPerformaExecutor>();
+            return builder.Build();
+        }
 
-    private static ContainerBuilder CustomizeContainer(ContainerBuilder builder)
-    {
-        return builder;
+        private static ContainerBuilder CustomizeContainer(ContainerBuilder builder)
+        {
+            return builder;
+        }
     }
 }

@@ -1,20 +1,22 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Test.API.Controllers.Base;
 
-namespace Test.API.Controllers;
-
-public class CountToTenMillionController : VeerBaseController
+namespace Test.API.Controllers
 {
-    public const string Route = "million";
-    [HttpGet(Route)]
-    public string CountToAMillion()
+    public class CountToTenMillionController : VeerBaseController
     {
-        var start = 0;
-        do
-        {
-            start++;
-        } while (start < 1_000_000);
+        public const string Route = "million";
 
-        return start.ToString();
+        [HttpGet(Route)]
+        public string CountToAMillion()
+        {
+            var start = 0;
+            do
+            {
+                start++;
+            } while (start < 1_000_000);
+
+            return start.ToString();
+        }
     }
 }

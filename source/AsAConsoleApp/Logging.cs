@@ -1,60 +1,58 @@
-﻿using Serilog;
+﻿using System.IO;
+using System.Linq;
+using Serilog;
 using Serilog.Core;
 
-namespace AsAConsoleApp;
-
-public static class Logging
+namespace AsAConsoleApp
 {
-    public static Logger CreateLogger(string fileName)
+    public static class Logging
     {
-        var currentDirInfo = new DirectoryInfo(Directory.GetCurrentDirectory());
-        var logfileDirName = "ConsoleAppLogs";
-
-        var projectRoot = FindProjectRootDir(currentDirInfo, 5);
-
-        var logDirPath = projectRoot is null
-            ? Path.Combine(".", logfileDirName)
-            : Path.Combine(projectRoot.FullName, logfileDirName);
-
-        return new LoggerConfiguration()
-            .WriteTo.File(Path.Combine(logDirPath, fileName))
-            .WriteTo.Seq("http://localhost:5341")
-            .CreateLogger();
-    }
-
-    public static DirectoryInfo? FindProjectRootDir(DirectoryInfo? currentDirectory, int maxParentDirLevel)
-    {
-        if (maxParentDirLevel == 0) return null; // try and stave off disaster
-        if (currentDirectory is null) return null;
-
-        var csprojFile = currentDirectory.GetFiles("*.csproj").SingleOrDefault();
-        if (csprojFile is null)
+        public static Logger CreateLogger(string fileName)
         {
-            if (currentDirectory.ThereIsAParentDirectory(out var parentDir))
+            var currentDirInfo = new DirectoryInfo(Directory.GetCurrentDirectory());
+            var logfileDirName = "ConsoleAppLogs";
+
+            var projectRoot = FindProjectRootDir(currentDirInfo, 5);
+
+            var logDirPath = projectRoot is null
+                ? Path.Combine(".", logfileDirName)
+                : Path.Combine(projectRoot.FullName, logfileDirName);
+
+            return new LoggerConfiguration()
+                .WriteTo.File(Path.Combine(logDirPath, fileName))
+                .WriteTo.Seq("http://localhost:5341")
+                .CreateLogger();
+        }
+
+        public static DirectoryInfo? FindProjectRootDir(DirectoryInfo? currentDirectory, int maxParentDirLevel)
+        {
+            if (maxParentDirLevel == 0) return null; // try and stave off disaster
+            if (currentDirectory is null) return null;
+
+            var csprojFile = currentDirectory.GetFiles("*.csproj").SingleOrDefault();
+            if (csprojFile is null)
             {
-                return FindProjectRootDir(parentDir, maxParentDirLevel - 1);
-            }
-            else
-            {
+                if (currentDirectory.ThereIsAParentDirectory(out var parentDir))
+                    return FindProjectRootDir(parentDir, maxParentDirLevel - 1);
                 return null;
             }
-        }
 
-        return csprojFile.Directory;
+            return csprojFile.Directory;
+        }
     }
-}
 
-public static class ExtensionMethods
-{
-    public static bool ThereIsAParentDirectory(this DirectoryInfo dir, out DirectoryInfo parentDir)
+    public static class ExtensionMethods
     {
-        if (dir.Parent is not null)
+        public static bool ThereIsAParentDirectory(this DirectoryInfo dir, out DirectoryInfo parentDir)
         {
-            parentDir = dir.Parent;
-            return dir.Parent.Exists;
-        }
+            if (dir.Parent is not null)
+            {
+                parentDir = dir.Parent;
+                return dir.Parent.Exists;
+            }
 
-        parentDir = dir;
-        return false;
+            parentDir = dir;
+            return false;
+        }
     }
 }
