@@ -11,6 +11,7 @@ namespace UsingTheIDE
 
         [IterationVariable(1_000_000, 4_000_000)]
         public int VariableB { get; set; }
+
         [IterationVariable(1, 1, 1)]
         public int VariableC { get; set; }
 

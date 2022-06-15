@@ -75,7 +75,7 @@ public static class logger
                 messageLine = messageLine.Replace(original, replacement);
             }
 
-            writer.WriteLine(messageLine);
+            writer.WriteLine(" - " + messageLine);
             writer.Flush();
 
             mutex.ReleaseMutex();
