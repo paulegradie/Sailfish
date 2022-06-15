@@ -26,14 +26,14 @@ namespace VeerPerforma.TestAdapter.Utils
             var propertyNamesAndCombos = parameterGridCreator.GenerateParameterGrid(bag.Type);
             var propertyNames = propertyNamesAndCombos.Item1.ToArray();
             var combos = propertyNamesAndCombos.Item2;
+
             var contentLines = bag.CsFileContentString.Split("\r");
 
             var testCaseSets = new List<TestCase>();
             foreach (var method in methods)
             {
                 var methodNameLine = GetMethodNameLine(contentLines, method);
-                var randomId = Guid.NewGuid();
-                var testCaseSet = combos.Select(CreateTestCase(bag, sourceDll, method, propertyNames, methodNameLine, randomId));
+                var testCaseSet = combos.Select(CreateTestCase(bag, sourceDll, method, propertyNames, methodNameLine));
                 testCaseSets.AddRange(testCaseSet);
             }
 
@@ -45,14 +45,14 @@ namespace VeerPerforma.TestAdapter.Utils
             string sourceDll,
             MethodInfo method,
             string[] propertyNames,
-            int methodNameLine,
-            Guid randomId)
+            int methodNameLine)
         {
+            var randomId = Guid.NewGuid();
             return variablesForEachPropertyInOrder =>
             {
                 logger.Verbose("Param set for {Method}: {ParamSet}", method.Name, string.Join(", ", variablesForEachPropertyInOrder.Select(x => x.ToString())));
                 var paramsDisplayName = DisplayNameHelper.CreateParamsDisplay(propertyNames, variablesForEachPropertyInOrder);
-                var fullyQualifiedName = CreateFullyQualifiedName(bag, paramsDisplayName);
+                var fullyQualifiedName = CreateFullyQualifiedName(bag);
 
                 logger.Verbose("This is the file path!: {FilePath}", bag.CsFilePath);
                 var testCase = new TestCase(fullyQualifiedName, TestExecutor.ExecutorUri, sourceDll) // a test case is a method
@@ -68,9 +68,9 @@ namespace VeerPerforma.TestAdapter.Utils
             };
         }
 
-        private static string CreateFullyQualifiedName(DataBag bag, string paramsDisplayName)
+        private static string CreateFullyQualifiedName(DataBag bag)
         {
-            return string.Join(".", Assembly.CreateQualifiedName(Assembly.GetCallingAssembly().ToString(), bag.Type.Name), paramsDisplayName);
+            return Assembly.CreateQualifiedName(Assembly.GetCallingAssembly().ToString(), bag.Type.Name);
         }
 
         private int GetMethodNameLine(string[] fileLines, MethodInfo method)

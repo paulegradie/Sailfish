@@ -39,7 +39,18 @@ namespace VeerPerforma.TestAdapter.Utils
                 foreach (var container in testInstanceContainers)
                 {
                     var tc = testCases.SingleOrDefault(x => x.DisplayName == container.DisplayName); // Can we set a common Id property instead of the random GUID?
-                    if (tc is null) throw new Exception($"Somehow a test case wasn't found for {container.DisplayName}");
+                    if (tc is null)
+                    {
+                        logger.Verbose("\r----FATAL ERROR ENCOUNTERED!! ----\r");
+                        logger.Verbose($"TestInstanceContainer: {container.DisplayName}");
+                        logger.Verbose("\rThe following testCases were available in this instance:\r");
+                        foreach (var testCase in testCases)
+                        {
+                            logger.Verbose("{DisplayName}, {Source}, {CodeFilePath}, {FQN}, {ToStringAttempt}", testCase.DisplayName, testCase.Source, testCase.CodeFilePath, testCase.FullyQualifiedName, testCase.ToString());
+                        }
+                        
+                        throw new Exception($"Somehow a test case wasn't found for {container.DisplayName}");
+                    }
                     executor.Execute(container, (instanceContainer, result) => { TestResultCallback(frameworkHandle, tc, instanceContainer, result); }).Wait(); // this is async tho
                 }
             }

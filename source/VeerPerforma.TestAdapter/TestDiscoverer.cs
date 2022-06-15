@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.Adapter;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.Logging;
@@ -8,7 +10,6 @@ namespace VeerPerforma.TestAdapter
 {
     // https://github.com/Microsoft/vstest-docs/blob/main/RFCs/0004-Adapter-Extensibility.md
     [FileExtension(".dll")]
-    [FileExtension(".cs")]
     [DefaultExecutorUri(TestExecutor.ExecutorUriString)]
     public class TestDiscoverer : ITestDiscoverer
     {
@@ -18,10 +19,17 @@ namespace VeerPerforma.TestAdapter
             logger.SendMessage(TestMessageLevel.Warning, "THIS IS A WARNING");
             logger.SendMessage(TestMessageLevel.Error, "OOPSIE - THIS IS AN ERROR");
 
-
+            containers = containers.Where(x => !x.StartsWith("VeerPerforma.TestAdapter"));
             
-            var testCases = new CustomTestDiscovery().DiscoverTests(containers);
-            foreach (var testCase in testCases) discoverySink.SendTestCase(testCase);
+            try
+            {
+                var testCases = new TestDiscovery().DiscoverTests(containers);
+                foreach (var testCase in testCases) discoverySink.SendTestCase(testCase);
+            }
+            catch (Exception ex)
+            {
+                logger.SendMessage(TestMessageLevel.Error, $"Encountered a bonkers error!: -- {ex.Message}");
+            }
         }
     }
 }

@@ -15,8 +15,8 @@
         <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.2.0" />
         <PackageReference Include="Microsoft.TestPlatform.TestHost" Version="17.2.0" />
         <PackageReference Include="Serilog" Version="2.11.0" />
-        <PackageReference Include="VeerPerforma" Version="0.0.98" />
-        <PackageReference Include="VeerPerforma.TestAdapter" Version="0.0.98" />
+        <PackageReference Include="VeerPerforma" Version="0.0.102" />
+        <PackageReference Include="VeerPerforma.TestAdapter" Version="0.0.102" />
     </ItemGroup>
 
     <ItemGroup>

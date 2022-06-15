@@ -1,11 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel;
 
 namespace VeerPerforma.TestAdapter.Utils
 {
-    internal class CustomTestDiscovery
+    internal class TestDiscovery
     {
         private readonly DirectoryRecursion dirRecursor;
         private readonly FileIo fileIo;
@@ -13,7 +14,7 @@ namespace VeerPerforma.TestAdapter.Utils
         private readonly TestFilter testFilter;
         private readonly TypeLoader typeLoader;
 
-        public CustomTestDiscovery()
+        public TestDiscovery()
         {
             fileIo = new FileIo();
             testFilter = new TestFilter();
@@ -22,25 +23,33 @@ namespace VeerPerforma.TestAdapter.Utils
             typeLoader = new TypeLoader();
         }
 
-        public IEnumerable<TestCase> DiscoverTests(IEnumerable<string> sourceDlls)
+        public IEnumerable<TestCase> DiscoverTests(IEnumerable<string> sourceDllPaths)
         {
-            var sourceDllPaths = sourceDlls.ToList();
-            var referenceFile = sourceDllPaths.First();
-
             var testCases = new List<TestCase>();
-            foreach (var sourceDllPath in sourceDllPaths)
+            foreach (var sourceDllPath in sourceDllPaths.Distinct())
             {
                 var project = dirRecursor.RecurseUpwardsUntilFileIsFound(
                     ".csproj",
-                    referenceFile,
-                    5);
+                    sourceDllPath,
+                    10);
 
-                var perfTestTypes = typeLoader.LoadTypes(sourceDllPath);
+                Type[] perfTestTypes;
+                try
+                {
+                    perfTestTypes = typeLoader.LoadTypes(sourceDllPath);
+                }
+                catch
+                {
+                    continue;
+                }
 
-                var correspondingCsFiles = fileIo.FindAllFilesRecursively(
+                if (perfTestTypes.Length == 0) continue;
+
+                var correspondingCsFiles = dirRecursor.FindAllFilesRecursively(
                     project,
                     "*.cs",
-                    s => fileIo.FilePathDoesNotContainBinOrObjDirs(s));
+                    s => DirectoryRecursion.FileSearchFilters.FilePathDoesNotContainBinOrObjDirs(s));
+                if (correspondingCsFiles.Count == 0) continue;
 
                 var bags = new List<DataBag>();
                 foreach (var csFilePath in correspondingCsFiles)
@@ -48,11 +57,11 @@ namespace VeerPerforma.TestAdapter.Utils
                     var fileContent = fileIo.ReadFileContents(csFilePath);
                     var perfTypesInThisCsFile = testFilter.FindTestTypesInTheCurrentFile(fileContent, perfTestTypes);
 
-                    foreach (var perfTestType in perfTypesInThisCsFile) bags.Add(new DataBag(csFilePath, fileContent, perfTestType));
+                    foreach (var perfTestType in perfTypesInThisCsFile)
+                        bags.Add(new DataBag(csFilePath, fileContent, perfTestType));
                 }
 
-                if (bags.Count < 1) throw new Exception("Failed to find any test type file paths");
-
+                if (bags.Count == 0) continue;
                 foreach (var bag in bags)
                 {
                     var cases = testCaseCreator.AssembleTestCases(bag, sourceDllPath);

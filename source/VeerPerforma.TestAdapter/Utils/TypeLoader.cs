@@ -21,14 +21,12 @@ namespace VeerPerforma.TestAdapter.Utils
             return types;
         }
 
-        public Type[] CollectTestTypesFromAssembly(Assembly assembly)
+        private Type[] CollectTestTypesFromAssembly(Assembly assembly)
         {
             var perfTestTypes = assembly
                 .GetTypes()
                 .Where(x => x.HasAttribute<VeerPerformaAttribute>())
                 .ToArray();
-
-            if (perfTestTypes.Length < 1) throw new Exception("No perf test types found");
 
             logger.Verbose("\rTest Types Discovered in {Assembly}:\r", assembly.FullName ?? "Couldn't Find the assembly name property");
             foreach (var testType in perfTestTypes) logger.Verbose("--- Perf tests: {0}", testType.Name);
@@ -38,9 +36,9 @@ namespace VeerPerforma.TestAdapter.Utils
 
         private Assembly LoadAssemblyFromDll(string dllPath)
         {
-            return Assembly.LoadFile(dllPath);
-            // AppDomain.CurrentDomain.Load(assembly.GetName()); // is this necessary?
-            // return assembly;
+            var assembly = Assembly.LoadFile(dllPath);
+            AppDomain.CurrentDomain.Load(assembly.GetName()); // is this necessary?
+            return assembly;
         }
     }
 }

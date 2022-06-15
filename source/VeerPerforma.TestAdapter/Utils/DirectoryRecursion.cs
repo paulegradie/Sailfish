@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using VeerPerforma.Utils;
@@ -45,6 +46,35 @@ namespace VeerPerforma.TestAdapter.Utils
 
             parentDir = dir;
             return false;
+        }
+
+        public List<string> FindAllFilesRecursively(FileInfo originReferenceFile, string searchPattern, Func<string, bool>? where = null)
+        {
+            var filePaths = Directory.GetFiles(
+                Path.GetDirectoryName(originReferenceFile.FullName)!,
+                searchPattern,
+                SearchOption.AllDirectories);
+
+            if (where is not null) filePaths = filePaths.Where(where).ToArray();
+
+            foreach (var filePath in filePaths)
+            {
+                logger.Verbose($"Corresponding {searchPattern} files in this assembly project");
+                logger.Verbose("--- {filePath}", filePath);
+            }
+
+            return filePaths.ToList();
+        }
+
+
+        
+        public static class FileSearchFilters
+        {
+            public static bool FilePathDoesNotContainBinOrObjDirs(string path)
+            {
+                var sep = Path.DirectorySeparatorChar;
+                return !(path.Contains($"{sep}bin{sep}") || path.Contains($"{sep}obj{sep}"));
+            }
         }
     }
 }

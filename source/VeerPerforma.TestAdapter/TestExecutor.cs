@@ -19,7 +19,7 @@ namespace VeerPerforma.TestAdapter
         public void RunTests(IEnumerable<string> sourceDlls, IRunContext runContext, IFrameworkHandle frameworkHandle)
         {
             logger.Verbose("We are hitting RunTests(IEnumerable<string> sourceDlls,");
-            var testCases = new CustomTestDiscovery().DiscoverTests(sourceDlls);
+            var testCases = new TestDiscovery().DiscoverTests(sourceDlls);
             new TestExecution().ExecuteTests(testCases.ToList(), runContext, frameworkHandle);
         }
 

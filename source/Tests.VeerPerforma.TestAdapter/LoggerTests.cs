@@ -1,14 +1,16 @@
 using System.IO;
 using System.Linq;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Shouldly;
 using VeerPerforma.Utils;
-using Xunit;
+
 
 namespace Tests.VeerPerforma.TestAdapter
 {
+    [TestClass]
     public class LoggerTests
     {
-        [Fact]
+        [TestMethod]
         public void ReplaceWorksCorrectly()
         {
             var tempFile = Path.GetTempFileName();
@@ -21,8 +23,8 @@ namespace Tests.VeerPerforma.TestAdapter
             var lines = reader.ReadToEnd().Split("\r").Select(x => x.Trim()).Where(x => !string.IsNullOrEmpty(x)).ToArray();
 
             lines.Length.ShouldBe(2);
-            lines.First().ShouldBe("What an amazing logger");
-            lines.Last().ShouldBe("This is a terrible test of silly the horrigle logging system");
+            lines.First().ShouldBe("- What an amazing logger");
+            lines.Last().ShouldBe("- This is a terrible test of silly the horrigle logging system");
         }
     }
 }
