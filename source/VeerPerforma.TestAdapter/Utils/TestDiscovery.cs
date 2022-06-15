@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel;
-using VeerPerforma.Utils;
 
 namespace VeerPerforma.TestAdapter.Utils
 {
@@ -26,8 +25,6 @@ namespace VeerPerforma.TestAdapter.Utils
         public IEnumerable<TestCase> DiscoverTests(IEnumerable<string> sourceDlls)
         {
             var sourceDllPaths = sourceDlls.ToList();
-            logger.Verbose("Entering into the DiscoverTests method!");
-            logger.Verbose("Processing source .dlls: {dlls}", string.Join(", ", sourceDllPaths));
             var referenceFile = sourceDllPaths.First();
 
             var testCases = new List<TestCase>();
@@ -44,9 +41,6 @@ namespace VeerPerforma.TestAdapter.Utils
                     project,
                     "*.cs",
                     s => fileIo.FilePathDoesNotContainBinOrObjDirs(s));
-
-
-                logger.Verbose("Beginning assembly of test cases!");
 
                 var bags = new List<DataBag>();
                 foreach (var csFilePath in correspondingCsFiles)

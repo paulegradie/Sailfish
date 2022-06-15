@@ -32,19 +32,25 @@ namespace VeerPerforma.TestAdapter.Utils
             foreach (var method in methods)
             {
                 var methodNameLine = GetMethodNameLine(contentLines, method);
-                var testCaseSet = combos.Select(CreateTestCase(bag, sourceDll, method, propertyNames, methodNameLine));
+                var randomId = Guid.NewGuid();
+                var testCaseSet = combos.Select(CreateTestCase(bag, sourceDll, method, propertyNames, methodNameLine, randomId));
                 testCaseSets.AddRange(testCaseSet);
             }
 
             return testCaseSets;
         }
 
-        private Func<int[], TestCase> CreateTestCase(DataBag bag, string sourceDll, MethodInfo method, string[] propertyNames, int methodNameLine)
+        private Func<int[], TestCase> CreateTestCase(
+            DataBag bag,
+            string sourceDll,
+            MethodInfo method,
+            string[] propertyNames,
+            int methodNameLine,
+            Guid randomId)
         {
             return variablesForEachPropertyInOrder =>
             {
                 logger.Verbose("Param set for {Method}: {ParamSet}", method.Name, string.Join(", ", variablesForEachPropertyInOrder.Select(x => x.ToString())));
-                var randomId = Guid.NewGuid();
                 var paramsDisplayName = DisplayNameHelper.CreateParamsDisplay(propertyNames, variablesForEachPropertyInOrder);
                 var fullyQualifiedName = CreateFullyQualifiedName(bag, paramsDisplayName);
 

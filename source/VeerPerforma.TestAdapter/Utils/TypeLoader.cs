@@ -11,8 +11,7 @@ namespace VeerPerforma.TestAdapter.Utils
     {
         public Type[] LoadTypes(IEnumerable<string> sourceDlls)
         {
-            var types = sourceDlls.SelectMany(dll => LoadTypes(dll));
-            return types.ToArray();
+            return sourceDlls.SelectMany(dll => LoadTypes(dll)).ToArray();
         }
 
         public Type[] LoadTypes(string sourceDll)
@@ -24,14 +23,14 @@ namespace VeerPerforma.TestAdapter.Utils
 
         public Type[] CollectTestTypesFromAssembly(Assembly assembly)
         {
-            var perfTestTypes = assembly // mvp only supports test discovery in current assembly 
+            var perfTestTypes = assembly
                 .GetTypes()
                 .Where(x => x.HasAttribute<VeerPerformaAttribute>())
                 .ToArray();
 
             if (perfTestTypes.Length < 1) throw new Exception("No perf test types found");
 
-            logger.Verbose("\rTests Types Discovered:\r");
+            logger.Verbose("\rTest Types Discovered in {Assembly}:\r", assembly.FullName ?? "Couldn't Find the assembly name property");
             foreach (var testType in perfTestTypes) logger.Verbose("--- Perf tests: {0}", testType.Name);
 
             return perfTestTypes;
@@ -39,9 +38,9 @@ namespace VeerPerforma.TestAdapter.Utils
 
         private Assembly LoadAssemblyFromDll(string dllPath)
         {
-            var assembly = Assembly.LoadFile(dllPath);
-            AppDomain.CurrentDomain.Load(assembly.GetName()); // is this necessary?
-            return assembly;
+            return Assembly.LoadFile(dllPath);
+            // AppDomain.CurrentDomain.Load(assembly.GetName()); // is this necessary?
+            // return assembly;
         }
     }
 }

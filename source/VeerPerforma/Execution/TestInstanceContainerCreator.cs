@@ -6,13 +6,13 @@ using Autofac;
 
 namespace VeerPerforma.Execution
 {
-    public class TestObjectCreator : ITestObjectCreator
+    public class TestInstanceContainerCreator : ITestInstanceContainerCreator
     {
         private readonly IMethodOrganizer methodOrganizer;
         private readonly IParameterGridCreator parameterGridCreator;
         private readonly ITypeResolver typeResolver;
 
-        public TestObjectCreator(ITypeResolver typeResolver, IParameterGridCreator parameterGridCreator, IMethodOrganizer methodOrganizer)
+        public TestInstanceContainerCreator(ITypeResolver typeResolver, IParameterGridCreator parameterGridCreator, IMethodOrganizer methodOrganizer)
         {
             this.typeResolver = typeResolver;
             this.parameterGridCreator = parameterGridCreator;

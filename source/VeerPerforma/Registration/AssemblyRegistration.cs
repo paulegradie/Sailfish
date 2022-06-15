@@ -41,7 +41,7 @@ namespace VeerPerforma.Registration
             serviceCollection.AddTransient<ITestCollector, TestCollector>();
             serviceCollection.AddTransient<IParameterCombinator, ParameterCombinator>();
             serviceCollection.AddTransient<IParameterGridCreator, ParameterGridCreator>();
-            serviceCollection.AddTransient<ITestObjectCreator, TestObjectCreator>();
+            serviceCollection.AddTransient<ITestInstanceContainerCreator, TestInstanceContainerCreator>();
             serviceCollection.AddTransient<ITypeResolver, TypeResolver>();
             serviceCollection.AddTransient<IMethodOrganizer, MethodOrganizer>();
             serviceCollection.AddTransient<IMethodIterator, MethodIterator>();
@@ -67,7 +67,7 @@ namespace VeerPerforma.Registration
             builder.RegisterType<TestCollector>().As<ITestCollector>();
             builder.RegisterType<ParameterCombinator>().As<IParameterCombinator>();
             builder.RegisterType<ParameterGridCreator>().As<IParameterGridCreator>();
-            builder.RegisterType<TestObjectCreator>().As<ITestObjectCreator>();
+            builder.RegisterType<TestInstanceContainerCreator>().As<ITestInstanceContainerCreator>();
             builder.RegisterType<TypeResolver>().As<ITypeResolver>();
             builder.RegisterType<MethodOrganizer>().As<IMethodOrganizer>();
             builder.RegisterType<MethodIterator>().As<IMethodIterator>();

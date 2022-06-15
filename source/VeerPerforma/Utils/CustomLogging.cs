@@ -19,7 +19,7 @@ namespace VeerPerforma.Utils
 
             try
             {
-                DoWrite(filePath, messageLine, properties);
+                DoWrite(filePath, "\r" + messageLine + "\r", properties);
             }
             catch (Exception ex)
             {

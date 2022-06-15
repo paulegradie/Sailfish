@@ -13,7 +13,7 @@ namespace VeerPerforma.TestAdapter.Utils
     internal class TestExecution
     {
         private readonly IVeerTestExecutor executor;
-        private readonly ITestObjectCreator objectCreator;
+        private readonly ITestInstanceContainerCreator instanceContainerCreator;
         private readonly TypeLoader typeLoader;
 
         public TestExecution()
@@ -21,7 +21,7 @@ namespace VeerPerforma.TestAdapter.Utils
             typeLoader = new TypeLoader();
             var container = CompositionRoot();
             executor = container.Resolve<IVeerTestExecutor>();
-            objectCreator = container.Resolve<ITestObjectCreator>();
+            instanceContainerCreator = container.Resolve<ITestInstanceContainerCreator>();
         }
 
         public void ExecuteTests(List<TestCase> testCases, IRunContext runContext, IFrameworkHandle frameworkHandle)
@@ -30,13 +30,12 @@ namespace VeerPerforma.TestAdapter.Utils
 
             if (testCases.Count == 0) return;
 
-            var sourceDlls = testCases.Select(x => x.Source);
+            var sourceDlls = testCases.Select(x => x.Source).Distinct();
             var perfTestTypes = typeLoader.LoadTypes(sourceDlls);
 
-            // var totalTests = new List<TestContainerAndTestCase>();
             foreach (var perfTestType in perfTestTypes)
             {
-                var testInstanceContainers = objectCreator.CreateTestContainerInstances(perfTestType);
+                var testInstanceContainers = instanceContainerCreator.CreateTestContainerInstances(perfTestType);
                 foreach (var container in testInstanceContainers)
                 {
                     var tc = testCases.SingleOrDefault(x => x.DisplayName == container.DisplayName); // Can we set a common Id property instead of the random GUID?
@@ -67,7 +66,6 @@ namespace VeerPerforma.TestAdapter.Utils
             testResult.StartTime = result.PerformanceTimerResults.GlobalStart;
             testResult.EndTime = result.PerformanceTimerResults.GlobalStop;
             testResult.Duration = result.PerformanceTimerResults.GlobalDuration;
-
             logger.Verbose("Test Executed -- recording and sending the result to the framework handle - {TestResult}", testResult.ToString());
             frameworkHandle.RecordResult(testResult);
         }
@@ -78,17 +76,5 @@ namespace VeerPerforma.TestAdapter.Utils
             builder.RegisterVeerPerformaTypes();
             return builder.Build();
         }
-    }
-
-    public class TestContainerAndTestCase
-    {
-        public TestContainerAndTestCase(TestCase testCase, TestInstanceContainer testInstanceContainer)
-        {
-            TestCase = testCase;
-            TestInstanceContainer = testInstanceContainer;
-        }
-
-        public TestCase TestCase { get; }
-        public TestInstanceContainer TestInstanceContainer { get; }
     }
 }

@@ -9,16 +9,16 @@ namespace VeerPerforma.Execution
     {
         private readonly ILogger logger;
         private readonly IMethodIterator methodIterator;
-        private readonly ITestObjectCreator testObjectCreator;
+        private readonly ITestInstanceContainerCreator testInstanceContainerCreator;
 
         public VeerTestExecutor(
             ILogger logger,
-            ITestObjectCreator testObjectCreator,
+            ITestInstanceContainerCreator testInstanceContainerCreator,
             IMethodIterator methodIterator
         )
         {
             this.logger = logger;
-            this.testObjectCreator = testObjectCreator;
+            this.testInstanceContainerCreator = testInstanceContainerCreator;
             this.methodIterator = methodIterator;
         }
 
@@ -38,7 +38,7 @@ namespace VeerPerforma.Execution
 
         public async Task Execute(Type test, Action<TestInstanceContainer, TestExecutionResult>? callback = null)
         {
-            var testInstanceContainers = testObjectCreator.CreateTestContainerInstances(test);
+            var testInstanceContainers = testInstanceContainerCreator.CreateTestContainerInstances(test);
             await Execute(testInstanceContainers);
         }
 

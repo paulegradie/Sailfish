@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace VeerPerforma.Execution
 {
-    public interface ITestObjectCreator
+    public interface ITestInstanceContainerCreator
     {
         List<TestInstanceContainer> CreateTestContainerInstances(Type test);
     }
