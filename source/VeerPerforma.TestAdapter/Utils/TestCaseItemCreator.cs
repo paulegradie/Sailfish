@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Text.RegularExpressions;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel;
 using VeerPerforma.Attributes;
 using VeerPerforma.Execution;
@@ -27,12 +28,13 @@ namespace VeerPerforma.TestAdapter.Utils
             var propertyNames = propertyNamesAndCombos.Item1.ToArray();
             var combos = propertyNamesAndCombos.Item2;
 
-            var contentLines = bag.CsFileContentString.Split("\r");
+            var contentLines = LineSplitter.SplitFileIntoLines(bag.CsFileContentString);
 
             var testCaseSets = new List<TestCase>();
             foreach (var method in methods)
             {
                 var methodNameLine = GetMethodNameLine(contentLines, method);
+                if (methodNameLine == 0) continue;
                 var testCaseSet = combos.Select(CreateTestCase(bag, sourceDll, method, propertyNames, methodNameLine));
                 testCaseSets.AddRange(testCaseSet);
             }
@@ -78,7 +80,7 @@ namespace VeerPerforma.TestAdapter.Utils
             var lineNumber = fileLines
                 .Select(
                     (line, index) => { return line.Contains(method.Name + "()") ? index : -1; })
-                .Single(x => x >= 0);
+                .SingleOrDefault(x => x >= 0);
 
             logger.Verbose(
                 "Method discovered on line {lineNumber} with signature: {siggy}",

@@ -15,9 +15,6 @@ namespace VeerPerforma.TestAdapter
     {
         public void DiscoverTests(IEnumerable<string> containers, IDiscoveryContext discoveryContext, IMessageLogger logger, ITestCaseDiscoverySink discoverySink)
         {
-            logger.SendMessage(TestMessageLevel.Informational, "THIS IS A TEST MESSAGE LEVEL");
-            logger.SendMessage(TestMessageLevel.Warning, "THIS IS A WARNING");
-            logger.SendMessage(TestMessageLevel.Error, "OOPSIE - THIS IS AN ERROR");
 
             containers = containers.Where(x => !x.StartsWith("VeerPerforma.TestAdapter"));
             

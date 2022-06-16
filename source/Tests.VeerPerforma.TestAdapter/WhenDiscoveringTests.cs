@@ -15,7 +15,7 @@ public class WhenDiscoveringTests
         var allDllsInThisProject = DllFinder.FindAllDllsRecursively();
 
         // Assumes there is one valid test file.
-        var discoverer = new TestDiscovery().DiscoverTests(allDllsInThisProject).ToList();
-        discoverer.Count.ShouldBe(6);
+        var testCases = new TestDiscovery().DiscoverTests(allDllsInThisProject).ToList();
+        testCases.Count.ShouldBe(6);
     }
 }

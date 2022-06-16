@@ -42,14 +42,15 @@ namespace VeerPerforma.TestAdapter.Utils
                     if (tc is null)
                     {
                         logger.Verbose("\r----FATAL ERROR ENCOUNTERED!! ----\r");
-                        logger.Verbose($"TestInstanceContainer: {container.DisplayName}");
+                        logger.Verbose("TestInstanceContainer: {ContainerName}", container.DisplayName);
                         logger.Verbose("\rThe following testCases were available in this instance:\r");
                         foreach (var testCase in testCases)
                         {
-                            logger.Verbose("{DisplayName}, {Source}, {CodeFilePath}, {FQN}, {ToStringAttempt}", testCase.DisplayName, testCase.Source, testCase.CodeFilePath, testCase.FullyQualifiedName, testCase.ToString());
+                            logger.Verbose("{DisplayName}, {Source}, {CodeFilePath}, {FQN}", testCase.DisplayName, testCase.Source, testCase.CodeFilePath, testCase.FullyQualifiedName);
                         }
-                        
-                        throw new Exception($"Somehow a test case wasn't found for {container.DisplayName}");
+
+                        continue;
+                        // throw new Exception($"Somehow a test case wasn't found for {container.DisplayName}");
                     }
                     executor.Execute(container, (instanceContainer, result) => { TestResultCallback(frameworkHandle, tc, instanceContainer, result); }).Wait(); // this is async tho
                 }
