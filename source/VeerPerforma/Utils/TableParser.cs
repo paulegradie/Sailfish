@@ -6,6 +6,8 @@ using System.Linq.Expressions;
 using System.Reflection;
 using System.Text;
 
+/// This is not my code.
+/// https://github.com/Robert-McGinley/TableParser
 namespace VeerPerforma.Utils
 {
     public static class TableParserExtensions
