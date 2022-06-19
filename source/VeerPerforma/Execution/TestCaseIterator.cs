@@ -4,17 +4,19 @@ using Serilog;
 
 namespace VeerPerforma.Execution
 {
-    public class MethodIterator : IMethodIterator
+    public class TestCaseIterator : ITestCaseIterator
     {
         private readonly ILogger logger;
 
-        public MethodIterator(ILogger logger)
+        public TestCaseIterator(ILogger logger)
         {
             this.logger = logger;
         }
 
-        public async Task<List<string>> IterateMethodNTimesAsync(TestInstanceContainer testInstanceContainer)
+        public async Task<List<string>> Iterate(TestInstanceContainer testInstanceContainer)
         {
+            await testInstanceContainer.Invocation.GlobalSetup();
+
             await WarmupIterations(testInstanceContainer);
 
             var messages = new List<string>();
@@ -26,6 +28,8 @@ namespace VeerPerforma.Execution
 
                 await testInstanceContainer.Invocation.IterationTearDown();
             }
+
+            await testInstanceContainer.Invocation.GlobalTeardown();
 
             return messages; // TODO: use this?
         }

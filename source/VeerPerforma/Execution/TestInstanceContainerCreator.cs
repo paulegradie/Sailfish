@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using Autofac;
+using VeerPerforma.Statistics;
 
 namespace VeerPerforma.Execution
 {
@@ -12,7 +13,10 @@ namespace VeerPerforma.Execution
         private readonly IParameterGridCreator parameterGridCreator;
         private readonly ITypeResolver typeResolver;
 
-        public TestInstanceContainerCreator(ITypeResolver typeResolver, IParameterGridCreator parameterGridCreator, IMethodOrganizer methodOrganizer)
+        public TestInstanceContainerCreator(
+            ITypeResolver typeResolver,
+            IParameterGridCreator parameterGridCreator,
+            IMethodOrganizer methodOrganizer)
         {
             this.typeResolver = typeResolver;
             this.parameterGridCreator = parameterGridCreator;
@@ -25,13 +29,15 @@ namespace VeerPerforma.Execution
             var instances = CreateInstances(test, combos, propNames);
             var methodInstancePairs = methodOrganizer.FormMethodGroups(instances);
 
+            var executionSettings = test.RetrieveExecutionTestSettings();
+
             var testContainers = new List<TestInstanceContainer>();
             foreach (var pair in methodInstancePairs.Values)
             {
                 if (pair.Count != combos.Length) throw new Exception("Instances and combos for some reason did not match");
                 foreach (var ((method, instance), variableCombo) in pair.Zip(combos))
                 {
-                    var containers = TestInstanceContainer.CreateTestInstance(instance, method, propNames.ToArray(), variableCombo);
+                    var containers = TestInstanceContainer.CreateTestInstance(instance, method, propNames.ToArray(), variableCombo, executionSettings);
                     testContainers.Add(containers);
                 }
             }
@@ -80,6 +86,17 @@ namespace VeerPerforma.Execution
             var instance = Activator.CreateInstance(test, ctorArgs);
             if (instance is null) throw new Exception($"Couldn't create instance of {test.Name}");
             return instance;
+        }
+    }
+
+    public static class ExecutionExtensionMethods
+    {
+        public static ExecutionSettings RetrieveExecutionTestSettings(this Type type)
+        {
+            return new ExecutionSettings()
+            {
+                AsCsv = false
+            };
         }
     }
 }

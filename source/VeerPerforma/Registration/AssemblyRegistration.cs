@@ -3,6 +3,8 @@ using Autofac;
 using Microsoft.Extensions.DependencyInjection;
 using Serilog;
 using VeerPerforma.Execution;
+using VeerPerforma.Presentation;
+using VeerPerforma.Statistics;
 
 namespace VeerPerforma.Registration
 {
@@ -44,7 +46,11 @@ namespace VeerPerforma.Registration
             serviceCollection.AddTransient<ITestInstanceContainerCreator, TestInstanceContainerCreator>();
             serviceCollection.AddTransient<ITypeResolver, TypeResolver>();
             serviceCollection.AddTransient<IMethodOrganizer, MethodOrganizer>();
-            serviceCollection.AddTransient<IMethodIterator, MethodIterator>();
+            serviceCollection.AddTransient<ITestCaseIterator, TestCaseIterator>();
+            serviceCollection.AddTransient<IStatisticsCompiler, StatisticsCompiler>();
+            serviceCollection.AddTransient<ITestResultCompiler, TestResultCompiler>();
+            serviceCollection.AddTransient<ITestResultPresenter, TestResultPresenter>();
+            serviceCollection.AddTransient<IConsoleWriter, ConsoleWriter>();
         }
     }
 
@@ -70,7 +76,11 @@ namespace VeerPerforma.Registration
             builder.RegisterType<TestInstanceContainerCreator>().As<ITestInstanceContainerCreator>();
             builder.RegisterType<TypeResolver>().As<ITypeResolver>();
             builder.RegisterType<MethodOrganizer>().As<IMethodOrganizer>();
-            builder.RegisterType<MethodIterator>().As<IMethodIterator>();
+            builder.RegisterType<TestCaseIterator>().As<ITestCaseIterator>();
+            builder.RegisterType<StatisticsCompiler>().As<IStatisticsCompiler>();
+            builder.RegisterType<TestResultCompiler>().As<ITestResultCompiler>();
+            builder.RegisterType<TestResultPresenter>().As<ITestResultPresenter>();
+            builder.RegisterType<ConsoleWriter>().As<IConsoleWriter>();
         }
     }
 }

@@ -14,6 +14,8 @@ namespace VeerPerforma.TestAdapter
         public const string ExecutorUriString = "executor://veerperformaexecutor/v1";
         public static readonly Uri ExecutorUri = new Uri(ExecutorUriString);
 
+        private readonly object obj = new();
+
         public bool Cancelled;
 
         public void RunTests(IEnumerable<string> sourceDlls, IRunContext runContext, IFrameworkHandle frameworkHandle)
@@ -31,7 +33,10 @@ namespace VeerPerforma.TestAdapter
 
         public void Cancel()
         {
-            Cancelled = true;
+            lock (obj)
+            {
+                Cancelled = true;
+            }
         }
     }
 }

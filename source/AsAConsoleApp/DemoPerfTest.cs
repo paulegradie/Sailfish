@@ -67,6 +67,7 @@ namespace AsAConsoleApp
         [ExecutePerformanceCheck]
         public async Task Other()
         {
+            Thread.Sleep(400);
             await Task.CompletedTask;
             Console.WriteLine("WOW");
         }
