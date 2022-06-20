@@ -12,6 +12,7 @@ namespace VeerPerforma.Attributes
         public VeerPerformaAttribute(int numIterations = 3, int numWarmupIterations = 3)
         {
             NumIterations = numIterations;
+            NumWarmupIterations = numWarmupIterations;
         }
 
         public int NumIterations { get; set; }

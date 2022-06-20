@@ -125,3 +125,18 @@ public class DemoPerfTest : ApiTestBase
 }
 ```
 
+## TODOs
+
+**Differential Analyzer**
+
+The idea idea here is to provide a database schema where analysis results can be tracked. We'll need to keep track of the iterations for these runs so we can compute statistical differences between run A and run B.
+
+When run in this mode, there will have to be a list things to think about:
+
+ - Each record will need to be time stamped.
+   - We could try and use a 'run number' type system, but time is really the only thing that is guaranteed to move forward.
+   -  We might need a way to link back
+   -  We could provide a git integration where by two branch are provided to perform an automated before and after style local perf performance test
+ - A store is available that holds previous execution results
+ - A new class will be skipped until new results are logged to the store
+ - We'll have a nice way to present the differential statistics

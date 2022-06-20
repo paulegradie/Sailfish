@@ -8,6 +8,7 @@ using VeerPerforma.Attributes;
 
 namespace AsAConsoleApp
 {
+    [WriteToMarkdown]
     [VeerPerforma(2)]
     public class DemoPerfTest : ApiTestBase
     {

@@ -33,7 +33,11 @@ public class TestResultCompiler : ITestResultCompiler
                 var stats = ComputeStatistics(resultListElement);
                 var exception = resultListElement.Exception;
 
-                var compiledResult = new CompiledResult(resultListElement.TestInstanceContainer.DisplayName, stats);
+                var compiledResult = new CompiledResult(
+                    resultListElement.TestInstanceContainer.DisplayName,
+                    resultListElement.TestInstanceContainer.GroupingId,
+                    stats);
+
                 if (exception is not null)
                 {
                     compiledResult.Exception = exception;
@@ -43,7 +47,8 @@ public class TestResultCompiler : ITestResultCompiler
                 compiledResults.Add(compiledResult);
             }
 
-            var container = new CompiledResultContainer(exceptions, type, compiledResults);
+            var settings = type.RetrieveExecutionTestSettings();
+            var container = new CompiledResultContainer(exceptions, type, compiledResults, settings);
             resultContainers.Add(container);
         }
 

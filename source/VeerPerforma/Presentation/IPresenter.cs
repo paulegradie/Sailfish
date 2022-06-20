@@ -1,20 +1,15 @@
-﻿using VeerPerforma.Statistics;
+﻿using System.Collections.Generic;
+using VeerPerforma.Statistics;
 
 namespace VeerPerforma.Presentation;
 
-public interface IConsoleWriter : IPresenter
+public interface IConsoleWriter
 {
+    string Present(List<CompiledResultContainer> result);
 }
 
-public interface ICsvWriter : IPresenter
+public interface ICsvWriter
 {
+    string Present(List<CompiledResultContainer> result);
 }
 
-public interface IMarkdownWriter : IPresenter
-{
-}
-
-public interface IPresenter
-{
-    void Present(CompiledResultContainer result);
-}

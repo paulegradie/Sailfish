@@ -5,6 +5,7 @@ using Serilog;
 using VeerPerforma.Execution;
 using VeerPerforma.Presentation;
 using VeerPerforma.Statistics;
+using VeerPerforma.Utils;
 
 namespace VeerPerforma.Registration
 {
@@ -51,6 +52,8 @@ namespace VeerPerforma.Registration
             serviceCollection.AddTransient<ITestResultCompiler, TestResultCompiler>();
             serviceCollection.AddTransient<ITestResultPresenter, TestResultPresenter>();
             serviceCollection.AddTransient<IConsoleWriter, ConsoleWriter>();
+            serviceCollection.AddTransient<IPresentationStringConstructor, PresentationStringConstructor>();
+            serviceCollection.AddTransient<IFileIo, FileIo>();
         }
     }
 
@@ -81,6 +84,9 @@ namespace VeerPerforma.Registration
             builder.RegisterType<TestResultCompiler>().As<ITestResultCompiler>();
             builder.RegisterType<TestResultPresenter>().As<ITestResultPresenter>();
             builder.RegisterType<ConsoleWriter>().As<IConsoleWriter>();
+            builder.RegisterType<PresentationStringConstructor>().As<IPresentationStringConstructor>().InstancePerDependency();
+            builder.RegisterType<MarkdownFileWriter>().As<IMarkdownWriter>();
+            builder.RegisterType<FileIo>().As<IFileIo>();
         }
     }
 }

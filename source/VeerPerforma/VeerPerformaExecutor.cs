@@ -1,6 +1,7 @@
 using System;
 using System.Threading.Tasks;
 using VeerPerforma.Execution;
+using VeerPerforma.Presentation;
 using VeerPerforma.Statistics;
 
 namespace VeerPerforma
@@ -39,7 +40,7 @@ namespace VeerPerforma
             {
                 var results = await veerTestExecutor.Execute(testRun.Tests);
                 var compiledResults = testResultCompiler.CompileResults(results);
-                testResultPresenter.PresentResults(compiledResults);
+                await testResultPresenter.PresentResults(compiledResults);
             }
             else
             {
