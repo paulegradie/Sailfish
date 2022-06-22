@@ -3,11 +3,6 @@ using Accord.Statistics.Testing;
 
 namespace VeerPerforma.Statistics.StatisticalAnalysis;
 
-public interface ITTest
-{
-    TTestResult ExecuteTest(double[] before, double[] after, double alpha = 0.01);
-}
-
 public class TTest : ITTest
 {
     private readonly int sigDig = 3;
@@ -20,7 +15,7 @@ public class TTest : ITTest
         var meanAfter = Math.Round(test.EstimatedValue2, sigDig);
         var testStatistic = Math.Round(test.Statistic, sigDig);
         var pVal = Math.Round(test.PValue, sigDig);
-        var dof = test.DegreesOfFreedom;
+        var dof = Math.Round(test.DegreesOfFreedom, sigDig);
 
         var isSignificant = pVal <= alpha;
         var changeDirection = meanAfter > meanBefore ? "Regressed" : "Improved";
