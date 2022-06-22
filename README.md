@@ -9,49 +9,10 @@ response time data for API calls that you're developing against.
 
 For this reason, this project does not go to the extent that other more rigorous benchmark analysis tools such as, say, BenchmarkDotNet do.
 
-In addition, thanks to the BenchmarkDotNet team for providing inspirations for the test class pattern.
-
-# Sailfish performance testing tools
-
-When you create a new test class, you provide attributes to:
- - The class - to tell the runner this is a Sailfish performance test
- - Helper Methods - to tell the runner to call certain methods before and after the main execution iterations
- - The main execution method - a single method that will be called by the runner and clocked for speed.
-
-# How does it work?
-
-When the test executor is invoked (either as a console app, or via the TestAdapter), your performance test class (e.g. the one above) is manipulated using reflection. A quick validation check will be made (in the event that you have incorrectly created a test class or have provded test names that don't exist in your library), and then your tests will be constructed and executed.
-
-Any properties that have an `IterationVariable` attribute will compiled into a parameter grid. This is important because the more iteration variables you supply, and the more parameters you supply, the more test case instances will be activated from the class. This is product operation, where you multiple the lengths of all the iteration variable params arrays together.
-
-The class above provides two iterations variables:
-
-    [IterationVariable(1, 2, 3)]        // 3 variables here
-    public int NTries { get; set; }
-
-    [IterationVariable(200, 300)]      // and 2 variables here
-    public int WaitPeriod { get; set; }
-
-Therefore - the total number of test cases produced will be 6 (because `3 * 2*`).
-
-Finally, once all class instances are built, the test runner iterates through them, invokes the setup methods, invokes the execution methods (according to the number of iterations specified in the class attribute), times those invocations and logs them, and then executes teardown methods.
-
-# Usage Scenarios
-
-There are two demo projects provided in this repo that demonstrate two typical use cases.
-
-### DemoTestRunner
-Naturally, most developers will wish to executes their performance tests in an IDE. This is why we provide the `Sailfish.TestAdapter`, which allows you to activate test classes directly from the IDE. You are likely familiar with Visual Studio, or perhaps Jetbrains Rider's, test running tools (the little play button that appears next to your tests). The `DemoTestRunner` project has the test adapter installed and provides a simple test for you to see how this works.
-
-### DemoConsoleApp
-If you're looking to run performance tests as part of your automated build and test pipeline, you can use use the `SailfishExecutor` in a console app that is easily invokable. The `DemoConsoleApp` demonstrates this functionality and also provides a simple command line interface using the `McMaster.Extensions.CommandLineUtils`, which is a neat simple way to provide CLI args.
-
 
 # Example Test Case
 
-The first question one might ask about a new tool is 'what are all the possible features of this tool'?
-
-The following class demonstrates all of the attributes currently available, as well as all available arguments (with made-up parameters).
+The following class demonstrates all of the attributes currently available, as well as all available arguments (with made-up parameters). We'll provide a description of this class in the next section.
 
 ```
 [Sailfish(numIterations = 3, numWarmupIterations = 3)]
@@ -123,6 +84,45 @@ public class DemoPerfTest : ApiTestBase
 }
 ```
 
+# How does it work?
+
+When you create a new test class, you provide attributes to:
+ - The class - to tell the runner this is a Sailfish performance test
+ - Helper Methods - to tell the runner to call certain methods before and after the main execution iterations
+ - The main execution method - a single method that will be called by the runner and clocked for speed.
+
+```
+[Sailfish(numIterations = 3, numWarmupIterations = 3)]
+public class DemoPerfTest : ApiTestBase
+```
+
+When the test executor is invoked (either as a console app, or via the IDE test play button tools), test classses are discovered via reflection. A quick validation check will be made (in the event that you have incorrectly created a test class or have provided test names that don't exist in your library), and then your tests will be constructed.
+
+Any properties that have an `IterationVariable` attribute will compiled into a parameter grid. This is important because the more iteration variables you supply, and the more parameters you supply, the more test case instances will be activated from the class. This is a product operation, where you multiple the lengths of all the iteration variable params arrays together.
+
+The class above provides two iterations variables:
+
+    [IterationVariable(1, 2, 3)]        // 3 variables here
+    public int NTries { get; set; }
+
+    [IterationVariable(200, 300)]      // and 2 variables here
+    public int WaitPeriod { get; set; }
+
+Therefore - the total number of test cases produced will be 6 (because `3 * 2`).
+
+Finally, once all class instances are built, the test runner iterates through them, invokes the setup methods, invokes the execution methods (according to the number of iterations specified in the class attribute), times those invocations and logs them, and then executes teardown methods.
+
+# Usage Scenarios
+
+There are two demo projects provided in this repo that demonstrate two typical use cases.
+
+### DemoTestRunner
+Naturally, most developers will wish to executes their performance tests in an IDE. This is why we provide the `Sailfish.TestAdapter`, which allows you to activate test classes directly from the IDE. You are likely familiar with Visual Studio, or perhaps Jetbrains Rider's, test running tools (the little play button that appears next to your tests). The `DemoTestRunner` project has the test adapter installed and provides a simple test for you to see how this works.
+
+### DemoConsoleApp
+If you're looking to run performance tests as part of your automated build and test pipeline, you can use use the `SailfishExecutor` in a console app that is easily invokable. The `DemoConsoleApp` demonstrates this functionality and also provides a simple command line interface using the `McMaster.Extensions.CommandLineUtils`, which is a neat simple way to provide CLI args.
+
+
 # Features
 
 ## Performance tracking
@@ -154,7 +154,6 @@ When the program executes in tracking mode, a tracking file will be emitted. The
  - The console app should expose a database schema and return a json of data perhaps.
  - The test adapter should also be able to retrieve the last set of results.
 
-## Ideas
 
 # RoadMap
 
@@ -172,3 +171,14 @@ A common use case we've seen is the before and after analysis of changes made be
 
 We could provide a mediator that allow users to register message handlers that perform custom actions. This could be accomplished by using MediatR internally and allowing users to register handler implementations - which we would that call as part of the execution run.
 
+ - Publishing nuget packages!
+
+Sailfish is intended for public consumption, so we need to get a github action set up to publish the library to nuget.
+
+
+# License
+Sailfish is [MIT licensed](./LICENSE).
+
+# Acknowledgements
+
+Sailfish is inspired by the [BenchmarkDotNet](https://benchmarkdotnet.org/) precision benchmarking library.
