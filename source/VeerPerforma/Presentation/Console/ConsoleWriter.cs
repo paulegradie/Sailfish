@@ -1,50 +1,45 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 using VeerPerforma.Statistics;
 using VeerPerforma.Utils;
 
-namespace VeerPerforma.Presentation;
+namespace VeerPerforma.Presentation.Console;
 
-public interface IMarkdownWriter
+public interface IPresentationStringConstructor
 {
-    Task Present(List<CompiledResultContainer> result, string filePath);
+    void AppendLine(string item);
+    void AppendLine();
+    string Build();
 }
 
-public class MarkdownFileWriter : IMarkdownWriter
+public class ConsoleWriter : IConsoleWriter
 {
-    private readonly IFileIo fileIo;
     private readonly IPresentationStringConstructor stringBuilder;
 
-    public MarkdownFileWriter(
-        IFileIo fileIo,
-        IPresentationStringConstructor stringBuilder)
+    public ConsoleWriter(IPresentationStringConstructor stringBuilder)
     {
-        this.fileIo = fileIo;
         this.stringBuilder = stringBuilder;
     }
 
-    public async Task Present(List<CompiledResultContainer> results, string filePath)
+    public string Present(List<CompiledResultContainer> results)
     {
-        foreach (var result in results)
+        foreach (var container in results)
         {
-            if (result.Settings.AsMarkdown)
+            if (container.Settings.AsConsole)
             {
-                PrintHeader(result.Type.Name);
-                PrintResults(result.CompiledResults);
-                PrintExceptions(result.Exceptions);
+                AddHeader(container.Type.Name);
+                AddResults(container.CompiledResults);
+                AddExceptions(container.Exceptions);
             }
         }
 
-
-        var fileString = stringBuilder.Build();
-        if (!string.IsNullOrEmpty(fileString))
-            await fileIo.WriteToFile(fileString, filePath, CancellationToken.None);
+        var output = stringBuilder.Build();
+        System.Console.WriteLine(output);
+        return output;
     }
 
-    private void PrintHeader(string typeName)
+    private void AddHeader(string typeName)
     {
         stringBuilder.AppendLine();
         stringBuilder.AppendLine("\r-----------------------------------");
@@ -52,25 +47,25 @@ public class MarkdownFileWriter : IMarkdownWriter
         stringBuilder.AppendLine("-----------------------------------\r");
     }
 
-    private void PrintResults(List<CompiledResult> compiledResults)
+    private void AddResults(List<CompiledResult> compiledResults)
     {
         foreach (var group in compiledResults.GroupBy(x => x.GroupingId))
         {
             stringBuilder.AppendLine();
             var table = group.ToStringTable(
+                new List<string>() { "", "ms", "ms", "ms", "" },
                 u => u.DisplayName,
                 u => u.TestCaseStatistics.Median,
                 u => u.TestCaseStatistics.Mean,
                 u => u.TestCaseStatistics.StdDev,
-                u => u.TestCaseStatistics.Variance,
-                u => u.TestCaseStatistics.InterQuartileMedian
+                u => u.TestCaseStatistics.Variance
             );
 
             stringBuilder.AppendLine(table);
         }
     }
 
-    private void PrintExceptions(List<Exception> exceptions)
+    private void AddExceptions(List<Exception> exceptions)
     {
         if (exceptions.Count > 0)
             stringBuilder.AppendLine($" ---- One or more Exceptions encountered ---- ");

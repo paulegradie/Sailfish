@@ -10,7 +10,7 @@ namespace Test.ApiCommunicationTests
 {
     public class WhenTalkingToTheApi : ApiTestBase
     {
-        public WhenTalkingToTheApi(WebApplicationFactory<MyApp> factory) : base(factory)
+        public WhenTalkingToTheApi(WebApplicationFactory<DemoApp> factory) : base(factory)
         {
         }
 

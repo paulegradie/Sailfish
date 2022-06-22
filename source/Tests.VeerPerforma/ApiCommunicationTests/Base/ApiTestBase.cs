@@ -6,16 +6,16 @@ using Xunit;
 
 namespace Test.ApiCommunicationTests.Base
 {
-    public class ApiTestBase : IClassFixture<WebApplicationFactory<MyApp>>
+    public class ApiTestBase : IClassFixture<WebApplicationFactory<DemoApp>>
     {
-        public ApiTestBase(WebApplicationFactory<MyApp> factory)
+        public ApiTestBase(WebApplicationFactory<DemoApp> factory)
         {
             WebHostFactory = factory.WithWebHostBuilder(
                 builder => { builder.UseTestServer(); });
             Client = WebHostFactory.CreateClient();
         }
 
-        public WebApplicationFactory<MyApp> WebHostFactory { get; set; }
+        public WebApplicationFactory<DemoApp> WebHostFactory { get; set; }
         public HttpClient Client { get; }
     }
 }

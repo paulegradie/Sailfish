@@ -57,6 +57,6 @@ public class TestResultCompiler : ITestResultCompiler
 
     private TestCaseStatistics ComputeStatistics(TestExecutionResult result)
     {
-        return statsCompiler.Compile(result.PerformanceTimerResults);
+        return statsCompiler.Compile(result.TestInstanceContainer.DisplayName, result.PerformanceTimerResults);
     }
 }

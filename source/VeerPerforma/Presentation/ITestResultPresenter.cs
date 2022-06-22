@@ -6,5 +6,5 @@ namespace VeerPerforma.Presentation;
 
 public interface ITestResultPresenter
 {
-    Task PresentResults(List<CompiledResultContainer> resultContainers);
+    Task PresentResults(List<CompiledResultContainer> resultContainers, string directoryPath, bool noTrack);
 }

@@ -4,13 +4,13 @@ namespace VeerPerforma.Statistics;
 
 public interface IStatisticsCompiler
 {
-    TestCaseStatistics Compile(PerformanceTimer populatedTimer);
+    TestCaseStatistics Compile(string displayName, PerformanceTimer populatedTimer);
 }
 
 public class StatisticsCompiler : IStatisticsCompiler
 {
-    public TestCaseStatistics Compile(PerformanceTimer populatedTimer)
+    public TestCaseStatistics Compile(string displayName, PerformanceTimer populatedTimer)
     {
-        return populatedTimer.ToTestCaseStatistics();
+        return populatedTimer.ToTestCaseStatistics(displayName);
     }
 }

@@ -18,4 +18,20 @@ public class CompiledResultContainer
     public ExecutionSettings Settings { get; }
     public List<CompiledResult> CompiledResults { get; set; }
     public List<Exception> Exceptions { get; set; }
+
+    // public List<StatisticsCsvRecord> ConvertToStatsRecord()
+    // {
+    //     var results = new List<TTesetCsvRecord>();
+    //     foreach (var r in CompiledResults)
+    //     {
+    //         var s = r.TestCaseStatistics;
+    //         new StatisticsCsvRecord
+    //         {
+    //             TestName = r.DisplayName,
+    //             
+    //         };
+    //     }
+    //
+    //     return results;
+    // }
 }

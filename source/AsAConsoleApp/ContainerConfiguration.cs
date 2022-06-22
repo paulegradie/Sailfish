@@ -19,7 +19,7 @@ namespace AsAConsoleApp
 
         private static ContainerBuilder CustomizeContainer(ContainerBuilder builder)
         {
-            builder.RegisterType<WebApplicationFactory<MyApp>>();
+            builder.RegisterType<WebApplicationFactory<DemoApp>>();
             return builder;
         }
     }

@@ -9,14 +9,15 @@ using VeerPerforma.Attributes;
 namespace AsAConsoleApp
 {
     [WriteToMarkdown]
-    [VeerPerforma(2)]
+    [WriteToCsv]
+    [VeerPerforma(1)]
     public class DemoPerfTest : ApiTestBase
     {
-        public DemoPerfTest(WebApplicationFactory<MyApp> factory) : base(factory)
+        public DemoPerfTest(WebApplicationFactory<DemoApp> factory) : base(factory)
         {
         }
 
-        [IterationVariable(1, 1, 2, 3)] public int NTries { get; set; }
+        [IterationVariable(1, 2)] public int NTries { get; set; }
 
         [IterationVariable(200, 300)] public int WaitPeriod { get; set; }
 
@@ -68,7 +69,7 @@ namespace AsAConsoleApp
         [ExecutePerformanceCheck]
         public async Task Other()
         {
-            Thread.Sleep(400);
+            Thread.Sleep(1);
             await Task.CompletedTask;
             Console.WriteLine("WOW");
         }

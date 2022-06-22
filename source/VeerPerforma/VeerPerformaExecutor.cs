@@ -1,8 +1,10 @@
 using System;
+using System.IO;
 using System.Threading.Tasks;
 using VeerPerforma.Execution;
 using VeerPerforma.Presentation;
 using VeerPerforma.Statistics;
+using VeerPerforma.Statistics.StatisticalAnalysis;
 
 namespace VeerPerforma
 {
@@ -16,6 +18,7 @@ namespace VeerPerforma
         private readonly ITestFilter testFilter;
         private readonly ITestResultCompiler testResultCompiler;
         private readonly ITestResultPresenter testResultPresenter;
+        private readonly ITwoTailedTTester twoTailedTTester;
         private readonly IVeerTestExecutor veerTestExecutor;
 
         public VeerPerformaExecutor(
@@ -23,7 +26,8 @@ namespace VeerPerforma
             ITestCollector testCollector,
             ITestFilter testFilter,
             ITestResultCompiler testResultCompiler,
-            ITestResultPresenter testResultPresenter
+            ITestResultPresenter testResultPresenter,
+            ITwoTailedTTester twoTailedTTester
         )
         {
             this.veerTestExecutor = veerTestExecutor;
@@ -31,16 +35,25 @@ namespace VeerPerforma
             this.testFilter = testFilter;
             this.testResultCompiler = testResultCompiler;
             this.testResultPresenter = testResultPresenter;
+            this.twoTailedTTester = twoTailedTTester;
         }
 
-        public async Task Run(string[] testNames, params Type[] testLocationTypes)
+        public async Task Run(string[] testNames, string directoryPath, bool noTrack, bool analyze, params Type[] testLocationTypes) // TODO: pass an object.
         {
             var testRun = CollectTests(testNames, testLocationTypes);
             if (testRun.IsValid)
             {
                 var results = await veerTestExecutor.Execute(testRun.Tests);
                 var compiledResults = testResultCompiler.CompileResults(results);
-                await testResultPresenter.PresentResults(compiledResults);
+                await testResultPresenter.PresentResults(compiledResults, directoryPath, noTrack);
+
+                if (analyze)
+                {
+                    var date = DateTime.Now.ToLocalTime().ToString("yyyy-dd-M--HH-mm-ss");
+                    await twoTailedTTester.PresentTestResults(
+                        directoryPath,
+                        Path.Combine(directoryPath, $"t-test_{date}.md"));
+                }
             }
             else
             {
@@ -50,7 +63,6 @@ namespace VeerPerforma
                     Console.WriteLine(reason);
                     foreach (var testName in names) Console.WriteLine($"--- {testName}");
                 }
-
             }
         }
 

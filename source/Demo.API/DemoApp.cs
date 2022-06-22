@@ -1,5 +1,5 @@
 ﻿namespace Test.API;
 
-public class MyApp
+public class DemoApp
 {
 }

@@ -1,10 +1,15 @@
 ﻿using System;
 using Autofac;
+using CsvHelper;
 using Microsoft.Extensions.DependencyInjection;
 using Serilog;
 using VeerPerforma.Execution;
 using VeerPerforma.Presentation;
+using VeerPerforma.Presentation.Console;
+using VeerPerforma.Presentation.Csv;
+using VeerPerforma.Presentation.Markdown;
 using VeerPerforma.Statistics;
+using VeerPerforma.Statistics.StatisticalAnalysis;
 using VeerPerforma.Utils;
 
 namespace VeerPerforma.Registration
@@ -51,9 +56,14 @@ namespace VeerPerforma.Registration
             serviceCollection.AddTransient<IStatisticsCompiler, StatisticsCompiler>();
             serviceCollection.AddTransient<ITestResultCompiler, TestResultCompiler>();
             serviceCollection.AddTransient<ITestResultPresenter, TestResultPresenter>();
-            serviceCollection.AddTransient<IConsoleWriter, ConsoleWriter>();
-            serviceCollection.AddTransient<IPresentationStringConstructor, PresentationStringConstructor>();
             serviceCollection.AddTransient<IFileIo, FileIo>();
+            serviceCollection.AddTransient<IPresentationStringConstructor, PresentationStringConstructor>();
+            serviceCollection.AddTransient<IConsoleWriter, ConsoleWriter>();
+            serviceCollection.AddTransient<IPerformanceCsvWriter, PerformanceCsvWriter>();
+            serviceCollection.AddTransient<IMarkdownWriter, MarkdownWriter>();
+            serviceCollection.AddTransient<ITwoTailedTTester, TwoTailedTTester>();
+            serviceCollection.AddTransient<ITrackingFileFinder, TrackingFileFinder>();
+            serviceCollection.AddTransient<IPerformanceCsvTrackingWriter, PerformanceCsvTrackingWriter>();
         }
     }
 
@@ -83,10 +93,16 @@ namespace VeerPerforma.Registration
             builder.RegisterType<StatisticsCompiler>().As<IStatisticsCompiler>();
             builder.RegisterType<TestResultCompiler>().As<ITestResultCompiler>();
             builder.RegisterType<TestResultPresenter>().As<ITestResultPresenter>();
-            builder.RegisterType<ConsoleWriter>().As<IConsoleWriter>();
             builder.RegisterType<PresentationStringConstructor>().As<IPresentationStringConstructor>().InstancePerDependency();
-            builder.RegisterType<MarkdownFileWriter>().As<IMarkdownWriter>();
             builder.RegisterType<FileIo>().As<IFileIo>();
+            builder.RegisterType<MarkdownWriter>().As<IMarkdownWriter>();
+            builder.RegisterType<ConsoleWriter>().As<IConsoleWriter>();
+            builder.RegisterType<PerformanceCsvWriter>().As<IPerformanceCsvWriter>();
+            builder.RegisterType<TTest>().As<ITTest>();
+            builder.RegisterType<TwoTailedTTester>().As<ITwoTailedTTester>();
+            builder.RegisterType<TrackingFileFinder>().As<ITrackingFileFinder>();
+            builder.RegisterType<PerformanceCsvTrackingWriter>().As<IPerformanceCsvTrackingWriter>();
+
         }
     }
 }
