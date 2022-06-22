@@ -7,6 +7,7 @@ using Sailfish.Presentation;
 using Sailfish.Presentation.Console;
 using Sailfish.Presentation.Csv;
 using Sailfish.Presentation.Markdown;
+using Sailfish.Presentation.TTest;
 using Sailfish.Statistics;
 using Sailfish.Statistics.StatisticalAnalysis;
 using Sailfish.Utils;
@@ -61,7 +62,7 @@ namespace Sailfish.Registration
             serviceCollection.AddTransient<IConsoleWriter, ConsoleWriter>();
             serviceCollection.AddTransient<IPerformanceCsvWriter, PerformanceCsvWriter>();
             serviceCollection.AddTransient<IMarkdownWriter, MarkdownWriter>();
-            serviceCollection.AddTransient<ITwoTailedTTester, TwoTailedTTester>();
+            serviceCollection.AddTransient<ITwoTailedTTestWriter, TwoTailedTTestWriter>();
             serviceCollection.AddTransient<ITrackingFileFinder, TrackingFileFinder>();
             serviceCollection.AddTransient<IPerformanceCsvTrackingWriter, PerformanceCsvTrackingWriter>();
         }
@@ -99,7 +100,7 @@ namespace Sailfish.Registration
             builder.RegisterType<ConsoleWriter>().As<IConsoleWriter>();
             builder.RegisterType<PerformanceCsvWriter>().As<IPerformanceCsvWriter>();
             builder.RegisterType<TTest>().As<ITTest>();
-            builder.RegisterType<TwoTailedTTester>().As<ITwoTailedTTester>();
+            builder.RegisterType<TwoTailedTTestWriter>().As<ITwoTailedTTestWriter>();
             builder.RegisterType<TrackingFileFinder>().As<ITrackingFileFinder>();
             builder.RegisterType<PerformanceCsvTrackingWriter>().As<IPerformanceCsvTrackingWriter>();
 

@@ -1,5 +1,6 @@
 ﻿using System;
 using Accord.Statistics.Testing;
+using Sailfish.Presentation.TTest;
 
 namespace Sailfish.Statistics.StatisticalAnalysis;
 
@@ -7,7 +8,7 @@ public class TTest : ITTest
 {
     private readonly int sigDig = 3;
 
-    public TTestResult ExecuteTest(double[] before, double[] after, double alpha = 0.01)
+    public TTestResult ExecuteTest(double[] before, double[] after, TTestSettings settings)
     {
         var test = new TwoSampleTTest(before, after, false);
 
@@ -17,8 +18,8 @@ public class TTest : ITTest
         var pVal = Math.Round(test.PValue, sigDig);
         var dof = Math.Round(test.DegreesOfFreedom, sigDig);
 
-        var isSignificant = pVal <= alpha;
-        var changeDirection = meanAfter > meanBefore ? "Regressed" : "Improved";
+        var isSignificant = pVal <= settings.Alpha;
+        var changeDirection = meanAfter > meanBefore ? "*Regressed" : "*Improved";
 
         var description = isSignificant ? changeDirection : "No change";
 

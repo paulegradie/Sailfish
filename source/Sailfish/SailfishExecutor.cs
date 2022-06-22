@@ -3,6 +3,7 @@ using System.IO;
 using System.Threading.Tasks;
 using Sailfish.Execution;
 using Sailfish.Presentation;
+using Sailfish.Presentation.TTest;
 using Sailfish.Statistics;
 using Sailfish.Statistics.StatisticalAnalysis;
 
@@ -18,7 +19,7 @@ namespace Sailfish
         private readonly ITestFilter testFilter;
         private readonly ITestResultCompiler testResultCompiler;
         private readonly ITestResultPresenter testResultPresenter;
-        private readonly ITwoTailedTTester twoTailedTTester;
+        private readonly ITwoTailedTTestWriter twoTailedTTestWriter;
         private readonly ISailTestExecutor SailTestExecutor;
 
         public SailfishExecutor(
@@ -27,7 +28,7 @@ namespace Sailfish
             ITestFilter testFilter,
             ITestResultCompiler testResultCompiler,
             ITestResultPresenter testResultPresenter,
-            ITwoTailedTTester twoTailedTTester
+            ITwoTailedTTestWriter twoTailedTTestWriter
         )
         {
             this.SailTestExecutor = SailTestExecutor;
@@ -35,10 +36,10 @@ namespace Sailfish
             this.testFilter = testFilter;
             this.testResultCompiler = testResultCompiler;
             this.testResultPresenter = testResultPresenter;
-            this.twoTailedTTester = twoTailedTTester;
+            this.twoTailedTTestWriter = twoTailedTTestWriter;
         }
 
-        public async Task Run(string[] testNames, string directoryPath, bool noTrack, bool analyze, params Type[] testLocationTypes) // TODO: pass an object.
+        public async Task Run(string[] testNames, string directoryPath, bool noTrack, bool analyze, TTestSettings settings, params Type[] testLocationTypes) // TODO: pass an object.
         {
             var testRun = CollectTests(testNames, testLocationTypes);
             if (testRun.IsValid)
@@ -50,9 +51,10 @@ namespace Sailfish
                 if (analyze)
                 {
                     var date = DateTime.Now.ToLocalTime().ToString("yyyy-dd-M--HH-mm-ss");
-                    await twoTailedTTester.PresentTestResults(
+                    await twoTailedTTestWriter.PresentTestResults(
                         directoryPath,
-                        Path.Combine(directoryPath, $"t-test_{date}.md"));
+                        Path.Combine(directoryPath, $"t-test_{date}.md"), 
+                        settings);
                 }
             }
             else

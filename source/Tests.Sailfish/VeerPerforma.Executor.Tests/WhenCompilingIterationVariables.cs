@@ -1,10 +1,10 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using Shouldly;
 using Sailfish.Execution;
+using Shouldly;
 using Xunit;
 
-namespace Test.Sailfish.Executor.Tests
+namespace Test.VeerPerforma.Executor.Tests
 {
     public class WhenCompilingIterationVariables
     {
