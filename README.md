@@ -1,16 +1,15 @@
-# Sailfish - an unambitious performace test runner
-A .net package used to perform low resolution performance analysis of your component or API.
+# Sailfish - an unambitious performance / load test runner
+A .net package used to perform low resolution performance analysis of your C# component or API.
 
 # Intended Use
-This test framework is NOT intended to produce high resolution (microsecond, nanosecond) results on performance. It
-IS intended to provide approximate millisecond resolution.
+This test framework is intended to provide approximate millisecond resolution. It is NOT intended to produce high resolution (microsecond, nanosecond) results on performance.
 
-Although you may use this project however you'd like, the intended use case for this is to provide approximate millisecond
+You may use this project however you'd like, however the intended use case for this is to provide approximate millisecond
 response time data for API calls that you're developing against.
 
-For this reason, this project does not go to the extent that other more rigorous benchmark analysis tools such as, say, BenchmarkDotNet do. BenchmarkDotNet in particular does take a clean approach to constructing the test classes, so that idea has been incorporated here when specifying `IterationVariable`s.
+For this reason, this project does not go to the extent that other more rigorous benchmark analysis tools such as, say, BenchmarkDotNet do.
 
-Thanks to the BenchmarkDotNet team for that pattern. You folks are really smart. *hat tip*
+In addition, thanks to the BenchmarkDotNet team for providing inspirations for the test class pattern.
 
 # Sailfish performance testing tools
 
@@ -40,7 +39,6 @@ Finally, once all class instances are built, the test runner iterates through th
 # Usage Scenarios
 
 There are two demo projects provided in this repo that demonstrate two typical use cases.
-
 
 ### DemoTestRunner
 Naturally, most developers will wish to executes their performance tests in an IDE. This is why we provide the `Sailfish.TestAdapter`, which allows you to activate test classes directly from the IDE. You are likely familiar with Visual Studio, or perhaps Jetbrains Rider's, test running tools (the little play button that appears next to your tests). The `DemoTestRunner` project has the test adapter installed and provides a simple test for you to see how this works.
@@ -127,11 +125,15 @@ public class DemoPerfTest : ApiTestBase
 
 # Features
 
-### Performance tracking
+## Performance tracking
+
+Sailfish by default will print performance results to console (unless the `[SupressConsole]` attribute is applied to the test class). Additional attributes are provided to write csv and markdown files to a nominated directory.
+
+ - `[WriteToMarkdown]`
+ - `[WriteToCsv]`
 
 
-
-### Differential Analyzer
+## Differential Analyzer
 
 Sailfish provides basic statistical testing tools to determine differences between your code versions. These are largely automatic, and on by default. You may however configure them to a lesser extent.
 
@@ -153,5 +155,20 @@ When the program executes in tracking mode, a tracking file will be emitted. The
  - The test adapter should also be able to retrieve the last set of results.
 
 ## Ideas
- - git integration - where you can perform an auto branch swap, and the branch names are used in the file names, and the comparison is made automatically.
- - Slack integraiton - when a change in performance is observed - a mediator should be provided to emit a message to a lot of different handlers, which talk to various different services.
+
+# RoadMap
+
+While Sailfish is ready for basic usage given the features outlinea above, there are few outstanding things to complete before Sailfish is v1 complete.
+
+ - Complexity estimation
+
+An interesting use case for load or performance testing is emperically determining algorithm complexity. To accomplish this, we could provide a test class attribute that indicates a particular test case for such a test. To facilitate the analysis, the user would design their test case in such a way that a single IterationVariable attribute delivered a series representing linear growth in load. Once the execution method results are collected, we would perform various regressions against the data to attempt a 'best guess' on the type of curve represented by the data. This could then be printed in addition to the performance results for the method as an addendum to the results table for that method.
+
+ - Git integration
+
+A common use case we've seen is the before and after analysis of changes made between two branches. When using Sailfish as a console app, we could allow users to provide two branch names (before and after) to then automate a comparative analysis of their branches. The tool would set the working directory to be the project directory, attempt to switch to the before 'branch', build, execute, switch branches to the 'after' branch, and repeate. The same statistical analysis would be emitted after.
+
+- Custom event handlers
+
+We could provide a mediator that allow users to register message handlers that perform custom actions. This could be accomplished by using MediatR internally and allowing users to register handler implementations - which we would that call as part of the execution run.
+
