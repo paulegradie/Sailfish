@@ -2,13 +2,11 @@
 
 This project provides a demo for how to use Sailfish as a console app.
 
-
 ## Example output
 
 The demo test should #JustWork.
 
 When the test executes, various outputs will be written to the output directory (set to your bin folder by default) as well as the console.
-
 
 For example, you should see something similar to the following appear after the first run:
 
@@ -34,7 +32,7 @@ DemoPerfTest
 
 ```
 
-This will by default produce a tracking file in a subdirectory to the output directory. So, on the second run, by deafult, you should also the following statistical test:
+This will by default produce a tracking file in a subdirectory to the output directory. So, on the second run, by default, you should also the following statistical test:
 
 -----------------------------------
 T-Test results comparing:
