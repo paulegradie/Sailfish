@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Autofac;
 using McMaster.Extensions.CommandLineUtils;
+using Sailfish.Presentation.TTest;
 using Sailfish.Tool.Framework.DIContainer;
 
 namespace Sailfish.Tool
@@ -22,6 +23,8 @@ namespace Sailfish.Tool
         [Option("-a|--analyze", CommandOptionType.SingleValue, Description = "Use this option to enable analysis mode, where a directory is nominated, and it is used to track and retrieve historical performance test runs for use in statistical tests against new runs.")]
         public bool Analyze { get; set; }
 
+        [Option("-h|--ttest-alpha", CommandOptionType.SingleValue, Description = "Use this option to set the significance threshold for the ttest analysis.")]
+        public double Alpha { get; set; } = 0.01;
 
         public static async Task<int> Main(string[] args)
         {
@@ -37,10 +40,13 @@ namespace Sailfish.Tool
 
 
             if (TestNames is null) throw new Exception("Program failed to start...");
+
+            var testSettings = new TTestSettings(Alpha);
+            
             await ContainerConfiguration
                 .CompositionRoot()
                 .Resolve<SailfishExecutor>()
-                .Run(TestNames.Where(x => !string.IsNullOrEmpty(x) && !string.IsNullOrWhiteSpace(x)).ToArray(), OutputDirectory, NoTrack, Analyze);
+                .Run(TestNames.Where(x => !string.IsNullOrEmpty(x) && !string.IsNullOrWhiteSpace(x)).ToArray(), OutputDirectory, NoTrack, Analyze, testSettings);
         }
     }
 }

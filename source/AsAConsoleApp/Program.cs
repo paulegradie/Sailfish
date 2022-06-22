@@ -22,7 +22,7 @@ namespace AsAConsoleApp
         public bool Analyze { get; set; } = true;
 
         [Option("-h|--ttest-alpha", CommandOptionType.SingleValue, Description = "Use this option to set the significance threshold for the ttest analysis.")]
-        public double Alpha { get; set; } = 0.5;
+        public double Alpha { get; set; } = 0.01;
 
 
         private static async Task Main(string[] userRequestedTestNames)

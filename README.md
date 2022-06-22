@@ -1,14 +1,16 @@
-# Sailfish - an unambitious performance / load test runner
-A .net package used to perform low resolution performance analysis of your C# component or API.
+<h1 align="center" style="flex-direction: column;"><img src="assets/Sailfish.png" alt="Sailfish" width="700" /></h1>
+
+Sailfish is a .net library used to perform low resolution performance analysis of your component or API.
 
 # Intended Use
-This test framework is intended to provide approximate millisecond resolution. It is NOT intended to produce high resolution (microsecond, nanosecond) results on performance.
+This test framework is intended to provide approximate millisecond resolution performance data of your component or API. It is NOT intended to produce high resolution (microsecond, nanosecond) results on performance.
 
 You may use this project however you'd like, however the intended use case for this is to provide approximate millisecond
-response time data for API calls that you're developing against.
+response time data for API calls that you're developing against. Please keep in mind the physical machines that you run this software will have a direct affect on the results that are produced. In otherwords, for more reliable results, execute tests on stable hardware that is, if possible, not really doing anything else. For example, running these tests on dynamic cloud infrastructure may introduce signficant outlier results.
+
+Fortunately, tools to mitigate the affects of such volatility in the infrastructure are currently under development.
 
 For this reason, this project does not go to the extent that other more rigorous benchmark analysis tools such as, say, BenchmarkDotNet do.
-
 
 # Example Test Case
 
@@ -132,7 +134,6 @@ Sailfish by default will print performance results to console (unless the `[Supr
  - `[WriteToMarkdown]`
  - `[WriteToCsv]`
 
-
 ## Differential Analyzer
 
 Sailfish provides basic statistical testing tools to determine differences between your code versions. These are largely automatic, and on by default. You may however configure them to a lesser extent.
@@ -162,6 +163,10 @@ For an example of execution outputs, have a look at the [Console App demo projec
 # RoadMap
 
 While Sailfish is ready for basic usage given the features outlined above, there are few outstanding things to complete before Sailfish is v1 complete.
+
+ - Hardware affect mitigation
+
+We can introduce options for users to remove outliers from their datasets, for example by computer quartiles and truncating the resulting datasets.
 
  - Complexity estimation
 

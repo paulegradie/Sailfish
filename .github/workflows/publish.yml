@@ -1,0 +1,50 @@
+name: publish to nuget
+on:
+  push:
+    branches:
+      - main
+    paths-ignore:
+      - '**/*.md'
+      - '**/*.yml'
+      - '**/.gitignore'
+      - 'assets/*'
+      - 'source/Sailfish.TestAdapter/*'
+      - 'source/Sailfish.Tool/*'
+      - 'source/UsingTheIDE/*'
+      - 'source/AsAConsoleApp/*'
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+
+    - name: Generate build number
+      id: buildnumber
+      uses: einaregilsson/build-number@v3
+      with:
+        token: ${{secrets.github_token}}
+
+    - uses: actions/checkout@v2
+    - name: Setup dotnet
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: 6.0.x
+
+    - name: Checkout
+      uses: actions/checkout@v2
+
+    - name: Verify commit exists in origin/main
+      run: echo "Going to use ${{ steps.buildnumber.outputs.build_number }} for the package Id."
+
+    - name: Set VERSION variable from tag
+      run: echo "VERSION=0.0.${{ steps.buildnumber.outputs.build_number }}" >> $GITHUB_ENV
+
+    - name: Build
+      run: dotnet build ./source/Sailfish/Sailfish.csproj --configuration Release /p:Version=${VERSION}
+
+    - name: Pack
+      run: dotnet pack ./source/Sailfish/Sailfish.csproj --configuration Release /p:Version=${VERSION} --no-build --output .
+
+    - name: Push
+      run: dotnet nuget push Sailfish.${VERSION}.nupkg --source https://www.nuget.org --api-key ${{secrets.NUGET_API_KEY}}
