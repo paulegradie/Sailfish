@@ -32,7 +32,7 @@ namespace Sailfish.TestAdapter.Utils
                 ? Path.Combine(".", logfileDirName)
                 : Path.Combine(projectRoot.FullName, logfileDirName);
 
-            var hardCodedDir = "C:\\Users\\paule\\code\\VeerPerformaRelated\\TestingLogs\\WORK_DAMNYOU.txt";
+            var hardCodedDir = "C:\\Users\\paule\\code\\ProjectSailfish\\TestingLogs\\WORK_DAMNYOU.txt";
 
             return new LoggerConfiguration()
                 .MinimumLevel.Verbose()

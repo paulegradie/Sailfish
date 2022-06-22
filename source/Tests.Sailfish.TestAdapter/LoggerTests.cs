@@ -2,10 +2,10 @@ using System.IO;
 using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Shouldly;
-using VeerPerforma.Utils;
+using Sailfish.Utils;
 
 
-namespace Tests.VeerPerforma.TestAdapter
+namespace Tests.Sailfish.TestAdapter
 {
     [TestClass]
     public class LoggerTests

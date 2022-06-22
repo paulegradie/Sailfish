@@ -25,7 +25,7 @@ namespace Sailfish.TestAdapter.Utils
         {
             var perfTestTypes = assembly
                 .GetTypes()
-                .Where(x => x.HasAttribute<VeerPerformaAttribute>())
+                .Where(x => x.HasAttribute<SailfishAttribute>())
                 .ToArray();
 
             logger.Verbose("\rTest Types Discovered in {Assembly}:\r", assembly.FullName ?? "Couldn't Find the assembly name property");

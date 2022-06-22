@@ -17,19 +17,19 @@ function IncrementVersion ($csProjXMLPath)
 }
 
 # GO TO ADAPTER
-$adapterPath = "C:\Users\paule\code\VeerPerformaRelated\Veer-Performa\source\VeerPerforma.TestAdapter"
+$adapterPath = "C:\Users\paule\code\ProjectSailfish\Sailfish\source\Sailfish.TestAdapter"
 Set-Location $adapterPath
-$csProjAdapter = $adapterPath + "\VeerPerforma.TestAdapter.csproj";
+$csProjAdapter = $adapterPath + "\Sailfish.TestAdapter.csproj";
 IncrementVersion $csProjAdapter
 
 dotnet build
 dotnet pack -c Release -o ../../../LocalPackages
 
 
-# Go To VeerPerforma
-$corePath = "C:\Users\paule\code\VeerPerformaRelated\Veer-Performa\source\VeerPerforma"
+# Go To Sailfish
+$corePath = "C:\Users\paule\code\ProjectSailfish\Sailfish\source\Sailfish"
 Set-Location $corePath
-$csProjCore = $corePath + "\VeerPerforma.csproj";
+$csProjCore = $corePath + "\Sailfish.csproj";
 IncrementVersion $csProjCore
 dotnet build
 dotnet pack -c Release -o ../../../LocalPackages

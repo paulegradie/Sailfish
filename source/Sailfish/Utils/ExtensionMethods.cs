@@ -65,7 +65,7 @@ namespace Sailfish.Utils
         {
             var numIterations = type
                 .GetCustomAttributes(true)
-                .OfType<VeerPerformaAttribute>()
+                .OfType<SailfishAttribute>()
                 .Single()
                 .NumIterations;
             return numIterations;
@@ -75,7 +75,7 @@ namespace Sailfish.Utils
         {
             var numWarmupIterations = type
                 .GetCustomAttributes(true)
-                .OfType<VeerPerformaAttribute>()
+                .OfType<SailfishAttribute>()
                 .Single()
                 .NumWarmupIterations;
             return numWarmupIterations;

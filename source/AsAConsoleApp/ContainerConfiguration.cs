@@ -12,7 +12,7 @@ namespace AsAConsoleApp
             var builder = new ContainerBuilder();
             builder = CustomizeContainer(builder);
 
-            builder.RegisterVeerPerformaTypes();
+            builder.RegisterSailfishTypes();
             builder.RegisterPerformanceTypes(typeof(DemoPerfTest));
             return builder.Build();
         }

@@ -35,11 +35,11 @@ namespace Sailfish.Tool
                 OutputDirectory = Path.Combine(Directory.GetCurrentDirectory(), "performance_output");
             }
 
-            
+
             if (TestNames is null) throw new Exception("Program failed to start...");
             await ContainerConfiguration
                 .CompositionRoot()
-                .Resolve<VeerPerformaExecutor>()
+                .Resolve<SailfishExecutor>()
                 .Run(TestNames.Where(x => !string.IsNullOrEmpty(x) && !string.IsNullOrWhiteSpace(x)).ToArray(), OutputDirectory, NoTrack, Analyze);
         }
     }

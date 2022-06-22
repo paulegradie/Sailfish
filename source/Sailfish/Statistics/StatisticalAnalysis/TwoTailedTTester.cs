@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -38,7 +39,7 @@ public class TwoTailedTTester : ITwoTailedTTester
         var results = ComputeTTest(beforeAndAfter);
 
         var table = results.ToStringTable(
-            new List<string>() { "", "ms", "ms", "", "", "", ""},
+            new List<string>() { "", "ms", "ms", "", "", "", "" },
             m => m.TestName,
             m => m.MeanOfBefore,
             m => m.MeanOfAfter,
@@ -52,6 +53,9 @@ public class TwoTailedTTester : ITwoTailedTTester
         stringBuilder.AppendLine(table);
 
         var fileString = stringBuilder.Build();
+
+        Console.WriteLine(fileString);
+
         if (!string.IsNullOrEmpty(fileString))
             await fileIo.WriteToFile(fileString, outputFilePath, CancellationToken.None);
     }
@@ -59,8 +63,10 @@ public class TwoTailedTTester : ITwoTailedTTester
     private void PrintHeader(string beforeId, string afterId)
     {
         stringBuilder.AppendLine();
-        stringBuilder.AppendLine("\r-----------------------------------");
-        stringBuilder.AppendLine($"\r - T-Test results comparing - \rBefore: {beforeId}\rAfter: {afterId} \r");
+        stringBuilder.AppendLine("-----------------------------------");
+        stringBuilder.AppendLine($"T-Test results comparing:");
+        stringBuilder.AppendLine($"Before: {beforeId}");
+        stringBuilder.AppendLine($"After: {afterId}");
         stringBuilder.AppendLine("-----------------------------------\r");
     }
 

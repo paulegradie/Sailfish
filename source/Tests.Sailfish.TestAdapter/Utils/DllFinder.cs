@@ -1,8 +1,9 @@
 ﻿using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using Sailfish.TestAdapter.Utils;
 
-namespace Tests.VeerPerforma.TestAdapter.Utils;
+namespace Tests.Sailfish.TestAdapter.Utils;
 
 public static class DllFinder
 {

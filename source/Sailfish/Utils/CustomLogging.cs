@@ -13,7 +13,7 @@ namespace Sailfish.Utils
 
         public static void VerbosePadded(string messageLine, params string[] properties)
         {
-            if (filePath is null) filePath = filePath ?? $"C:\\Users\\paule\\code\\VeerPerformaRelated\\TestingLogs\\crazy_logs-{Guid.NewGuid().ToString()}.txt";
+            if (filePath is null) filePath = filePath ?? $"C:\\Users\\paule\\code\\ProjectSailfish\\TestingLogs\\crazy_logs-{Guid.NewGuid().ToString()}.txt";
 
             if (!File.Exists(filePath)) File.Create(filePath);
 
@@ -23,7 +23,7 @@ namespace Sailfish.Utils
             }
             catch (Exception ex)
             {
-                filePath = $"C:\\Users\\paule\\code\\VeerPerformaRelated\\TestingLogs\\crazy_logs-{Guid.NewGuid().ToString()}.txt";
+                filePath = $"C:\\Users\\paule\\code\\ProjectSailfish\\TestingLogs\\crazy_logs-{Guid.NewGuid().ToString()}.txt";
                 DoWrite(filePath, $"What a crazy exception! How is it possible that: {ex.Message}");
                 DoWrite(filePath, "\r" + messageLine + "\r", properties);
             }
@@ -31,7 +31,7 @@ namespace Sailfish.Utils
 
         public static void Verbose(string messageLine, params string[] properties)
         {
-            if (filePath is null) filePath = filePath ?? $"C:\\Users\\paule\\code\\VeerPerformaRelated\\TestingLogs\\crazy_logs-{Guid.NewGuid().ToString()}.txt";
+            if (filePath is null) filePath = filePath ?? $"C:\\Users\\paule\\code\\ProjectSailfish\\TestingLogs\\crazy_logs-{Guid.NewGuid().ToString()}.txt";
 
             if (!File.Exists(filePath)) File.Create(filePath);
 
@@ -41,7 +41,7 @@ namespace Sailfish.Utils
             }
             catch (Exception ex)
             {
-                filePath = $"C:\\Users\\paule\\code\\VeerPerformaRelated\\TestingLogs\\crazy_logs-{Guid.NewGuid().ToString()}.txt";
+                filePath = $"C:\\Users\\paule\\code\\ProjectSailfish\\TestingLogs\\crazy_logs-{Guid.NewGuid().ToString()}.txt";
                 DoWrite(filePath, $"What a crazy exception!: {ex.Message}", properties);
                 DoWrite(filePath, messageLine, properties);
             }
@@ -49,7 +49,7 @@ namespace Sailfish.Utils
 
         private static void DoWrite(string fp, string messageLine, params string[] properties)
         {
-            using (var mutex = new Mutex(false, "THE_ONLY_VEER_MUTEX"))
+            using (var mutex = new Mutex(false, "THE_ONLY_Sail_MUTEX"))
             {
                 mutex.WaitOne();
 

@@ -11,7 +11,7 @@ namespace Sailfish.TestAdapter.Utils
 {
     internal class TestExecution
     {
-        private readonly IVeerTestExecutor executor;
+        private readonly ISailTestExecutor executor;
         private readonly ITestInstanceContainerCreator instanceContainerCreator;
         private readonly TypeLoader typeLoader;
 
@@ -19,7 +19,7 @@ namespace Sailfish.TestAdapter.Utils
         {
             typeLoader = new TypeLoader();
             var container = CompositionRoot();
-            executor = container.Resolve<IVeerTestExecutor>();
+            executor = container.Resolve<ISailTestExecutor>();
             instanceContainerCreator = container.Resolve<ITestInstanceContainerCreator>();
         }
 
@@ -84,7 +84,7 @@ namespace Sailfish.TestAdapter.Utils
         public static IContainer CompositionRoot()
         {
             var builder = new ContainerBuilder();
-            builder.RegisterVeerPerformaTypes();
+            builder.RegisterSailfishTypes();
             return builder.Build();
         }
     }

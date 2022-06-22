@@ -17,7 +17,7 @@ namespace Sailfish.Execution
             var allTests = new List<Type>();
             foreach (var sourceType in sourceTypes)
             {
-                var allTypes = sourceType.Assembly.GetTypes().Where(t => t.HasAttribute<VeerPerformaAttribute>());
+                var allTypes = sourceType.Assembly.GetTypes().Where(t => t.HasAttribute<SailfishAttribute>());
                 allTests.AddRange(allTypes);
             }
 
@@ -26,7 +26,7 @@ namespace Sailfish.Execution
 
         public Type[] CollectTestTypes()
         {
-            var types = Assembly.GetCallingAssembly().GetTypes().Where(t => t.HasAttribute<VeerPerformaAttribute>()).ToArray();
+            var types = Assembly.GetCallingAssembly().GetTypes().Where(t => t.HasAttribute<SailfishAttribute>()).ToArray();
             return types;
         }
     }

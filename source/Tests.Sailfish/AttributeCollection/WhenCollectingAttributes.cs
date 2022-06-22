@@ -15,7 +15,7 @@ namespace Test.AttributeCollection
             var allTypesWithAttribute = Assembly
                     .GetAssembly(typeof(WhenCollectingAttributes))!
                 .GetTypes()
-                .Where(t => t.HasAttribute<VeerPerformaAttribute>())
+                .Where(t => t.HasAttribute<SailfishAttribute>())
                 .ToArray();
 
             allTypesWithAttribute.Length.ShouldBeGreaterThan(0);
@@ -28,12 +28,12 @@ namespace Test.AttributeCollection
                         .OrderBy(x => x));
         }
 
-        [VeerPerforma]
+        [Sailfish]
         public class TestClassOne
         {
         }
 
-        [VeerPerforma(3)]
+        [Sailfish(3)]
         public class TestClassTwo
         {
         }

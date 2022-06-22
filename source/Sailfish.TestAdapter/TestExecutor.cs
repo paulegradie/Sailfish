@@ -11,7 +11,7 @@ namespace Sailfish.TestAdapter
     [ExtensionUri(ExecutorUriString)]
     public class TestExecutor : ITestExecutor
     {
-        public const string ExecutorUriString = "executor://veerperformaexecutor/v1";
+        public const string ExecutorUriString = "executor://sailfishexecutor/v1";
         public static readonly Uri ExecutorUri = new Uri(ExecutorUriString);
 
         private readonly object obj = new();

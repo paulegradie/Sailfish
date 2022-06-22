@@ -3,7 +3,7 @@ using Test.API.Controllers.Base;
 
 namespace Test.API.Controllers
 {
-    public class CountToTenMillionController : VeerBaseController
+    public class CountToTenMillionController : BaseController
     {
         public const string Route = "million";
 

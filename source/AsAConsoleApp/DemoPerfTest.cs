@@ -10,7 +10,7 @@ namespace AsAConsoleApp
 {
     [WriteToMarkdown]
     [WriteToCsv]
-    [VeerPerforma(1)]
+    [Sailfish(1)]
     public class DemoPerfTest : ApiTestBase
     {
         public DemoPerfTest(WebApplicationFactory<DemoApp> factory) : base(factory)
@@ -21,37 +21,37 @@ namespace AsAConsoleApp
 
         [IterationVariable(200, 300)] public int WaitPeriod { get; set; }
 
-        [VeerGlobalSetup]
+        [SailGlobalSetup]
         public void GlobalSetup()
         {
             Console.WriteLine("This is the Global Setup");
         }
 
-        [VeerGlobalTeardown]
+        [SailGlobalTeardown]
         public void GlobalTeardown()
         {
             Console.WriteLine("This is the Global Teardown");
         }
 
-        [VeerExecutionMethodSetup]
+        [SailExecutionMethodSetup]
         public void ExecutionMethodSetup()
         {
             Console.WriteLine("This is the Execution Method Setup");
         }
 
-        [VeerExecutionMethodTeardown]
+        [SailExecutionMethodTeardown]
         public void ExecutionMethodTeardown()
         {
             Console.WriteLine("This is the Execution Method Teardown");
         }
 
-        [VeerExecutionIterationSetup]
+        [SailExecutionIterationSetup]
         public void IterationSetup()
         {
             Console.WriteLine("This is the Iteration Setup - use sparingly");
         }
 
-        [VeerExecutionIterationTeardown]
+        [SailExecutionIterationTeardown]
         public void IterationTeardown()
         {
             Console.WriteLine("This is the Iteration Teardown - use sparingly");

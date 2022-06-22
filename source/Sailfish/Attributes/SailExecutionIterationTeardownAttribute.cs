@@ -3,7 +3,7 @@ using System;
 namespace Sailfish.Attributes
 {
     [AttributeUsage(AttributeTargets.Method, AllowMultiple = false)]
-    public class VeerGlobalTeardownAttribute : Attribute
+    public class SailExecutionIterationTeardownAttribute : Attribute
     {
     }
 }

@@ -1,10 +1,10 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <PackageId>Sailfish.TestAdapter</PackageId>
-    <Version>0.0.107</Version>
+    <Version>0.0.108</Version>
     <Authors>Paul E. Gradie</Authors>
     <Description>
-            VeerPerforma is a simple, unambitious, low resolution performace test framework for writing clean, manageable performance tests
+            Sailfish is a simple, unambitious, low resolution performace test framework for writing clean, manageable performance tests
             against your component or API. The general intention is to provide a simple tool that teams can use to write straight forward
             tests that assess the speed of your code, without weighing you down with all the extra ceremony.
         </Description>

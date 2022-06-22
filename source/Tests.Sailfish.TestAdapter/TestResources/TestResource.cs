@@ -1,10 +1,10 @@
 ﻿using System;
 using System.IO;
-using VeerPerforma.Attributes;
+using Sailfish.Attributes;
 
-namespace Tests.VeerPerforma.TestAdapter.TestResources
+namespace Tests.Sailfish.TestAdapter.TestResources
 {
-    [VeerPerforma]
+    [Sailfish]
     public class SimplePerfTest
     {
         [IterationVariable(1, 2, 3)]

@@ -4,7 +4,7 @@ namespace Test.API.Controllers.Base
 {
     [Route("/")]
     [ApiController]
-    public class VeerBaseController : ControllerBase
+    public class BaseController : ControllerBase
     {
     }
 }

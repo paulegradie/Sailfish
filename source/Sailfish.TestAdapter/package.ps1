@@ -1,4 +1,4 @@
-$packagepath = "../../../LocalPackages/VeerPerforma.TestAdapter.nupkg"
+$packagepath = "../../../LocalPackages/Sailfish.TestAdapter.nupkg"
 
 if (Test-Path -Path $packagepath -PathType Leaf)
 {
@@ -7,4 +7,4 @@ if (Test-Path -Path $packagepath -PathType Leaf)
 dotnet build
 dotnet pack -c Release -o ../../../LocalPackages
 
-# 'C:\Users\paule\code\Veer-Performa\source\VeerPerforma.TestAdapter\bin\Debug\VeerPerforma.TestAdapter.nupkg
+# 'C:\Users\paule\code\Sailfish\source\Sailfish.TestAdapter\bin\Debug\Sailfish.TestAdapter.nupkg

@@ -3,9 +3,9 @@ using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Sailfish.TestAdapter.Utils;
 using Shouldly;
-using Tests.VeerPerforma.TestAdapter.TestResources;
+using Tests.Sailfish.TestAdapter.TestResources;
 
-namespace Tests.VeerPerforma.TestAdapter;
+namespace Tests.Sailfish.TestAdapter;
 
 [TestClass]
 public class WhenAssemblingTestCases

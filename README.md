@@ -1,4 +1,4 @@
-# Veer-Performa - an unambitious performace test runner
+# Sailfish - an unambitious performace test runner
 A .net package used to perform low resolution performance analysis of your component or API.
 
 # Intended Use
@@ -12,10 +12,10 @@ For this reason, this project does not go to the extent that other more rigorous
 
 Thanks to the BenchmarkDotNet team for that pattern. You folks are really smart. *hat tip*
 
-# Veer Performa performance testing tools
+# Sailfish performance testing tools
 
 When you create a new test class, you provide attributes to:
- - The class - to tell the runner this is a VeerPerforma performance test
+ - The class - to tell the runner this is a Sailfish performance test
  - Helper Methods - to tell the runner to call certain methods before and after the main execution iterations
  - The main execution method - a single method that will be called by the runner and clocked for speed.
 
@@ -43,10 +43,10 @@ There are two demo projects provided in this repo that demonstrate two typical u
 
 
 ### DemoTestRunner
-Naturally, most developers will wish to executes their performance tests in an IDE. This is why we provide the `VeerPerforma.TestAdapter`, which allows you to activate test classes directly from the IDE. You are likely familiar with Visual Studio, or perhaps Jetbrains Rider's, test running tools (the little play button that appears next to your tests). The `DemoTestRunner` project has the test adapter installed and provides a simple test for you to see how this works.
+Naturally, most developers will wish to executes their performance tests in an IDE. This is why we provide the `Sailfish.TestAdapter`, which allows you to activate test classes directly from the IDE. You are likely familiar with Visual Studio, or perhaps Jetbrains Rider's, test running tools (the little play button that appears next to your tests). The `DemoTestRunner` project has the test adapter installed and provides a simple test for you to see how this works.
 
 ### DemoConsoleApp
-If you're looking to run performance tests as part of your automated build and test pipeline, you can use use the `VeerPerformaExecutor` in a console app that is easily invokable. The `DemoConsoleApp` demonstrates this functionality and also provides a simple command line interface using the `McMaster.Extensions.CommandLineUtils`, which is a neat simple way to provide CLI args.
+If you're looking to run performance tests as part of your automated build and test pipeline, you can use use the `SailfishExecutor` in a console app that is easily invokable. The `DemoConsoleApp` demonstrates this functionality and also provides a simple command line interface using the `McMaster.Extensions.CommandLineUtils`, which is a neat simple way to provide CLI args.
 
 
 # Example Test Case
@@ -56,11 +56,11 @@ The first question one might ask about a new tool is 'what are all the possible 
 The following class demonstrates all of the attributes currently available, as well as all available arguments (with made-up parameters).
 
 ```
-[VeerPerforma(numIterations = 3, numWarmupIterations = 3)]
+[Sailfish(numIterations = 3, numWarmupIterations = 3)]
 public class DemoPerfTest : ApiTestBase
 {
     [InDevelopment("This is a note to the reader: this attribute is not ready for use and currently does the same thing as method setup.")]
-    [VeerGlobalSetup]
+    [SailGlobalSetup]
     public void GlobalSetup()
     {
         // This happens once per test case instance, and happens before any other setup methods.
@@ -68,34 +68,34 @@ public class DemoPerfTest : ApiTestBase
     }
 
     [InDevelopment("This is a note to the reader: this attribute is not ready for use and currently does the same thing as method teardown.")]
-    [VeerGlobalTeardown]
+    [SailGlobalTeardown]
     public void GlobalTeardown()
     {
         // This happens once per test case instance, and happens after all otehr teardown methods.
     }
 
-    [VeerExecutionMethodSetup]
+    [SailExecutionMethodSetup]
     public void ExecutionMethodSetup()
     {
         // This happens once per method. It occurs before method iterations.
     }
 
-    [VeerExecutionMethodTeardown]
+    [SailExecutionMethodTeardown]
     public void ExecutionMethodTeardown()
     {
         // This happens once per method. It occurs after method iterations.
     }
 
-    [VeerExecutionIterationSetup]
+    [SailExecutionIterationSetup]
     public void IterationSetup()
     {
-        // This is a high frequency setup method that happens before every invocation of the main execution method (with the `ExecutePerformanceCheck` attribute).
+        // This is a high frequency setup method that happens before every invocation of the main execution method (with the `ExecutePerformanceCheck` attribute)
     }
 
-    [VeerExecutionIterationTeardown]
+    [SailExecutionIterationTeardown]
     public void IterationTeardown()
     {
-        // This is a high frequency setup method that happens after every invocation of the main execution method (with the `ExecutePerformanceCheck` attribute).
+        // This is a high frequency setup method that happens after every invocation of the main execution method (with the `ExecutePerformanceCheck` attribute)
     }
 
     [IterationVariable(1, 2, 3)]
@@ -125,18 +125,33 @@ public class DemoPerfTest : ApiTestBase
 }
 ```
 
-## TODOs
+# Features
 
-**Differential Analyzer**
+### Performance tracking
 
-The idea idea here is to provide a database schema where analysis results can be tracked. We'll need to keep track of the iterations for these runs so we can compute statistical differences between run A and run B.
 
-When run in this mode, there will have to be a list things to think about:
 
- - Each record will need to be time stamped.
-   - We could try and use a 'run number' type system, but time is really the only thing that is guaranteed to move forward.
-   -  We might need a way to link back
-   -  We could provide a git integration where by two branch are provided to perform an automated before and after style local perf performance test
- - A store is available that holds previous execution results
- - A new class will be skipped until new results are logged to the store
- - We'll have a nice way to present the differential statistics
+### Differential Analyzer
+
+Sailfish provides basic statistical testing tools to determine differences between your code versions. These are largely automatic, and on by default. You may however configure them to a lesser extent.
+
+
+When a directory is nominated, Sailfish will keep a (chonologically ordered) history of tracking files. Analysis will be executed on the latest file in the history, or you may choose a specific file to compare against.
+
+For example, say you were working on refactoring a feature in your API to improve its efficiency. To analyze the difference, write a performance test on your default branch (e.g. main) of your version control system (e.g. git). Next, go to your branch code and execute the performance test app again. Sailfish will find the default branch performance results and then use them in a two tailed students t test. (In the future, we hope to use the Welches t-test).
+
+There are two modes for tracking and analysis.
+ - Tracking - this mode will write files to the tracking directory
+ - Analysis - this mode will compare the current execution to the previous
+
+When the program executes in tracking mode, a tracking file will be emitted. Then, the statistical analyzer will read the latest, and the one that came just before.
+
+**The alpha value for change description is 0.01.**
+
+**Future Directions**
+ - The console app should expose a database schema and return a json of data perhaps.
+ - The test adapter should also be able to retrieve the last set of results.
+
+## Ideas
+ - git integration - where you can perform an auto branch swap, and the branch names are used in the file names, and the comparison is made automatically.
+ - Slack integraiton - when a change in performance is observed - a mediator should be provided to emit a message to a lot of different handlers, which talk to various different services.

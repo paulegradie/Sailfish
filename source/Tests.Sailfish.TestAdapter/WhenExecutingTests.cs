@@ -2,10 +2,11 @@
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.Adapter;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using NSubstitute;
+using Sailfish.TestAdapter.Utils;
 using Shouldly;
-using Tests.VeerPerforma.TestAdapter.Utils;
+using Tests.Sailfish.TestAdapter.Utils;
 
-namespace Tests.VeerPerforma.TestAdapter;
+namespace Tests.Sailfish.TestAdapter;
 
 [TestClass]
 public class WhenExecutingTests

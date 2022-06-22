@@ -12,17 +12,17 @@ namespace Sailfish
     ///     This class can be used in a project that is intended to define a bunch of perf tests
     ///     For example, create a project, and execute this run command. That will allow you to
     /// </summary>
-    public class VeerPerformaExecutor
+    public class SailfishExecutor
     {
         private readonly ITestCollector testCollector;
         private readonly ITestFilter testFilter;
         private readonly ITestResultCompiler testResultCompiler;
         private readonly ITestResultPresenter testResultPresenter;
         private readonly ITwoTailedTTester twoTailedTTester;
-        private readonly IVeerTestExecutor veerTestExecutor;
+        private readonly ISailTestExecutor SailTestExecutor;
 
-        public VeerPerformaExecutor(
-            IVeerTestExecutor veerTestExecutor,
+        public SailfishExecutor(
+            ISailTestExecutor SailTestExecutor,
             ITestCollector testCollector,
             ITestFilter testFilter,
             ITestResultCompiler testResultCompiler,
@@ -30,7 +30,7 @@ namespace Sailfish
             ITwoTailedTTester twoTailedTTester
         )
         {
-            this.veerTestExecutor = veerTestExecutor;
+            this.SailTestExecutor = SailTestExecutor;
             this.testCollector = testCollector;
             this.testFilter = testFilter;
             this.testResultCompiler = testResultCompiler;
@@ -43,7 +43,7 @@ namespace Sailfish
             var testRun = CollectTests(testNames, testLocationTypes);
             if (testRun.IsValid)
             {
-                var results = await veerTestExecutor.Execute(testRun.Tests);
+                var results = await SailTestExecutor.Execute(testRun.Tests);
                 var compiledResults = testResultCompiler.CompileResults(results);
                 await testResultPresenter.PresentResults(compiledResults, directoryPath, noTrack);
 

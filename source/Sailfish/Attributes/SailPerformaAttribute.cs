@@ -3,13 +3,13 @@
 namespace Sailfish.Attributes
 {
     [AttributeUsage(AttributeTargets.Class, Inherited = false, AllowMultiple = true)]
-    public class VeerPerformaAttribute : Attribute
+    public class SailfishAttribute : Attribute
     {
-        internal VeerPerformaAttribute()
+        internal SailfishAttribute()
         {
         }
 
-        public VeerPerformaAttribute(int numIterations = 3, int numWarmupIterations = 3)
+        public SailfishAttribute(int numIterations = 3, int numWarmupIterations = 3)
         {
             NumIterations = numIterations;
             NumWarmupIterations = numWarmupIterations;

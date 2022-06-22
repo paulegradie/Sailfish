@@ -29,7 +29,15 @@
     </ItemGroup>
 
     <ItemGroup>
-      <Folder Include="Behavior" />
+      <Compile Remove="Behavior\**" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <EmbeddedResource Remove="Behavior\**" />
+    </ItemGroup>
+
+    <ItemGroup>
+      <None Remove="Behavior\**" />
     </ItemGroup>
 
 </Project>

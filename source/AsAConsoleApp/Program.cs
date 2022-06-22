@@ -50,7 +50,7 @@ namespace AsAConsoleApp
 
         public async Task OnExecute()
         {
-            // var filePath = $"C:\\Users\\paule\\code\\VeerPerformaRelated\\tracking_output\\Test_{Guid.NewGuid().ToString()}.csv";
+            // var filePath = $"C:\\Users\\paule\\code\\ProjectSailfish\\tracking_output\\Test_{Guid.NewGuid().ToString()}.csv";
             //
             // var data = new List<Thingo>()
             // {
@@ -86,18 +86,18 @@ namespace AsAConsoleApp
             // }
 
             var logger = Logging.CreateLogger("ConsoleAppLogs.log");
-            
+
             if (OutputDirectory is null)
             {
                 OutputDirectory = Path.Combine(Directory.GetCurrentDirectory(), "performance_output");
             }
-            
+
             // testing
-            OutputDirectory = "C:\\Users\\paule\\code\\VeerPerformaRelated";
-            
+            OutputDirectory = "C:\\Users\\paule\\code\\ProjectSailfish";
+
             await ContainerConfiguration
                 .CompositionRoot()
-                .Resolve<VeerPerformaExecutor>()
+                .Resolve<SailfishExecutor>()
                 .Run(TestNames, OutputDirectory, NoTrack, Analyze, GetType());
         }
     }

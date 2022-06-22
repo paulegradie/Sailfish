@@ -2,7 +2,7 @@
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Sailfish.TestAdapter.Utils;
 using Shouldly;
-using Tests.VeerPerforma.TestAdapter.Utils;
+using Tests.Sailfish.TestAdapter.Utils;
 
 namespace Tests.Sailfish.TestAdapter;
 

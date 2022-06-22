@@ -1,3 +1,3 @@
-# Veer Performa Console App Demo
+# Sailfish Console App Demo
 
-This project provides a demo for how to use Veer performa as a console app.
+This project provides a demo for how to use Sailfish as a console app.

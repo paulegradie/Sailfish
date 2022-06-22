@@ -4,7 +4,7 @@ using Shouldly;
 using Sailfish.Execution;
 using Xunit;
 
-namespace Test.VeerPerforma.Executor.Tests
+namespace Test.Sailfish.Executor.Tests
 {
     public class WhenCompilingIterationVariables
     {

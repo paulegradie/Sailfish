@@ -16,7 +16,7 @@ namespace Sailfish.Registration
 {
     public static class AssemblyRegistrationExtensionMethods
     {
-        public static void RegisterVeerPerformaTypes(this ContainerBuilder builder)
+        public static void RegisterSailfishTypes(this ContainerBuilder builder)
         {
             builder.RegisterModule(new ExecutorModule());
         }
@@ -33,7 +33,7 @@ namespace Sailfish.Registration
             throw new NotImplementedException();
         }
 
-        public static void RegisterVeerPerformaTypes(this IServiceCollection serviceCollection)
+        public static void RegisterSailfishTypes(this IServiceCollection serviceCollection)
         {
             serviceCollection.AddTransient<ILogger>(
                 c =>
@@ -42,8 +42,8 @@ namespace Sailfish.Registration
                         .CreateLogger();
                 });
 
-            serviceCollection.AddTransient<VeerPerformaExecutor>();
-            serviceCollection.AddTransient<IVeerTestExecutor, VeerTestExecutor>();
+            serviceCollection.AddTransient<SailfishExecutor>();
+            serviceCollection.AddTransient<ISailTestExecutor, SailTestExecutor>();
             serviceCollection.AddTransient<ITestFilter, TestFilter>();
             serviceCollection.AddTransient<ITestListValidator, TestListValidator>();
             serviceCollection.AddTransient<ITestCollector, TestCollector>();
@@ -79,8 +79,8 @@ namespace Sailfish.Registration
                         .CreateLogger();
                 }).SingleInstance();
 
-            builder.RegisterType<VeerPerformaExecutor>().AsSelf();
-            builder.RegisterType<VeerTestExecutor>().As<IVeerTestExecutor>();
+            builder.RegisterType<SailfishExecutor>().AsSelf();
+            builder.RegisterType<SailTestExecutor>().As<ISailTestExecutor>();
             builder.RegisterType<TestFilter>().As<ITestFilter>();
             builder.RegisterType<TestListValidator>().As<ITestListValidator>();
             builder.RegisterType<TestCollector>().As<ITestCollector>();

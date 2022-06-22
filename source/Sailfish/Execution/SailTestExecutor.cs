@@ -5,13 +5,13 @@ using Serilog;
 
 namespace Sailfish.Execution
 {
-    public class VeerTestExecutor : IVeerTestExecutor
+    public class SailTestExecutor : ISailTestExecutor
     {
         private readonly ILogger logger;
         private readonly ITestCaseIterator testCaseIterator;
         private readonly ITestInstanceContainerCreator testInstanceContainerCreator;
 
-        public VeerTestExecutor(
+        public SailTestExecutor(
             ILogger logger,
             ITestInstanceContainerCreator testInstanceContainerCreator,
             ITestCaseIterator testCaseIterator

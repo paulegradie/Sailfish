@@ -25,7 +25,7 @@ namespace Sailfish.TestAdapter.Utils
         //
         // static TestProperty GetTestProperty()
         // {
-        //     return TestProperty.Register("VeerPerformaTestCase", "Sailfish Test Case", typeof(Assembly), typeof(DataMap));
-        // } 
+        //     return TestProperty.Register("SailfishTestCase", "Sailfish Test Case", typeof(Assembly), typeof(DataMap));
+        // }
     }
 }
