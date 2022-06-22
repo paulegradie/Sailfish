@@ -34,6 +34,7 @@ DemoPerfTest
 
 This will by default produce a tracking file in a subdirectory to the output directory. So, on the second run, by default, you should also the following statistical test:
 
+```
 -----------------------------------
 T-Test results comparing:
 Before: PerformanceResults_2022-23-6--08-36-26.cvs.tracking
@@ -51,3 +52,4 @@ After: PerformanceResults_2022-23-6--08-34-58.cvs.tracking
  | DemoPerfTest.Other(NTries: 1, WaitPeriod: 300)               | 13.75 ms     | 13 ms       | 0.362  | 5.146            | 1          | No change         |
  | DemoPerfTest.Other(NTries: 1, WaitPeriod: 200)               | 12.5 ms      | 14.5 ms     | 0.378  | 3.688            | -1         | No change         |
 
+```
