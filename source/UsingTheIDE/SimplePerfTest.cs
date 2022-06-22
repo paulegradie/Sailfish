@@ -1,7 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Linq;
-using VeerPerforma.Attributes;
+using Sailfish.Attributes;
 
 namespace UsingTheIDE
 {

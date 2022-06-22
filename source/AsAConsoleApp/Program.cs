@@ -8,9 +8,9 @@ using Autofac;
 using CsvHelper;
 using CsvHelper.Configuration;
 using McMaster.Extensions.CommandLineUtils;
-using VeerPerforma;
-using VeerPerforma.Presentation.Csv;
-using VeerPerforma.Statistics;
+using Sailfish;
+using Sailfish.Presentation.Csv;
+using Sailfish.Statistics;
 
 namespace AsAConsoleApp
 {

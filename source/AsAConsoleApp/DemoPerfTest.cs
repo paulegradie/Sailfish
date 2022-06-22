@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Test.API;
 using Test.ApiCommunicationTests.Base;
-using VeerPerforma.Attributes;
+using Sailfish.Attributes;
 
 namespace AsAConsoleApp
 {

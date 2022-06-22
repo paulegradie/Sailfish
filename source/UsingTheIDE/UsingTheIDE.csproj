@@ -20,7 +20,7 @@
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\VeerPerforma\VeerPerforma.csproj" />
+      <ProjectReference Include="..\Sailfish\Sailfish.csproj" />
     </ItemGroup>
 
 </Project>

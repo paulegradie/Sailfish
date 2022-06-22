@@ -1,7 +1,7 @@
 using Autofac;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Test.API;
-using VeerPerforma.Registration;
+using Sailfish.Registration;
 
 namespace AsAConsoleApp
 {

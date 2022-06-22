@@ -9,8 +9,8 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\Tests.VeerPerforma\Tests.VeerPerforma.csproj" />
-      <ProjectReference Include="..\VeerPerforma\VeerPerforma.csproj" />
+      <ProjectReference Include="..\Tests.Sailfish\Tests.Sailfish.csproj" />
+      <ProjectReference Include="..\Sailfish\Sailfish.csproj" />
     </ItemGroup>
 
     <ItemGroup>

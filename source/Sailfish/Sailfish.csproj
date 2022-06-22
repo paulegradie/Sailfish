@@ -1,0 +1,27 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <PackageId>Sailfish</PackageId>
+    <Version>0.0.107</Version>
+    <Authors>Paul E. Gradie</Authors>
+    <Description>
+            VeerPerforma is a simple, unambitious, low resolution performace test framework for writing clean, manageable performance tests
+            against your component or API. The general intention is to provide a simple tool that teams can use to write straight forward
+            tests that assess the speed of your code, without weighing you down with all the extra ceremony.
+        </Description>
+    <TargetFramework>net6.0</TargetFramework>
+    <LangVersion>10</LangVersion>
+    <Nullable>enable</Nullable>
+    <IsPackable>true</IsPackable>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Accord.Statistics" Version="3.8.0" />
+    <PackageReference Include="Autofac" Version="6.4.0" />
+    <PackageReference Include="CsvHelper" Version="26.1.0" />
+    <PackageReference Include="MathNet.Numerics" Version="5.0.0" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="6.0.0" />
+    <PackageReference Include="Serilog" Version="2.11.0" />
+  </ItemGroup>
+  <ItemGroup>
+    <Folder Include="Presentation\TTest" />
+  </ItemGroup>
+</Project>

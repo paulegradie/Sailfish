@@ -1,8 +1,8 @@
-﻿// using VeerPerforma.Attributes;
+﻿// using Sailfish.Attributes;
 //
 // namespace AsAConsoleApp;
 //
-// [VeerPerforma]
+// [Sailfish]
 // public class FaultyTestStructure
 // {
 //     [IterationVariable(1, 2, 3)]
