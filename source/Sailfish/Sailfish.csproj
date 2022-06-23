@@ -8,7 +8,7 @@
             against your component or API. The general intention is to provide a simple tool that teams can use to write straight forward
             tests that assess the speed of your code, without weighing you down with all the extra ceremony.
         </Description>
-    <TargetFramework>net6.0</TargetFramework>
+    <TargetFramework>net5.0</TargetFramework>
     <LangVersion>10</LangVersion>
     <Nullable>enable</Nullable>
     <IsPackable>true</IsPackable>
