@@ -2,6 +2,8 @@
 
 Sailfish is a .net library used to perform low resolution performance analysis of your component or API.
 
+Available on [https://www.nuget.org/packages/Sailfish/](https://www.nuget.org/packages/Sailfish/)
+
 # Intended Use
 This test framework is intended to provide approximate millisecond resolution performance data of your component or API. It is NOT intended to produce high resolution (microsecond, nanosecond) results on performance.
 
@@ -121,6 +123,8 @@ There are two demo projects provided in this repo that demonstrate two typical u
 ### DemoTestRunner
 Naturally, most developers will wish to executes their performance tests in an IDE. This is why we provide the `Sailfish.TestAdapter`, which allows you to activate test classes directly from the IDE. You are likely familiar with Visual Studio, or perhaps Jetbrains Rider's, test running tools (the little play button that appears next to your tests). The `DemoTestRunner` project has the test adapter installed and provides a simple test for you to see how this works.
 
+*Note - The test runner has partial functionality. You will likely encounter errors using Visual Studio.
+
 ### DemoConsoleApp
 If you're looking to run performance tests as part of your automated build and test pipeline, you can use use the `SailfishExecutor` in a console app that is easily invokable. The `DemoConsoleApp` demonstrates this functionality and also provides a simple command line interface using the `McMaster.Extensions.CommandLineUtils`, which is a neat simple way to provide CLI args.
 
@@ -179,10 +183,6 @@ A common use case we've seen is the before and after analysis of changes made be
 - Custom event handlers
 
 We could provide a mediator that allow users to register message handlers that perform custom actions. This could be accomplished by using MediatR internally and allowing users to register handler implementations - which we would that call as part of the execution run.
-
- - Publishing nuget packages!
-
-Sailfish is intended for public consumption, so we need to get a github action set up to publish the library to nuget.
 
 
 # License
