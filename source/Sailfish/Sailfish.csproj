@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <PackageId>Sailfish</PackageId>
-    <Version>0.0.116</Version>
+    <Version>0.0.117</Version>
     <Authors>Paul E. Gradie</Authors>
     <Description>
             Sailfish is a simple, unambitious, low resolution performace test framework for writing clean, manageable performance tests
@@ -23,7 +23,7 @@
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="Accord.Statistics" Version="3.8.0" />
-    <PackageReference Include="Autofac" Version="6.4.0" />
+    <PackageReference Include="Autofac" Version="4.9.4" />
     <PackageReference Include="CsvHelper" Version="26.1.0" />
     <PackageReference Include="MathNet.Numerics" Version="5.0.0" />
     <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="6.0.0" />

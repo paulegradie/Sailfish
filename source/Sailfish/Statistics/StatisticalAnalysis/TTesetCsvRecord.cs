@@ -2,17 +2,10 @@
 
 public class TTesetCsvRecord
 {
-    public string TestName { get; set; }
-    public string MeanOfBefore { get; set; }
-    public string MeanOfAfter { get; set; }
-    public string PValue { get; set; }
-    public string DegreesOfFreedom { get; set; }
-    public string TStatistic { get; set; }
-}
-
-public class StatisticsCsvRecord
-{
-    public string TestName { get; set; }
-    
-    
+    public string TestName { get; set; } = null!;
+    public string MeanOfBefore { get; set; } = null!;
+    public string MeanOfAfter { get; set; } = null!;
+    public string PValue { get; set; } = null!;
+    public string DegreesOfFreedom { get; set; } = null!;
+    public string TStatistic { get; set; } = null!;
 }

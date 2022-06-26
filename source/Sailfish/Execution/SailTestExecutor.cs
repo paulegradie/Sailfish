@@ -35,6 +35,9 @@ namespace Sailfish.Execution
                 catch (Exception ex)
                 {
                     logger.Fatal("The Test runner encountered a fatal error: {0}", ex.Message);
+
+                    // TODO: When we encounter an error on execution, we swallow things for now
+                    // Instead, I'd like to return a list of those types that failed, and report their types as well as their exceptions
                     resultsDict.Add(testType, new List<TestExecutionResult>());
                 }
             }

@@ -19,7 +19,7 @@ namespace Sailfish.Execution
 
         public string[] Messages { get; set; }
         public Exception? Exception { get; set; }
-        public int StatusCode { get; set; }
+        public StatusCode StatusCode { get; set; }
         public PerformanceTimer PerformanceTimerResults { get; set; } = null!;
         public ExecutionSettings ExecutionSettings { get; set; }
 
@@ -30,7 +30,7 @@ namespace Sailfish.Execution
         {
             return new TestExecutionResult(container, messages, true)
             {
-                StatusCode = 0,
+                StatusCode = StatusCode.Success,
                 PerformanceTimerResults = container.Invocation.GetPerformanceResults()
             };
         }
@@ -39,7 +39,7 @@ namespace Sailfish.Execution
         {
             return new TestExecutionResult(container, messages, false, exception)
             {
-                StatusCode = 1,
+                StatusCode = StatusCode.Failure,
                 PerformanceTimerResults = container.Invocation.GetPerformanceResults()
             };
         }

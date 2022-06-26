@@ -37,7 +37,7 @@ namespace Sailfish.Execution
 
         public ExecutionSettings ExecutionSettings { get; }
 
-        public AncillaryInvocation Invocation { get; protected set; }
+        public AncillaryInvocation Invocation { get; protected set; } = null!;
 
         public static TestInstanceContainer CreateTestInstance(object instance, MethodInfo method, string[] propertyNames, int[] variables)
         {

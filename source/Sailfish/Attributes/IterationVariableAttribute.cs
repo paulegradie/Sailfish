@@ -13,7 +13,7 @@ namespace Sailfish.Attributes
     {
         public IterationVariableAttribute(params int[] n)
         {
-            if (n.Length == 0) throw new InvalidOperationException("No values were provided to the IteratationVariable attribute.");
+            if (n.Length == 0) throw new InvalidOperationException("No values were provided to the IterationVariable attribute.");
             N = n;
         }
 

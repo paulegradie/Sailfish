@@ -43,6 +43,9 @@ jobs:
     - name: Build
       run: dotnet build ./source/Sailfish/Sailfish.csproj --configuration Release /p:Version=${VERSION}
 
+    - name: Test
+      run: dotnet test ./source/Tests.Sailfish/Tests.Sailfish.csproj --verbosity normal
+
     - name: Pack
       run: dotnet pack ./source/Sailfish/Sailfish.csproj --configuration Release /p:Version=${VERSION} --no-build --output .
 

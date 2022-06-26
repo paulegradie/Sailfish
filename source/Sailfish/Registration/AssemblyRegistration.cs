@@ -1,6 +1,5 @@
 ﻿using System;
 using Autofac;
-using CsvHelper;
 using Microsoft.Extensions.DependencyInjection;
 using Sailfish.Execution;
 using Sailfish.Presentation;
@@ -65,6 +64,7 @@ namespace Sailfish.Registration
             serviceCollection.AddTransient<ITwoTailedTTestWriter, TwoTailedTTestWriter>();
             serviceCollection.AddTransient<ITrackingFileFinder, TrackingFileFinder>();
             serviceCollection.AddTransient<IPerformanceCsvTrackingWriter, PerformanceCsvTrackingWriter>();
+            serviceCollection.AddTransient<IIterationVariableRetriever, IterationVariableRetriever>();
         }
     }
 
@@ -103,6 +103,7 @@ namespace Sailfish.Registration
             builder.RegisterType<TwoTailedTTestWriter>().As<ITwoTailedTTestWriter>();
             builder.RegisterType<TrackingFileFinder>().As<ITrackingFileFinder>();
             builder.RegisterType<PerformanceCsvTrackingWriter>().As<IPerformanceCsvTrackingWriter>();
+            builder.RegisterType<IterationVariableRetriever>().As<IIterationVariableRetriever>();
 
         }
     }

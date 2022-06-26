@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using Autofac;
 
 namespace Sailfish.Execution
 {
@@ -65,7 +64,9 @@ namespace Sailfish.Execution
 
         private static ConstructorInfo GetConstructor(Type type)
         {
-            var ctorInfos = type.GetDeclaredConstructors();
+            var ctorInfos = type.GetConstructors(BindingFlags.Public | BindingFlags.Instance | BindingFlags.DeclaredOnly | BindingFlags.NonPublic);
+            
+            // var ctorInfos = type.GetDeclaredConstructors();
             if (ctorInfos.Length == 0 || ctorInfos.Length > 1) throw new Exception("A single ctor must be declared in all test types");
             return ctorInfos.Single();
         }

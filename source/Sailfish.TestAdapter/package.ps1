@@ -1,10 +1,16 @@
-$packagepath = "../../../LocalPackages/Sailfish.TestAdapter.nupkg"
+# A helper for local dev -- you can run this to build and package 
+# Sailfish for local reference in your project, or in the demo project
 
-if (Test-Path -Path $packagepath -PathType Leaf)
-{
-    Remove-Item -Force $packagepath
+$packageDir = "../../../LocalPackages/"
+
+if (Test-Path $packageDir) {   
+    Write-Host "Output dir exists"
 }
+else
+{
+    New-Item $packageDir -ItemType Directory
+    Write-Host "Output dir created"
+}
+
 dotnet build
 dotnet pack -c Release -o ../../../LocalPackages
-
-# 'C:\Users\paule\code\Sailfish\source\Sailfish.TestAdapter\bin\Debug\Sailfish.TestAdapter.nupkg

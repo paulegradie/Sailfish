@@ -12,7 +12,7 @@ namespace Sailfish.Utils
     {
         public static string ToStringTable<T>(this IEnumerable<T> values, List<string> headerSuffixes, params Expression<Func<T, object>>[] valueSelectors)
         {
-            var headers = valueSelectors.Select(func => GetProperty(func).Name).ToArray();
+            var headers = valueSelectors.Select(func => GetProperty(func)!.Name).ToArray();
             var selectors = valueSelectors.Select(exp => exp.Compile()).ToArray();
             return ToStringTable(values, headers, headerSuffixes, selectors);
         }
@@ -45,7 +45,7 @@ namespace Sailfish.Utils
 
                     if (headerSuffixes.Count == 0)
                     {
-                        arrValues[rowIndex, colIndex] = value != null ? value.ToString() : "null";
+                        arrValues[rowIndex, colIndex] = (value != null ? value.ToString() : "null")!;
                     }
                     else
                     {
@@ -110,19 +110,20 @@ namespace Sailfish.Utils
         }
 
 
-        private static PropertyInfo GetProperty<T>(Expression<Func<T, object>> expresstion)
+        // I'm not sure this is the best approach. Seeems like we could search from custom attributes instead.
+        private static PropertyInfo? GetProperty<T>(Expression<Func<T, object>> expression)
         {
-            if (expresstion.Body is UnaryExpression)
+            if (expression.Body is UnaryExpression)
             {
-                if ((expresstion.Body as UnaryExpression).Operand is MemberExpression)
+                if (((expression.Body as UnaryExpression)!).Operand is MemberExpression)
                 {
-                    return ((expresstion.Body as UnaryExpression).Operand as MemberExpression).Member as PropertyInfo;
+                    return (((expression.Body as UnaryExpression)!.Operand as MemberExpression)!.Member as PropertyInfo)!;
                 }
             }
 
-            if ((expresstion.Body is MemberExpression))
+            if ((expression.Body is MemberExpression))
             {
-                return (expresstion.Body as MemberExpression).Member as PropertyInfo;
+                return (((expression.Body as MemberExpression)!).Member as PropertyInfo)!;
             }
 
             return null;

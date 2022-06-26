@@ -16,7 +16,7 @@ public class WhenAssemblingTestCases
         var refFile = Directory.GetFiles(".").First();
 
         var projFile = recurse.RecurseUpwardsUntilFileIsFound(".csproj", refFile, 10);
-        var file = Directory.GetFiles(Directory.GetParent(projFile.FullName).FullName, fileName, SearchOption.AllDirectories).Single();
+        var file = Directory.GetFiles(Directory.GetParent(projFile.FullName)!.FullName, fileName, SearchOption.AllDirectories).Single();
         return file;
     }
 

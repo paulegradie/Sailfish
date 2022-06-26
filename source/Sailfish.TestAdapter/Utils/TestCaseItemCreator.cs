@@ -15,7 +15,7 @@ namespace Sailfish.TestAdapter.Utils
 
         public TestCaseItemCreator()
         {
-            parameterGridCreator = new ParameterGridCreator(new ParameterCombinator());
+            parameterGridCreator = new ParameterGridCreator(new ParameterCombinator(), new IterationVariableRetriever());
         }
 
         public IEnumerable<TestCase> AssembleTestCases(DataBag bag, string sourceDll)

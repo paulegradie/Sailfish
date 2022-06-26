@@ -5,7 +5,6 @@ using Sailfish.Execution;
 using Sailfish.Presentation;
 using Sailfish.Presentation.TTest;
 using Sailfish.Statistics;
-using Sailfish.Statistics.StatisticalAnalysis;
 
 namespace Sailfish
 {

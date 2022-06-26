@@ -6,7 +6,7 @@ namespace Sailfish.Statistics;
 
 public class TestCaseStatistics
 {
-    public string DisplayName { get; set; }
+    public string DisplayName { get; set; } = null!;
     public double Mean { get; set; }
     public double Median { get; set; }
     public double StdDev { get; set; }
@@ -16,7 +16,7 @@ public class TestCaseStatistics
     public DateTimeOffset GlobalStart { get; set; }
     public DateTimeOffset GlobalEnd { get; set; }
 
-    public double[] RawExecutionResults { get; set; } // milliseconds
+    public double[] RawExecutionResults { get; set; } = null!; // milliseconds
 
     public TestCaseStatistics ConvertFromPerfTimer(string displayName, PerformanceTimer performanceTimer)
     {

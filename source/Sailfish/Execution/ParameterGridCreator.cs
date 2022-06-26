@@ -1,24 +1,32 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
-using Sailfish.Attributes;
-using Sailfish.Utils;
 
 namespace Sailfish.Execution
 {
     public class ParameterGridCreator : IParameterGridCreator
     {
         private readonly IParameterCombinator parameterCombinator;
+        private readonly IIterationVariableRetriever iterationVariableRetriever;
 
-        public ParameterGridCreator(IParameterCombinator parameterCombinator)
+        public ParameterGridCreator(IParameterCombinator parameterCombinator, IIterationVariableRetriever iterationVariableRetriever)
         {
             this.parameterCombinator = parameterCombinator;
+            this.iterationVariableRetriever = iterationVariableRetriever;
         }
 
+        // TODO: We could probably use a better data structure here
+        /// <summary>
+        /// Returns an tuple of (property name (as a string), variable groups of the structure
+        /// Propnames = ["A", "B"]
+        ///           A   B    A  B    A  B    A  B
+        /// combos = [[1, 2], [1, 4], [2, 2], [2, 4]
+        /// </summary>
+        /// <param name="test"></param>
+        /// <returns></returns>
         public (List<string>, int[][]) GenerateParameterGrid(Type test)
         {
-            var variableProperties = GetParams(test);
+            var variableProperties = iterationVariableRetriever.RetrieveIterationVariables(test);
 
             var propNames = new List<string>();
             var propValues = new List<List<int>>();
@@ -30,35 +38,7 @@ namespace Sailfish.Execution
 
             var combos = parameterCombinator.GetAllPossibleCombos(propValues);
 
-            foreach (var testCombos in combos)
-            {
-                var combs = testCombos.ToList();
-            }
-
-            // Propnames = ["A", "B"]
-            //           A   B    A  B    A  B    A  B
-            // combos = [[1, 2], [1, 4], [2, 2], [2, 4]
             return (propNames, combos);
-        }
-
-        private static Dictionary<string, int[]> GetParams(Type type)
-        {
-            var dict = new Dictionary<string, int[]>();
-            var propertiesWithAttribute = type.GetPropertiesWithAttribute<IterationVariableAttribute>();
-            foreach (var property in propertiesWithAttribute)
-            {
-                var variableValues = property
-                    .GetCustomAttributes()
-                    .OfType<IterationVariableAttribute>()
-                    .Single() // multiple prop on the attribute is false, so this shouldn't throw - we validate first to give feedback
-                    .N
-                    .Distinct() // Duplicate values are currently allowed until we have an analyzer that prevents folks from providing duplicate values
-                    .OrderBy(x => x)
-                    .ToArray();
-                dict.Add(property.Name, variableValues);
-            }
-
-            return dict;
         }
     }
 }
