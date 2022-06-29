@@ -1,5 +1,6 @@
 using System;
 using Autofac;
+using Sailfish.Exceptions;
 
 namespace Sailfish.Execution
 {
@@ -25,11 +26,11 @@ namespace Sailfish.Execution
             if (serviceProvider is not null)
             {
                 var resolved = serviceProvider.GetService(type);
-                if (resolved is null) throw new Exception($"Could not resolve test type: {type.Name}. Make sure you register this type in your autofac or service collection container.");
+                if (resolved is null) throw new SailfishException($"Could not resolve test type: {type.Name}. Make sure you register this type in your autofac or service collection container.");
                 return resolved;
             }
 
-            throw new Exception("Service provider not found from whence to resolve objects");
+            throw new SailfishException("Service provider not found from whence to resolve objects");
         }
     }
 }

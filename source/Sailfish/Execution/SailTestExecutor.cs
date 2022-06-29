@@ -88,6 +88,22 @@ namespace Sailfish.Execution
             {
                 exception = ex;
             }
+            finally
+            {
+                if (testInstanceContainer.Instance is IDisposable disposable)
+                {
+                    disposable.Dispose();
+                }
+                else if (testInstanceContainer.Instance is IAsyncDisposable asyncDisposable)
+                {
+                    await asyncDisposable.DisposeAsync();
+                }
+                else
+                {
+                    testInstanceContainer.Instance = null!;
+                }
+            }
+
 
             return exception is null
                 ? TestExecutionResult.CreateSuccess(testInstanceContainer, messages)

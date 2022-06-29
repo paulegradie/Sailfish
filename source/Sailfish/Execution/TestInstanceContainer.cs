@@ -24,12 +24,16 @@ namespace Sailfish.Execution
             ExecutionMethod = method;
             DisplayName = displayName;
             ExecutionSettings = executionSettings;
+            GroupingId = $"{instance.GetType().Name}.{method.Name}";
         }
 
         public Type Type { get; }
-        public object Instance { get; }
+
+        private object instance;
+        public object Instance { get; set; }
+
         public MethodInfo ExecutionMethod { get; }
-        public string GroupingId => $"{Instance.GetType().Name}.{ExecutionMethod.Name}";
+        public string GroupingId { get; set; }
         public string DisplayName { get; } // This is a uniq id since we take a Distinct on all Iteration Variable attribute param -- class.method(varA: 1, varB: 3) is the form
         public int NumWarmupIterations => ExecutionSettings.NumWarmupIterations;
         public int NumIterations => ExecutionSettings.NumIterations;

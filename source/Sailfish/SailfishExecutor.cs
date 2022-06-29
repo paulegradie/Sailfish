@@ -19,7 +19,7 @@ namespace Sailfish
         private readonly ITestResultCompiler testResultCompiler;
         private readonly ITestResultPresenter testResultPresenter;
         private readonly ITwoTailedTTestWriter twoTailedTTestWriter;
-        private readonly ISailTestExecutor SailTestExecutor;
+        private readonly ISailTestExecutor sailTestExecutor;
 
         public SailfishExecutor(
             ISailTestExecutor SailTestExecutor,
@@ -30,7 +30,7 @@ namespace Sailfish
             ITwoTailedTTestWriter twoTailedTTestWriter
         )
         {
-            this.SailTestExecutor = SailTestExecutor;
+            this.sailTestExecutor = SailTestExecutor;
             this.testCollector = testCollector;
             this.testFilter = testFilter;
             this.testResultCompiler = testResultCompiler;
@@ -38,12 +38,29 @@ namespace Sailfish
             this.twoTailedTTestWriter = twoTailedTTestWriter;
         }
 
-        public async Task Run(string[] testNames, string directoryPath, bool noTrack, bool analyze, TTestSettings settings, params Type[] testLocationTypes) // TODO: pass an object.
+        public async Task Run(RunSettings runSettings)
+        {
+            await Run(
+                testNames: runSettings.TestNames,
+                directoryPath: runSettings.DirectoryPath,
+                noTrack: runSettings.NoTrack,
+                analyze: runSettings.Analyze,
+                settings: runSettings.Settings,
+                testLocationTypes: runSettings.TestLocationTypes);
+        }
+
+        public async Task Run(
+            string[] testNames,
+            string directoryPath,
+            bool noTrack,
+            bool analyze,
+            TTestSettings settings,
+            params Type[] testLocationTypes)
         {
             var testRun = CollectTests(testNames, testLocationTypes);
             if (testRun.IsValid)
             {
-                var results = await SailTestExecutor.Execute(testRun.Tests);
+                var results = await sailTestExecutor.Execute(testRun.Tests);
                 var compiledResults = testResultCompiler.CompileResults(results);
                 await testResultPresenter.PresentResults(compiledResults, directoryPath, noTrack);
 
@@ -52,7 +69,7 @@ namespace Sailfish
                     var date = DateTime.Now.ToLocalTime().ToString("yyyy-dd-M--HH-mm-ss");
                     await twoTailedTTestWriter.PresentTestResults(
                         directoryPath,
-                        Path.Combine(directoryPath, $"t-test_{date}.md"), 
+                        Path.Combine(directoryPath, $"t-test_{date}.md"),
                         settings);
                 }
             }
@@ -65,6 +82,8 @@ namespace Sailfish
                     foreach (var testName in names) Console.WriteLine($"--- {testName}");
                 }
             }
+
+            Task.Yield();
         }
 
         public TestValidationResult CollectTests(string[] testNames, params Type[] locationTypes)

@@ -32,7 +32,14 @@ namespace AsAConsoleApp
 
         public async Task OnExecute()
         {
+            await ContainerConfiguration
+                .CompositionRoot()
+                .Resolve<SailfishExecutor>()
+                .Run(AssembleRunRequest());
+        }
 
+        private RunSettings AssembleRunRequest()
+        {
             if (OutputDirectory is null)
             {
                 OutputDirectory = Path.Combine(Directory.GetCurrentDirectory(), "performance_output");
@@ -42,10 +49,7 @@ namespace AsAConsoleApp
                 }
             }
 
-            await ContainerConfiguration
-                .CompositionRoot()
-                .Resolve<SailfishExecutor>()
-                .Run(TestNames, OutputDirectory, NoTrack, Analyze, new TTestSettings(Alpha), GetType());
+            return new RunSettings(TestNames, OutputDirectory, NoTrack, Analyze, new TTestSettings(Alpha), GetType());
         }
     }
 }
