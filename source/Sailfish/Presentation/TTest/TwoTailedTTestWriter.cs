@@ -8,6 +8,7 @@ using Sailfish.Presentation.Csv;
 using Sailfish.Statistics;
 using Sailfish.Statistics.StatisticalAnalysis;
 using Sailfish.Utils;
+using Serilog;
 
 namespace Sailfish.Presentation.TTest;
 
@@ -16,21 +17,23 @@ public class TwoTailedTTestWriter : ITwoTailedTTestWriter
     private readonly ITrackingFileFinder trackingFileFinder;
     private readonly IFileIo fileIo;
     private readonly ITTest ttest;
+    private readonly ILogger logger;
     private readonly IPresentationStringConstructor stringBuilder;
 
     public TwoTailedTTestWriter(
         ITrackingFileFinder trackingFileFinder,
         IFileIo fileIo,
         ITTest ttest,
+        ILogger logger,
         IPresentationStringConstructor stringBuilder)
     {
         this.trackingFileFinder = trackingFileFinder;
         this.fileIo = fileIo;
         this.ttest = ttest;
+        this.logger = logger;
         this.stringBuilder = stringBuilder;
     }
 
-    // TODO: pass in a ttest settings object
     public async Task PresentTestResults(string readDirectory, string outputFilePath, TTestSettings settings)
     {
         await Task.CompletedTask;
@@ -39,6 +42,11 @@ public class TwoTailedTTestWriter : ITwoTailedTTestWriter
         if (string.IsNullOrEmpty(beforeAndAfter.After)) return;
 
         var results = ComputeTTest(beforeAndAfter, settings);
+        if (results.Count == 0)
+        {
+            logger.Information("No prior test results found for the current set");
+            return;
+        }
 
         var table = results.ToStringTable(
             new List<string>() { "", "ms", "ms", "", "", "", "" },

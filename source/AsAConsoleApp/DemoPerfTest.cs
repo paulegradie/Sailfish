@@ -17,9 +17,9 @@ namespace AsAConsoleApp
         {
         }
 
-        [IterationVariable(1, 2)] public int NTries { get; set; }
-
-        [IterationVariable(200, 300)] public int WaitPeriod { get; set; }
+        // [IterationVariable(1, 2)] public int NTries { get; set; }
+        //
+        // [IterationVariable(200, 300)] public int WaitPeriod { get; set; }
 
         [SailGlobalSetup]
         public void GlobalSetup()
@@ -61,9 +61,7 @@ namespace AsAConsoleApp
         [ExecutePerformanceCheck]
         public async Task WaitPeriodPerfTest()
         {
-            Thread.Sleep(WaitPeriod);
             await Client.GetStringAsync("/");
-            WriteSomething();
         }
 
         [ExecutePerformanceCheck]
@@ -72,11 +70,6 @@ namespace AsAConsoleApp
             Thread.Sleep(1);
             await Task.CompletedTask;
             Console.WriteLine("WOW");
-        }
-
-        private void WriteSomething()
-        {
-            Console.WriteLine($"Wait Period - Iteration Complete: {NTries}-{WaitPeriod}");
         }
     }
 }

@@ -32,7 +32,6 @@ namespace AsAConsoleApp
 
         public async Task OnExecute()
         {
-            var logger = Logging.CreateLogger("ConsoleAppLogs.log");
 
             if (OutputDirectory is null)
             {
