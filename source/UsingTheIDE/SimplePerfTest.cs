@@ -5,9 +5,6 @@ using Sailfish.Attributes;
 
 namespace UsingTheIDE
 {
-
-    // DO NOT MODIFY THIS FILE OR MOVE ITS LOCATION
-    // IT IS A TEST DEPENDENCY
     [Sailfish(NumIterations = 3, NumWarmupIterations = 2)]
     public class SimplePerfTest
     {

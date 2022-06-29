@@ -25,10 +25,6 @@ namespace Sailfish.Execution
                 erroredTests.Add("Could not find the following tests:", missingTests);
             }
 
-            if (AnyTestHaveTooManyExecutionMethods(filteredTestNames, out var invalidTests))
-            {
-                erroredTests.Add("The following tests have too many execution methods:", invalidTests);
-            }
 
             if (AnyTestHasNoExecutionMethods(filteredTestNames, out var noExecutionMethodTests))
             {
@@ -50,28 +46,6 @@ namespace Sailfish.Execution
             }
 
             return missingExecutionMethod.Count > 0;
-        }
-
-        private bool AnyTestHaveTooManyExecutionMethods(Type[] testClasses, out List<string> invalidlyStructuredTests)
-        {
-            invalidlyStructuredTests = new List<string>();
-            foreach (var test in testClasses)
-            {
-                if (!TypeHasMoreThanOneExecutionMethod(test))
-                {
-                    invalidlyStructuredTests.Add(test.Name);
-                }
-            }
-
-            return invalidlyStructuredTests.Count > 0;
-        }
-
-        private static bool TypeHasMoreThanOneExecutionMethod(Type type)
-        {
-            return type
-                .GetMethodsWithAttribute<ExecutePerformanceCheckAttribute>()
-                .ToArray()
-                .Length > 1;
         }
 
         private static bool TypeHasMoreThanZeroExecutionMethods(Type type)
