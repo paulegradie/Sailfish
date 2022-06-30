@@ -8,18 +8,15 @@ namespace Sailfish.Execution;
 
 public class TestInstanceContainerCreator : ITestInstanceContainerCreator
 {
-    private readonly IMethodOrganizer methodOrganizer;
     private readonly IParameterGridCreator parameterGridCreator;
     private readonly ITypeResolver typeResolver;
 
     public TestInstanceContainerCreator(
         ITypeResolver typeResolver,
-        IParameterGridCreator parameterGridCreator,
-        IMethodOrganizer methodOrganizer)
+        IParameterGridCreator parameterGridCreator)
     {
         this.typeResolver = typeResolver;
         this.parameterGridCreator = parameterGridCreator;
-        this.methodOrganizer = methodOrganizer;
     }
 
     public List<TestInstanceContainerProvider> CreateTestContainerInstanceProvider(Type test)

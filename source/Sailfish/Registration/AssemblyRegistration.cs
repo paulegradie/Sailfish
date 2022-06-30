@@ -51,7 +51,6 @@ namespace Sailfish.Registration
             serviceCollection.AddTransient<IParameterGridCreator, ParameterGridCreator>();
             serviceCollection.AddTransient<ITestInstanceContainerCreator, TestInstanceContainerCreator>();
             serviceCollection.AddTransient<ITypeResolver, TypeResolver>();
-            serviceCollection.AddTransient<IMethodOrganizer, MethodOrganizer>();
             serviceCollection.AddTransient<ITestCaseIterator, TestCaseIterator>();
             serviceCollection.AddTransient<IStatisticsCompiler, StatisticsCompiler>();
             serviceCollection.AddTransient<ITestResultCompiler, TestResultCompiler>();
@@ -89,7 +88,6 @@ namespace Sailfish.Registration
             builder.RegisterType<ParameterGridCreator>().As<IParameterGridCreator>();
             builder.RegisterType<TestInstanceContainerCreator>().As<ITestInstanceContainerCreator>();
             builder.RegisterType<TypeResolver>().As<ITypeResolver>();
-            builder.RegisterType<MethodOrganizer>().As<IMethodOrganizer>();
             builder.RegisterType<TestCaseIterator>().As<ITestCaseIterator>();
             builder.RegisterType<StatisticsCompiler>().As<IStatisticsCompiler>();
             builder.RegisterType<TestResultCompiler>().As<ITestResultCompiler>();
