@@ -15,8 +15,6 @@ namespace Sailfish.Execution
 
         public async Task<List<string>> Iterate(TestInstanceContainer testInstanceContainer)
         {
-            await testInstanceContainer.Invocation.GlobalSetup();
-
             await WarmupIterations(testInstanceContainer);
 
             var messages = new List<string>();
@@ -28,8 +26,6 @@ namespace Sailfish.Execution
 
                 await testInstanceContainer.Invocation.IterationTearDown();
             }
-
-            await testInstanceContainer.Invocation.GlobalTeardown();
 
             return messages; // TODO: use this?
         }

@@ -9,11 +9,12 @@ namespace Sailfish.Execution;
 // TODO: register this 
 public class TestInstanceContainerProvider
 {
+    public readonly MethodInfo method;
+
     private readonly ITypeResolver typeResolver;
     private readonly Type test;
     private readonly int[] combo;
     private readonly List<string> propertyNames;
-    private readonly MethodInfo method;
     private readonly Type[] ctorArgTypes;
 
     public TestInstanceContainerProvider(

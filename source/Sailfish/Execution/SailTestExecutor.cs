@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Serilog;
 
@@ -56,10 +57,55 @@ namespace Sailfish.Execution
         {
             var results = new List<TestExecutionResult>();
 
-            foreach (var provider in testInstanceContainerProviders)
+            var enumeratedMethodGroups = testInstanceContainerProviders
+                .GroupBy(x => x.method.Name)
+                .Zip(Enumerable.Range(0, testInstanceContainerProviders.Count));
+
+            var previousMethod = 0;
+            foreach (var (instanceProviders, currentMethod) in enumeratedMethodGroups)
             {
-                var executionResult = await Execute(provider.ProvideTestInstanceContainer(), callback);
-                results.Add(executionResult);
+                foreach (var (provider, instanceIndex) in instanceProviders.Zip(Enumerable.Range(0, instanceProviders.Count())))
+                {
+                    var instanceContainer = provider.ProvideTestInstanceContainer();
+                    if (instanceIndex == 0 && currentMethod == 0)
+                    {
+                        await instanceContainer.Invocation.GlobalSetup();
+                    }
+
+                    if (instanceIndex == 0 && (currentMethod == 0 || previousMethod != currentMethod))
+                    {
+                        await instanceContainer.Invocation.MethodSetup();
+                    }
+
+
+                    var executionResult = await Execute(instanceContainer, callback);
+                    results.Add(executionResult);
+
+                    if (instanceIndex == instanceProviders.Count() - 1)
+                    {
+                        await instanceContainer.Invocation.MethodTearDown();
+                    }
+
+                    if (currentMethod == enumeratedMethodGroups.Count() - 1 && instanceIndex == instanceProviders.Count() - 1)
+                    {
+                        await instanceContainer.Invocation.GlobalTeardown();
+                    }
+
+                    if (instanceContainer.Instance is IDisposable disposable)
+                    {
+                        disposable.Dispose();
+                    }
+                    else if (instanceContainer.Instance is IAsyncDisposable asyncDisposable)
+                    {
+                        await asyncDisposable.DisposeAsync();
+                    }
+                    else
+                    {
+                        instanceContainer.Instance = null!;
+                    }
+                }
+
+                previousMethod = currentMethod;
             }
 
             return results;
@@ -89,22 +135,6 @@ namespace Sailfish.Execution
             {
                 exception = ex;
             }
-            finally
-            {
-                if (testInstanceContainer.Instance is IDisposable disposable)
-                {
-                    disposable.Dispose();
-                }
-                else if (testInstanceContainer.Instance is IAsyncDisposable asyncDisposable)
-                {
-                    await asyncDisposable.DisposeAsync();
-                }
-                else
-                {
-                    testInstanceContainer.Instance = null!;
-                }
-            }
-
 
             return exception is null
                 ? TestExecutionResult.CreateSuccess(testInstanceContainer, messages)

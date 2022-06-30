@@ -17,9 +17,11 @@ namespace AsAConsoleApp
         {
         }
 
-        [IterationVariable(1, 2)] public int NTries { get; set; }
-        
-        [IterationVariable(200, 300)] public int WaitPeriod { get; set; }
+        [IterationVariable(1, 2)]
+        public int NTries { get; set; }
+
+        [IterationVariable(200, 300)]
+        public int WaitPeriod { get; set; }
 
         [SailGlobalSetup]
         public void GlobalSetup()
