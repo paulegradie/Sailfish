@@ -10,7 +10,7 @@ namespace Sailfish.Execution
     {
         Task<Dictionary<Type, List<TestExecutionResult>>> Execute(Type[] testTypes, Action<TestInstanceContainer, TestExecutionResult>? callback = null);
         Task<List<TestExecutionResult>> Execute(Type test, Action<TestInstanceContainer, TestExecutionResult>? callback = null);
-        Task<List<TestExecutionResult>> Execute(List<TestInstanceContainer> testInstanceContainer, Action<TestInstanceContainer, TestExecutionResult>? callback = null);
+        Task<List<TestExecutionResult>> Execute(List<TestInstanceContainerProvider> testInstanceContainer, Action<TestInstanceContainer, TestExecutionResult>? callback = null);
         Task<TestExecutionResult> Execute(TestInstanceContainer testInstanceContainer, Action<TestInstanceContainer, TestExecutionResult>? callback = null);
     }
 }
