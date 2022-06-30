@@ -47,17 +47,18 @@ namespace Sailfish.Execution
 
         public async Task<List<TestExecutionResult>> Execute(Type test, Action<TestInstanceContainer, TestExecutionResult>? callback = null)
         {
-            var testInstanceContainers = testInstanceContainerCreator.CreateTestContainerInstances(test);
+            var testInstanceContainers = testInstanceContainerCreator.CreateTestContainerInstanceProvider(test);
             var results = await Execute(testInstanceContainers);
             return results;
         }
 
-        public async Task<List<TestExecutionResult>> Execute(List<TestInstanceContainer> testInstanceContainers, Action<TestInstanceContainer, TestExecutionResult>? callback = null)
+        public async Task<List<TestExecutionResult>> Execute(List<TestInstanceContainerProvider> testInstanceContainerProviders, Action<TestInstanceContainer, TestExecutionResult>? callback = null)
         {
             var results = new List<TestExecutionResult>();
-            foreach (var testInstanceContainer in testInstanceContainers) // a test container has all the things need to create a test. All derived from the type.
+
+            foreach (var provider in testInstanceContainerProviders)
             {
-                var executionResult = await Execute(testInstanceContainer, callback);
+                var executionResult = await Execute(provider.ProvideTestInstanceContainer(), callback);
                 results.Add(executionResult);
             }
 
@@ -65,12 +66,12 @@ namespace Sailfish.Execution
         }
 
         // This will be called in the adapter
-        public async Task<TestExecutionResult> Execute(TestInstanceContainer testInstanceContainer, Action<TestInstanceContainer, TestExecutionResult>? callback = null)
+        public async Task<TestExecutionResult> Execute(TestInstanceContainer container, Action<TestInstanceContainer, TestExecutionResult>? callback = null)
         {
-            var result = await Iterate(testInstanceContainer);
+            var result = await Iterate(container);
             if (callback is not null)
             {
-                callback(testInstanceContainer, result);
+                callback(result.TestInstanceContainer, result);
             }
 
             return result;

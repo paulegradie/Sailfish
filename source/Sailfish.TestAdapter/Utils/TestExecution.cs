@@ -34,9 +34,10 @@ namespace Sailfish.TestAdapter.Utils
 
             foreach (var perfTestType in perfTestTypes)
             {
-                var testInstanceContainers = instanceContainerCreator.CreateTestContainerInstances(perfTestType);
-                foreach (var container in testInstanceContainers)
+                var testInstanceContainerProviders = instanceContainerCreator.CreateTestContainerInstanceProvider(perfTestType);
+                foreach (var provider in testInstanceContainerProviders)
                 {
+                    var container = provider.ProvideTestInstanceContainer();
                     var tc = testCases.SingleOrDefault(x => x.DisplayName == container.DisplayName); // Can we set a common Id property instead of the random GUID?
                     if (tc is null)
                     {
