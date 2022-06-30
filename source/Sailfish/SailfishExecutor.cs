@@ -82,8 +82,6 @@ namespace Sailfish
                     foreach (var testName in names) Console.WriteLine($"--- {testName}");
                 }
             }
-
-            Task.Yield();
         }
 
         public TestValidationResult CollectTests(string[] testNames, params Type[] locationTypes)

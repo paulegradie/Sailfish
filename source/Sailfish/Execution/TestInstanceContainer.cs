@@ -29,7 +29,6 @@ namespace Sailfish.Execution
 
         public Type Type { get; }
 
-        private object instance;
         public object Instance { get; set; }
 
         public MethodInfo ExecutionMethod { get; }

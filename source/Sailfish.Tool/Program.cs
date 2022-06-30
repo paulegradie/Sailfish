@@ -15,7 +15,7 @@ namespace Sailfish.Tool
         public string[] TestNames { get; set; } = { };
 
         [Option("-o|--outputDir", CommandOptionType.SingleValue, Description = "Path to an output directory. Absolute or relative.")]
-        public string OutputDirectory { get; set; }
+        public string? OutputDirectory { get; set; }
 
         [Option("-n|--no-track", CommandOptionType.SingleValue, Description = "Disable tracking. Tracking is where we emit results to enabled targets for later reference when performing statistical analysis.")]
         public bool NoTrack { get; set; }
@@ -42,7 +42,7 @@ namespace Sailfish.Tool
             if (TestNames is null) throw new Exception("Program failed to start...");
 
             var testSettings = new TTestSettings(Alpha);
-            
+
             await ContainerConfiguration
                 .CompositionRoot()
                 .Resolve<SailfishExecutor>()
