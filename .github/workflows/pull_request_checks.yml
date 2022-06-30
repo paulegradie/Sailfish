@@ -1,0 +1,36 @@
+name: Run Tests on pull request
+on: [pull_request]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+
+    - name: Generate build number
+      id: buildnumber
+      uses: einaregilsson/build-number@v3
+      with:
+        token: ${{secrets.github_token}}
+
+    - uses: actions/checkout@v2
+    - name: Setup dotnet
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: 6.0.x
+
+    - name: Checkout
+      uses: actions/checkout@v2
+
+    - name: Verify commit exists in origin/main
+      run: echo "Going to use ${{ steps.buildnumber.outputs.build_number }} for the package Id."
+
+    - name: Set VERSION variable from tag
+      run: echo "VERSION=0.0.${{ steps.buildnumber.outputs.build_number }}" >> $GITHUB_ENV
+
+    - name: Build
+      run: dotnet build ./source/Sailfish/Sailfish.csproj --configuration Release /p:Version=${VERSION}-pull-request
+
+    - name: Test
+      run: dotnet test ./source/Tests.Sailfish/Tests.Sailfish.csproj --verbosity normal
