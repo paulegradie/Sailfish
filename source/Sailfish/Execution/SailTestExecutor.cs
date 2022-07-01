@@ -48,67 +48,73 @@ namespace Sailfish.Execution
 
         public async Task<List<TestExecutionResult>> Execute(Type test, Action<TestInstanceContainer, TestExecutionResult>? callback = null)
         {
-            var testInstanceContainers = testInstanceContainerCreator.CreateTestContainerInstanceProvider(test);
+            var testInstanceContainers = testInstanceContainerCreator.CreateTestContainerInstanceProviders(test);
             var results = await Execute(testInstanceContainers);
             return results;
         }
 
-        public async Task<List<TestExecutionResult>> Execute(List<TestInstanceContainerProvider> testInstanceContainerProviders, Action<TestInstanceContainer, TestExecutionResult>? callback = null)
+        public async Task<List<TestExecutionResult>> Execute(
+            List<TestInstanceContainerProvider> testMethods,
+            Action<TestInstanceContainer, TestExecutionResult>? callback = null)
         {
             var results = new List<TestExecutionResult>();
 
-            var enumeratedMethodGroups = testInstanceContainerProviders
-                .GroupBy(x => x.method.Name)
-                .Zip(Enumerable.Range(0, testInstanceContainerProviders.Count));
-
-            var previousMethod = 0;
-            foreach (var (instanceProviders, currentMethod) in enumeratedMethodGroups)
+            var methodIndex = 0;
+            var totalMethodCount = testMethods.Count() - 1;
+            foreach (var testMethod in testMethods.OrderBy(x => x.method.Name))
             {
-                foreach (var (provider, instanceIndex) in instanceProviders.Zip(Enumerable.Range(0, instanceProviders.Count())))
+                var currentVariableSetIndex = 0;
+                var totalNumVariableSets = testMethod.GetNumberCombosInQueue() - 1;
+
+                foreach (var testMethodContainer in testMethod.ProvideNextTestInstanceContainer())
                 {
-                    var instanceContainer = provider.ProvideTestInstanceContainer();
-                    if (instanceIndex == 0 && currentMethod == 0)
+                    if (ShouldCallGlobalSetup(methodIndex, currentVariableSetIndex))
                     {
-                        await instanceContainer.Invocation.GlobalSetup();
+                        await testMethodContainer.Invocation.GlobalSetup();
                     }
 
-                    if (instanceIndex == 0 && (currentMethod == 0 || previousMethod != currentMethod))
+                    if (ShouldCallMethodSetup(methodIndex, currentVariableSetIndex))
                     {
-                        await instanceContainer.Invocation.MethodSetup();
+                        await testMethodContainer.Invocation.MethodSetup();
                     }
 
-
-                    var executionResult = await Execute(instanceContainer, callback);
+                    var executionResult = await Execute(testMethodContainer, callback);
                     results.Add(executionResult);
 
-                    if (instanceIndex == instanceProviders.Count() - 1)
+                    if (ShouldCallMethodTeardown(currentVariableSetIndex, totalNumVariableSets))
                     {
-                        await instanceContainer.Invocation.MethodTearDown();
+                        await testMethodContainer.Invocation.MethodTearDown();
+                        await DisposeOfTestInstance(testMethodContainer);
                     }
 
-                    if (currentMethod == enumeratedMethodGroups.Count() - 1 && instanceIndex == instanceProviders.Count() - 1)
+                    if (ShouldCallGlobalTeardown(methodIndex, totalMethodCount, currentVariableSetIndex, totalNumVariableSets))
                     {
-                        await instanceContainer.Invocation.GlobalTeardown();
+                        await testMethodContainer.Invocation.GlobalTeardown();
                     }
 
-                    if (instanceContainer.Instance is IDisposable disposable)
-                    {
-                        disposable.Dispose();
-                    }
-                    else if (instanceContainer.Instance is IAsyncDisposable asyncDisposable)
-                    {
-                        await asyncDisposable.DisposeAsync();
-                    }
-                    else
-                    {
-                        instanceContainer.Instance = null!;
-                    }
+                    currentVariableSetIndex += 1;
                 }
 
-                previousMethod = currentMethod;
+                methodIndex += 1;
             }
 
             return results;
+        }
+
+        private static async Task DisposeOfTestInstance(TestInstanceContainer instanceContainer)
+        {
+            if (instanceContainer.Instance is IDisposable disposable)
+            {
+                disposable.Dispose();
+            }
+            else if (instanceContainer.Instance is IAsyncDisposable asyncDisposable)
+            {
+                await asyncDisposable.DisposeAsync();
+            }
+            else
+            {
+                instanceContainer.Instance = null!;
+            }
         }
 
         // This will be called in the adapter
@@ -139,6 +145,26 @@ namespace Sailfish.Execution
             return exception is null
                 ? TestExecutionResult.CreateSuccess(testInstanceContainer, messages)
                 : TestExecutionResult.CreateFailure(testInstanceContainer, messages, exception);
+        }
+
+        private static bool ShouldCallGlobalTeardown(int methodIndex, int totalMethodCount, int currentVariableSetIndex, int totalNumVariableSets)
+        {
+            return methodIndex == totalMethodCount && currentVariableSetIndex == totalNumVariableSets;
+        }
+
+        private static bool ShouldCallMethodTeardown(int currentVariableSetIndex, int totalNumVariableSets)
+        {
+            return currentVariableSetIndex == totalNumVariableSets;
+        }
+
+        private static bool ShouldCallMethodSetup(int methodIndex, int currentVariableSetIndex)
+        {
+            return methodIndex == 0 && currentVariableSetIndex == 0;
+        }
+
+        private static bool ShouldCallGlobalSetup(int methodIndex, int currentMethodIndex)
+        {
+            return methodIndex == 0 && currentMethodIndex == 0;
         }
     }
 }

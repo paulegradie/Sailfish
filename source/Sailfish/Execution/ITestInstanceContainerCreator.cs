@@ -5,7 +5,6 @@ namespace Sailfish.Execution
 {
     public interface ITestInstanceContainerCreator
     {
-        // List<TestInstanceContainer> CreateTestContainerInstances(Type test);
-        List<TestInstanceContainerProvider> CreateTestContainerInstanceProvider(Type test);
+        List<TestInstanceContainerProvider> CreateTestContainerInstanceProviders(Type test);
     }
 }

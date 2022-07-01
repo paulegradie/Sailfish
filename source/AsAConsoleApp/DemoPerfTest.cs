@@ -63,13 +63,14 @@ namespace AsAConsoleApp
         [ExecutePerformanceCheck]
         public async Task WaitPeriodPerfTest()
         {
+            await Task.Delay(WaitPeriod);
             await Client.GetStringAsync("/");
         }
 
         [ExecutePerformanceCheck]
         public async Task Other()
         {
-            Thread.Sleep(1);
+            Thread.Sleep(200);
             await Task.CompletedTask;
             Console.WriteLine("WOW");
         }

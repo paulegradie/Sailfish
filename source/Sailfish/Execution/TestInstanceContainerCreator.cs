@@ -19,9 +19,9 @@ public class TestInstanceContainerCreator : ITestInstanceContainerCreator
         this.parameterGridCreator = parameterGridCreator;
     }
 
-    public List<TestInstanceContainerProvider> CreateTestContainerInstanceProvider(Type test)
+    public List<TestInstanceContainerProvider> CreateTestContainerInstanceProviders(Type test)
     {
-        var (propNames, combos) = parameterGridCreator.GenerateParameterGrid(test);
+        var (propNames, variableSets) = parameterGridCreator.GenerateParameterGrid(test);
         var methods = test
             .GetMethodsWithAttribute<ExecutePerformanceCheckAttribute>()
             .OrderBy(x => x.Name);
@@ -29,16 +29,13 @@ public class TestInstanceContainerCreator : ITestInstanceContainerCreator
         var instanceContainers = new List<TestInstanceContainerProvider>();
         foreach (var method in methods)
         {
-            foreach (var combo in combos)
-            {
-                var provider = new TestInstanceContainerProvider(
-                    typeResolver,
-                    test,
-                    combo,
-                    propNames,
-                    method);
-                instanceContainers.Add(provider);
-            }
+            var provider = new TestInstanceContainerProvider(
+                typeResolver,
+                test,
+                variableSets,
+                propNames,
+                method);
+            instanceContainers.Add(provider);
         }
 
         return instanceContainers;
