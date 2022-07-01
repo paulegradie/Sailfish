@@ -34,25 +34,28 @@ namespace Sailfish.TestAdapter.Utils
 
             foreach (var perfTestType in perfTestTypes)
             {
-                var testInstanceContainerProviders = instanceContainerCreator.CreateTestContainerInstanceProvider(perfTestType);
-                foreach (var provider in testInstanceContainerProviders)
+                var testMethods = instanceContainerCreator.CreateTestContainerInstanceProviders(perfTestType);
+                foreach (var method in testMethods)
                 {
-                    var container = provider.ProvideTestInstanceContainer();
-                    var tc = testCases.SingleOrDefault(x => x.DisplayName == container.DisplayName); // Can we set a common Id property instead of the random GUID?
-                    if (tc is null)
+                    foreach (var container in method.ProvideNextTestInstanceContainer())
                     {
-                        logger.Verbose("\r----FATAL ERROR ENCOUNTERED!! ----\r");
-                        logger.Verbose("TestInstanceContainer: {ContainerName}", container.DisplayName);
-                        logger.Verbose("\rThe following testCases were available in this instance:\r");
-                        foreach (var testCase in testCases)
+                        var tc = testCases.SingleOrDefault(x => x.DisplayName == container.DisplayName); // Can we set a common Id property instead of the random GUID?
+                        if (tc is null)
                         {
-                            logger.Verbose("{DisplayName}, {Source}, {CodeFilePath}, {FQN}", testCase.DisplayName, testCase.Source, testCase.CodeFilePath, testCase.FullyQualifiedName);
+                            logger.Verbose("\r----FATAL ERROR ENCOUNTERED!! ----\r");
+                            logger.Verbose("TestInstanceContainer: {ContainerName}", container.DisplayName);
+                            logger.Verbose("\rThe following testCases were available in this instance:\r");
+                            foreach (var testCase in testCases)
+                            {
+                                logger.Verbose("{DisplayName}, {Source}, {CodeFilePath}, {FQN}", testCase.DisplayName, testCase.Source, testCase.CodeFilePath, testCase.FullyQualifiedName);
+                            }
+
+                            continue;
+                            // throw new Exception($"Somehow a test case wasn't found for {container.DisplayName}");
                         }
 
-                        continue;
-                        // throw new Exception($"Somehow a test case wasn't found for {container.DisplayName}");
+                        executor.Execute(container, (instanceContainer, result) => { TestResultCallback(frameworkHandle, tc, instanceContainer, result); }).Wait(); // this is async tho
                     }
-                    executor.Execute(container, (instanceContainer, result) => { TestResultCallback(frameworkHandle, tc, instanceContainer, result); }).Wait(); // this is async tho
                 }
             }
         }

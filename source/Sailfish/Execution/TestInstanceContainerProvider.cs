@@ -6,44 +6,55 @@ using Sailfish.Exceptions;
 
 namespace Sailfish.Execution;
 
-// TODO: register this 
 public class TestInstanceContainerProvider
 {
     public readonly MethodInfo method;
 
     private readonly ITypeResolver typeResolver;
     private readonly Type test;
-    private readonly int[] combo;
+    private readonly Queue<int[]> combos;
     private readonly List<string> propertyNames;
     private readonly Type[] ctorArgTypes;
 
     public TestInstanceContainerProvider(
         ITypeResolver typeResolver,
         Type test,
-        int[] combo,
+        int[][] combos,
         List<string> propertyNames,
         MethodInfo method)
     {
         this.typeResolver = typeResolver;
         this.test = test;
-        this.combo = combo;
+        this.combos = new Queue<int[]>(combos);
         this.propertyNames = propertyNames;
         this.method = method;
         this.ctorArgTypes = test.GetCtorParamTypes();
     }
 
-    public TestInstanceContainer ProvideTestInstanceContainer()
-    {
-        var instance = CreateTestInstance();
-        SetProperties(instance);
+    private object? instance;
 
-        var container = TestInstanceContainer.CreateTestInstance(instance, method, propertyNames.ToArray(), combo);
-        return container;
+    public int GetNumberCombosInQueue()
+    {
+        return combos.Count();
     }
 
-    private void SetProperties(object instance)
+    public IEnumerable<TestInstanceContainer> ProvideNextTestInstanceContainer()
     {
-        foreach (var (propertyName, variableValue) in propertyNames.Zip(combo))
+        foreach (var nextVariableSet in combos)
+        {
+            if (instance is null)
+            {
+                instance = CreateTestInstance();
+            }
+
+            SetProperties(instance, nextVariableSet);
+            yield return TestInstanceContainer.CreateTestInstance(instance, method, propertyNames.ToArray(), nextVariableSet);
+        }
+    }
+
+    private void SetProperties(object instance, int[] nextVariableSet)
+    {
+        foreach (var (propertyName, variableValue) in propertyNames.Zip(nextVariableSet))
         {
             var prop = instance.GetType().GetProperties().Single(x => x.Name == propertyName);
             prop.SetValue(instance, variableValue);
