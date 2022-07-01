@@ -12,20 +12,20 @@ public class TestInstanceContainerProvider
 
     private readonly ITypeResolver typeResolver;
     private readonly Type test;
-    private readonly Queue<int[]> combos;
+    private readonly Queue<int[]> variableSets;
     private readonly List<string> propertyNames;
     private readonly Type[] ctorArgTypes;
 
     public TestInstanceContainerProvider(
         ITypeResolver typeResolver,
         Type test,
-        int[][] combos,
+        int[][] variableSets,
         List<string> propertyNames,
         MethodInfo method)
     {
         this.typeResolver = typeResolver;
         this.test = test;
-        this.combos = new Queue<int[]>(combos);
+        this.variableSets = new Queue<int[]>(variableSets);
         this.propertyNames = propertyNames;
         this.method = method;
         this.ctorArgTypes = test.GetCtorParamTypes();
@@ -33,14 +33,14 @@ public class TestInstanceContainerProvider
 
     private object? instance;
 
-    public int GetNumberCombosInQueue()
+    public int GetNumberOfVariableSetsInTheQueue()
     {
-        return combos.Count();
+        return variableSets.Count();
     }
 
     public IEnumerable<TestInstanceContainer> ProvideNextTestInstanceContainer()
     {
-        foreach (var nextVariableSet in combos)
+        foreach (var nextVariableSet in variableSets)
         {
             if (instance is null)
             {

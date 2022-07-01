@@ -64,7 +64,7 @@ namespace Sailfish.Execution
             foreach (var testMethod in testMethods.OrderBy(x => x.method.Name))
             {
                 var currentVariableSetIndex = 0;
-                var totalNumVariableSets = testMethod.GetNumberCombosInQueue() - 1;
+                var totalNumVariableSets = testMethod.GetNumberOfVariableSetsInTheQueue() - 1;
 
                 foreach (var testMethodContainer in testMethod.ProvideNextTestInstanceContainer())
                 {
