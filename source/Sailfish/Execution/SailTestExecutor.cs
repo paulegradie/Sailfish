@@ -73,23 +73,19 @@ namespace Sailfish.Execution
                         await testMethodContainer.Invocation.GlobalSetup();
                     }
 
-                    if (ShouldCallMethodSetup(methodIndex, currentVariableSetIndex))
-                    {
-                        await testMethodContainer.Invocation.MethodSetup();
-                    }
-
+                    await testMethodContainer.Invocation.MethodSetup();
                     var executionResult = await Execute(testMethodContainer, callback);
                     results.Add(executionResult);
-
-                    if (ShouldCallMethodTeardown(currentVariableSetIndex, totalNumVariableSets))
-                    {
-                        await testMethodContainer.Invocation.MethodTearDown();
-                        await DisposeOfTestInstance(testMethodContainer);
-                    }
+                    await testMethodContainer.Invocation.MethodTearDown();
 
                     if (ShouldCallGlobalTeardown(methodIndex, totalMethodCount, currentVariableSetIndex, totalNumVariableSets))
                     {
                         await testMethodContainer.Invocation.GlobalTeardown();
+                    }
+
+                    if (ShouldDisposeOfInstance(currentVariableSetIndex, totalNumVariableSets))
+                    {
+                        await DisposeOfTestInstance(testMethodContainer);
                     }
 
                     currentVariableSetIndex += 1;
@@ -152,14 +148,9 @@ namespace Sailfish.Execution
             return methodIndex == totalMethodCount && currentVariableSetIndex == totalNumVariableSets;
         }
 
-        private static bool ShouldCallMethodTeardown(int currentVariableSetIndex, int totalNumVariableSets)
+        private static bool ShouldDisposeOfInstance(int currentVariableSetIndex, int totalNumVariableSets)
         {
             return currentVariableSetIndex == totalNumVariableSets;
-        }
-
-        private static bool ShouldCallMethodSetup(int methodIndex, int currentVariableSetIndex)
-        {
-            return methodIndex == 0 && currentVariableSetIndex == 0;
         }
 
         private static bool ShouldCallGlobalSetup(int methodIndex, int currentMethodIndex)
