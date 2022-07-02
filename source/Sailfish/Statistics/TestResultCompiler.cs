@@ -28,21 +28,26 @@ public class TestResultCompiler : ITestResultCompiler
 
             foreach (var resultListElement in resultList)
             {
-                var stats = ComputeStatistics(resultListElement);
                 var exception = resultListElement.Exception;
-
-                var compiledResult = new CompiledResult(
-                    resultListElement.TestInstanceContainer.DisplayName,
-                    resultListElement.TestInstanceContainer.GroupingId,
-                    stats);
-
                 if (exception is not null)
                 {
+                    var compiledResult = new CompiledResult(
+                        resultListElement.IsSuccess ? resultListElement.TestInstanceContainer.DisplayName : "",
+                        resultListElement.IsSuccess ? resultListElement.TestInstanceContainer.GroupingId : "",
+                        null!);
+
                     compiledResult.Exception = exception;
                     exceptions.Add(exception);
                 }
-
-                compiledResults.Add(compiledResult);
+                else
+                {
+                    var stats = ComputeStatistics(resultListElement);
+                    var compiledResult = new CompiledResult(
+                        resultListElement.TestInstanceContainer.DisplayName,
+                        resultListElement.TestInstanceContainer.GroupingId,
+                        stats);
+                    compiledResults.Add(compiledResult);
+                }
             }
 
             var settings = type.RetrieveExecutionTestSettings();

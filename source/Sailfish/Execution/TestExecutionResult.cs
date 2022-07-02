@@ -9,10 +9,10 @@ namespace Sailfish.Execution
         private TestExecutionResult(TestInstanceContainer container, List<string> messages, bool isSuccess, Exception? exception = null)
         {
             TestInstanceContainer = container;
-            Messages = messages.ToArray();
+            Messages = messages?.ToArray()!;
             Exception = exception;
             IsSuccess = isSuccess;
-            ExecutionSettings = container.ExecutionSettings;
+            ExecutionSettings = container?.ExecutionSettings!; // Trick compiler on failure
         }
 
         public TestInstanceContainer TestInstanceContainer { get; set; }

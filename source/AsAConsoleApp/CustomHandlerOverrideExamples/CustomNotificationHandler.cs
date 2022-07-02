@@ -15,16 +15,16 @@ public class CustomNotificationHandler : INotificationHandler<NotifyOnTestResult
             .Split(Environment.NewLine);
 
         Console.WriteLine("Make believe this handler parses the ttest result and reports tests that have regressed.");
+        var header = lines.Single(x => x.Contains("TestName"));
+        lines = lines
+            .Where(x => x.Contains("*"))
+            .ToArray();
+
         if (lines.Count() == 0)
         {
             Console.WriteLine("No regressions or improvements found.");
             return Task.CompletedTask;
         }
-
-        var header = lines[8];
-        lines = lines
-            .Where(x => x.Contains("*"))
-            .ToArray();
 
         Console.WriteLine(header);
         foreach (var line in lines)
