@@ -13,7 +13,7 @@ public class WhenSettingSailfishAttributes
     {
         var parameters = new[] { 1, 2, 3 };
 
-        var atty = new IterationVariableAttribute(parameters);
+        var atty = new SailfishVariableAttribute(parameters);
 
         atty.N.ShouldBe(parameters);
     }
@@ -36,6 +36,6 @@ public class WhenSettingSailfishAttributes
 
 public class TestClass
 {
-    [IterationVariable(1, 2, 3)]
+    [SailfishVariable(1, 2, 3)]
     public int[]? Count { get; set; }
 }

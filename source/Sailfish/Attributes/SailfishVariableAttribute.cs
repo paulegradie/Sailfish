@@ -1,4 +1,5 @@
 using System;
+using Sailfish.Exceptions;
 
 namespace Sailfish.Attributes
 {
@@ -9,11 +10,11 @@ namespace Sailfish.Attributes
     ///     Sailfish attribute
     /// </summary>
     [AttributeUsage(AttributeTargets.Property)]
-    public class IterationVariableAttribute : Attribute
+    public sealed class SailfishVariableAttribute : Attribute
     {
-        public IterationVariableAttribute(params int[] n)
+        public SailfishVariableAttribute(params int[] n)
         {
-            if (n.Length == 0) throw new InvalidOperationException("No values were provided to the IterationVariable attribute.");
+            if (n.Length == 0) throw new SailfishException("No values were provided to the IterationVariable attribute.");
             N = n;
         }
 

@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using MediatR;
 using Sailfish.Contracts.Private;
-using Sailfish.Contracts.Public;
 using Sailfish.Contracts.Public.Commands;
 using Sailfish.Presentation.Csv;
 using Sailfish.Presentation.TTest;

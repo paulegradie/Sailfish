@@ -2,6 +2,6 @@
 
 namespace Sailfish.Attributes;
 
-public class SuppressConsoleAttribute : Attribute
+public sealed class SuppressConsoleAttribute : Attribute
 {
 }

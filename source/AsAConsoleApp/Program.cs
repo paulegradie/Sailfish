@@ -1,15 +1,10 @@
 ﻿using System.IO;
 using System.Threading.Tasks;
-using AsAConsoleApp.CloudExample;
+using AsAConsoleApp.Configuration;
 using Autofac;
 using McMaster.Extensions.CommandLineUtils;
-using MediatR;
-using Microsoft.AspNetCore.Mvc.Testing;
 using Sailfish;
-using Sailfish.Contracts.Public;
-using Sailfish.Contracts.Public.Commands;
 using Sailfish.Presentation.TTest;
-using Test.API;
 
 namespace AsAConsoleApp
 {
@@ -20,11 +15,10 @@ namespace AsAConsoleApp
 
         [Option("-o|--outputDir", CommandOptionType.SingleValue, Description = "Path to an output directory. Absolute or relative.")]
         public string? OutputDirectory { get; set; }
-        
+
         [Option("-k|--trackingDirectory", CommandOptionType.SingleValue, Description = "Path to an output directory. Absolute or relative.")]
         public string? TrackingDirectory { get; set; }
 
-        
         [Option("-n|--no-track", CommandOptionType.SingleValue, Description = "Disable tracking. Tracking is where we emit results to enabled targets for later reference when performing statistical analysis.")]
         public bool NoTrack { get; set; }
 
@@ -33,10 +27,10 @@ namespace AsAConsoleApp
 
         [Option("-h|--ttest-alpha", CommandOptionType.SingleValue, Description = "Use this option to set the significance threshold for the ttest analysis.")]
         public double Alpha { get; set; } = 0.005;
-        
+
         [Option("-r|--round", CommandOptionType.SingleValue, Description = "The number of digits to round to")]
         public int Round { get; set; } = 4;
-        
+
 
         private static async Task Main(string[] userRequestedTestNames)
         {
@@ -48,15 +42,16 @@ namespace AsAConsoleApp
             await ContainerConfiguration
                 .CompositionRoot()
                 .Resolve<SailfishExecution>()
-                .Run(AssembleRunRequest(), RegisterThings);
+                .Run(AssembleRunRequest(), RegisterWithSailfish);
         }
 
-        public void RegisterThings(ContainerBuilder builder)
+        public void RegisterWithSailfish(ContainerBuilder builder)
         {
-            builder.RegisterType<WebApplicationFactory<DemoApp>>();
-            builder.RegisterType<SailfishExecution>().AsSelf();
-            builder.RegisterType<CloudWriter>().As<ICloudWriter>();
-            builder.RegisterType<CustomWriteToCloudHandler>().As<INotificationHandler<WriteCurrentTrackingFileCommand>>();
+            // These registrations will be used by Sailfish's internal DI container which
+            // is necessary to resolve dependencies used by test classes.
+            // Additionally, there are various MediatR handlers that can be overriden
+            // using these additional registrations.
+            builder.RegisterModule<ExtraRegistrationsModule>();
         }
 
         private RunSettings AssembleRunRequest()
@@ -73,4 +68,5 @@ namespace AsAConsoleApp
             return new RunSettings(TestNames, OutputDirectory, NoTrack, Analyze, new TTestSettings(Alpha, Round), GetType());
         }
     }
+    
 }

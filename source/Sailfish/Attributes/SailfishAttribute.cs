@@ -3,7 +3,7 @@
 namespace Sailfish.Attributes
 {
     [AttributeUsage(AttributeTargets.Class, Inherited = false, AllowMultiple = true)]
-    public class SailfishAttribute : Attribute
+    public sealed class SailfishAttribute : Attribute
     {
         internal SailfishAttribute()
         {

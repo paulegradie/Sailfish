@@ -23,7 +23,7 @@ public class TestInstanceContainerCreator : ITestInstanceContainerCreator
     {
         var (propNames, variableSets) = parameterGridCreator.GenerateParameterGrid(test);
         var methods = test
-            .GetMethodsWithAttribute<ExecutePerformanceCheckAttribute>()
+            .GetMethodsWithAttribute<SailfishMethodAttribute>()
             .OrderBy(x => x.Name);
 
         var instanceContainers = new List<TestInstanceContainerProvider>();

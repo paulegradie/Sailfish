@@ -2,77 +2,76 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.Testing;
+using Sailfish.Attributes;
 using Test.API;
 using Test.ApiCommunicationTests.Base;
-using Sailfish.Attributes;
 
-namespace AsAConsoleApp
+namespace AsAConsoleApp.ExamplePerformanceTests
 {
     [WriteToMarkdown]
     [WriteToCsv]
-    [Sailfish(1)]
-    public class DemoPerfTest : ApiTestBase
+    [Sailfish(2, 2)]
+    public class ExamplePerformanceTest : ApiTestBase
     {
-        public DemoPerfTest(WebApplicationFactory<DemoApp> factory) : base(factory)
+        public ExamplePerformanceTest(WebApplicationFactory<DemoApp> factory) : base(factory)
         {
         }
 
-        [IterationVariable(1, 2)]
+        [SailfishVariable(1, 2)]
         public int NTries { get; set; }
 
-        [IterationVariable(200, 300)]
+        [SailfishVariable(200, 300)]
         public int WaitPeriod { get; set; }
 
-        [SailGlobalSetup]
+        [SailfishGlobalSetup]
         public void GlobalSetup()
         {
             Console.WriteLine("This is the Global Setup");
         }
 
-        [SailGlobalTeardown]
+        [SailfishGlobalTeardown]
         public void GlobalTeardown()
         {
             Console.WriteLine("This is the Global Teardown");
         }
 
-        [SailExecutionMethodSetup]
+        [SailfishMethodSetup]
         public void ExecutionMethodSetup()
         {
             Console.WriteLine("This is the Execution Method Setup");
         }
 
-        [SailExecutionMethodTeardown]
+        [SailfishMethodTeardown]
         public void ExecutionMethodTeardown()
         {
             Console.WriteLine("This is the Execution Method Teardown");
         }
 
-        [SailExecutionIterationSetup]
+        [SailfishIterationSetup]
         public void IterationSetup()
         {
             Console.WriteLine("This is the Iteration Setup - use sparingly");
         }
 
-        [SailExecutionIterationTeardown]
+        [SailfishIterationTeardown]
         public void IterationTeardown()
         {
             Console.WriteLine("This is the Iteration Teardown - use sparingly");
         }
 
 
-        [ExecutePerformanceCheck]
+        [SailfishMethod]
         public async Task WaitPeriodPerfTest()
         {
             await Task.Delay(WaitPeriod);
             await Client.GetStringAsync("/");
         }
 
-        [ExecutePerformanceCheck]
+        [SailfishMethod]
         public async Task Other()
         {
             Thread.Sleep(200);
             await Task.CompletedTask;
-            Console.WriteLine("WOW");
         }
     }
 }

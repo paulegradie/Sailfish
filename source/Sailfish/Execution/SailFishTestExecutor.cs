@@ -23,7 +23,9 @@ namespace Sailfish.Execution
             this.testCaseIterator = testCaseIterator;
         }
 
-        public async Task<Dictionary<Type, List<TestExecutionResult>>> Execute(Type[] testTypes, Action<TestInstanceContainer, TestExecutionResult>? callback = null)
+        public async Task<Dictionary<Type, List<TestExecutionResult>>> Execute(
+            Type[] testTypes,
+            Action<TestInstanceContainer, TestExecutionResult>? callback = null)
         {
             var resultsDict = new Dictionary<Type, List<TestExecutionResult>>();
             foreach (var testType in testTypes)

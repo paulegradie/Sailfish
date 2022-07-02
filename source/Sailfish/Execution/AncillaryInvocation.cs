@@ -23,12 +23,12 @@ namespace Sailfish.Execution
             this.instance = instance;
             mainMethod = method;
             this.performanceTimer = performanceTimer;
-            globalSetup = instance.GetMethodWithAttribute<SailGlobalSetupAttribute>();
-            globalTeardown = instance.GetMethodWithAttribute<SailGlobalTeardownAttribute>();
-            methodSetup = instance.GetMethodWithAttribute<SailExecutionMethodSetupAttribute>();
-            methodTeardown = instance.GetMethodWithAttribute<SailExecutionMethodTeardownAttribute>();
-            iterationSetup = instance.GetMethodWithAttribute<SailExecutionIterationSetupAttribute>();
-            iterationTeardown = instance.GetMethodWithAttribute<SailExecutionIterationTeardownAttribute>();
+            globalSetup = instance.GetMethodWithAttribute<SailfishGlobalSetupAttribute>();
+            globalTeardown = instance.GetMethodWithAttribute<SailfishGlobalTeardownAttribute>();
+            methodSetup = instance.GetMethodWithAttribute<SailfishMethodSetupAttribute>();
+            methodTeardown = instance.GetMethodWithAttribute<SailfishMethodTeardownAttribute>();
+            iterationSetup = instance.GetMethodWithAttribute<SailfishIterationSetupAttribute>();
+            iterationTeardown = instance.GetMethodWithAttribute<SailfishIterationTeardownAttribute>();
         }
 
         public async Task ExecutionMethod(bool timed = true)

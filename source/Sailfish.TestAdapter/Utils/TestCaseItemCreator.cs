@@ -20,7 +20,7 @@ namespace Sailfish.TestAdapter.Utils
 
         public IEnumerable<TestCase> AssembleTestCases(DataBag bag, string sourceDll)
         {
-            var methods = bag.Type.GetMethodsWithAttribute<ExecutePerformanceCheckAttribute>().ToArray();
+            var methods = bag.Type.GetMethodsWithAttribute<SailfishMethodAttribute>().ToArray();
             if (methods is null) throw new Exception("No method with ExecutePerformanceCheck attribute found -- this shouldn't have made it into the test type scan!");
 
             var propertyNamesAndCombos = parameterGridCreator.GenerateParameterGrid(bag.Type);

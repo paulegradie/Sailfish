@@ -1,6 +1,4 @@
-﻿using System.IO;
-
-namespace Sailfish.Statistics.StatisticalAnalysis;
+﻿namespace Sailfish.Statistics.StatisticalAnalysis;
 
 public class BeforeAndAfterTrackingFiles
 {

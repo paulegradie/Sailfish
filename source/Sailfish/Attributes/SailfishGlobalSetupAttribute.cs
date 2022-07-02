@@ -3,7 +3,7 @@
 namespace Sailfish.Attributes
 {
     [AttributeUsage(AttributeTargets.Method, Inherited = false, AllowMultiple = false)]
-    public class SailGlobalSetupAttribute : Attribute
+    public sealed class SailfishGlobalSetupAttribute : Attribute
     {
     }
 }
