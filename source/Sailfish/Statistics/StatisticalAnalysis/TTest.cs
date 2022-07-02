@@ -6,10 +6,9 @@ namespace Sailfish.Statistics.StatisticalAnalysis;
 
 public class TTest : ITTest
 {
-    private readonly int sigDig = 3;
-
     public TTestResult ExecuteTest(double[] before, double[] after, TTestSettings settings)
     {
+        var sigDig = settings.Round;
         var test = new TwoSampleTTest(before, after, false);
 
         var meanBefore = Math.Round(test.EstimatedValue1, sigDig);

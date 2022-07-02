@@ -1,7 +1,7 @@
 using Autofac;
 using Microsoft.AspNetCore.Mvc.Testing;
+using Sailfish;
 using Test.API;
-using Sailfish.Registration;
 using Serilog;
 
 namespace AsAConsoleApp
@@ -10,22 +10,12 @@ namespace AsAConsoleApp
     {
         public static IContainer CompositionRoot()
         {
-            var builder = new ContainerBuilder();
-            builder = CustomizeContainer(builder);
-
-            builder.RegisterSailfishTypes();
-            builder.RegisterPerformanceTypes(typeof(DemoPerfTest));
-            return builder.Build();
-        }
-
-        private static ContainerBuilder CustomizeContainer(ContainerBuilder builder)
-        {
             var logger = Logging.CreateLogger("ConsoleAppLogs.log");
+            var builder = new ContainerBuilder();
             builder.Register<ILogger>(c => { return logger; });
-
-
             builder.RegisterType<WebApplicationFactory<DemoApp>>();
-            return builder;
+            builder.RegisterType<SailfishExecution>().AsSelf();
+            return builder.Build();
         }
     }
 }

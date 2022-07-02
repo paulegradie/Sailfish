@@ -4,12 +4,13 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using CsvHelper;
+using Sailfish.Contracts.Public.CsvMaps;
 using Sailfish.Statistics;
 using Sailfish.Utils;
 
 namespace Sailfish.Presentation.Csv;
 
-public class PerformanceCsvWriter : IPerformanceCsvWriter
+internal class PerformanceCsvWriter : IPerformanceCsvWriter
 {
     private readonly IFileIo fileIo;
 
@@ -20,6 +21,7 @@ public class PerformanceCsvWriter : IPerformanceCsvWriter
 
     public async Task Present(List<CompiledResultContainer> result, string filePath)
     {
+        
         using (var writer = new StreamWriter(filePath))
         using (var csv = new CsvWriter(writer, CultureInfo.InvariantCulture))
         {

@@ -57,7 +57,7 @@ namespace Sailfish.Utils
 
         public static async Task InvokeWith(this MethodInfo method, object instance)
         {
-            if (method.IsAsyncMethod()) await (Task) method.Invoke(instance, null)!;
+            if (method.IsAsyncMethod()) await (Task)method.Invoke(instance, null)!;
             else method.Invoke(instance, null);
         }
 

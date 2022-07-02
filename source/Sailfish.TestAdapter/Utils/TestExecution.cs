@@ -11,7 +11,7 @@ namespace Sailfish.TestAdapter.Utils
 {
     internal class TestExecution
     {
-        private readonly ISailTestExecutor executor;
+        private readonly ISailFishTestExecutor executor;
         private readonly ITestInstanceContainerCreator instanceContainerCreator;
         private readonly TypeLoader typeLoader;
 
@@ -19,7 +19,7 @@ namespace Sailfish.TestAdapter.Utils
         {
             typeLoader = new TypeLoader();
             var container = CompositionRoot();
-            executor = container.Resolve<ISailTestExecutor>();
+            executor = container.Resolve<ISailFishTestExecutor>();
             instanceContainerCreator = container.Resolve<ITestInstanceContainerCreator>();
         }
 

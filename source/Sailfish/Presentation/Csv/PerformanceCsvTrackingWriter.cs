@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using CsvHelper;
+using Sailfish.Contracts.Public.CsvMaps;
 using Sailfish.Statistics;
 using Sailfish.Utils;
 
@@ -18,8 +19,9 @@ public class PerformanceCsvTrackingWriter : IPerformanceCsvTrackingWriter
         this.fileIo = fileIo;
     }
 
-    public async Task Present(List<CompiledResultContainer> result, string filePath, bool noTrack)
+    public async Task<string> ConvertToCsvStringContent(List<CompiledResultContainer> result)
     {
+        var filePath = Path.GetTempFileName();
         using (var writer = new StreamWriter(filePath))
         using (var csv = new CsvWriter(writer, CultureInfo.InvariantCulture))
         {
@@ -27,16 +29,15 @@ public class PerformanceCsvTrackingWriter : IPerformanceCsvTrackingWriter
 
             foreach (var container in result)
             {
-                if (noTrack) continue;
-
                 var records = container
                     .CompiledResults
                     .Select(x => x.TestCaseStatistics);
 
-                csv.WriteRecords(records);
+                await csv.WriteRecordsAsync(records);
             }
         }
 
-        await Task.CompletedTask;
+        using var stream = new StreamReader(filePath);
+        return await stream.ReadToEndAsync();
     }
 }

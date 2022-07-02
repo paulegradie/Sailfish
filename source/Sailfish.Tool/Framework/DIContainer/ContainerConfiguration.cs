@@ -8,7 +8,7 @@ namespace Sailfish.Tool.Framework.DIContainer
         {
             var builder = new ContainerBuilder();
             builder = CustomizeContainer(builder);
-            builder.RegisterType<SailfishExecutor>();
+            builder.RegisterType<SailfishExecution>();
             return builder.Build();
         }
 

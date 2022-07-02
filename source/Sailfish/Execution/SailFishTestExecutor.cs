@@ -6,13 +6,13 @@ using Serilog;
 
 namespace Sailfish.Execution
 {
-    public class SailTestExecutor : ISailTestExecutor
+    public class SailFishTestExecutor : ISailFishTestExecutor
     {
         private readonly ILogger logger;
         private readonly ITestCaseIterator testCaseIterator;
         private readonly ITestInstanceContainerCreator testInstanceContainerCreator;
 
-        public SailTestExecutor(
+        public SailFishTestExecutor(
             ILogger logger,
             ITestInstanceContainerCreator testInstanceContainerCreator,
             ITestCaseIterator testCaseIterator
