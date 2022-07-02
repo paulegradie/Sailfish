@@ -35,12 +35,12 @@ namespace Sailfish.Execution
             };
         }
 
-        public static TestExecutionResult CreateFailure(TestInstanceContainer container, List<string> messages, Exception exception)
+        public static TestExecutionResult CreateFailure(TestInstanceContainer? container, List<string>? messages, Exception exception)
         {
-            return new TestExecutionResult(container, messages, false, exception)
+            return new TestExecutionResult(container!, messages!, false, exception)
             {
                 StatusCode = StatusCode.Failure,
-                PerformanceTimerResults = container.Invocation.GetPerformanceResults()
+                PerformanceTimerResults = container?.Invocation?.GetPerformanceResults()! // Trick the compiler on failure
             };
         }
     }

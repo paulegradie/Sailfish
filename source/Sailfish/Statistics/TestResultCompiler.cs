@@ -15,8 +15,6 @@ public class TestResultCompiler : ITestResultCompiler
         this.statsCompiler = statsCompiler;
     }
 
-    // SHould return a map of the Type: Container with (type derived execution settings, compiled results)
-
     public List<CompiledResultContainer> CompileResults(Dictionary<Type, List<TestExecutionResult>> results)
     {
         var resultContainers = new List<CompiledResultContainer>();
