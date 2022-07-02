@@ -1,46 +1,60 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Threading.Tasks;
-using Sailfish.Presentation.Console;
+using MediatR;
+using Sailfish.Contracts.Private;
+using Sailfish.Contracts.Public.Commands;
 using Sailfish.Presentation.Csv;
-using Sailfish.Presentation.Markdown;
+using Sailfish.Presentation.TTest;
 using Sailfish.Statistics;
+using Sailfish.Statistics.StatisticalAnalysis;
 
 namespace Sailfish.Presentation;
 
-public class TestResultPresenter : ITestResultPresenter
+internal class TestResultPresenter : ITestResultPresenter
 {
-    private readonly IConsoleWriter consoleWriter;
-    private readonly IMarkdownWriter markdownWriter;
-    private readonly IPerformanceCsvWriter performanceCsvWriter;
+    private readonly IMediator mediator;
+    private readonly IBeforeAndAfterStreamReader beforeAndAfterStreamReader;
     private readonly IPerformanceCsvTrackingWriter performanceCsvTrackingWriter;
+    private readonly ITwoTailedTTestWriter twoTailedTTestWriter;
 
     public TestResultPresenter(
-        IConsoleWriter consoleWriter,
-        IMarkdownWriter markdownWriter,
-        IPerformanceCsvWriter performanceCsvWriter,
-        IPerformanceCsvTrackingWriter performanceCsvTrackingWriter)
+        IMediator mediator,
+        IBeforeAndAfterStreamReader beforeAndAfterStreamReader,
+        IPerformanceCsvTrackingWriter performanceCsvTrackingWriter,
+        ITwoTailedTTestWriter twoTailedTTestWriter)
     {
-        this.consoleWriter = consoleWriter;
-        this.markdownWriter = markdownWriter;
-        this.performanceCsvWriter = performanceCsvWriter;
+        this.mediator = mediator;
+        this.beforeAndAfterStreamReader = beforeAndAfterStreamReader;
         this.performanceCsvTrackingWriter = performanceCsvTrackingWriter;
+        this.twoTailedTTestWriter = twoTailedTTestWriter;
     }
 
-    public async Task PresentResults(List<CompiledResultContainer> resultContainers, string directoryPath, bool noTrack)
+    public async Task PresentResults(
+        List<CompiledResultContainer> resultContainers,
+        string directoryPath,
+        DateTime timeStamp,
+        bool noTrack,
+        bool analyze,
+        TTestSettings testSettings)
     {
-        var fileName = $"PerformanceResults_{DateTime.Now.ToLocalTime().ToString("yyyy-dd-M--HH-mm-ss")}"; // sortable file name with date
+        await mediator.Publish(new WriteToConsoleCommand(resultContainers));
+        await mediator.Publish(new WriteToMarkDownCommand(resultContainers, directoryPath, timeStamp));
+        await mediator.Publish(new WriteToCsvCommand(resultContainers, directoryPath, timeStamp));
 
-        consoleWriter.Present(resultContainers);
-        await markdownWriter.Present(resultContainers, Path.Combine(directoryPath, $"{fileName}.md"));
-        await performanceCsvWriter.Present(resultContainers, Path.Combine(directoryPath, $"{fileName}.csv"));
-
-        var output = Path.Combine(directoryPath, "tracking_output");
-        if (!Directory.Exists(output))
+        if (!noTrack)
         {
-            Directory.CreateDirectory(output);
+            var trackingContent = await performanceCsvTrackingWriter.ConvertToCsvStringContent(resultContainers);
+            await mediator.Publish(new WriteCurrentTrackingFileCommand(trackingContent, directoryPath, timeStamp));
         }
-        await performanceCsvTrackingWriter.Present(resultContainers, Path.Combine(output, $"{fileName}.cvs.tracking"), noTrack);
+
+        if (analyze)
+        {
+            var response = await mediator.Send(new BeforeAndAfterFileLocationCommand(directoryPath));
+            if (string.IsNullOrEmpty(response.BeforeFilePath) || string.IsNullOrEmpty(response.AfterFilePath)) return;
+
+            var tTestContent = await twoTailedTTestWriter.ComputeAndConvertToStringContent(new BeforeAndAfterTrackingFiles(response.BeforeFilePath, response.AfterFilePath), testSettings);
+            await mediator.Publish(new WriteTTestResultCommand(tTestContent, directoryPath, testSettings, timeStamp));
+        }
     }
 }

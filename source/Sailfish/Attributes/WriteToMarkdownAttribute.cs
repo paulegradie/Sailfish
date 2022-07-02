@@ -2,6 +2,6 @@
 
 namespace Sailfish.Attributes;
 
-public class WriteToMarkdownAttribute : Attribute
+public sealed class WriteToMarkdownAttribute : Attribute
 {
 }

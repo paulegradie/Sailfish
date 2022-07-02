@@ -6,7 +6,7 @@ namespace Sailfish.Execution
 {
     public delegate void AdapterCallbackAction(TestExecutionResult result);
 
-    public interface ISailTestExecutor
+    public interface ISailFishTestExecutor
     {
         Task<Dictionary<Type, List<TestExecutionResult>>> Execute(Type[] testTypes, Action<TestInstanceContainer, TestExecutionResult>? callback = null);
         Task<List<TestExecutionResult>> Execute(Type test, Action<TestInstanceContainer, TestExecutionResult>? callback = null);

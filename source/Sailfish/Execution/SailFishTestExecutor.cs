@@ -6,13 +6,13 @@ using Serilog;
 
 namespace Sailfish.Execution
 {
-    public class SailTestExecutor : ISailTestExecutor
+    public class SailFishTestExecutor : ISailFishTestExecutor
     {
         private readonly ILogger logger;
         private readonly ITestCaseIterator testCaseIterator;
         private readonly ITestInstanceContainerCreator testInstanceContainerCreator;
 
-        public SailTestExecutor(
+        public SailFishTestExecutor(
             ILogger logger,
             ITestInstanceContainerCreator testInstanceContainerCreator,
             ITestCaseIterator testCaseIterator
@@ -23,7 +23,9 @@ namespace Sailfish.Execution
             this.testCaseIterator = testCaseIterator;
         }
 
-        public async Task<Dictionary<Type, List<TestExecutionResult>>> Execute(Type[] testTypes, Action<TestInstanceContainer, TestExecutionResult>? callback = null)
+        public async Task<Dictionary<Type, List<TestExecutionResult>>> Execute(
+            Type[] testTypes,
+            Action<TestInstanceContainer, TestExecutionResult>? callback = null)
         {
             var resultsDict = new Dictionary<Type, List<TestExecutionResult>>();
             foreach (var testType in testTypes)

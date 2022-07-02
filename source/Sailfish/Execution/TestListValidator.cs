@@ -51,7 +51,7 @@ namespace Sailfish.Execution
         private static bool TypeHasMoreThanZeroExecutionMethods(Type type)
         {
             return type
-                .GetMethodsWithAttribute<ExecutePerformanceCheckAttribute>()
+                .GetMethodsWithAttribute<SailfishMethodAttribute>()
                 .ToArray()
                 .Length > 0;
         }

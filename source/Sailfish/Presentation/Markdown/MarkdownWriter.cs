@@ -28,18 +28,20 @@ public class MarkdownWriter : IMarkdownWriter
         {
             if (result.Settings.AsMarkdown)
             {
-                PrintHeader(result.Type.Name);
-                PrintResults(result.CompiledResults);
-                PrintExceptions(result.Exceptions);
+                AppendHeader(result.Type.Name);
+                AppendResults(result.CompiledResults);
+                AppendExceptions(result.Exceptions);
             }
         }
 
         var fileString = stringBuilder.Build();
         if (!string.IsNullOrEmpty(fileString))
+        {
             await fileIo.WriteToFile(fileString, filePath, CancellationToken.None);
+        }
     }
 
-    private void PrintHeader(string typeName)
+    private void AppendHeader(string typeName)
     {
         stringBuilder.AppendLine();
         stringBuilder.AppendLine("\r-----------------------------------");
@@ -47,7 +49,7 @@ public class MarkdownWriter : IMarkdownWriter
         stringBuilder.AppendLine("-----------------------------------\r");
     }
 
-    private void PrintResults(List<CompiledResult> compiledResults)
+    private void AppendResults(List<CompiledResult> compiledResults)
     {
         foreach (var group in compiledResults.GroupBy(x => x.GroupingId))
         {
@@ -65,7 +67,7 @@ public class MarkdownWriter : IMarkdownWriter
         }
     }
 
-    private void PrintExceptions(List<Exception> exceptions)
+    private void AppendExceptions(List<Exception> exceptions)
     {
         if (exceptions.Count > 0)
             stringBuilder.AppendLine($" ---- One or more Exceptions encountered ---- ");

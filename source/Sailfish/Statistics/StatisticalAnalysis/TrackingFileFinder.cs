@@ -1,19 +1,21 @@
-﻿using System.IO;
-using System.Linq;
+﻿using System.Linq;
 
 namespace Sailfish.Statistics.StatisticalAnalysis;
 
 public class TrackingFileFinder : ITrackingFileFinder
 {
+    private readonly ITrackingFileDirectoryReader trackingFileDirectoryReader;
+
+    public TrackingFileFinder(ITrackingFileDirectoryReader trackingFileDirectoryReader)
+    {
+        this.trackingFileDirectoryReader = trackingFileDirectoryReader;
+    }
+
     public BeforeAndAfterTrackingFiles GetBeforeAndAfterTrackingFiles(string directory)
     {
-        var files = Directory.GetFiles(Path.Combine(directory, "tracking_output"))
-            .Where(x => x.EndsWith(".cvs.tracking"))
-            .OrderByDescending(x => x)
-            .ToList();
-
-        return files.Count < 2
-            ? new BeforeAndAfterTrackingFiles(files.First(), "")
-            : new BeforeAndAfterTrackingFiles(files.First(), files[1]);
+        var files = trackingFileDirectoryReader.DefaultReadDirectory(directory);
+        return files.Count() < 2
+            ? new BeforeAndAfterTrackingFiles(string.Empty, string.Empty)
+            : new BeforeAndAfterTrackingFiles(files[0], files[1]);
     }
 }

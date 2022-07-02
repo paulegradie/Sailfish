@@ -2,6 +2,6 @@
 
 namespace Sailfish.Attributes;
 
-public class WriteToCsvAttribute : Attribute
+public sealed class WriteToCsvAttribute : Attribute
 {
 }

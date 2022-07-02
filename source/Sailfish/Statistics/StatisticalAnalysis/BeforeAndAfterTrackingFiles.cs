@@ -1,20 +1,13 @@
-﻿using System.IO;
-
-namespace Sailfish.Statistics.StatisticalAnalysis;
+﻿namespace Sailfish.Statistics.StatisticalAnalysis;
 
 public class BeforeAndAfterTrackingFiles
 {
-    public BeforeAndAfterTrackingFiles(string before, string after)
+    public BeforeAndAfterTrackingFiles(string beforeFilePath, string afterFilePath)
     {
-        Before = before;
-        After = after;
+        BeforeFilePath = beforeFilePath;
+        AfterFilePath = afterFilePath;
     }
 
-    public string Before { get; set; }
-    public string After { get; set; }
-
-    public string GetFileStem(string path)
-    {
-        return Path.GetFileName(path);
-    }
+    public string BeforeFilePath { get; set; }
+    public string AfterFilePath { get; set; }
 }

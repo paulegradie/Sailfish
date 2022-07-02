@@ -1,5 +1,6 @@
 ﻿using System;
 using Autofac;
+using MediatR;
 using Microsoft.Extensions.DependencyInjection;
 using Sailfish.Execution;
 using Sailfish.Presentation;
@@ -19,6 +20,18 @@ namespace Sailfish.Registration
         public static void RegisterSailfishTypes(this ContainerBuilder builder)
         {
             builder.RegisterModule(new ExecutorModule());
+            builder
+                .RegisterType<Mediator>()
+                .As<IMediator>()
+                .InstancePerLifetimeScope();
+            builder.Register<ServiceFactory>(
+                context =>
+                {
+                    var c = context.Resolve<IComponentContext>();
+                    return t => c.Resolve(t);
+                });
+            builder.RegisterAssemblyTypes(typeof(SailfishExecutor).Assembly).AsImplementedInterfaces(); // via assembly scan
+
         }
 
         public static void RegisterPerformanceTypes(this ContainerBuilder builder, params Type[] sourceTypes)
@@ -43,7 +56,7 @@ namespace Sailfish.Registration
                 });
 
             serviceCollection.AddTransient<SailfishExecutor>();
-            serviceCollection.AddTransient<ISailTestExecutor, SailTestExecutor>();
+            serviceCollection.AddTransient<ISailFishTestExecutor, SailFishTestExecutor>();
             serviceCollection.AddTransient<ITestFilter, TestFilter>();
             serviceCollection.AddTransient<ITestListValidator, TestListValidator>();
             serviceCollection.AddTransient<ITestCollector, TestCollector>();
@@ -80,7 +93,7 @@ namespace Sailfish.Registration
                 }).SingleInstance();
 
             builder.RegisterType<SailfishExecutor>().AsSelf();
-            builder.RegisterType<SailTestExecutor>().As<ISailTestExecutor>();
+            builder.RegisterType<SailFishTestExecutor>().As<ISailFishTestExecutor>();
             builder.RegisterType<TestFilter>().As<ITestFilter>();
             builder.RegisterType<TestListValidator>().As<ITestListValidator>();
             builder.RegisterType<TestCollector>().As<ITestCollector>();
@@ -102,7 +115,6 @@ namespace Sailfish.Registration
             builder.RegisterType<TrackingFileFinder>().As<ITrackingFileFinder>();
             builder.RegisterType<PerformanceCsvTrackingWriter>().As<IPerformanceCsvTrackingWriter>();
             builder.RegisterType<IterationVariableRetriever>().As<IIterationVariableRetriever>();
-
         }
     }
 }

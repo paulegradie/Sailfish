@@ -1,6 +1,5 @@
 ﻿using System;
 using System.IO;
-using System.Linq;
 using System.Threading.Tasks;
 using Autofac;
 using McMaster.Extensions.CommandLineUtils;
@@ -26,6 +25,9 @@ namespace Sailfish.Tool
         [Option("-h|--ttest-alpha", CommandOptionType.SingleValue, Description = "Use this option to set the significance threshold for the ttest analysis.")]
         public double Alpha { get; set; } = 0.01;
 
+        [Option("-r|--round", CommandOptionType.SingleValue, Description = "The number of digits to round to")]
+        public int Round { get; set; } = 4;
+
         public static async Task<int> Main(string[] args)
         {
             return await CommandLineApplication.ExecuteAsync<Program>(args);
@@ -38,15 +40,26 @@ namespace Sailfish.Tool
                 OutputDirectory = Path.Combine(Directory.GetCurrentDirectory(), "performance_output");
             }
 
-
             if (TestNames is null) throw new Exception("Program failed to start...");
-
-            var testSettings = new TTestSettings(Alpha);
 
             await ContainerConfiguration
                 .CompositionRoot()
-                .Resolve<SailfishExecutor>()
-                .Run(TestNames.Where(x => !string.IsNullOrEmpty(x) && !string.IsNullOrWhiteSpace(x)).ToArray(), OutputDirectory, NoTrack, Analyze, testSettings);
+                .Resolve<SailfishExecution>()
+                .Run(AssembleRunRequest());
+        }
+
+        private RunSettings AssembleRunRequest()
+        {
+            if (OutputDirectory is null)
+            {
+                OutputDirectory = Path.Combine(Directory.GetCurrentDirectory(), "performance_output");
+                if (!Directory.Exists(OutputDirectory))
+                {
+                    Directory.CreateDirectory(OutputDirectory);
+                }
+            }
+
+            return new RunSettings(TestNames, OutputDirectory, NoTrack, Analyze, new TTestSettings(Alpha, Round), GetType());
         }
     }
 }
