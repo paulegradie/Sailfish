@@ -1,43 +1,19 @@
-﻿using System.IO;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using AsAConsoleApp.Configuration;
 using Autofac;
-using McMaster.Extensions.CommandLineUtils;
 using Sailfish;
-using Sailfish.Presentation.TTest;
+using Sailfish.Program;
 
 namespace AsAConsoleApp
 {
-    internal class Program
+    class Program : SailfishProgramBase
     {
-        [Option("-t|--tests", CommandOptionType.MultipleValue, Description = "List of tests to execute")]
-        public string[] TestNames { get; set; } = { };
-
-        [Option("-o|--outputDir", CommandOptionType.SingleValue, Description = "Path to an output directory. Absolute or relative.")]
-        public string? OutputDirectory { get; set; }
-
-        [Option("-k|--trackingDirectory", CommandOptionType.SingleValue, Description = "Path to an output directory. Absolute or relative.")]
-        public string? TrackingDirectory { get; set; }
-
-        [Option("-n|--no-track", CommandOptionType.SingleValue, Description = "Disable tracking. Tracking is where we emit results to enabled targets for later reference when performing statistical analysis.")]
-        public bool NoTrack { get; set; }
-
-        [Option("-a|--analyze", CommandOptionType.SingleValue, Description = "Use this option to enable analysis mode, where a directory is nominated, and it is used to track and retrieve historical performance test runs for use in statistical tests against new runs.")]
-        public bool Analyze { get; set; } = true;
-
-        [Option("-h|--ttest-alpha", CommandOptionType.SingleValue, Description = "Use this option to set the significance threshold for the ttest analysis.")]
-        public double Alpha { get; set; } = 0.005;
-
-        [Option("-r|--round", CommandOptionType.SingleValue, Description = "The number of digits to round to")]
-        public int Round { get; set; } = 4;
-
-
         private static async Task Main(string[] userRequestedTestNames)
         {
-            await CommandLineApplication.ExecuteAsync<Program>(userRequestedTestNames);
+            await SailfishMain<Program>(userRequestedTestNames);
         }
 
-        public async Task OnExecute()
+        public override async Task OnExecuteAsync()
         {
             await ContainerConfiguration
                 .CompositionRoot()
@@ -51,22 +27,20 @@ namespace AsAConsoleApp
             // is necessary to resolve dependencies used by test classes.
             // Additionally, there are various MediatR handlers that can be overriden
             // using these additional registrations.
-            builder.RegisterModule<ExtraRegistrationsModule>();
-        }
+            builder.RegisterModule<RequiredAdditionalRegistrationsModule>();
 
-        private RunSettings AssembleRunRequest()
-        {
-            if (OutputDirectory is null)
+            // These registrations can override the default handlers for
+            // writing t-test results and reading/writing tracking files
+            // This is useful if you've got a system for running automated perf
+            // tests and what then recorded in the cloud.
+            if (Environment?.ToLowerInvariant() == "notify")
             {
-                OutputDirectory = Path.Combine(Directory.GetCurrentDirectory(), "performance_output");
-                if (!Directory.Exists(OutputDirectory))
-                {
-                    Directory.CreateDirectory(OutputDirectory);
-                }
+                builder.RegisterModule<OptionalAdditionalRegistrationsNotifications>();
             }
-
-            return new RunSettings(TestNames, OutputDirectory, NoTrack, Analyze, new TTestSettings(Alpha, Round), GetType());
+            else if (Environment?.ToLowerInvariant() == "cloud")
+            {
+                builder.RegisterModule<OptionalAdditionalRegistrationsCloud>();
+            }
         }
     }
-    
 }

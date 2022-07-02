@@ -8,7 +8,7 @@ namespace Sailfish.Execution;
 
 public class TestInstanceContainerProvider
 {
-    public readonly MethodInfo method;
+    public readonly MethodInfo Method;
 
     private readonly ITypeResolver typeResolver;
     private readonly Type test;
@@ -27,7 +27,7 @@ public class TestInstanceContainerProvider
         this.test = test;
         this.variableSets = new Queue<int[]>(variableSets);
         this.propertyNames = propertyNames;
-        this.method = method;
+        this.Method = method;
         this.ctorArgTypes = test.GetCtorParamTypes();
     }
 
@@ -48,24 +48,24 @@ public class TestInstanceContainerProvider
             }
 
             SetProperties(instance, nextVariableSet);
-            yield return TestInstanceContainer.CreateTestInstance(instance, method, propertyNames.ToArray(), nextVariableSet);
+            yield return TestInstanceContainer.CreateTestInstance(instance, Method, propertyNames.ToArray(), nextVariableSet);
         }
     }
 
-    private void SetProperties(object instance, int[] nextVariableSet)
+    private void SetProperties(object obj, int[] nextVariableSet)
     {
         foreach (var (propertyName, variableValue) in propertyNames.Zip(nextVariableSet))
         {
-            var prop = instance.GetType().GetProperties().Single(x => x.Name == propertyName);
-            prop.SetValue(instance, variableValue);
+            var prop = obj.GetType().GetProperties().Single(x => x.Name == propertyName);
+            prop.SetValue(obj, variableValue);
         }
     }
 
     private object CreateTestInstance()
     {
         var ctorArgs = ctorArgTypes.Select(x => typeResolver.ResolveType(x)).ToArray();
-        var instance = Activator.CreateInstance(test, ctorArgs);
-        if (instance is null) throw new SailfishException($"Couldn't create instance of {test.Name}");
-        return instance;
+        var obj = Activator.CreateInstance(test, ctorArgs);
+        if (obj is null) throw new SailfishException($"Couldn't create instance of {test.Name}");
+        return obj;
     }
 }

@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using Sailfish.Presentation;
 
 namespace Sailfish.Statistics.StatisticalAnalysis;
 
@@ -8,8 +9,8 @@ public class DefaultTrackingFileDirectoryReader : ITrackingFileDirectoryReader
 {
     public virtual List<string> DefaultReadDirectory(string directory)
     {
-        var files = Directory.GetFiles(Path.Combine(directory, "tracking_output"))
-            .Where(x => x.EndsWith(".cvs.tracking"))
+        var files = Directory.GetFiles(directory)
+            .Where(x => x.EndsWith(DefaultFileSettings.TrackingSuffix))
             .OrderByDescending(x => x)
             .ToList();
         return files;

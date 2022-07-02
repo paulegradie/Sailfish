@@ -1,6 +1,6 @@
 using System.Threading.Tasks;
 
-namespace AsAConsoleApp.CloudExample;
+namespace AsAConsoleApp.CustomHandlerOverrideExamples;
 
 public interface ICloudWriter
 {

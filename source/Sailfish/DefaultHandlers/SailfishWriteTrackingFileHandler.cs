@@ -10,13 +10,15 @@ public class SailfishWriteTrackingFileHandler : INotificationHandler<WriteCurren
 {
     public async Task Handle(WriteCurrentTrackingFileCommand notification, CancellationToken cancellationToken)
     {
-        var output = Path.Combine(notification.DefaultOutputDirectory, "tracking_output");
+        var output = notification.DefaultOutputDirectory;
         if (!Directory.Exists(output))
         {
             Directory.CreateDirectory(output);
         }
 
-        using var streamWriter = new StreamWriter(notification.DefaultFileName);
+        var filePath = Path.Join(output, notification.DefaultFileName);
+
+        using var streamWriter = new StreamWriter(filePath);
         await streamWriter.WriteAsync(notification.Content);
     }
 }

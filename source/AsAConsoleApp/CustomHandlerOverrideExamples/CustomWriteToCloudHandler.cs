@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 using MediatR;
 using Sailfish.Contracts.Public.Commands;
 
-namespace AsAConsoleApp.CloudExample;
+namespace AsAConsoleApp.CustomHandlerOverrideExamples;
 
 public class CustomWriteToCloudHandler : INotificationHandler<WriteCurrentTrackingFileCommand>
 {

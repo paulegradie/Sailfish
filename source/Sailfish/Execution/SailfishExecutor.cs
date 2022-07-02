@@ -34,17 +34,21 @@ public class SailfishExecutor
         await Run(
             testNames: runSettings.TestNames,
             directoryPath: runSettings.DirectoryPath,
+            trackingDirectory: runSettings.TrackingDirectoryPath,
             noTrack: runSettings.NoTrack,
             analyze: runSettings.Analyze,
             settings: runSettings.Settings,
+            notify: runSettings.Notify,
             testLocationTypes: runSettings.TestLocationTypes);
     }
 
     public async Task Run(
         string[] testNames,
         string directoryPath,
+        string trackingDirectory,
         bool noTrack,
         bool analyze,
+        bool notify,
         TTestSettings settings,
         params Type[] testLocationTypes)
     {
@@ -57,7 +61,7 @@ public class SailfishExecutor
 
             var compiledResults = testResultCompiler.CompileResults(results);
 
-            await testResultPresenter.PresentResults(compiledResults, directoryPath, timeStamp, noTrack, analyze, settings);
+            await testResultPresenter.PresentResults(compiledResults, directoryPath, trackingDirectory, timeStamp, noTrack, analyze, notify, settings);
         }
         else
         {

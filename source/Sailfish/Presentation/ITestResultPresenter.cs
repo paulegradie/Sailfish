@@ -11,8 +11,10 @@ public interface ITestResultPresenter
     Task PresentResults(
         List<CompiledResultContainer> resultContainers,
         string directoryPath,
+        string trackingDirectory,
         DateTime timeStamp,
         bool noTrack,
         bool analyze,
+        bool notify,
         TTestSettings settings);
 }
