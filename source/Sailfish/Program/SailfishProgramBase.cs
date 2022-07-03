@@ -1,5 +1,6 @@
 ﻿using System.IO;
 using System.Threading.Tasks;
+using Autofac;
 using McMaster.Extensions.CommandLineUtils;
 using Sailfish.Presentation.TTest;
 using Sailfish.Utils;
@@ -14,7 +15,7 @@ public abstract class SailfishProgramBase
     }
 
     public abstract Task OnExecuteAsync();
-    // public abstract void RegisterWithSailfish(ContainerBuilder builder);
+    public abstract void RegisterWithSailfish(ContainerBuilder builder);
 
     public RunSettings AssembleRunRequest()
     {
