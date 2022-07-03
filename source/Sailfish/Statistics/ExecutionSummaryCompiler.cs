@@ -62,8 +62,8 @@ internal class ExecutionSummaryCompiler : IExecutionSummaryCompiler
         if (testExecutionResult.IsSuccess)
         {
             if (testExecutionResult.IsSuccess && !testExecutionResult.PerformanceTimerResults.IsValid) throw new SailfishException($"Somehow test exception was successful, but the performance timer was invalid for test: {testExecutionResult.TestInstanceContainer.DisplayName}");
-            var stats = ComputeStatistics(testExecutionResult);
-            var compiledResult = new CompiledResult(testExecutionResult.TestInstanceContainer.DisplayName, testExecutionResult.TestInstanceContainer.GroupingId, stats);
+            var descriptiveStatistics = ComputeStatistics(testExecutionResult);
+            var compiledResult = new CompiledResult(testExecutionResult.TestInstanceContainer.DisplayName, testExecutionResult.TestInstanceContainer.GroupingId, descriptiveStatistics);
             if (testExecutionResult.Exception is not null)
             {
                 compiledResult.Exception = testExecutionResult.Exception;
@@ -82,7 +82,7 @@ internal class ExecutionSummaryCompiler : IExecutionSummaryCompiler
         }
     }
 
-    private TestCaseStatistics ComputeStatistics(TestExecutionResult result)
+    private DescriptiveStatistics ComputeStatistics(TestExecutionResult result)
     {
         return statsCompiler.Compile(result.TestInstanceContainer.DisplayName, result.PerformanceTimerResults);
     }

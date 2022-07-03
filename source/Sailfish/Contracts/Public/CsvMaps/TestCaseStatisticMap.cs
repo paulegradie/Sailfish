@@ -3,7 +3,7 @@ using Sailfish.Statistics;
 
 namespace Sailfish.Contracts.Public.CsvMaps;
 
-public sealed class TestCaseStatisticMap : ClassMap<TestCaseStatistics>
+public sealed class TestCaseStatisticMap : ClassMap<DescriptiveStatistics>
 {
     public TestCaseStatisticMap()
     {

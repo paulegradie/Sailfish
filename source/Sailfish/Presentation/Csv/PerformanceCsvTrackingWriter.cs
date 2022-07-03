@@ -31,7 +31,7 @@ internal class PerformanceCsvTrackingWriter : IPerformanceCsvTrackingWriter
             {
                 var records = container
                     .CompiledResults
-                    .Select(x => x.TestCaseStatistics);
+                    .Select(x => x.DescriptiveStatistics);
 
                 await csv.WriteRecordsAsync(records);
             }

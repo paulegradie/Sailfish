@@ -16,6 +16,6 @@ internal class TrackingFileFinder : ITrackingFileFinder
         var files = trackingFileDirectoryReader.DefaultReadDirectory(directory);
         return files.Count() < 2
             ? new BeforeAndAfterTrackingFiles(string.Empty, string.Empty)
-            : new BeforeAndAfterTrackingFiles(files[0], files[1]);
+            : new BeforeAndAfterTrackingFiles(files[1], files[0]);
     }
 }

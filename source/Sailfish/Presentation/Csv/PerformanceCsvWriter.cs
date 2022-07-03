@@ -30,7 +30,7 @@ internal class PerformanceCsvWriter : IPerformanceCsvWriter
             {
                 if (container.Settings.AsCsv)
                 {
-                    var records = container.CompiledResults.Select(x => x.TestCaseStatistics);
+                    var records = container.CompiledResults.Select(x => x.DescriptiveStatistics);
                     csv.WriteRecords(records);
                 }
             }

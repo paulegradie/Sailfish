@@ -61,10 +61,10 @@ internal class MarkdownWriter : IMarkdownWriter
                 var table = group.ToStringTable(
                     new List<string>() { "", "ms", "ms", "ms", "" },
                     u => u.DisplayName!,
-                    u => u.TestCaseStatistics!.Median,
-                    u => u.TestCaseStatistics!.Mean,
-                    u => u.TestCaseStatistics!.StdDev,
-                    u => u.TestCaseStatistics!.Variance
+                    u => u.DescriptiveStatistics!.Median,
+                    u => u.DescriptiveStatistics!.Mean,
+                    u => u.DescriptiveStatistics!.StdDev,
+                    u => u.DescriptiveStatistics!.Variance
                 );
 
                 stringBuilder.AppendLine(table);

@@ -4,5 +4,5 @@ namespace Sailfish.Statistics;
 
 internal interface IStatisticsCompiler
 {
-    TestCaseStatistics Compile(string displayName, PerformanceTimer populatedTimer);
+    DescriptiveStatistics Compile(string displayName, PerformanceTimer populatedTimer);
 }

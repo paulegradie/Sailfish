@@ -1,9 +1,11 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using Sailfish.Contracts.Public.CsvMaps;
 using Sailfish.Statistics;
 using Sailfish.Statistics.StatisticalAnalysis;
 using Sailfish.Utils;
+using Serilog;
 
 namespace Sailfish.Presentation.TTest;
 
@@ -11,23 +13,32 @@ internal class TTestComputer : ITTestComputer
 {
     private readonly IFileIo fileIo;
     private readonly ITTest tTest;
+    private readonly ILogger logger;
 
-    public TTestComputer(IFileIo fileIo, ITTest tTest)
+    public TTestComputer(IFileIo fileIo, ITTest tTest, ILogger logger)
     {
         this.fileIo = fileIo;
         this.tTest = tTest;
+        this.logger = logger;
     }
 
     public List<NamedTTestResult> ComputeTTest(BeforeAndAfterTrackingFiles beforeAndAfter, TTestSettings settings)
     {
-        var before = fileIo.ReadCsvFile<TestCaseStatisticMap, TestCaseStatistics>(beforeAndAfter.BeforeFilePath);
-        var after = fileIo.ReadCsvFile<TestCaseStatisticMap, TestCaseStatistics>(beforeAndAfter.AfterFilePath).ToList();
-
-        var results = Compute(before, after, settings);
-        return results;
+        try
+        {
+            var before = fileIo.ReadCsvFile<TestCaseStatisticMap, DescriptiveStatistics>(beforeAndAfter.BeforeFilePath);
+            var after = fileIo.ReadCsvFile<TestCaseStatisticMap, DescriptiveStatistics>(beforeAndAfter.AfterFilePath).ToList();
+            var results = Compute(before, after, settings);
+            return results;
+        }
+        catch (Exception ex)
+        {
+            logger.Fatal("Unable to read tracking files before and after: {Message}", ex.Message);
+            return new List<NamedTTestResult>();
+        }
     }
 
-    private List<NamedTTestResult> Compute(List<TestCaseStatistics> before, List<TestCaseStatistics> after, TTestSettings testSettings)
+    private List<NamedTTestResult> Compute(List<DescriptiveStatistics> before, List<DescriptiveStatistics> after, TTestSettings testSettings)
     {
         var testNames = after.Select(x => x.DisplayName).OrderByDescending(x => x);
 

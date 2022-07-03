@@ -5,8 +5,8 @@ namespace Sailfish.Statistics;
 
 internal class StatisticsCompiler : IStatisticsCompiler
 {
-    public TestCaseStatistics Compile(string displayName, PerformanceTimer populatedTimer)
+    public DescriptiveStatistics Compile(string displayName, PerformanceTimer populatedTimer)
     {
-        return populatedTimer.ToTestCaseStatistics(displayName);
+        return populatedTimer.ToDescriptiveStatistics(displayName);
     }
 }

@@ -4,7 +4,7 @@ using Sailfish.Execution;
 
 namespace Sailfish.Statistics;
 
-public class TestCaseStatistics
+public class DescriptiveStatistics
 {
     public string DisplayName { get; set; } = null!;
     public double Mean { get; set; }
@@ -18,7 +18,7 @@ public class TestCaseStatistics
 
     public double[] RawExecutionResults { get; set; } = null!; // milliseconds
 
-    public TestCaseStatistics ConvertFromPerfTimer(string displayName, PerformanceTimer performanceTimer)
+    public DescriptiveStatistics ConvertFromPerfTimer(string displayName, PerformanceTimer performanceTimer)
     {
         var executionIterations = performanceTimer.ExecutionIterationPerformances.Select(x => (double)x.Duration).ToArray();
 
@@ -27,16 +27,16 @@ public class TestCaseStatistics
         var variance = MathNet.Numerics.Statistics.Statistics.Variance(executionIterations);
         var median = MathNet.Numerics.Statistics.Statistics.Median(executionIterations);
 
-        return new TestCaseStatistics
+        return new DescriptiveStatistics
         {
             DisplayName = displayName,
             GlobalStart = performanceTimer.GlobalStart,
             GlobalEnd = performanceTimer.GlobalStop,
             GlobalDuration = performanceTimer.GlobalDuration.TotalSeconds,
-            Mean = Math.Round(mean, 3),
-            StdDev = Math.Round(stdDev, 3),
-            Variance = Math.Round(variance, 3),
-            Median = Math.Round(median, 3),
+            Mean = Math.Round(mean, 5),
+            StdDev = Math.Round(stdDev, 5),
+            Variance = Math.Round(variance, 5),
+            Median = Math.Round(median, 5),
             RawExecutionResults = executionIterations
         };
     }
