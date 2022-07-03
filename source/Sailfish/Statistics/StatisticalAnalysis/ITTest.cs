@@ -2,7 +2,7 @@
 
 namespace Sailfish.Statistics.StatisticalAnalysis;
 
-public interface ITTest
+internal interface ITTest
 {
     TTestResult ExecuteTest(double[] before, double[] after, TTestSettings settings);
 }

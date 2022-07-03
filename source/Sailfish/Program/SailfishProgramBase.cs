@@ -1,7 +1,9 @@
 ﻿using System.IO;
 using System.Threading.Tasks;
+using Autofac;
 using McMaster.Extensions.CommandLineUtils;
 using Sailfish.Presentation.TTest;
+using Sailfish.Utils;
 
 namespace Sailfish.Program;
 
@@ -13,19 +15,23 @@ public abstract class SailfishProgramBase
     }
 
     public abstract Task OnExecuteAsync();
+    public abstract void RegisterWithSailfish(ContainerBuilder builder);
 
     public RunSettings AssembleRunRequest()
     {
         if (OutputDirectory is null)
         {
             OutputDirectory = Path.Combine(Directory.GetCurrentDirectory(), "performance_output");
-            if (!Directory.Exists(OutputDirectory))
-            {
-                Directory.CreateDirectory(OutputDirectory);
-            }
+            Directories.EnsureDirectoryExists(OutputDirectory);
         }
 
-        return new RunSettings(TestNames, OutputDirectory, TrackingDirectory, NoTrack, Analyze,  Notify, new TTestSettings(Alpha, Round), GetType());
+        if (TrackingDirectory is null)
+        {
+            TrackingDirectory = Path.Combine(Directory.GetCurrentDirectory(), "tracking_directory");
+            Directories.EnsureDirectoryExists(TrackingDirectory);
+        }
+
+        return new RunSettings(TestNames, OutputDirectory, TrackingDirectory, NoTrack, Analyze, Notify, new TTestSettings(Alpha, Round), GetType());
     }
 
     [Option("-t|--tests", CommandOptionType.MultipleValue, Description = "List of tests to execute")]
@@ -51,7 +57,7 @@ public abstract class SailfishProgramBase
 
     [Option("-r|--round", CommandOptionType.SingleValue, Description = "The number of digits to round to")]
     public int Round { get; set; } = 4;
-    
+
     [Option("-e|--environment", CommandOptionType.SingleValue, Description = "A flag you can use to specify a runtime environment. This can be used, e.g., to switch registrations.")]
     public string? Environment { get; set; }
 }

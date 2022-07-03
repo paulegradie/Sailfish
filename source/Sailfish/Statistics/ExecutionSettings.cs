@@ -1,6 +1,6 @@
 ﻿namespace Sailfish.Statistics;
 
-public class ExecutionSettings
+internal class ExecutionSettings
 {
     public bool AsCsv { get; set; }
     public bool AsConsole { get; set; }

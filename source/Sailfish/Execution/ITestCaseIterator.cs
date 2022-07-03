@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 
 namespace Sailfish.Execution
 {
-    public interface ITestCaseIterator
+    internal interface ITestCaseIterator
     {
         Task<List<string>> Iterate(TestInstanceContainer testInstanceContainer);
     }

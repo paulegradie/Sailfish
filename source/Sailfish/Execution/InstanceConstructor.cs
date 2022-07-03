@@ -4,7 +4,7 @@ namespace Sailfish.Execution
 {
     
 
-public static class InstanceConstructor
+internal static class InstanceConstructor
 {
     // must be parameterless
 

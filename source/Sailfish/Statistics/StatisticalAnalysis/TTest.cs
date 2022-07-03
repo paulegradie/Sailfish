@@ -4,7 +4,7 @@ using Sailfish.Presentation.TTest;
 
 namespace Sailfish.Statistics.StatisticalAnalysis;
 
-public class TTest : ITTest
+internal class TTest : ITTest
 {
     public TTestResult ExecuteTest(double[] before, double[] after, TTestSettings settings)
     {

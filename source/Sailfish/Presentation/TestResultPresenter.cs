@@ -29,7 +29,7 @@ internal class TestResultPresenter : ITestResultPresenter
     }
 
     public async Task PresentResults(
-        List<CompiledResultContainer> resultContainers,
+        List<ExecutionSummary> resultContainers,
         string directoryPath,
         string trackingDirectory,
         DateTime timeStamp,

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Reflection;
+using Sailfish.ExtensionMethods;
 using Sailfish.Statistics;
 using Sailfish.Utils;
 
@@ -9,7 +10,7 @@ namespace Sailfish.Execution
     /// A test instance container is a single case for a single method for a single type
     /// It will contain all of the necessary items to execute a test case
     /// </summary>
-    public class TestInstanceContainer
+    internal class TestInstanceContainer
     {
         private TestInstanceContainer(
             Type type,

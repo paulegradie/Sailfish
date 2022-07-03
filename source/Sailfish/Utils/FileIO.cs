@@ -9,7 +9,7 @@ using CsvHelper.Configuration;
 
 namespace Sailfish.Utils;
 
-public class FileIo : IFileIo
+internal class FileIo : IFileIo
 {
     public async Task WriteToFile(string content, string filePath, CancellationToken cancellationToken)
     {

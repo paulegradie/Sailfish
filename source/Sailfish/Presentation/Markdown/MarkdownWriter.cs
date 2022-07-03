@@ -3,13 +3,14 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Sailfish.ExtensionMethods;
 using Sailfish.Presentation.Console;
 using Sailfish.Statistics;
 using Sailfish.Utils;
 
 namespace Sailfish.Presentation.Markdown;
 
-public class MarkdownWriter : IMarkdownWriter
+internal class MarkdownWriter : IMarkdownWriter
 {
     private readonly IFileIo fileIo;
     private readonly IPresentationStringConstructor stringBuilder;
@@ -22,7 +23,7 @@ public class MarkdownWriter : IMarkdownWriter
         this.stringBuilder = stringBuilder;
     }
 
-    public async Task Present(List<CompiledResultContainer> results, string filePath)
+    public async Task Present(List<ExecutionSummary> results, string filePath)
     {
         foreach (var result in results)
         {

@@ -4,7 +4,7 @@ using Sailfish.Statistics.StatisticalAnalysis;
 
 namespace Sailfish.Presentation;
 
-public interface IBeforeAndAfterStreamReader
+internal interface IBeforeAndAfterStreamReader
 {
     Task<BeforeAndAfterTrackingFiles> ReadBeforeAndAfterStream(FileStream before, FileStream after);
 }

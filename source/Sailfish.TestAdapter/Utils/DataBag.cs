@@ -2,7 +2,7 @@
 
 namespace Sailfish.TestAdapter.Utils
 {
-    public class DataBag
+    internal class DataBag
     {
         public DataBag(string csFilePath, string fileContent, Type type)
         {

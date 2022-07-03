@@ -2,7 +2,7 @@ using System;
 
 namespace Sailfish.Execution
 {
-    public interface ITestCollector
+    internal interface ITestCollector
     {
         Type[] CollectTestTypes(params Type[] sourceTypes);
         Type[] CollectTestTypes();

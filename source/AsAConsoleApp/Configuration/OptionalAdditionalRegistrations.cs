@@ -1,5 +1,4 @@
-﻿using System;
-using AsAConsoleApp.CustomHandlerOverrideExamples;
+﻿using AsAConsoleApp.CustomHandlerOverrideExamples;
 using Autofac;
 using MediatR;
 using Sailfish.Contracts.Public.Commands;

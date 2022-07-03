@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace Sailfish.Execution;
 
-public interface IIterationVariableRetriever
+internal interface IIterationVariableRetriever
 {
     Dictionary<string, int[]> RetrieveIterationVariables(Type type);
 }

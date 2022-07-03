@@ -1,9 +1,10 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using Sailfish.ExtensionMethods;
 
 namespace Sailfish.Execution
 {
-    public class ParameterCombinator : IParameterCombinator
+    internal class ParameterCombinator : IParameterCombinator
     {
         public int[][] GetAllPossibleCombos(IEnumerable<IEnumerable<int>> ints)
         {
@@ -13,20 +14,9 @@ namespace Sailfish.Execution
             foreach (var inner in strings)
                 combos = from c in combos
                     from i in inner
-                    select c.Append(i);
+                    select ParameterCombinatorExtensionMethods.Append(c, i);
 
             return combos.Select(x => x.Select(int.Parse).ToArray()).ToArray();
-        }
-    }
-
-    public static class ParameterCombinatorExtensionMethods
-    {
-        public static IEnumerable<TSource> Append<TSource>(this IEnumerable<TSource> source, TSource item)
-        {
-            foreach (var element in source)
-                yield return element;
-
-            yield return item;
         }
     }
 }

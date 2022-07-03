@@ -1,14 +1,14 @@
 ﻿using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
+using Sailfish.ExtensionMethods;
 using Sailfish.Presentation.Console;
 using Sailfish.Statistics.StatisticalAnalysis;
-using Sailfish.Utils;
 using Serilog;
 
 namespace Sailfish.Presentation.TTest;
 
-public class TwoTailedTTestWriter : ITwoTailedTTestWriter
+internal class TwoTailedTTestWriter : ITwoTailedTTestWriter
 {
     private readonly ITTestComputer tTestComputer;
     private readonly ILogger logger;

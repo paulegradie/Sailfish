@@ -4,9 +4,9 @@ using Sailfish.Statistics;
 
 namespace Sailfish.Presentation.Csv;
 
-public interface IPerformanceCsvTrackingWriter
+internal interface IPerformanceCsvTrackingWriter
 {
     // Task Present(List<CompiledResultContainer> result, string filePath);
-    Task<string> ConvertToCsvStringContent(List<CompiledResultContainer> result);
+    Task<string> ConvertToCsvStringContent(List<ExecutionSummary> result);
 
 }

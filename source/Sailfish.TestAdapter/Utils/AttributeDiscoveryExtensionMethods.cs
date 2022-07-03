@@ -5,7 +5,7 @@ using System.Reflection;
 
 namespace Sailfish.TestAdapter.Utils
 {
-    public static class AttributeDiscoveryExtensionMethods
+    internal static class AttributeDiscoveryExtensionMethods
     {
         internal static bool HasAttribute<TAttribute>(this Type type, bool inherit = false) where TAttribute : Attribute
         {

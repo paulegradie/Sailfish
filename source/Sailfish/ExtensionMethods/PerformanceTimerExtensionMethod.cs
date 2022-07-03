@@ -1,8 +1,9 @@
 ﻿using Sailfish.Execution;
+using Sailfish.Statistics;
 
-namespace Sailfish.Statistics;
+namespace Sailfish.ExtensionMethods;
 
-public static class PerformanceTimerExtensionMethod
+internal static class PerformanceTimerExtensionMethod
 {
     public static TestCaseStatistics ToTestCaseStatistics(this PerformanceTimer populatedPerformanceTimer, string displayName)
     {

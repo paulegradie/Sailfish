@@ -3,7 +3,7 @@ using Sailfish.Presentation.Console;
 
 namespace Sailfish.Presentation;
 
-public class PresentationStringConstructor : IPresentationStringConstructor
+internal class PresentationStringConstructor : IPresentationStringConstructor
 {
     private readonly StringBuilder stringBuilder;
 

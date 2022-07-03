@@ -2,7 +2,7 @@ using System;
 
 namespace Sailfish.Execution
 {
-    public interface ITestFilter
+    internal interface ITestFilter
     {
         TestValidationResult FilterAndValidate(Type[] tests, string[] testsRequestedByUser);
     }

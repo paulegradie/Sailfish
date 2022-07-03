@@ -3,7 +3,7 @@ using System.Collections.Generic;
 
 namespace Sailfish.Execution
 {
-    public class TestValidationResult
+    internal class TestValidationResult
     {
         private TestValidationResult(bool isValid, Type[] tests, Dictionary<string, List<string>> errors)
         {

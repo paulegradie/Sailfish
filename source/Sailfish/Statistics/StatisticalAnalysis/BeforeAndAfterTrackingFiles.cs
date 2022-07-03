@@ -1,6 +1,6 @@
 ﻿namespace Sailfish.Statistics.StatisticalAnalysis;
 
-public class BeforeAndAfterTrackingFiles
+internal class BeforeAndAfterTrackingFiles
 {
     public BeforeAndAfterTrackingFiles(string beforeFilePath, string afterFilePath)
     {

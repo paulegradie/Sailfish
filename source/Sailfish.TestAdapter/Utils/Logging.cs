@@ -7,7 +7,7 @@ using Serilog.Core;
 
 namespace Sailfish.TestAdapter.Utils
 {
-    public static class LogExtensions
+    internal static class LogExtensions
     {
         public static string AppendTimeStamp(this string fileName)
         {
@@ -19,7 +19,7 @@ namespace Sailfish.TestAdapter.Utils
         }
     }
 
-    public static class Logging
+    internal static class Logging
     {
         public static Logger CreateLogger(string fileName)
         {

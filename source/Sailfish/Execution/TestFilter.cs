@@ -3,7 +3,7 @@ using System.Linq;
 
 namespace Sailfish.Execution
 {
-    public class TestFilter : ITestFilter
+    internal class TestFilter : ITestFilter
     {
         private readonly ITestListValidator testListValidator;
 

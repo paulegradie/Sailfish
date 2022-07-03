@@ -6,13 +6,13 @@ using System.Linq.Expressions;
 using System.Reflection;
 using System.Text;
 
-namespace Sailfish.Utils
+namespace Sailfish.ExtensionMethods
 {
-    public static class TableParserExtensions
+    internal static class TableParserExtensionMethods
     {
         public static string ToStringTable<T>(this IEnumerable<T> values, List<string> headerSuffixes, params Expression<Func<T, object>>[] valueSelectors)
         {
-            var headers = valueSelectors.Select(func => GetProperty(func)!.Name).ToArray();
+            var headers = valueSelectors.Select(func => GetProperty<T>(func)!.Name).ToArray();
             var selectors = valueSelectors.Select(exp => exp.Compile()).ToArray();
             return ToStringTable(values, headers, headerSuffixes, selectors);
         }

@@ -4,7 +4,7 @@ using Sailfish.Exceptions;
 
 namespace Sailfish.Execution
 {
-    public class TypeResolver : ITypeResolver
+    internal class TypeResolver : ITypeResolver
     {
         private readonly ILifetimeScope lifetimeScope;
 

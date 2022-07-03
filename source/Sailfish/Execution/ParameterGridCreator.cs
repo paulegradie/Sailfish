@@ -4,7 +4,7 @@ using System.Linq;
 
 namespace Sailfish.Execution
 {
-    public class ParameterGridCreator : IParameterGridCreator
+    internal class ParameterGridCreator : IParameterGridCreator
     {
         private readonly IParameterCombinator parameterCombinator;
         private readonly IIterationVariableRetriever iterationVariableRetriever;

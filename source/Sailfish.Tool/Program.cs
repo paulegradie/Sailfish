@@ -24,5 +24,9 @@ namespace Sailfish.Tool
                 .Resolve<SailfishExecution>()
                 .Run(AssembleRunRequest());
         }
+
+        public override void RegisterWithSailfish(ContainerBuilder builder)
+        {
+        }
     }
 }

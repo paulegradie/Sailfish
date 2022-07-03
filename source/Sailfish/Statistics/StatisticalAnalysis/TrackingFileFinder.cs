@@ -2,7 +2,7 @@
 
 namespace Sailfish.Statistics.StatisticalAnalysis;
 
-public class TrackingFileFinder : ITrackingFileFinder
+internal class TrackingFileFinder : ITrackingFileFinder
 {
     private readonly ITrackingFileDirectoryReader trackingFileDirectoryReader;
 

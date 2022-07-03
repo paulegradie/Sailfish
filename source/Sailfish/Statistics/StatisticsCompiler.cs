@@ -1,13 +1,9 @@
 ﻿using Sailfish.Execution;
+using Sailfish.ExtensionMethods;
 
 namespace Sailfish.Statistics;
 
-public interface IStatisticsCompiler
-{
-    TestCaseStatistics Compile(string displayName, PerformanceTimer populatedTimer);
-}
-
-public class StatisticsCompiler : IStatisticsCompiler
+internal class StatisticsCompiler : IStatisticsCompiler
 {
     public TestCaseStatistics Compile(string displayName, PerformanceTimer populatedTimer)
     {

@@ -4,7 +4,7 @@ using Sailfish.Statistics;
 
 namespace Sailfish.Execution
 {
-    public class TestExecutionResult
+    internal class TestExecutionResult
     {
         private TestExecutionResult(TestInstanceContainer container, List<string> messages, bool isSuccess, Exception? exception = null)
         {

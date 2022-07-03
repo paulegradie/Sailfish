@@ -2,8 +2,8 @@ using System.Linq;
 using System.Reflection;
 using Shouldly;
 using Sailfish.Attributes;
+using Sailfish.ExtensionMethods;
 using Xunit;
-using Sailfish.Utils;
 
 namespace Test.AttributeCollection
 {

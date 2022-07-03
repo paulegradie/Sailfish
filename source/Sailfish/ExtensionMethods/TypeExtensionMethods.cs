@@ -2,9 +2,9 @@
 using System.Linq;
 using System.Reflection;
 
-namespace Sailfish.Execution;
+namespace Sailfish.ExtensionMethods;
 
-public static class TypeExtensionMethods
+internal static class TypeExtensionMethods
 {
     public static ConstructorInfo GetSingleConstructor(this Type type)
     {

@@ -6,7 +6,7 @@ using Serilog;
 
 namespace Sailfish.Execution
 {
-    public class SailFishTestExecutor : ISailFishTestExecutor
+    internal class SailFishTestExecutor : ISailFishTestExecutor
     {
         private readonly ILogger logger;
         private readonly ITestCaseIterator testCaseIterator;
@@ -23,32 +23,34 @@ namespace Sailfish.Execution
             this.testCaseIterator = testCaseIterator;
         }
 
-        public async Task<Dictionary<Type, List<TestExecutionResult>>> Execute(
+        public async Task<List<RawExecutionResult>> Execute(
             Type[] testTypes,
             Action<TestInstanceContainer, TestExecutionResult>? callback = null)
         {
-            var resultsDict = new Dictionary<Type, List<TestExecutionResult>>();
+            var rawResults = new List<RawExecutionResult>();
             foreach (var testType in testTypes)
             {
                 try
                 {
-                    var executionResults = await Execute(testType, callback);
-                    resultsDict.Add(testType, executionResults);
+                    var rawResult = await Execute(testType, callback);
+                    rawResults.Add(new RawExecutionResult(testType, rawResult));
                 }
                 catch (Exception ex)
                 {
                     logger.Fatal("The Test runner encountered a fatal error: {0}", ex.Message);
-
+                    rawResults.Add(new RawExecutionResult(testType, ex));
+                    
                     // TODO: When we encounter an error on execution, we swallow things for now
                     // Instead, I'd like to return a list of those types that failed, and report their types as well as their exceptions
-                    resultsDict.Add(testType, new List<TestExecutionResult>
-                    {
-                        TestExecutionResult.CreateFailure(null, null, ex)
-                    });
+                    // resultsDict.Add(
+                    //     testType, new List<TestExecutionResult>
+                    //     {
+                    //         TestExecutionResult.CreateFailure(null, null, ex)
+                    //     });
                 }
             }
 
-            return resultsDict;
+            return rawResults;
         }
 
         public async Task<List<TestExecutionResult>> Execute(Type test, Action<TestInstanceContainer, TestExecutionResult>? callback = null)

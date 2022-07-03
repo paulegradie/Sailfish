@@ -5,7 +5,7 @@ using Sailfish.Presentation;
 
 namespace Sailfish.Statistics.StatisticalAnalysis;
 
-public class DefaultTrackingFileDirectoryReader : ITrackingFileDirectoryReader
+internal class DefaultTrackingFileDirectoryReader : ITrackingFileDirectoryReader
 {
     public virtual List<string> DefaultReadDirectory(string directory)
     {

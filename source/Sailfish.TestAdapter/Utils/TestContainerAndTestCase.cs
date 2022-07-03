@@ -3,7 +3,7 @@ using Sailfish.Execution;
 
 namespace Sailfish.TestAdapter.Utils;
 
-public class TestContainerAndTestCase
+internal class TestContainerAndTestCase
 {
     public TestContainerAndTestCase(TestCase testCase, TestInstanceContainer testInstanceContainer)
     {

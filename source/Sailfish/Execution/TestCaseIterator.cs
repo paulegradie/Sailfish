@@ -4,7 +4,7 @@ using Serilog;
 
 namespace Sailfish.Execution
 {
-    public class TestCaseIterator : ITestCaseIterator
+    internal class TestCaseIterator : ITestCaseIterator
     {
         private readonly ILogger logger;
 

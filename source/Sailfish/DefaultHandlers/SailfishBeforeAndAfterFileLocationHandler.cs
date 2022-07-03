@@ -6,7 +6,7 @@ using Sailfish.Statistics.StatisticalAnalysis;
 
 namespace Sailfish.DefaultHandlers;
 
-public class SailfishBeforeAndAfterFileLocationHandler : IRequestHandler<BeforeAndAfterFileLocationCommand, BeforeAndAfterFileLocationResponse>
+internal class SailfishBeforeAndAfterFileLocationHandler : IRequestHandler<BeforeAndAfterFileLocationCommand, BeforeAndAfterFileLocationResponse>
 {
     private readonly ITrackingFileFinder trackingFileFinder;
 

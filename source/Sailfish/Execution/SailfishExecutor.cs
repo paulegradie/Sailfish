@@ -6,11 +6,11 @@ using Sailfish.Statistics;
 
 namespace Sailfish.Execution;
 
-public class SailfishExecutor
+internal class SailfishExecutor
 {
     private readonly ITestCollector testCollector;
     private readonly ITestFilter testFilter;
-    private readonly ITestResultCompiler testResultCompiler;
+    private readonly IExecutionSummaryCompiler executionSummaryCompiler;
     private readonly ITestResultPresenter testResultPresenter;
     private readonly ISailFishTestExecutor sailFishTestExecutor;
 
@@ -18,14 +18,14 @@ public class SailfishExecutor
         ISailFishTestExecutor sailFishTestExecutor,
         ITestCollector testCollector,
         ITestFilter testFilter,
-        ITestResultCompiler testResultCompiler,
+        IExecutionSummaryCompiler executionSummaryCompiler,
         ITestResultPresenter testResultPresenter
     )
     {
         this.sailFishTestExecutor = sailFishTestExecutor;
         this.testCollector = testCollector;
         this.testFilter = testFilter;
-        this.testResultCompiler = testResultCompiler;
+        this.executionSummaryCompiler = executionSummaryCompiler;
         this.testResultPresenter = testResultPresenter;
     }
 
@@ -57,9 +57,9 @@ public class SailfishExecutor
         {
             var timeStamp = DateTime.Now.ToLocalTime();
 
-            var results = await sailFishTestExecutor.Execute(testRun.Tests);
+            var rawExecutionResults = await sailFishTestExecutor.Execute(testRun.Tests);
 
-            var compiledResults = testResultCompiler.CompileResults(results);
+            var compiledResults = executionSummaryCompiler.CompileToSummaries(rawExecutionResults);
 
             await testResultPresenter.PresentResults(compiledResults, directoryPath, trackingDirectory, timeStamp, noTrack, analyze, notify, settings);
         }

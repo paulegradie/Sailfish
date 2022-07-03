@@ -2,11 +2,11 @@
 using System.Collections.Generic;
 using System.Linq;
 using Sailfish.Attributes;
-using Sailfish.Utils;
+using Sailfish.ExtensionMethods;
 
 namespace Sailfish.Execution;
 
-public class TestInstanceContainerCreator : ITestInstanceContainerCreator
+internal class TestInstanceContainerCreator : ITestInstanceContainerCreator
 {
     private readonly IParameterGridCreator parameterGridCreator;
     private readonly ITypeResolver typeResolver;

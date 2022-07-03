@@ -3,11 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using Sailfish.Attributes;
-using Sailfish.Utils;
+using Sailfish.ExtensionMethods;
 
 namespace Sailfish.Execution;
 
-public class IterationVariableRetriever : IIterationVariableRetriever
+internal class IterationVariableRetriever : IIterationVariableRetriever
 {
     public Dictionary<string, int[]> RetrieveIterationVariables(Type type)
     {

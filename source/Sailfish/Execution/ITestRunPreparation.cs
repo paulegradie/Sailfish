@@ -4,7 +4,7 @@ using System.Reflection;
 
 namespace Sailfish.Execution
 {
-    public interface ITestRunPreparation
+    internal interface ITestRunPreparation
     {
         Dictionary<string, List<(MethodInfo, object)>> GenerateTestInstances(Type test);
     }

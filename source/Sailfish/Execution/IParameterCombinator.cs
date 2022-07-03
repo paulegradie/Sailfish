@@ -2,7 +2,7 @@
 
 namespace Sailfish.Execution
 {
-    public interface IParameterCombinator
+    internal interface IParameterCombinator
     {
         int[][] GetAllPossibleCombos(IEnumerable<IEnumerable<int>> ints);
     }

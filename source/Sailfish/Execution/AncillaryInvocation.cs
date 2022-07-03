@@ -1,11 +1,11 @@
 ﻿using System.Reflection;
 using System.Threading.Tasks;
 using Sailfish.Attributes;
-using Sailfish.Utils;
+using Sailfish.ExtensionMethods;
 
 namespace Sailfish.Execution
 {
-    public class AncillaryInvocation
+    internal class AncillaryInvocation
     {
         private readonly MethodInfo? globalSetup;
         private readonly MethodInfo? globalTeardown;

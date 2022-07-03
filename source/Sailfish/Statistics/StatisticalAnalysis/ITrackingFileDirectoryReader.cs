@@ -2,7 +2,7 @@
 
 namespace Sailfish.Statistics.StatisticalAnalysis;
 
-public interface ITrackingFileDirectoryReader
+internal interface ITrackingFileDirectoryReader
 {
     List<string> DefaultReadDirectory(string directory);
 }

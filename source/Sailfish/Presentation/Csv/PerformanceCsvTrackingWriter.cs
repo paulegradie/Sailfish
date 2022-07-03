@@ -10,7 +10,7 @@ using Sailfish.Utils;
 
 namespace Sailfish.Presentation.Csv;
 
-public class PerformanceCsvTrackingWriter : IPerformanceCsvTrackingWriter
+internal class PerformanceCsvTrackingWriter : IPerformanceCsvTrackingWriter
 {
     private readonly IFileIo fileIo;
 
@@ -19,7 +19,7 @@ public class PerformanceCsvTrackingWriter : IPerformanceCsvTrackingWriter
         this.fileIo = fileIo;
     }
 
-    public async Task<string> ConvertToCsvStringContent(List<CompiledResultContainer> result)
+    public async Task<string> ConvertToCsvStringContent(List<ExecutionSummary> result)
     {
         var filePath = Path.GetTempFileName();
         using (var writer = new StreamWriter(filePath))

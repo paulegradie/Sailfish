@@ -6,10 +6,10 @@ using Sailfish.Statistics;
 
 namespace Sailfish.Presentation;
 
-public interface ITestResultPresenter
+internal interface ITestResultPresenter
 {
     Task PresentResults(
-        List<CompiledResultContainer> resultContainers,
+        List<ExecutionSummary> resultContainers,
         string directoryPath,
         string trackingDirectory,
         DateTime timeStamp,

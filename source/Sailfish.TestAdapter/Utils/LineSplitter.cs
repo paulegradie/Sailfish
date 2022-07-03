@@ -3,7 +3,7 @@ using System.Text.RegularExpressions;
 
 namespace Sailfish.TestAdapter.Utils;
 
-public static class LineSplitter
+internal static class LineSplitter
 {
     public static string[] SplitFileIntoLines(string fileContents)
     {

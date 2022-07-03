@@ -3,7 +3,7 @@ using Sailfish.Statistics;
 
 namespace Sailfish.Presentation.Console;
 
-public interface IConsoleWriter
+internal interface IConsoleWriter
 {
-    string Present(List<CompiledResultContainer> result);
+    string Present(List<ExecutionSummary> result);
 }

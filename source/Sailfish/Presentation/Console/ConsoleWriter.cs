@@ -1,12 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Sailfish.ExtensionMethods;
 using Sailfish.Statistics;
-using Sailfish.Utils;
 
 namespace Sailfish.Presentation.Console;
 
-public class ConsoleWriter : IConsoleWriter
+internal class ConsoleWriter : IConsoleWriter
 {
     private readonly IPresentationStringConstructor stringBuilder;
 
@@ -15,7 +15,7 @@ public class ConsoleWriter : IConsoleWriter
         this.stringBuilder = stringBuilder;
     }
 
-    public string Present(List<CompiledResultContainer> results)
+    public string Present(List<ExecutionSummary> results)
     {
         foreach (var container in results)
         {

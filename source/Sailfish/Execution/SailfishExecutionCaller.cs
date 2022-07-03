@@ -7,7 +7,7 @@ namespace Sailfish.Execution;
 
 public static class SailfishExecutionCaller
 {
-    public static async Task Run(RunSettings runSettings, Action<ContainerBuilder>? registerAdditionalTypes = null)
+    internal static async Task Run(RunSettings runSettings, Action<ContainerBuilder>? registerAdditionalTypes = null)
     {
         var builder = new ContainerBuilder();
         builder.RegisterSailfishTypes();

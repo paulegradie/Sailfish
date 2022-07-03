@@ -1,6 +1,6 @@
-﻿namespace Sailfish.Statistics.StatisticalAnalysis;
+﻿namespace Sailfish.Presentation.Csv;
 
-public class TTesetCsvRecord
+public class TTestCsvRecord
 {
     public string TestName { get; set; } = null!;
     public string MeanOfBefore { get; set; } = null!;

@@ -3,7 +3,7 @@ using System.Linq;
 
 namespace Sailfish.Utils
 {
-    public static class DisplayNameHelper
+    internal static class DisplayNameHelper
     {
         public static string CreateDisplayName(Type testType, string methodName, string paramsCombo)
         {

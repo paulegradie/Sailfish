@@ -21,7 +21,7 @@ namespace AsAConsoleApp
                 .Run(AssembleRunRequest(), RegisterWithSailfish);
         }
 
-        public void RegisterWithSailfish(ContainerBuilder builder)
+        public override void RegisterWithSailfish(ContainerBuilder builder)
         {
             // These registrations will be used by Sailfish's internal DI container which
             // is necessary to resolve dependencies used by test classes.

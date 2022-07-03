@@ -2,7 +2,7 @@ using System;
 
 namespace Sailfish.Execution
 {
-    public interface ITypeResolver
+    internal interface ITypeResolver
     {
         object ResolveType(Type type);
     }

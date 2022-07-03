@@ -3,10 +3,11 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using Sailfish.Exceptions;
+using Sailfish.ExtensionMethods;
 
 namespace Sailfish.Execution;
 
-public class TestInstanceContainerProvider
+internal class TestInstanceContainerProvider
 {
     public readonly MethodInfo Method;
 

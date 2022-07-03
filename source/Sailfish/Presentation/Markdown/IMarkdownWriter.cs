@@ -4,7 +4,7 @@ using Sailfish.Statistics;
 
 namespace Sailfish.Presentation.Markdown;
 
-public interface IMarkdownWriter
+internal interface IMarkdownWriter
 {
-    Task Present(List<CompiledResultContainer> result, string filePath);
+    Task Present(List<ExecutionSummary> result, string filePath);
 }

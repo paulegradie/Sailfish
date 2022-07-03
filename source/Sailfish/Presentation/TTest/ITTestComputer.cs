@@ -3,7 +3,7 @@ using Sailfish.Statistics.StatisticalAnalysis;
 
 namespace Sailfish.Presentation.TTest;
 
-public interface ITTestComputer
+internal interface ITTestComputer
 {
     List<NamedTTestResult> ComputeTTest(BeforeAndAfterTrackingFiles beforeAndAfter, TTestSettings settings);
 }

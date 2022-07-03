@@ -19,7 +19,7 @@ internal class PerformanceCsvWriter : IPerformanceCsvWriter
         this.fileIo = fileIo;
     }
 
-    public async Task Present(List<CompiledResultContainer> result, string filePath)
+    public async Task Present(List<ExecutionSummary> result, string filePath)
     {
         
         using (var writer = new StreamWriter(filePath))

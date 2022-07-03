@@ -7,7 +7,7 @@ using Sailfish.Utils;
 
 namespace Sailfish.Presentation.TTest;
 
-public class TTestComputer : ITTestComputer
+internal class TTestComputer : ITTestComputer
 {
     private readonly IFileIo fileIo;
     private readonly ITTest tTest;

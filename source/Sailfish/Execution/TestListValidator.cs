@@ -2,12 +2,12 @@
 using System.Collections.Generic;
 using System.Linq;
 using Sailfish.Attributes;
+using Sailfish.ExtensionMethods;
 using Serilog;
-using Sailfish.Utils;
 
 namespace Sailfish.Execution
 {
-    public class TestListValidator : ITestListValidator
+    internal class TestListValidator : ITestListValidator
     {
         private readonly ILogger logger;
 

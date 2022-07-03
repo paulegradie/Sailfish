@@ -6,9 +6,9 @@ namespace Sailfish.Contracts.Private;
 
 internal class WriteToConsoleCommand : INotification
 {
-    public WriteToConsoleCommand(List<CompiledResultContainer> content)
+    public WriteToConsoleCommand(List<ExecutionSummary> content)
     {
         Content = content;
     }
-    public List<CompiledResultContainer> Content { get; set; }
+    public List<ExecutionSummary> Content { get; set; }
 }

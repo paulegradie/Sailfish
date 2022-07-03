@@ -2,11 +2,10 @@
 using System.Reflection;
 using Sailfish.Attributes;
 using Sailfish.Statistics;
-using Sailfish.Utils;
 
-namespace Sailfish.Execution;
+namespace Sailfish.ExtensionMethods;
 
-public static class ExecutionExtensionMethods
+internal static class ExecutionExtensionMethods
 {
     public static ExecutionSettings RetrieveExecutionTestSettings(this Type type)
     {

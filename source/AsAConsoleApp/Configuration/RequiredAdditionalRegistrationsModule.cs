@@ -1,6 +1,4 @@
 ﻿using Autofac;
-using Microsoft.AspNetCore.Mvc.Testing;
-using Test.API;
 
 namespace AsAConsoleApp.Configuration;
 

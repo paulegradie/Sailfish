@@ -6,9 +6,9 @@ using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using Sailfish.Attributes;
 
-namespace Sailfish.Utils
+namespace Sailfish.ExtensionMethods
 {
-    public static class ExtensionMethods
+    public static class ReflectionExtensionMethods
     {
         internal static bool HasAttribute<TAttribute>(this Type type, bool inherit = false) where TAttribute : Attribute
         {
