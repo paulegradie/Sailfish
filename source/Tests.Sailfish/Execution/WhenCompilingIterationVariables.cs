@@ -15,9 +15,9 @@ namespace Test.Execution
             var combos = combinator.GetAllPossibleCombos(
                 new List<List<int>>
                 {
-                    new List<int>() { 1, 2, 3 },
-                    new List<int>() { 4, 5 },
-                    new List<int>() { 6, 7, 8, 9 }
+                    new() { 1, 2, 3 },
+                    new() { 4, 5 },
+                    new() { 6, 7, 8, 9 }
                 });
             var result = combos.Select(c => c.ToArray()).ToArray();
 
@@ -31,9 +31,9 @@ namespace Test.Execution
             var combos = combinator.GetAllPossibleCombos(
                 new List<List<int>>
                 {
-                    new List<int>() { 1, 2 },
-                    new List<int>() { 4, 5 },
-                    new List<int>() { 6 }
+                    new() { 1, 2 },
+                    new() { 4, 5 },
+                    new() { 6 }
                 });
             var result = combos.Select(c => c.ToArray()).ToArray();
 

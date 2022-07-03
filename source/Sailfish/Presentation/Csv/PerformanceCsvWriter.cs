@@ -21,7 +21,6 @@ internal class PerformanceCsvWriter : IPerformanceCsvWriter
 
     public async Task Present(List<ExecutionSummary> result, string filePath)
     {
-        
         using (var writer = new StreamWriter(filePath))
         using (var csv = new CsvWriter(writer, CultureInfo.InvariantCulture))
         {

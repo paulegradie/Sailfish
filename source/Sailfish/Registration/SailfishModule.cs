@@ -12,7 +12,7 @@ using Serilog;
 
 namespace Sailfish.Registration;
 
-public class SailfishTypes : Module
+public class SailfishModule : Module
 {
     protected override void Load(ContainerBuilder builder)
     {

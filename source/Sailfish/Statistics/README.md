@@ -41,7 +41,6 @@ When collecting statistics, we are interested in:
 | OtherClass.TestMethodB(VariableA: 1, VariableB: 1)  | 21.3s  | 23.2s | 22.6s  | 15.3     | 22.3s         | 
 | OtherClass.TestMethodB(VariableA: 1, VariableB: 1)  | 21.3s  | 23.2s | 22.6s  | 15.3     | 22.3s         |
 
-
 Since tracking files are produced by default, on the second run you should see something like the following statistical test performed (unless this is disabled):
 
 ```

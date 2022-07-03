@@ -39,14 +39,6 @@ namespace Sailfish.Execution
                 {
                     logger.Fatal("The Test runner encountered a fatal error: {0}", ex.Message);
                     rawResults.Add(new RawExecutionResult(testType, ex));
-                    
-                    // TODO: When we encounter an error on execution, we swallow things for now
-                    // Instead, I'd like to return a list of those types that failed, and report their types as well as their exceptions
-                    // resultsDict.Add(
-                    //     testType, new List<TestExecutionResult>
-                    //     {
-                    //         TestExecutionResult.CreateFailure(null, null, ex)
-                    //     });
                 }
             }
 
@@ -134,20 +126,15 @@ namespace Sailfish.Execution
 
         private async Task<TestExecutionResult> Iterate(TestInstanceContainer testInstanceContainer)
         {
-            Exception? exception = null;
-            var messages = new List<string>();
             try
             {
-                messages = await testCaseIterator.Iterate(testInstanceContainer);
+                var messages = await testCaseIterator.Iterate(testInstanceContainer);
+                return new TestExecutionResult(testInstanceContainer, messages);
             }
-            catch (Exception ex)
+            catch (Exception exception)
             {
-                exception = ex;
+                return new TestExecutionResult(testInstanceContainer, exception);
             }
-
-            return exception is null
-                ? TestExecutionResult.CreateSuccess(testInstanceContainer, messages)
-                : TestExecutionResult.CreateFailure(testInstanceContainer, messages, exception);
         }
 
         private static bool ShouldCallGlobalTeardown(int methodIndex, int totalMethodCount, int currentVariableSetIndex, int totalNumVariableSets)

@@ -15,9 +15,8 @@ namespace Sailfish.TestAdapter
     {
         public void DiscoverTests(IEnumerable<string> containers, IDiscoveryContext discoveryContext, IMessageLogger logger, ITestCaseDiscoverySink discoverySink)
         {
-
             containers = containers.Where(x => !x.StartsWith("Sailfish.TestAdapter"));
-            
+
             try
             {
                 var testCases = new TestDiscovery().DiscoverTests(containers);

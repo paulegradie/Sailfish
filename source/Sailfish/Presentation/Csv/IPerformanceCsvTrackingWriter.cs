@@ -8,5 +8,4 @@ internal interface IPerformanceCsvTrackingWriter
 {
     // Task Present(List<CompiledResultContainer> result, string filePath);
     Task<string> ConvertToCsvStringContent(List<ExecutionSummary> result);
-
 }

@@ -28,8 +28,8 @@ internal class TestInstanceContainerProvider
         this.test = test;
         this.variableSets = new Queue<int[]>(variableSets);
         this.propertyNames = propertyNames;
-        this.Method = method;
-        this.ctorArgTypes = test.GetCtorParamTypes();
+        Method = method;
+        ctorArgTypes = test.GetCtorParamTypes();
     }
 
     private object? instance;

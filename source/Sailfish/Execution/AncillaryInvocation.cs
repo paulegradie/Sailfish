@@ -73,8 +73,13 @@ namespace Sailfish.Execution
             performanceTimer.StopGlobalTimer();
         }
 
-        public PerformanceTimer GetPerformanceResults()
+        public PerformanceTimer GetPerformanceResults(bool isValid = true)
         {
+            if (!isValid)
+            {
+                performanceTimer.SetAsInvalid();
+            }
+            
             return performanceTimer;
         }
     }

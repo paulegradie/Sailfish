@@ -1,22 +1,20 @@
 ﻿using System;
 using System.Collections.Generic;
+using Sailfish.ExtensionMethods;
 
 namespace Sailfish.Statistics;
 
 internal class ExecutionSummary
 {
-    public ExecutionSummary(List<Exception> exceptions, Type type, List<CompiledResult> compiledResults, ExecutionSettings settings)
+    public ExecutionSummary(Type type, List<CompiledResult> compiledResults)
     {
-        Exceptions = exceptions;
         Type = type;
         CompiledResults = compiledResults;
-        Settings = settings;
+        Settings = type.RetrieveExecutionTestSettings();
     }
 
     public Type Type { get; set; }
     public int StatusCode { get; set; }
     public ExecutionSettings Settings { get; }
     public List<CompiledResult> CompiledResults { get; set; }
-    public List<Exception> Exceptions { get; set; }
 }
-

@@ -10,5 +10,6 @@ internal class WriteToConsoleCommand : INotification
     {
         Content = content;
     }
+
     public List<ExecutionSummary> Content { get; set; }
 }

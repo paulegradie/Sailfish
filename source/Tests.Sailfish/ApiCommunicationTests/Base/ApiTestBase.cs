@@ -19,6 +19,7 @@ namespace Test.ApiCommunicationTests.Base
 
         public WebApplicationFactory<DemoApp> WebHostFactory { get; set; }
         public HttpClient Client { get; }
+
         public async ValueTask DisposeAsync()
         {
             await WebHostFactory.DisposeAsync();

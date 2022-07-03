@@ -6,42 +6,36 @@ namespace Sailfish.Execution
 {
     internal class TestExecutionResult
     {
-        private TestExecutionResult(TestInstanceContainer container, List<string> messages, bool isSuccess, Exception? exception = null)
+        public TestExecutionResult(TestInstanceContainer container, List<string> messages)
         {
+            Exception = null;
+            IsSuccess = true;
+            StatusCode = StatusCode.Success;
+
             TestInstanceContainer = container;
-            Messages = messages?.ToArray()!;
+            Messages = messages;
+            ExecutionSettings = container.ExecutionSettings;
+            PerformanceTimerResults = container.Invocation.GetPerformanceResults();
+        }
+
+        public TestExecutionResult(TestInstanceContainer container, Exception exception)
+        {
             Exception = exception;
-            IsSuccess = isSuccess;
-            ExecutionSettings = container?.ExecutionSettings!; // Trick compiler on failure
+            IsSuccess = false;
+            StatusCode = StatusCode.Failure;
+
+            TestInstanceContainer = container;
+            Messages = null;
+            ExecutionSettings = container.ExecutionSettings;
+            PerformanceTimerResults = container.Invocation.GetPerformanceResults(false);
         }
 
-        public TestInstanceContainer TestInstanceContainer { get; set; }
-
-        public string[] Messages { get; set; }
-        public Exception? Exception { get; set; }
-        public StatusCode StatusCode { get; set; }
-        public PerformanceTimer PerformanceTimerResults { get; set; } = null!;
-        public ExecutionSettings ExecutionSettings { get; set; }
-
+        public ExecutionSettings? ExecutionSettings { get; }
+        public List<string>? Messages { get; }
+        public Exception? Exception { get; }
+        public StatusCode StatusCode { get; }
         public bool IsSuccess { get; }
-
-
-        public static TestExecutionResult CreateSuccess(TestInstanceContainer container, List<string> messages)
-        {
-            return new TestExecutionResult(container, messages, true)
-            {
-                StatusCode = StatusCode.Success,
-                PerformanceTimerResults = container.Invocation.GetPerformanceResults()
-            };
-        }
-
-        public static TestExecutionResult CreateFailure(TestInstanceContainer? container, List<string>? messages, Exception exception)
-        {
-            return new TestExecutionResult(container!, messages!, false, exception)
-            {
-                StatusCode = StatusCode.Failure,
-                PerformanceTimerResults = container?.Invocation?.GetPerformanceResults()! // Trick the compiler on failure
-            };
-        }
+        public TestInstanceContainer TestInstanceContainer { get; set; }
+        public PerformanceTimer PerformanceTimerResults { get; }
     }
 }

@@ -9,7 +9,6 @@ public class CustomBeforeAndAfterFileLocationHandler : IRequestHandler<BeforeAnd
 {
     public async Task<BeforeAndAfterFileLocationResponse> Handle(BeforeAndAfterFileLocationCommand request, CancellationToken cancellationToken)
     {
-
         await Task.CompletedTask;
         return new BeforeAndAfterFileLocationResponse("", "");
     }

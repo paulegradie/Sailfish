@@ -9,19 +9,19 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\Tests.Sailfish\Tests.Sailfish.csproj" />
-      <ProjectReference Include="..\Sailfish\Sailfish.csproj" />
+        <ProjectReference Include="..\Tests.Sailfish\Tests.Sailfish.csproj"/>
+        <ProjectReference Include="..\Sailfish\Sailfish.csproj"/>
     </ItemGroup>
 
     <ItemGroup>
-      <PackageReference Include="Autofac" Version="6.4.0" />
-      <PackageReference Include="Serilog.Extensions.Autofac.DependencyInjection" Version="5.0.0" />
-        <PackageReference Include="McMaster.Extensions.CommandLineUtils" Version="4.0.1" />
-        <PackageReference Include="Serilog.Sinks.Seq" Version="5.1.1" />
+        <PackageReference Include="Autofac" Version="6.4.0"/>
+        <PackageReference Include="Serilog.Extensions.Autofac.DependencyInjection" Version="5.0.0"/>
+        <PackageReference Include="McMaster.Extensions.CommandLineUtils" Version="4.0.1"/>
+        <PackageReference Include="Serilog.Sinks.Seq" Version="5.1.1"/>
     </ItemGroup>
 
     <ItemGroup>
-      <Folder Include="ConsoleAppLogs" />
+        <Folder Include="ConsoleAppLogs"/>
     </ItemGroup>
 
 </Project>

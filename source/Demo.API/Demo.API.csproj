@@ -4,16 +4,16 @@
         <TargetFramework>net6.0</TargetFramework>
         <Nullable>enable</Nullable>
         <RootNamespace>Test.API</RootNamespace>
-        
+
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Swashbuckle.AspNetCore" Version="6.2.3" />
-        <InternalsVisibleTo Include="Test" />
+        <PackageReference Include="Swashbuckle.AspNetCore" Version="6.2.3"/>
+        <InternalsVisibleTo Include="Test"/>
     </ItemGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\Sailfish\Sailfish.csproj" />
+        <ProjectReference Include="..\Sailfish\Sailfish.csproj"/>
     </ItemGroup>
 
 </Project>

@@ -32,11 +32,11 @@ internal class SailfishExecutor
     public async Task Run(RunSettings runSettings)
     {
         await Run(
-            testNames: runSettings.TestNames,
-            directoryPath: runSettings.DirectoryPath,
-            trackingDirectory: runSettings.TrackingDirectoryPath,
-            noTrack: runSettings.NoTrack,
-            analyze: runSettings.Analyze,
+            runSettings.TestNames,
+            runSettings.DirectoryPath,
+            runSettings.TrackingDirectoryPath,
+            runSettings.NoTrack,
+            runSettings.Analyze,
             settings: runSettings.Settings,
             notify: runSettings.Notify,
             testLocationTypes: runSettings.TestLocationTypes);

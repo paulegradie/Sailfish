@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Accord;
 using Sailfish.ExtensionMethods;
 using Sailfish.Presentation.Console;
 using Sailfish.Statistics;
@@ -31,7 +32,7 @@ internal class MarkdownWriter : IMarkdownWriter
             {
                 AppendHeader(result.Type.Name);
                 AppendResults(result.CompiledResults);
-                AppendExceptions(result.Exceptions);
+                AppendExceptions(result.CompiledResults.Where(x => x.Exception is not null).Select(x => x.Exception).ToList());
             }
         }
 
@@ -54,28 +55,34 @@ internal class MarkdownWriter : IMarkdownWriter
     {
         foreach (var group in compiledResults.GroupBy(x => x.GroupingId))
         {
-            stringBuilder.AppendLine();
-            var table = group.ToStringTable(
-                new List<string>() { "", "ms", "ms", "ms", "" },
-                u => u.DisplayName,
-                u => u.TestCaseStatistics.Median,
-                u => u.TestCaseStatistics.Mean,
-                u => u.TestCaseStatistics.StdDev,
-                u => u.TestCaseStatistics.Variance
-            );
+            if (group.Key is not null)
+            {
+                stringBuilder.AppendLine();
+                var table = group.ToStringTable(
+                    new List<string>() { "", "ms", "ms", "ms", "" },
+                    u => u.DisplayName!,
+                    u => u.TestCaseStatistics!.Median,
+                    u => u.TestCaseStatistics!.Mean,
+                    u => u.TestCaseStatistics!.StdDev,
+                    u => u.TestCaseStatistics!.Variance
+                );
 
-            stringBuilder.AppendLine(table);
+                stringBuilder.AppendLine(table);
+            }
         }
     }
 
-    private void AppendExceptions(List<Exception> exceptions)
+    public bool debug = true;
+
+    private void AppendExceptions(List<Exception?> exceptions)
     {
         if (exceptions.Count > 0)
             stringBuilder.AppendLine($" ---- One or more Exceptions encountered ---- ");
         foreach (var exception in exceptions)
         {
+            if (exception is null) continue;
             stringBuilder.AppendLine($"Exception: {exception.Message}\r");
-            if (exception.StackTrace is not null)
+            if (exception.StackTrace is not null && debug)
             {
                 stringBuilder.AppendLine($"StackTrace:\r{exception.StackTrace}\r");
             }

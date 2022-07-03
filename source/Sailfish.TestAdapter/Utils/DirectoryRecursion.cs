@@ -67,7 +67,6 @@ namespace Sailfish.TestAdapter.Utils
         }
 
 
-        
         public static class FileSearchFilters
         {
             public static bool FilePathDoesNotContainBinOrObjDirs(string path)

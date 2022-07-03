@@ -8,16 +8,16 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="NSubstitute" Version="4.3.0" />
-        <PackageReference Include="Shouldly" Version="4.0.3" />
-        <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.1.0" />
-        <PackageReference Include="MSTest.TestAdapter" Version="2.2.8" />
-        <PackageReference Include="MSTest.TestFramework" Version="2.2.8" />
-        <PackageReference Include="coverlet.collector" Version="3.1.2" />
+        <PackageReference Include="NSubstitute" Version="4.3.0"/>
+        <PackageReference Include="Shouldly" Version="4.0.3"/>
+        <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.1.0"/>
+        <PackageReference Include="MSTest.TestAdapter" Version="2.2.8"/>
+        <PackageReference Include="MSTest.TestFramework" Version="2.2.8"/>
+        <PackageReference Include="coverlet.collector" Version="3.1.2"/>
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\Sailfish.TestAdapter\Sailfish.TestAdapter.csproj" />
+        <ProjectReference Include="..\Sailfish.TestAdapter\Sailfish.TestAdapter.csproj"/>
     </ItemGroup>
 
 </Project>

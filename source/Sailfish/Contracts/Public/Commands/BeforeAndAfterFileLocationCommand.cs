@@ -8,5 +8,6 @@ public class BeforeAndAfterFileLocationCommand : IRequest<BeforeAndAfterFileLoca
     {
         DefaultDirectory = defaultDirectory;
     }
+
     public string DefaultDirectory { get; set; }
 }

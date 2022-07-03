@@ -11,6 +11,8 @@ public class CustomNotificationHandler : INotificationHandler<NotifyOnTestResult
 {
     public Task Handle(NotifyOnTestResultCommand notification, CancellationToken cancellationToken)
     {
+        if (string.IsNullOrEmpty(notification.TTestContent)) return Task.CompletedTask;
+
         var lines = notification.TTestContent
             .Split(Environment.NewLine);
 

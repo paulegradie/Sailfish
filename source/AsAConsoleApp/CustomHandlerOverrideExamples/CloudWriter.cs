@@ -3,7 +3,7 @@ using System.Threading.Tasks;
 
 namespace AsAConsoleApp.CustomHandlerOverrideExamples;
 
-class CloudWriter : ICloudWriter
+internal class CloudWriter : ICloudWriter
 {
     public Task WriteToMyCloudStorageContainer(string fileName, string content)
     {

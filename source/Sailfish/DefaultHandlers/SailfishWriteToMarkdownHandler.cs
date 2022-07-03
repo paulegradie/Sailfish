@@ -1,24 +1,25 @@
-﻿using System.Threading;
+﻿using System.IO;
+using System.Threading;
 using System.Threading.Tasks;
 using MediatR;
 using Sailfish.Contracts.Private;
 using Sailfish.Presentation;
-using Sailfish.Presentation.Csv;
+using Sailfish.Presentation.Markdown;
 
 namespace Sailfish.DefaultHandlers;
 
 internal class SailfishWriteToMarkdownHandler : INotificationHandler<WriteToMarkDownCommand>
 {
-    private readonly IPerformanceCsvWriter performanceCsvWriter;
+    private readonly IMarkdownWriter markdownWriter;
 
-    public SailfishWriteToMarkdownHandler(IPerformanceCsvWriter performanceCsvWriter)
+    public SailfishWriteToMarkdownHandler(IMarkdownWriter markdownWriter)
     {
-        this.performanceCsvWriter = performanceCsvWriter;
+        this.markdownWriter = markdownWriter;
     }
 
     public async Task Handle(WriteToMarkDownCommand notification, CancellationToken cancellationToken)
     {
-        var fileName = DefaultFileSettings.DefaultPerformanceFileNameStem(notification.TimeStamp) + ".md";
-        await performanceCsvWriter.Present(notification.Content, fileName);
+        var filePath = Path.Combine(notification.OutputDirectory, DefaultFileSettings.DefaultPerformanceFileNameStem(notification.TimeStamp) + ".md");
+        await markdownWriter.Present(notification.Content, filePath);
     }
 }

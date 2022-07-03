@@ -31,17 +31,17 @@ namespace Sailfish.ExtensionMethods
             if (headerSuffixes.Count > 0 && headerSuffixes.Count != columnHeaders.Length) throw new Exception("Header suffix array length must match num columns");
 
             // Fill headers
-            for (int colIndex = 0; colIndex < arrValues.GetLength(1); colIndex++)
+            for (var colIndex = 0; colIndex < arrValues.GetLength(1); colIndex++)
             {
                 arrValues[0, colIndex] = columnHeaders[colIndex];
             }
 
             // Fill table rows
-            for (int rowIndex = 1; rowIndex < arrValues.GetLength(0); rowIndex++)
+            for (var rowIndex = 1; rowIndex < arrValues.GetLength(0); rowIndex++)
             {
-                for (int colIndex = 0; colIndex < arrValues.GetLength(1); colIndex++)
+                for (var colIndex = 0; colIndex < arrValues.GetLength(1); colIndex++)
                 {
-                    object value = valueSelectors[colIndex].Invoke(values[rowIndex - 1]);
+                    var value = valueSelectors[colIndex].Invoke(values[rowIndex - 1]);
 
                     if (headerSuffixes.Count == 0)
                     {
@@ -59,16 +59,16 @@ namespace Sailfish.ExtensionMethods
 
         public static string ToStringTable(this string[,] arrValues)
         {
-            int[] maxColumnsWidth = GetMaxColumnsWidth(arrValues);
+            var maxColumnsWidth = GetMaxColumnsWidth(arrValues);
             var headerSpliter = new string('-', maxColumnsWidth.Sum(i => i + 3) - 1);
 
             var sb = new StringBuilder();
-            for (int rowIndex = 0; rowIndex < arrValues.GetLength(0); rowIndex++)
+            for (var rowIndex = 0; rowIndex < arrValues.GetLength(0); rowIndex++)
             {
-                for (int colIndex = 0; colIndex < arrValues.GetLength(1); colIndex++)
+                for (var colIndex = 0; colIndex < arrValues.GetLength(1); colIndex++)
                 {
                     // Print cell
-                    string cell = arrValues[rowIndex, colIndex];
+                    var cell = arrValues[rowIndex, colIndex];
                     cell = cell.PadRight(maxColumnsWidth[colIndex]);
                     sb.Append(" | ");
                     sb.Append(cell);
@@ -92,12 +92,12 @@ namespace Sailfish.ExtensionMethods
         private static int[] GetMaxColumnsWidth(string[,] arrValues)
         {
             var maxColumnsWidth = new int[arrValues.GetLength(1)];
-            for (int colIndex = 0; colIndex < arrValues.GetLength(1); colIndex++)
+            for (var colIndex = 0; colIndex < arrValues.GetLength(1); colIndex++)
             {
-                for (int rowIndex = 0; rowIndex < arrValues.GetLength(0); rowIndex++)
+                for (var rowIndex = 0; rowIndex < arrValues.GetLength(0); rowIndex++)
                 {
-                    int newLength = arrValues[rowIndex, colIndex].Length;
-                    int oldLength = maxColumnsWidth[colIndex];
+                    var newLength = arrValues[rowIndex, colIndex].Length;
+                    var oldLength = maxColumnsWidth[colIndex];
 
                     if (newLength > oldLength)
                     {
@@ -115,15 +115,15 @@ namespace Sailfish.ExtensionMethods
         {
             if (expression.Body is UnaryExpression)
             {
-                if (((expression.Body as UnaryExpression)!).Operand is MemberExpression)
+                if ((expression.Body as UnaryExpression)!.Operand is MemberExpression)
                 {
                     return (((expression.Body as UnaryExpression)!.Operand as MemberExpression)!.Member as PropertyInfo)!;
                 }
             }
 
-            if ((expression.Body is MemberExpression))
+            if (expression.Body is MemberExpression)
             {
-                return (((expression.Body as MemberExpression)!).Member as PropertyInfo)!;
+                return ((expression.Body as MemberExpression)!.Member as PropertyInfo)!;
             }
 
             return null;

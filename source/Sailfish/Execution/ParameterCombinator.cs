@@ -9,7 +9,7 @@ namespace Sailfish.Execution
         public int[][] GetAllPossibleCombos(IEnumerable<IEnumerable<int>> ints)
         {
             var strings = ints.Select(x => x.Select(x => x.ToString()));
-            IEnumerable<IEnumerable<string>> combos = new[] {new string[0]};
+            IEnumerable<IEnumerable<string>> combos = new[] { new string[0] };
 
             foreach (var inner in strings)
                 combos = from c in combos

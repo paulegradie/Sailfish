@@ -6,7 +6,7 @@ using Sailfish.Program;
 
 namespace AsAConsoleApp
 {
-    class Program : SailfishProgramBase
+    internal class Program : SailfishProgramBase
     {
         private static async Task Main(string[] userRequestedTestNames)
         {
@@ -21,7 +21,7 @@ namespace AsAConsoleApp
                 .Run(AssembleRunRequest(), RegisterWithSailfish);
         }
 
-        public override void RegisterWithSailfish(ContainerBuilder builder)
+        public void RegisterWithSailfish(ContainerBuilder builder)
         {
             // These registrations will be used by Sailfish's internal DI container which
             // is necessary to resolve dependencies used by test classes.

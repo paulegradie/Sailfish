@@ -13,6 +13,7 @@ public class TTestSettings
         Alpha = alpha;
         Round = round;
     }
+
     public double Alpha { get; set; }
     public int Round { get; }
 }

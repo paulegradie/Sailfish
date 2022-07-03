@@ -13,7 +13,7 @@ namespace Test.AttributeCollection
         public void AllAttributesCanBeFound()
         {
             var allTypesWithAttribute = Assembly
-                    .GetAssembly(typeof(WhenCollectingAttributes))!
+                .GetAssembly(typeof(WhenCollectingAttributes))!
                 .GetTypes()
                 .Where(t => t.HasAttribute<SailfishAttribute>())
                 .ToArray();
@@ -24,7 +24,7 @@ namespace Test.AttributeCollection
                 .OrderBy(x => x)
                 .ToArray()
                 .ShouldBe(
-                    new[] {nameof(TestClassOne), nameof(TestClassTwo)}
+                    new[] { nameof(TestClassOne), nameof(TestClassTwo) }
                         .OrderBy(x => x));
         }
 

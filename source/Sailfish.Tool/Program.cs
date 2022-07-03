@@ -22,10 +22,10 @@ namespace Sailfish.Tool
             await ContainerConfiguration
                 .CompositionRoot()
                 .Resolve<SailfishExecution>()
-                .Run(AssembleRunRequest());
+                .Run(AssembleRunRequest(), RegisterWithSailfish);
         }
 
-        public override void RegisterWithSailfish(ContainerBuilder builder)
+        public void RegisterWithSailfish(ContainerBuilder builder)
         {
         }
     }

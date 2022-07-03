@@ -2,7 +2,13 @@
 
 public class TTestResult
 {
-    public TTestResult(double meanOfBefore, double meanOfAfter, double tStatistic, double pValue, double degreesOfFreedom, string changeDescription)
+    public TTestResult(
+        double meanOfBefore,
+        double meanOfAfter,
+        double tStatistic,
+        double pValue,
+        double degreesOfFreedom,
+        string changeDescription)
     {
         MeanOfBefore = meanOfBefore;
         MeanOfAfter = meanOfAfter;

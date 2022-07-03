@@ -1,29 +1,29 @@
 <Project Sdk="Microsoft.NET.Sdk">
-  <PropertyGroup>
-    <PackageId>Sailfish.TestAdapter</PackageId>
-    <Version>0.0.111</Version>
-    <Authors>Paul E. Gradie</Authors>
-    <Description>
+    <PropertyGroup>
+        <PackageId>Sailfish.TestAdapter</PackageId>
+        <Version>0.0.111</Version>
+        <Authors>Paul E. Gradie</Authors>
+        <Description>
             Sailfish is a simple, unambitious, low resolution performace test framework for writing clean, manageable performance tests
             against your component or API. The general intention is to provide a simple tool that teams can use to write straight forward
             tests that assess the speed of your code, without weighing you down with all the extra ceremony.
         </Description>
-    <RootNamespace>Sailfish.TestAdapter</RootNamespace>
-    <TargetFramework>net6.0</TargetFramework>
-    <Nullable>enable</Nullable>
-  </PropertyGroup>
-  <ItemGroup>
-    <PackageReference Include="NuGet.Build.Tasks.Pack" Version="6.2.0">
-      <PrivateAssets>all</PrivateAssets>
-      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
-    </PackageReference>
-    <PackageReference Include="Serilog.Sinks.Console" Version="4.0.1" />
-    <PackageReference Include="Serilog.Sinks.File" Version="5.0.0" />
-    <PackageReference Include="Serilog.Sinks.Seq" Version="5.1.1" />
-    <PackageReference Include="System.ComponentModel.Composition" Version="6.0.0" />
-    <PackageReference Include="Microsoft.VisualStudio.TestPlatform.ObjectModel" Version="14.0.0" />
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\Sailfish\Sailfish.csproj" />
-  </ItemGroup>
+        <RootNamespace>Sailfish.TestAdapter</RootNamespace>
+        <TargetFramework>net6.0</TargetFramework>
+        <Nullable>enable</Nullable>
+    </PropertyGroup>
+    <ItemGroup>
+        <PackageReference Include="NuGet.Build.Tasks.Pack" Version="6.2.0">
+            <PrivateAssets>all</PrivateAssets>
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+        </PackageReference>
+        <PackageReference Include="Serilog.Sinks.Console" Version="4.0.1"/>
+        <PackageReference Include="Serilog.Sinks.File" Version="5.0.0"/>
+        <PackageReference Include="Serilog.Sinks.Seq" Version="5.1.1"/>
+        <PackageReference Include="System.ComponentModel.Composition" Version="6.0.0"/>
+        <PackageReference Include="Microsoft.VisualStudio.TestPlatform.ObjectModel" Version="14.0.0"/>
+    </ItemGroup>
+    <ItemGroup>
+        <ProjectReference Include="..\Sailfish\Sailfish.csproj"/>
+    </ItemGroup>
 </Project>

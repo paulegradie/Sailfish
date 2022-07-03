@@ -53,7 +53,7 @@ namespace Sailfish.Utils
             {
                 mutex.WaitOne();
 
-                using var writer = new StreamWriter(fp, append: true);
+                using var writer = new StreamWriter(fp, true);
                 var regex = new Regex("{(.+?)}");
                 var matches = regex
                     .Matches(messageLine)

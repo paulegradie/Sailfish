@@ -17,13 +17,13 @@ internal class ConsoleWriter : IConsoleWriter
 
     public string Present(List<ExecutionSummary> results)
     {
-        foreach (var container in results)
+        foreach (var result in results)
         {
-            if (container.Settings.AsConsole)
+            if (result.Settings.AsConsole)
             {
-                AddHeader(container.Type.Name);
-                AddResults(container.CompiledResults);
-                AddExceptions(container.Exceptions);
+                AppendHeader(result.Type.Name);
+                AppendResults(result.CompiledResults);
+                AppendExceptions(result.CompiledResults.Where(x => x.Exception is not null).Select(x => x.Exception).ToList());
             }
         }
 
@@ -32,7 +32,7 @@ internal class ConsoleWriter : IConsoleWriter
         return output;
     }
 
-    private void AddHeader(string typeName)
+    private void AppendHeader(string typeName)
     {
         stringBuilder.AppendLine();
         stringBuilder.AppendLine("\r-----------------------------------");
@@ -40,30 +40,34 @@ internal class ConsoleWriter : IConsoleWriter
         stringBuilder.AppendLine("-----------------------------------\r");
     }
 
-    private void AddResults(List<CompiledResult> compiledResults)
+    private void AppendResults(List<CompiledResult> compiledResults)
     {
         foreach (var group in compiledResults.GroupBy(x => x.GroupingId))
         {
-            stringBuilder.AppendLine();
-            var table = group.ToStringTable(
-                new List<string>() { "", "ms", "ms", "ms", "" },
-                u => u.DisplayName,
-                u => u.TestCaseStatistics.Median,
-                u => u.TestCaseStatistics.Mean,
-                u => u.TestCaseStatistics.StdDev,
-                u => u.TestCaseStatistics.Variance
-            );
+            if (group.Key is not null)
+            {
+                stringBuilder.AppendLine();
+                var table = group.ToStringTable(
+                    new List<string>() { "", "ms", "ms", "ms", "" },
+                    u => u.DisplayName!,
+                    u => u.TestCaseStatistics!.Median,
+                    u => u.TestCaseStatistics!.Mean,
+                    u => u.TestCaseStatistics!.StdDev,
+                    u => u.TestCaseStatistics!.Variance
+                );
 
-            stringBuilder.AppendLine(table);
+                stringBuilder.AppendLine(table);
+            }
         }
     }
 
-    private void AddExceptions(List<Exception> exceptions)
+    private void AppendExceptions(List<Exception?> exceptions)
     {
         if (exceptions.Count > 0)
             stringBuilder.AppendLine($" ---- One or more Exceptions encountered ---- ");
         foreach (var exception in exceptions)
         {
+            if (exception is null) continue;
             stringBuilder.AppendLine($"Exception: {exception.Message}\r");
             if (exception.StackTrace is not null)
             {
