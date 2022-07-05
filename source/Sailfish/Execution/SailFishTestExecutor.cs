@@ -98,13 +98,13 @@ namespace Sailfish.Execution
 
         private static async Task DisposeOfTestInstance(TestInstanceContainer instanceContainer)
         {
-            if (instanceContainer.Instance is IDisposable disposable)
-            {
-                disposable.Dispose();
-            }
-            else if (instanceContainer.Instance is IAsyncDisposable asyncDisposable)
+            if (instanceContainer.Instance is IAsyncDisposable asyncDisposable)
             {
                 await asyncDisposable.DisposeAsync();
+            }
+            else if (instanceContainer.Instance is IDisposable disposable)
+            {
+                disposable.Dispose();
             }
             else
             {
