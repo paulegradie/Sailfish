@@ -65,8 +65,24 @@ namespace Sailfish.Execution
                 var currentVariableSetIndex = 0;
                 var totalNumVariableSets = testMethod.GetNumberOfVariableSetsInTheQueue() - 1;
 
-                foreach (var testMethodContainer in testMethod.ProvideNextTestInstanceContainer())
+                var instanceContainerEnumerator = testMethod.ProvideNextTestInstanceContainer().GetEnumerator();
+
+                bool cont;
+                try
                 {
+                    instanceContainerEnumerator.MoveNext();
+                }
+                catch (Exception ex)
+                {
+                    await DisposeOfTestInstance(instanceContainerEnumerator.Current);
+                    Console.WriteLine(ex.InnerException);
+                    throw;
+                }
+
+                do
+                {
+                    var testMethodContainer = instanceContainerEnumerator.Current;
+
                     if (ShouldCallGlobalSetup(methodIndex, currentVariableSetIndex))
                     {
                         await testMethodContainer.Invocation.GlobalSetup();
@@ -88,7 +104,17 @@ namespace Sailfish.Execution
                     }
 
                     currentVariableSetIndex += 1;
-                }
+
+                    try
+                    {
+                        cont = instanceContainerEnumerator.MoveNext();
+                    }
+                    catch
+                    {
+                        await DisposeOfTestInstance(instanceContainerEnumerator.Current);
+                        throw;
+                    }
+                } while (cont);
 
                 methodIndex += 1;
             }
@@ -96,19 +122,22 @@ namespace Sailfish.Execution
             return results;
         }
 
-        private static async Task DisposeOfTestInstance(TestInstanceContainer instanceContainer)
+        private static async Task DisposeOfTestInstance(TestInstanceContainer? instanceContainer)
         {
-            if (instanceContainer.Instance is IAsyncDisposable asyncDisposable)
+            if (instanceContainer?.Instance is IAsyncDisposable asyncDisposable)
             {
                 await asyncDisposable.DisposeAsync();
             }
-            else if (instanceContainer.Instance is IDisposable disposable)
+            else if (instanceContainer?.Instance is IDisposable disposable)
             {
                 disposable.Dispose();
             }
             else
             {
-                instanceContainer.Instance = null!;
+                if (instanceContainer is not null)
+                {
+                    instanceContainer.Instance = null!;
+                }
             }
         }
 

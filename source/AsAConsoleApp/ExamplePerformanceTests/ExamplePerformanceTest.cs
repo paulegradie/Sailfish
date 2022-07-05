@@ -70,7 +70,7 @@ namespace AsAConsoleApp.ExamplePerformanceTests
         [SailfishMethod]
         public async Task Other()
         {
-            Thread.Sleep(200);
+            Thread.Sleep(1200);
             await Task.CompletedTask;
         }
     }
