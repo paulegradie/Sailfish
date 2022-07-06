@@ -47,5 +47,6 @@ public class SailfishModule : Module
         builder.RegisterType<TrackingFileFinder>().As<ITrackingFileFinder>();
         builder.RegisterType<PerformanceCsvTrackingWriter>().As<IPerformanceCsvTrackingWriter>();
         builder.RegisterType<IterationVariableRetriever>().As<IIterationVariableRetriever>();
+        builder.RegisterType<TTestResultCsvWriter>().As<ITTestResultCsvWriter>();
     }
 }

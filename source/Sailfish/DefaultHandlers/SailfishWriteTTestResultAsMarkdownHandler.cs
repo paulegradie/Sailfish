@@ -8,18 +8,18 @@ using Sailfish.Utils;
 
 namespace Sailfish.DefaultHandlers;
 
-public class SailfishWriteTTestHandler : INotificationHandler<WriteTTestResultCommand>
+public class SailfishWriteTTestMarkdownResultHandler : INotificationHandler<WriteTTestResultAsMarkdownCommand>
 {
     private readonly IFileIo fileIo;
 
-    public SailfishWriteTTestHandler(IFileIo fileIo)
+    public SailfishWriteTTestMarkdownResultHandler(IFileIo fileIo)
     {
         this.fileIo = fileIo;
     }
 
-    public async Task Handle(WriteTTestResultCommand notification, CancellationToken cancellationToken)
+    public async Task Handle(WriteTTestResultAsMarkdownCommand notification, CancellationToken cancellationToken)
     {
-        var outputPath = Path.Join(notification.OutputDirectory, DefaultFileSettings.DefaultTTestFileNameStem(notification.TimeStamp));
+        var outputPath = Path.Join(notification.OutputDirectory, DefaultFileSettings.DefaultTTestMarkdownFileName(notification.TimeStamp));
         if (!string.IsNullOrEmpty(notification.Content))
         {
             await fileIo.WriteToFile(notification.Content, outputPath, cancellationToken);

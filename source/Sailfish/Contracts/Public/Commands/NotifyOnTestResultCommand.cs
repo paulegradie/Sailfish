@@ -6,14 +6,14 @@ namespace Sailfish.Contracts.Public.Commands;
 
 public class NotifyOnTestResultCommand : INotification
 {
-    public NotifyOnTestResultCommand(string tTestContent, TTestSettings testSettings, DateTime timeStamp)
+    public NotifyOnTestResultCommand(TTestResultFormats tTestContent, TTestSettings testSettings, DateTime timeStamp)
     {
         TTestContent = tTestContent;
         TestSettings = testSettings;
         TimeStamp = timeStamp;
     }
 
-    public string TTestContent { get; }
+    public TTestResultFormats TTestContent { get; }
     public TTestSettings TestSettings { get; }
     public DateTime TimeStamp { get; }
 }

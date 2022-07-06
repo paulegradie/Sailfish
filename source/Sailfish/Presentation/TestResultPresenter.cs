@@ -58,12 +58,13 @@ internal class TestResultPresenter : ITestResultPresenter
             var response = await mediator.Send(new BeforeAndAfterFileLocationCommand(trackingDir));
             if (string.IsNullOrEmpty(response.BeforeFilePath) || string.IsNullOrEmpty(response.AfterFilePath)) return;
 
-            var tTestContent = await twoTailedTTestWriter.ComputeAndConvertToStringContent(new BeforeAndAfterTrackingFiles(response.BeforeFilePath, response.AfterFilePath), testSettings);
-            await mediator.Publish(new WriteTTestResultCommand(tTestContent, directoryPath, testSettings, timeStamp));
+            var tTestFormats = await twoTailedTTestWriter.ComputeAndConvertToStringContent(new BeforeAndAfterTrackingFiles(response.BeforeFilePath, response.AfterFilePath), testSettings);
+            await mediator.Publish(new WriteTTestResultAsMarkdownCommand(tTestFormats.MarkdownTable, directoryPath, testSettings, timeStamp));
+            await mediator.Publish(new WriteTTestResultAsCsvCommand(tTestFormats.CsvRows, directoryPath, testSettings, timeStamp));
 
             if (notify)
             {
-                await mediator.Publish(new NotifyOnTestResultCommand(tTestContent, testSettings, timeStamp));
+                await mediator.Publish(new NotifyOnTestResultCommand(tTestFormats, testSettings, timeStamp));
             }
         }
     }

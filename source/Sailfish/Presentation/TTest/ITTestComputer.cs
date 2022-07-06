@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using Sailfish.Contracts.Public;
 using Sailfish.Statistics.StatisticalAnalysis;
 
 namespace Sailfish.Presentation.TTest;

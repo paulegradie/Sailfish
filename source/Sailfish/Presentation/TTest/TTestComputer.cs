@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Sailfish.Contracts.Public;
 using Sailfish.Contracts.Public.CsvMaps;
 using Sailfish.Statistics;
 using Sailfish.Statistics.StatisticalAnalysis;

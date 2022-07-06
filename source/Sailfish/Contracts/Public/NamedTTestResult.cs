@@ -1,4 +1,6 @@
-﻿namespace Sailfish.Statistics.StatisticalAnalysis;
+﻿using Sailfish.Statistics.StatisticalAnalysis;
+
+namespace Sailfish.Contracts.Public;
 
 public class NamedTTestResult
 {

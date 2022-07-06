@@ -4,9 +4,9 @@ using Sailfish.Presentation.TTest;
 
 namespace Sailfish.Contracts.Public.Commands;
 
-public class WriteTTestResultCommand : INotification
+public class WriteTTestResultAsMarkdownCommand : INotification
 {
-    public WriteTTestResultCommand(string content, string outputDirectory, TTestSettings testSettings, DateTime timeStamp)
+    public WriteTTestResultAsMarkdownCommand(string content, string outputDirectory, TTestSettings testSettings, DateTime timeStamp)
     {
         Content = content;
         OutputDirectory = outputDirectory;

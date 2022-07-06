@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
+using Sailfish.Contracts.Public;
 using Sailfish.ExtensionMethods;
 using Sailfish.Presentation.Console;
 using Sailfish.Statistics.StatisticalAnalysis;
@@ -24,7 +25,7 @@ internal class TwoTailedTTestWriter : ITwoTailedTTestWriter
         this.stringBuilder = stringBuilder;
     }
 
-    public async Task<string> ComputeAndConvertToStringContent(BeforeAndAfterTrackingFiles beforeAndAfter, TTestSettings settings)
+    public async Task<TTestResultFormats> ComputeAndConvertToStringContent(BeforeAndAfterTrackingFiles beforeAndAfter, TTestSettings settings)
     {
         await Task.CompletedTask;
 
@@ -32,7 +33,7 @@ internal class TwoTailedTTestWriter : ITwoTailedTTestWriter
         if (results.Count == 0)
         {
             logger.Information("No prior test results found for the current set");
-            return string.Empty;
+            return new TTestResultFormats("", new List<NamedTTestResult>());
         }
 
         var table = results.ToStringTable(
@@ -52,7 +53,7 @@ internal class TwoTailedTTestWriter : ITwoTailedTTestWriter
         stringBuilder.AppendLine();
         stringBuilder.AppendLine(table);
 
-        return stringBuilder.Build();
+        return new TTestResultFormats(stringBuilder.Build(), results);
     }
 
     private void PrintHeader(string beforeId, string afterId, double alpha)
