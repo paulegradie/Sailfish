@@ -25,7 +25,7 @@ internal class PerformanceCsvTrackingWriter : IPerformanceCsvTrackingWriter
         using (var writer = new StreamWriter(filePath))
         using (var csv = new CsvWriter(writer, CultureInfo.InvariantCulture))
         {
-            csv.Context.RegisterClassMap<TestCaseStatisticMap>();
+            csv.Context.RegisterClassMap<TestCaseDescriptiveStatisticsMap>();
 
             foreach (var container in result)
             {

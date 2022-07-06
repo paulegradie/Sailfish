@@ -3,9 +3,9 @@ using Sailfish.Statistics;
 
 namespace Sailfish.Contracts.Public.CsvMaps;
 
-public sealed class TestCaseStatisticMap : ClassMap<DescriptiveStatistics>
+public sealed class TestCaseDescriptiveStatisticsMap : ClassMap<DescriptiveStatistics>
 {
-    public TestCaseStatisticMap()
+    public TestCaseDescriptiveStatisticsMap()
     {
         Map(m => m.DisplayName).Index(0);
         Map(m => m.Median).Index(1);

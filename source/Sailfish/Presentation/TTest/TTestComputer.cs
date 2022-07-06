@@ -27,8 +27,8 @@ internal class TTestComputer : ITTestComputer
     {
         try
         {
-            var before = fileIo.ReadCsvFile<TestCaseStatisticMap, DescriptiveStatistics>(beforeAndAfter.BeforeFilePath);
-            var after = fileIo.ReadCsvFile<TestCaseStatisticMap, DescriptiveStatistics>(beforeAndAfter.AfterFilePath).ToList();
+            var before = fileIo.ReadCsvFile<TestCaseDescriptiveStatisticsMap, DescriptiveStatistics>(beforeAndAfter.BeforeFilePath);
+            var after = fileIo.ReadCsvFile<TestCaseDescriptiveStatisticsMap, DescriptiveStatistics>(beforeAndAfter.AfterFilePath).ToList();
             var results = Compute(before, after, settings);
             return results;
         }
