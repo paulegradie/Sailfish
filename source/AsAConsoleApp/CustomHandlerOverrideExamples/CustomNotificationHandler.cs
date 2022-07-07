@@ -3,6 +3,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using MediatR;
+using Sailfish.Contracts.Public;
 using Sailfish.Contracts.Public.Commands;
 
 namespace AsAConsoleApp.CustomHandlerOverrideExamples;
@@ -17,7 +18,7 @@ public class CustomNotificationHandler : INotificationHandler<NotifyOnTestResult
             .Split(Environment.NewLine);
 
         Console.WriteLine("Make believe this handler parses the ttest result and reports tests that have regressed.");
-        var header = lines.Single(x => x.Contains("TestName"));
+        var header = lines.Single(x => x.Contains(nameof(NamedTTestResult.DisplayName)));
         lines = lines
             .Where(x => x.Contains("*"))
             .ToArray();

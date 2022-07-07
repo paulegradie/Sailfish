@@ -38,7 +38,7 @@ internal class TwoTailedTTestWriter : ITwoTailedTTestWriter
 
         var table = results.ToStringTable(
             new List<string>() { "", "ms", "ms", "", "", "", "" },
-            m => m.TestName,
+            m => m.DisplayName,
             m => m.MeanOfBefore,
             m => m.MeanOfAfter,
             m => m.PValue,

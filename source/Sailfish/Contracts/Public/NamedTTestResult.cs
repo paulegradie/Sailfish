@@ -4,9 +4,9 @@ namespace Sailfish.Contracts.Public;
 
 public class NamedTTestResult
 {
-    public NamedTTestResult(string testName, TTestResult r)
+    public NamedTTestResult(string displayName, TTestResult r)
     {
-        TestName = testName;
+        DisplayName = displayName;
         MeanOfAfter = r.MeanOfAfter;
         MeanOfBefore = r.MeanOfBefore;
         TStatistic = r.TStatistic;
@@ -15,7 +15,7 @@ public class NamedTTestResult
         ChangeDescription = r.ChangeDescription;
     }
 
-    public string TestName { get; set; }
+    public string DisplayName { get; set; }
     public double MeanOfBefore { get; set; }
     public double MeanOfAfter { get; set; }
     public double TStatistic { get; set; }

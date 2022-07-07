@@ -9,6 +9,7 @@ public class TTestResultFormats
         MarkdownTable = markdownTable;
         CsvRows = csvRows;
     }
+
     public string MarkdownTable { get; set; }
     public List<NamedTTestResult> CsvRows { get; set; }
 }
