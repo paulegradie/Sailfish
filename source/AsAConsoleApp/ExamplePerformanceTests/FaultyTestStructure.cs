@@ -1,22 +1,17 @@
-﻿// using Sailfish.Attributes;
-//
-// namespace AsAConsoleApp;
-//
-// [Sailfish]
-// public class FaultyTestStructure
-// {
-//     [IterationVariable(1, 2, 3)]
-//     public int Variable { get; set; }
-//
-//     [ExecutePerformanceCheck]
-//     public void FaultyTest()
-//     {
-//         Console.WriteLine();
-//     }
-//
-//     [ExecutePerformanceCheck]
-//     public void DuplicateNotAllowed()
-//     {
-//     }
-// }
+﻿using System;
+using Sailfish.Attributes;
 
+namespace AsAConsoleApp.ExamplePerformanceTests;
+
+[Sailfish(disabled: true)]
+public class FaultyTestStructure
+{
+    [SailfishVariable(1, 2, 3)]
+    public int Variable { get; set; }
+
+    [SailfishMethod]
+    public void ILackASailfishMethodAttribute()
+    {
+        Console.WriteLine("TEST");
+    }
+}

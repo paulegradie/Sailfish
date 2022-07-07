@@ -11,6 +11,5 @@ public class RequiredAdditionalRegistrationsModule : Module
         // Sailfish will need to resolve this type
         builder.RegisterType<WebApplicationFactory<DemoApp>>();
         base.Load(builder);
-        
     }
 }

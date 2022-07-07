@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Sailfish.ExtensionMethods;
 using Serilog;
 
 namespace Sailfish.Execution
@@ -23,12 +24,24 @@ namespace Sailfish.Execution
             this.testCaseIterator = testCaseIterator;
         }
 
+        public bool FilterEnabledType(Type[] testTypes, out Type[] enabledTypes)
+        {
+            enabledTypes = testTypes.Where(x => !x.SailfishTypeIsDisabled()).ToArray();
+            return enabledTypes.Length > 0;
+        }
+
         public async Task<List<RawExecutionResult>> Execute(
             Type[] testTypes,
             Action<TestInstanceContainer, TestExecutionResult>? callback = null)
         {
             var rawResults = new List<RawExecutionResult>();
-            foreach (var testType in testTypes)
+            if (!FilterEnabledType(testTypes, out var enabledTestTypes))
+            {
+                Console.WriteLine($"\r\nNo Sailfish tests were discovered...\r\n");
+                return rawResults;
+            }
+
+            foreach (var testType in enabledTestTypes)
             {
                 try
                 {
@@ -75,6 +88,7 @@ namespace Sailfish.Execution
                 catch (Exception ex)
                 {
                     await DisposeOfTestInstance(instanceContainerEnumerator.Current);
+                    instanceContainerEnumerator.Dispose();
                     Console.WriteLine(ex.InnerException);
                     throw;
                 }
@@ -117,6 +131,7 @@ namespace Sailfish.Execution
                 } while (cont);
 
                 methodIndex += 1;
+                instanceContainerEnumerator.Dispose();
             }
 
             return results;

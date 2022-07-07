@@ -10,7 +10,7 @@ namespace AsAConsoleApp.ExamplePerformanceTests
 {
     [WriteToMarkdown]
     [WriteToCsv]
-    [Sailfish(2, 2)]
+    [Sailfish(2, 2, disabled: false)]
     public class ExamplePerformanceTest : ApiTestBase
     {
         public ExamplePerformanceTest(WebApplicationFactory<DemoApp> factory) : base(factory)

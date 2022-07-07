@@ -80,5 +80,15 @@ namespace Sailfish.ExtensionMethods
                 .NumWarmupIterations;
             return numWarmupIterations;
         }
+
+        internal static bool SailfishTypeIsDisabled(this Type type)
+        {
+            var disabled = type
+                .GetCustomAttributes(true)
+                .OfType<SailfishAttribute>()
+                .Single()
+                .Disabled;
+            return disabled;
+        }
     }
 }
