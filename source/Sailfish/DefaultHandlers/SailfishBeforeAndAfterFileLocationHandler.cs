@@ -18,7 +18,7 @@ internal class SailfishBeforeAndAfterFileLocationHandler : IRequestHandler<Befor
     public async Task<BeforeAndAfterFileLocationResponse> Handle(BeforeAndAfterFileLocationCommand request, CancellationToken cancellationToken)
     {
         await Task.CompletedTask;
-        var trackingFiles = trackingFileFinder.GetBeforeAndAfterTrackingFiles(request.DefaultDirectory);
+        var trackingFiles = trackingFileFinder.GetBeforeAndAfterTrackingFiles(request.DefaultDirectory, request.Tags);
         return new BeforeAndAfterFileLocationResponse(trackingFiles.BeforeFilePath, trackingFiles.AfterFilePath);
     }
 }

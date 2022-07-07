@@ -1,6 +1,6 @@
 using System;
-using System.Collections.Generic;
 using System.Threading.Tasks;
+using Accord.Collections;
 using Sailfish.Presentation;
 using Sailfish.Presentation.TTest;
 using Sailfish.Statistics;
@@ -52,7 +52,7 @@ internal class SailfishExecutor
         bool analyze,
         bool notify,
         TTestSettings settings,
-        Dictionary<string, string> tags,
+        OrderedDictionary<string, string> tags,
         params Type[] testLocationTypes)
     {
         var testRun = CollectTests(testNames, testLocationTypes);

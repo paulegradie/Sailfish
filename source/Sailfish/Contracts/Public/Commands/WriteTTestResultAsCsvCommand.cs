@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using Accord.Collections;
 using MediatR;
 using Sailfish.Presentation.TTest;
 
@@ -11,9 +12,9 @@ public class WriteTTestResultAsCsvCommand : INotification
     public List<NamedTTestResult> CsvRows { get; }
     public string OutputDirectory { get; }
     public TTestSettings TestSettings { get; }
-    public Dictionary<string, string> Tags { get; }
+    public OrderedDictionary<string, string> Tags { get; }
 
-    public WriteTTestResultAsCsvCommand(List<NamedTTestResult> csvRows, string outputDirectory, TTestSettings testSettings, DateTime timeStamp, Dictionary<string, string> tags)
+    public WriteTTestResultAsCsvCommand(List<NamedTTestResult> csvRows, string outputDirectory, TTestSettings testSettings, DateTime timeStamp, OrderedDictionary<string, string> tags)
     {
         TimeStamp = timeStamp;
         CsvRows = csvRows;

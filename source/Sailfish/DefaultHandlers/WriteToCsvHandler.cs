@@ -19,7 +19,8 @@ internal class WriteToCsvHandler : INotificationHandler<WriteToCsvCommand>
 
     public async Task Handle(WriteToCsvCommand notification, CancellationToken cancellationToken)
     {
-        var filePath = Path.Combine(notification.OutputDirectory, DefaultFileSettings.DefaultPerformanceFileNameStem(notification.TimeStamp) + ".csv");
+        var fileName = DefaultFileSettings.AppendTagsToFilename(DefaultFileSettings.DefaultPerformanceFileNameStem(notification.TimeStamp) + ".csv", notification.Tags);
+        var filePath = Path.Combine(notification.OutputDirectory, fileName);
         await performanceCsvWriter.Present(notification.Content, filePath);
     }
 }

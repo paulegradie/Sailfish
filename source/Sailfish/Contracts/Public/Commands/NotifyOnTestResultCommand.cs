@@ -1,5 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
+using Accord.Collections;
 using MediatR;
 using Sailfish.Presentation.TTest;
 
@@ -7,7 +7,7 @@ namespace Sailfish.Contracts.Public.Commands;
 
 public class NotifyOnTestResultCommand : INotification
 {
-    public NotifyOnTestResultCommand(TTestResultFormats tTestContent, TTestSettings testSettings, DateTime timeStamp, Dictionary<string, string> tags)
+    public NotifyOnTestResultCommand(TTestResultFormats tTestContent, TTestSettings testSettings, DateTime timeStamp, OrderedDictionary<string, string> tags)
     {
         TTestContent = tTestContent;
         TestSettings = testSettings;
@@ -18,5 +18,5 @@ public class NotifyOnTestResultCommand : INotification
     public TTestResultFormats TTestContent { get; }
     public TTestSettings TestSettings { get; }
     public DateTime TimeStamp { get; }
-    public Dictionary<string, string> Tags { get; }
+    public OrderedDictionary<string, string> Tags { get; }
 }

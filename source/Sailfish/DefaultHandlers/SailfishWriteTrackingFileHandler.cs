@@ -3,6 +3,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using MediatR;
 using Sailfish.Contracts.Public.Commands;
+using Sailfish.Presentation;
 
 namespace Sailfish.DefaultHandlers;
 
@@ -16,7 +17,8 @@ public class SailfishWriteTrackingFileHandler : INotificationHandler<WriteCurren
             Directory.CreateDirectory(output);
         }
 
-        var filePath = Path.Join(output, notification.DefaultFileName);
+        var fileName = DefaultFileSettings.AppendTagsToFilename(notification.DefaultFileName, notification.Tags);
+        var filePath = Path.Join(output, fileName);
 
         using var streamWriter = new StreamWriter(filePath);
         await streamWriter.WriteAsync(notification.Content);

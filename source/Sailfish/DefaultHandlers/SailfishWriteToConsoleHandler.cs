@@ -17,7 +17,7 @@ internal class WriteToConsoleHandler : INotificationHandler<WriteToConsoleComman
 
     public async Task Handle(WriteToConsoleCommand notification, CancellationToken cancellationToken)
     {
-        consoleWriter.Present(notification.Content);
+        consoleWriter.Present(notification.Content, notification.Tags);
         await Task.Yield();
     }
 }

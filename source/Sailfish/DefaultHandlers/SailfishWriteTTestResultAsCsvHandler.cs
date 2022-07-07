@@ -19,7 +19,8 @@ internal class SailfishWriteTTestResultAsCsvHandler : INotificationHandler<Write
 
     public async Task Handle(WriteTTestResultAsCsvCommand notification, CancellationToken cancellationToken)
     {
-        var outputPath = Path.Join(notification.OutputDirectory, DefaultFileSettings.DefaultTTestCsvFileName(notification.TimeStamp));
+        var fileName = DefaultFileSettings.AppendTagsToFilename(DefaultFileSettings.DefaultTTestCsvFileName(notification.TimeStamp), notification.Tags);
+        var outputPath = Path.Join(notification.OutputDirectory, fileName);
         if (notification.CsvRows.Count > 0)
         {
             await testResultCsvWriter.WriteToFile(notification.CsvRows, outputPath, cancellationToken);

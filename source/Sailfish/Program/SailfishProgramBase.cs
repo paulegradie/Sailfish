@@ -1,6 +1,6 @@
-﻿using System.Collections.Generic;
-using System.IO;
+﻿using System.IO;
 using System.Threading.Tasks;
+using Accord.Collections;
 using Autofac;
 using McMaster.Extensions.CommandLineUtils;
 using Sailfish.Presentation.TTest;
@@ -32,7 +32,7 @@ public abstract class SailfishProgramBase
             Directories.EnsureDirectoryExists(TrackingDirectory);
         }
 
-        var parsedTags = new Dictionary<string, string>();
+        var parsedTags = new OrderedDictionary<string, string>();
         if (Tags is not null)
         {
             parsedTags = TagParser.Parse(Tags);

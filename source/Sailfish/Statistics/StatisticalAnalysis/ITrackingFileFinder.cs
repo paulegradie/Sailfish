@@ -1,6 +1,8 @@
-﻿namespace Sailfish.Statistics.StatisticalAnalysis;
+﻿using Accord.Collections;
+
+namespace Sailfish.Statistics.StatisticalAnalysis;
 
 internal interface ITrackingFileFinder
 {
-    BeforeAndAfterTrackingFiles GetBeforeAndAfterTrackingFiles(string directory);
+    BeforeAndAfterTrackingFiles GetBeforeAndAfterTrackingFiles(string directory, OrderedDictionary<string, string> tags);
 }

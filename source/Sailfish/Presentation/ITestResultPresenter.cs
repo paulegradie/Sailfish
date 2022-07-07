@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Accord.Collections;
 using Sailfish.Presentation.TTest;
 using Sailfish.Statistics;
 
@@ -17,5 +18,5 @@ internal interface ITestResultPresenter
         bool analyze,
         bool notify,
         TTestSettings settings,
-        Dictionary<string, string> tags);
+        OrderedDictionary<string, string> tags);
 }

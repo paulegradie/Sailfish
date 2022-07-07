@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
+using Accord.Collections;
 using MediatR;
 using Sailfish.Contracts.Private;
 using Sailfish.Contracts.Public.Commands;
@@ -37,9 +38,9 @@ internal class TestResultPresenter : ITestResultPresenter
         bool analyze,
         bool notify,
         TTestSettings testSettings,
-        Dictionary<string, string> tags)
+        OrderedDictionary<string, string> tags)
     {
-        await mediator.Publish(new WriteToConsoleCommand(resultContainers));
+        await mediator.Publish(new WriteToConsoleCommand(resultContainers, tags));
         await mediator.Publish(new WriteToMarkDownCommand(resultContainers, directoryPath, timeStamp, tags));
         await mediator.Publish(new WriteToCsvCommand(resultContainers, directoryPath, timeStamp, tags));
 
@@ -57,7 +58,7 @@ internal class TestResultPresenter : ITestResultPresenter
 
         if (analyze)
         {
-            var response = await mediator.Send(new BeforeAndAfterFileLocationCommand(trackingDir));
+            var response = await mediator.Send(new BeforeAndAfterFileLocationCommand(trackingDir, tags));
             if (string.IsNullOrEmpty(response.BeforeFilePath) || string.IsNullOrEmpty(response.AfterFilePath)) return;
 
             var tTestFormats = await twoTailedTTestWriter.ComputeAndConvertToStringContent(new BeforeAndAfterTrackingFiles(response.BeforeFilePath, response.AfterFilePath), testSettings);

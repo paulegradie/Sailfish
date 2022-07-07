@@ -19,7 +19,8 @@ public class SailfishWriteTTestMarkdownResultHandler : INotificationHandler<Writ
 
     public async Task Handle(WriteTTestResultAsMarkdownCommand notification, CancellationToken cancellationToken)
     {
-        var outputPath = Path.Join(notification.OutputDirectory, DefaultFileSettings.DefaultTTestMarkdownFileName(notification.TimeStamp));
+        var filename = DefaultFileSettings.AppendTagsToFilename(DefaultFileSettings.DefaultTTestMarkdownFileName(notification.TimeStamp), notification.Tags);
+        var outputPath = Path.Join(notification.OutputDirectory, filename);
         if (!string.IsNullOrEmpty(notification.Content))
         {
             await fileIo.WriteToFile(notification.Content, outputPath, cancellationToken);

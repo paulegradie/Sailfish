@@ -1,12 +1,12 @@
-﻿using System.Collections.Generic;
+﻿using Accord.Collections;
 
 namespace Sailfish.Utils;
 
 internal static class TagParser
 {
-    public static Dictionary<string, string> Parse(string[]? tags)
+    public static OrderedDictionary<string, string> Parse(string[]? tags)
     {
-        var keyValues = new Dictionary<string, string>();
+        var keyValues = new OrderedDictionary<string, string>();
         if (tags is null) return keyValues;
 
         foreach (var tag in tags)

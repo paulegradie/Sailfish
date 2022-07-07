@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Accord.Collections;
 using Sailfish.ExtensionMethods;
 using Sailfish.Statistics;
 
@@ -15,7 +16,7 @@ internal class ConsoleWriter : IConsoleWriter
         this.stringBuilder = stringBuilder;
     }
 
-    public string Present(List<ExecutionSummary> results)
+    public string Present(List<ExecutionSummary> results, OrderedDictionary<string, string> tags)
     {
         foreach (var result in results)
         {
@@ -28,6 +29,13 @@ internal class ConsoleWriter : IConsoleWriter
         }
 
         var output = stringBuilder.Build();
+
+        if (tags.Count() > 0) System.Console.WriteLine($"{Environment.NewLine}Tags:");
+        foreach (var (key, value) in tags)
+        {
+            System.Console.WriteLine($"{key}: {value}");
+        }
+
         System.Console.WriteLine(output);
         return output;
     }
