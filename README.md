@@ -153,7 +153,7 @@ There are two modes for tracking and analysis.
 
 When the program executes in tracking mode, a tracking file will be emitted. Then, the statistical analyzer will read the latest, and the one that came just before.
 
-**The alpha value for change description is 0.01.**
+**The alpha value for change description is 0.01**
 
 **Future Directions**
  - The console app should expose a database schema and return a json of data perhaps.
@@ -180,10 +180,6 @@ An interesting use case for load or performance testing is emperically determini
  - Git integration
 
 A common use case we've seen is the before and after analysis of changes made between two branches. When using Sailfish as a console app, we could allow users to provide two branch names (before and after) to then automate a comparative analysis of their branches. The tool would set the working directory to be the project directory, attempt to switch to the before 'branch', build, execute, switch branches to the 'after' branch, and repeate. The same statistical analysis would be emitted after.
-
-- Custom event handlers
-
-We could provide a mediator that allow users to register message handlers that perform custom actions. This could be accomplished by using MediatR internally and allowing users to register handler implementations - which we would that call as part of the execution run.
 
 
 # License
