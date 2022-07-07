@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using Sailfish.Presentation.TTest;
 
 namespace Sailfish;
@@ -14,6 +15,7 @@ public class RunSettings
     public bool Notify { get; set; }
     public TTestSettings Settings { get; }
     public Type[] TestLocationTypes { get; }
+    public Dictionary<string, string> Tags { get; set; }
 
     public RunSettings(
         string[] testNames,
@@ -23,6 +25,7 @@ public class RunSettings
         bool analyze,
         bool notify,
         TTestSettings settings,
+        Dictionary<string, string> tags,
         params Type[] testLocationTypes)
     {
         TestNames = testNames;
@@ -31,6 +34,7 @@ public class RunSettings
         NoTrack = noTrack;
         Analyze = analyze;
         Settings = settings;
+        Tags = tags;
         Notify = notify;
         TestLocationTypes = testLocationTypes;
     }

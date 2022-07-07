@@ -71,6 +71,7 @@ internal class MarkdownWriter : IMarkdownWriter
         }
     }
 
+    // TODO: allow arg to dictate this
     public bool debug = true;
 
     private void AppendExceptions(List<Exception?> exceptions)

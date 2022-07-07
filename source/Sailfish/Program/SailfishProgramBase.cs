@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System.Collections.Generic;
+using System.IO;
 using System.Threading.Tasks;
 using Autofac;
 using McMaster.Extensions.CommandLineUtils;
@@ -31,7 +32,22 @@ public abstract class SailfishProgramBase
             Directories.EnsureDirectoryExists(TrackingDirectory);
         }
 
-        return new RunSettings(TestNames, OutputDirectory, TrackingDirectory, NoTrack, Analyze, Notify, new TTestSettings(Alpha, Round), GetType());
+        var parsedTags = new Dictionary<string, string>();
+        if (Tags is not null)
+        {
+            parsedTags = TagParser.Parse(Tags);
+        }
+
+        return new RunSettings(
+            TestNames,
+            OutputDirectory,
+            TrackingDirectory,
+            NoTrack,
+            Analyze,
+            Notify,
+            new TTestSettings(Alpha, Round),
+            parsedTags,
+            GetType());
     }
 
     [Option("-t|--tests", CommandOptionType.MultipleValue, Description = "List of tests to execute")]
@@ -60,4 +76,7 @@ public abstract class SailfishProgramBase
 
     [Option("-e|--environment", CommandOptionType.SingleValue, Description = "A flag you can use to specify a runtime environment. This can be used, e.g., to switch registrations.")]
     public string? Environment { get; set; }
+
+    [Option("-g|--tag", CommandOptionType.MultipleValue, Description = "A series of colon separated values that provide a key:value relationship. Use like -g version:123 -g build:2022.2.123")]
+    public string[]? Tags { get; set; }
 }

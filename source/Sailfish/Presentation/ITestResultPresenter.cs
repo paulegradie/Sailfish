@@ -16,5 +16,6 @@ internal interface ITestResultPresenter
         bool noTrack,
         bool analyze,
         bool notify,
-        TTestSettings settings);
+        TTestSettings settings,
+        Dictionary<string, string> tags);
 }

@@ -36,11 +36,12 @@ internal class TestResultPresenter : ITestResultPresenter
         bool noTrack,
         bool analyze,
         bool notify,
-        TTestSettings testSettings)
+        TTestSettings testSettings,
+        Dictionary<string, string> tags)
     {
         await mediator.Publish(new WriteToConsoleCommand(resultContainers));
-        await mediator.Publish(new WriteToMarkDownCommand(resultContainers, directoryPath, timeStamp));
-        await mediator.Publish(new WriteToCsvCommand(resultContainers, directoryPath, timeStamp));
+        await mediator.Publish(new WriteToMarkDownCommand(resultContainers, directoryPath, timeStamp, tags));
+        await mediator.Publish(new WriteToCsvCommand(resultContainers, directoryPath, timeStamp, tags));
 
         var trackingDir = string.IsNullOrEmpty(trackingDirectory) ? Path.Combine(directoryPath, "tracking_output") : trackingDirectory;
         if (!noTrack)
@@ -50,7 +51,8 @@ internal class TestResultPresenter : ITestResultPresenter
                 new WriteCurrentTrackingFileCommand(
                     trackingContent,
                     trackingDir,
-                    timeStamp));
+                    timeStamp,
+                    tags));
         }
 
         if (analyze)
@@ -59,12 +61,12 @@ internal class TestResultPresenter : ITestResultPresenter
             if (string.IsNullOrEmpty(response.BeforeFilePath) || string.IsNullOrEmpty(response.AfterFilePath)) return;
 
             var tTestFormats = await twoTailedTTestWriter.ComputeAndConvertToStringContent(new BeforeAndAfterTrackingFiles(response.BeforeFilePath, response.AfterFilePath), testSettings);
-            await mediator.Publish(new WriteTTestResultAsMarkdownCommand(tTestFormats.MarkdownTable, directoryPath, testSettings, timeStamp));
-            await mediator.Publish(new WriteTTestResultAsCsvCommand(tTestFormats.CsvRows, directoryPath, testSettings, timeStamp));
+            await mediator.Publish(new WriteTTestResultAsMarkdownCommand(tTestFormats.MarkdownTable, directoryPath, testSettings, timeStamp, tags));
+            await mediator.Publish(new WriteTTestResultAsCsvCommand(tTestFormats.CsvRows, directoryPath, testSettings, timeStamp, tags));
 
             if (notify)
             {
-                await mediator.Publish(new NotifyOnTestResultCommand(tTestFormats, testSettings, timeStamp));
+                await mediator.Publish(new NotifyOnTestResultCommand(tTestFormats, testSettings, timeStamp, tags));
             }
         }
     }

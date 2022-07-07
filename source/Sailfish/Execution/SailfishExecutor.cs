@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Sailfish.Presentation;
 using Sailfish.Presentation.TTest;
@@ -39,6 +40,7 @@ internal class SailfishExecutor
             runSettings.Analyze,
             settings: runSettings.Settings,
             notify: runSettings.Notify,
+            tags: runSettings.Tags,
             testLocationTypes: runSettings.TestLocationTypes);
     }
 
@@ -50,6 +52,7 @@ internal class SailfishExecutor
         bool analyze,
         bool notify,
         TTestSettings settings,
+        Dictionary<string, string> tags,
         params Type[] testLocationTypes)
     {
         var testRun = CollectTests(testNames, testLocationTypes);
@@ -61,7 +64,7 @@ internal class SailfishExecutor
 
             var compiledResults = executionSummaryCompiler.CompileToSummaries(rawExecutionResults);
 
-            await testResultPresenter.PresentResults(compiledResults, directoryPath, trackingDirectory, timeStamp, noTrack, analyze, notify, settings);
+            await testResultPresenter.PresentResults(compiledResults, directoryPath, trackingDirectory, timeStamp, noTrack, analyze, notify, settings, tags);
         }
         else
         {
