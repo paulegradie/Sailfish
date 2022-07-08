@@ -3,7 +3,7 @@ using Sailfish.Attributes;
 
 namespace AsAConsoleApp.ExamplePerformanceTests;
 
-[Sailfish(disabled: true)]
+[Sailfish(Disabled = true)]
 public class FaultyTestStructure
 {
     [SailfishVariable(1, 2, 3)]

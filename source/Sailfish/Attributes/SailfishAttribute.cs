@@ -9,15 +9,14 @@ namespace Sailfish.Attributes
         {
         }
 
-        public SailfishAttribute(int numIterations = 3, int numWarmupIterations = 3, bool disabled = false)
+        public SailfishAttribute(int numIterations = 3, int numWarmupIterations = 3)
         {
             NumIterations = numIterations;
             NumWarmupIterations = numWarmupIterations;
-            Disabled = disabled;
         }
 
         public int NumIterations { get; set; } = 1;
         public int NumWarmupIterations { get; set; } = 1;
-        public bool Disabled { get; }
+        public bool Disabled { get; set; }
     }
 }
