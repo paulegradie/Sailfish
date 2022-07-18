@@ -2,7 +2,7 @@
 
 namespace Sailfish.Utils;
 
-internal static class TagParser
+internal static class ColonParser
 {
     public static OrderedDictionary<string, string> Parse(string[]? tags)
     {

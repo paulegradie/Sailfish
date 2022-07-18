@@ -16,6 +16,8 @@ public class RunSettings
     public TTestSettings Settings { get; }
     public Type[] TestLocationTypes { get; }
     public OrderedDictionary<string, string> Tags { get; set; }
+    public OrderedDictionary<string, string> Args { get; }
+    public string BeforeTarget { get; }
 
     public RunSettings(
         string[] testNames,
@@ -26,6 +28,8 @@ public class RunSettings
         bool notify,
         TTestSettings settings,
         OrderedDictionary<string, string> tags,
+        OrderedDictionary<string, string>  args,
+        string beforeTarget,
         params Type[] testLocationTypes)
     {
         TestNames = testNames;
@@ -35,6 +39,8 @@ public class RunSettings
         Analyze = analyze;
         Settings = settings;
         Tags = tags;
+        Args = args;
+        BeforeTarget = beforeTarget;
         Notify = notify;
         TestLocationTypes = testLocationTypes;
     }

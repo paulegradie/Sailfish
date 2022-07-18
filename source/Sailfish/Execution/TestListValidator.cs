@@ -39,7 +39,7 @@ namespace Sailfish.Execution
             missingExecutionMethod = new List<string>();
             foreach (var test in testClasses)
             {
-                if (!TypeHasMoreThanZeroExecutionMethods(test))
+                if (!TypeHasMoreThanZeroExecutionMethods(test) && !test.SailfishTypeIsDisabled())
                 {
                     missingExecutionMethod.Add(test.Name);
                 }

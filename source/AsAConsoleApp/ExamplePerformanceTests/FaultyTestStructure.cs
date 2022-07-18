@@ -9,7 +9,7 @@ public class FaultyTestStructure
     [SailfishVariable(1, 2, 3)]
     public int Variable { get; set; }
 
-    [SailfishMethod]
+    // [SailfishMethod]
     public void ILackASailfishMethodAttribute()
     {
         Console.WriteLine("TEST");

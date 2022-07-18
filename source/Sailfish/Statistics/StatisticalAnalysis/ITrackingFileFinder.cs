@@ -4,5 +4,5 @@ namespace Sailfish.Statistics.StatisticalAnalysis;
 
 internal interface ITrackingFileFinder
 {
-    BeforeAndAfterTrackingFiles GetBeforeAndAfterTrackingFiles(string directory, OrderedDictionary<string, string> tags);
+    BeforeAndAfterTrackingFiles GetBeforeAndAfterTrackingFiles(string directory, string beforeTarget, OrderedDictionary<string, string> tags);
 }

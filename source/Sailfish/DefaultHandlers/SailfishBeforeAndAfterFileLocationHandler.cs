@@ -2,6 +2,7 @@
 using System.Threading.Tasks;
 using MediatR;
 using Sailfish.Contracts.Public.Commands;
+using Sailfish.Exceptions;
 using Sailfish.Statistics.StatisticalAnalysis;
 
 namespace Sailfish.DefaultHandlers;
@@ -18,7 +19,8 @@ internal class SailfishBeforeAndAfterFileLocationHandler : IRequestHandler<Befor
     public async Task<BeforeAndAfterFileLocationResponse> Handle(BeforeAndAfterFileLocationCommand request, CancellationToken cancellationToken)
     {
         await Task.CompletedTask;
-        var trackingFiles = trackingFileFinder.GetBeforeAndAfterTrackingFiles(request.DefaultDirectory, request.Tags);
+        var trackingFiles = trackingFileFinder.GetBeforeAndAfterTrackingFiles(request.DefaultDirectory, request.BeforeTarget, request.Tags);
+
         return new BeforeAndAfterFileLocationResponse(trackingFiles.BeforeFilePath, trackingFiles.AfterFilePath);
     }
 }

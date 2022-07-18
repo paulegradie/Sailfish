@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
-using Accord.Collections;
 using MediatR;
 using Sailfish.Contracts.Private;
 using Sailfish.Contracts.Public.Commands;
@@ -29,23 +28,14 @@ internal class TestResultPresenter : ITestResultPresenter
         this.twoTailedTTestWriter = twoTailedTTestWriter;
     }
 
-    public async Task PresentResults(
-        List<ExecutionSummary> resultContainers,
-        string directoryPath,
-        string trackingDirectory,
-        DateTime timeStamp,
-        bool noTrack,
-        bool analyze,
-        bool notify,
-        TTestSettings testSettings,
-        OrderedDictionary<string, string> tags)
+    public async Task PresentResults(List<ExecutionSummary> resultContainers, DateTime timeStamp, RunSettings runSettings)
     {
-        await mediator.Publish(new WriteToConsoleCommand(resultContainers, tags));
-        await mediator.Publish(new WriteToMarkDownCommand(resultContainers, directoryPath, timeStamp, tags));
-        await mediator.Publish(new WriteToCsvCommand(resultContainers, directoryPath, timeStamp, tags));
+        await mediator.Publish(new WriteToConsoleCommand(resultContainers, runSettings.Tags));
+        await mediator.Publish(new WriteToMarkDownCommand(resultContainers, runSettings.DirectoryPath, timeStamp, runSettings.Tags, runSettings.Args));
+        await mediator.Publish(new WriteToCsvCommand(resultContainers, runSettings.DirectoryPath, timeStamp, runSettings.Tags, runSettings.Args));
 
-        var trackingDir = string.IsNullOrEmpty(trackingDirectory) ? Path.Combine(directoryPath, "tracking_output") : trackingDirectory;
-        if (!noTrack)
+        var trackingDir = string.IsNullOrEmpty(runSettings.TrackingDirectoryPath) ? Path.Combine(runSettings.DirectoryPath, "tracking_output") : runSettings.TrackingDirectoryPath;
+        if (!runSettings.NoTrack)
         {
             var trackingContent = await performanceCsvTrackingWriter.ConvertToCsvStringContent(resultContainers);
             await mediator.Publish(
@@ -53,21 +43,21 @@ internal class TestResultPresenter : ITestResultPresenter
                     trackingContent,
                     trackingDir,
                     timeStamp,
-                    tags));
+                    runSettings.Tags));
         }
 
-        if (analyze)
+        if (runSettings.Analyze)
         {
-            var response = await mediator.Send(new BeforeAndAfterFileLocationCommand(trackingDir, tags));
+            var response = await mediator.Send(new BeforeAndAfterFileLocationCommand(trackingDir, runSettings.Tags, runSettings.BeforeTarget));
             if (string.IsNullOrEmpty(response.BeforeFilePath) || string.IsNullOrEmpty(response.AfterFilePath)) return;
 
-            var tTestFormats = await twoTailedTTestWriter.ComputeAndConvertToStringContent(new BeforeAndAfterTrackingFiles(response.BeforeFilePath, response.AfterFilePath), testSettings);
-            await mediator.Publish(new WriteTTestResultAsMarkdownCommand(tTestFormats.MarkdownTable, directoryPath, testSettings, timeStamp, tags));
-            await mediator.Publish(new WriteTTestResultAsCsvCommand(tTestFormats.CsvRows, directoryPath, testSettings, timeStamp, tags));
+            var tTestFormats = await twoTailedTTestWriter.ComputeAndConvertToStringContent(new BeforeAndAfterTrackingFiles(response.BeforeFilePath, response.AfterFilePath), runSettings.Settings);
+            await mediator.Publish(new WriteTTestResultAsMarkdownCommand(tTestFormats.MarkdownTable, runSettings.DirectoryPath, runSettings.Settings, timeStamp, runSettings.Tags));
+            await mediator.Publish(new WriteTTestResultAsCsvCommand(tTestFormats.CsvRows, runSettings.DirectoryPath, runSettings.Settings, timeStamp, runSettings.Tags));
 
-            if (notify)
+            if (runSettings.Notify)
             {
-                await mediator.Publish(new NotifyOnTestResultCommand(tTestFormats, testSettings, timeStamp, tags));
+                await mediator.Publish(new NotifyOnTestResultCommand(tTestFormats, runSettings.Settings, timeStamp, runSettings.Tags));
             }
         }
     }

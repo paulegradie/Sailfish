@@ -1,8 +1,6 @@
 using System;
 using System.Threading.Tasks;
-using Accord.Collections;
 using Sailfish.Presentation;
-using Sailfish.Presentation.TTest;
 using Sailfish.Statistics;
 
 namespace Sailfish.Execution;
@@ -33,26 +31,15 @@ internal class SailfishExecutor
     public async Task Run(RunSettings runSettings)
     {
         await Run(
-            runSettings.TestNames,
-            runSettings.DirectoryPath,
-            runSettings.TrackingDirectoryPath,
-            runSettings.NoTrack,
-            runSettings.Analyze,
-            settings: runSettings.Settings,
-            notify: runSettings.Notify,
-            tags: runSettings.Tags,
-            testLocationTypes: runSettings.TestLocationTypes);
+            testNames: runSettings.TestNames,
+            runSettings: runSettings,
+            testLocationTypes: runSettings.TestLocationTypes
+        );
     }
 
     public async Task Run(
         string[] testNames,
-        string directoryPath,
-        string trackingDirectory,
-        bool noTrack,
-        bool analyze,
-        bool notify,
-        TTestSettings settings,
-        OrderedDictionary<string, string> tags,
+        RunSettings runSettings,
         params Type[] testLocationTypes)
     {
         var testRun = CollectTests(testNames, testLocationTypes);
@@ -64,7 +51,7 @@ internal class SailfishExecutor
 
             var compiledResults = executionSummaryCompiler.CompileToSummaries(rawExecutionResults);
 
-            await testResultPresenter.PresentResults(compiledResults, directoryPath, trackingDirectory, timeStamp, noTrack, analyze, notify, settings, tags);
+            await testResultPresenter.PresentResults(compiledResults, timeStamp, runSettings);
         }
         else
         {
