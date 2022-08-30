@@ -38,14 +38,14 @@ class Program : SailfishProgramBase
 }
 
 [Sailfish]
-public class MostBasicTest
+public class AMostBasicTest
 {
-    public MostBasicTest()
+    public AMostBasicTest()
     {
     }
 
     [SailfishMethod]
-    public async Task Methdo()
+    public async Task Methdod()
     {
         await Thread.Sleep(200);
     }
