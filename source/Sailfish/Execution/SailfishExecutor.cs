@@ -45,7 +45,7 @@ internal class SailfishExecutor
         var testRun = CollectTests(testNames, testLocationTypes);
         if (testRun.IsValid)
         {
-            var timeStamp = DateTime.Now.ToLocalTime();
+            var timeStamp = runSettings.TimeStamp ?? DateTime.Now.ToLocalTime();
 
             var rawExecutionResults = await sailFishTestExecutor.Execute(testRun.Tests);
 

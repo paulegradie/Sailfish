@@ -43,21 +43,22 @@ internal class TestResultPresenter : ITestResultPresenter
                     trackingContent,
                     trackingDir,
                     timeStamp,
-                    runSettings.Tags));
+                    runSettings.Tags,
+                    runSettings.Args));
         }
 
         if (runSettings.Analyze)
         {
-            var response = await mediator.Send(new BeforeAndAfterFileLocationCommand(trackingDir, runSettings.Tags, runSettings.BeforeTarget));
+            var response = await mediator.Send(new BeforeAndAfterFileLocationCommand(trackingDir, runSettings.Tags, runSettings.BeforeTarget, runSettings.Args));
             if (string.IsNullOrEmpty(response.BeforeFilePath) || string.IsNullOrEmpty(response.AfterFilePath)) return;
 
             var tTestFormats = await twoTailedTTestWriter.ComputeAndConvertToStringContent(new BeforeAndAfterTrackingFiles(response.BeforeFilePath, response.AfterFilePath), runSettings.Settings);
-            await mediator.Publish(new WriteTTestResultAsMarkdownCommand(tTestFormats.MarkdownTable, runSettings.DirectoryPath, runSettings.Settings, timeStamp, runSettings.Tags));
-            await mediator.Publish(new WriteTTestResultAsCsvCommand(tTestFormats.CsvRows, runSettings.DirectoryPath, runSettings.Settings, timeStamp, runSettings.Tags));
+            await mediator.Publish(new WriteTTestResultAsMarkdownCommand(tTestFormats.MarkdownTable, runSettings.DirectoryPath, runSettings.Settings, timeStamp, runSettings.Tags, runSettings.Args));
+            await mediator.Publish(new WriteTTestResultAsCsvCommand(tTestFormats.CsvRows, runSettings.DirectoryPath, runSettings.Settings, timeStamp, runSettings.Tags, runSettings.Args));
 
             if (runSettings.Notify)
             {
-                await mediator.Publish(new NotifyOnTestResultCommand(tTestFormats, runSettings.Settings, timeStamp, runSettings.Tags));
+                await mediator.Publish(new NotifyOnTestResultCommand(tTestFormats, runSettings.Settings, timeStamp, runSettings.Tags, runSettings.Args));
             }
         }
     }

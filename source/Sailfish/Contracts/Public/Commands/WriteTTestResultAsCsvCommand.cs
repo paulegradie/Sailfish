@@ -13,14 +13,21 @@ public class WriteTTestResultAsCsvCommand : INotification
     public string OutputDirectory { get; }
     public TTestSettings TestSettings { get; }
     public OrderedDictionary<string, string> Tags { get; }
+    public OrderedDictionary<string, string> Args { get; }
 
-    public WriteTTestResultAsCsvCommand(List<NamedTTestResult> csvRows, string outputDirectory, TTestSettings testSettings, DateTime timeStamp, OrderedDictionary<string, string> tags)
+    public WriteTTestResultAsCsvCommand(
+        List<NamedTTestResult> csvRows,
+        string outputDirectory,
+        TTestSettings testSettings,
+        DateTime timeStamp,
+        OrderedDictionary<string, string> tags,
+        OrderedDictionary<string, string> args)
     {
         TimeStamp = timeStamp;
         CsvRows = csvRows;
         OutputDirectory = outputDirectory;
         TestSettings = testSettings;
         Tags = tags;
+        Args = args;
     }
-
 }

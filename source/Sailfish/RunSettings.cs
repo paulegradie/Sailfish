@@ -18,6 +18,7 @@ public class RunSettings
     public OrderedDictionary<string, string> Tags { get; set; }
     public OrderedDictionary<string, string> Args { get; }
     public string BeforeTarget { get; }
+    public DateTime? TimeStamp { get; }
 
     public RunSettings(
         string[] testNames,
@@ -30,6 +31,7 @@ public class RunSettings
         OrderedDictionary<string, string> tags,
         OrderedDictionary<string, string>  args,
         string beforeTarget,
+        DateTime? timeStamp,
         params Type[] testLocationTypes)
     {
         TestNames = testNames;
@@ -41,6 +43,7 @@ public class RunSettings
         Tags = tags;
         Args = args;
         BeforeTarget = beforeTarget;
+        TimeStamp = timeStamp;
         Notify = notify;
         TestLocationTypes = testLocationTypes;
     }

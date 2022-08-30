@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using System.Threading.Tasks;
 using Accord.Collections;
 using Autofac;
@@ -49,6 +50,12 @@ public abstract class SailfishProgramBase
             BeforeTarget = string.Empty;
         }
 
+        DateTime? timestamp = null;
+        if (TimeStamp is not null)
+        {
+            timestamp = DateTime.Parse(TimeStamp);
+        }
+
         return new RunSettings(
             TestNames,
             OutputDirectory,
@@ -60,6 +67,7 @@ public abstract class SailfishProgramBase
             parsedTags,
             parsedArgs,
             BeforeTarget,
+            timestamp,
             GetType());
     }
 
@@ -80,6 +88,9 @@ public abstract class SailfishProgramBase
 
     [Option("-k|--trackingDirectory", CommandOptionType.SingleValue, Description = "Path to an output directory for tracking files. Absolute or relative")]
     public string? TrackingDirectory { get; set; }
+
+    [Option("-m|--timeStamp", CommandOptionType.SingleValue, Description = "String to use as the timestamp. This should be a time sortable format. Input should be parsable by `DateTime.Parse`")]
+    public string? TimeStamp { get; set; }
 
     [Option("-n|--no-track", CommandOptionType.NoValue, Description = "Disable tracking. Tracking files are used when performing statistical analysis")]
     public bool NoTrack { get; set; } = false;
