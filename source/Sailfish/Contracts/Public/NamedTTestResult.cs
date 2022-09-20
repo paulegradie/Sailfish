@@ -1,9 +1,17 @@
-﻿using Sailfish.Statistics.StatisticalAnalysis;
+﻿using System.Text.Json.Serialization;
+using Sailfish.Statistics.StatisticalAnalysis;
+
+#pragma warning disable CS8618
 
 namespace Sailfish.Contracts.Public;
 
 public class NamedTTestResult
 {
+    [JsonConstructor]
+    public NamedTTestResult()
+    {
+    }
+
     public NamedTTestResult(string displayName, TTestResult r)
     {
         DisplayName = displayName;
