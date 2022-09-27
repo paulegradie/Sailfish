@@ -1,4 +1,5 @@
 ﻿using Autofac;
+using Sailfish.Contracts.Public;
 using Sailfish.Execution;
 using Sailfish.Presentation;
 using Sailfish.Presentation.Console;

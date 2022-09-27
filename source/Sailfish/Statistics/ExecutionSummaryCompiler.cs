@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using Sailfish.Contracts;
 using Sailfish.Exceptions;
 using Sailfish.Execution;
 

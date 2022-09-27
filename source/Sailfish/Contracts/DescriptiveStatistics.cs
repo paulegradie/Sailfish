@@ -2,7 +2,7 @@
 using System.Linq;
 using Sailfish.Execution;
 
-namespace Sailfish.Statistics;
+namespace Sailfish.Contracts;
 
 public class DescriptiveStatistics
 {
@@ -18,9 +18,10 @@ public class DescriptiveStatistics
 
     public double[] RawExecutionResults { get; set; } = null!; // milliseconds
 
-    public DescriptiveStatistics ConvertFromPerfTimer(string displayName, PerformanceTimer performanceTimer)
+    public static DescriptiveStatistics ConvertFromPerfTimer(string displayName, PerformanceTimer performanceTimer)
     {
-        var executionIterations = performanceTimer.ExecutionIterationPerformances.Select(x => (double)x.Duration).ToArray();
+        var executionIterations =
+            performanceTimer.ExecutionIterationPerformances.Select(x => (double)x.Duration).ToArray();
 
         var mean = MathNet.Numerics.Statistics.Statistics.Mean(executionIterations);
         var stdDev = MathNet.Numerics.Statistics.Statistics.StandardDeviation(executionIterations);

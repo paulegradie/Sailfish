@@ -6,10 +6,11 @@ using System.Threading;
 using System.Threading.Tasks;
 using CsvHelper;
 using CsvHelper.Configuration;
+using Sailfish.Utils;
 
-namespace Sailfish.Utils;
+namespace Sailfish.Contracts.Public;
 
-internal class FileIo : IFileIo
+public class FileIo : IFileIo
 {
     public async Task WriteToFile(string content, string filePath, CancellationToken cancellationToken)
     {
@@ -21,25 +22,21 @@ internal class FileIo : IFileIo
 
     public List<TData> ReadCsvFile<TMap, TData>(string filePath) where TMap : ClassMap where TData : class
     {
-        using (var reader = new StreamReader(filePath))
-        using (var csv = new CsvReader(reader, CultureInfo.InvariantCulture))
-        {
-            csv.Context.RegisterClassMap<TMap>();
+        using var reader = new StreamReader(filePath);
+        using var csv = new CsvReader(reader, CultureInfo.InvariantCulture);
+        csv.Context.RegisterClassMap<TMap>();
 
-            var records = csv.GetRecords<TData>().ToList();
-            return records;
-        }
+        var records = csv.GetRecords<TData>().ToList();
+        return records;
     }
 
     public List<TData> ReadCsvFile<TMap, TData>(FileStream fileStream) where TMap : ClassMap where TData : class
     {
-        using (var reader = new StreamReader(fileStream))
-        using (var csv = new CsvReader(reader, CultureInfo.InvariantCulture))
-        {
-            csv.Context.RegisterClassMap<TMap>();
+        using var reader = new StreamReader(fileStream);
+        using var csv = new CsvReader(reader, CultureInfo.InvariantCulture);
+        csv.Context.RegisterClassMap<TMap>();
 
-            var records = csv.GetRecords<TData>().ToList();
-            return records;
-        }
+        var records = csv.GetRecords<TData>().ToList();
+        return records;
     }
 }

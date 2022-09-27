@@ -21,8 +21,8 @@ internal class PerformanceCsvWriter : IPerformanceCsvWriter
 
     public async Task Present(List<ExecutionSummary> result, string filePath)
     {
-        using (var writer = new StreamWriter(filePath))
-        using (var csv = new CsvWriter(writer, CultureInfo.InvariantCulture))
+        await using (var writer = new StreamWriter(filePath))
+        await using (var csv = new CsvWriter(writer, CultureInfo.InvariantCulture))
         {
             csv.Context.RegisterClassMap<TestCaseDescriptiveStatisticsMap>();
 
@@ -31,7 +31,7 @@ internal class PerformanceCsvWriter : IPerformanceCsvWriter
                 if (container.Settings.AsCsv)
                 {
                     var records = container.CompiledResults.Select(x => x.DescriptiveStatistics);
-                    csv.WriteRecords(records);
+                    await csv.WriteRecordsAsync(records);
                 }
             }
         }

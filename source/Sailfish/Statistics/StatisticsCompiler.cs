@@ -1,4 +1,5 @@
-﻿using Sailfish.Execution;
+﻿using Sailfish.Contracts;
+using Sailfish.Execution;
 using Sailfish.ExtensionMethods;
 
 namespace Sailfish.Statistics;
