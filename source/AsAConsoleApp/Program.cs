@@ -29,17 +29,18 @@ namespace AsAConsoleApp
             // using these additional registrations.
             builder.RegisterModule<RequiredAdditionalRegistrationsModule>();
 
-            // These registrations can override the default handlers for
-            // writing t-test results and reading/writing tracking files
-            // This is useful if you've got a system for running automated perf
-            // tests and what then recorded in the cloud.
-            if (Environment?.ToLowerInvariant() == "notify")
+            switch (Environment?.ToLowerInvariant())
             {
-                builder.RegisterModule<OptionalAdditionalRegistrationsNotifications>();
-            }
-            else if (Environment?.ToLowerInvariant() == "cloud")
-            {
-                builder.RegisterModule<OptionalAdditionalRegistrationsCloud>();
+                // These registrations can override the default handlers for
+                // writing t-test results and reading/writing tracking files
+                // This is useful if you've got a system for running automated perf
+                // tests and what then recorded in the cloud.
+                case "notify":
+                    builder.RegisterModule<OptionalAdditionalRegistrationsNotifications>();
+                    break;
+                case "cloud":
+                    builder.RegisterModule<OptionalAdditionalRegistrationsCloud>();
+                    break;
             }
         }
     }
