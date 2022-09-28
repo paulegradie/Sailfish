@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Sailfish.Contracts.Public;
 using Sailfish.ExtensionMethods;
 using Sailfish.Presentation.Console;
 using Sailfish.Statistics;

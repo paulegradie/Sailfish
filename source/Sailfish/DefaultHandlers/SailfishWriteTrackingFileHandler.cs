@@ -20,7 +20,7 @@ public class SailfishWriteTrackingFileHandler : INotificationHandler<WriteCurren
         var fileName = DefaultFileSettings.AppendTagsToFilename(notification.DefaultFileName, notification.Tags);
         var filePath = Path.Join(output, fileName);
 
-        using var streamWriter = new StreamWriter(filePath);
+        await using var streamWriter = new StreamWriter(filePath);
         await streamWriter.WriteAsync(notification.Content);
     }
 }
