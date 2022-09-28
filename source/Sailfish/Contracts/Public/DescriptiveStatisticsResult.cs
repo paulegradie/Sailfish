@@ -2,7 +2,7 @@
 using System.Linq;
 using Sailfish.Execution;
 
-namespace Sailfish.Contracts;
+namespace Sailfish.Contracts.Public;
 
 public class DescriptiveStatisticsResult
 {

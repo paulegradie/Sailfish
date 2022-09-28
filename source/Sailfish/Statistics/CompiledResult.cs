@@ -1,5 +1,6 @@
 ﻿using System;
 using Sailfish.Contracts;
+using Sailfish.Contracts.Public;
 
 namespace Sailfish.Statistics;
 
