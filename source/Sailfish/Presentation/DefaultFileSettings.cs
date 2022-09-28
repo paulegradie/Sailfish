@@ -11,7 +11,7 @@ public static class DefaultFileSettings
     public static readonly string SortableFormat = "yyyy-dd-M--HH-mm-ss";
     public static readonly string TrackingSuffix = ".cvs.tracking";
     public static readonly string TagsPrefix = "tags-";
-    private static readonly string UnderScore = "_";
+    private static readonly string JoinSymbol = "=";
     public static readonly Func<DateTime, string> DefaultPerformanceFileNameStem = (DateTime timestamp) => $"PerformanceResults_{timestamp.ToString(SortableFormat)}"; // sortable file name with date
     public static readonly Func<DateTime, string> DefaultTTestMarkdownFileName = (DateTime timeStamp) => $"t-test_{timeStamp.ToString(SortableFormat)}.md";
     public static readonly Func<DateTime, string> DefaultTTestCsvFileName = (DateTime timeStamp) => $"t-test_{timeStamp.ToString(SortableFormat)}.csv";
@@ -19,22 +19,22 @@ public static class DefaultFileSettings
 
     public static string JoinTags(OrderedDictionary<string, string> tags)
     {
-        if (tags.Count() == 0) return string.Empty;
+        if (!tags.Any()) return string.Empty;
 
         var result = new StringBuilder();
         result.Append(TagsPrefix);
         foreach (var tagPair in tags)
         {
-            var joinedTag = string.Join(UnderScore, tagPair.Key, tagPair.Value, string.Empty);
+            var joinedTag = string.Join(JoinSymbol, tagPair.Key, tagPair.Value, string.Empty);
             result.Append(joinedTag);
         }
 
-        return result.ToString().TrimEnd(UnderScore.ToCharArray());
+        return result.ToString().TrimEnd(JoinSymbol.ToCharArray());
     }
 
     public static string AppendTagsToFilename(string fileName, OrderedDictionary<string, string> tags)
     {
-        if (tags.Count() == 0) return fileName;
+        if (!tags.Any()) return fileName;
         var joinedTags = JoinTags(tags);
 
         if (fileName.EndsWith(TrackingSuffix))
@@ -50,7 +50,7 @@ public static class DefaultFileSettings
         }
         else
         {
-            return string.Join(UnderScore, joinedTags);
+            return string.Join(JoinSymbol, joinedTags);
         }
     }
 }
