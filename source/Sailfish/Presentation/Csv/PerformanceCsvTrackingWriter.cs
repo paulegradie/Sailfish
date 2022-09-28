@@ -21,7 +21,7 @@ internal class PerformanceCsvTrackingWriter : IPerformanceCsvTrackingWriter
 
             foreach (var records in result.Select(container => container
                          .CompiledResults
-                         .Select(x => x.DescriptiveStatistics)
+                         .Select(x => x.DescriptiveStatisticsResult)
                          .Where(x => x is not null)))
             {
                 await csv.WriteRecordsAsync(records);

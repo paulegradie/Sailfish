@@ -5,5 +5,5 @@ namespace Sailfish.Statistics;
 
 internal interface IStatisticsCompiler
 {
-    DescriptiveStatistics Compile(string displayName, PerformanceTimer populatedTimer);
+    DescriptiveStatisticsResult Compile(string displayName, PerformanceTimer populatedTimer);
 }

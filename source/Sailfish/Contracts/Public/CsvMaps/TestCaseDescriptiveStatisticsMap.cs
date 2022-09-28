@@ -1,9 +1,8 @@
 ﻿using CsvHelper.Configuration;
-using Sailfish.Statistics;
 
 namespace Sailfish.Contracts.Public.CsvMaps;
 
-public sealed class TestCaseDescriptiveStatisticsMap : ClassMap<DescriptiveStatistics>
+public sealed class TestCaseDescriptiveStatisticsMap : ClassMap<DescriptiveStatisticsResult>
 {
     public TestCaseDescriptiveStatisticsMap()
     {

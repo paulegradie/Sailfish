@@ -4,7 +4,6 @@ using System.Linq;
 using Sailfish.Contracts;
 using Sailfish.Contracts.Public;
 using Sailfish.Contracts.Public.CsvMaps;
-using Sailfish.Statistics;
 using Sailfish.Statistics.StatisticalAnalysis;
 using Sailfish.Utils;
 using Serilog;
@@ -28,8 +27,8 @@ internal class TTestComputer : ITTestComputer
     {
         try
         {
-            var before = fileIo.ReadCsvFile<TestCaseDescriptiveStatisticsMap, DescriptiveStatistics>(beforeAndAfter.BeforeFilePath);
-            var after = fileIo.ReadCsvFile<TestCaseDescriptiveStatisticsMap, DescriptiveStatistics>(beforeAndAfter.AfterFilePath).ToList();
+            var before = fileIo.ReadCsvFile<TestCaseDescriptiveStatisticsMap, DescriptiveStatisticsResult>(beforeAndAfter.BeforeFilePath);
+            var after = fileIo.ReadCsvFile<TestCaseDescriptiveStatisticsMap, DescriptiveStatisticsResult>(beforeAndAfter.AfterFilePath).ToList();
             var results = Compute(before, after, settings);
             return results;
         }
@@ -40,7 +39,7 @@ internal class TTestComputer : ITTestComputer
         }
     }
 
-    private List<NamedTTestResult> Compute(List<DescriptiveStatistics> before, List<DescriptiveStatistics> after, TTestSettings testSettings)
+    private List<NamedTTestResult> Compute(List<DescriptiveStatisticsResult> before, List<DescriptiveStatisticsResult> after, TTestSettings testSettings)
     {
         var testNames = after.Select(x => x.DisplayName).OrderByDescending(x => x);
 

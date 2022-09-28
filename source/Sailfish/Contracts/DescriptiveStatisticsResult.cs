@@ -4,7 +4,7 @@ using Sailfish.Execution;
 
 namespace Sailfish.Contracts;
 
-public class DescriptiveStatistics
+public class DescriptiveStatisticsResult
 {
     public string DisplayName { get; set; } = null!;
     public double Mean { get; set; }
@@ -18,7 +18,7 @@ public class DescriptiveStatistics
 
     public double[] RawExecutionResults { get; set; } = null!; // milliseconds
 
-    public static DescriptiveStatistics ConvertFromPerfTimer(string displayName, PerformanceTimer performanceTimer)
+    public static DescriptiveStatisticsResult ConvertFromPerfTimer(string displayName, PerformanceTimer performanceTimer)
     {
         var executionIterations =
             performanceTimer.ExecutionIterationPerformances.Select(x => (double)x.Duration).ToArray();
@@ -28,7 +28,7 @@ public class DescriptiveStatistics
         var variance = MathNet.Numerics.Statistics.Statistics.Variance(executionIterations);
         var median = MathNet.Numerics.Statistics.Statistics.Median(executionIterations);
 
-        return new DescriptiveStatistics
+        return new DescriptiveStatisticsResult
         {
             DisplayName = displayName,
             GlobalStart = performanceTimer.GlobalStart,

@@ -83,7 +83,7 @@ internal class ExecutionSummaryCompiler : IExecutionSummaryCompiler
         }
     }
 
-    private DescriptiveStatistics ComputeStatistics(TestExecutionResult result)
+    private DescriptiveStatisticsResult ComputeStatistics(TestExecutionResult result)
     {
         return statsCompiler.Compile(result.TestInstanceContainer.DisplayName, result.PerformanceTimerResults);
     }

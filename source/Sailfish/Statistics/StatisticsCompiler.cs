@@ -6,7 +6,7 @@ namespace Sailfish.Statistics;
 
 internal class StatisticsCompiler : IStatisticsCompiler
 {
-    public DescriptiveStatistics Compile(string displayName, PerformanceTimer populatedTimer)
+    public DescriptiveStatisticsResult Compile(string displayName, PerformanceTimer populatedTimer)
     {
         return populatedTimer.ToDescriptiveStatistics(displayName);
     }

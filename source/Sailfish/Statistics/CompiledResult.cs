@@ -5,11 +5,11 @@ namespace Sailfish.Statistics;
 
 internal class CompiledResult
 {
-    public CompiledResult(string displayName, string groupingId, DescriptiveStatistics descriptiveStatistics)
+    public CompiledResult(string displayName, string groupingId, DescriptiveStatisticsResult descriptiveStatisticsResult)
     {
         DisplayName = displayName;
         GroupingId = groupingId;
-        DescriptiveStatistics = descriptiveStatistics;
+        DescriptiveStatisticsResult = descriptiveStatisticsResult;
     }
 
     public CompiledResult(Exception exception)
@@ -18,7 +18,7 @@ internal class CompiledResult
     }
 
     public string? GroupingId { get; set; }
-    public DescriptiveStatistics? DescriptiveStatistics { get; set; }
+    public DescriptiveStatisticsResult? DescriptiveStatisticsResult { get; set; }
     public Exception? Exception { get; set; }
     public string? DisplayName { get; set; }
     
