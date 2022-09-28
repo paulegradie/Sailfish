@@ -7,11 +7,13 @@ using McMaster.Extensions.CommandLineUtils;
 using Sailfish.Presentation.TTest;
 using Sailfish.Utils;
 
+// ReSharper disable MemberCanBePrivate.Global
+
 namespace Sailfish.Program;
 
 public abstract class SailfishProgramBase
 {
-    public static async Task SailfishMain<TProgram>(string[] userRequestedTestNames) where TProgram : class
+    protected static async Task SailfishMain<TProgram>(string[] userRequestedTestNames) where TProgram : class
     {
         await CommandLineApplication.ExecuteAsync<TProgram>(userRequestedTestNames);
     }
@@ -19,7 +21,7 @@ public abstract class SailfishProgramBase
     public abstract Task OnExecuteAsync();
     public abstract void RegisterWithSailfish(ContainerBuilder builder);
 
-    public RunSettings AssembleRunRequest()
+    protected RunSettings AssembleRunRequest()
     {
         if (OutputDirectory is null)
         {
@@ -33,7 +35,7 @@ public abstract class SailfishProgramBase
             Directories.EnsureDirectoryExists(TrackingDirectory);
         }
 
-        var parsedTags = new OrderedDictionary<string, string>();
+        var parsedTags = new OrderedDictionary<string, string>() { { "Example", "Tag" }, { "Another", "thing" } };
         if (Tags is not null)
         {
             parsedTags = ColonParser.Parse(Tags);
@@ -45,10 +47,7 @@ public abstract class SailfishProgramBase
             parsedArgs = ColonParser.Parse(Args);
         }
 
-        if (BeforeTarget is null)
-        {
-            BeforeTarget = string.Empty;
-        }
+        BeforeTarget ??= string.Empty;
 
         DateTime? timestamp = null;
         if (TimeStamp is not null)
