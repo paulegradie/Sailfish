@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -59,5 +60,15 @@ public static class DefaultFileSettings
         var filenameStem = Path.GetFileNameWithoutExtension(fileName);
         var extension = Path.GetExtension(fileName);
         return string.Join(".", filenameStem, joinedTags) + extension;
+    }
+
+    public static Dictionary<string, string> ExtractDataFromFileNameWithTagSection(string filename)
+    {
+        var dataSection =
+            filename.Split(".")
+                .Single(x => x.StartsWith(TagsPrefix))[TagsPrefix.Length..];
+        var keyValues = dataSection.Split(MapDelimiter);
+        return keyValues.Select(keyValue => keyValue.Split(KeyValueDelimiter))
+            .ToDictionary(keyVal => keyVal[0], keyVal => keyVal[1]);
     }
 }
