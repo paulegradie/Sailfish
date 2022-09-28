@@ -8,10 +8,11 @@ namespace Sailfish.Presentation;
 
 public static class DefaultFileSettings
 {
-    public static readonly string SortableFormat = "yyyy-dd-M--HH-mm-ss";
-    public static readonly string TrackingSuffix = ".cvs.tracking";
-    public static readonly string TagsPrefix = "tags-";
-    private static readonly string JoinSymbol = "=";
+    public const string SortableFormat = "yyyy-dd-M--HH-mm-ss";
+    public const string TrackingSuffix = ".cvs.tracking";
+    public const string TagsPrefix = "tags-";
+    public const string JoinSymbol = "=";
+
     public static readonly Func<DateTime, string> DefaultPerformanceFileNameStem = (DateTime timestamp) => $"PerformanceResults_{timestamp.ToString(SortableFormat)}"; // sortable file name with date
     public static readonly Func<DateTime, string> DefaultTTestMarkdownFileName = (DateTime timeStamp) => $"t-test_{timeStamp.ToString(SortableFormat)}.md";
     public static readonly Func<DateTime, string> DefaultTTestCsvFileName = (DateTime timeStamp) => $"t-test_{timeStamp.ToString(SortableFormat)}.csv";
