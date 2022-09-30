@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using Accord.Collections;
+using Sailfish.Exceptions;
 
 // ReSharper disable MemberCanBePrivate.Global
 
@@ -64,9 +65,12 @@ public static class DefaultFileSettings
 
     public static Dictionary<string, string> ExtractDataFromFileNameWithTagSection(string filename)
     {
-        var dataSection =
-            filename.Split(".")
-                .Single(x => x.StartsWith(TagsPrefix))[TagsPrefix.Length..];
+        var parts =
+            filename.Split(TagsPrefix);
+        if (parts.Length == 1) return new Dictionary<string, string>();
+        var dataSection = parts.TakeLast(1)
+            .SingleOrDefault()?.Replace(TrackingSuffix, string.Empty);
+        if (dataSection is null) throw new SailfishException("Invalid File Name Structure");
         var keyValues = dataSection.Split(MapDelimiter);
         return keyValues.Select(keyValue => keyValue.Split(KeyValueDelimiter))
             .ToDictionary(keyVal => keyVal[0], keyVal => keyVal[1]);
