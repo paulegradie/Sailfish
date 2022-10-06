@@ -5,7 +5,6 @@ using MediatR;
 using Sailfish.Contracts.Public;
 using Sailfish.Contracts.Public.Commands;
 using Sailfish.Presentation;
-using Sailfish.Utils;
 
 namespace Sailfish.DefaultHandlers;
 

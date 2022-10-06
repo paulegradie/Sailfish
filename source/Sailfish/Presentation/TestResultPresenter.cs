@@ -4,37 +4,49 @@ using System.IO;
 using System.Threading.Tasks;
 using MediatR;
 using Sailfish.Contracts.Private;
+using Sailfish.Contracts.Public;
 using Sailfish.Contracts.Public.Commands;
 using Sailfish.Presentation.Csv;
 using Sailfish.Presentation.TTest;
 using Sailfish.Statistics;
-using Sailfish.Statistics.StatisticalAnalysis;
+using Serilog;
 
 namespace Sailfish.Presentation;
 
 internal class TestResultPresenter : ITestResultPresenter
 {
+    private readonly ILogger logger;
     private readonly IMediator mediator;
+    private readonly IFileIo fileIo;
     private readonly IPerformanceCsvTrackingWriter performanceCsvTrackingWriter;
     private readonly ITwoTailedTTestWriter twoTailedTTestWriter;
 
     public TestResultPresenter(
+        ILogger logger,
         IMediator mediator,
+        IFileIo fileIo,
         IPerformanceCsvTrackingWriter performanceCsvTrackingWriter,
         ITwoTailedTTestWriter twoTailedTTestWriter)
     {
+        this.logger = logger;
         this.mediator = mediator;
+        this.fileIo = fileIo;
         this.performanceCsvTrackingWriter = performanceCsvTrackingWriter;
         this.twoTailedTTestWriter = twoTailedTTestWriter;
     }
 
-    public async Task PresentResults(List<ExecutionSummary> resultContainers, DateTime timeStamp, RunSettings runSettings)
+    public async Task PresentResults(List<ExecutionSummary> resultContainers, DateTime timeStamp,
+        RunSettings runSettings)
     {
         await mediator.Publish(new WriteToConsoleCommand(resultContainers, runSettings.Tags));
-        await mediator.Publish(new WriteToMarkDownCommand(resultContainers, runSettings.DirectoryPath, timeStamp, runSettings.Tags, runSettings.Args));
-        await mediator.Publish(new WriteToCsvCommand(resultContainers, runSettings.DirectoryPath, timeStamp, runSettings.Tags, runSettings.Args));
+        await mediator.Publish(new WriteToMarkDownCommand(resultContainers, runSettings.DirectoryPath, timeStamp,
+            runSettings.Tags, runSettings.Args));
+        await mediator.Publish(new WriteToCsvCommand(resultContainers, runSettings.DirectoryPath, timeStamp,
+            runSettings.Tags, runSettings.Args));
 
-        var trackingDir = string.IsNullOrEmpty(runSettings.TrackingDirectoryPath) ? Path.Combine(runSettings.DirectoryPath, "tracking_output") : runSettings.TrackingDirectoryPath;
+        var trackingDir = string.IsNullOrEmpty(runSettings.TrackingDirectoryPath)
+            ? Path.Combine(runSettings.DirectoryPath, "tracking_output")
+            : runSettings.TrackingDirectoryPath;
         if (!runSettings.NoTrack)
         {
             var trackingContent = await performanceCsvTrackingWriter.ConvertToCsvStringContent(resultContainers);
@@ -49,16 +61,42 @@ internal class TestResultPresenter : ITestResultPresenter
 
         if (runSettings.Analyze)
         {
-            var response = await mediator.Send(new BeforeAndAfterFileLocationCommand(trackingDir, runSettings.Tags, runSettings.BeforeTarget, runSettings.Args));
-            if (string.IsNullOrEmpty(response.BeforeFilePath) || string.IsNullOrEmpty(response.AfterFilePath)) return;
+            var beforeAndAfterFileLocations = await mediator.Send(new BeforeAndAfterFileLocationCommand(trackingDir, runSettings.Tags, runSettings.BeforeTarget, runSettings.Args));
+            if (string.IsNullOrEmpty(beforeAndAfterFileLocations.BeforeFilePath) || string.IsNullOrEmpty(beforeAndAfterFileLocations.AfterFilePath))
+            {
+                logger.Fatal("Failed to identify before and after file locations when analyzing tracking data");
+                return;
+            }
 
-            var tTestFormats = await twoTailedTTestWriter.ComputeAndConvertToStringContent(new BeforeAndAfterTrackingFiles(response.BeforeFilePath, response.AfterFilePath), runSettings.Settings);
-            await mediator.Publish(new WriteTTestResultAsMarkdownCommand(tTestFormats.MarkdownTable, runSettings.DirectoryPath, runSettings.Settings, timeStamp, runSettings.Tags, runSettings.Args));
-            await mediator.Publish(new WriteTTestResultAsCsvCommand(tTestFormats.CsvRows, runSettings.DirectoryPath, runSettings.Settings, timeStamp, runSettings.Tags, runSettings.Args));
+            var beforeAndAfterData = await mediator.Send(
+                new ReadInBeforeAndAfterDataCommand(
+                    beforeAndAfterFileLocations.BeforeFilePath,
+                    beforeAndAfterFileLocations.AfterFilePath,
+                    runSettings.BeforeTarget,
+                    runSettings.Tags,
+                    runSettings.Args));
+
+            if (beforeAndAfterData.BeforeData is null || beforeAndAfterData.AfterData is null)
+            {
+                logger.Fatal("Failed to retrieve test result data");
+                return;
+            }
+
+            var tTestResults = await twoTailedTTestWriter.ComputeAndConvertToStringContent(
+                new TestData(beforeAndAfterFileLocations.BeforeFilePath, beforeAndAfterData.BeforeData.Data),
+                new TestData(beforeAndAfterFileLocations.AfterFilePath, beforeAndAfterData.AfterData.Data),
+                runSettings.Settings);
+
+            await mediator.Publish(new WriteTTestResultAsMarkdownCommand(
+                tTestResults.MarkdownTable, runSettings.DirectoryPath, runSettings.Settings, timeStamp, runSettings.Tags, runSettings.Args));
+
+            await mediator.Publish(new WriteTTestResultAsCsvCommand(
+                tTestResults.CsvRows, runSettings.DirectoryPath, runSettings.Settings, timeStamp, runSettings.Tags, runSettings.Args));
 
             if (runSettings.Notify)
             {
-                await mediator.Publish(new NotifyOnTestResultCommand(tTestFormats, runSettings.Settings, timeStamp, runSettings.Tags, runSettings.Args));
+                await mediator.Publish(new NotifyOnTestResultCommand(tTestResults, runSettings.Settings, timeStamp,
+                    runSettings.Tags, runSettings.Args));
             }
         }
     }

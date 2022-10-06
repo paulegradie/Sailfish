@@ -7,7 +7,6 @@ using Sailfish.Contracts.Public;
 using Sailfish.ExtensionMethods;
 using Sailfish.Presentation.Console;
 using Sailfish.Statistics;
-using Sailfish.Utils;
 
 namespace Sailfish.Presentation.Markdown;
 

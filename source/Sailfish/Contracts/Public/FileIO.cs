@@ -19,7 +19,7 @@ public class FileIo : IFileIo
         File.SetAttributes(filePath, FileAttributes.ReadOnly);
     }
 
-    public List<TData> ReadCsvFile<TMap, TData>(string filePath) where TMap : ClassMap where TData : class
+    public List<TData> ReadCsvFileAsSync<TMap, TData>(string filePath) where TMap : ClassMap where TData : class
     {
         using var reader = new StreamReader(filePath);
         using var csv = new CsvReader(reader, CultureInfo.InvariantCulture);
@@ -29,7 +29,7 @@ public class FileIo : IFileIo
         return records;
     }
 
-    public List<TData> ReadCsvFile<TMap, TData>(FileStream fileStream) where TMap : ClassMap where TData : class
+    public List<TData> ReadCsvFileAsSync<TMap, TData>(FileStream fileStream) where TMap : ClassMap where TData : class
     {
         using var reader = new StreamReader(fileStream);
         using var csv = new CsvReader(reader, CultureInfo.InvariantCulture);
@@ -39,13 +39,23 @@ public class FileIo : IFileIo
         return records;
     }
 
-    public List<TData> ReadCsvString<TMap, TData>(string csvContent) where TMap : ClassMap where TData : class
+    public List<TData> ReadCsvStringAsSync<TMap, TData>(string csvContent) where TMap : ClassMap where TData : class
     {
         using var reader = new StringReader(csvContent);
         using var csv = new CsvReader(reader, CultureInfo.InvariantCulture);
         csv.Context.RegisterClassMap<TMap>();
 
         var records = csv.GetRecords<TData>().ToList();
+        return records;
+    }
+
+    public async Task<List<TData>> ReadCsvFile<TMap, TData>(string filePath) where TMap : ClassMap where TData : class
+    {
+        using var reader = new StreamReader(filePath);
+        using var csv = new CsvReader(reader, CultureInfo.InvariantCulture);
+        csv.Context.RegisterClassMap<TMap>();
+
+        var records = await csv.GetRecordsAsync<TData>().ToListAsync();
         return records;
     }
 }

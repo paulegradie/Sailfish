@@ -1,50 +1,38 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using Sailfish.Contracts;
 using Sailfish.Contracts.Public;
-using Sailfish.Contracts.Public.CsvMaps;
 using Sailfish.Statistics.StatisticalAnalysis;
-using Sailfish.Utils;
 using Serilog;
 
 namespace Sailfish.Presentation.TTest;
 
 internal class TTestComputer : ITTestComputer
 {
-    private readonly IFileIo fileIo;
     private readonly ITTest tTest;
     private readonly ILogger logger;
 
-    public TTestComputer(IFileIo fileIo, ITTest tTest, ILogger logger)
+    public TTestComputer(ITTest tTest, ILogger logger)
     {
-        this.fileIo = fileIo;
         this.tTest = tTest;
         this.logger = logger;
     }
 
-    public List<NamedTTestResult> ComputeTTest(BeforeAndAfterTrackingFiles beforeAndAfter, TTestSettings settings)
+    public List<NamedTTestResult> ComputeTTest(TestData before, TestData after, TTestSettings settings)
     {
+        var testNames = new List<string>();
         try
         {
-            var before = fileIo.ReadCsvFile<TestCaseDescriptiveStatisticsMap, DescriptiveStatisticsResult>(beforeAndAfter.BeforeFilePath);
-            var after = fileIo.ReadCsvFile<TestCaseDescriptiveStatisticsMap, DescriptiveStatisticsResult>(beforeAndAfter.AfterFilePath).ToList();
-            var results = Compute(before, after, settings);
-            return results;
+            var rawNames = after.Data.Select(x => x.DisplayName);
+            testNames = rawNames.OrderBy(FirstNumberRetriever).ThenBy(SecondNumberRetriever).ThenBy(ThirdNumberRetriever).ToList();
         }
-        catch (Exception ex)
+        catch
         {
-            logger.Fatal("Unable to read tracking files before and after: {Message}", ex.Message);
-            return new List<NamedTTestResult>();
+            testNames = after.Data.Select(x => x.DisplayName).OrderByDescending(x => x).ToList();
         }
-    }
 
-    private List<NamedTTestResult> Compute(List<DescriptiveStatisticsResult> before, List<DescriptiveStatisticsResult> after, TTestSettings testSettings)
-    {
-        var testNames = after.Select(x => x.DisplayName).OrderByDescending(x => x);
-
-        var beforeData = before.ToList();
-        var afterData = after.ToList();
+        var beforeData = before.Data.ToList();
+        var afterData = after.Data.ToList();
 
         var results = new List<NamedTTestResult>();
         foreach (var testName in testNames)
@@ -52,13 +40,59 @@ internal class TTestComputer : ITTestComputer
             var afterCompiled = afterData.Single(x => x.DisplayName == testName);
             var beforeCompiled = beforeData.SingleOrDefault(x => x.DisplayName == testName);
 
-            if (beforeCompiled is not null) // this could be the first time we've ever run this test
-            {
-                var result = tTest.ExecuteTest(beforeCompiled.RawExecutionResults, afterCompiled.RawExecutionResults, testSettings);
-                results.Add(new NamedTTestResult(testName, result));
-            }
+            if (beforeCompiled is null) continue; // this could be the first time we've ever run this test
+            var result = tTest.ExecuteTest(beforeCompiled.RawExecutionResults, afterCompiled.RawExecutionResults, settings);
+            results.Add(new NamedTTestResult(testName, result));
         }
 
         return results;
+    }
+
+    // name will be like
+    // some.test(maybe:20,other:30)
+    // some.test(maybe:10,other:30)
+    private static int FirstNumberRetriever(string s)
+    {
+        var elements = GetElements(s);
+        return elements.FirstOrDefault();
+    }
+
+    private static int? SecondNumberRetriever(string s)
+    {
+        var elements = GetElements(s);
+        try
+        {
+            return elements[1];
+        }
+        catch
+        {
+            return null;
+        }
+    }
+
+    private static int? ThirdNumberRetriever(string s)
+    {
+        var elements = GetElements(s);
+        try
+        {
+            return elements[2];
+        }
+        catch
+        {
+            return null;
+        }
+    }
+
+    private static List<int> GetElements(string s)
+    {
+        var elements = s
+            .Split("(")
+            .Last()
+            .Replace(")", string.Empty)
+            .Split(",")
+            .Select(x => x.Split(":").Last())
+            .Select(int.Parse)
+            .ToList();
+        return elements;
     }
 }

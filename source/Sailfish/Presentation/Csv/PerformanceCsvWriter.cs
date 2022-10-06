@@ -7,7 +7,6 @@ using CsvHelper;
 using Sailfish.Contracts.Public;
 using Sailfish.Contracts.Public.CsvMaps;
 using Sailfish.Statistics;
-using Sailfish.Utils;
 
 namespace Sailfish.Presentation.Csv;
 

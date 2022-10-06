@@ -8,7 +8,6 @@ using Sailfish.Presentation.Markdown;
 using Sailfish.Presentation.TTest;
 using Sailfish.Statistics;
 using Sailfish.Statistics.StatisticalAnalysis;
-using Sailfish.Utils;
 using Serilog;
 
 namespace Sailfish.Registration;
