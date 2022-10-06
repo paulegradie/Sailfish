@@ -4,10 +4,10 @@ namespace Sailfish.Contracts.Public;
 
 public class TestData
 {
-    public string TestId { get; }
+    public IEnumerable<string> TestId { get; }
     public List<DescriptiveStatisticsResult> Data { get; }
 
-    public TestData(string testId, List<DescriptiveStatisticsResult> data)
+    public TestData(IEnumerable<string> testId, List<DescriptiveStatisticsResult> data)
     {
         TestId = testId;
         Data = data;

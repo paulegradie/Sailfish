@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Threading.Tasks;
 using MediatR;
 using Sailfish.Contracts.Private;
@@ -62,7 +63,7 @@ internal class TestResultPresenter : ITestResultPresenter
         if (runSettings.Analyze)
         {
             var beforeAndAfterFileLocations = await mediator.Send(new BeforeAndAfterFileLocationCommand(trackingDir, runSettings.Tags, runSettings.BeforeTarget, runSettings.Args));
-            if (string.IsNullOrEmpty(beforeAndAfterFileLocations.BeforeFilePath) || string.IsNullOrEmpty(beforeAndAfterFileLocations.AfterFilePath))
+            if (!beforeAndAfterFileLocations.BeforeFilePath.Any() || !beforeAndAfterFileLocations.AfterFilePath.Any())
             {
                 logger.Fatal("Failed to identify before and after file locations when analyzing tracking data");
                 return;

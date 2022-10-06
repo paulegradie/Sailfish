@@ -54,13 +54,13 @@ internal class TwoTailedTTestWriter : ITwoTailedTTestWriter
         return new TTestResultFormats(stringBuilder.Build(), results);
     }
 
-    private void PrintHeader(string beforeId, string afterId, double alpha)
+    private void PrintHeader(IEnumerable<string> beforeId, IEnumerable<string> afterId, double alpha)
     {
         stringBuilder.AppendLine();
         stringBuilder.AppendLine("-----------------------------------");
         stringBuilder.AppendLine($"T-Test results comparing:");
-        stringBuilder.AppendLine($"Before: {beforeId}");
-        stringBuilder.AppendLine($"After: {afterId}");
+        stringBuilder.AppendLine($"Before: {string.Join(", ", beforeId)}");
+        stringBuilder.AppendLine($"After: {string.Join(", ", afterId)}");
         stringBuilder.AppendLine("-----------------------------------\r");
         stringBuilder.AppendLine($"Note: The change in execution time is significant if the PValue is less than {alpha}");
     }

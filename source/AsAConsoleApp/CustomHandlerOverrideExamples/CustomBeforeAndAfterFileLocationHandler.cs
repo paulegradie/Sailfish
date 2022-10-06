@@ -1,4 +1,5 @@
-﻿using System.Threading;
+﻿using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using MediatR;
 using Sailfish.Contracts.Public.Commands;
@@ -10,6 +11,6 @@ public class CustomBeforeAndAfterFileLocationHandler : IRequestHandler<BeforeAnd
     public async Task<BeforeAndAfterFileLocationResponse> Handle(BeforeAndAfterFileLocationCommand request, CancellationToken cancellationToken)
     {
         await Task.CompletedTask;
-        return new BeforeAndAfterFileLocationResponse("", "");
+        return new BeforeAndAfterFileLocationResponse(new List<string>() { string.Empty }, new List<string>() { string.Empty });
     }
 }

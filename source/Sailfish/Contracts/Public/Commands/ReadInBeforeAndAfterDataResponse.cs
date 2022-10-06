@@ -1,5 +1,3 @@
-using Sailfish.Presentation;
-
 namespace Sailfish.Contracts.Public.Commands;
 
 public class ReadInBeforeAndAfterDataResponse

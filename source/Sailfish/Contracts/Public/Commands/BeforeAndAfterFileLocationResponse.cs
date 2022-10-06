@@ -1,13 +1,15 @@
+using System.Collections.Generic;
+
 namespace Sailfish.Contracts.Public.Commands;
 
 public class BeforeAndAfterFileLocationResponse
 {
-    public BeforeAndAfterFileLocationResponse(string beforeFilePath, string afterFilePath)
+    public BeforeAndAfterFileLocationResponse(IEnumerable<string> beforeFilePath, IEnumerable<string> afterFilePath)
     {
         BeforeFilePath = beforeFilePath;
         AfterFilePath = afterFilePath;
     }
 
-    public string BeforeFilePath { get; set; }
-    public string AfterFilePath { get; set; }
+    public IEnumerable<string> BeforeFilePath { get; set; }
+    public IEnumerable<string> AfterFilePath { get; set; }
 }

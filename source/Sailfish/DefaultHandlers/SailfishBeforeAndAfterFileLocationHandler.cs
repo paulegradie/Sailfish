@@ -1,4 +1,5 @@
-﻿using System.Threading;
+﻿using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using MediatR;
 using Sailfish.Contracts.Public.Commands;
@@ -19,7 +20,8 @@ internal class SailfishBeforeAndAfterFileLocationHandler : IRequestHandler<Befor
     {
         await Task.CompletedTask;
         var trackingFiles = trackingFileFinder.GetBeforeAndAfterTrackingFiles(request.DefaultDirectory, request.BeforeTarget, request.Tags);
-
-        return new BeforeAndAfterFileLocationResponse(trackingFiles.BeforeFilePath, trackingFiles.AfterFilePath);
+        return new BeforeAndAfterFileLocationResponse(
+            new List<string>() { trackingFiles.BeforeFilePath },
+            new List<string>() { trackingFiles.AfterFilePath });
     }
 }

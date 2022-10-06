@@ -24,7 +24,14 @@ internal class TTestComputer : ITTestComputer
         try
         {
             var rawNames = after.Data.Select(x => x.DisplayName);
-            testNames = rawNames.OrderBy(FirstNumberRetriever).ThenBy(SecondNumberRetriever).ThenBy(ThirdNumberRetriever).ToList();
+            testNames = rawNames
+                .OrderBy(FirstTestName)
+                .ThenBy(SecondTestName)
+                .ThenBy(ThirdTestName)
+                .ThenBy(FirstNumberRetriever)
+                .ThenBy(SecondNumberRetriever)
+                .ThenBy(ThirdNumberRetriever)
+                .ToList();
         }
         catch
         {
@@ -37,10 +44,10 @@ internal class TTestComputer : ITTestComputer
         var results = new List<NamedTTestResult>();
         foreach (var testName in testNames)
         {
-            var afterCompiled = afterData.Single(x => x.DisplayName == testName);
+            var afterCompiled = afterData.SingleOrDefault(x => x.DisplayName == testName);
             var beforeCompiled = beforeData.SingleOrDefault(x => x.DisplayName == testName);
 
-            if (beforeCompiled is null) continue; // this could be the first time we've ever run this test
+            if (beforeCompiled is null || afterCompiled is null) continue; // this could be the first time we've ever run this test
             var result = tTest.ExecuteTest(beforeCompiled.RawExecutionResults, afterCompiled.RawExecutionResults, settings);
             results.Add(new NamedTTestResult(testName, result));
         }
@@ -48,10 +55,37 @@ internal class TTestComputer : ITTestComputer
         return results;
     }
 
+    private string? FirstTestName(string s)
+    {
+        return GetNamePart(s, 0);
+    }
+
+    private string? SecondTestName(string s)
+    {
+        return GetNamePart(s, 1);
+    }
+
+    private string? ThirdTestName(string s)
+    {
+        return GetNamePart(s, 2);
+    }
+
+    private static string GetNamePart(string s, int i)
+    {
+        try
+        {
+            return s.Split("(").First().Split(".").ToList()[i];
+        }
+        catch (Exception ex)
+        {
+            return null;
+        }
+    }
+
     // name will be like
     // some.test(maybe:20,other:30)
     // some.test(maybe:10,other:30)
-    private static int FirstNumberRetriever(string s)
+    private static int? FirstNumberRetriever(string s)
     {
         var elements = GetElements(s);
         return elements.FirstOrDefault();
