@@ -22,14 +22,14 @@ internal class TrackingFileFinder : ITrackingFileFinder
         string? beforeTargetOverride = null;
         if (!string.IsNullOrEmpty(beforeTarget) && !string.IsNullOrWhiteSpace(beforeTarget))
         {
-            beforeTargetOverride = files.Select(x => Path.GetFileName(x)).SingleOrDefault(x => x.ToLowerInvariant().Equals(beforeTarget));
+            beforeTargetOverride = files.Select(Path.GetFileName).SingleOrDefault(x => x?.ToLowerInvariant() == beforeTarget);
             if (beforeTargetOverride is null)
             {
                 throw new SailfishException("The file name provided for the before target was not found");
             }
         }
 
-        if (tags.Count() > 0)
+        if (tags.Any())
         {
             var joinedTags = DefaultFileSettings.JoinTags(tags); // empty string
             files = files.Where(x => x.Replace(DefaultFileSettings.TrackingSuffix, string.Empty).EndsWith(joinedTags))
@@ -40,8 +40,8 @@ internal class TrackingFileFinder : ITrackingFileFinder
             files = files.Where(x => !x.Contains(DefaultFileSettings.TagsPrefix)).ToList();
         }
 
-        return files.Count() < 2
+        return files.Count < 2
             ? new BeforeAndAfterTrackingFiles(string.Empty, string.Empty)
-            : new BeforeAndAfterTrackingFiles(beforeTargetOverride is null ? files[1] : beforeTargetOverride, files[0]);
+            : new BeforeAndAfterTrackingFiles(beforeTargetOverride ?? files[1], files[0]);
     }
 }

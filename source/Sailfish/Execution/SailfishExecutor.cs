@@ -28,16 +28,16 @@ internal class SailfishExecutor
         this.testResultPresenter = testResultPresenter;
     }
 
-    public async Task Run(RunSettings runSettings)
+    public async Task<SailfishValidity> Run(RunSettings runSettings)
     {
-        await Run(
+        return await Run(
             testNames: runSettings.TestNames,
             runSettings: runSettings,
             testLocationTypes: runSettings.TestLocationTypes
         );
     }
 
-    public async Task Run(
+    public async Task<SailfishValidity> Run(
         string[] testNames,
         RunSettings runSettings,
         params Type[] testLocationTypes)
@@ -52,21 +52,42 @@ internal class SailfishExecutor
             var compiledResults = executionSummaryCompiler.CompileToSummaries(rawExecutionResults);
 
             await testResultPresenter.PresentResults(compiledResults, timeStamp, runSettings);
+            return SailfishValidity.CreateValidResult();
         }
-        else
+
+        Console.WriteLine("\r----------- Error ------------\r");
+        foreach (var (reason, names) in testRun.Errors)
         {
-            Console.WriteLine("\r----------- Error ------------\r");
-            foreach (var (reason, names) in testRun.Errors)
-            {
-                Console.WriteLine(reason);
-                foreach (var testName in names) Console.WriteLine($"--- {testName}");
-            }
+            Console.WriteLine(reason);
+            foreach (var testName in names) Console.WriteLine($"--- {testName}");
         }
+
+        return SailfishValidity.CreateInvalidResult();
     }
 
     public TestValidationResult CollectTests(string[] testNames, params Type[] locationTypes)
     {
         var perfTests = testCollector.CollectTestTypes(locationTypes);
         return testFilter.FilterAndValidate(perfTests, testNames);
+    }
+}
+
+public class SailfishValidity
+{
+    private SailfishValidity(bool isValid)
+    {
+        IsValid = isValid;
+    }
+
+    public bool IsValid { get; set; }
+
+    public static SailfishValidity CreateValidResult()
+    {
+        return new SailfishValidity(true);
+    }
+
+    public static SailfishValidity CreateInvalidResult()
+    {
+        return new SailfishValidity(false);
     }
 }

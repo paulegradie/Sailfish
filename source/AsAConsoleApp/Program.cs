@@ -1,4 +1,5 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Threading.Tasks;
 using AsAConsoleApp.Configuration;
 using Autofac;
 using Sailfish;
@@ -15,10 +16,13 @@ namespace AsAConsoleApp
 
         public override async Task OnExecuteAsync()
         {
-            await ContainerConfiguration
+            var validityResult = await ContainerConfiguration
                 .CompositionRoot()
                 .Resolve<SailfishExecution>()
                 .Run(AssembleRunRequest(), RegisterWithSailfish);
+
+            var it = validityResult.IsValid ? string.Empty : "not ";
+            Console.WriteLine($"Test run was {it}valid");
         }
 
         public override void RegisterWithSailfish(ContainerBuilder builder)

@@ -55,28 +55,28 @@ internal class TTestComputer : ITTestComputer
         return results;
     }
 
-    private string? FirstTestName(string s)
+    private static string? FirstTestName(string s)
     {
         return GetNamePart(s, 0);
     }
 
-    private string? SecondTestName(string s)
+    private static string? SecondTestName(string s)
     {
         return GetNamePart(s, 1);
     }
 
-    private string? ThirdTestName(string s)
+    private static string? ThirdTestName(string s)
     {
         return GetNamePart(s, 2);
     }
 
-    private static string GetNamePart(string s, int i)
+    private static string? GetNamePart(string s, int i)
     {
         try
         {
             return s.Split("(").First().Split(".").ToList()[i];
         }
-        catch (Exception ex)
+        catch (Exception _)
         {
             return null;
         }

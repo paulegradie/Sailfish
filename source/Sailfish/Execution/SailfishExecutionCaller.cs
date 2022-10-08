@@ -7,18 +7,15 @@ namespace Sailfish.Execution;
 
 public static class SailfishExecutionCaller
 {
-    internal static async Task Run(RunSettings runSettings, Action<ContainerBuilder>? registerAdditionalTypes = null)
+    internal static async Task<SailfishValidity> Run(RunSettings runSettings, Action<ContainerBuilder>? registerAdditionalTypes = null)
     {
         var builder = new ContainerBuilder();
         builder.RegisterSailfishTypes();
         builder.RegisterPerformanceTypes(runSettings.TestLocationTypes);
 
-        if (registerAdditionalTypes is not null)
-        {
-            registerAdditionalTypes(builder);
-        }
+        registerAdditionalTypes?.Invoke(builder);
 
         var container = builder.Build();
-        await container.Resolve<SailfishExecutor>().Run(runSettings);
+        return await container.Resolve<SailfishExecutor>().Run(runSettings);
     }
 }
