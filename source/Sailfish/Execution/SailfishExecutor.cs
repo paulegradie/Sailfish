@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using System.Threading.Tasks;
 using Sailfish.Presentation;
 using Sailfish.Statistics;
@@ -52,7 +53,10 @@ internal class SailfishExecutor
             var compiledResults = executionSummaryCompiler.CompileToSummaries(rawExecutionResults);
 
             await testResultPresenter.PresentResults(compiledResults, timeStamp, runSettings);
-            return SailfishValidity.CreateValidResult();
+
+            return rawExecutionResults.Select(x => x.IsSuccess).All(x => x)
+                ? SailfishValidity.CreateValidResult()
+                : SailfishValidity.CreateInvalidResult();
         }
 
         Console.WriteLine("\r----------- Error ------------\r");
