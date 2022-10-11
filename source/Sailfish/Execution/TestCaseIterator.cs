@@ -1,41 +1,40 @@
 ﻿using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
-using Serilog;
 
 namespace Sailfish.Execution
 {
     internal class TestCaseIterator : ITestCaseIterator
     {
-        private readonly ILogger logger;
-
-        public TestCaseIterator(ILogger logger)
+        public async Task<List<string>> Iterate(TestInstanceContainer testInstanceContainer, CancellationToken cancellationToken)
         {
-            this.logger = logger;
-        }
-
-        public async Task<List<string>> Iterate(TestInstanceContainer testInstanceContainer)
-        {
-            await WarmupIterations(testInstanceContainer);
+            await WarmupIterations(testInstanceContainer, cancellationToken);
 
             var messages = new List<string>();
             for (var i = 0; i < testInstanceContainer.NumIterations; i++)
             {
+                cancellationToken.ThrowIfCancellationRequested();
                 await testInstanceContainer.Invocation.IterationSetup();
 
+                cancellationToken.ThrowIfCancellationRequested();
                 await testInstanceContainer.Invocation.ExecutionMethod();
 
+                cancellationToken.ThrowIfCancellationRequested();
                 await testInstanceContainer.Invocation.IterationTearDown();
             }
 
             return messages; // TODO: use this?
         }
 
-        private async Task WarmupIterations(TestInstanceContainer testInstanceContainer)
+        private static async Task WarmupIterations(TestInstanceContainer testInstanceContainer, CancellationToken cancellationToken)
         {
             for (var i = 0; i < testInstanceContainer.NumWarmupIterations; i++)
             {
+                cancellationToken.ThrowIfCancellationRequested();
                 await testInstanceContainer.Invocation.IterationSetup();
+                cancellationToken.ThrowIfCancellationRequested();
                 await testInstanceContainer.Invocation.ExecutionMethod();
+                cancellationToken.ThrowIfCancellationRequested();
                 await testInstanceContainer.Invocation.IterationTearDown();
             }
         }

@@ -76,7 +76,7 @@ internal class TTestComputer : ITTestComputer
         {
             return s.Split("(").First().Split(".").ToList()[i];
         }
-        catch (Exception _)
+        catch
         {
             return null;
         }

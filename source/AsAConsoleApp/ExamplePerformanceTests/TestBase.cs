@@ -7,12 +7,13 @@ using Microsoft.AspNetCore.TestHost;
 using Test.API;
 using Xunit;
 
-namespace Test.ApiCommunicationTests.Base
+namespace AsAConsoleApp.ExamplePerformanceTests
 {
-    public class ApiTestBase : IClassFixture<WebApplicationFactory<DemoApp>>, IAsyncDisposable
+    public class TestBase : IClassFixture<WebApplicationFactory<DemoApp>>, IAsyncDisposable
     {
-        public ApiTestBase(WebApplicationFactory<DemoApp> factory)
+        public TestBase(WebApplicationFactory<DemoApp> factory, CancellationTransport cancellationTransport)
         {
+            CancellationToken = cancellationTransport.CancellationToken;
             WebHostFactory = factory.WithWebHostBuilder(
                 builder => { builder.UseTestServer(); });
             Client = WebHostFactory.CreateClient();

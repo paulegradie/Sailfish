@@ -1,4 +1,6 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
+using System.Threading;
 using Sailfish.Contracts.Public;
 using Sailfish.Exceptions;
 using Sailfish.Execution;
@@ -14,27 +16,14 @@ internal class ExecutionSummaryCompiler : IExecutionSummaryCompiler
         this.statsCompiler = statsCompiler;
     }
 
-    /// <summary>
-    /// This is effectively a mapper, that maps 
-    /// </summary>
-    /// <param name="results"></param>
-    /// <param name="rawExecutionResults"></param>
-    /// <returns></returns>
-    public List<ExecutionSummary> CompileToSummaries(List<RawExecutionResult> rawExecutionResults)
+    public List<ExecutionSummary> CompileToSummaries(List<RawExecutionResult> rawExecutionResults, CancellationToken cancellationToken)
     {
-        var executionSummaries = new List<ExecutionSummary>();
-        foreach (var rawExecutionResult in rawExecutionResults)
-        {
-            var summary = IterateExecutionResults(rawExecutionResult);
-
-            executionSummaries.Add(summary);
-        }
-
-        return executionSummaries;
+        return rawExecutionResults.Select(rawExecutionResult => IterateExecutionResults(rawExecutionResult, cancellationToken)).ToList();
     }
 
-    private ExecutionSummary IterateExecutionResults(RawExecutionResult rawExecutionResult)
+    private ExecutionSummary IterateExecutionResults(RawExecutionResult rawExecutionResult, CancellationToken cancellationToken)
     {
+        cancellationToken.ThrowIfCancellationRequested();
         var compiledResults = new List<CompiledResult>();
 
         if (rawExecutionResult.ExecutionResults != null)
@@ -47,24 +36,28 @@ internal class ExecutionSummaryCompiler : IExecutionSummaryCompiler
             return new ExecutionSummary(rawExecutionResult.TestType, compiledResults);
         }
 
-        else if (rawExecutionResult.Exception is not null)
-        {
-            var compiledResult = new CompiledResult(rawExecutionResult.Exception);
-            return new ExecutionSummary(rawExecutionResult.TestType, new List<CompiledResult>() { compiledResult });
-        }
-        else
-        {
-            return new ExecutionSummary(rawExecutionResult.TestType, new List<CompiledResult>() { });
-        }
+        if (rawExecutionResult.Exception is null) return new ExecutionSummary(rawExecutionResult.TestType, new List<CompiledResult>() { });
+        var compiledResult = new CompiledResult(rawExecutionResult.Exception);
+        return new ExecutionSummary(rawExecutionResult.TestType, new List<CompiledResult>() { compiledResult });
     }
 
     private void CompileTestResult(TestExecutionResult testExecutionResult, List<CompiledResult> compiledResults)
     {
         if (testExecutionResult.IsSuccess)
         {
-            if (testExecutionResult.IsSuccess && !testExecutionResult.PerformanceTimerResults.IsValid) throw new SailfishException($"Somehow test exception was successful, but the performance timer was invalid for test: {testExecutionResult.TestInstanceContainer.DisplayName}");
+            if (testExecutionResult.IsSuccess && !testExecutionResult.PerformanceTimerResults.IsValid)
+            {
+                var message = $"Somehow the test exception was successful, but the performance " +
+                              $"timer was invalid for test: {testExecutionResult.TestInstanceContainer.DisplayName}";
+                throw new SailfishException(message);
+            }
+
             var descriptiveStatistics = ComputeStatistics(testExecutionResult);
-            var compiledResult = new CompiledResult(testExecutionResult.TestInstanceContainer.DisplayName, testExecutionResult.TestInstanceContainer.GroupingId, descriptiveStatistics);
+            var compiledResult = new CompiledResult(
+                testExecutionResult.TestInstanceContainer.DisplayName,
+                testExecutionResult.TestInstanceContainer.GroupingId,
+                descriptiveStatistics);
+
             if (testExecutionResult.Exception is not null)
             {
                 compiledResult.Exception = testExecutionResult.Exception;
@@ -74,11 +67,9 @@ internal class ExecutionSummaryCompiler : IExecutionSummaryCompiler
         }
         else
         {
-            if (testExecutionResult.Exception is not null)
-            {
-                var compiledResult = new CompiledResult(testExecutionResult.Exception);
-                compiledResults.Add(compiledResult);
-            }
+            if (testExecutionResult.Exception is null) return;
+            var compiledResult = new CompiledResult(testExecutionResult.Exception);
+            compiledResults.Add(compiledResult);
             // if we have a failure, but no exception -- we have no information to report
         }
     }

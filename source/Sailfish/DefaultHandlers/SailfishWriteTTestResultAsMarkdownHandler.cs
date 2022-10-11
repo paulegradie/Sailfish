@@ -23,7 +23,7 @@ public class SailfishWriteTTestMarkdownResultHandler : INotificationHandler<Writ
         var outputPath = Path.Join(notification.OutputDirectory, filename);
         if (!string.IsNullOrEmpty(notification.Content))
         {
-            await fileIo.WriteToFile(notification.Content, outputPath, cancellationToken);
+            await fileIo.WriteToFile(notification.Content, outputPath, cancellationToken).ConfigureAwait(false);
         }
 
         System.Console.WriteLine(notification.Content);

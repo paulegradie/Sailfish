@@ -4,7 +4,6 @@ using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Sailfish.Attributes;
 using Test.API;
-using Test.ApiCommunicationTests.Base;
 
 // Tests here are automatically discovered and executed
 namespace AsAConsoleApp.ExamplePerformanceTests;
@@ -12,15 +11,14 @@ namespace AsAConsoleApp.ExamplePerformanceTests;
 [WriteToMarkdown]
 [WriteToCsv]
 [Sailfish(1, 2, Disabled = false)]
-public class ExamplePerformanceTest : ApiTestBase
+public class ExamplePerformanceTest : TestBase
 {
-    public ExamplePerformanceTest(WebApplicationFactory<DemoApp> factory) : base(factory)
+    public ExamplePerformanceTest(WebApplicationFactory<DemoApp> factory, CancellationTransport cancellationTransport) : base(factory, cancellationTransport)
     {
     }
 
-    [SailfishVariable(1, 2)] public int NTries { get; set; }
-
     [SailfishVariable(200, 300)] public int WaitPeriod { get; set; }
+    [SailfishVariable(1, 2)] public int NTries { get; set; } // try to avoid multiple variables if you can manage
 
     [SailfishGlobalSetup]
     public void GlobalSetup()
@@ -62,14 +60,14 @@ public class ExamplePerformanceTest : ApiTestBase
     [SailfishMethod]
     public async Task WaitPeriodPerfTest()
     {
-        await Task.Delay(WaitPeriod);
-        await Client.GetStringAsync("/");
+        await Task.Delay(WaitPeriod, CancellationToken);
+        await Client.GetStringAsync("/", CancellationToken);
     }
 
     [SailfishMethod]
     public async Task Other()
     {
-        Thread.Sleep(200);
+        await Task.Delay(200, CancellationToken);
         await Task.CompletedTask;
     }
 }

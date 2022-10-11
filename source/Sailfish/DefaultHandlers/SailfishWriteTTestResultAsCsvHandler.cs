@@ -23,7 +23,7 @@ internal class SailfishWriteTTestResultAsCsvHandler : INotificationHandler<Write
         var outputPath = Path.Join(notification.OutputDirectory, fileName);
         if (notification.CsvRows.Count > 0)
         {
-            await testResultCsvWriter.WriteToFile(notification.CsvRows, outputPath, cancellationToken);
+            await testResultCsvWriter.WriteToFile(notification.CsvRows, outputPath, cancellationToken).ConfigureAwait(false);
         }
     }
 }

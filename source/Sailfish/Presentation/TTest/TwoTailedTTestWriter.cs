@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using Sailfish.Contracts.Public;
 using Sailfish.ExtensionMethods;
@@ -23,15 +24,13 @@ internal class TwoTailedTTestWriter : ITwoTailedTTestWriter
         this.stringBuilder = stringBuilder;
     }
 
-    public async Task<TTestResultFormats> ComputeAndConvertToStringContent(TestData beforeTestData, TestData afterTestData, TTestSettings settings)
+    public Task<TTestResultFormats> ComputeAndConvertToStringContent(TestData beforeTestData, TestData afterTestData, TTestSettings settings, CancellationToken cancellationToken)
     {
-        await Task.CompletedTask;
-
         var results = tTestComputer.ComputeTTest(beforeTestData, afterTestData, settings);
         if (results.Count == 0)
         {
             logger.Information("No prior test results found for the current set");
-            return new TTestResultFormats("", new List<NamedTTestResult>());
+            return Task.FromResult(new TTestResultFormats("", new List<NamedTTestResult>()));
         }
 
         var table = results.ToStringTable(
@@ -51,7 +50,7 @@ internal class TwoTailedTTestWriter : ITwoTailedTTestWriter
         stringBuilder.AppendLine();
         stringBuilder.AppendLine(table);
 
-        return new TTestResultFormats(stringBuilder.Build(), results);
+        return Task.FromResult(new TTestResultFormats(stringBuilder.Build(), results));
     }
 
     private void PrintHeader(IEnumerable<string> beforeId, IEnumerable<string> afterId, double alpha)

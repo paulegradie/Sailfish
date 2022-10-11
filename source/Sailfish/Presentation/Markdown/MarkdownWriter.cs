@@ -23,22 +23,19 @@ internal class MarkdownWriter : IMarkdownWriter
         this.stringBuilder = stringBuilder;
     }
 
-    public async Task Present(List<ExecutionSummary> results, string filePath)
+    public async Task Present(List<ExecutionSummary> results, string filePath, CancellationToken cancellationToken)
     {
-        foreach (var result in results)
+        foreach (var result in results.Where(result => result.Settings.AsMarkdown))
         {
-            if (result.Settings.AsMarkdown)
-            {
-                AppendHeader(result.Type.Name);
-                AppendResults(result.CompiledResults);
-                AppendExceptions(result.CompiledResults.Where(x => x.Exception is not null).Select(x => x.Exception).ToList());
-            }
+            AppendHeader(result.Type.Name);
+            AppendResults(result.CompiledResults);
+            AppendExceptions(result.CompiledResults.Where(x => x.Exception is not null).Select(x => x.Exception).ToList());
         }
 
         var fileString = stringBuilder.Build();
         if (!string.IsNullOrEmpty(fileString))
         {
-            await fileIo.WriteToFile(fileString, filePath, CancellationToken.None);
+            await fileIo.WriteToFile(fileString, filePath, cancellationToken).ConfigureAwait(false);
         }
     }
 
@@ -50,39 +47,39 @@ internal class MarkdownWriter : IMarkdownWriter
         stringBuilder.AppendLine("-----------------------------------\r");
     }
 
-    private void AppendResults(List<CompiledResult> compiledResults)
+    private void AppendResults(IEnumerable<CompiledResult> compiledResults)
     {
         foreach (var group in compiledResults.GroupBy(x => x.GroupingId))
         {
-            if (group.Key is not null)
-            {
-                stringBuilder.AppendLine();
-                var table = group.ToStringTable(
-                    new List<string>() { "", "ms", "ms", "ms", "" },
-                    u => u.DisplayName!,
-                    u => u.DescriptiveStatisticsResult!.Median,
-                    u => u.DescriptiveStatisticsResult!.Mean,
-                    u => u.DescriptiveStatisticsResult!.StdDev,
-                    u => u.DescriptiveStatisticsResult!.Variance
-                );
+            if (group.Key is null) continue;
+            stringBuilder.AppendLine();
+            var table = group.ToStringTable(
+                new List<string>() { "", "ms", "ms", "ms", "" },
+                u => u.DisplayName!,
+                u => u.DescriptiveStatisticsResult!.Median,
+                u => u.DescriptiveStatisticsResult!.Mean,
+                u => u.DescriptiveStatisticsResult!.StdDev,
+                u => u.DescriptiveStatisticsResult!.Variance
+            );
 
-                stringBuilder.AppendLine(table);
-            }
+            stringBuilder.AppendLine(table);
         }
     }
 
     // TODO: allow arg to dictate this
-    public bool debug = true;
+    public readonly bool debug = true;
 
-    private void AppendExceptions(List<Exception?> exceptions)
+    private void AppendExceptions(IReadOnlyCollection<Exception?> exceptions)
     {
         if (exceptions.Count > 0)
-            stringBuilder.AppendLine($" ---- One or more Exceptions encountered ---- ");
-        foreach (var exception in exceptions)
         {
-            if (exception is null) continue;
-            stringBuilder.AppendLine($"Exception: {exception.Message}\r");
-            if (exception.StackTrace is not null && debug)
+            stringBuilder.AppendLine($" ---- One or more Exceptions encountered ---- ");
+        }
+
+        foreach (var exception in exceptions.Where(exception => exception is not null))
+        {
+            stringBuilder.AppendLine($"Exception: {exception?.Message}\r");
+            if (exception?.StackTrace is not null && debug)
             {
                 stringBuilder.AppendLine($"StackTrace:\r{exception.StackTrace}\r");
             }

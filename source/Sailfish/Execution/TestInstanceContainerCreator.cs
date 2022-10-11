@@ -26,18 +26,6 @@ internal class TestInstanceContainerCreator : ITestInstanceContainerCreator
             .GetMethodsWithAttribute<SailfishMethodAttribute>()
             .OrderBy(x => x.Name);
 
-        var instanceContainers = new List<TestInstanceContainerProvider>();
-        foreach (var method in methods)
-        {
-            var provider = new TestInstanceContainerProvider(
-                typeResolver,
-                test,
-                variableSets,
-                propNames,
-                method);
-            instanceContainers.Add(provider);
-        }
-
-        return instanceContainers;
+        return methods.Select(method => new TestInstanceContainerProvider(typeResolver, test, variableSets, propNames, method)).ToList();
     }
 }

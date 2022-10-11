@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Sailfish.ExtensionMethods;
 using Serilog;
@@ -24,15 +25,16 @@ namespace Sailfish.Execution
             this.testCaseIterator = testCaseIterator;
         }
 
-        public bool FilterEnabledType(Type[] testTypes, out Type[] enabledTypes)
+        private static bool FilterEnabledType(IEnumerable<Type> testTypes, out Type[] enabledTypes)
         {
             enabledTypes = testTypes.Where(x => !x.SailfishTypeIsDisabled()).ToArray();
             return enabledTypes.Length > 0;
         }
 
         public async Task<List<RawExecutionResult>> Execute(
-            Type[] testTypes,
-            Action<TestInstanceContainer, TestExecutionResult>? callback = null)
+            IEnumerable<Type> testTypes,
+            Action<TestInstanceContainer, TestExecutionResult>? callback = null,
+            CancellationToken cancellationToken = default)
         {
             var rawResults = new List<RawExecutionResult>();
             if (!FilterEnabledType(testTypes, out var enabledTestTypes))
@@ -45,7 +47,7 @@ namespace Sailfish.Execution
             {
                 try
                 {
-                    var rawResult = await Execute(testType, callback);
+                    var rawResult = await Execute(testType, callback, cancellationToken);
                     rawResults.Add(new RawExecutionResult(testType, rawResult));
                 }
                 catch (Exception ex)
@@ -58,21 +60,25 @@ namespace Sailfish.Execution
             return rawResults;
         }
 
-        public async Task<List<TestExecutionResult>> Execute(Type test, Action<TestInstanceContainer, TestExecutionResult>? callback = null)
+        public async Task<List<TestExecutionResult>> Execute(
+            Type test,
+            Action<TestInstanceContainer, TestExecutionResult>? callback = null,
+            CancellationToken cancellationToken = default)
         {
             var testInstanceContainers = testInstanceContainerCreator.CreateTestContainerInstanceProviders(test);
-            var results = await Execute(testInstanceContainers);
+            var results = await Execute(testInstanceContainers, callback, cancellationToken);
             return results;
         }
 
-        public async Task<List<TestExecutionResult>> Execute(
-            List<TestInstanceContainerProvider> testMethods,
-            Action<TestInstanceContainer, TestExecutionResult>? callback = null)
+        private async Task<List<TestExecutionResult>> Execute(
+            IReadOnlyCollection<TestInstanceContainerProvider> testMethods,
+            Action<TestInstanceContainer, TestExecutionResult>? callback = null,
+            CancellationToken cancellationToken = default)
         {
             var results = new List<TestExecutionResult>();
 
             var methodIndex = 0;
-            var totalMethodCount = testMethods.Count() - 1;
+            var totalMethodCount = testMethods.Count - 1;
             foreach (var testMethod in testMethods.OrderBy(x => x.Method.Name))
             {
                 var currentVariableSetIndex = 0;
@@ -99,16 +105,22 @@ namespace Sailfish.Execution
 
                     if (ShouldCallGlobalSetup(methodIndex, currentVariableSetIndex))
                     {
+                        cancellationToken.ThrowIfCancellationRequested();
                         await testMethodContainer.Invocation.GlobalSetup();
                     }
 
+                    cancellationToken.ThrowIfCancellationRequested();
                     await testMethodContainer.Invocation.MethodSetup();
-                    var executionResult = await Execute(testMethodContainer, callback);
+
+                    var executionResult = await Execute(testMethodContainer, callback, cancellationToken);
                     results.Add(executionResult);
+
+                    cancellationToken.ThrowIfCancellationRequested();
                     await testMethodContainer.Invocation.MethodTearDown();
 
                     if (ShouldCallGlobalTeardown(methodIndex, totalMethodCount, currentVariableSetIndex, totalNumVariableSets))
                     {
+                        cancellationToken.ThrowIfCancellationRequested();
                         await testMethodContainer.Invocation.GlobalTeardown();
                     }
 
@@ -139,40 +151,43 @@ namespace Sailfish.Execution
 
         private static async Task DisposeOfTestInstance(TestInstanceContainer? instanceContainer)
         {
-            if (instanceContainer?.Instance is IAsyncDisposable asyncDisposable)
+            switch (instanceContainer?.Instance)
             {
-                await asyncDisposable.DisposeAsync();
-            }
-            else if (instanceContainer?.Instance is IDisposable disposable)
-            {
-                disposable.Dispose();
-            }
-            else
-            {
-                if (instanceContainer is not null)
+                case IAsyncDisposable asyncDisposable:
+                    await asyncDisposable.DisposeAsync();
+                    break;
+                case IDisposable disposable:
+                    disposable.Dispose();
+                    break;
+                default:
                 {
-                    instanceContainer.Instance = null!;
+                    if (instanceContainer is not null)
+                    {
+                        instanceContainer.Instance = null!;
+                    }
+
+                    break;
                 }
             }
         }
 
         // This will be called in the adapter
-        public async Task<TestExecutionResult> Execute(TestInstanceContainer container, Action<TestInstanceContainer, TestExecutionResult>? callback = null)
+        public async Task<TestExecutionResult> Execute(
+            TestInstanceContainer container,
+            Action<TestInstanceContainer, TestExecutionResult>? callback = null,
+            CancellationToken cancellationToken = default)
         {
-            var result = await Iterate(container);
-            if (callback is not null)
-            {
-                callback(result.TestInstanceContainer, result);
-            }
+            var result = await Iterate(container, cancellationToken);
+            callback?.Invoke(result.TestInstanceContainer, result);
 
             return result;
         }
 
-        private async Task<TestExecutionResult> Iterate(TestInstanceContainer testInstanceContainer)
+        private async Task<TestExecutionResult> Iterate(TestInstanceContainer testInstanceContainer, CancellationToken cancellationToken = default)
         {
             try
             {
-                var messages = await testCaseIterator.Iterate(testInstanceContainer);
+                var messages = await testCaseIterator.Iterate(testInstanceContainer, cancellationToken);
                 return new TestExecutionResult(testInstanceContainer, messages);
             }
             catch (Exception exception)

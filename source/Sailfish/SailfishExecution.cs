@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading;
 using System.Threading.Tasks;
 using Autofac;
 using Sailfish.Execution;
@@ -10,8 +11,8 @@ namespace Sailfish;
 /// </summary>
 public class SailfishExecution
 {
-    public async Task<SailfishValidity> Run(RunSettings runSettings, Action<ContainerBuilder>? registerAdditionalTypes = null)
+    public async Task<SailfishValidity> Run(RunSettings runSettings, Action<ContainerBuilder>? registerAdditionalTypes = null, CancellationToken cancellationToken = default)
     {
-        return await SailfishExecutionCaller.Run(runSettings, registerAdditionalTypes);
+        return await SailfishExecutionCaller.Run(runSettings, registerAdditionalTypes, cancellationToken);
     }
 }

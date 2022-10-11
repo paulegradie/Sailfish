@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using Sailfish.ExtensionMethods;
 
@@ -8,13 +9,18 @@ namespace Sailfish.Execution
     {
         public int[][] GetAllPossibleCombos(IEnumerable<IEnumerable<int>> ints)
         {
-            var strings = ints.Select(x => x.Select(x => x.ToString()));
-            IEnumerable<IEnumerable<string>> combos = new[] { new string[0] };
+            var strings = ints.Select(x => x.Select(y => y.ToString()));
+            IEnumerable<IEnumerable<string>> combos = new[] { Array.Empty<string>() };
 
-            foreach (var inner in strings)
-                combos = from c in combos
-                    from i in inner
-                    select ParameterCombinatorExtensionMethods.Append(c, i);
+            combos = strings
+                .Aggregate(
+                    combos,
+                    (current, inner) =>
+                        from c
+                            in current
+                        from i
+                            in inner
+                        select ParameterCombinatorExtensionMethods.Append(c, i));
 
             return combos.Select(x => x.Select(int.Parse).ToArray()).ToArray();
         }

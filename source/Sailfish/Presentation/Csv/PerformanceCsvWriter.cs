@@ -2,6 +2,7 @@
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using CsvHelper;
 using Sailfish.Contracts.Public;
@@ -19,19 +20,19 @@ internal class PerformanceCsvWriter : IPerformanceCsvWriter
         this.fileIo = fileIo;
     }
 
-    public async Task Present(List<ExecutionSummary> result, string filePath)
+    public async Task Present(IEnumerable<ExecutionSummary> result, string filePath, CancellationToken cancellationToken)
     {
-        await using (var writer = new StreamWriter(filePath))
-        await using (var csv = new CsvWriter(writer, CultureInfo.InvariantCulture))
+        var writer = new StreamWriter(filePath);
+        await using (writer.ConfigureAwait(false))
         {
-            csv.Context.RegisterClassMap<TestCaseDescriptiveStatisticsMap>();
-
-            foreach (var container in result)
+            var csv = new CsvWriter(writer, CultureInfo.InvariantCulture);
+            await using (csv.ConfigureAwait(false))
             {
-                if (container.Settings.AsCsv)
+                csv.Context.RegisterClassMap<TestCaseDescriptiveStatisticsMap>();
+
+                foreach (var records in from container in result where container.Settings.AsCsv select container.CompiledResults.Select(x => x.DescriptiveStatisticsResult))
                 {
-                    var records = container.CompiledResults.Select(x => x.DescriptiveStatisticsResult);
-                    await csv.WriteRecordsAsync(records);
+                    await csv.WriteRecordsAsync(records, cancellationToken);
                 }
             }
         }

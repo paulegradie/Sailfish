@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 using Sailfish.Statistics;
 
@@ -10,5 +11,6 @@ internal interface ITestResultPresenter
     Task PresentResults(
         List<ExecutionSummary> resultContainers,
         DateTime timeStamp,
-        RunSettings runSettings);
+        RunSettings runSettings,
+        CancellationToken cancellationToken);
 }

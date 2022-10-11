@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading;
 using System.Threading.Tasks;
 using AsAConsoleApp.Configuration;
 using Autofac;
@@ -9,6 +10,8 @@ namespace AsAConsoleApp
 {
     internal class Program : SailfishProgramBase
     {
+        private readonly CancellationToken cancellationToken = new CancellationTokenSource().Token;
+
         private static async Task Main(string[] userRequestedTestNames)
         {
             await SailfishMain<Program>(userRequestedTestNames);
@@ -19,7 +22,7 @@ namespace AsAConsoleApp
             var validityResult = await ContainerConfiguration
                 .CompositionRoot()
                 .Resolve<SailfishExecution>()
-                .Run(AssembleRunRequest(), RegisterWithSailfish);
+                .Run(AssembleRunRequest(), RegisterWithSailfish, cancellationToken);
 
             var it = validityResult.IsValid ? string.Empty : "not ";
             Console.WriteLine($"Test run was {it}valid");
@@ -32,6 +35,7 @@ namespace AsAConsoleApp
             // Additionally, there are various MediatR handlers that can be overriden
             // using these additional registrations.
             builder.RegisterModule<RequiredAdditionalRegistrationsModule>();
+            builder.RegisterInstance(new CancellationTransport() { CancellationToken = cancellationToken }).AsSelf();
 
             switch (Environment?.ToLowerInvariant())
             {

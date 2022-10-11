@@ -21,6 +21,6 @@ internal class WriteToCsvHandler : INotificationHandler<WriteToCsvCommand>
     {
         var fileName = DefaultFileSettings.AppendTagsToFilename(DefaultFileSettings.DefaultPerformanceFileNameStem(notification.TimeStamp) + ".csv", notification.Tags);
         var filePath = Path.Combine(notification.OutputDirectory, fileName);
-        await performanceCsvWriter.Present(notification.Content, filePath);
+        await performanceCsvWriter.Present(notification.Content, filePath, cancellationToken).ConfigureAwait(false);
     }
 }
