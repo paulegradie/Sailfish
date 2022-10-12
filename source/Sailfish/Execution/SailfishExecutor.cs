@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -59,7 +60,7 @@ internal class SailfishExecutor
 
             return rawExecutionResults.Select(x => x.IsSuccess).All(x => x)
                 ? SailfishValidity.CreateValidResult()
-                : SailfishValidity.CreateInvalidResult();
+                : SailfishValidity.CreateInvalidResult(rawExecutionResults.Where(x => x.Exception is not null).Select(x => x.Exception));
         }
 
         Console.WriteLine("\r----------- Error ------------\r");
@@ -69,7 +70,7 @@ internal class SailfishExecutor
             foreach (var testName in names) Console.WriteLine($"--- {testName}");
         }
 
-        return SailfishValidity.CreateInvalidResult();
+        return SailfishValidity.CreateInvalidResult(new List<Exception?>());
     }
 
     private TestValidationResult CollectTests(string[] testNames, params Type[] locationTypes)

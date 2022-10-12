@@ -1,21 +1,26 @@
-﻿namespace Sailfish.Execution;
+﻿using System;
+using System.Collections.Generic;
+
+namespace Sailfish.Execution;
 
 public class SailfishValidity
 {
-    private SailfishValidity(bool isValid)
+    private SailfishValidity(bool isValid, IEnumerable<Exception?>? exceptions = null)
     {
         IsValid = isValid;
+        Exceptions = exceptions;
     }
 
-    public bool IsValid { get; set; }
+    public bool IsValid { get; }
+    public IEnumerable<Exception?>? Exceptions { get; }
 
     public static SailfishValidity CreateValidResult()
     {
         return new SailfishValidity(true);
     }
 
-    public static SailfishValidity CreateInvalidResult()
+    public static SailfishValidity CreateInvalidResult(IEnumerable<Exception?> exceptions)
     {
-        return new SailfishValidity(false);
+        return new SailfishValidity(false, exceptions);
     }
 }
