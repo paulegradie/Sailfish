@@ -24,15 +24,19 @@ public static class SailfishExecutionCaller
         return await container.Resolve<SailfishExecutor>().Run(runSettings, cancellationToken).ConfigureAwait(false);
     }
 
-    internal static async Task<SailfishValidity> Run(RunSettings runSettings, Action<ContainerBuilder>? registerAdditionalTypes = null, CancellationToken cancellationToken = default)
+    internal static async Task<SailfishValidity> Run(RunSettings runSettings, Action<ContainerBuilder>? registerAdditionalTypes = null, CancellationToken? cancellationToken = null)
     {
         var builder = new ContainerBuilder();
         builder.RegisterSailfishTypes();
         builder.RegisterPerformanceTypes(runSettings.TestLocationTypes);
+        builder.Register(ctx =>
+                cancellationToken is not null ? new CancellationTokenAccess() { Token = cancellationToken } : new CancellationTokenAccess() { Token = new CancellationToken(false) })
+            .AsSelf()
+            .SingleInstance();
 
         registerAdditionalTypes?.Invoke(builder);
 
         var container = builder.Build();
-        return await container.Resolve<SailfishExecutor>().Run(runSettings, cancellationToken).ConfigureAwait(false);
+        return await container.Resolve<SailfishExecutor>().Run(runSettings, cancellationToken ?? default).ConfigureAwait(false);
     }
 }

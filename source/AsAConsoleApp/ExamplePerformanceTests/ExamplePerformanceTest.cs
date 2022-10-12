@@ -1,8 +1,8 @@
 using System;
-using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Sailfish.Attributes;
+using Sailfish.Execution;
 using Test.API;
 
 // Tests here are automatically discovered and executed
@@ -13,7 +13,7 @@ namespace AsAConsoleApp.ExamplePerformanceTests;
 [Sailfish(1, 2, Disabled = false)]
 public class ExamplePerformanceTest : TestBase
 {
-    public ExamplePerformanceTest(WebApplicationFactory<DemoApp> factory, CancellationTransport cancellationTransport) : base(factory, cancellationTransport)
+    public ExamplePerformanceTest(WebApplicationFactory<DemoApp> factory, CancellationTokenAccess ctAccess) : base(factory, ctAccess)
     {
     }
 
@@ -67,7 +67,7 @@ public class ExamplePerformanceTest : TestBase
     [SailfishMethod]
     public async Task Other()
     {
-        await Task.Delay(200, CancellationToken);
+        await Task.Delay(WaitPeriod, CancellationToken);
         await Task.CompletedTask;
     }
 }

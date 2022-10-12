@@ -35,7 +35,6 @@ namespace AsAConsoleApp
             // Additionally, there are various MediatR handlers that can be overriden
             // using these additional registrations.
             builder.RegisterModule<RequiredAdditionalRegistrationsModule>();
-            builder.RegisterInstance(new CancellationTransport() { CancellationToken = cancellationToken }).AsSelf();
 
             switch (Environment?.ToLowerInvariant())
             {

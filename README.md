@@ -18,6 +18,8 @@ Fortunately, tools to mitigate the affects of such volatility in the infrastruct
 
 For this reason, this project does not go to the extent that other more rigorous benchmark analysis tools such as, say, BenchmarkDotNet do to buffer the effects of hardware and compute sharing.
 
+Please visit our wiki for examples on how to use Sailfish effectively for your project or organization.
+
 ## Quick Start Guide
 
 ```csharp
@@ -40,14 +42,17 @@ class Program : SailfishProgramBase
 [Sailfish]
 public class AMostBasicTest
 {
-    public AMostBasicTest()
+    public AMostBasicTest(CancellationTokenAccess ctAccess)
     {
+        CancellationToken = ctAccess.Token;
     }
+    
+    CancellationToken CancellationToken { get; set; }
 
     [SailfishMethod]
-    public async Task Methdod()
+    public async Task TestMethod()
     {
-        await Thread.Sleep(200);
+        await Task.Delay(2000, CancellationToken);
     }
 }
 ```
