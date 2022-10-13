@@ -29,10 +29,6 @@ public static class SailfishExecutionCaller
         var builder = new ContainerBuilder();
         builder.RegisterSailfishTypes();
         builder.RegisterPerformanceTypes(runSettings.TestLocationTypes);
-        builder.Register(ctx =>
-                cancellationToken is not null ? new CancellationTokenAccess() { Token = cancellationToken } : new CancellationTokenAccess() { Token = new CancellationToken(false) })
-            .AsSelf()
-            .SingleInstance();
 
         registerAdditionalTypes?.Invoke(builder);
 

@@ -4,7 +4,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
-using Sailfish.Execution;
 using Test.API;
 using Xunit;
 
@@ -12,9 +11,9 @@ namespace AsAConsoleApp.ExamplePerformanceTests
 {
     public class TestBase : IClassFixture<WebApplicationFactory<DemoApp>>, IAsyncDisposable
     {
-        public TestBase(WebApplicationFactory<DemoApp> factory, CancellationTokenAccess ctAccess)
+        public TestBase(WebApplicationFactory<DemoApp> factory)
         {
-            CancellationToken = ctAccess.Token ?? CancellationToken.None;
+            CancellationToken = CancellationToken.None;
             WebHostFactory = factory.WithWebHostBuilder(
                 builder => { builder.UseTestServer(); });
             Client = WebHostFactory.CreateClient();

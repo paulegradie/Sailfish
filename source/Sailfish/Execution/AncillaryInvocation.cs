@@ -40,7 +40,7 @@ namespace Sailfish.Execution
 
         public async Task IterationSetup()
         {
-            if (iterationSetup is not null) await iterationSetup.InvokeWith(instance);
+            if (iterationSetup is not null) await iterationSetup.InvokeWith(instance).ConfigureAwait(false);
         }
 
         public async Task IterationTearDown()

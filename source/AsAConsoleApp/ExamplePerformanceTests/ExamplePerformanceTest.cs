@@ -13,7 +13,7 @@ namespace AsAConsoleApp.ExamplePerformanceTests;
 [Sailfish(1, 2, Disabled = false)]
 public class ExamplePerformanceTest : TestBase
 {
-    public ExamplePerformanceTest(WebApplicationFactory<DemoApp> factory, CancellationTokenAccess ctAccess) : base(factory, ctAccess)
+    public ExamplePerformanceTest(WebApplicationFactory<DemoApp> factory) : base(factory)
     {
     }
 
