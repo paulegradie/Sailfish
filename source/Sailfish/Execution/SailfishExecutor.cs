@@ -58,9 +58,10 @@ internal class SailfishExecutor
 
             await testResultPresenter.PresentResults(compiledResults, timeStamp, runSettings, cancellationToken);
 
+            var exceptions = compiledResults.SelectMany(x => x.CompiledResults.Select(j => j.Exception)).Where(x => x is not null);
             return rawExecutionResults.Select(x => x.IsSuccess).All(x => x)
                 ? SailfishValidity.CreateValidResult()
-                : SailfishValidity.CreateInvalidResult(rawExecutionResults.Where(x => x.Exception is not null).Select(x => x.Exception));
+                : SailfishValidity.CreateInvalidResult(exceptions!);
         }
 
         Console.WriteLine("\r----------- Error ------------\r");
@@ -70,7 +71,7 @@ internal class SailfishExecutor
             foreach (var testName in names) Console.WriteLine($"--- {testName}");
         }
 
-        return SailfishValidity.CreateInvalidResult(new List<Exception?>());
+        return SailfishValidity.CreateInvalidResult(Enumerable.Empty<Exception>());
     }
 
     private TestValidationResult CollectTests(string[] testNames, params Type[] locationTypes)
