@@ -25,30 +25,26 @@ Please visit our wiki for examples on how to use Sailfish effectively for your p
 ```csharp
 class Program : SailfishProgramBase
 {
-    static async Task Main(string[] userRequestedTestNames)
+    public static async Task Main(string[] testNamesToFilterBy)
     {
-        // SailfishMain is in the base
-        await SailfishMain<Program>(userRequestedTestNames);
+        await SailfishMain<Program>(testNamesToFilterBy);
     }
 
-    // this override is provided by the cli tool
-    public override async Task OnExecuteAsync()
+    protected override IEnumerable<Type> SourceTypesProvider()
     {
-        var cliOptions = AssembleRunRequest();
-        new SailfishExecution.Run(cliOptions)
-     }
+       // provide types from the same assembly as your performance tests
+       return new[] { GetType() };
+    }
+
+    protected override void RegisterWithSailfish(ContainerBuilder builder)
+    {
+       // register anything that you need to inject into your performance tests
+    }
 }
 
 [Sailfish]
 public class AMostBasicTest
 {
-    public AMostBasicTest(CancellationTokenAccess ctAccess)
-    {
-        CancellationToken = ctAccess.Token;
-    }
-    
-    CancellationToken CancellationToken { get; set; }
-
     [SailfishMethod]
     public async Task TestMethod()
     {
