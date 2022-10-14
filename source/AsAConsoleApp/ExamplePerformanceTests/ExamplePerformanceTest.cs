@@ -26,34 +26,16 @@ public class ExamplePerformanceTest : TestBase
         Console.WriteLine("This is the Global Setup");
     }
 
-    [SailfishGlobalTeardown]
-    public void GlobalTeardown()
-    {
-        Console.WriteLine("This is the Global Teardown");
-    }
-
     [SailfishMethodSetup]
     public void ExecutionMethodSetup()
     {
         Console.WriteLine("This is the Execution Method Setup");
     }
 
-    [SailfishMethodTeardown]
-    public void ExecutionMethodTeardown()
-    {
-        Console.WriteLine("This is the Execution Method Teardown");
-    }
-
     [SailfishIterationSetup]
     public void IterationSetup()
     {
         Console.WriteLine("This is the Iteration Setup - use sparingly");
-    }
-
-    [SailfishIterationTeardown]
-    public void IterationTeardown()
-    {
-        Console.WriteLine("This is the Iteration Teardown - use sparingly");
     }
 
     [SailfishMethod]
@@ -68,5 +50,24 @@ public class ExamplePerformanceTest : TestBase
     {
         await Task.Delay(WaitPeriod, cancellationToken);
         await Task.CompletedTask;
+    }
+
+    [SailfishIterationTeardown]
+    public void IterationTeardown()
+    {
+        Console.WriteLine("This is the Iteration Teardown - use sparingly");
+    }
+
+    [SailfishMethodTeardown]
+    public void ExecutionMethodTeardown()
+    {
+        Console.WriteLine("This is the Execution Method Teardown");
+    }
+
+    [SailfishGlobalTeardown]
+    public override async Task GlobalTeardown(CancellationToken cancellationToken)
+    {
+        await Task.Yield();
+        Console.WriteLine("This is the Global Teardown");
     }
 }

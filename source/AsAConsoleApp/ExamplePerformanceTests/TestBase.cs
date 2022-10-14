@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Net.Http;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
@@ -24,5 +25,11 @@ public class TestBase : IClassFixture<WebApplicationFactory<DemoApp>>, IAsyncDis
     public async ValueTask DisposeAsync()
     {
         await WebHostFactory.DisposeAsync();
+    }
+
+
+    public virtual async Task GlobalTeardown(CancellationToken cancellationToken)
+    {
+        await Client.GetAsync("api", cancellationToken);
     }
 }
