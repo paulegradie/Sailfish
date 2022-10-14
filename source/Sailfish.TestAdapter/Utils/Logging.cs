@@ -24,7 +24,7 @@ internal static class Logging
     public static Logger CreateLogger(string fileName)
     {
         var currentDirInfo = new DirectoryInfo(Directory.GetCurrentDirectory());
-        var logfileDirName = "ADAPTER_LOGS";
+        const string logfileDirName = "ADAPTER_LOGS";
 
         var projectRoot = FindProjectRootDir(currentDirInfo, 5);
 
@@ -32,7 +32,7 @@ internal static class Logging
             ? Path.Combine(".", logfileDirName)
             : Path.Combine(projectRoot.FullName, logfileDirName);
 
-        var hardCodedDir = "C:\\Users\\paule\\code\\ProjectSailfish\\TestingLogs\\WORK_DAMNYOU.txt";
+        const string hardCodedDir = "C:\\Users\\paule\\code\\ProjectSailfish\\TestingLogs\\WORK_DAMNYOU.txt";
 
         return new LoggerConfiguration()
             .MinimumLevel.Verbose()
