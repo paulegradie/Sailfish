@@ -1,7 +1,8 @@
-﻿using System.Threading.Tasks;
+﻿using System;
+using System.Collections.Generic;
+using System.Threading.Tasks;
 using Autofac;
 using Sailfish.Program;
-using Sailfish.Tool.Framework.DIContainer;
 
 namespace Sailfish.Tool
 {
@@ -17,15 +18,12 @@ namespace Sailfish.Tool
             await SailfishMain<Program>(args);
         }
 
-        public override async Task OnExecuteAsync()
+        protected override IEnumerable<Type> SourceTypesProvider()
         {
-            await ContainerConfiguration
-                .CompositionRoot()
-                .Resolve<SailfishExecution>()
-                .Run(AssembleRunRequest(), RegisterWithSailfish);
+            return new[] { GetType() };
         }
 
-        public override void RegisterWithSailfish(ContainerBuilder builder)
+        protected override void RegisterWithSailfish(ContainerBuilder builder)
         {
         }
     }

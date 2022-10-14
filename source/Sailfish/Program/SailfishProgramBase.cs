@@ -1,5 +1,8 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Accord.Collections;
 using Autofac;
@@ -11,17 +14,30 @@ using Sailfish.Utils;
 
 namespace Sailfish.Program;
 
-public abstract class SailfishProgramBase
+public class SailfishProgramBase
 {
     protected static async Task SailfishMain<TProgram>(string[] userRequestedTestNames) where TProgram : class
     {
         await CommandLineApplication.ExecuteAsync<TProgram>(userRequestedTestNames);
     }
 
-    public abstract Task OnExecuteAsync();
-    public abstract void RegisterWithSailfish(ContainerBuilder builder);
+    protected async Task OnExecuteAsync(CancellationToken cancellationToken)
+    {
+        var validityResult = await new SailfishExecution().Run(AssembleRunRequest(SourceTypesProvider()), RegisterWithSailfish, cancellationToken);
+        var not = validityResult.IsValid ? string.Empty : "not ";
+        Console.WriteLine($"Test run was {not}valid");
+    }
 
-    protected RunSettings AssembleRunRequest()
+    protected virtual IEnumerable<Type> SourceTypesProvider()
+    {
+        return Enumerable.Empty<Type>();
+    }
+
+    protected virtual void RegisterWithSailfish(ContainerBuilder builder)
+    {
+    }
+
+    protected virtual RunSettings AssembleRunRequest(IEnumerable<Type> sourceTypes)
     {
         if (OutputDirectory is null)
         {
@@ -67,7 +83,7 @@ public abstract class SailfishProgramBase
             parsedArgs,
             BeforeTarget,
             timestamp,
-            GetType());
+            sourceTypes.ToArray());
     }
 
     [Option("-a|--analyze", CommandOptionType.NoValue,
