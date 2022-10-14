@@ -20,7 +20,7 @@ internal class TestInstanceContainerProvider
     public TestInstanceContainerProvider(
         ITypeResolver typeResolver,
         Type test,
-        int[][] variableSets,
+        IEnumerable<int[]> variableSets,
         List<string> propertyNames,
         MethodInfo method)
     {
@@ -36,24 +36,21 @@ internal class TestInstanceContainerProvider
 
     public int GetNumberOfVariableSetsInTheQueue()
     {
-        return variableSets.Count();
+        return variableSets.Count;
     }
 
     public IEnumerable<TestInstanceContainer> ProvideNextTestInstanceContainer()
     {
         foreach (var nextVariableSet in variableSets)
         {
-            if (instance is null)
-            {
-                instance = CreateTestInstance();
-            }
+            instance ??= CreateTestInstance();
 
             SetProperties(instance, nextVariableSet);
             yield return TestInstanceContainer.CreateTestInstance(instance, Method, propertyNames.ToArray(), nextVariableSet);
         }
     }
 
-    private void SetProperties(object obj, int[] nextVariableSet)
+    private void SetProperties(object obj, IEnumerable<int> nextVariableSet)
     {
         foreach (var (propertyName, variableValue) in propertyNames.Zip(nextVariableSet))
         {

@@ -1,9 +1,8 @@
 using System;
 
-namespace Sailfish.Attributes
+namespace Sailfish.Attributes;
+
+[AttributeUsage(AttributeTargets.Method, Inherited = false)]
+public sealed class SailfishMethodAttribute : Attribute
 {
-    [AttributeUsage(AttributeTargets.Method, Inherited = false)]
-    public sealed class SailfishMethodAttribute : Attribute
-    {
-    }
 }

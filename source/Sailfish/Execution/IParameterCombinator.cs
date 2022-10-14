@@ -1,9 +1,8 @@
 ﻿using System.Collections.Generic;
 
-namespace Sailfish.Execution
+namespace Sailfish.Execution;
+
+internal interface IParameterCombinator
 {
-    internal interface IParameterCombinator
-    {
-        int[][] GetAllPossibleCombos(IEnumerable<IEnumerable<int>> ints);
-    }
+    int[][] GetAllPossibleCombos(IEnumerable<IEnumerable<int>> ints);
 }

@@ -1,8 +1,8 @@
 using System;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Sailfish.Attributes;
-using Sailfish.Execution;
 using Test.API;
 
 // Tests here are automatically discovered and executed
@@ -21,15 +21,9 @@ public class ExamplePerformanceTest : TestBase
     [SailfishVariable(1, 2)] public int NTries { get; set; } // try to avoid multiple variables if you can manage
 
     [SailfishGlobalSetup]
-    public void GlobalSetup()
+    public void GlobalSetup(CancellationToken cancellationToken)
     {
         Console.WriteLine("This is the Global Setup");
-    }
-
-    [SailfishGlobalTeardown]
-    public void GlobalTeardown()
-    {
-        Console.WriteLine("This is the Global Teardown");
     }
 
     [SailfishMethodSetup]
@@ -38,16 +32,24 @@ public class ExamplePerformanceTest : TestBase
         Console.WriteLine("This is the Execution Method Setup");
     }
 
-    [SailfishMethodTeardown]
-    public void ExecutionMethodTeardown()
-    {
-        Console.WriteLine("This is the Execution Method Teardown");
-    }
-
     [SailfishIterationSetup]
     public void IterationSetup()
     {
         Console.WriteLine("This is the Iteration Setup - use sparingly");
+    }
+
+    [SailfishMethod]
+    public async Task WaitPeriodPerfTest(CancellationToken cancellationToken)
+    {
+        await Task.Delay(WaitPeriod, cancellationToken);
+        await Client.GetStringAsync("/", cancellationToken);
+    }
+
+    [SailfishMethod]
+    public async Task Other(CancellationToken cancellationToken)
+    {
+        await Task.Delay(WaitPeriod, cancellationToken);
+        await Task.CompletedTask;
     }
 
     [SailfishIterationTeardown]
@@ -56,18 +58,16 @@ public class ExamplePerformanceTest : TestBase
         Console.WriteLine("This is the Iteration Teardown - use sparingly");
     }
 
-
-    [SailfishMethod]
-    public async Task WaitPeriodPerfTest()
+    [SailfishMethodTeardown]
+    public void ExecutionMethodTeardown()
     {
-        await Task.Delay(WaitPeriod, CancellationToken);
-        await Client.GetStringAsync("/", CancellationToken);
+        Console.WriteLine("This is the Execution Method Teardown");
     }
 
-    [SailfishMethod]
-    public async Task Other()
+    [SailfishGlobalTeardown]
+    public override async Task GlobalTeardown(CancellationToken cancellationToken)
     {
-        await Task.Delay(WaitPeriod, CancellationToken);
-        await Task.CompletedTask;
+        await Task.Yield();
+        Console.WriteLine("This is the Global Teardown");
     }
 }

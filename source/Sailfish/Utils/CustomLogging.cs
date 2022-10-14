@@ -4,71 +4,70 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading;
 
-namespace Sailfish.Utils
+namespace Sailfish.Utils;
+
+public static class logger
 {
-    public static class logger
+    public static string? filePath;
+
+
+    public static void VerbosePadded(string messageLine, params string[] properties)
     {
-        public static string? filePath;
+        if (filePath is null) filePath = filePath ?? $"C:\\Users\\paule\\code\\ProjectSailfish\\TestingLogs\\crazy_logs-{Guid.NewGuid().ToString()}.txt";
 
+        if (!File.Exists(filePath)) File.Create(filePath);
 
-        public static void VerbosePadded(string messageLine, params string[] properties)
+        try
         {
-            if (filePath is null) filePath = filePath ?? $"C:\\Users\\paule\\code\\ProjectSailfish\\TestingLogs\\crazy_logs-{Guid.NewGuid().ToString()}.txt";
-
-            if (!File.Exists(filePath)) File.Create(filePath);
-
-            try
-            {
-                DoWrite(filePath, "\r" + messageLine + "\r", properties);
-            }
-            catch (Exception ex)
-            {
-                filePath = $"C:\\Users\\paule\\code\\ProjectSailfish\\TestingLogs\\crazy_logs-{Guid.NewGuid().ToString()}.txt";
-                DoWrite(filePath, $"What a crazy exception! How is it possible that: {ex.Message}");
-                DoWrite(filePath, "\r" + messageLine + "\r", properties);
-            }
+            DoWrite(filePath, "\r" + messageLine + "\r", properties);
         }
-
-        public static void Verbose(string messageLine, params string[] properties)
+        catch (Exception ex)
         {
-            if (filePath is null) filePath = filePath ?? $"C:\\Users\\paule\\code\\ProjectSailfish\\TestingLogs\\crazy_logs-{Guid.NewGuid().ToString()}.txt";
-
-            if (!File.Exists(filePath)) File.Create(filePath);
-
-            try
-            {
-                DoWrite(filePath, messageLine, properties);
-            }
-            catch (Exception ex)
-            {
-                filePath = $"C:\\Users\\paule\\code\\ProjectSailfish\\TestingLogs\\crazy_logs-{Guid.NewGuid().ToString()}.txt";
-                DoWrite(filePath, $"What a crazy exception!: {ex.Message}", properties);
-                DoWrite(filePath, messageLine, properties);
-            }
+            filePath = $"C:\\Users\\paule\\code\\ProjectSailfish\\TestingLogs\\crazy_logs-{Guid.NewGuid().ToString()}.txt";
+            DoWrite(filePath, $"What a crazy exception! How is it possible that: {ex.Message}");
+            DoWrite(filePath, "\r" + messageLine + "\r", properties);
         }
+    }
 
-        private static void DoWrite(string fp, string messageLine, params string[] properties)
+    public static void Verbose(string messageLine, params string[] properties)
+    {
+        if (filePath is null) filePath = filePath ?? $"C:\\Users\\paule\\code\\ProjectSailfish\\TestingLogs\\crazy_logs-{Guid.NewGuid().ToString()}.txt";
+
+        if (!File.Exists(filePath)) File.Create(filePath);
+
+        try
         {
-            using (var mutex = new Mutex(false, "THE_ONLY_Sail_MUTEX"))
-            {
-                mutex.WaitOne();
+            DoWrite(filePath, messageLine, properties);
+        }
+        catch (Exception ex)
+        {
+            filePath = $"C:\\Users\\paule\\code\\ProjectSailfish\\TestingLogs\\crazy_logs-{Guid.NewGuid().ToString()}.txt";
+            DoWrite(filePath, $"What a crazy exception!: {ex.Message}", properties);
+            DoWrite(filePath, messageLine, properties);
+        }
+    }
 
-                using var writer = new StreamWriter(fp, true);
-                var regex = new Regex("{(.+?)}");
-                var matches = regex
-                    .Matches(messageLine)
-                    .Select(x => x.ToString())
-                    .ToArray();
+    private static void DoWrite(string fp, string messageLine, params string[] properties)
+    {
+        using (var mutex = new Mutex(false, "THE_ONLY_Sail_MUTEX"))
+        {
+            mutex.WaitOne();
 
-                var pairs = matches.Zip(properties).ToArray();
+            using var writer = new StreamWriter(fp, true);
+            var regex = new Regex("{(.+?)}");
+            var matches = regex
+                .Matches(messageLine)
+                .Select(x => x.ToString())
+                .ToArray();
 
-                foreach (var (original, replacement) in pairs) messageLine = messageLine.Replace(original, replacement);
+            var pairs = matches.Zip(properties).ToArray();
 
-                writer.WriteLine(" - " + messageLine);
-                writer.Flush();
+            foreach (var (original, replacement) in pairs) messageLine = messageLine.Replace(original, replacement);
 
-                mutex.ReleaseMutex();
-            }
+            writer.WriteLine(" - " + messageLine);
+            writer.Flush();
+
+            mutex.ReleaseMutex();
         }
     }
 }

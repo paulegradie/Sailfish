@@ -5,29 +5,28 @@ using System.Reflection;
 using Sailfish.Attributes;
 using Sailfish.ExtensionMethods;
 
-namespace Sailfish.Execution
+namespace Sailfish.Execution;
+
+internal class TestCollector : ITestCollector
 {
-    internal class TestCollector : ITestCollector
+    public Type[] CollectTestTypes(params Type[] sourceTypes)
     {
-        public Type[] CollectTestTypes(params Type[] sourceTypes)
+        if (sourceTypes.Length == 0)
+            return CollectTestTypes();
+
+        var allTests = new List<Type>();
+        foreach (var sourceType in sourceTypes)
         {
-            if (sourceTypes.Length == 0)
-                return CollectTestTypes();
-
-            var allTests = new List<Type>();
-            foreach (var sourceType in sourceTypes)
-            {
-                var allTypes = sourceType.Assembly.GetTypes().Where(t => t.HasAttribute<SailfishAttribute>());
-                allTests.AddRange(allTypes);
-            }
-
-            return allTests.Distinct().ToArray();
+            var allTypes = sourceType.Assembly.GetTypes().Where(t => t.HasAttribute<SailfishAttribute>());
+            allTests.AddRange(allTypes);
         }
 
-        public Type[] CollectTestTypes()
-        {
-            var types = Assembly.GetCallingAssembly().GetTypes().Where(t => t.HasAttribute<SailfishAttribute>()).ToArray();
-            return types;
-        }
+        return allTests.Distinct().ToArray();
+    }
+
+    public Type[] CollectTestTypes()
+    {
+        var types = Assembly.GetCallingAssembly().GetTypes().Where(t => t.HasAttribute<SailfishAttribute>()).ToArray();
+        return types;
     }
 }

@@ -1,10 +1,9 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 
-namespace Test.API.Controllers.Base
+namespace Test.API.Controllers.Base;
+
+[Route("/")]
+[ApiController]
+public class BaseController : ControllerBase
 {
-    [Route("/")]
-    [ApiController]
-    public class BaseController : ControllerBase
-    {
-    }
 }

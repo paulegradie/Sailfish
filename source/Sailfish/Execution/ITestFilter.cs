@@ -1,9 +1,8 @@
 using System;
 
-namespace Sailfish.Execution
+namespace Sailfish.Execution;
+
+internal interface ITestFilter
 {
-    internal interface ITestFilter
-    {
-        TestValidationResult FilterAndValidate(Type[] tests, string[] testsRequestedByUser);
-    }
+    TestValidationResult FilterAndValidate(Type[] tests, string[] testsRequestedByUser);
 }

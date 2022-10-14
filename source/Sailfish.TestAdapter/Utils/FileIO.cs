@@ -1,28 +1,27 @@
 ﻿using System;
 using System.IO;
 
-namespace Sailfish.TestAdapter.Utils
+namespace Sailfish.TestAdapter.Utils;
+
+internal class FileIo // This is all DirectoryRecursion logic - should move this.
 {
-    internal class FileIo // This is all DirectoryRecursion logic - should move this.
+    public string ReadFileContents(string sourceFile)
     {
-        public string ReadFileContents(string sourceFile)
+        var content = ReadFile(sourceFile);
+        return content;
+    }
+
+    private string ReadFile(string filePath)
+    {
+        try
         {
-            var content = ReadFile(sourceFile);
+            using var fileStream = new StreamReader(filePath);
+            var content = fileStream.ReadToEnd();
             return content;
         }
-
-        private string ReadFile(string filePath)
+        catch
         {
-            try
-            {
-                using var fileStream = new StreamReader(filePath);
-                var content = fileStream.ReadToEnd();
-                return content;
-            }
-            catch
-            {
-                throw new Exception($"Could not read the file provided: {filePath}");
-            }
+            throw new Exception($"Could not read the file provided: {filePath}");
         }
     }
 }

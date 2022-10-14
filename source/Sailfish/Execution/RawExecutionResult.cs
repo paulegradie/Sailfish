@@ -20,8 +20,8 @@ internal class RawExecutionResult
         TestType = testType;
     }
 
-    public Exception? Exception { get; set; }
-    public bool IsSuccess { get; set; }
-    public Type TestType { get; set; }
-    public List<TestExecutionResult>? ExecutionResults { get; set; }
+    public Exception? Exception { get; }
+    public bool IsSuccess { get; }
+    public Type TestType { get; }
+    public List<TestExecutionResult>? ExecutionResults { get; }
 }

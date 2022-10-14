@@ -1,9 +1,8 @@
 using System;
 
-namespace Sailfish.Attributes
+namespace Sailfish.Attributes;
+
+[AttributeUsage(AttributeTargets.Method)]
+public sealed class SailfishGlobalTeardownAttribute : Attribute
 {
-    [AttributeUsage(AttributeTargets.Method, AllowMultiple = false)]
-    public sealed class SailfishGlobalTeardownAttribute : Attribute
-    {
-    }
 }
