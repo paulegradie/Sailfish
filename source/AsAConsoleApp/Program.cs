@@ -32,7 +32,7 @@ internal class Program : SailfishProgramBase
             // These registrations can override the default handlers for
             // writing t-test results and reading/writing tracking files
             // This is useful if you've got a system for running automated perf
-            // tests and what then recorded in the cloud.
+            // tests that record data to the cloud or some other non-default target.
             case "notify":
                 builder.RegisterModule<OptionalAdditionalRegistrationsNotifications>();
                 break;
