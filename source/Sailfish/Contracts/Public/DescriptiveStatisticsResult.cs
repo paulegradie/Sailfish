@@ -18,11 +18,9 @@ public class DescriptiveStatisticsResult
 
     public double[] RawExecutionResults { get; set; } = null!; // milliseconds
 
-    public static DescriptiveStatisticsResult ConvertFromPerfTimer(string displayName,
-        PerformanceTimer performanceTimer)
+    public static DescriptiveStatisticsResult ConvertFromPerfTimer(string displayName, PerformanceTimer performanceTimer)
     {
-        var executionIterations =
-            performanceTimer.ExecutionIterationPerformances.Select(x => (double)x.Duration).ToArray();
+        var executionIterations = performanceTimer.ExecutionIterationPerformances.Select(x => (double)x.Duration).ToArray();
 
         var mean = MathNet.Numerics.Statistics.Statistics.Mean(executionIterations);
         var stdDev = MathNet.Numerics.Statistics.Statistics.StandardDeviation(executionIterations);

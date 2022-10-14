@@ -8,7 +8,7 @@ public static class ContainerConfiguration
     {
         var builder = new ContainerBuilder();
         builder = CustomizeContainer(builder);
-        builder.RegisterType<SailfishExecution>();
+        builder.RegisterType<Sailfish>();
         return builder.Build();
     }
 

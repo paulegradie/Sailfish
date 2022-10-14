@@ -6,6 +6,7 @@ using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using Sailfish.Attributes;
+using Sailfish.Exceptions;
 
 namespace Sailfish.ExtensionMethods;
 
@@ -56,33 +57,41 @@ public static class ReflectionExtensionMethods
         return method.HasAttribute<AsyncStateMachineAttribute>();
     }
 
-    public static async Task InvokeWith(this MethodInfo method, object instance)
+    public static async Task InvokeAs(this MethodInfo method, object instance)
     {
-        if (method.IsAsyncMethod()) await (Task)method.Invoke(instance, null)!;
+        if (method.IsAsyncMethod())
+        {
+            await (Task)method.Invoke(instance, null)!;
+        }
         else method.Invoke(instance, null);
     }
 
-    public static async Task InvokeWith(this MethodInfo method, object instance, CancellationToken cancellationToken)
+    public static async Task InvokeAsWithCancellation(this MethodInfo method, object instance, CancellationToken cancellationToken)
     {
-        if (method.IsAsyncMethod()) await (Task)method.Invoke(instance, new object[] { cancellationToken })!;
-        else method.Invoke(instance, null);
+        var parameters = new object[] { cancellationToken };
+        if (method.IsAsyncMethod()) await (Task)method.Invoke(instance, parameters)!;
+        else method.Invoke(instance, parameters);
     }
 
     public static async Task TryInvoke(this MethodInfo? methodInfo, object instance, CancellationToken cancellationToken)
     {
         if (methodInfo is null) return;
 
-        var parameters = methodInfo.GetParameters() ?? Enumerable.Empty<ParameterInfo>();
-        if (parameters.Count() == 0)
+        var parameters = methodInfo.GetParameters().ToList();
+        switch (parameters.Count)
         {
-            await methodInfo.InvokeWith(instance).ConfigureAwait(false);
-        }
-        else if (parameters.Count() == 1 && parameters.Single().ParameterType == typeof(CancellationToken))
-        {
-            await methodInfo.InvokeWith(instance, cancellationToken).ConfigureAwait(false);
+            case 0:
+                await methodInfo.InvokeAs(instance);
+                break;
+            case 1:
+                var paramIsCancellationToken = parameters.SingleOrDefault()?.ParameterType == typeof(CancellationToken);
+                if (!paramIsCancellationToken) throw new TestFormatException("Parameter injection is only supported for the CancellationToken type");
+                await methodInfo.InvokeAsWithCancellation(instance, cancellationToken).ConfigureAwait(false);
+                break;
+            default:
+                throw new TestFormatException("Parameter injection is only supported for the CancellationToken type");
         }
     }
-
 
     internal static int GetNumIterations(this Type type)
     {

@@ -21,7 +21,7 @@ public class ExamplePerformanceTest : TestBase
     [SailfishVariable(1, 2)] public int NTries { get; set; } // try to avoid multiple variables if you can manage
 
     [SailfishGlobalSetup]
-    public void GlobalSetup()
+    public void GlobalSetup(CancellationToken cancellationToken)
     {
         Console.WriteLine("This is the Global Setup");
     }

@@ -14,7 +14,6 @@ internal class ExecutionSummary
     }
 
     public Type Type { get; set; }
-    public int StatusCode { get; set; }
     public ExecutionSettings Settings { get; }
     public List<CompiledResult> CompiledResults { get; set; }
 }

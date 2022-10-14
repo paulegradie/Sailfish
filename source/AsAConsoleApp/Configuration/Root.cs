@@ -11,7 +11,7 @@ public static class ContainerConfiguration
         var builder = new ContainerBuilder();
         var logger = Logging.CreateLogger("ConsoleAppLogs.log");
         builder.Register<ILogger>(c => { return logger; });
-        builder.RegisterType<SailfishExecution>().AsSelf();
+        builder.RegisterType<Sailfish.Sailfish>().AsSelf();
         return builder.Build();
     }
 }

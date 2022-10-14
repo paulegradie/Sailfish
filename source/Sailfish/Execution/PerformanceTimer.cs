@@ -4,14 +4,14 @@ using System.Diagnostics;
 
 namespace Sailfish.Execution;
 
-public class PerformanceTimer
+public sealed class PerformanceTimer
 {
     public readonly List<IterationPerformance> ExecutionIterationPerformances = new();
     private readonly Stopwatch executionTimer;
     private readonly Stopwatch globalTimer;
 
     public readonly List<IterationPerformance> MethodIterationPerformances = new(); // all iterations of the method
-    private readonly Stopwatch methodTimer;
+    private readonly Stopwatch methodIterationTimer;
     private DateTimeOffset executionIterationStart;
 
     // transient fields
@@ -20,7 +20,7 @@ public class PerformanceTimer
     public PerformanceTimer()
     {
         globalTimer = new Stopwatch();
-        methodTimer = new Stopwatch();
+        methodIterationTimer = new Stopwatch();
         executionTimer = new Stopwatch();
     }
 
@@ -52,18 +52,18 @@ public class PerformanceTimer
 
     public void StartMethodTimer()
     {
-        if (methodTimer.IsRunning) return;
+        if (methodIterationTimer.IsRunning) return;
         methodIterationStart = DateTimeOffset.Now;
-        methodTimer.Start();
+        methodIterationTimer.Start();
     }
 
     public void StopMethodTimer()
     {
-        if (!methodTimer.IsRunning) return;
-        methodTimer.Stop();
+        if (!methodIterationTimer.IsRunning) return;
+        methodIterationTimer.Stop();
         var methodIterationStop = DateTimeOffset.Now;
-        MethodIterationPerformances.Add(new IterationPerformance(methodIterationStart, methodIterationStop, methodTimer.ElapsedMilliseconds));
-        methodTimer.Reset();
+        MethodIterationPerformances.Add(new IterationPerformance(methodIterationStart, methodIterationStop, methodIterationTimer.ElapsedMilliseconds));
+        methodIterationTimer.Reset();
     }
 
     public void StartGlobalTimer()

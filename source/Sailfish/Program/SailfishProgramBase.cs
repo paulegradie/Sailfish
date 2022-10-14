@@ -10,8 +10,6 @@ using McMaster.Extensions.CommandLineUtils;
 using Sailfish.Presentation.TTest;
 using Sailfish.Utils;
 
-// ReSharper disable MemberCanBePrivate.Global
-
 namespace Sailfish.Program;
 
 public class SailfishProgramBase
@@ -23,7 +21,7 @@ public class SailfishProgramBase
 
     protected async Task OnExecuteAsync(CancellationToken cancellationToken)
     {
-        var validityResult = await new SailfishExecution().Run(AssembleRunRequest(SourceTypesProvider()), RegisterWithSailfish, cancellationToken);
+        var validityResult = await Sailfish.Run(AssembleRunRequest(SourceTypesProvider()), RegisterWithSailfish, cancellationToken);
         var not = validityResult.IsValid ? string.Empty : "not ";
         Console.WriteLine($"Test run was {not}valid");
     }
@@ -136,7 +134,7 @@ public class SailfishProgramBase
     public string[]? Args { get; set; }
 
     [Option("-t|--tests", CommandOptionType.MultipleValue, Description = "List of tests to execute")]
-    public string[] TestNames { get; set; } = { };
+    public string[] TestNames { get; set; } = Array.Empty<string>();
 
     [Option("-y|--notify", CommandOptionType.NoValue,
         Description =

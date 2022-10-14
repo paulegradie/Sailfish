@@ -11,11 +11,17 @@ internal class Program : SailfishProgramBase
 {
     public static async Task Main(string[] userRequestedTestNames)
     {
+        // your main can call the sailfish main.
         await SailfishMain<Program>(userRequestedTestNames);
+
+        // alternatively, if you don't want the base / cli tools, you can 
+        // await Sailfish.Main(new RunSettings(), RegisterWithSailfish, cancellationToken);
     }
 
     protected override IEnumerable<Type> SourceTypesProvider()
     {
+        // any types from any assembly that contains Sailfish tests
+        // to direct a scan of the assembly
         return new[] { GetType() };
     }
 

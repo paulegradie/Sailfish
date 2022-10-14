@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using MediatR;
@@ -11,6 +12,6 @@ public class CustomBeforeAndAfterFileLocationHandler : IRequestHandler<BeforeAnd
     public async Task<BeforeAndAfterFileLocationResponse> Handle(BeforeAndAfterFileLocationCommand request, CancellationToken cancellationToken)
     {
         await Task.CompletedTask;
-        return new BeforeAndAfterFileLocationResponse(new List<string>() { string.Empty }, new List<string>() { string.Empty });
+        return new BeforeAndAfterFileLocationResponse(Enumerable.Empty<string>(), Enumerable.Empty<string>());
     }
 }

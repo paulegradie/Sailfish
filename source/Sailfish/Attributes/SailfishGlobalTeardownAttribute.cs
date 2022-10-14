@@ -2,7 +2,7 @@ using System;
 
 namespace Sailfish.Attributes;
 
-[AttributeUsage(AttributeTargets.Method, AllowMultiple = false)]
+[AttributeUsage(AttributeTargets.Method)]
 public sealed class SailfishGlobalTeardownAttribute : Attribute
 {
 }

@@ -10,7 +10,7 @@ public static class Logging
     public static Logger CreateLogger(string fileName)
     {
         var currentDirInfo = new DirectoryInfo(Directory.GetCurrentDirectory());
-        var logfileDirName = "ConsoleAppLogs";
+        const string logfileDirName = "ConsoleAppLogs";
 
         var projectRoot = FindProjectRootDir(currentDirInfo, 5);
 
@@ -30,14 +30,15 @@ public static class Logging
         if (currentDirectory is null) return null;
 
         var csprojFile = currentDirectory.GetFiles("*.csproj").SingleOrDefault();
-        if (csprojFile is null)
-        {
-            if (currentDirectory.ThereIsAParentDirectory(out var parentDir))
-                return FindProjectRootDir(parentDir, maxParentDirLevel - 1);
-            return null;
-        }
+        if (csprojFile is not null) return csprojFile.Directory;
 
-        return csprojFile.Directory;
+        if (currentDirectory.ThereIsAParentDirectory(out var parentDir))
+        {
+            return FindProjectRootDir(parentDir, maxParentDirLevel - 1);
+        }
+        
+        return null;
+
     }
 }
 

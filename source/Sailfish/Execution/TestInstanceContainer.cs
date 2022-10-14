@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Reflection;
-using System.Threading;
 using Sailfish.ExtensionMethods;
 using Sailfish.Statistics;
 using Sailfish.Utils;
