@@ -3,7 +3,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Sailfish.Attributes;
-using Sailfish.Execution;
 using Test.API;
 
 // Tests here are automatically discovered and executed
@@ -22,7 +21,7 @@ public class ExamplePerformanceTest : TestBase
     [SailfishVariable(1, 2)] public int NTries { get; set; } // try to avoid multiple variables if you can manage
 
     [SailfishGlobalSetup]
-    public void GlobalSetup(CancellationToken cancellationToken)
+    public void GlobalSetup()
     {
         Console.WriteLine("This is the Global Setup");
     }
@@ -58,16 +57,16 @@ public class ExamplePerformanceTest : TestBase
     }
 
     [SailfishMethod]
-    public async Task WaitPeriodPerfTest()
+    public async Task WaitPeriodPerfTest(CancellationToken cancellationToken)
     {
-        await Task.Delay(WaitPeriod, CancellationToken);
-        await Client.GetStringAsync("/", CancellationToken);
+        await Task.Delay(WaitPeriod, cancellationToken);
+        await Client.GetStringAsync("/", cancellationToken);
     }
 
     [SailfishMethod]
-    public async Task Other()
+    public async Task Other(CancellationToken cancellationToken)
     {
-        await Task.Delay(WaitPeriod, CancellationToken);
+        await Task.Delay(WaitPeriod, cancellationToken);
         await Task.CompletedTask;
     }
 }

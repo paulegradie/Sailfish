@@ -68,6 +68,22 @@ public static class ReflectionExtensionMethods
         else method.Invoke(instance, null);
     }
 
+    public static async Task TryInvoke(this MethodInfo? methodInfo, object instance, CancellationToken cancellationToken)
+    {
+        if (methodInfo is null) return;
+
+        var parameters = methodInfo.GetParameters() ?? Enumerable.Empty<ParameterInfo>();
+        if (parameters.Count() == 0)
+        {
+            await methodInfo.InvokeWith(instance).ConfigureAwait(false);
+        }
+        else if (parameters.Count() == 1 && parameters.Single().ParameterType == typeof(CancellationToken))
+        {
+            await methodInfo.InvokeWith(instance, cancellationToken).ConfigureAwait(false);
+        }
+    }
+
+
     internal static int GetNumIterations(this Type type)
     {
         var numIterations = type

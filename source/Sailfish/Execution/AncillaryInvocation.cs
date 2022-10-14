@@ -22,8 +22,9 @@ internal class AncillaryInvocation
     public AncillaryInvocation(object instance, MethodInfo method, PerformanceTimer performanceTimer)
     {
         this.instance = instance;
-        mainMethod = method;
         this.performanceTimer = performanceTimer;
+
+        mainMethod = method;
         globalSetup = instance.GetMethodWithAttribute<SailfishGlobalSetupAttribute>();
         globalTeardown = instance.GetMethodWithAttribute<SailfishGlobalTeardownAttribute>();
         methodSetup = instance.GetMethodWithAttribute<SailfishMethodSetupAttribute>();
@@ -35,42 +36,41 @@ internal class AncillaryInvocation
     public async Task ExecutionMethod(CancellationToken cancellationToken, bool timed = true)
     {
         if (timed) performanceTimer.StartExecutionTimer();
-        await mainMethod.InvokeWith(instance, cancellationToken).ConfigureAwait(false);
+        await mainMethod.TryInvoke(instance, cancellationToken).ConfigureAwait(false);
         if (timed) performanceTimer.StopExecutionTimer();
     }
 
     public async Task IterationSetup(CancellationToken cancellationToken)
     {
-        if (iterationSetup is not null) await iterationSetup.InvokeWith(instance, cancellationToken).ConfigureAwait(false);
+        if (iterationSetup is not null) await iterationSetup.TryInvoke(instance, cancellationToken).ConfigureAwait(false);
     }
 
     public async Task IterationTearDown(CancellationToken cancellationToken)
     {
-        if (iterationTeardown is not null) await iterationTeardown.InvokeWith(instance, cancellationToken).ConfigureAwait(false);
+        if (iterationTeardown is not null) await iterationTeardown.TryInvoke(instance, cancellationToken).ConfigureAwait(false);
     }
 
     public async Task MethodSetup(CancellationToken cancellationToken)
     {
         performanceTimer.StartMethodTimer();
-        if (methodSetup is not null) await methodSetup.InvokeWith(instance, cancellationToken).ConfigureAwait(false);
+        if (methodSetup is not null) await methodSetup.TryInvoke(instance, cancellationToken).ConfigureAwait(false);
     }
 
     public async Task MethodTearDown(CancellationToken cancellationToken)
     {
-        if (methodTeardown is not null) await methodTeardown.InvokeWith(instance, cancellationToken).ConfigureAwait(false);
+        if (methodTeardown is not null) await methodTeardown.TryInvoke(instance, cancellationToken).ConfigureAwait(false);
         performanceTimer.StopMethodTimer();
     }
-
 
     public async Task GlobalSetup(CancellationToken cancellationToken)
     {
         performanceTimer.StartGlobalTimer();
-        if (globalSetup is not null) await globalSetup.InvokeWith(instance, cancellationToken).ConfigureAwait(false);
+        if (globalSetup is not null) await globalSetup.TryInvoke(instance, cancellationToken).ConfigureAwait(false);
     }
 
     public async Task GlobalTeardown(CancellationToken cancellationToken)
     {
-        if (globalTeardown is not null) await globalTeardown.InvokeWith(instance, cancellationToken).ConfigureAwait(false);
+        if (globalTeardown is not null) await globalTeardown.TryInvoke(instance, cancellationToken).ConfigureAwait(false);
         performanceTimer.StopGlobalTimer();
     }
 
