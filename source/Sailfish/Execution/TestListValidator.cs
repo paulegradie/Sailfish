@@ -5,61 +5,60 @@ using Sailfish.Attributes;
 using Sailfish.ExtensionMethods;
 using Serilog;
 
-namespace Sailfish.Execution
+namespace Sailfish.Execution;
+
+internal class TestListValidator : ITestListValidator
 {
-    internal class TestListValidator : ITestListValidator
+    private readonly ILogger logger;
+
+    public TestListValidator(ILogger logger)
     {
-        private readonly ILogger logger;
+        this.logger = logger;
+    }
 
-        public TestListValidator(ILogger logger)
+    public TestValidationResult ValidateTests(string[] testsRequestedByUser, Type[] filteredTestNames)
+    {
+        var erroredTests = new Dictionary<string, List<string>>();
+        if (TestsAreRequestedButCannotFindAllOfThem(testsRequestedByUser, filteredTestNames.Select(x => x.Name).ToArray(), out var missingTests))
         {
-            this.logger = logger;
+            logger.Fatal("Could not find the tests specified: {Tests}", testsRequestedByUser.Where(x => !filteredTestNames.Select(x => x.Name).Contains(x)));
+            erroredTests.Add("Could not find the following tests:", missingTests);
         }
 
-        public TestValidationResult ValidateTests(string[] testsRequestedByUser, Type[] filteredTestNames)
+
+        if (AnyTestHasNoExecutionMethods(filteredTestNames, out var noExecutionMethodTests))
         {
-            var erroredTests = new Dictionary<string, List<string>>();
-            if (TestsAreRequestedButCannotFindAllOfThem(testsRequestedByUser, filteredTestNames.Select(x => x.Name).ToArray(), out var missingTests))
+            erroredTests.Add("The following tests have no execution method defined:", noExecutionMethodTests);
+        }
+
+        return erroredTests.Keys.Count > 0 ? TestValidationResult.CreateFailure(filteredTestNames, erroredTests) : TestValidationResult.CreateSuccess(filteredTestNames);
+    }
+
+    private static bool AnyTestHasNoExecutionMethods(IEnumerable<Type> testClasses, out List<string> missingExecutionMethod)
+    {
+        missingExecutionMethod = new List<string>();
+        foreach (var test in testClasses)
+        {
+            if (!TypeHasMoreThanZeroExecutionMethods(test) && !test.SailfishTypeIsDisabled())
             {
-                logger.Fatal("Could not find the tests specified: {Tests}", testsRequestedByUser.Where(x => !filteredTestNames.Select(x => x.Name).Contains(x)));
-                erroredTests.Add("Could not find the following tests:", missingTests);
+                missingExecutionMethod.Add(test.Name);
             }
-
-
-            if (AnyTestHasNoExecutionMethods(filteredTestNames, out var noExecutionMethodTests))
-            {
-                erroredTests.Add("The following tests have no execution method defined:", noExecutionMethodTests);
-            }
-
-            return erroredTests.Keys.Count > 0 ? TestValidationResult.CreateFailure(filteredTestNames, erroredTests) : TestValidationResult.CreateSuccess(filteredTestNames);
         }
 
-        private bool AnyTestHasNoExecutionMethods(Type[] testClasses, out List<string> missingExecutionMethod)
-        {
-            missingExecutionMethod = new List<string>();
-            foreach (var test in testClasses)
-            {
-                if (!TypeHasMoreThanZeroExecutionMethods(test) && !test.SailfishTypeIsDisabled())
-                {
-                    missingExecutionMethod.Add(test.Name);
-                }
-            }
+        return missingExecutionMethod.Count > 0;
+    }
 
-            return missingExecutionMethod.Count > 0;
-        }
+    private static bool TypeHasMoreThanZeroExecutionMethods(Type type)
+    {
+        return type
+            .GetMethodsWithAttribute<SailfishMethodAttribute>()
+            .ToArray()
+            .Length > 0;
+    }
 
-        private static bool TypeHasMoreThanZeroExecutionMethods(Type type)
-        {
-            return type
-                .GetMethodsWithAttribute<SailfishMethodAttribute>()
-                .ToArray()
-                .Length > 0;
-        }
-
-        private bool TestsAreRequestedButCannotFindAllOfThem(string[] testsRequestedByUser, string[] filteredTestNames, out List<string> missingTests)
-        {
-            missingTests = testsRequestedByUser.Except(filteredTestNames).ToList();
-            return testsRequestedByUser.Length > 0 && filteredTestNames.Length != testsRequestedByUser.Length;
-        }
+    private static bool TestsAreRequestedButCannotFindAllOfThem(IReadOnlyCollection<string> testsRequestedByUser, IReadOnlyCollection<string> filteredTestNames, out List<string> missingTests)
+    {
+        missingTests = testsRequestedByUser.Except(filteredTestNames).ToList();
+        return testsRequestedByUser.Count > 0 && filteredTestNames.Count != testsRequestedByUser.Count;
     }
 }

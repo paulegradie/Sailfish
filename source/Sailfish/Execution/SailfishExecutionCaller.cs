@@ -32,7 +32,6 @@ public static class SailfishExecutionCaller
 
         registerAdditionalTypes?.Invoke(builder);
 
-        var container = builder.Build();
-        return await container.Resolve<SailfishExecutor>().Run(runSettings, cancellationToken ?? default).ConfigureAwait(false);
+        return await builder.Build().Resolve<SailfishExecutor>().Run(runSettings, cancellationToken ?? default).ConfigureAwait(false);
     }
 }

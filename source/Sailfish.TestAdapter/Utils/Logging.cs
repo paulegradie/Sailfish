@@ -5,70 +5,69 @@ using Sailfish.Utils;
 using Serilog;
 using Serilog.Core;
 
-namespace Sailfish.TestAdapter.Utils
+namespace Sailfish.TestAdapter.Utils;
+
+internal static class LogExtensions
 {
-    internal static class LogExtensions
+    public static string AppendTimeStamp(this string fileName)
     {
-        public static string AppendTimeStamp(this string fileName)
-        {
-            return string.Concat(
-                Path.GetFileNameWithoutExtension(fileName),
-                DateTime.Now.ToString("yyyyMMddHHmmssfff"),
-                Path.GetExtension(fileName)
-            );
-        }
+        return string.Concat(
+            Path.GetFileNameWithoutExtension(fileName),
+            DateTime.Now.ToString("yyyyMMddHHmmssfff"),
+            Path.GetExtension(fileName)
+        );
+    }
+}
+
+internal static class Logging
+{
+    public static Logger CreateLogger(string fileName)
+    {
+        var currentDirInfo = new DirectoryInfo(Directory.GetCurrentDirectory());
+        var logfileDirName = "ADAPTER_LOGS";
+
+        var projectRoot = FindProjectRootDir(currentDirInfo, 5);
+
+        var logDirPath = projectRoot is null
+            ? Path.Combine(".", logfileDirName)
+            : Path.Combine(projectRoot.FullName, logfileDirName);
+
+        var hardCodedDir = "C:\\Users\\paule\\code\\ProjectSailfish\\TestingLogs\\WORK_DAMNYOU.txt";
+
+        return new LoggerConfiguration()
+            .MinimumLevel.Verbose()
+            .WriteTo.Console()
+            // .WriteTo.Seq("http://localhost:5341")
+            .WriteTo.File(hardCodedDir) //Path.Combine(hardCodedDir, fileName))
+            .CreateLogger();
     }
 
-    internal static class Logging
+    public static DirectoryInfo? FindProjectRootDir(DirectoryInfo? currentDirectory, int maxParentDirLevel)
     {
-        public static Logger CreateLogger(string fileName)
+        if (maxParentDirLevel == 0) return null; // try and stave off disaster
+        if (currentDirectory is null) return null;
+
+        var csprojFile = currentDirectory.GetFiles("*.csproj").SingleOrDefault();
+        if (csprojFile is null)
         {
-            var currentDirInfo = new DirectoryInfo(Directory.GetCurrentDirectory());
-            var logfileDirName = "ADAPTER_LOGS";
-
-            var projectRoot = FindProjectRootDir(currentDirInfo, 5);
-
-            var logDirPath = projectRoot is null
-                ? Path.Combine(".", logfileDirName)
-                : Path.Combine(projectRoot.FullName, logfileDirName);
-
-            var hardCodedDir = "C:\\Users\\paule\\code\\ProjectSailfish\\TestingLogs\\WORK_DAMNYOU.txt";
-
-            return new LoggerConfiguration()
-                .MinimumLevel.Verbose()
-                .WriteTo.Console()
-                // .WriteTo.Seq("http://localhost:5341")
-                .WriteTo.File(hardCodedDir) //Path.Combine(hardCodedDir, fileName))
-                .CreateLogger();
+            if (currentDirectory.ThereIsAParentDirectory(out var parentDir))
+                return FindProjectRootDir(parentDir, maxParentDirLevel - 1);
+            return null;
         }
 
-        public static DirectoryInfo? FindProjectRootDir(DirectoryInfo? currentDirectory, int maxParentDirLevel)
+        return csprojFile.Directory;
+    }
+
+    public static bool ThereIsAParentDirectory(this DirectoryInfo dir, out DirectoryInfo parentDir)
+    {
+        if (dir.Parent is not null)
         {
-            if (maxParentDirLevel == 0) return null; // try and stave off disaster
-            if (currentDirectory is null) return null;
-
-            var csprojFile = currentDirectory.GetFiles("*.csproj").SingleOrDefault();
-            if (csprojFile is null)
-            {
-                if (currentDirectory.ThereIsAParentDirectory(out var parentDir))
-                    return FindProjectRootDir(parentDir, maxParentDirLevel - 1);
-                return null;
-            }
-
-            return csprojFile.Directory;
+            logger.Verbose("CurrentDir: {0} --- Parent Directory: {1}", dir.Name, dir.Parent.Name);
+            parentDir = dir.Parent;
+            return dir.Parent.Exists;
         }
 
-        public static bool ThereIsAParentDirectory(this DirectoryInfo dir, out DirectoryInfo parentDir)
-        {
-            if (dir.Parent is not null)
-            {
-                logger.Verbose("CurrentDir: {0} --- Parent Directory: {1}", dir.Name, dir.Parent.Name);
-                parentDir = dir.Parent;
-                return dir.Parent.Exists;
-            }
-
-            parentDir = dir;
-            return false;
-        }
+        parentDir = dir;
+        return false;
     }
 }

@@ -6,26 +6,25 @@ using Test.API.Controllers;
 using Test.ApiCommunicationTests.Base;
 using Xunit;
 
-namespace Test.ApiCommunicationTests
+namespace Test.ApiCommunicationTests;
+
+public class WhenTalkingToTheApi : ApiTestBase
 {
-    public class WhenTalkingToTheApi : ApiTestBase
+    public WhenTalkingToTheApi(WebApplicationFactory<DemoApp> factory) : base(factory)
     {
-        public WhenTalkingToTheApi(WebApplicationFactory<DemoApp> factory) : base(factory)
-        {
-        }
+    }
 
-        [Fact]
-        public async Task AResponseIsReturned()
-        {
-            var response = await Client.GetStringAsync("/");
-            response.ShouldBe(TestController.TestResponse);
-        }
+    [Fact]
+    public async Task AResponseIsReturned()
+    {
+        var response = await Client.GetStringAsync("/");
+        response.ShouldBe(TestController.TestResponse);
+    }
 
-        [Fact]
-        public async Task AMillionIsCounted()
-        {
-            var response = await Client.GetStringAsync("/million");
-            response.ShouldBe("1000000");
-        }
+    [Fact]
+    public async Task AMillionIsCounted()
+    {
+        var response = await Client.GetStringAsync("/million");
+        response.ShouldBe("1000000");
     }
 }

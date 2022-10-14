@@ -1,4 +1,5 @@
 using System;
+using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Sailfish.Attributes;
@@ -21,7 +22,7 @@ public class ExamplePerformanceTest : TestBase
     [SailfishVariable(1, 2)] public int NTries { get; set; } // try to avoid multiple variables if you can manage
 
     [SailfishGlobalSetup]
-    public void GlobalSetup()
+    public void GlobalSetup(CancellationToken cancellationToken)
     {
         Console.WriteLine("This is the Global Setup");
     }
@@ -55,7 +56,6 @@ public class ExamplePerformanceTest : TestBase
     {
         Console.WriteLine("This is the Iteration Teardown - use sparingly");
     }
-
 
     [SailfishMethod]
     public async Task WaitPeriodPerfTest()

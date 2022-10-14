@@ -1,9 +1,8 @@
 using System;
 
-namespace Sailfish.Execution
+namespace Sailfish.Execution;
+
+internal interface ITypeResolver
 {
-    internal interface ITypeResolver
-    {
-        object ResolveType(Type type);
-    }
+    object ResolveType(Type type);
 }

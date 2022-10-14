@@ -7,25 +7,22 @@ using Microsoft.AspNetCore.TestHost;
 using Test.API;
 using Xunit;
 
-namespace AsAConsoleApp.ExamplePerformanceTests
+namespace AsAConsoleApp.ExamplePerformanceTests;
+
+public class TestBase : IClassFixture<WebApplicationFactory<DemoApp>>, IAsyncDisposable
 {
-    public class TestBase : IClassFixture<WebApplicationFactory<DemoApp>>, IAsyncDisposable
+    public TestBase(WebApplicationFactory<DemoApp> factory)
     {
-        public TestBase(WebApplicationFactory<DemoApp> factory)
-        {
-            CancellationToken = CancellationToken.None;
-            WebHostFactory = factory.WithWebHostBuilder(
-                builder => { builder.UseTestServer(); });
-            Client = WebHostFactory.CreateClient();
-        }
+        WebHostFactory = factory.WithWebHostBuilder(
+            builder => { builder.UseTestServer(); });
+        Client = WebHostFactory.CreateClient();
+    }
 
-        public CancellationToken CancellationToken { get; }
-        public WebApplicationFactory<DemoApp> WebHostFactory { get; set; }
-        public HttpClient Client { get; }
+    public WebApplicationFactory<DemoApp> WebHostFactory { get; set; }
+    public HttpClient Client { get; }
 
-        public async ValueTask DisposeAsync()
-        {
-            await WebHostFactory.DisposeAsync();
-        }
+    public async ValueTask DisposeAsync()
+    {
+        await WebHostFactory.DisposeAsync();
     }
 }

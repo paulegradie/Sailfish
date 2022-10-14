@@ -2,10 +2,9 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Sailfish.Execution
+namespace Sailfish.Execution;
+
+internal interface ITestCaseIterator
 {
-    internal interface ITestCaseIterator
-    {
-        Task<List<string>> Iterate(TestInstanceContainer testInstanceContainer, CancellationToken cancellationToken);
-    }
+    Task<List<string>> Iterate(TestInstanceContainer testInstanceContainer, CancellationToken cancellationToken);
 }

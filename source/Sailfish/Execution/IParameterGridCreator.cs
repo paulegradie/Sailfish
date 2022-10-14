@@ -1,10 +1,9 @@
 using System;
 using System.Collections.Generic;
 
-namespace Sailfish.Execution
+namespace Sailfish.Execution;
+
+internal interface IParameterGridCreator
 {
-    internal interface IParameterGridCreator
-    {
-        (List<string>, int[][]) GenerateParameterGrid(Type test);
-    }
+    (List<string>, int[][]) GenerateParameterGrid(Type test);
 }

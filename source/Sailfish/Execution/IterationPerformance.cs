@@ -7,11 +7,11 @@ public class IterationPerformance
     public IterationPerformance(DateTimeOffset startTime, DateTimeOffset endTime, long elapsedMilliseconds)
     {
         StartTime = startTime;
-        StopTime = StopTime;
+        StopTime = endTime;
         Duration = elapsedMilliseconds;
     }
 
-    public DateTimeOffset StartTime { get; set; }
-    public DateTimeOffset StopTime { get; set; }
-    public long Duration { get; set; } // milliseconds
+    public DateTimeOffset StartTime { get; }
+    public DateTimeOffset StopTime { get; }
+    public long Duration { get; } // milliseconds
 }
