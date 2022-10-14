@@ -1,5 +1,4 @@
 using Autofac;
-using Sailfish;
 using Serilog;
 
 namespace AsAConsoleApp.Configuration;
@@ -10,8 +9,7 @@ public static class ContainerConfiguration
     {
         var builder = new ContainerBuilder();
         var logger = Logging.CreateLogger("ConsoleAppLogs.log");
-        builder.Register<ILogger>(c => { return logger; });
-        builder.RegisterType<Sailfish.Sailfish>().AsSelf();
+        builder.Register<ILogger>(c => logger);
         return builder.Build();
     }
 }

@@ -8,7 +8,7 @@ using Sailfish.Presentation;
 
 namespace Sailfish.DefaultHandlers;
 
-public class SailfishWriteTTestMarkdownResultHandler : INotificationHandler<WriteTTestResultAsMarkdownCommand>
+internal class SailfishWriteTTestMarkdownResultHandler : INotificationHandler<WriteTTestResultAsMarkdownCommand>
 {
     private readonly IFileIo fileIo;
 

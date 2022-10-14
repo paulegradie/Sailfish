@@ -33,7 +33,4 @@
         <PackageReference Include="McMaster.Extensions.CommandLineUtils" Version="4.0.1" />
         <PackageReference Include="System.Linq.Async" Version="6.0.1" />
     </ItemGroup>
-    <ItemGroup>
-      <Folder Include="Execution\Public" />
-    </ItemGroup>
 </Project>

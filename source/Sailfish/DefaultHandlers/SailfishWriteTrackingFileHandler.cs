@@ -7,7 +7,7 @@ using Sailfish.Presentation;
 
 namespace Sailfish.DefaultHandlers;
 
-public class SailfishWriteTrackingFileHandler : INotificationHandler<WriteCurrentTrackingFileCommand>
+internal class SailfishWriteTrackingFileHandler : INotificationHandler<WriteCurrentTrackingFileCommand>
 {
     public async Task Handle(WriteCurrentTrackingFileCommand notification, CancellationToken cancellationToken)
     {

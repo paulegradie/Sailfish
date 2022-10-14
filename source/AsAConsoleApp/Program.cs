@@ -15,7 +15,7 @@ internal class Program : SailfishProgramBase
         await SailfishMain<Program>(userRequestedTestNames);
 
         // alternatively, if you don't want the base / cli tools, you can 
-        // await Sailfish.Main(new RunSettings(), RegisterWithSailfish, cancellationToken);
+        // await SailfishRunner.Run(new RunSettings(), RegisterWithSailfish, cancellationToken);
     }
 
     protected override IEnumerable<Type> SourceTypesProvider()

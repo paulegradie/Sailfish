@@ -10,7 +10,7 @@ using Serilog;
 
 namespace Sailfish.DefaultHandlers;
 
-public class SailfishReadInBeforeAndAfterDataHandler : IRequestHandler<ReadInBeforeAndAfterDataCommand, ReadInBeforeAndAfterDataResponse>
+internal class SailfishReadInBeforeAndAfterDataHandler : IRequestHandler<ReadInBeforeAndAfterDataCommand, ReadInBeforeAndAfterDataResponse>
 {
     private readonly IFileIo fileIo;
     private readonly ILogger logger;

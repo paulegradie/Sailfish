@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 using Autofac;
 using Sailfish.Registration;
 
-namespace Sailfish.Execution.Public;
+namespace Sailfish.Execution;
 
 internal static class SailfishExecutionCaller
 {
