@@ -41,17 +41,32 @@ public class AMostBasicTest
 }
 ```
 
-## Intended Use
-This test framework is intended to provide approximate millisecond resolution performance data of your component or API. It is NOT intended to produce high resolution (microsecond, nanosecond) results on performance.
+## General Concepts
 
-You may use this project however you'd like, however the intended use case for this is to provide approximate millisecond
-response time data for API calls that you're developing against. Please keep in mind the physical machines that you run this software will have a direct affect on the results that are produced. In otherwords, for more reliable results, execute tests on stable hardware that is, if possible, not really doing anything else. For example, running these tests on dynamic cloud infrastructure may introduce signficant outlier results.
+#### Performance testing
 
-Fortunately, tools to mitigate the affects of such volatility in the infrastructure are currently under development.
+Benchmarking software or hardware often involves taking precise measurements on stable, controlled hardware using highly optimized tools and protocols. Furthermore, understanding software efficiency often involves using algorithm complexity analysis.
 
-For this reason, this project does not go to the extent that other more rigorous benchmark analysis tools such as, say, BenchmarkDotNet do to buffer the effects of hardware and compute sharing.
+For productionized systems, this tends to be a somewhat academic pursuit. Instead, production systems tend to require performance trends data, as apposed to snapshot data.
+
+Sailfish provides the tool that can be used to write performance type interrogative tests that run against your application, and handle the creating of tracking data that you can then provide to consumers (e.g. dashboard apps, notification tools, etc).
+
+#### Structure
+
+Sailfish is a system for collecting and executing (using reflection) your Sailfish tests. When you write a test, you simply create a class and mark it with attributes provided by the Sailfish library. At runtime, Sailfish will discover your tests, instantiate them, and then call the implemented execution methods in a specific way - all the while recording how long everything took.
+
+So to use sailfish, you'll simply write your tests, and then invoke sailfish's main execution method (e.g. `SailfishRunner.Run`)
+
+#### Intended Use
+
+Sailfish is intended to be used as a quick-to-setup console app for local testing, or as part of a productionized performance monitoring system. Execution of Sailfish tests is kept in process (to improve your development experience) at the expense of certain internal optimizations. For this reason, results produced by Sailfish have a minimum resolution of milliseconds.
+
+Sailfish includes built-in outlier removal, which can be used to truncate outer quartiles from performance results. So if you're running Sailfish tests against an application running in the cloud (for example as part of a live system performance monitoring application), you can take the approach of increasing the number of samples you collect (over different parts of the day) and removing the first and fourth quartiles (to remove the majority of outlier data).
+
+Sailfish does not go to the extent that other more rigorous benchmark analysis tools such as, say, BenchmarkDotNet do to buffer the effects of hardware and compute sharing.
 
 Please visit our wiki for examples on how to use Sailfish effectively for your project or organization.
+
 
 ## License
 Sailfish is [MIT licensed](./LICENSE).
