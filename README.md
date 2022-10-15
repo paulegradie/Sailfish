@@ -15,6 +15,7 @@ class Program : SailfishProgramBase
 {
     public static async Task Main(string[] testNamesToFilterBy)
     {
+        // provided via the SailfishProgramBase
         await SailfishMain<Program>(testNamesToFilterBy);
     }
 
@@ -27,12 +28,20 @@ class Program : SailfishProgramBase
     protected override void RegisterWithSailfish(ContainerBuilder builder)
     {
        // register anything that you need to inject into your performance tests
+       builder.RegisterType<MyType>().AsSelf();
     }
 }
 
 [Sailfish]
 public class AMostBasicTest
 {
+    private readonly MyType myType;
+
+    public AMostBasicTest(MyType myType)
+    {
+        this.myType = myType;
+    }
+
     [SailfishMethod]
     public async Task TestMethod(CancellationToken cancellationToken) // <-- token is injected when requested
     {
