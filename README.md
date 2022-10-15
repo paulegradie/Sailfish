@@ -42,8 +42,8 @@ public class AMostBasicTest
         this.myType = myType;
     }
 
-    [SailfishMethod]
-    public async Task TestMethod(CancellationToken cancellationToken) // <-- token is injected when requested
+    [SailfishMethod] // checkout all of the attributes provided by sailfish
+    public async Task TestMethod(CancellationToken cancellationToken) // token is injected when requested
     {
         await Task.Delay(2000, cancellationToken);
     }
