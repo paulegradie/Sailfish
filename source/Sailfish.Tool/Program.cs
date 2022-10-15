@@ -7,7 +7,7 @@ using Sailfish.Program;
 namespace Sailfish.Tool;
 
 /// <summary>
-/// The tool does currently support additional registrations.
+/// The tool does not currently support additional registrations.
 /// TODO: We can take an additional argument that points to
 /// modules with additional registrations perhaps.
 /// </summary>

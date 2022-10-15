@@ -14,8 +14,8 @@ internal class Program : SailfishProgramBase
         // your main can call the sailfish main.
         await SailfishMain<Program>(userRequestedTestNames);
 
-        // alternatively, if you don't want the base / cli tools, you can 
-        // await SailfishRunner.Run(new RunSettings(), RegisterWithSailfish, cancellationToken);
+        // alternatively, if you don't want the base / cli tools, you can do
+        // await SailfishRunner.Run(new RunSettings(), RegisterWithSailfishCallback, cancellationToken);
     }
 
     protected override IEnumerable<Type> SourceTypesProvider()
