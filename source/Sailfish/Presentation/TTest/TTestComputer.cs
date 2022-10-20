@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using MathNet.Numerics.Statistics;
 using Sailfish.Contracts.Public;
-using Sailfish.Exceptions;
 using Sailfish.Statistics.StatisticalAnalysis;
 using Serilog;
 
