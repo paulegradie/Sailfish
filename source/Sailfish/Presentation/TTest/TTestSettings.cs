@@ -14,6 +14,7 @@ public class TTestSettings
         Alpha = alpha;
         Round = round;
         UseInnerQuartile = useInnerQuartile;
+        
     }
 
     public double Alpha { get; set; }

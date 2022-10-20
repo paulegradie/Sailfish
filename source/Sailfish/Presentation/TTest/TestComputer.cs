@@ -4,16 +4,17 @@ using System.Linq;
 using MathNet.Numerics.Statistics;
 using Sailfish.Contracts.Public;
 using Sailfish.Statistics.StatisticalAnalysis;
+using Sailfish.Utils.MathOps;
 using Serilog;
 
 namespace Sailfish.Presentation.TTest;
 
-internal class TTestComputer : ITTestComputer
+internal class TestComputer : ITTestComputer
 {
     private readonly ITTest tTest;
     private readonly ILogger logger;
 
-    public TTestComputer(ITTest tTest, ILogger logger)
+    public TestComputer(ITTest tTest, ILogger logger)
     {
         this.tTest = tTest;
         this.logger = logger;
@@ -44,6 +45,7 @@ internal class TTestComputer : ITTestComputer
         {
             var afterCompiled = Aggregate(
                 testName,
+                settings,
                 after
                     .Data
                     .Where(x => x.DisplayName.Equals(testName, StringComparison.InvariantCultureIgnoreCase))
@@ -51,6 +53,7 @@ internal class TTestComputer : ITTestComputer
 
             var beforeCompiled = Aggregate(
                 testName,
+                settings,
                 before
                     .Data
                     .Where(x => x.DisplayName.Equals(testName, StringComparison.InvariantCultureIgnoreCase))
@@ -65,7 +68,7 @@ internal class TTestComputer : ITTestComputer
         return results;
     }
 
-    private static DescriptiveStatisticsResult? Aggregate(string displayName, IReadOnlyCollection<DescriptiveStatisticsResult> data)
+    private static DescriptiveStatisticsResult? Aggregate(string displayName, TTestSettings settings, IReadOnlyCollection<DescriptiveStatisticsResult> data)
     {
         switch (data.Count)
         {
@@ -82,10 +85,10 @@ internal class TTestComputer : ITTestComputer
                     GlobalDuration = data.Select(x => x.GlobalDuration).Mean(),
                     GlobalStart = data.OrderBy(x => x.GlobalStart).First().GlobalStart,
                     GlobalEnd = data.OrderBy(x => x.GlobalEnd).First().GlobalEnd,
-                    Mean = data.Select(x => x.Mean).Mean(),
-                    Median = data.Select(x => x.Median).Median(),
-                    Variance = allRawData.Variance(),
-                    StdDev = allRawData.StandardDeviation(),
+                    Mean = settings.UseInnerQuartile ? ComputeQuartiles.GetInnerQuartileValues(allRawData).Mean() : allRawData.Mean(),
+                    Median = settings.UseInnerQuartile ? ComputeQuartiles.GetInnerQuartileValues(allRawData).Median() : allRawData.Median(),
+                    Variance = settings.UseInnerQuartile ? ComputeQuartiles.GetInnerQuartileValues(allRawData).Variance() : allRawData.Variance(),
+                    StdDev = settings.UseInnerQuartile ? ComputeQuartiles.GetInnerQuartileValues(allRawData).StandardDeviation() : allRawData.StandardDeviation(),
                 };
         }
     }

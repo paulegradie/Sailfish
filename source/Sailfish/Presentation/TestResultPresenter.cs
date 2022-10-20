@@ -96,7 +96,7 @@ internal class TestResultPresenter : ITestResultPresenter
                 .ConfigureAwait(false);
             if (!beforeAndAfterFileLocations.BeforeFilePath.Any() || !beforeAndAfterFileLocations.AfterFilePath.Any())
             {
-                logger.Fatal("Failed to identify before and after file locations when analyzing tracking data");
+                logger.Error("Failed to identify any before and after file locations when providing tracking data");
                 return;
             }
 
@@ -112,7 +112,7 @@ internal class TestResultPresenter : ITestResultPresenter
 
             if (beforeAndAfterData.BeforeData is null || beforeAndAfterData.AfterData is null)
             {
-                logger.Fatal("Failed to retrieve test result data");
+                logger.Error("Failed to retrieve test result data");
                 return;
             }
 

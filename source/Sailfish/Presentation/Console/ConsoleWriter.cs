@@ -18,19 +18,16 @@ internal class ConsoleWriter : IConsoleWriter
 
     public string Present(List<ExecutionSummary> results, OrderedDictionary<string, string> tags)
     {
-        foreach (var result in results)
+        foreach (var result in results.Where(result => result.Settings.AsConsole))
         {
-            if (result.Settings.AsConsole)
-            {
-                AppendHeader(result.Type.Name);
-                AppendResults(result.CompiledResults);
-                AppendExceptions(result.CompiledResults.Where(x => x.Exception is not null).Select(x => x.Exception).ToList());
-            }
+            AppendHeader(result.Type.Name);
+            AppendResults(result.CompiledResults);
+            AppendExceptions(result.CompiledResults.Where(x => x.Exception is not null).Select(x => x.Exception).ToList());
         }
 
         var output = stringBuilder.Build();
 
-        if (tags.Count() > 0) System.Console.WriteLine($"{Environment.NewLine}Tags:");
+        if (tags.Any()) System.Console.WriteLine($"{Environment.NewLine}Tags:");
         foreach (var (key, value) in tags)
         {
             System.Console.WriteLine($"{key}: {value}");
