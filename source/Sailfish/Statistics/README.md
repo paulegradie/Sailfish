@@ -12,7 +12,6 @@ When collecting statistics, we are interested in:
         - Mean
         - Median
         - StdDev
-        - Interquartile Median
 
 - A good structured log that can be written to stdout / console
 
@@ -20,34 +19,34 @@ When collecting statistics, we are interested in:
 
 `ExampleClass`
 
-| TestCase                                              | Median | Mean  | StdDev | Variance | Interquartile |
-|-------------------------------------------------------|-------|-------|--------|----------|---------------|
-| ExampleClass.TestMethodA(VariableA: 1, VariableB: 1)  | 21.3s | 23.2s | 22.6s  | 15.3     | 22.3s         |
-| ExampleClass.TestMethodA(VariableA: 1, VariableB: 2)  | 25.3s | 23.2s | 22.6s  | 15.3     | 22.3s         |
-| ExampleClass.TestMethodA(VariableA: 2, VariableB: 1)  | 46.3s | 44.2s | 22.6s  | 15.3     | 22.3s         |
-| ExampleClass.TestMethodA(VariableA: 2, VariableB: 2)  | 21.3s | 23.2s | 22.6s  | 15.3     | 22.3s         |
-| ExampleClass.TestMethodB(VariableA: 1, VariableB: 1)  | 21.3s | 23.2s | 22.6s  | 15.3     | 22.3s         |
-| ExampleClass.TestMethodB(VariableA: 1, VariableB: 2)  | 25.3s | 23.2s | 22.6s  | 15.3     | 22.3s         |
-| ExampleClass.TestMethodB(VariableA: 2, VariableB: 1)  | 46.3s | 44.2s | 22.6s  | 15.3     | 22.3s         |
-| ExampleClass.TestMethodB(VariableA: 2, VariableB: 2)  | 21.3s | 23.2s | 22.6s  | 15.3     | 22.3s         |
+| TestCase                                             | Median | Mean  | StdDev | Variance |
+|------------------------------------------------------|--------|-------|--------|----------|
+| ExampleClass.TestMethodA(VariableA: 1, VariableB: 1) | 21.3s  | 23.2s | 22.6s  | 15.3     |
+| ExampleClass.TestMethodA(VariableA: 1, VariableB: 2) | 25.3s  | 23.2s | 22.6s  | 15.3     |
+| ExampleClass.TestMethodA(VariableA: 2, VariableB: 1) | 46.3s  | 44.2s | 22.6s  | 15.3     |
+| ExampleClass.TestMethodA(VariableA: 2, VariableB: 2) | 21.3s  | 23.2s | 22.6s  | 15.3     |
+| ExampleClass.TestMethodB(VariableA: 1, VariableB: 1) | 21.3s  | 23.2s | 22.6s  | 15.3     |
+| ExampleClass.TestMethodB(VariableA: 1, VariableB: 2) | 25.3s  | 23.2s | 22.6s  | 15.3     |
+| ExampleClass.TestMethodB(VariableA: 2, VariableB: 1) | 46.3s  | 44.2s | 22.6s  | 15.3     |
+| ExampleClass.TestMethodB(VariableA: 2, VariableB: 2) | 21.3s  | 23.2s | 22.6s  | 15.3     |
 
 `OtherClass`
 
-| TestCase                                            | Median | Mean  | StdDev | Variance | Interquartile |
-|-----------------------------------------------------|--------|-------|--------|----------|---------------|
-| OtherClass.TestMethodB(VariableA: 1, VariableB: 1)  | 21.3s  | 23.2s | 22.6s  | 15.3     | 22.3s         |
-| OtherClass.TestMethodB(VariableA: 1, VariableB: 1)  | 21.3s  | 23.2s | 22.6s  | 15.3     | 22.3s         |   
-| OtherClass.TestMethodB(VariableA: 1, VariableB: 1)  | 21.3s  | 23.2s | 22.6s  | 15.3     | 22.3s         |  
-| OtherClass.TestMethodB(VariableA: 1, VariableB: 1)  | 21.3s  | 23.2s | 22.6s  | 15.3     | 22.3s         | 
-| OtherClass.TestMethodB(VariableA: 1, VariableB: 1)  | 21.3s  | 23.2s | 22.6s  | 15.3     | 22.3s         |
+| TestCase                                            | Median | Mean  | StdDev | Variance |
+|-----------------------------------------------------|--------|-------|--------|----------|
+| OtherClass.TestMethodB(VariableA: 1, VariableB: 1)  | 21.3s  | 23.2s | 22.6s  | 15.3     |
+| OtherClass.TestMethodB(VariableA: 1, VariableB: 1)  | 21.3s  | 23.2s | 22.6s  | 15.3     |   
+| OtherClass.TestMethodB(VariableA: 1, VariableB: 1)  | 21.3s  | 23.2s | 22.6s  | 15.3     |  
+| OtherClass.TestMethodB(VariableA: 1, VariableB: 1)  | 21.3s  | 23.2s | 22.6s  | 15.3     | 
+| OtherClass.TestMethodB(VariableA: 1, VariableB: 1)  | 21.3s  | 23.2s | 22.6s  | 15.3     |
 
 Since tracking files are produced by default, on the second run you should see something like the following statistical test performed (unless this is disabled):
 
 ```
 -----------------------------------
 T-Test results comparing:
-Before: PerformanceResults_2022-23-6--09-43-30.cvs.tracking
-After: PerformanceResults_2022-23-6--08-49-02.cvs.tracking
+Before: PerformanceResults_2022-23-6--09-43-30.csv.tracking
+After: PerformanceResults_2022-23-6--08-49-02.csv.tracking
 -----------------------------------
 Note: The change in execution time is significant if the PValue is less than 0.5 (This is typically going to be set to 0.01, not 0.5).
 

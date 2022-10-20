@@ -8,7 +8,7 @@ public class BeforeAndAfterFileLocationCommand : IRequest<BeforeAndAfterFileLoca
     public BeforeAndAfterFileLocationCommand(string defaultDirectory, OrderedDictionary<string, string> tags, string beforeTarget, OrderedDictionary<string, string> args)
     {
         DefaultDirectory = defaultDirectory;
-        this.Tags = tags;
+        Tags = tags;
         BeforeTarget = beforeTarget;
         Args = args;
     }

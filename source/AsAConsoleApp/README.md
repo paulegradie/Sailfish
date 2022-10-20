@@ -37,8 +37,8 @@ This will by default produce a tracking file in a subdirectory to the output dir
 ```
 -----------------------------------
 T-Test results comparing:
-Before: PerformanceResults_2022-23-6--09-43-30.cvs.tracking
-After: PerformanceResults_2022-23-6--08-49-02.cvs.tracking
+Before: PerformanceResults_2022-23-6--09-43-30.csv.tracking
+After: PerformanceResults_2022-23-6--08-49-02.csv.tracking
 -----------------------------------
 Note: The change in execution time is significant if the PValue is less than 0.5
 

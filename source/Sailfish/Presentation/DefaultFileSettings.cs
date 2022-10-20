@@ -6,14 +6,14 @@ using System.Text;
 using Accord.Collections;
 using Sailfish.Exceptions;
 
-// ReSharper disable MemberCanBePrivate.Global
-
 namespace Sailfish.Presentation;
 
 public static class DefaultFileSettings
 {
+    public const string CsvSuffix = ".csv";
+    public const string MarkdownSuffix = ".md";
     public const string SortableFormat = "yyyy-dd-M--HH-mm-ss";
-    public const string TrackingSuffix = ".cvs.tracking";
+    public const string TrackingSuffix = $"{CsvSuffix}.tracking";
     public const string TagsPrefix = "tags-";
     public const string KeyValueDelimiter = "=";
     public const string MapDelimiter = "__";
@@ -23,10 +23,10 @@ public static class DefaultFileSettings
             $"PerformanceResults_{timestamp.ToString(SortableFormat)}"; // sortable file name with date
 
     public static readonly Func<DateTime, string> DefaultTTestMarkdownFileName =
-        (DateTime timeStamp) => $"t-test_{timeStamp.ToString(SortableFormat)}.md";
+        (DateTime timeStamp) => $"t-test_{timeStamp.ToString(SortableFormat)}{MarkdownSuffix}";
 
     public static readonly Func<DateTime, string> DefaultTTestCsvFileName =
-        (DateTime timeStamp) => $"t-test_{timeStamp.ToString(SortableFormat)}.csv";
+        (DateTime timeStamp) => $"t-test_{timeStamp.ToString(SortableFormat)}{CsvSuffix}";
 
     public static readonly Func<DateTime, string> DefaultTrackingFileName = (timeStamp) =>
         $"PerformanceTracking_{timeStamp.ToLocalTime().ToString(SortableFormat)}{TrackingSuffix}";
