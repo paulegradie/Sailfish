@@ -1,6 +1,9 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
+using MathNet.Numerics.Statistics;
 using Sailfish.Contracts.Public;
+using Sailfish.Exceptions;
 using Sailfish.Statistics.StatisticalAnalysis;
 using Serilog;
 
@@ -19,7 +22,7 @@ internal class TTestComputer : ITTestComputer
 
     public List<NamedTTestResult> ComputeTTest(TestData before, TestData after, TTestSettings settings)
     {
-        var testNames = new List<string>();
+        List<string> testNames;
         try
         {
             var rawNames = after.Data.Select(x => x.DisplayName);
@@ -37,21 +40,55 @@ internal class TTestComputer : ITTestComputer
             testNames = after.Data.Select(x => x.DisplayName).OrderByDescending(x => x).ToList();
         }
 
-        var beforeData = before.Data.ToList();
-        var afterData = after.Data.ToList();
-
         var results = new List<NamedTTestResult>();
         foreach (var testName in testNames)
         {
-            var afterCompiled = afterData.SingleOrDefault(x => x.DisplayName == testName);
-            var beforeCompiled = beforeData.SingleOrDefault(x => x.DisplayName == testName);
+            var afterCompiled = Aggregate(
+                testName,
+                after
+                    .Data
+                    .Where(x => x.DisplayName.Equals(testName, StringComparison.InvariantCultureIgnoreCase))
+                    .ToList());
+
+            var beforeCompiled = Aggregate(
+                testName,
+                before
+                    .Data
+                    .Where(x => x.DisplayName.Equals(testName, StringComparison.InvariantCultureIgnoreCase))
+                    .ToList());
 
             if (beforeCompiled is null || afterCompiled is null) continue; // this could be the first time we've ever run this test
+
             var result = tTest.ExecuteTest(beforeCompiled.RawExecutionResults, afterCompiled.RawExecutionResults, settings);
             results.Add(new NamedTTestResult(testName, result));
         }
 
         return results;
+    }
+
+    private static DescriptiveStatisticsResult? Aggregate(string displayName, IReadOnlyCollection<DescriptiveStatisticsResult> data)
+    {
+        switch (data.Count)
+        {
+            case 0:
+                return null;
+            case 1:
+                return data.Single();
+            default:
+                var allRawData = data.SelectMany(x => x.RawExecutionResults).ToArray();
+                return new DescriptiveStatisticsResult
+                {
+                    RawExecutionResults = allRawData,
+                    DisplayName = displayName,
+                    GlobalDuration = data.Select(x => x.GlobalDuration).Mean(),
+                    GlobalStart = data.OrderBy(x => x.GlobalStart).First().GlobalStart,
+                    GlobalEnd = data.OrderBy(x => x.GlobalEnd).First().GlobalEnd,
+                    Mean = data.Select(x => x.Mean).Mean(),
+                    Median = data.Select(x => x.Median).Median(),
+                    Variance = allRawData.Variance(),
+                    StdDev = allRawData.StandardDeviation(),
+                };
+        }
     }
 
     private static string? FirstTestName(string s)
@@ -81,9 +118,9 @@ internal class TTestComputer : ITTestComputer
         }
     }
 
-    // name will be like
-    // some.test(maybe:20,other:30)
-    // some.test(maybe:10,other:30)
+// name will be like
+// some.test(maybe:20,other:30)
+// some.test(maybe:10,other:30)
     private static int? FirstNumberRetriever(string s)
     {
         var elements = GetElements(s);
