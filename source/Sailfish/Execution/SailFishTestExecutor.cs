@@ -43,10 +43,15 @@ internal class SailFishTestExecutor : ISailFishTestExecutor
             return rawResults;
         }
 
+        var testIndex = 0;
+        var totalTestCount = enabledTestTypes.Length;
+
+        Console.WriteLine($"Discovered {totalTestCount} enabled test type{(totalTestCount == 1 ? "" : "s")}");
         foreach (var testType in enabledTestTypes)
         {
             try
             {
+                Console.WriteLine($"Executing test type {testIndex + 1} of {totalTestCount}: {testType.Name}");
                 var rawResult = await Execute(testType, callback, cancellationToken);
                 rawResults.Add(new RawExecutionResult(testType, rawResult));
             }
@@ -55,6 +60,8 @@ internal class SailFishTestExecutor : ISailFishTestExecutor
                 logger.Fatal("The Test runner encountered a fatal error: {0}", ex.Message);
                 rawResults.Add(new RawExecutionResult(testType, ex));
             }
+
+            testIndex += 1;
         }
 
         return rawResults;
@@ -81,6 +88,7 @@ internal class SailFishTestExecutor : ISailFishTestExecutor
         var totalMethodCount = testMethods.Count - 1;
         foreach (var testMethod in testMethods.OrderBy(x => x.Method.Name))
         {
+            Console.WriteLine($"Executing test method {methodIndex + 1} of {totalMethodCount + 1}: {testMethod.Method.DeclaringType?.Name}.{testMethod.Method.Name}");
             var currentVariableSetIndex = 0;
             var totalNumVariableSets = testMethod.GetNumberOfVariableSetsInTheQueue() - 1;
 
