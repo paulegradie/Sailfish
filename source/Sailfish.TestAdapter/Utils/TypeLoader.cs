@@ -11,7 +11,7 @@ internal class TypeLoader
 {
     public Type[] LoadTypes(IEnumerable<string> sourceDlls)
     {
-        return sourceDlls.SelectMany(dll => LoadTypes(dll)).ToArray();
+        return sourceDlls.SelectMany(LoadTypes).ToArray();
     }
 
     public Type[] LoadTypes(string sourceDll)
@@ -28,8 +28,8 @@ internal class TypeLoader
             .Where(x => x.HasAttribute<SailfishAttribute>())
             .ToArray();
 
-        logger.Verbose("\rTest Types Discovered in {Assembly}:\r", assembly.FullName ?? "Couldn't Find the assembly name property");
-        foreach (var testType in perfTestTypes) logger.Verbose("--- Perf tests: {0}", testType.Name);
+        CustomLogger.Verbose("\rTest Types Discovered in {Assembly}:\r", assembly.FullName ?? "Couldn't Find the assembly name property");
+        foreach (var testType in perfTestTypes) CustomLogger.Verbose("--- Perf tests: {0}", testType.Name);
 
         return perfTestTypes;
     }

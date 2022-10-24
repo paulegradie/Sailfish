@@ -49,7 +49,7 @@ public class SailfishProgramBase
             Directories.EnsureDirectoryExists(TrackingDirectory);
         }
 
-        var parsedTags = new OrderedDictionary<string, string>() { { "Example", "Tag" }, { "Another", "thing" } };
+        var parsedTags = new OrderedDictionary<string, string>();
         if (Tags is not null)
         {
             parsedTags = ColonParser.Parse(Tags);

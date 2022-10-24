@@ -62,7 +62,7 @@ internal static class Logging
     {
         if (dir.Parent is not null)
         {
-            logger.Verbose("CurrentDir: {0} --- Parent Directory: {1}", dir.Name, dir.Parent.Name);
+            CustomLogger.Verbose("CurrentDir: {0} --- Parent Directory: {1}", dir.Name, dir.Parent.Name);
             parentDir = dir.Parent;
             return dir.Parent.Exists;
         }

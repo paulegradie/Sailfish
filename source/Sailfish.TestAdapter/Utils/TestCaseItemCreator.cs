@@ -51,11 +51,11 @@ internal class TestCaseItemCreator
         var randomId = Guid.NewGuid();
         return variablesForEachPropertyInOrder =>
         {
-            logger.Verbose("Param set for {Method}: {ParamSet}", method.Name, string.Join(", ", variablesForEachPropertyInOrder.Select(x => x.ToString())));
+            CustomLogger.Verbose("Param set for {Method}: {ParamSet}", method.Name, string.Join(", ", variablesForEachPropertyInOrder.Select(x => x.ToString())));
             var paramsDisplayName = DisplayNameHelper.CreateParamsDisplay(propertyNames, variablesForEachPropertyInOrder);
             var fullyQualifiedName = CreateFullyQualifiedName(bag);
 
-            logger.Verbose("This is the file path!: {FilePath}", bag.CsFilePath);
+            CustomLogger.Verbose("This is the file path!: {FilePath}", bag.CsFilePath);
             var testCase = new TestCase(fullyQualifiedName, TestExecutor.ExecutorUri, sourceDll) // a test case is a method
             {
                 CodeFilePath = bag.CsFilePath,
@@ -78,10 +78,10 @@ internal class TestCaseItemCreator
     {
         var lineNumber = fileLines
             .Select(
-                (line, index) => { return line.Contains(method.Name + "()") ? index : -1; })
+                (line, index) => line.Contains(method.Name + "()") ? index : -1)
             .SingleOrDefault(x => x >= 0);
 
-        logger.Verbose(
+        CustomLogger.Verbose(
             "Method discovered on line {lineNumber} with signature: {siggy}",
             lineNumber.ToString(),
             fileLines[lineNumber]);

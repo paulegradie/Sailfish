@@ -12,7 +12,7 @@ internal class DirectoryRecursion
     {
         var result = RecurseUpwardsUntilFileIsFoundInner(suffixToMatch, sourceFile, maxParentDirLevel);
         if (result is null) throw new Exception("Couldn't locate a csproj file in this project.");
-        logger.Verbose("Project found: {0}", result.FullName);
+        CustomLogger.Verbose("Project found: {0}", result.FullName);
         return result;
     }
 
@@ -32,7 +32,7 @@ internal class DirectoryRecursion
             return null;
         }
 
-        logger.Verbose("Found the proj file! {0}", csprojFile);
+        CustomLogger.Verbose("Found the proj file! {0}", csprojFile);
         return new FileInfo(csprojFile);
     }
 
@@ -59,8 +59,8 @@ internal class DirectoryRecursion
 
         foreach (var filePath in filePaths)
         {
-            logger.Verbose($"Corresponding {searchPattern} files in this assembly project");
-            logger.Verbose("--- {filePath}", filePath);
+            CustomLogger.Verbose($"Corresponding {searchPattern} files in this assembly project");
+            CustomLogger.Verbose("--- {filePath}", filePath);
         }
 
         return filePaths.ToList();

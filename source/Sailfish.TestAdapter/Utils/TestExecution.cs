@@ -25,7 +25,7 @@ internal class TestExecution
 
     public void ExecuteTests(List<TestCase> testCases, IRunContext runContext, IFrameworkHandle frameworkHandle)
     {
-        logger.VerbosePadded("We are calling the Execute Tests method");
+        CustomLogger.VerbosePadded("We are calling the Execute Tests method");
 
         if (testCases.Count == 0) return;
 
@@ -42,12 +42,12 @@ internal class TestExecution
                     var tc = testCases.SingleOrDefault(x => x.DisplayName == container.DisplayName); // Can we set a common Id property instead of the random GUID?
                     if (tc is null)
                     {
-                        logger.Verbose("\r----FATAL ERROR ENCOUNTERED!! ----\r");
-                        logger.Verbose("TestInstanceContainer: {ContainerName}", container.DisplayName);
-                        logger.Verbose("\rThe following testCases were available in this instance:\r");
+                        CustomLogger.Verbose("\r----FATAL ERROR ENCOUNTERED!! ----\r");
+                        CustomLogger.Verbose("TestInstanceContainer: {ContainerName}", container.DisplayName);
+                        CustomLogger.Verbose("\rThe following testCases were available in this instance:\r");
                         foreach (var testCase in testCases)
                         {
-                            logger.Verbose("{DisplayName}, {Source}, {CodeFilePath}, {FQN}", testCase.DisplayName, testCase.Source, testCase.CodeFilePath, testCase.FullyQualifiedName);
+                            CustomLogger.Verbose("{DisplayName}, {Source}, {CodeFilePath}, {FQN}", testCase.DisplayName, testCase.Source, testCase.CodeFilePath, testCase.FullyQualifiedName);
                         }
 
                         continue;
@@ -81,7 +81,7 @@ internal class TestExecution
         testResult.StartTime = result.PerformanceTimerResults.GlobalStart;
         testResult.EndTime = result.PerformanceTimerResults.GlobalStop;
         testResult.Duration = result.PerformanceTimerResults.GlobalDuration;
-        logger.Verbose("Test Executed -- recording and sending the result to the framework handle - {TestResult}", testResult.ToString());
+        CustomLogger.Verbose("Test Executed -- recording and sending the result to the framework handle - {TestResult}", testResult.ToString());
         frameworkHandle.RecordResult(testResult);
     }
 
