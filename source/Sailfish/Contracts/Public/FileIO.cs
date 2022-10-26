@@ -19,9 +19,19 @@ public class FileIo : IFileIo
         File.SetAttributes(filePath, FileAttributes.ReadOnly);
     }
 
-    public async Task<List<TData>> ReadCsvFile<TMap, TData>(string filePath, CancellationToken cancellationToken) where TMap : ClassMap where TData : class
+    public  async Task<List<TData>> ReadCsvFile<TMap, TData>(string filePath, CancellationToken cancellationToken) where TMap : ClassMap where TData : class
     {
         using var reader = new StreamReader(filePath);
+        using var csv = new CsvReader(reader, CultureInfo.InvariantCulture);
+        csv.Context.RegisterClassMap<TMap>();
+
+        var records = await csv.GetRecordsAsync<TData>(cancellationToken).ToListAsync(cancellationToken).ConfigureAwait(false);
+        return records;
+    }
+
+    public async Task<List<TData>> ReadCsvString<TMap, TData>(string csvContent, CancellationToken cancellationToken) where TMap : ClassMap where TData : class
+    {
+        using var reader = new StringReader(csvContent);
         using var csv = new CsvReader(reader, CultureInfo.InvariantCulture);
         csv.Context.RegisterClassMap<TMap>();
 
