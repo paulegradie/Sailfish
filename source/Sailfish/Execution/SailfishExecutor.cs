@@ -4,6 +4,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Sailfish.Presentation;
 using Sailfish.Statistics;
+using Serilog;
 
 namespace Sailfish.Execution;
 
@@ -63,11 +64,11 @@ internal class SailfishExecutor
                 : SailfishValidity.CreateInvalidResult(exceptions!);
         }
 
-        Console.WriteLine("\r----------- Error ------------\r");
+        Log.Logger.Error("{NumErrors} errors encountered while discovering tests", testRun.Errors.Count);
         foreach (var (reason, names) in testRun.Errors)
         {
-            Console.WriteLine(reason);
-            foreach (var testName in names) Console.WriteLine($"--- {testName}");
+            Log.Logger.Error("{Reason}", reason);
+            foreach (var testName in names) Log.Logger.Error("--- {TestName}", testName);
         }
 
         return SailfishValidity.CreateInvalidResult(Enumerable.Empty<Exception>());

@@ -39,19 +39,19 @@ internal class SailFishTestExecutor : ISailFishTestExecutor
         var rawResults = new List<RawExecutionResult>();
         if (!FilterEnabledType(testTypes, out var enabledTestTypes))
         {
-            Console.WriteLine($"\r\nNo Sailfish tests were discovered...\r\n");
+            logger.Warning($"\r\nNo Sailfish tests were discovered...\r\n");
             return rawResults;
         }
 
         var testIndex = 0;
         var totalTestCount = enabledTestTypes.Length;
 
-        Console.WriteLine($"Discovered {totalTestCount} enabled test type{(totalTestCount == 1 ? "" : "s")}");
+        logger.Information("Discovered {TotalTestCount} enabled test types", totalTestCount);
         foreach (var testType in enabledTestTypes)
         {
             try
             {
-                Console.WriteLine($"Executing test type {testIndex + 1} of {totalTestCount}: {testType.Name}");
+                logger.Information("Executing test type {TestIndex} of {TotalTestCount}: {TestName}", testIndex + 1, totalTestCount, testType.Name);
                 var rawResult = await Execute(testType, callback, cancellationToken);
                 rawResults.Add(new RawExecutionResult(testType, rawResult));
             }
@@ -88,7 +88,9 @@ internal class SailFishTestExecutor : ISailFishTestExecutor
         var totalMethodCount = testMethods.Count - 1;
         foreach (var testMethod in testMethods.OrderBy(x => x.Method.Name))
         {
-            Console.WriteLine($"Executing test method {methodIndex + 1} of {totalMethodCount + 1}: {testMethod.Method.DeclaringType?.Name}.{testMethod.Method.Name}");
+            logger.Information(
+                "Executing test method {MethodIndex} of {TotalMethodCount}: {TestTypeName}.{TestMethodName}",
+                methodIndex + 1, totalMethodCount + 1, testMethod.Method.DeclaringType?.Name, testMethod.Method.Name);
             var currentVariableSetIndex = 0;
             var totalNumVariableSets = testMethod.GetNumberOfVariableSetsInTheQueue() - 1;
 
