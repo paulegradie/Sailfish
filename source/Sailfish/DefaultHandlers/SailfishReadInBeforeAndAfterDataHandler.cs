@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using MediatR;
@@ -29,6 +30,7 @@ internal class SailfishReadInBeforeAndAfterDataHandler : IRequestHandler<ReadInB
         var afterData = new List<DescriptiveStatisticsResult>();
         if (!await TryAddDataFile(request.AfterFilePath, afterData, cancellationToken).ConfigureAwait(false)) return new ReadInBeforeAndAfterDataResponse(null, null);
 
+        if (!beforeData.Any() || !afterData.Any()) return new ReadInBeforeAndAfterDataResponse(null, null);
 
         return new ReadInBeforeAndAfterDataResponse(new TestData(request.BeforeFilePath, beforeData), new TestData(request.AfterFilePath, afterData));
     }

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using MediatR;
@@ -21,6 +22,8 @@ internal class TestResultPresenter : ITestResultPresenter
     private readonly IMediator mediator;
     private readonly IPerformanceCsvTrackingWriter performanceCsvTrackingWriter;
     private readonly ITwoTailedTTestWriter twoTailedTTestWriter;
+
+    private const string DefaultTrackingDirectory = "tracking_output";
 
     public TestResultPresenter(
         ILogger logger,
@@ -68,8 +71,9 @@ internal class TestResultPresenter : ITestResultPresenter
             .ConfigureAwait(false);
 
         var trackingDir = string.IsNullOrEmpty(runSettings.TrackingDirectoryPath)
-            ? Path.Combine(runSettings.DirectoryPath, "tracking_output")
+            ? Path.Combine(runSettings.DirectoryPath, DefaultTrackingDirectory)
             : runSettings.TrackingDirectoryPath;
+
         if (!runSettings.NoTrack)
         {
             var trackingContent = await performanceCsvTrackingWriter.ConvertToCsvStringContent(resultContainers);
@@ -94,16 +98,29 @@ internal class TestResultPresenter : ITestResultPresenter
                         runSettings.Args),
                     cancellationToken)
                 .ConfigureAwait(false);
-            if (!beforeAndAfterFileLocations.BeforeFilePath.Any() || !beforeAndAfterFileLocations.AfterFilePath.Any())
+
+            if (!beforeAndAfterFileLocations.AfterFilePaths.Any() || !beforeAndAfterFileLocations.BeforeFilePaths.Any())
             {
-                logger.Error("Failed to identify any before and after file locations when providing tracking data");
-                return;
+                var message = new StringBuilder();
+                if (!beforeAndAfterFileLocations.BeforeFilePaths.Any())
+                {
+                    message.Append("No 'Before' file locations discovered. ");
+                }
+
+                if (!beforeAndAfterFileLocations.AfterFilePaths.Any())
+                {
+                    message.Append("No 'After' file locations discovered. ");
+                }
+
+                message.Append($"If file locations are not provided, data must be provided via the {nameof(ReadInBeforeAndAfterDataCommand)} handler.");
+                var msg = message.ToString();
+                logger.Warning("{Message}", msg);
             }
 
             var beforeAndAfterData = await mediator.Send(
                     new ReadInBeforeAndAfterDataCommand(
-                        beforeAndAfterFileLocations.BeforeFilePath,
-                        beforeAndAfterFileLocations.AfterFilePath,
+                        beforeAndAfterFileLocations.BeforeFilePaths,
+                        beforeAndAfterFileLocations.AfterFilePaths,
                         runSettings.BeforeTarget,
                         runSettings.Tags,
                         runSettings.Args),
@@ -112,13 +129,13 @@ internal class TestResultPresenter : ITestResultPresenter
 
             if (beforeAndAfterData.BeforeData is null || beforeAndAfterData.AfterData is null)
             {
-                logger.Error("Failed to retrieve test result data");
+                logger.Warning("Failed to retrieve tracking data... aborting the test operation");
                 return;
             }
 
             var tTestResults = await twoTailedTTestWriter.ComputeAndConvertToStringContent(
-                    new TestData(beforeAndAfterFileLocations.BeforeFilePath, beforeAndAfterData.BeforeData.Data),
-                    new TestData(beforeAndAfterFileLocations.AfterFilePath, beforeAndAfterData.AfterData.Data),
+                    beforeAndAfterData.BeforeData,
+                    beforeAndAfterData.AfterData,
                     runSettings.Settings,
                     cancellationToken)
                 .ConfigureAwait(false);

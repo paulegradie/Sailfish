@@ -4,12 +4,12 @@ namespace Sailfish.Contracts.Public.Commands;
 
 public class BeforeAndAfterFileLocationResponse
 {
-    public BeforeAndAfterFileLocationResponse(IEnumerable<string> beforeFilePath, IEnumerable<string> afterFilePath)
+    public BeforeAndAfterFileLocationResponse(IEnumerable<string> beforeFilePaths, IEnumerable<string> afterFilePaths)
     {
-        BeforeFilePath = beforeFilePath;
-        AfterFilePath = afterFilePath;
+        BeforeFilePaths = beforeFilePaths;
+        AfterFilePaths = afterFilePaths;
     }
 
-    public IEnumerable<string> BeforeFilePath { get; set; }
-    public IEnumerable<string> AfterFilePath { get; set; }
+    public IEnumerable<string> BeforeFilePaths { get; set; }
+    public IEnumerable<string> AfterFilePaths { get; set; }
 }

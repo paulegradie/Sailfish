@@ -17,11 +17,15 @@
         <PackageReference Include="Autofac" Version="6.4.0" />
         <PackageReference Include="Serilog.Extensions.Autofac.DependencyInjection" Version="5.0.0" />
         <PackageReference Include="McMaster.Extensions.CommandLineUtils" Version="4.0.1" />
+        <PackageReference Include="Serilog.Sinks.Console" Version="4.1.0" />
         <PackageReference Include="Serilog.Sinks.Seq" Version="5.1.1" />
+        <PackageReference Include="Serilog.Settings.Configuration" Version="3.3.0" />
     </ItemGroup>
 
     <ItemGroup>
-        <Folder Include="ConsoleAppLogs" />
+      <None Update="appsettings.json">
+        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+      </None>
     </ItemGroup>
 
 </Project>

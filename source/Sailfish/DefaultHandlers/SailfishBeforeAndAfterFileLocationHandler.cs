@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using MediatR;
@@ -20,7 +21,7 @@ internal class SailfishBeforeAndAfterFileLocationHandler : IRequestHandler<Befor
     {
         var trackingFiles = trackingFileFinder.GetBeforeAndAfterTrackingFiles(request.DefaultDirectory, request.BeforeTarget, request.Tags);
         return Task.FromResult(new BeforeAndAfterFileLocationResponse(
-            new List<string>() { trackingFiles.BeforeFilePath },
-            new List<string>() { trackingFiles.AfterFilePath }));
+            new List<string>() { trackingFiles.BeforeFilePath }.Where(x => !string.IsNullOrEmpty(x)),
+            new List<string>() { trackingFiles.AfterFilePath }.Where(x => !string.IsNullOrEmpty(x))));
     }
 }
