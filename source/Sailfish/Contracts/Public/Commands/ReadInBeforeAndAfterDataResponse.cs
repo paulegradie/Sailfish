@@ -10,4 +10,9 @@ public class ReadInBeforeAndAfterDataResponse
         BeforeData = beforeData;
         AfterData = afterData;
     }
+
+    public static ReadInBeforeAndAfterDataResponse CreateNullResponse()
+    {
+        return new ReadInBeforeAndAfterDataResponse(null, null);
+    }
 }
