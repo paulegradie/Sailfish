@@ -39,7 +39,7 @@ internal class SailFishTestExecutor : ISailFishTestExecutor
         var rawResults = new List<RawExecutionResult>();
         if (!FilterEnabledType(testTypes, out var enabledTestTypes))
         {
-            logger.Warning($"\r\nNo Sailfish tests were discovered...\r\n");
+            logger.Warning("No Sailfish tests were discovered...");
             return rawResults;
         }
 
