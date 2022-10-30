@@ -7,17 +7,17 @@ namespace Sailfish.Contracts.Public.Commands;
 
 public class NotifyOnTestResultCommand : INotification
 {
-    public NotifyOnTestResultCommand(TTestResultFormats tTestContent, TTestSettings testSettings, DateTime timeStamp, OrderedDictionary<string, string> tags, OrderedDictionary<string, string> args)
+    public NotifyOnTestResultCommand(TestResultFormats testResultFormats, TestSettings testSettings, DateTime timeStamp, OrderedDictionary<string, string> tags, OrderedDictionary<string, string> args)
     {
-        TTestContent = tTestContent;
+        TestResultFormats = testResultFormats;
         TestSettings = testSettings;
         TimeStamp = timeStamp;
         Tags = tags;
         Args = args;
     }
 
-    public TTestResultFormats TTestContent { get; }
-    public TTestSettings TestSettings { get; }
+    public TestResultFormats TestResultFormats { get; }
+    public TestSettings TestSettings { get; }
     public DateTime TimeStamp { get; }
     public OrderedDictionary<string, string> Tags { get; }
     public OrderedDictionary<string, string> Args { get; }

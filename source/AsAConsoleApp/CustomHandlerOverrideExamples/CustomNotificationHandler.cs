@@ -12,9 +12,9 @@ public class CustomNotificationHandler : INotificationHandler<NotifyOnTestResult
 {
     public Task Handle(NotifyOnTestResultCommand notification, CancellationToken cancellationToken)
     {
-        if (string.IsNullOrEmpty(notification.TTestContent.MarkdownTable)) return Task.CompletedTask;
+        if (string.IsNullOrEmpty(notification.TestResultFormats.MarkdownTable)) return Task.CompletedTask;
 
-        var lines = notification.TTestContent.MarkdownTable
+        var lines = notification.TestResultFormats.MarkdownTable
             .Split(Environment.NewLine);
 
         Console.WriteLine("Make believe this handler parses the t-test result and reports tests that have regressed.");

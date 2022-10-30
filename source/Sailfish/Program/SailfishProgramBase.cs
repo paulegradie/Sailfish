@@ -76,7 +76,7 @@ public class SailfishProgramBase
             NoTrack,
             Analyze,
             Notify,
-            new TTestSettings(Alpha, Round, useInnerQuartile: true),
+            new TestSettings(Alpha, Round, useInnerQuartile: true),
             parsedTags,
             parsedArgs,
             BeforeTarget,

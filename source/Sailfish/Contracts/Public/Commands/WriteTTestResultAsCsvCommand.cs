@@ -11,14 +11,14 @@ public class WriteTTestResultAsCsvCommand : INotification
     public readonly DateTime TimeStamp;
     public List<NamedTTestResult> CsvRows { get; }
     public string OutputDirectory { get; }
-    public TTestSettings TestSettings { get; }
+    public TestSettings TestSettings { get; }
     public OrderedDictionary<string, string> Tags { get; }
     public OrderedDictionary<string, string> Args { get; }
 
     public WriteTTestResultAsCsvCommand(
         List<NamedTTestResult> csvRows,
         string outputDirectory,
-        TTestSettings testSettings,
+        TestSettings testSettings,
         DateTime timeStamp,
         OrderedDictionary<string, string> tags,
         OrderedDictionary<string, string> args)

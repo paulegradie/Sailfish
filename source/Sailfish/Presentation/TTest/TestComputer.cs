@@ -20,7 +20,7 @@ internal class TestComputer : ITTestComputer
         this.logger = logger;
     }
 
-    public List<NamedTTestResult> ComputeTTest(TestData before, TestData after, TTestSettings settings)
+    public List<NamedTTestResult> ComputeTTest(TestData before, TestData after, TestSettings settings)
     {
         List<string> testNames;
         try
@@ -68,7 +68,7 @@ internal class TestComputer : ITTestComputer
         return results;
     }
 
-    private static DescriptiveStatisticsResult? Aggregate(string displayName, TTestSettings settings, IReadOnlyCollection<DescriptiveStatisticsResult> data)
+    private static DescriptiveStatisticsResult? Aggregate(string displayName, TestSettings settings, IReadOnlyCollection<DescriptiveStatisticsResult> data)
     {
         switch (data.Count)
         {

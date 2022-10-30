@@ -12,7 +12,7 @@ internal class TTest : ITTest
     // valid statistics require a minimum of 5 samples
     private const int MinimumSampleSizeForTruncation = 10;
 
-    public TTestResult ExecuteTest(double[] before, double[] after, TTestSettings settings)
+    public TTestResult ExecuteTest(double[] before, double[] after, TestSettings settings)
     {
         var sigDig = settings.Round;
 
@@ -41,7 +41,7 @@ internal class TTest : ITTest
             description);
     }
 
-    private static double[] PreProcessSample(double[] rawData, TTestSettings settings)
+    private static double[] PreProcessSample(double[] rawData, TestSettings settings)
     {
         if (!settings.UseInnerQuartile) return rawData;
         if (rawData.Length < MinimumSampleSizeForTruncation) return rawData;

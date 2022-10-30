@@ -7,7 +7,7 @@ namespace Sailfish.Contracts.Public.Commands;
 
 public class WriteTTestResultAsMarkdownCommand : INotification
 {
-    public WriteTTestResultAsMarkdownCommand(string content, string outputDirectory, TTestSettings testSettings, DateTime timeStamp, OrderedDictionary<string, string> tags, OrderedDictionary<string, string> args)
+    public WriteTTestResultAsMarkdownCommand(string content, string outputDirectory, TestSettings testSettings, DateTime timeStamp, OrderedDictionary<string, string> tags, OrderedDictionary<string, string> args)
     {
         Content = content;
         OutputDirectory = outputDirectory;
@@ -22,5 +22,5 @@ public class WriteTTestResultAsMarkdownCommand : INotification
     public DateTime TimeStamp { get; }
     public OrderedDictionary<string, string> Tags { get; }
     public OrderedDictionary<string, string> Args { get; }
-    public TTestSettings TestSettings { get; set; }
+    public TestSettings TestSettings { get; set; }
 }

@@ -4,5 +4,5 @@ namespace Sailfish.Statistics.StatisticalAnalysis;
 
 internal interface ITTest
 {
-    TTestResult ExecuteTest(double[] before, double[] after, TTestSettings settings);
+    TTestResult ExecuteTest(double[] before, double[] after, TestSettings settings);
 }

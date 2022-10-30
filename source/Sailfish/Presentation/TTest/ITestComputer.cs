@@ -5,5 +5,5 @@ namespace Sailfish.Presentation.TTest;
 
 internal interface ITTestComputer
 {
-    List<NamedTTestResult> ComputeTTest(TestData beforeTestData, TestData afterTestData, TTestSettings settings);
+    List<NamedTTestResult> ComputeTTest(TestData beforeTestData, TestData afterTestData, TestSettings settings);
 }

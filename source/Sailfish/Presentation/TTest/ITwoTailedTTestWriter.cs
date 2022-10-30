@@ -6,5 +6,5 @@ namespace Sailfish.Presentation.TTest;
 
 internal interface ITwoTailedTTestWriter
 {
-    Task<TTestResultFormats> ComputeAndConvertToStringContent(TestData beforeTestData, TestData afterTestData, TTestSettings settings, CancellationToken cancellationToken);
+    Task<TestResultFormats> ComputeAndConvertToStringContent(TestData beforeTestData, TestData afterTestData, TestSettings settings, CancellationToken cancellationToken);
 }

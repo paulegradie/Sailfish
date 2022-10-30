@@ -13,7 +13,7 @@ public class RunSettings
     public bool NoTrack { get; }
     public bool Analyze { get; }
     public bool Notify { get; set; }
-    public TTestSettings Settings { get; }
+    public TestSettings Settings { get; }
     public Type[] TestLocationTypes { get; }
     public OrderedDictionary<string, string> Tags { get; set; }
     public OrderedDictionary<string, string> Args { get; }
@@ -27,7 +27,7 @@ public class RunSettings
         bool noTrack,
         bool analyze,
         bool notify,
-        TTestSettings settings,
+        TestSettings settings,
         OrderedDictionary<string, string> tags,
         OrderedDictionary<string, string>  args,
         string beforeTarget,

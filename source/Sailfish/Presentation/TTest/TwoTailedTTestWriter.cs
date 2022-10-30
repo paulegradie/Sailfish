@@ -24,13 +24,14 @@ internal class TwoTailedTTestWriter : ITwoTailedTTestWriter
         this.stringBuilder = stringBuilder;
     }
 
-    public Task<TTestResultFormats> ComputeAndConvertToStringContent(TestData beforeTestData, TestData afterTestData, TTestSettings settings, CancellationToken cancellationToken)
+    public Task<TestResultFormats> ComputeAndConvertToStringContent(TestData beforeTestData, TestData afterTestData, TestSettings settings, CancellationToken cancellationToken)
     {
+        var testIds = new TestIds(beforeTestData.TestId, afterTestData.TestId);
         var results = tTestComputer.ComputeTTest(beforeTestData, afterTestData, settings);
         if (results.Count == 0)
         {
             logger.Information("No prior test results found for the current set");
-            return Task.FromResult(new TTestResultFormats("", new List<NamedTTestResult>()));
+            return Task.FromResult(new TestResultFormats("", new List<NamedTTestResult>(), testIds));
         }
 
         var table = results.ToStringTable(
@@ -44,22 +45,22 @@ internal class TwoTailedTTestWriter : ITwoTailedTTestWriter
             m => m.ChangeDescription
         );
         PrintHeader(
-            beforeTestData.TestId,
-            afterTestData.TestId,
+            testIds.BeforeTestIds,
+            testIds.AfterTestIds,
             settings.Alpha);
         stringBuilder.AppendLine();
         stringBuilder.AppendLine(table);
 
-        return Task.FromResult(new TTestResultFormats(stringBuilder.Build(), results));
+        return Task.FromResult(new TestResultFormats(stringBuilder.Build(), results, testIds));
     }
 
-    private void PrintHeader(IEnumerable<string> beforeId, IEnumerable<string> afterId, double alpha)
+    private void PrintHeader(IEnumerable<string> beforeIds, IEnumerable<string> afterIds, double alpha)
     {
         stringBuilder.AppendLine();
         stringBuilder.AppendLine("-----------------------------------");
         stringBuilder.AppendLine($"T-Test results comparing:");
-        stringBuilder.AppendLine($"Before: {string.Join(", ", beforeId)}");
-        stringBuilder.AppendLine($"After: {string.Join(", ", afterId)}");
+        stringBuilder.AppendLine($"Before: {string.Join(", ", beforeIds)}");
+        stringBuilder.AppendLine($"After: {string.Join(", ", afterIds)}");
         stringBuilder.AppendLine("-----------------------------------\r");
         stringBuilder.AppendLine($"Note: The change in execution time is significant if the PValue is less than {alpha}");
     }
