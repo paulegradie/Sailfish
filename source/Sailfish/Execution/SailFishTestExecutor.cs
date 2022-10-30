@@ -57,7 +57,7 @@ internal class SailFishTestExecutor : ISailFishTestExecutor
             }
             catch (Exception ex)
             {
-                logger.Fatal("The Test runner encountered a fatal error: {0}", ex.Message);
+                logger.Fatal("The Test runner encountered a fatal error: {Message}", ex.Message);
                 rawResults.Add(new RawExecutionResult(testType, ex));
             }
 

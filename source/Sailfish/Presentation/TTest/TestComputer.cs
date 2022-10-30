@@ -41,7 +41,7 @@ internal class TestComputer : ITTestComputer
         }
 
         var results = new List<NamedTTestResult>();
-        foreach (var testName in testNames)
+        foreach (var testName in testNames.Distinct())
         {
             var afterCompiled = Aggregate(
                 testName,
