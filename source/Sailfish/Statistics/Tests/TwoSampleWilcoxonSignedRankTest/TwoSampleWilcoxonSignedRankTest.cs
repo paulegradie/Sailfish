@@ -29,7 +29,7 @@ public class TwoSampleWilcoxonSignedRankTest : ITwoSampleWilcoxonSignedRankTest
         var medianAfter = Math.Round(after.Median(), sigDig);
 
         var testStatistic = Math.Round(test.Statistic, sigDig);
-        var pVal = Math.Round(test.PValue, 6);
+        var pVal = Math.Round(test.PValue, TestConstants.PValueSigDig);
 
         var isSignificant = test.PValue <= settings.Alpha;
         var changeDirection = medianAfter > medianBefore ? SailfishChangeDirection.Regressed : SailfishChangeDirection.Improved;
