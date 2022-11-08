@@ -5,21 +5,13 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using CsvHelper;
-using Sailfish.Contracts.Public;
 using Sailfish.Contracts.Public.CsvMaps;
-using Sailfish.Statistics;
+using Sailfish.Execution;
 
 namespace Sailfish.Presentation.Csv;
 
 internal class PerformanceCsvWriter : IPerformanceCsvWriter
 {
-    private readonly IFileIo fileIo;
-
-    public PerformanceCsvWriter(IFileIo fileIo)
-    {
-        this.fileIo = fileIo;
-    }
-
     public async Task Present(IEnumerable<ExecutionSummary> result, string filePath, CancellationToken cancellationToken)
     {
         var writer = new StreamWriter(filePath);

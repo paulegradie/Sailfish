@@ -3,8 +3,8 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using MediatR;
+using Sailfish.Analysis;
 using Sailfish.Contracts.Public.Commands;
-using Sailfish.Statistics.StatisticalAnalysis;
 
 namespace Sailfish.DefaultHandlers;
 

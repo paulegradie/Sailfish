@@ -36,7 +36,7 @@ internal class AncillaryInvocation
     public async Task ExecutionMethod(CancellationToken cancellationToken, bool timed = true)
     {
         // TODO: we can make this more precise by timing the outside, and then returning
-        // a timespan from the wasted bits inside the tryinvocate
+        // a timespan from the wasted bits inside the try invocate
         // add method to timer to .StopExecutionTimerWithAdjustment(timespan);
         if (timed) performanceTimer.StartExecutionTimer();
         await mainMethod.TryInvoke(instance, cancellationToken).ConfigureAwait(false);

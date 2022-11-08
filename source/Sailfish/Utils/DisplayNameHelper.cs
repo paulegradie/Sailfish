@@ -15,7 +15,7 @@ internal static class DisplayNameHelper
         if (variableNames.Length != paramSet.Length) throw new Exception("Number of variables and number of params does not match");
         var namedParams = variableNames.Zip(paramSet);
 
-        return "(" + string.Join(", ", namedParams.Select(pair => FormNameString(pair)).ToArray()) + ")";
+        return "(" + string.Join(", ", namedParams.Select(FormNameString).ToArray()) + ")";
     }
 
     private static string FormNameString((string First, int Second) pair)

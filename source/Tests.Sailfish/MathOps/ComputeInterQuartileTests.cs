@@ -1,6 +1,6 @@
 using System;
 using System.Linq;
-using Sailfish.Utils.MathOps;
+using Sailfish.MathOps;
 using Shouldly;
 using Xunit;
 

@@ -1,5 +1,4 @@
 ﻿using System.Text;
-using Sailfish.Presentation.Console;
 
 namespace Sailfish.Presentation;
 

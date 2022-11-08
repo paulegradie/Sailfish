@@ -6,12 +6,12 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using MediatR;
+using Sailfish.Analysis;
 using Sailfish.Contracts.Private;
 using Sailfish.Contracts.Public;
 using Sailfish.Contracts.Public.Commands;
+using Sailfish.Execution;
 using Sailfish.Presentation.Csv;
-using Sailfish.Presentation.TTest;
-using Sailfish.Statistics;
 using Serilog;
 
 namespace Sailfish.Presentation;
@@ -20,21 +20,24 @@ internal class TestResultPresenter : ITestResultPresenter
 {
     private readonly ILogger logger;
     private readonly IMediator mediator;
+    private readonly ITestComputer testComputer;
     private readonly IPerformanceCsvTrackingWriter performanceCsvTrackingWriter;
-    private readonly ITwoTailedTTestWriter twoTailedTTestWriter;
+    private readonly ITestResultTableContentFormatter testResultTableContentFormatter;
 
     private const string DefaultTrackingDirectory = "tracking_output";
 
     public TestResultPresenter(
         ILogger logger,
         IMediator mediator,
+        ITestComputer testComputer,
         IPerformanceCsvTrackingWriter performanceCsvTrackingWriter,
-        ITwoTailedTTestWriter twoTailedTTestWriter)
+        ITestResultTableContentFormatter testResultTableContentFormatter)
     {
         this.logger = logger;
         this.mediator = mediator;
+        this.testComputer = testComputer;
         this.performanceCsvTrackingWriter = performanceCsvTrackingWriter;
-        this.twoTailedTTestWriter = twoTailedTTestWriter;
+        this.testResultTableContentFormatter = testResultTableContentFormatter;
     }
 
     public async Task PresentResults(
@@ -46,7 +49,8 @@ internal class TestResultPresenter : ITestResultPresenter
         await mediator.Publish(
                 new WriteToConsoleCommand(
                     resultContainers,
-                    runSettings.Tags),
+                    runSettings.Tags,
+                    runSettings),
                 cancellationToken)
             .ConfigureAwait(false);
 
@@ -56,7 +60,8 @@ internal class TestResultPresenter : ITestResultPresenter
                     runSettings.DirectoryPath,
                     timeStamp,
                     runSettings.Tags,
-                    runSettings.Args),
+                    runSettings.Args,
+                    runSettings),
                 cancellationToken)
             .ConfigureAwait(false);
 
@@ -66,7 +71,8 @@ internal class TestResultPresenter : ITestResultPresenter
                     runSettings.DirectoryPath,
                     timeStamp,
                     runSettings.Tags,
-                    runSettings.Args),
+                    runSettings.Args,
+                    runSettings),
                 cancellationToken)
             .ConfigureAwait(false);
 
@@ -133,16 +139,24 @@ internal class TestResultPresenter : ITestResultPresenter
                 return;
             }
 
-            var tTestResults = await twoTailedTTestWriter.ComputeAndConvertToStringContent(
-                    beforeAndAfterData.BeforeData,
-                    beforeAndAfterData.AfterData,
-                    runSettings.Settings,
-                    cancellationToken)
-                .ConfigureAwait(false);
+            var testResults = testComputer.ComputeTest(
+                beforeAndAfterData.BeforeData,
+                beforeAndAfterData.AfterData,
+                runSettings.Settings);
+
+            if (!testResults.Any())
+            {
+                logger.Information("No prior test results found for the current set");
+                return;
+            }
+
+            var testIds = new TestIds(beforeAndAfterData.BeforeData.TestIds, beforeAndAfterData.AfterData.TestIds);
+            var testResultFormats = testResultTableContentFormatter.CreateTableFormats(testResults, testIds, cancellationToken);
+            TestResultConsoleWriter.WriteToConsole(testResultFormats.MarkdownFormat, testIds, runSettings.Settings);
 
             await mediator.Publish(
-                    new WriteTTestResultAsMarkdownCommand(
-                        tTestResults.MarkdownTable,
+                    new WriteTestResultsAsMarkdownCommand(
+                        testResultFormats.MarkdownFormat,
                         runSettings.DirectoryPath,
                         runSettings.Settings,
                         timeStamp,
@@ -152,8 +166,8 @@ internal class TestResultPresenter : ITestResultPresenter
                 .ConfigureAwait(false);
 
             await mediator.Publish(
-                    new WriteTTestResultAsCsvCommand(
-                        tTestResults.CsvRows,
+                    new WriteTestResultsAsCsvCommand(
+                        testResultFormats.CsvFormat,
                         runSettings.DirectoryPath,
                         runSettings.Settings,
                         timeStamp,
@@ -166,7 +180,7 @@ internal class TestResultPresenter : ITestResultPresenter
             {
                 await mediator.Publish(
                         new NotifyOnTestResultCommand(
-                            tTestResults,
+                            testResultFormats,
                             runSettings.Settings,
                             timeStamp,
                             runSettings.Tags,

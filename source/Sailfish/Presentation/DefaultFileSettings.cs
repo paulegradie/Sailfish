@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using Accord.Collections;
+using Sailfish.Analysis;
 using Sailfish.Exceptions;
 
 namespace Sailfish.Presentation;
@@ -22,11 +23,11 @@ public static class DefaultFileSettings
         (DateTime timestamp) =>
             $"PerformanceResults_{timestamp.ToString(SortableFormat)}"; // sortable file name with date
 
-    public static readonly Func<DateTime, string> DefaultTTestMarkdownFileName =
-        (DateTime timeStamp) => $"t-test_{timeStamp.ToString(SortableFormat)}{MarkdownSuffix}";
+    public static readonly Func<DateTime, TestType, string> DefaultTTestMarkdownFileName =
+        (DateTime timeStamp, TestType testType) => $"test_{testType.ToString()}_{timeStamp.ToString(SortableFormat)}{MarkdownSuffix}";
 
-    public static readonly Func<DateTime, string> DefaultTTestCsvFileName =
-        (DateTime timeStamp) => $"t-test_{timeStamp.ToString(SortableFormat)}{CsvSuffix}";
+    public static readonly Func<DateTime, TestType, string> DefaultTTestCsvFileName =
+        (DateTime timeStamp, TestType testType) => $"test_{testType.ToString()}_{timeStamp.ToString(SortableFormat)}{CsvSuffix}";
 
     public static readonly Func<DateTime, string> DefaultTrackingFileName = (timeStamp) =>
         $"PerformanceTracking_{timeStamp.ToLocalTime().ToString(SortableFormat)}{TrackingSuffix}";

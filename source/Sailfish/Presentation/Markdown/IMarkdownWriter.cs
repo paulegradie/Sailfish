@@ -1,11 +1,11 @@
 ﻿using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using Sailfish.Statistics;
+using Sailfish.Execution;
 
 namespace Sailfish.Presentation.Markdown;
 
 internal interface IMarkdownWriter
 {
-    Task Present(List<ExecutionSummary> result, string filePath, CancellationToken cancellationToken);
+    Task Present(List<ExecutionSummary> result, string filePath, RunSettings settings, CancellationToken cancellationToken);
 }

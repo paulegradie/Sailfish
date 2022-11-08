@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 using Accord.Collections;
 using Autofac;
 using McMaster.Extensions.CommandLineUtils;
-using Sailfish.Presentation.TTest;
+using Sailfish.Analysis;
 using Sailfish.Utils;
 
 namespace Sailfish.Program;
@@ -81,6 +81,7 @@ public class SailfishProgramBase
             parsedArgs,
             BeforeTarget,
             timestamp,
+            Debug,
             sourceTypes.ToArray());
     }
 
@@ -104,8 +105,8 @@ public class SailfishProgramBase
             "A series of colon separated values that provide a key:value relationship. Use like -g version:123 -g build:2022.2.123")]
     public string[]? Tags { get; set; }
 
-    [Option("-h|--ttest-alpha", CommandOptionType.SingleValue,
-        Description = "Use this option to set the significance threshold for the ttest analysis")]
+    [Option("-h|--test-alpha", CommandOptionType.SingleValue,
+        Description = "Use this option to set the significance threshold for the test analysis")]
     public double Alpha { get; set; } = 0.005;
 
     [Option("-k|--trackingDirectory", CommandOptionType.SingleValue,
@@ -138,6 +139,9 @@ public class SailfishProgramBase
 
     [Option("-y|--notify", CommandOptionType.NoValue,
         Description =
-            "Use this option to enable sending of the notification command. There are no default handlers, but users can implement their own to process ttest results and send messages to webhooks in response")]
+            "Use this option to enable sending of the notification command. There are no default handlers, but users can implement their own to process test results and send messages to webhooks in response")]
     public bool Notify { get; set; } = true;
+
+    [Option("-d|--debug", CommandOptionType.NoValue, Description = "Use this option to enable debug mode. This will provide more verbose errors in your outputs")]
+    public bool Debug { get; set; } = false;
 }

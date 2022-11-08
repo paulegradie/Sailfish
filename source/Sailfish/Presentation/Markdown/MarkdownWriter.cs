@@ -4,8 +4,8 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Sailfish.Contracts.Public;
+using Sailfish.Execution;
 using Sailfish.ExtensionMethods;
-using Sailfish.Presentation.Console;
 using Sailfish.Statistics;
 
 namespace Sailfish.Presentation.Markdown;
@@ -23,13 +23,13 @@ internal class MarkdownWriter : IMarkdownWriter
         this.stringBuilder = stringBuilder;
     }
 
-    public async Task Present(List<ExecutionSummary> results, string filePath, CancellationToken cancellationToken)
+    public async Task Present(List<ExecutionSummary> results, string filePath, RunSettings settings, CancellationToken cancellationToken)
     {
         foreach (var result in results.Where(result => result.Settings.AsMarkdown))
         {
             AppendHeader(result.Type.Name);
             AppendResults(result.CompiledResults);
-            AppendExceptions(result.CompiledResults.Where(x => x.Exception is not null).Select(x => x.Exception).ToList());
+            AppendExceptions(result.CompiledResults.Where(x => x.Exception is not null).Select(x => x.Exception).ToList(), settings.Debug);
         }
 
         var fileString = stringBuilder.Build();
@@ -66,10 +66,10 @@ internal class MarkdownWriter : IMarkdownWriter
         }
     }
 
-    // TODO: allow arg to dictate this
-    public readonly bool debug = true;
+    // // TODO: allow arg to dictate this
+    // public readonly bool debug = true;
 
-    private void AppendExceptions(IReadOnlyCollection<Exception?> exceptions)
+    private void AppendExceptions(IReadOnlyCollection<Exception?> exceptions, bool debug)
     {
         if (exceptions.Count > 0)
         {

@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Reflection;
 using Sailfish.ExtensionMethods;
-using Sailfish.Statistics;
 using Sailfish.Utils;
 
 namespace Sailfish.Execution;

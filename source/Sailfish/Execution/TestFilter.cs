@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace Sailfish.Execution;
@@ -19,9 +20,9 @@ internal class TestFilter : ITestFilter
         return result;
     }
 
-    private Type[] FilterTests(Type[] tests, string[] testsRequestedByUser)
+    private static Type[] FilterTests(Type[] tests, IReadOnlyCollection<string> testsRequestedByUser)
     {
-        if (testsRequestedByUser.Length > 0)
+        if (testsRequestedByUser.Count > 0)
             return tests
                 .Where(test => testsRequestedByUser.Contains(test.Name))
                 .ToArray();

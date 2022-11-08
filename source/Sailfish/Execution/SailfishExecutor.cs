@@ -3,7 +3,6 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Sailfish.Presentation;
-using Sailfish.Statistics;
 using Serilog;
 
 namespace Sailfish.Execution;
