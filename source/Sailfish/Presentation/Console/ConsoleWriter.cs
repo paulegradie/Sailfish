@@ -74,8 +74,8 @@ internal class ConsoleWriter : IConsoleWriter
 
         foreach (var exception in exceptions.Where(exception => exception is not null))
         {
-            stringBuilder.AppendLine($"Exception: {exception.Message}\r");
-            if (exception.StackTrace is not null)
+            stringBuilder.AppendLine($"Exception: {exception?.Message}\r");
+            if (exception?.StackTrace is not null)
             {
                 stringBuilder.AppendLine($"StackTrace:\r{exception.StackTrace}\r");
             }
