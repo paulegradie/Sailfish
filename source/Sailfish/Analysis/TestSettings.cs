@@ -14,12 +14,12 @@ public class TestSettings
     {
         Alpha = alpha;
         Round = round;
-        TestType = testType;
         UseInnerQuartile = useInnerQuartile;
+        TestType = testType;
     }
 
     public double Alpha { get; set; }
     public int Round { get; }
-    public TestType TestType { get; }
     public bool UseInnerQuartile { get; set; }
+    public TestType TestType { get; }
 }

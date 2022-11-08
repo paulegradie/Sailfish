@@ -8,7 +8,7 @@ using Serilog;
 
 namespace Sailfish.Analysis;
 
-internal class TestComputer : ITestComputer
+public class TestComputer : ITestComputer
 {
     private readonly IStatisticalTestExecutor statisticalTestExecutor;
     private readonly ILogger logger;
@@ -123,9 +123,9 @@ internal class TestComputer : ITestComputer
         }
     }
 
-// name will be like
-// some.test(maybe:20,other:30)
-// some.test(maybe:10,other:30)
+    // name will be like
+    // some.test(maybe:20,other:30)
+    // some.test(maybe:10,other:30)
     private static int? FirstNumberRetriever(string s)
     {
         var elements = GetElements(s);

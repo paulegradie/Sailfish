@@ -6,11 +6,19 @@ using MediatR;
 using Sailfish.Contracts;
 using Sailfish.Contracts.Public;
 using Sailfish.Contracts.Public.Commands;
+using Serilog;
 
 namespace AsAConsoleApp.CustomHandlerOverrideExamples;
 
 public class CustomNotificationHandler : INotificationHandler<NotifyOnTestResultCommand>
 {
+    private readonly ILogger logger;
+
+    public CustomNotificationHandler(ILogger logger)
+    {
+        this.logger = logger;
+    }
+
     public Task Handle(NotifyOnTestResultCommand notification, CancellationToken cancellationToken)
     {
         if (string.IsNullOrEmpty(notification.TestResultFormats.MarkdownFormat)) return Task.CompletedTask;

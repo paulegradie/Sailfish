@@ -12,14 +12,21 @@ public class StatisticalTestExecutor : IStatisticalTestExecutor
     private readonly ITTest ttest;
     private readonly ITwoSampleWilcoxonSignedRankTest twoSampWilcoxonSignedRankTest;
 
-    public StatisticalTestExecutor(
-        IMannWhitneyWilcoxonTest? mwWilcoxonTest = null,
-        ITTest? ttest = null,
-        ITwoSampleWilcoxonSignedRankTest? twoSampWilcoxonSignedRankTest = null)
+    public StatisticalTestExecutor()
     {
-        this.mannWhitneyWilcoxonTest = mwWilcoxonTest ?? new MannWhitneyWilcoxonTest();
-        this.ttest = ttest ?? new TTest();
-        this.twoSampWilcoxonSignedRankTest = twoSampWilcoxonSignedRankTest ?? new TwoSampleWilcoxonSignedRankTest();
+        mannWhitneyWilcoxonTest = new MannWhitneyWilcoxonTest();
+        ttest = new TTest();
+        twoSampWilcoxonSignedRankTest = new TwoSampleWilcoxonSignedRankTest();
+    }
+
+    public StatisticalTestExecutor(
+        IMannWhitneyWilcoxonTest mwWilcoxonTest,
+        ITTest ttest,
+        ITwoSampleWilcoxonSignedRankTest twoSampWilcoxonSignedRankTest)
+    {
+        mannWhitneyWilcoxonTest = mwWilcoxonTest;
+        this.ttest = ttest;
+        this.twoSampWilcoxonSignedRankTest = twoSampWilcoxonSignedRankTest;
     }
 
     public TestResults ExecuteStatisticalTest(
