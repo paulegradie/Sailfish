@@ -66,9 +66,6 @@ internal class MarkdownWriter : IMarkdownWriter
         }
     }
 
-    // // TODO: allow arg to dictate this
-    // public readonly bool debug = true;
-
     private void AppendExceptions(IReadOnlyCollection<Exception?> exceptions, bool debug)
     {
         if (exceptions.Count > 0)
