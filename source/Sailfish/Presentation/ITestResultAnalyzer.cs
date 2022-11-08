@@ -1,17 +1,14 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using Sailfish.Execution;
 
 namespace Sailfish.Presentation;
 
-internal interface ITestResultPresenter
+public interface ITestResultAnalyzer
 {
-    Task PresentResults(
-        List<ExecutionSummary> resultContainers,
+    public Task Analyze(
         DateTime timeStamp,
-        string trackingDir,
         RunSettings runSettings,
+        string trackingDir,
         CancellationToken cancellationToken);
 }

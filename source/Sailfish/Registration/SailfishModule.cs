@@ -47,5 +47,6 @@ public class SailfishModule : Module
         builder.RegisterType<IterationVariableRetriever>().As<IIterationVariableRetriever>();
         builder.RegisterType<TestResultsCsvWriter>().As<ITestResultsCsvWriter>();
         builder.RegisterType<TestResultTableContentFormatter>().As<ITestResultTableContentFormatter>();
+        builder.RegisterType<TestResultAnalyzer>().As<ITestResultAnalyzer>();
     }
 }

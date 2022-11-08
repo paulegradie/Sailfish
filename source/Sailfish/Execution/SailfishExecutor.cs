@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -13,14 +14,17 @@ internal class SailfishExecutor
     private readonly ITestFilter testFilter;
     private readonly IExecutionSummaryCompiler executionSummaryCompiler;
     private readonly ITestResultPresenter testResultPresenter;
+    private readonly ITestResultAnalyzer testResultAnalyzer;
     private readonly ISailFishTestExecutor sailFishTestExecutor;
+    private const string DefaultTrackingDirectory = "tracking_output";
 
     public SailfishExecutor(
         ISailFishTestExecutor sailFishTestExecutor,
         ITestCollector testCollector,
         ITestFilter testFilter,
         IExecutionSummaryCompiler executionSummaryCompiler,
-        ITestResultPresenter testResultPresenter
+        ITestResultPresenter testResultPresenter,
+        ITestResultAnalyzer testResultAnalyzer
     )
     {
         this.sailFishTestExecutor = sailFishTestExecutor;
@@ -28,6 +32,7 @@ internal class SailfishExecutor
         this.testFilter = testFilter;
         this.executionSummaryCompiler = executionSummaryCompiler;
         this.testResultPresenter = testResultPresenter;
+        this.testResultAnalyzer = testResultAnalyzer;
     }
 
     public async Task<SailfishValidity> Run(RunSettings runSettings, CancellationToken cancellationToken)
@@ -55,7 +60,12 @@ internal class SailfishExecutor
 
             var compiledResults = executionSummaryCompiler.CompileToSummaries(rawExecutionResults, cancellationToken);
 
-            await testResultPresenter.PresentResults(compiledResults, timeStamp, runSettings, cancellationToken);
+            var trackingDir = GetRunSettingsTrackingDirectoryPath(runSettings);
+            await testResultPresenter.PresentResults(compiledResults, timeStamp, trackingDir, runSettings, cancellationToken);
+            if (runSettings.Analyze)
+            {
+                await testResultAnalyzer.Analyze(timeStamp, runSettings, trackingDir, cancellationToken);
+            }
 
             var exceptions = compiledResults.SelectMany(x => x.CompiledResults.Select(j => j.Exception)).Where(x => x is not null);
             return rawExecutionResults.Select(x => x.IsSuccess).All(x => x)
@@ -71,6 +81,13 @@ internal class SailfishExecutor
         }
 
         return SailfishValidity.CreateInvalidResult(Enumerable.Empty<Exception>());
+    }
+
+    private static string GetRunSettingsTrackingDirectoryPath(RunSettings runSettings)
+    {
+        return string.IsNullOrEmpty(runSettings.TrackingDirectoryPath)
+            ? Path.Combine(runSettings.DirectoryPath, DefaultTrackingDirectory)
+            : runSettings.TrackingDirectoryPath;
     }
 
     private TestValidationResult CollectTests(string[] testNames, params Type[] locationTypes)
