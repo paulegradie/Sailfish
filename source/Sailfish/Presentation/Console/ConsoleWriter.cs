@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using Accord.Collections;
+using Sailfish.Execution;
 using Sailfish.ExtensionMethods;
 using Sailfish.Statistics;
 
@@ -45,36 +46,36 @@ internal class ConsoleWriter : IConsoleWriter
         stringBuilder.AppendLine("-----------------------------------\r");
     }
 
-    private void AppendResults(List<CompiledResult> compiledResults)
+    private void AppendResults(IEnumerable<CompiledResult> compiledResults)
     {
         foreach (var group in compiledResults.GroupBy(x => x.GroupingId))
         {
-            if (group.Key is not null)
-            {
-                stringBuilder.AppendLine();
-                var table = group.ToStringTable(
-                    new List<string>() { "", "ms", "ms", "ms", "" },
-                    u => u.DisplayName!,
-                    u => u.DescriptiveStatisticsResult!.Median,
-                    u => u.DescriptiveStatisticsResult!.Mean,
-                    u => u.DescriptiveStatisticsResult!.StdDev,
-                    u => u.DescriptiveStatisticsResult!.Variance
-                );
+            if (group.Key is null) continue;
+            stringBuilder.AppendLine();
+            var table = group.ToStringTable(
+                new List<string>() { "", "ms", "ms", "ms", "" },
+                u => u.DisplayName!,
+                u => u.DescriptiveStatisticsResult!.Median,
+                u => u.DescriptiveStatisticsResult!.Mean,
+                u => u.DescriptiveStatisticsResult!.StdDev,
+                u => u.DescriptiveStatisticsResult!.Variance
+            );
 
-                stringBuilder.AppendLine(table);
-            }
+            stringBuilder.AppendLine(table);
         }
     }
 
-    private void AppendExceptions(List<Exception?> exceptions)
+    private void AppendExceptions(IReadOnlyCollection<Exception?> exceptions)
     {
         if (exceptions.Count > 0)
-            stringBuilder.AppendLine($" ---- One or more Exceptions encountered ---- ");
-        foreach (var exception in exceptions)
         {
-            if (exception is null) continue;
-            stringBuilder.AppendLine($"Exception: {exception.Message}\r");
-            if (exception.StackTrace is not null)
+            stringBuilder.AppendLine($" ---- One or more Exceptions encountered ---- ");
+        }
+
+        foreach (var exception in exceptions.Where(exception => exception is not null))
+        {
+            stringBuilder.AppendLine($"Exception: {exception?.Message}\r");
+            if (exception?.StackTrace is not null)
             {
                 stringBuilder.AppendLine($"StackTrace:\r{exception.StackTrace}\r");
             }

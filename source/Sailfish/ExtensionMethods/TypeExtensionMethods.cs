@@ -14,7 +14,7 @@ internal static class TypeExtensionMethods
                 | BindingFlags.Instance
                 | BindingFlags.DeclaredOnly
                 | BindingFlags.NonPublic);
-        if (ctorInfos.Length == 0 || ctorInfos.Length > 1) throw new Exception("A single ctor must be declared in all test types");
+        if (ctorInfos.Length is 0 or > 1) throw new Exception("A single ctor must be declared in all test types");
         return ctorInfos.Single();
     }
 

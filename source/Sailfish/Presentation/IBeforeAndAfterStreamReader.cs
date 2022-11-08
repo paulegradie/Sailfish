@@ -1,6 +1,6 @@
 ﻿using System.IO;
 using System.Threading.Tasks;
-using Sailfish.Statistics.StatisticalAnalysis;
+using Sailfish.Analysis;
 
 namespace Sailfish.Presentation;
 

@@ -4,12 +4,12 @@ namespace Sailfish.Contracts.Public;
 
 public class TestData
 {
-    public IEnumerable<string> TestId { get; }
+    public IEnumerable<string> TestIds { get; }
     public IEnumerable<DescriptiveStatisticsResult> Data { get; }
 
-    public TestData(IEnumerable<string> testId, IEnumerable<DescriptiveStatisticsResult> data)
+    public TestData(IEnumerable<string> testIds, IEnumerable<DescriptiveStatisticsResult> data)
     {
-        TestId = testId;
+        TestIds = testIds;
         Data = data;
     }
 }

@@ -2,7 +2,7 @@
 
 namespace Sailfish.Utils;
 
-public static class Directories
+internal static class Directories
 {
     public static void EnsureDirectoryExists(string directoryPath)
     {

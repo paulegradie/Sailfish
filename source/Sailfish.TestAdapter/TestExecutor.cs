@@ -4,7 +4,6 @@ using System.Linq;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.Adapter;
 using Sailfish.TestAdapter.Utils;
-using Sailfish.Utils;
 
 namespace Sailfish.TestAdapter;
 

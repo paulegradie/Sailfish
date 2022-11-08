@@ -1,11 +1,10 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
-using Sailfish.Statistics;
+using Sailfish.Execution;
 
 namespace Sailfish.Presentation.Csv;
 
 internal interface IPerformanceCsvTrackingWriter
-{
-    // Task Present(List<CompiledResultContainer> result, string filePath);
+{ 
     Task<string> ConvertToCsvStringContent(List<ExecutionSummary> result);
 }

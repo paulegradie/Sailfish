@@ -1,13 +1,18 @@
 ﻿using System;
 using Accord.Collections;
 using MediatR;
-using Sailfish.Presentation.TTest;
+using Sailfish.Analysis;
 
 namespace Sailfish.Contracts.Public.Commands;
 
 public class NotifyOnTestResultCommand : INotification
 {
-    public NotifyOnTestResultCommand(TestResultFormats testResultFormats, TestSettings testSettings, DateTime timeStamp, OrderedDictionary<string, string> tags, OrderedDictionary<string, string> args)
+    public NotifyOnTestResultCommand(
+        TestResultFormats testResultFormats,
+        TestSettings testSettings,
+        DateTime timeStamp,
+        OrderedDictionary<string, string> tags,
+        OrderedDictionary<string, string> args)
     {
         TestResultFormats = testResultFormats;
         TestSettings = testSettings;

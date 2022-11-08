@@ -5,7 +5,6 @@ using Microsoft.VisualStudio.TestPlatform.ObjectModel;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.Adapter;
 using Sailfish.Execution;
 using Sailfish.Registration;
-using Sailfish.Utils;
 
 namespace Sailfish.TestAdapter.Utils;
 

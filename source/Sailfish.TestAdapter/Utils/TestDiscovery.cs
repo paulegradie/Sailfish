@@ -47,7 +47,7 @@ internal class TestDiscovery
             var correspondingCsFiles = dirRecursor.FindAllFilesRecursively(
                 project,
                 "*.cs",
-                s => DirectoryRecursion.FileSearchFilters.FilePathDoesNotContainBinOrObjDirs(s));
+                DirectoryRecursion.FileSearchFilters.FilePathDoesNotContainBinOrObjDirs);
             if (correspondingCsFiles.Count == 0) continue;
 
             var bags = new List<DataBag>();
@@ -61,9 +61,8 @@ internal class TestDiscovery
             }
 
             if (bags.Count == 0) continue;
-            foreach (var bag in bags)
+            foreach (var cases in bags.Select(bag => testCaseCreator.AssembleTestCases(bag, sourceDllPath)))
             {
-                var cases = testCaseCreator.AssembleTestCases(bag, sourceDllPath);
                 testCases.AddRange(cases);
             }
         }

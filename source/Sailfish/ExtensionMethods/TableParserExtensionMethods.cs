@@ -10,11 +10,16 @@ namespace Sailfish.ExtensionMethods;
 
 internal static class TableParserExtensionMethods
 {
+    public static string ToStringTable<T>(this IEnumerable<T> values, List<string> headerSuffixes, List<Expression<Func<T, object>>> valueSelectors)
+    {
+        return ToStringTable(values, headerSuffixes, valueSelectors.ToArray());
+    }
+
     public static string ToStringTable<T>(this IEnumerable<T> values, List<string> headerSuffixes, params Expression<Func<T, object>>[] valueSelectors)
     {
         var headers = valueSelectors.Select(func => GetProperty<T>(func)!.Name).ToArray();
         var selectors = valueSelectors.Select(exp => exp.Compile()).ToArray();
-        return ToStringTable(values, headers, headerSuffixes, selectors);
+        return ToStringTable(values, headers.ToArray(), headerSuffixes, selectors);
     }
 
     public static string ToStringTable<T>(this IEnumerable<T> values, string[] columnHeaders, List<string> headerSuffixes, params Func<T, object>[] valueSelectors)
@@ -60,7 +65,7 @@ internal static class TableParserExtensionMethods
     public static string ToStringTable(this string[,] arrValues)
     {
         var maxColumnsWidth = GetMaxColumnsWidth(arrValues);
-        var headerSpliter = new string('-', maxColumnsWidth.Sum(i => i + 3) - 1);
+        var headerSplitter = new string('-', maxColumnsWidth.Sum(i => i + 3) - 1);
 
         var sb = new StringBuilder();
         for (var rowIndex = 0; rowIndex < arrValues.GetLength(0); rowIndex++)
@@ -79,11 +84,9 @@ internal static class TableParserExtensionMethods
             sb.AppendLine();
 
             // Print splitter
-            if (rowIndex == 0)
-            {
-                sb.AppendFormat(" |{0}| ", headerSpliter);
-                sb.AppendLine();
-            }
+            if (rowIndex != 0) continue;
+            sb.AppendFormat(" |{0}| ", headerSplitter);
+            sb.AppendLine();
         }
 
         return sb.ToString();
@@ -110,20 +113,20 @@ internal static class TableParserExtensionMethods
     }
 
 
-    // I'm not sure this is the best approach. Seeems like we could search from custom attributes instead.
-    private static PropertyInfo? GetProperty<T>(Expression<Func<T, object>> expression)
+    // I'm not sure this is the best approach. Seems like we could search from custom attributes instead.
+    private static PropertyInfo? GetProperty<T>(Expression<Func<T, object>> selector)
     {
-        if (expression.Body is UnaryExpression)
+        if (selector.Body is UnaryExpression)
         {
-            if ((expression.Body as UnaryExpression)!.Operand is MemberExpression)
+            if ((selector.Body as UnaryExpression)!.Operand is MemberExpression)
             {
-                return (((expression.Body as UnaryExpression)!.Operand as MemberExpression)!.Member as PropertyInfo)!;
+                return (((selector.Body as UnaryExpression)!.Operand as MemberExpression)!.Member as PropertyInfo)!;
             }
         }
 
-        if (expression.Body is MemberExpression)
+        if (selector.Body is MemberExpression memberExpression)
         {
-            return ((expression.Body as MemberExpression)!.Member as PropertyInfo)!;
+            return (memberExpression?.Member as PropertyInfo)!;
         }
 
         return null;

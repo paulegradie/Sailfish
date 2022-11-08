@@ -21,6 +21,6 @@ internal class SailfishWriteTrackingFileHandler : INotificationHandler<WriteCurr
         var filePath = Path.Join(output, fileName);
 
         await using var streamWriter = new StreamWriter(filePath);
-        await streamWriter.WriteAsync(notification.Content).ConfigureAwait(false);
+        await streamWriter.WriteAsync(notification.TrackingFileContent).ConfigureAwait(false);
     }
 }
