@@ -34,9 +34,9 @@ public class MannWhitneyWilcoxonTest : IMannWhitneyWilcoxonTest
         var medianAfter = Math.Round(after.Median(), sigDig);
 
         var testStatistic = Math.Round(test.Statistic, sigDig);
-        var pVal = Math.Round(test.PValue, sigDig);
+        var pVal = Math.Round(test.PValue, 6);
 
-        var isSignificant = pVal <= settings.Alpha;
+        var isSignificant = test.PValue <= settings.Alpha;
         var changeDirection = meanAfter > meanBefore ? SailfishChangeDirection.Regressed : SailfishChangeDirection.Improved;
 
         var description = isSignificant ? changeDirection : SailfishChangeDirection.NoChange;
