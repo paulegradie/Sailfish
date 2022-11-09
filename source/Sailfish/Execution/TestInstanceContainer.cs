@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Reflection;
+using Sailfish.Analysis;
 using Sailfish.ExtensionMethods;
 using Sailfish.Utils;
 
@@ -15,14 +16,14 @@ internal class TestInstanceContainer
         Type type,
         object instance,
         MethodInfo method,
-        string displayName,
+        TestCaseId testCaseId,
         ExecutionSettings executionSettings
     )
     {
         Type = type;
         Instance = instance;
         ExecutionMethod = method;
-        DisplayName = displayName;
+        TestCaseId = testCaseId;
         ExecutionSettings = executionSettings;
         GroupingId = $"{instance.GetType().Name}.{method.Name}";
     }
@@ -33,7 +34,7 @@ internal class TestInstanceContainer
 
     public MethodInfo ExecutionMethod { get; }
     public string GroupingId { get; set; }
-    public string DisplayName { get; } // This is a uniq id since we take a Distinct on all Iteration Variable attribute param -- class.method(varA: 1, varB: 3) is the form
+    public TestCaseId TestCaseId { get; } // This is a uniq id since we take a Distinct on all Iteration Variable attribute param -- class.method(varA: 1, varB: 3) is the form
     public int NumWarmupIterations => ExecutionSettings.NumWarmupIterations;
     public int NumIterations => ExecutionSettings.NumIterations;
 
@@ -46,12 +47,11 @@ internal class TestInstanceContainer
     {
         if (propertyNames.Length != variables.Length) throw new Exception("Property names and variables do not match");
 
-        var paramsDisplay = DisplayNameHelper.CreateParamsDisplay(propertyNames, variables);
-        var fullDisplayName = DisplayNameHelper.CreateDisplayName(instance.GetType(), method.Name, paramsDisplay); // a uniq id
+        var testCaseId = DisplayNameHelper.CreateTestCaseId(instance.GetType(), method.Name, propertyNames, variables); // a uniq id
 
         var executionSettings = instance.GetType().RetrieveExecutionTestSettings();
 
-        return new TestInstanceContainer(instance.GetType(), instance, method, fullDisplayName, executionSettings)
+        return new TestInstanceContainer(instance.GetType(), instance, method, testCaseId, executionSettings)
         {
             Invocation = new AncillaryInvocation(instance, method, new PerformanceTimer())
         };

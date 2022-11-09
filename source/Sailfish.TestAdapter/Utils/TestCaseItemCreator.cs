@@ -52,14 +52,13 @@ internal class TestCaseItemCreator
         return variablesForEachPropertyInOrder =>
         {
             CustomLogger.Verbose("Param set for {Method}: {ParamSet}", method.Name, string.Join(", ", variablesForEachPropertyInOrder.Select(x => x.ToString())));
-            var paramsDisplayName = DisplayNameHelper.CreateParamsDisplay(propertyNames, variablesForEachPropertyInOrder);
             var fullyQualifiedName = CreateFullyQualifiedName(bag);
 
             CustomLogger.Verbose("This is the file path!: {FilePath}", bag.CsFilePath);
             var testCase = new TestCase(fullyQualifiedName, TestExecutor.ExecutorUri, sourceDll) // a test case is a method
             {
                 CodeFilePath = bag.CsFilePath,
-                DisplayName = DisplayNameHelper.CreateDisplayName(bag.Type, method.Name, paramsDisplayName),
+                DisplayName = DisplayNameHelper.CreateTestCaseId(bag.Type, method.Name, propertyNames, variablesForEachPropertyInOrder).TestCaseName.Name,
                 ExecutorUri = TestExecutor.ExecutorUri,
                 Id = randomId,
                 LineNumber = methodNameLine

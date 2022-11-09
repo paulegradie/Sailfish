@@ -38,15 +38,16 @@ internal class TestExecution
             {
                 foreach (var container in method.ProvideNextTestInstanceContainer())
                 {
-                    var tc = testCases.SingleOrDefault(x => x.DisplayName == container.DisplayName); // Can we set a common Id property instead of the random GUID?
+                    var tc = testCases.SingleOrDefault(x => x.DisplayName == container.TestCaseId.DisplayName); // Can we set a common Id property instead of the random GUID?
                     if (tc is null)
                     {
                         CustomLogger.Verbose("\r----FATAL ERROR ENCOUNTERED!! ----\r");
-                        CustomLogger.Verbose("TestInstanceContainer: {ContainerName}", container.DisplayName);
+                        CustomLogger.Verbose("TestInstanceContainer: {ContainerName}", container.TestCaseId.DisplayName);
                         CustomLogger.Verbose("\rThe following testCases were available in this instance:\r");
                         foreach (var testCase in testCases)
                         {
-                            CustomLogger.Verbose("{DisplayName}, {Source}, {CodeFilePath}, {FQN}", testCase.DisplayName, testCase.Source, testCase.CodeFilePath, testCase.FullyQualifiedName);
+                            CustomLogger.Verbose("{DisplayName}, {Source}, {CodeFilePath}, {FQN}", testCase.DisplayName, testCase.Source, testCase.CodeFilePath,
+                                testCase.FullyQualifiedName);
                         }
 
                         continue;
@@ -59,7 +60,7 @@ internal class TestExecution
         }
     }
 
-    public void TestResultCallback(
+    public static void TestResultCallback(
         IFrameworkHandle frameworkHandle,
         TestCase testCase,
         TestInstanceContainer container,

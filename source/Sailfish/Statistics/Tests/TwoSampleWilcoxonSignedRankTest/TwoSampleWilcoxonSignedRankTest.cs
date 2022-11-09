@@ -12,10 +12,10 @@ public class TwoSampleWilcoxonSignedRankTest : ITwoSampleWilcoxonSignedRankTest
 {
     private const int MinimumSampleSizeForTruncation = 10;
 
+
     public TestResults ExecuteTest(double[] before, double[] after, TestSettings settings)
     {
         var sigDig = settings.Round;
-
 
         var test = new Accord.Statistics.Testing.TwoSampleWilcoxonSignedRankTest(
             PreProcessSample(before, settings),
@@ -28,10 +28,9 @@ public class TwoSampleWilcoxonSignedRankTest : ITwoSampleWilcoxonSignedRankTest
         var medianBefore = Math.Round(before.Median(), sigDig);
         var medianAfter = Math.Round(after.Median(), sigDig);
 
-        var testStatistic = Math.Round(test.Statistic, sigDig);
-        var pVal = Math.Round(test.PValue, TestConstants.PValueSigDig);
-
+        var testStatistic = test.Statistic;
         var isSignificant = test.PValue <= settings.Alpha;
+        var pVal = Math.Round(test.PValue, TestConstants.PValueSigDig);
         var changeDirection = medianAfter > medianBefore ? SailfishChangeDirection.Regressed : SailfishChangeDirection.Improved;
 
         var description = isSignificant ? changeDirection : SailfishChangeDirection.NoChange;

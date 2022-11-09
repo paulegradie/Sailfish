@@ -6,7 +6,7 @@ public sealed class TestResultCsvMap : ClassMap<TestCaseResults>
 {
     public TestResultCsvMap()
     {
-        Map(m => m.DisplayName).Index(0);
+        Map(m => m.TestCaseId.DisplayName).Index(0);
         Map(m => m.TestResults.MeanOfBefore).Index(1);
         Map(m => m.TestResults.MeanOfAfter).Index(2);
         Map(m => m.TestResults.MedianOfBefore).Index(3);

@@ -1,4 +1,5 @@
 ﻿using System.Text.Json.Serialization;
+using Sailfish.Analysis;
 using Sailfish.Statistics.Tests;
 
 #pragma warning disable CS8618
@@ -12,12 +13,12 @@ public class TestCaseResults
     {
     }
 
-    public TestCaseResults(string displayName, TestResults testResults)
+    public TestCaseResults(TestCaseId TestCaseId, TestResults testResults)
     {
         TestResults = testResults;
-        DisplayName = displayName;
+        this.TestCaseId = TestCaseId;
     }
 
-    public string DisplayName { get; set; }
+    public TestCaseId TestCaseId { get; set; }
     public TestResults TestResults { get; }
 }

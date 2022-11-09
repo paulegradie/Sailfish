@@ -2,5 +2,5 @@
 
 public class TestConstants
 {
-    public const int PValueSigDig = 8;
+    public const int PValueSigDig = 10;
 }

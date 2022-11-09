@@ -54,7 +54,7 @@ internal class ConsoleWriter : IConsoleWriter
             stringBuilder.AppendLine();
             var table = group.ToStringTable(
                 new List<string>() { "", "ms", "ms", "ms", "" },
-                u => u.DisplayName!,
+                u => u.TestCaseId!.DisplayName!,
                 u => u.DescriptiveStatisticsResult!.Median,
                 u => u.DescriptiveStatisticsResult!.Mean,
                 u => u.DescriptiveStatisticsResult!.StdDev,

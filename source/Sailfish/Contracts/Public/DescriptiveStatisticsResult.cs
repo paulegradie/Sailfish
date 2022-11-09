@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using Accord.Statistics;
+using Sailfish.Analysis;
 using Sailfish.Execution;
 
 namespace Sailfish.Contracts.Public;
@@ -19,7 +20,7 @@ public class DescriptiveStatisticsResult
 
     public double[] RawExecutionResults { get; set; } = null!; // milliseconds
 
-    public static DescriptiveStatisticsResult ConvertFromPerfTimer(string displayName, PerformanceTimer performanceTimer)
+    public static DescriptiveStatisticsResult ConvertFromPerfTimer(TestCaseId testCaseId, PerformanceTimer performanceTimer)
     {
         var executionIterations = performanceTimer.ExecutionIterationPerformances.Select(x => (double)x.Duration).ToArray();
 
@@ -30,7 +31,7 @@ public class DescriptiveStatisticsResult
 
         return new DescriptiveStatisticsResult
         {
-            DisplayName = displayName,
+            DisplayName = testCaseId.DisplayName,
             GlobalStart = performanceTimer.GlobalStart,
             GlobalEnd = performanceTimer.GlobalStop,
             GlobalDuration = performanceTimer.GlobalDuration.TotalSeconds,

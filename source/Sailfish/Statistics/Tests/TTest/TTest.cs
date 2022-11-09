@@ -13,6 +13,10 @@ internal class TTest : ITTest
     // inner quartile values must be enough to produce a valid statistic
     // valid statistics require a minimum of 5 samples
     private const int MinimumSampleSizeForTruncation = 10;
+    public class AdditionalResults
+    {
+        public const string DegreesOfFreedom = "DegreesOfFreedom";
+    }
 
     public TestResults ExecuteTest(double[] before, double[] after, TestSettings settings)
     {
@@ -30,17 +34,17 @@ internal class TTest : ITTest
         var medianAfter = Math.Round(after.Median(), sigDig);
 
         var testStatistic = Math.Round(test.Statistic, sigDig);
-        var pVal = Math.Round(test.PValue, TestConstants.PValueSigDig);
         var dof = Math.Round(test.DegreesOfFreedom, sigDig);
 
         var isSignificant = test.PValue <= settings.Alpha;
+        var pVal = Math.Round(test.PValue, TestConstants.PValueSigDig);
         var changeDirection = meanAfter > meanBefore ? SailfishChangeDirection.Regressed : SailfishChangeDirection.Improved;
 
         var description = isSignificant ? changeDirection : SailfishChangeDirection.NoChange;
 
         var additionalResults = new Dictionary<string, double>()
         {
-            { "DegreesOfFreedom", dof }
+            { AdditionalResults.DegreesOfFreedom, dof }
         };
 
         return new TestResults(

@@ -48,13 +48,13 @@ internal class ExecutionSummaryCompiler : IExecutionSummaryCompiler
             if (testExecutionResult.IsSuccess && !testExecutionResult.PerformanceTimerResults.IsValid)
             {
                 var message = $"Somehow the test exception was successful, but the performance " +
-                              $"timer was invalid for test: {testExecutionResult.TestInstanceContainer.DisplayName}";
+                              $"timer was invalid for test: {testExecutionResult.TestInstanceContainer.TestCaseId.DisplayName}";
                 throw new SailfishException(message);
             }
 
             var descriptiveStatistics = ComputeStatistics(testExecutionResult);
             var compiledResult = new CompiledResult(
-                testExecutionResult.TestInstanceContainer.DisplayName,
+                testExecutionResult.TestInstanceContainer.TestCaseId,
                 testExecutionResult.TestInstanceContainer.GroupingId,
                 descriptiveStatistics);
 
@@ -76,6 +76,6 @@ internal class ExecutionSummaryCompiler : IExecutionSummaryCompiler
 
     private DescriptiveStatisticsResult ComputeStatistics(TestExecutionResult result)
     {
-        return statsCompiler.Compile(result.TestInstanceContainer.DisplayName, result.PerformanceTimerResults);
+        return statsCompiler.Compile(result.TestInstanceContainer.TestCaseId, result.PerformanceTimerResults);
     }
 }

@@ -1,13 +1,14 @@
 ﻿using System;
+using Sailfish.Analysis;
 using Sailfish.Contracts.Public;
 
 namespace Sailfish.Statistics;
 
 internal class CompiledResult
 {
-    public CompiledResult(string displayName, string groupingId, DescriptiveStatisticsResult descriptiveStatisticsResult)
+    public CompiledResult(TestCaseId testCaseId, string groupingId, DescriptiveStatisticsResult descriptiveStatisticsResult)
     {
-        DisplayName = displayName;
+        TestCaseId = testCaseId;
         GroupingId = groupingId;
         DescriptiveStatisticsResult = descriptiveStatisticsResult;
     }
@@ -20,6 +21,6 @@ internal class CompiledResult
     public string? GroupingId { get; set; }
     public DescriptiveStatisticsResult? DescriptiveStatisticsResult { get; set; }
     public Exception? Exception { get; set; }
-    public string? DisplayName { get; set; }
+    public TestCaseId? TestCaseId { get; set; }
     
 }
