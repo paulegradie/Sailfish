@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using MathNet.Numerics.Statistics;
 using Sailfish.Contracts.Public;
@@ -47,7 +46,7 @@ public class TestComputer : ITestComputer
         }
 
         var results = new List<TestCaseResults>();
-        foreach (var testCaseId in orderedTestCaseIds.Distinct())
+        foreach (var testCaseId in orderedTestCaseIds.GroupBy(x => x.DisplayName).Select(x => x.First()))
         {
             var afterCompiled = Aggregate(
                 testCaseId,
