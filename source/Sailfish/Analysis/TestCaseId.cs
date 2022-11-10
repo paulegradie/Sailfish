@@ -18,10 +18,10 @@ public class TestCaseId
         TestCaseVariables = testCaseVariables;
     }
 
-    public TestCaseName TestCaseName { get; }
-    public TestCaseVariables TestCaseVariables { get; }
+    public TestCaseName TestCaseName { get; init; }
+    public TestCaseVariables TestCaseVariables { get; init; }
 
-    public string DisplayName => FormDisplayName();
+    [JsonIgnore] public string DisplayName => FormDisplayName();
 
     private string FormDisplayName()
     {
