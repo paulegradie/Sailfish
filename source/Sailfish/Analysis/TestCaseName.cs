@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json.Serialization;
 
 namespace Sailfish.Analysis;
 
@@ -11,7 +12,12 @@ public class TestCaseName
 
     private const char OpenBracket = '(';
     private const char Dot = '.';
-    
+
+    [JsonConstructor]
+    public TestCaseName()
+    {
+    }
+
     public TestCaseName(string displayName)
     {
         Name = displayName.Split(OpenBracket).First();
@@ -24,8 +30,8 @@ public class TestCaseName
         Parts = parts;
     }
 
-    public string Name { get; }
-    public IReadOnlyList<string> Parts { get; }
+    public string Name { get; } = null!;
+    public IReadOnlyList<string> Parts { get; } = null!;
 
     private static IReadOnlyList<string> GetNameParts(string displayName)
     {

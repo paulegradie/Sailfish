@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json.Serialization;
 
 namespace Sailfish.Analysis;
 
@@ -9,7 +10,12 @@ public class TestCaseVariables
     private const char CloseBracket = ')';
     private const char Dot = '.';
     private const char Colon = ':';
-    
+
+    [JsonConstructor]
+    public TestCaseVariables()
+    {
+    }
+
     public TestCaseVariables(string displayName)
     {
         Variables = GetElements(displayName);
@@ -20,7 +26,7 @@ public class TestCaseVariables
         Variables = variables;
     }
 
-    public IEnumerable<TestCaseVariable> Variables { get; set; }
+    public IEnumerable<TestCaseVariable> Variables { get; set; } = null!;
 
     public TestCaseVariable? GetVariableIndex(int index)
     {
