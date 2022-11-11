@@ -6,6 +6,10 @@ namespace Sailfish.Analysis;
 public class TestCaseId
 {
     [JsonConstructor]
+    public TestCaseId()
+    {
+    }
+
     public TestCaseId(string displayName)
     {
         TestCaseName = new TestCaseName(displayName);
@@ -18,8 +22,8 @@ public class TestCaseId
         TestCaseVariables = testCaseVariables;
     }
 
-    public TestCaseName TestCaseName { get; init; }
-    public TestCaseVariables TestCaseVariables { get; init; }
+    public TestCaseName TestCaseName { get; init; } = null!;
+    public TestCaseVariables TestCaseVariables { get; init; } = null!;
 
     [JsonIgnore] public string DisplayName => FormDisplayName();
 
