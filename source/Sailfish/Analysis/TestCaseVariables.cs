@@ -6,8 +6,8 @@ namespace Sailfish.Analysis;
 
 public class TestCaseVariables
 {
-    private const char OpenBracket = '(';
-    private const char CloseBracket = ')';
+    private const string OpenBracket = "(";
+    private const string CloseBracket = ")";
     private const char Dot = '.';
     private const char Colon = ':';
 
@@ -55,14 +55,22 @@ public class TestCaseVariables
 
     private static IEnumerable<TestCaseVariable> GetElements(string s)
     {
-        var elements = s
+        var rawElements = s
             .Split(OpenBracket)
             .Last()
-            .Replace(")", string.Empty)
+            .Replace(CloseBracket, string.Empty)
             .Split(",")
-            .Select(ParseVariable)
-            .OrderBy(x => x.Name)
+            .Where(x => !string.IsNullOrEmpty(x))
             .ToList();
-        return elements;
+
+        if (rawElements.Any())
+        {
+            return rawElements
+                .Select(ParseVariable)
+                .OrderBy(x => x.Name)
+                .ToList();
+        }
+
+        return System.Array.Empty<TestCaseVariable>();
     }
 }
