@@ -12,10 +12,12 @@ public class WhenDiscoveringTests
     [TestMethod]
     public void AllTestsAreDiscovered()
     {
-        var allDllsInThisProject = DllFinder.FindAllDllsRecursively();
+        // sources is a list of dlls that we've discovered in this project
+        var sources = DllFinder.FindAllDllsRecursively();
 
         // Assumes there is one valid test file.
-        var testCases = new TestDiscovery().DiscoverTests(allDllsInThisProject).ToList();
+        // And The discoverer tests will be those found from inside the 
+        var testCases = TestDiscovery.DiscoverTests(sources).ToList();
         testCases.Count.ShouldBe(6);
     }
 }

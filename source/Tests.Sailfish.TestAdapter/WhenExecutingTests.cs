@@ -14,13 +14,11 @@ public class WhenExecutingTests
     [TestMethod]
     public void FilteredTestsAreSuccessfullyDiscovered()
     {
-        var executor = new TestExecution();
         var frameworkHandle = Substitute.For<IFrameworkHandle>();
-        var context = Substitute.For<IRunContext>();
 
         var allDllsInThisProject = DllFinder.FindAllDllsRecursively();
-        var testCases = new TestDiscovery().DiscoverTests(allDllsInThisProject).ToList();
+        var testCases = TestDiscovery.DiscoverTests(allDllsInThisProject).ToList();
 
-        Should.NotThrow(() => executor.ExecuteTests(testCases.Take(1).ToList(), context, frameworkHandle));
+        Should.NotThrow(() => TestExecution.ExecuteTests(testCases.Take(1).ToList(), frameworkHandle));
     }
 }

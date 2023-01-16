@@ -6,18 +6,6 @@ using Serilog.Core;
 
 namespace Sailfish.TestAdapter.Utils;
 
-internal static class LogExtensions
-{
-    public static string AppendTimeStamp(this string fileName)
-    {
-        return string.Concat(
-            Path.GetFileNameWithoutExtension(fileName),
-            DateTime.Now.ToString("yyyyMMddHHmmssfff"),
-            Path.GetExtension(fileName)
-        );
-    }
-}
-
 internal static class Logging
 {
     public static Logger CreateLogger(string fileName)

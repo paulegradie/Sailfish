@@ -33,7 +33,7 @@ internal class SailFishTestExecutor : ISailFishTestExecutor
 
     public async Task<List<RawExecutionResult>> Execute(
         IEnumerable<Type> testTypes,
-        Action<TestInstanceContainer, TestExecutionResult>? callback = null,
+        Action<TestExecutionResult>? callback = null,
         CancellationToken cancellationToken = default)
     {
         var rawResults = new List<RawExecutionResult>();
@@ -69,7 +69,7 @@ internal class SailFishTestExecutor : ISailFishTestExecutor
 
     public async Task<List<TestExecutionResult>> Execute(
         Type test,
-        Action<TestInstanceContainer, TestExecutionResult>? callback = null,
+        Action<TestExecutionResult>? callback = null,
         CancellationToken cancellationToken = default)
     {
         var testInstanceContainers = testInstanceContainerCreator.CreateTestContainerInstanceProviders(test);
@@ -79,7 +79,7 @@ internal class SailFishTestExecutor : ISailFishTestExecutor
 
     private async Task<List<TestExecutionResult>> Execute(
         IReadOnlyCollection<TestInstanceContainerProvider> testMethods,
-        Action<TestInstanceContainer, TestExecutionResult>? callback = null,
+        Action<TestExecutionResult>? callback = null,
         CancellationToken cancellationToken = default)
     {
         var results = new List<TestExecutionResult>();
@@ -180,11 +180,11 @@ internal class SailFishTestExecutor : ISailFishTestExecutor
     // This will be called in the adapter
     public async Task<TestExecutionResult> Execute(
         TestInstanceContainer container,
-        Action<TestInstanceContainer, TestExecutionResult>? callback = null,
+        Action<TestExecutionResult>? callback = null,
         CancellationToken cancellationToken = default)
     {
         var result = await Iterate(container, cancellationToken);
-        callback?.Invoke(result.TestInstanceContainer, result);
+        callback?.Invoke(result);
 
         return result;
     }

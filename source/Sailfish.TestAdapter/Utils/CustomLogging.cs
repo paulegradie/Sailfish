@@ -13,7 +13,7 @@ internal static class CustomLogger
 
     public static void VerbosePadded(string messageLine, params string[] properties)
     {
-        FilePath ??= FilePath ?? $"C:\\Users\\paule\\code\\ProjectSailfish\\TestingLogs\\crazy_logs-{Guid.NewGuid().ToString()}.txt";
+        FilePath ??= FilePath ?? $"C:\\Users\\paule\\code\\Sailfish\\TestingLogs\\crazy_logs-{Guid.NewGuid().ToString()}.txt";
 
         if (!File.Exists(FilePath)) File.Create(FilePath);
 
@@ -23,7 +23,7 @@ internal static class CustomLogger
         }
         catch (Exception ex)
         {
-            FilePath = $"C:\\Users\\paule\\code\\ProjectSailfish\\TestingLogs\\crazy_logs-{Guid.NewGuid().ToString()}.txt";
+            FilePath = $"C:\\Users\\paule\\code\\Sailfish\\TestingLogs\\crazy_logs-{Guid.NewGuid().ToString()}.txt";
             DoWrite(FilePath, $"What a crazy exception! How is it possible that: {ex.Message}");
             DoWrite(FilePath, "\r" + messageLine + "\r", properties);
         }
@@ -31,7 +31,7 @@ internal static class CustomLogger
 
     public static void Verbose(string messageLine, params string[] properties)
     {
-        if (FilePath is null) FilePath = FilePath ?? $"C:\\Users\\paule\\code\\ProjectSailfish\\TestingLogs\\crazy_logs-{Guid.NewGuid().ToString()}.txt";
+        FilePath ??= FilePath ?? $"C:\\Users\\paule\\code\\Sailfish\\TestingLogs\\crazy_logs-{Guid.NewGuid().ToString()}.txt";
 
         if (!File.Exists(FilePath)) File.Create(FilePath);
 
@@ -41,7 +41,7 @@ internal static class CustomLogger
         }
         catch (Exception ex)
         {
-            FilePath = $"C:\\Users\\paule\\code\\ProjectSailfish\\TestingLogs\\crazy_logs-{Guid.NewGuid().ToString()}.txt";
+            FilePath = $"C:\\Users\\paule\\code\\Sailfish\\TestingLogs\\crazy_logs-{Guid.NewGuid().ToString()}.txt";
             DoWrite(FilePath, $"What a crazy exception!: {ex.Message}", properties);
             DoWrite(FilePath, messageLine, properties);
         }

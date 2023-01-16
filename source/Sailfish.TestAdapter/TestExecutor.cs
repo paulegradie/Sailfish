@@ -17,17 +17,26 @@ public class TestExecutor : ITestExecutor
 
     public bool Cancelled;
 
-    public void RunTests(IEnumerable<string> sourceDlls, IRunContext runContext, IFrameworkHandle frameworkHandle)
-    {
-        CustomLogger.Verbose("We are hitting RunTests(IEnumerable<string> sourceDlls,");
-        var testCases = new TestDiscovery().DiscoverTests(sourceDlls);
-        new TestExecution().ExecuteTests(testCases.ToList(), runContext, frameworkHandle);
-    }
 
-    public void RunTests(IEnumerable<TestCase> tests, IRunContext runContext, IFrameworkHandle frameworkHandle)
+    public void RunTests(IEnumerable<TestCase>? tests, IRunContext? runContext, IFrameworkHandle? frameworkHandle)
     {
         CustomLogger.Verbose("We are hitting RunTests(IEnumerable<TestCase> tests,");
-        new TestExecution().ExecuteTests(tests.ToList(), runContext, frameworkHandle);
+        if (tests is null) throw new Exception("Tests was null in the test case list!");
+        if (runContext is null || frameworkHandle is null) throw new Exception("Wow more nulls");
+
+        TestExecution.ExecuteTests(tests.ToList(), frameworkHandle);
+    }
+
+    public void RunTests(IEnumerable<string>? sources, IRunContext? runContext, IFrameworkHandle? frameworkHandle)
+    {
+        if (sources is null) throw new Exception("Tests was null in the test case list!");
+
+        var enumeratedSources = sources.ToList();
+        CustomLogger.Verbose("We are hitting RunTests(IEnumerable<string> sourceDlls - {DLLS}", string.Join(", ", enumeratedSources));
+        if (runContext is null || frameworkHandle is null) throw new Exception("Wow more nulls");
+
+        var testCases = TestDiscovery.DiscoverTests(enumeratedSources);
+        TestExecution.ExecuteTests(testCases.ToList(), frameworkHandle);
     }
 
     public void Cancel()

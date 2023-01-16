@@ -1,27 +1,30 @@
-﻿using System;
-using System.IO;
-using System.Linq;
-using Sailfish.Attributes;
+﻿using Sailfish.Attributes;
 
 namespace UsingTheIDE;
 
 [Sailfish(NumIterations = 3, NumWarmupIterations = 2)]
-public class SimplePerfTest
+public class SimplePerfTest : SailfishBase
 {
-    [SailfishVariable(1, 2, 3)]
-    public int VariableA { get; set; }
+    private readonly ExampleDep exampleDep;
 
-    [SailfishVariable(1_000, 4_000)]
-    public int VariableB { get; set; }
+    [SailfishVariable(1, 2, 3)] public int VariableA { get; set; }
+
+    [SailfishVariable(100, 400)] public int VariableB { get; set; }
 
     [SailfishMethod]
     public void Go()
     {
-        Enumerable.Range(0, VariableA * VariableB).Select(
-            x =>
+        for (var i = 0; i < VariableA; i++)
+        {
+            for (var j = 0; j < VariableB; j++)
             {
-                Console.SetOut(new StreamWriter(Stream.Null));
-                return 0;
-            });
+                exampleDep.WriteSomething("Wow");
+            }
+        }
+    }
+
+    public SimplePerfTest(ExampleDep exampleDep, SailfishDependencies sailfishDependencies) : base(sailfishDependencies)
+    {
+        this.exampleDep = exampleDep;
     }
 }

@@ -13,14 +13,18 @@ namespace Sailfish.TestAdapter;
 [DefaultExecutorUri(TestExecutor.ExecutorUriString)]
 public class TestDiscoverer : ITestDiscoverer
 {
-    public void DiscoverTests(IEnumerable<string> containers, IDiscoveryContext discoveryContext, IMessageLogger logger, ITestCaseDiscoverySink discoverySink)
+    public void DiscoverTests(IEnumerable<string> sources, IDiscoveryContext discoveryContext, IMessageLogger logger, ITestCaseDiscoverySink discoverySink)
     {
-        containers = containers.Where(x => !x.StartsWith("Sailfish.TestAdapter"));
-
+        sources = sources.Where(x => !x.StartsWith("Sailfish.TestAdapter"));
+        CustomLogger.VerbosePadded("TEST SOURCES IN TESTDISCOVERER: {TESTS}", string.Join(", ", sources));
         try
         {
-            var testCases = new TestDiscovery().DiscoverTests(containers);
-            foreach (var testCase in testCases) discoverySink.SendTestCase(testCase);
+            var testCases = TestDiscovery.DiscoverTests(sources);
+            foreach (var testCase in testCases)
+            {
+                
+                discoverySink.SendTestCase(testCase);
+            }
         }
         catch (Exception ex)
         {

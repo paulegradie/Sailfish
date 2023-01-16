@@ -6,21 +6,21 @@ using Sailfish.Attributes;
 
 namespace Sailfish.TestAdapter.Utils;
 
-internal class TypeLoader
+internal static class TypeLoader
 {
-    public Type[] LoadTypes(IEnumerable<string> sourceDlls)
+    public static IEnumerable<Type> LoadSailfishTestTypesFrom(IEnumerable<string> sourceDlls)
     {
-        return sourceDlls.SelectMany(LoadTypes).ToArray();
+        return sourceDlls.SelectMany(LoadSailfishTestTypesFrom).ToArray();
     }
 
-    public Type[] LoadTypes(string sourceDll)
+    public static Type[] LoadSailfishTestTypesFrom(string sourceDll)
     {
         var assembly = LoadAssemblyFromDll(sourceDll);
-        var types = CollectTestTypesFromAssembly(assembly);
+        var types = CollectSailfishTestTypesFromAssembly(assembly);
         return types;
     }
 
-    private Type[] CollectTestTypesFromAssembly(Assembly assembly)
+    private static Type[] CollectSailfishTestTypesFromAssembly(Assembly assembly)
     {
         var perfTestTypes = assembly
             .GetTypes()
@@ -33,7 +33,7 @@ internal class TypeLoader
         return perfTestTypes;
     }
 
-    private Assembly LoadAssemblyFromDll(string dllPath)
+    private static Assembly LoadAssemblyFromDll(string dllPath)
     {
         var assembly = Assembly.LoadFile(dllPath);
         AppDomain.CurrentDomain.Load(assembly.GetName()); // is this necessary?

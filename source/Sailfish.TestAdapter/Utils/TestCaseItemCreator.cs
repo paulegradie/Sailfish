@@ -11,40 +11,47 @@ namespace Sailfish.TestAdapter.Utils;
 
 internal class TestCaseItemCreator
 {
+    public const string TestCaseId = "TestCaseId";
+
     private readonly ParameterGridCreator parameterGridCreator;
 
     public TestCaseItemCreator()
     {
         parameterGridCreator = new ParameterGridCreator(new ParameterCombinator(), new IterationVariableRetriever());
+        TestProperty.Register(TestCaseId, "TestType", typeof(Type), TestPropertyAttributes.None, typeof(Type));
     }
 
-    public IEnumerable<TestCase> AssembleTestCases(DataBag bag, string sourceDll)
+    public IEnumerable<TestCase> AssembleTestCases(Type testType, string testCsFileContent, string testCsFilePath, string sourceDll)
     {
-        var methods = bag.Type.GetMethodsWithAttribute<SailfishMethodAttribute>().ToArray();
-        if (methods is null) throw new Exception("No method with ExecutePerformanceCheck attribute found -- this shouldn't have made it into the test type scan!");
-
-        var propertyNamesAndCombos = parameterGridCreator.GenerateParameterGrid(bag.Type);
-        var propertyNames = propertyNamesAndCombos.Item1.ToArray();
-        var combos = propertyNamesAndCombos.Item2;
-
-        var contentLines = LineSplitter.SplitFileIntoLines(bag.CsFileContentString);
-
         var testCaseSets = new List<TestCase>();
+        var methods = testType.GetMethodsWithAttribute<SailfishMethodAttribute>()?.ToArray();
+        if (methods is null)
+        {
+            CustomLogger.VerbosePadded("No method with ExecutePerformanceCheck attribute found -- this shouldn't have made it into the test type scan!");
+            return testCaseSets;
+        }
+
+        var (item1, combos) = parameterGridCreator.GenerateParameterGrid(testType);
+        var propertyNames = item1.ToArray();
+
+        var contentLines = LineSplitter.SplitFileIntoLines(testCsFileContent);
+
         foreach (var method in methods)
         {
             var methodNameLine = GetMethodNameLine(contentLines, method);
             if (methodNameLine == 0) continue;
-            var testCaseSet = combos.Select(CreateTestCase(bag, sourceDll, method, propertyNames, methodNameLine));
+            var testCaseSet = combos.Select(CreateTestCase(testType, testCsFilePath, sourceDll, method, propertyNames, methodNameLine));
             testCaseSets.AddRange(testCaseSet);
         }
 
         return testCaseSets;
     }
 
-    private Func<int[], TestCase> CreateTestCase(
-        DataBag bag,
+    private static Func<int[], TestCase> CreateTestCase(
+        Type testType,
+        string testFilePath,
         string sourceDll,
-        MethodInfo method,
+        MemberInfo method,
         string[] propertyNames,
         int methodNameLine)
     {
@@ -52,28 +59,31 @@ internal class TestCaseItemCreator
         return variablesForEachPropertyInOrder =>
         {
             CustomLogger.Verbose("Param set for {Method}: {ParamSet}", method.Name, string.Join(", ", variablesForEachPropertyInOrder.Select(x => x.ToString())));
-            var fullyQualifiedName = CreateFullyQualifiedName(bag);
-
-            CustomLogger.Verbose("This is the file path!: {FilePath}", bag.CsFilePath);
+            var fullyQualifiedName = CreateFullyQualifiedName(testType);
+                
+            CustomLogger.Verbose("This is the file path!: {FilePath}", testFilePath);
             var testCase = new TestCase(fullyQualifiedName, TestExecutor.ExecutorUri, sourceDll) // a test case is a method
             {
-                CodeFilePath = bag.CsFilePath,
-                DisplayName = DisplayNameHelper.CreateTestCaseId(bag.Type, method.Name, propertyNames, variablesForEachPropertyInOrder).TestCaseName.Name,
+                CodeFilePath = testFilePath,
+                DisplayName = DisplayNameHelper.CreateTestCaseId(testType, method.Name, propertyNames, variablesForEachPropertyInOrder).TestCaseName.Name,
                 ExecutorUri = TestExecutor.ExecutorUri,
                 Id = randomId,
                 LineNumber = methodNameLine
             };
 
+            var property = TestProperty.Find(TestCaseId)!;
+            testCase.SetPropertyValue(property, testType);
+
             return testCase;
         };
     }
 
-    private static string CreateFullyQualifiedName(DataBag bag)
+    private static string CreateFullyQualifiedName(Type testType)
     {
-        return Assembly.CreateQualifiedName(Assembly.GetCallingAssembly().ToString(), bag.Type.Name);
+        return Assembly.CreateQualifiedName(Assembly.GetCallingAssembly().ToString(), testType.Name);
     }
 
-    private int GetMethodNameLine(string[] fileLines, MethodInfo method)
+    private static int GetMethodNameLine(IReadOnlyList<string> fileLines, MemberInfo method)
     {
         var lineNumber = fileLines
             .Select(

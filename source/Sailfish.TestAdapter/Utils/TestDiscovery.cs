@@ -5,29 +5,24 @@ using Microsoft.VisualStudio.TestPlatform.ObjectModel;
 
 namespace Sailfish.TestAdapter.Utils;
 
-internal class TestDiscovery
+internal static class TestDiscovery
 {
-    private readonly DirectoryRecursion dirRecursor;
-    private readonly FileIo fileIo;
-    private readonly TestCaseItemCreator testCaseCreator;
-    private readonly TestFilter testFilter;
-    private readonly TypeLoader typeLoader;
+    private static readonly DirectoryRecursion DirRecursor = new();
+    private static readonly FileIo FileIo = new();
+    private static readonly TestCaseItemCreator TestCaseCreator = new();
 
-    public TestDiscovery()
-    {
-        fileIo = new FileIo();
-        testFilter = new TestFilter();
-        dirRecursor = new DirectoryRecursion();
-        testCaseCreator = new TestCaseItemCreator();
-        typeLoader = new TypeLoader();
-    }
-
-    public IEnumerable<TestCase> DiscoverTests(IEnumerable<string> sourceDllPaths)
+    /// <summary>
+    /// This method should scan through the dlls provided, and extract each type that qualifies as a test type
+    /// Then, that 
+    /// </summary>
+    /// <param name="sourceDllPaths"></param>
+    /// <returns></returns>
+    public static IEnumerable<TestCase> DiscoverTests(IEnumerable<string> sourceDllPaths)
     {
         var testCases = new List<TestCase>();
         foreach (var sourceDllPath in sourceDllPaths.Distinct())
         {
-            var project = dirRecursor.RecurseUpwardsUntilFileIsFound(
+            var project = DirRecursor.RecurseUpwardsUntilFileIsFound(
                 ".csproj",
                 sourceDllPath,
                 10);
@@ -35,7 +30,7 @@ internal class TestDiscovery
             Type[] perfTestTypes;
             try
             {
-                perfTestTypes = typeLoader.LoadTypes(sourceDllPath);
+                perfTestTypes = TypeLoader.LoadSailfishTestTypesFrom(sourceDllPath);
             }
             catch
             {
@@ -44,26 +39,22 @@ internal class TestDiscovery
 
             if (perfTestTypes.Length == 0) continue;
 
-            var correspondingCsFiles = dirRecursor.FindAllFilesRecursively(
+            var correspondingCsFiles = DirRecursor.FindAllFilesRecursively(
                 project,
                 "*.cs",
                 DirectoryRecursion.FileSearchFilters.FilePathDoesNotContainBinOrObjDirs);
             if (correspondingCsFiles.Count == 0) continue;
 
-            var bags = new List<DataBag>();
             foreach (var csFilePath in correspondingCsFiles)
             {
-                var fileContent = fileIo.ReadFileContents(csFilePath);
-                var perfTypesInThisCsFile = testFilter.FindTestTypesInTheCurrentFile(fileContent, perfTestTypes);
+                var fileContent = FileIo.ReadFileContents(csFilePath);
+                var perfTypesInThisCsFile = TestFilter.FindTestTypesInTheCurrentFile(fileContent, perfTestTypes);
 
                 foreach (var perfTestType in perfTypesInThisCsFile)
-                    bags.Add(new DataBag(csFilePath, fileContent, perfTestType));
-            }
-
-            if (bags.Count == 0) continue;
-            foreach (var cases in bags.Select(bag => testCaseCreator.AssembleTestCases(bag, sourceDllPath)))
-            {
-                testCases.AddRange(cases);
+                {
+                    var cases = TestCaseCreator.AssembleTestCases(perfTestType, fileContent, csFilePath, sourceDllPath);
+                    testCases.AddRange(cases);
+                }
             }
         }
 

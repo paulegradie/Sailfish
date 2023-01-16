@@ -32,7 +32,7 @@ public class WhenAssemblingTestCases
         var bag = new DataBag(testResourceRelativePath, content, typeof(SimplePerfTest));
         var sourceDll = "C:/this/is/some/dll.dll";
 
-        var result = creator.AssembleTestCases(bag, sourceDll).ToList();
+        var result = creator.AssembleTestCases(bag.Type, bag.CsFileContentString, bag.CsFilePath, sourceDll).ToList();
 
         result.Count.ShouldBe(6);
         var first = result.First();
