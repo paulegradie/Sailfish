@@ -26,10 +26,9 @@ public class SailfishDependencies : ISailfishFixtureDependency
         Container.Dispose();
     }
 
-    public T ResolveType<T>(T type) where T : class
+
+    public object ResolveType(Type type)
     {
-        var thing = Container.Resolve(typeof(T));
-        var typed = (T)thing;
-        return typed;
+        return Container.Resolve(type);
     }
 }

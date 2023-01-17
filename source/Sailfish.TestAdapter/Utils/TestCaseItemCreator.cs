@@ -11,14 +11,14 @@ namespace Sailfish.TestAdapter.Utils;
 
 internal class TestCaseItemCreator
 {
-    public const string TestCaseId = "TestCaseId";
+    public const string TestType = "TestType";
 
     private readonly ParameterGridCreator parameterGridCreator;
 
     public TestCaseItemCreator()
     {
         parameterGridCreator = new ParameterGridCreator(new ParameterCombinator(), new IterationVariableRetriever());
-        TestProperty.Register(TestCaseId, "TestType", typeof(Type), TestPropertyAttributes.None, typeof(Type));
+        TestProperty.Register(TestType, "TestType", typeof(Type), TestPropertyAttributes.None, typeof(Type));
     }
 
     public IEnumerable<TestCase> AssembleTestCases(Type testType, string testCsFileContent, string testCsFilePath, string sourceDll)
@@ -71,7 +71,7 @@ internal class TestCaseItemCreator
                 LineNumber = methodNameLine
             };
 
-            var property = TestProperty.Find(TestCaseId)!;
+            var property = TestProperty.Find(TestType)!;
             testCase.SetPropertyValue(property, testType);
 
             return testCase;

@@ -9,10 +9,10 @@ namespace Sailfish.Execution;
 internal class TestInstanceContainerCreator : ITestInstanceContainerCreator
 {
     private readonly IParameterGridCreator parameterGridCreator;
-    private readonly ITypeResolver typeResolver;
+    private readonly ITypeResolver? typeResolver;
 
     public TestInstanceContainerCreator(
-        ITypeResolver typeResolver,
+        ITypeResolver? typeResolver,
         IParameterGridCreator parameterGridCreator)
     {
         this.typeResolver = typeResolver;

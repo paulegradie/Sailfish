@@ -48,5 +48,6 @@ public class SailfishModule : Module
         builder.RegisterType<TestResultsCsvWriter>().As<ITestResultsCsvWriter>();
         builder.RegisterType<TestResultTableContentFormatter>().As<ITestResultTableContentFormatter>();
         builder.RegisterType<TestResultAnalyzer>().As<ITestResultAnalyzer>();
+        builder.RegisterType<SailfishExecutionEngine>().As<ISailfishExecutionEngine>();
     }
 }

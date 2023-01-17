@@ -1,4 +1,5 @@
 using System;
+using Sailfish.Execution;
 
 namespace Sailfish.AdapterUtils;
 
@@ -6,7 +7,6 @@ namespace Sailfish.AdapterUtils;
 /// When implementing fixture classes, you need to inherit from this interface in order
 /// to ensure your tests are correctly disposed
 /// </summary>
-public interface ISailfishFixtureDependency : IDisposable
+public interface ISailfishFixtureDependency : ITypeResolver, IDisposable
 {
-    public T ResolveType<T>(T type) where T : class;
 }

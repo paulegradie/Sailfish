@@ -1,16 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading;
-using Autofac;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.Adapter;
 using Sailfish.Execution;
-using Serilog;
 
 namespace Sailfish.TestAdapter.Utils;
 
-
-internal class TestExecution
+internal static class TestExecution
 {
     public static void ExecuteTests(List<TestCase> testCases, IFrameworkHandle frameworkHandle)
     {
@@ -24,25 +22,21 @@ internal class TestExecution
 
         foreach (var testCase in testCases)
         {
-            var testTypeProperty = TestProperty.Find(TestCaseItemCreator.TestCaseId)!;
-            var testTypeObj = testCase.GetPropertyValue(testTypeProperty);
-            if (testTypeObj is null) throw new Exception("OMG TestTypeProp not being set!?");
+            var testTypeProperty = TestProperty.Find(TestCaseItemCreator.TestType)!;
+            var testType = (Type)testCase.GetPropertyValue(testTypeProperty)!;
+            if (testType is null) throw new Exception("OMG TestTypeProp not being set!?");
 
-            var testType = (Type)testTypeObj;
 
-            var executor = new SailFishTestExecutor(
-                Log.Logger,
-                new TestInstanceContainerCreator(
-                    new DllTypeResolver(testCase.Source),
-                    new ParameterGridCreator(
-                        new ParameterCombinator(),
-                        new IterationVariableRetriever())),
-                new TestCaseIterator());
-
+            var testContainerCreator = new TestInstanceContainerCreator(
+                null,
+                new ParameterGridCreator(
+                    new ParameterCombinator(),
+                    new IterationVariableRetriever()));
+            var engine = new SailfishExecutionEngine(new TestCaseIterator());
 
             void TestResultCallback(TestExecutionResult result)
             {
-                var testResult = new TestResult(tc);
+                var testResult = new TestResult(testCase);
 
                 if (result.Exception is not null)
                 {
@@ -51,7 +45,7 @@ internal class TestExecution
                 }
 
                 testResult.Outcome = result.StatusCode == 0 ? TestOutcome.Passed : TestOutcome.Failed;
-                testResult.DisplayName = tc.DisplayName;
+                testResult.DisplayName = testCase.DisplayName;
 
                 testResult.StartTime = result.PerformanceTimerResults.GlobalStart;
                 testResult.EndTime = result.PerformanceTimerResults.GlobalStop;
@@ -60,8 +54,12 @@ internal class TestExecution
                 frameworkHandle.RecordResult(testResult);
             }
 
-
-            var result = executor.Execute(testType, TestResultCallback, CancellationToken.None).GetAwaiter().GetResult();
+            // each provider is a method in the instance, which yields a number of cases based on the variable combos
+            var testMethods = testContainerCreator.CreateTestContainerInstanceProviders(testType);
+            foreach (var testMethod in testMethods.OrderBy(x => x.Method.Name))
+            {
+                engine.ActivateContainer(0, 0, testMethod, TestResultCallback, CancellationToken.None).GetAwaiter().GetResult();
+            }
         }
     }
 }
