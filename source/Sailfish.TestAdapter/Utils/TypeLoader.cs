@@ -1,34 +1,29 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using Microsoft.VisualStudio.TestPlatform.ObjectModel.Logging;
 using Sailfish.Attributes;
 
 namespace Sailfish.TestAdapter.Utils;
 
 internal static class TypeLoader
 {
-    public static IEnumerable<Type> LoadSailfishTestTypesFrom(IEnumerable<string> sourceDlls)
-    {
-        return sourceDlls.SelectMany(LoadSailfishTestTypesFrom).ToArray();
-    }
-
-    public static Type[] LoadSailfishTestTypesFrom(string sourceDll)
+    public static Type[] LoadSailfishTestTypesFrom(string sourceDll, IMessageLogger logger)
     {
         var assembly = LoadAssemblyFromDll(sourceDll);
-        var types = CollectSailfishTestTypesFromAssembly(assembly);
+        var types = CollectSailfishTestTypesFromAssembly(assembly, logger);
         return types;
     }
 
-    private static Type[] CollectSailfishTestTypesFromAssembly(Assembly assembly)
+    private static Type[] CollectSailfishTestTypesFromAssembly(Assembly assembly, IMessageLogger logger)
     {
         var perfTestTypes = assembly
             .GetTypes()
             .Where(x => x.HasAttribute<SailfishAttribute>())
             .ToArray();
 
-        CustomLogger.Verbose("\rTest Types Discovered in {Assembly}:\r", assembly.FullName ?? "Couldn't Find the assembly name property");
-        foreach (var testType in perfTestTypes) CustomLogger.Verbose("--- Perf tests: {0}", testType.Name);
+        logger.SendMessage(TestMessageLevel.Informational, $"\rTest Types Discovered in {assembly.FullName ?? "Couldn't Find the assembly name property"}:\r");
+        foreach (var testType in perfTestTypes) logger.SendMessage(TestMessageLevel.Informational, $"--- Perf tests: {testType.Name}");
 
         return perfTestTypes;
     }

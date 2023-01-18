@@ -2,13 +2,13 @@
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel;
+using Microsoft.VisualStudio.TestPlatform.ObjectModel.Logging;
 
 namespace Sailfish.TestAdapter.Utils;
 
 internal static class TestDiscovery
 {
     private static readonly DirectoryRecursion DirRecursor = new();
-    private static readonly FileIo FileIo = new();
     private static readonly TestCaseItemCreator TestCaseCreator = new();
 
     /// <summary>
@@ -16,8 +16,9 @@ internal static class TestDiscovery
     /// Then, that 
     /// </summary>
     /// <param name="sourceDllPaths"></param>
+    /// <param name="logger"></param>
     /// <returns></returns>
-    public static IEnumerable<TestCase> DiscoverTests(IEnumerable<string> sourceDllPaths)
+    public static IEnumerable<TestCase> DiscoverTests(IEnumerable<string> sourceDllPaths, IMessageLogger logger)
     {
         var testCases = new List<TestCase>();
         foreach (var sourceDllPath in sourceDllPaths.Distinct())
@@ -25,12 +26,13 @@ internal static class TestDiscovery
             var project = DirRecursor.RecurseUpwardsUntilFileIsFound(
                 ".csproj",
                 sourceDllPath,
-                10);
+                10,
+                logger);
 
             Type[] perfTestTypes;
             try
             {
-                perfTestTypes = TypeLoader.LoadSailfishTestTypesFrom(sourceDllPath);
+                perfTestTypes = TypeLoader.LoadSailfishTestTypesFrom(sourceDllPath, logger);
             }
             catch
             {
@@ -39,9 +41,10 @@ internal static class TestDiscovery
 
             if (perfTestTypes.Length == 0) continue;
 
-            var correspondingCsFiles = DirRecursor.FindAllFilesRecursively(
+            var correspondingCsFiles = DirectoryRecursion.FindAllFilesRecursively(
                 project,
                 "*.cs",
+                logger,
                 DirectoryRecursion.FileSearchFilters.FilePathDoesNotContainBinOrObjDirs);
             if (correspondingCsFiles.Count == 0) continue;
 
@@ -52,7 +55,7 @@ internal static class TestDiscovery
 
                 foreach (var perfTestType in perfTypesInThisCsFile)
                 {
-                    var cases = TestCaseCreator.AssembleTestCases(perfTestType, fileContent, csFilePath, sourceDllPath);
+                    var cases = TestCaseCreator.AssembleTestCases(perfTestType, fileContent, csFilePath, sourceDllPath, logger);
                     testCases.AddRange(cases);
                 }
             }

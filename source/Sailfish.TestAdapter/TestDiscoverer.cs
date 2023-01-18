@@ -4,6 +4,7 @@ using System.Linq;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.Adapter;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.Logging;
+using Newtonsoft.Json;
 using Sailfish.TestAdapter.Utils;
 
 namespace Sailfish.TestAdapter;
@@ -15,14 +16,21 @@ public class TestDiscoverer : ITestDiscoverer
 {
     public void DiscoverTests(IEnumerable<string> sources, IDiscoveryContext discoveryContext, IMessageLogger logger, ITestCaseDiscoverySink discoverySink)
     {
-        sources = sources.Where(x => !x.StartsWith("Sailfish.TestAdapter"));
-        CustomLogger.VerbosePadded("TEST SOURCES IN TESTDISCOVERER: {TESTS}", string.Join(", ", sources));
+        sources = sources.ToList();
+        logger.SendMessage(TestMessageLevel.Informational, "--------THIS IS A MESSAGE FROM DISCOVERY!-------------");
+        logger.SendMessage(TestMessageLevel.Informational, $"sources that were passed to this function: {string.Join(", ", sources.ToList())}");
+
+        var filteredSource = sources.Where(x => !x.EndsWith("Sailfish.TestAdapter.dll") && !x.EndsWith("Tests.Sailfish.TestAdapter.dll"));
+
+        logger.SendMessage(TestMessageLevel.Informational, $"All filteredSources: {JsonConvert.SerializeObject(filteredSource)}");
+
         try
         {
-            var testCases = TestDiscovery.DiscoverTests(sources);
+            var testCases = TestDiscovery.DiscoverTests(filteredSource, logger).ToList();
+            logger.SendMessage(TestMessageLevel.Informational, $"Found {testCases.Count()} test cases!");
             foreach (var testCase in testCases)
             {
-                
+                logger.SendMessage(TestMessageLevel.Informational, $"Sending test case {testCase.FullyQualifiedName}");
                 discoverySink.SendTestCase(testCase);
             }
         }

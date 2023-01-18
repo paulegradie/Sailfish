@@ -1,5 +1,6 @@
 ﻿using System.Linq;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.Adapter;
+using Microsoft.VisualStudio.TestPlatform.ObjectModel.Logging;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using NSubstitute;
 using Sailfish.TestAdapter.Utils;
@@ -17,8 +18,9 @@ public class WhenExecutingTests
         var frameworkHandle = Substitute.For<IFrameworkHandle>();
 
         var allDllsInThisProject = DllFinder.FindAllDllsRecursively();
-        var testCases = TestDiscovery.DiscoverTests(allDllsInThisProject).ToList();
+        var testCases = TestDiscovery.DiscoverTests(allDllsInThisProject, Substitute.For<IMessageLogger>()).ToList();
 
+        
         Should.NotThrow(() => TestExecution.ExecuteTests(testCases.Take(1).ToList(), frameworkHandle));
     }
 }

@@ -19,6 +19,7 @@ public class SailfishDependencies : ISailfishFixtureDependency
     private void RegisterThings(ContainerBuilder builder)
     {
         builder.RegisterType<ExampleDep>().AsSelf();
+        builder.RegisterType<SailfishDependencies>().AsSelf();
     }
 
     public void Dispose()

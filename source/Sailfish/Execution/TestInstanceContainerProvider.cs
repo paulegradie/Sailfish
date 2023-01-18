@@ -69,6 +69,9 @@ internal class TestInstanceContainerProvider
 
     private object ResolveObjectWrapper(Type type, ISailfishFixtureDependency? sailfishFixtureDependency)
     {
+        var fixtureDependencyWasNull = sailfishFixtureDependency is null;
+        var typeResolverWasNull = typeResolver is null;
+
         if (sailfishFixtureDependency is not null)
         {
             try
@@ -98,33 +101,19 @@ internal class TestInstanceContainerProvider
         }
         catch (Exception ex)
         {
-            throw new SailfishException($"No way found to resolve type: {type.Name} - {ex.Message}");
+            throw new SailfishException(
+                $"No way found to resolve type: {type.Name} - {ex.Message}... fixtureDependencyWasNull was {fixtureDependencyWasNull}, and typeResolverWasNull was {typeResolverWasNull}");
         }
     }
 
-    private ISailfishFixtureDependency? GetSailfishFixtureGenericArgument()
+    public ISailfishFixtureDependency? GetSailfishFixtureGenericArgument()
     {
-        if (test.IsAssignableFrom(typeof(ISailfishFixture<>)))
+        var sailfishFixtureType = test.GetInterfaces().SingleOrDefault(x => x.GetGenericTypeDefinition() == typeof(ISailfishFixture<>));
+
+        if (sailfishFixtureType is not null)
         {
-            var currentType = test;
-            while (!currentType.IsAssignableFrom(typeof(ISailfishFixture<>)))
-            {
-                if (currentType.BaseType is null)
-                {
-                    break;
-                }
-
-                currentType = currentType.BaseType;
-            }
-
-            var sailfishFixtureInterface = currentType
-                .GetInterfaces()
-                .Where(
-                    i =>
-                        i.IsGenericType
-                        && i.GetGenericTypeDefinition() == typeof(ISailfishFixture<>));
-            var fixtureDependencyType = sailfishFixtureInterface.GetType().GetGenericArguments().Single();
-            var fixtureDependencyInstance = Activator.CreateInstance(fixtureDependencyType);
+            var fixtureType = sailfishFixtureType.GetGenericArguments()?.Single()!;
+            var fixtureDependencyInstance = Activator.CreateInstance(fixtureType);
             return fixtureDependencyInstance as ISailfishFixtureDependency;
         }
 

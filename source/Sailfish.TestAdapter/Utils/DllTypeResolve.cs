@@ -30,9 +30,6 @@ internal class DllTypeResolver : ITypeResolver
             .Where(x => x.HasAttribute<SailfishAttribute>())
             .ToArray();
 
-        CustomLogger.Verbose("\rTest Types Discovered in {Assembly}:\r", assembly.FullName ?? "Couldn't Find the assembly name property");
-        foreach (var testType in perfTestTypes) CustomLogger.Verbose("--- Perf tests: {0}", testType.Name);
-
         return perfTestTypes;
     }
 }

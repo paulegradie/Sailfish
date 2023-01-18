@@ -3,15 +3,15 @@ using System.IO;
 
 namespace Sailfish.TestAdapter.Utils;
 
-internal class FileIo // This is all DirectoryRecursion logic - should move this.
+internal static class FileIo // This is all DirectoryRecursion logic - should move this.
 {
-    public string ReadFileContents(string sourceFile)
+    public static string ReadFileContents(string sourceFile)
     {
         var content = ReadFile(sourceFile);
         return content;
     }
 
-    private string ReadFile(string filePath)
+    private static string ReadFile(string filePath)
     {
         try
         {

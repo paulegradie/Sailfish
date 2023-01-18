@@ -1,5 +1,7 @@
 ﻿using System.Linq;
+using Microsoft.VisualStudio.TestPlatform.ObjectModel.Logging;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
+using NSubstitute;
 using Sailfish.TestAdapter.Utils;
 using Shouldly;
 using Tests.Sailfish.TestAdapter.Utils;
@@ -17,7 +19,7 @@ public class WhenDiscoveringTests
 
         // Assumes there is one valid test file.
         // And The discoverer tests will be those found from inside the 
-        var testCases = TestDiscovery.DiscoverTests(sources).ToList();
+        var testCases = TestDiscovery.DiscoverTests(sources, Substitute.For<IMessageLogger>()).ToList();
         testCases.Count.ShouldBe(6);
     }
 }

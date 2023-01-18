@@ -2,20 +2,21 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using Microsoft.VisualStudio.TestPlatform.ObjectModel.Logging;
 
 namespace Sailfish.TestAdapter.Utils;
 
 internal class DirectoryRecursion
 {
-    public FileInfo RecurseUpwardsUntilFileIsFound(string suffixToMatch, string sourceFile, int maxParentDirLevel)
+    public FileInfo RecurseUpwardsUntilFileIsFound(string suffixToMatch, string sourceFile, int maxParentDirLevel, IMessageLogger logger)
     {
-        var result = RecurseUpwardsUntilFileIsFoundInner(suffixToMatch, sourceFile, maxParentDirLevel);
+        var result = RecurseUpwardsUntilFileIsFoundInner(suffixToMatch, sourceFile, maxParentDirLevel, logger);
         if (result is null) throw new Exception("Couldn't locate a csproj file in this project.");
-        CustomLogger.Verbose("Project found: {0}", result.FullName);
+        logger.SendMessage(TestMessageLevel.Informational, $"Project found: {result.FullName}");
         return result;
     }
 
-    private FileInfo? RecurseUpwardsUntilFileIsFoundInner(string suffixToMatch, string sourceFile, int maxParentDirLevel)
+    private FileInfo? RecurseUpwardsUntilFileIsFoundInner(string suffixToMatch, string sourceFile, int maxParentDirLevel, IMessageLogger logger)
     {
         if (maxParentDirLevel == 0) return null; // try and stave off disaster
 
@@ -23,15 +24,15 @@ internal class DirectoryRecursion
         var dirName = Path.GetDirectoryName(sourceFile);
         if (dirName is null) return null;
 
-        var csprojFile = Directory.GetFiles(dirName).Where(x => x.EndsWith(suffixToMatch)).SingleOrDefault();
+        var csprojFile = Directory.GetFiles(dirName).SingleOrDefault(x => x.EndsWith(suffixToMatch));
         if (csprojFile is null)
         {
-            if (ThereIsAParentDirectory(new DirectoryInfo(sourceFile), out var parentDir))
-                return RecurseUpwardsUntilFileIsFoundInner(suffixToMatch, parentDir.FullName, maxParentDirLevel - 1);
-            return null;
+            return ThereIsAParentDirectory(new DirectoryInfo(sourceFile), out var parentDir)
+                ? RecurseUpwardsUntilFileIsFoundInner(suffixToMatch, parentDir.FullName, maxParentDirLevel - 1, logger)
+                : null;
         }
 
-        CustomLogger.Verbose("Found the proj file! {0}", csprojFile);
+        logger.SendMessage(TestMessageLevel.Informational, $"Found the proj file! {csprojFile}");
         return new FileInfo(csprojFile);
     }
 
@@ -47,7 +48,7 @@ internal class DirectoryRecursion
         return false;
     }
 
-    public List<string> FindAllFilesRecursively(FileInfo originReferenceFile, string searchPattern, Func<string, bool>? where = null)
+    public static List<string> FindAllFilesRecursively(FileInfo originReferenceFile, string searchPattern, IMessageLogger logger, Func<string, bool>? where = null)
     {
         var filePaths = Directory.GetFiles(
             Path.GetDirectoryName(originReferenceFile.FullName)!,
@@ -58,8 +59,8 @@ internal class DirectoryRecursion
 
         foreach (var filePath in filePaths)
         {
-            CustomLogger.Verbose($"Corresponding {searchPattern} files in this assembly project");
-            CustomLogger.Verbose("--- {filePath}", filePath);
+            logger.SendMessage(TestMessageLevel.Informational, $"Corresponding {searchPattern} files in this assembly project");
+            logger.SendMessage(TestMessageLevel.Informational, $"--- {filePath}");
         }
 
         return filePaths.ToList();
