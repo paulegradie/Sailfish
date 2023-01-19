@@ -19,13 +19,14 @@ public class WhenCollectingAttributes
             .ToArray();
 
         allTypesWithAttribute.Length.ShouldBeGreaterThan(0);
-        allTypesWithAttribute
+        var result = allTypesWithAttribute
             .Select(x => x.Name)
             .OrderBy(x => x)
-            .ToArray()
-            .ShouldBe(
-                new[] { nameof(TestClassOne), nameof(TestClassTwo) }
-                    .OrderBy(x => x));
+            .ToArray();
+
+        result.ShouldContain(nameof(TestClassOne));
+        result.ShouldContain(nameof(TestClassTwo));
+        result.ShouldNotContain(nameof(TestClassThree));
     }
 
     [Sailfish]
@@ -35,6 +36,10 @@ public class WhenCollectingAttributes
 
     [Sailfish(3)]
     public class TestClassTwo
+    {
+    }
+
+    public class TestClassThree
     {
     }
 }

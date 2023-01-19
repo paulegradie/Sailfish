@@ -4,17 +4,13 @@
         <TargetFramework>net7.0</TargetFramework>
         <LangVersion>10</LangVersion>
         <Nullable>enable</Nullable>
-        <RootNamespace>UsingTheIDE</RootNamespace>
-        <OutputType>Library</OutputType>
-        <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
-        <IsTestProject>true</IsTestProject>
-        <TestProject>true</TestProject>
+        <RootNamespace>Tests.UsingTheIDE</RootNamespace>
     </PropertyGroup>
 
     <ItemGroup>
         <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.4.1" />
         <PackageReference Include="Microsoft.TestPlatform.TestHost" Version="17.4.1" />
-        <PackageReference Include="Sailfish.TestAdapter" Version="0.0.224" />
+        <PackageReference Include="Sailfish.TestAdapter" Version="0.0.232" />
         <PackageReference Include="Serilog" Version="2.12.0" />
     </ItemGroup>
 

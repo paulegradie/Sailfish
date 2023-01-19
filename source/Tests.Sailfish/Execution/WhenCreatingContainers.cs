@@ -10,7 +10,6 @@ using Xunit;
 
 namespace Test.Execution;
 
-
 public class WhenCreatingContainers
 {
     [Fact]

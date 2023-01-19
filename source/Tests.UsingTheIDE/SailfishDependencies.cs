@@ -2,7 +2,7 @@ using System;
 using Autofac;
 using Sailfish.AdapterUtils;
 
-namespace UsingTheIDE;
+namespace Tests.UsingTheIDE;
 
 // Example of what they'll implement
 public class SailfishDependencies : ISailfishFixtureDependency

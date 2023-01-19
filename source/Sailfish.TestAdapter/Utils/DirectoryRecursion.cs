@@ -57,9 +57,9 @@ internal class DirectoryRecursion
 
         if (where is not null) filePaths = filePaths.Where(where).ToArray();
 
+        logger.SendMessage(TestMessageLevel.Informational, $"Corresponding {searchPattern} files in this assembly project");
         foreach (var filePath in filePaths)
         {
-            logger.SendMessage(TestMessageLevel.Informational, $"Corresponding {searchPattern} files in this assembly project");
             logger.SendMessage(TestMessageLevel.Informational, $"--- {filePath}");
         }
 

@@ -23,13 +23,10 @@ internal static class TestExecution
             return;
         }
 
+        var engine = new SailfishExecutionEngine(new TestCaseIterator());
+
         foreach (var testCase in testCases)
         {
-            var serializedTestCase = JsonConvert.SerializeObject(testCase);
-            var serializedTraits = JsonConvert.SerializeObject(testCase.Traits);
-            frameworkHandle?.SendMessage(TestMessageLevel.Informational, $"serializedTestCase was: {serializedTestCase}");
-            frameworkHandle?.SendMessage(TestMessageLevel.Informational, $"serializedTraits was: {serializedTraits}");
-
             var testTypeTrait = testCase.Traits.Single(trait => trait.Name == TestCaseItemCreator.TestTypeFullName);
             var testTypeFullName = testTypeTrait.Value;
 
@@ -37,7 +34,8 @@ internal static class TestExecution
             var testType = assembly.GetType(testTypeFullName, true, true);
             if (testType is null)
             {
-                frameworkHandle?.SendMessage(TestMessageLevel.Informational, $"Unable to fine the testType from the traits: {testCase.DisplayName}");
+                frameworkHandle?.SendMessage(TestMessageLevel.Error, $"Unable to find the following testType: {testTypeFullName}");
+                continue;
             }
 
             var typeResolve = assembly.GetTypeResolverOrNull();
@@ -46,7 +44,6 @@ internal static class TestExecution
                 new ParameterGridCreator(
                     new ParameterCombinator(),
                     new IterationVariableRetriever()));
-            var engine = new SailfishExecutionEngine(new TestCaseIterator());
 
             void TestResultCallback(TestExecutionResult result)
             {
@@ -64,16 +61,24 @@ internal static class TestExecution
                 testResult.StartTime = result.PerformanceTimerResults.GlobalStart;
                 testResult.EndTime = result.PerformanceTimerResults.GlobalStop;
                 testResult.Duration = result.PerformanceTimerResults.GlobalDuration;
-                frameworkHandle?.SendMessage(TestMessageLevel.Informational,
-                    $"Test Executed -- recording and sending the result to the framework handle - {testResult.ToString()}");
+
+                testResult.ErrorMessage = result.Exception?.Message;
+
                 frameworkHandle?.RecordResult(testResult);
+                frameworkHandle?.RecordEnd(testCase, testResult.Outcome);
             }
+
 
             // each provider is a method in the instance, which yields a number of cases based on the variable combos
             var testMethods = testContainerCreator.CreateTestContainerInstanceProviders(testType);
+
+            var methodIndex = 0;
+            var totalMethodCount = testMethods.Count - 1;
             foreach (var testMethod in testMethods.OrderBy(x => x.Method.Name))
             {
-                engine.ActivateContainer(0, 0, testMethod, TestResultCallback, CancellationToken.None).GetAwaiter().GetResult();
+                frameworkHandle?.RecordStart(testCase);
+                engine.ActivateContainer(methodIndex, totalMethodCount, testMethod, TestResultCallback, CancellationToken.None).GetAwaiter().GetResult();
+                methodIndex += 1;
             }
         }
 

@@ -12,7 +12,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "AsAConsoleApp", "AsAConsole
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sailfish.TestAdapter", "Sailfish.TestAdapter\Sailfish.TestAdapter.csproj", "{71C488BD-3668-4D53-A5BD-6E9307215B5E}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "UsingTheIDE", "UsingTheIDE\UsingTheIDE.csproj", "{589A178C-41ED-4B33-9DB4-DD6300DE41FB}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tests.UsingTheIDE", "Tests.UsingTheIDE\Tests.UsingTheIDE.csproj", "{589A178C-41ED-4B33-9DB4-DD6300DE41FB}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "DemoScenarios", "DemoScenarios", "{AA777AE3-7608-4068-9BDE-3AE366657722}"
 EndProject

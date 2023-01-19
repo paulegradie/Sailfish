@@ -1,6 +1,8 @@
-﻿using Sailfish.Attributes;
+﻿using System.Threading;
+using System.Threading.Tasks;
+using Sailfish.Attributes;
 
-namespace UsingTheIDE;
+namespace Tests.UsingTheIDE;
 
 [Sailfish(NumIterations = 3, NumWarmupIterations = 2)]
 public class SimplePerfTest : SailfishBase
@@ -9,18 +11,10 @@ public class SimplePerfTest : SailfishBase
 
     [SailfishVariable(1, 2, 3)] public int VariableA { get; set; }
 
-    [SailfishVariable(100, 400)] public int VariableB { get; set; }
-
-    [SailfishMethod]
-    public void Go()
+    [SailfishMethod] 
+    public async Task Go(CancellationToken cancellationToken)
     {
-        for (var i = 0; i < VariableA; i++)
-        {
-            for (var j = 0; j < VariableB; j++)
-            {
-                exampleDep.WriteSomething("Wow");
-            }
-        }
+        await Task.Delay(1_000, cancellationToken);
     }
 
     public SimplePerfTest(ExampleDep exampleDep, SailfishDependencies sailfishDependencies) : base(sailfishDependencies)

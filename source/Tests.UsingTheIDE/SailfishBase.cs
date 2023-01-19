@@ -1,6 +1,6 @@
 using Sailfish.AdapterUtils;
 
-namespace UsingTheIDE;
+namespace Tests.UsingTheIDE;
 
 public abstract class SailfishBase : ISailfishFixture<SailfishDependencies>
 {

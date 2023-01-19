@@ -35,8 +35,33 @@ internal class TestCaseItemCreator
         {
             var methodNameLine = GetMethodNameLine(contentLines, method, logger);
             if (methodNameLine == 0) continue;
-            var testCaseSet = combos.Select(CreateTestCase(testType, testCsFilePath, sourceDll, method, propertyNames, methodNameLine, logger));
-            testCaseSets.AddRange(testCaseSet);
+
+            var cnt = 0;
+            foreach (var variableCombinations in combos)
+            {
+                var fullyQualifiedName = CreateFullyQualifiedName(testType);
+                var testCaseId = DisplayNameHelper.CreateTestCaseId(testType, method.Name, propertyNames, variableCombinations);
+                logger.SendMessage(TestMessageLevel.Informational, $"DisplayName: {testCaseId.DisplayName}");
+                var testCase = new TestCase(fullyQualifiedName, TestExecutor.ExecutorUri, sourceDll) // a test case is a method
+                {
+                    CodeFilePath = testCsFilePath,
+                    DisplayName = testCaseId.DisplayName,
+                    ExecutorUri = TestExecutor.ExecutorUri,
+                    Id = Guid.NewGuid(),
+                    LineNumber = methodNameLine + cnt
+                };
+                cnt++;
+
+                if (testType.FullName is null)
+                {
+                    logger.SendMessage(TestMessageLevel.Informational, $"ERROR!: testType fullname not defined - fullname: {testType.FullName}");
+                    throw new Exception("Impossible!");
+                }
+
+                testCase.Traits.Add(new Trait(TestTypeFullName, testType.FullName));
+                testCase.Traits.Add(new Trait("DisplayName", testCaseId.DisplayName));
+                testCaseSets.Add(testCase);
+            }
         }
 
         return testCaseSets;
@@ -47,51 +72,16 @@ internal class TestCaseItemCreator
         return Assembly.CreateQualifiedName(testType.GetType().Assembly.FullName, testType.Name);
     }
 
-    private static Func<int[], TestCase> CreateTestCase(
-        Type testType,
-        string testFilePath,
-        string sourceDll,
-        MemberInfo method,
-        string[] propertyNames,
-        int methodNameLine,
-        IMessageLogger handle)
-    {
-        var randomId = Guid.NewGuid();
-        return variablesForEachPropertyInOrder =>
-        {
-            handle.SendMessage(TestMessageLevel.Informational, $"Param set for {method.Name}: {string.Join(", ", variablesForEachPropertyInOrder.Select(x => x.ToString()))}");
-            // var fullyQualifiedName = CreateFullyQualifiedName(testType);
-
-            var displayName = DisplayNameHelper.CreateTestCaseId(testType, method.Name, propertyNames, variablesForEachPropertyInOrder).TestCaseName.Name;
-            handle.SendMessage(TestMessageLevel.Informational, $"DisplayName: {displayName}");
-            
-            handle.SendMessage(TestMessageLevel.Informational, $"This is the file path!: {testFilePath}");
-            var testCase = new TestCase(testType.Name, TestExecutor.ExecutorUri, sourceDll) // a test case is a method
-            {
-                CodeFilePath = testFilePath,
-                DisplayName = DisplayNameHelper.CreateTestCaseId(testType, method.Name, propertyNames, variablesForEachPropertyInOrder).TestCaseName.Name,
-                ExecutorUri = TestExecutor.ExecutorUri,
-                Id = randomId,
-                LineNumber = methodNameLine
-            };
-
-            if (testType.FullName is null)
-            {
-                handle.SendMessage(TestMessageLevel.Informational, $"ERROR!: testType fullname not defined - fullname: {testType.FullName}");
-                throw new Exception("Impossible!");
-            }
-
-            testCase.Traits.Add(new Trait(TestTypeFullName, testType.FullName));
-
-            return testCase;
-        };
-    }
-
     private static int GetMethodNameLine(IReadOnlyList<string> fileLines, MemberInfo method, IMessageLogger logger)
     {
         var lineNumber = fileLines
             .Select(
-                (line, index) => line.Contains(method.Name + "()") ? index : -1)
+                (line, index) =>
+                {
+                    logger.SendMessage(TestMessageLevel.Informational, $"Line {index}: {line}");
+                    var methodKey = $" {method.Name}(";
+                    return line.Trim().Contains(methodKey) ? index : -1;
+                })
             .SingleOrDefault(x => x >= 0);
 
         logger.SendMessage(TestMessageLevel.Informational, $"Method discovered on line {lineNumber.ToString()} with signature: {fileLines[lineNumber]}");
