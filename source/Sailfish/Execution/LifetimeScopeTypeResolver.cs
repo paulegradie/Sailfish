@@ -22,4 +22,9 @@ internal class LifetimeScopeTypeResolver : ITypeResolver
         throw new SailfishException(message);
 
     }
+
+    public T ResolveType<T>()
+    {
+        return (T)ResolveType(typeof(T));
+    }
 }

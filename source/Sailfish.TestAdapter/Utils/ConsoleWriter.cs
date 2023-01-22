@@ -1,20 +1,26 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Accord.Collections;
+using Microsoft.VisualStudio.TestPlatform.ObjectModel.Adapter;
+using Microsoft.VisualStudio.TestPlatform.ObjectModel.Logging;
 using Sailfish.Execution;
 using Sailfish.ExtensionMethods;
+using Sailfish.Presentation;
+using Sailfish.Presentation.Console;
 using Sailfish.Statistics;
 
-namespace Sailfish.Presentation.Console;
+namespace Sailfish.TestAdapter.Utils;
 
 internal class ConsoleWriter : IConsoleWriter
 {
     private readonly IPresentationStringConstructor stringBuilder;
+    private readonly IMessageLogger? messageLogger;
 
-    public ConsoleWriter(IPresentationStringConstructor stringBuilder)
+    public ConsoleWriter(IPresentationStringConstructor stringBuilder, IMessageLogger? messageLogger)
     {
         this.stringBuilder = stringBuilder;
+        this.messageLogger = messageLogger;
     }
 
     public string Present(IEnumerable<ExecutionSummary> results, OrderedDictionary<string, string> tags)
@@ -31,10 +37,10 @@ internal class ConsoleWriter : IConsoleWriter
         if (tags.Any()) System.Console.WriteLine($"{Environment.NewLine}Tags:");
         foreach (var (key, value) in tags)
         {
-            System.Console.WriteLine($"{key}: {value}");
+            messageLogger?.SendMessage(TestMessageLevel.Informational, $"{key}: {value}");
         }
 
-        System.Console.WriteLine(output);
+        messageLogger?.SendMessage(TestMessageLevel.Informational, output);
         return output;
     }
 

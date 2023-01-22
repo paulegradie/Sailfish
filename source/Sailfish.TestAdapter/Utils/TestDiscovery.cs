@@ -10,9 +10,6 @@ namespace Sailfish.TestAdapter.Utils;
 
 internal static class TestDiscovery
 {
-    private static readonly DirectoryRecursion DirRecursor = new();
-    private static readonly TestCaseItemCreator TestCaseCreator = new();
-
     /// <summary>
     /// This method should scan through the dlls provided, and extract each type that qualifies as a test type
     /// Then, that 
@@ -28,9 +25,10 @@ internal static class TestDiscovery
         foreach (var sourceDllPath in sourceDllPaths.Distinct())
         {
             var currentSearchDir = new FileInfo(sourceDllPath);
-            if (previousSearchDir is null || (currentSearchDir.Directory is not null && (previousSearchDir.Directory is not null) && (currentSearchDir.Directory?.FullName != previousSearchDir.Directory?.FullName)))
+            if (previousSearchDir is null || (currentSearchDir.Directory is not null && (previousSearchDir.Directory is not null) &&
+                                              (currentSearchDir.Directory?.FullName != previousSearchDir.Directory?.FullName)))
             {
-                project = DirRecursor.RecurseUpwardsUntilFileIsFound(
+                project = DirectoryRecursion.RecurseUpwardsUntilFileIsFound(
                     ".csproj",
                     sourceDllPath,
                     10,
@@ -39,7 +37,6 @@ internal static class TestDiscovery
             }
 
             if (project is null) throw new Exception();
-
 
             Type[] perfTestTypes;
             try
@@ -64,7 +61,7 @@ internal static class TestDiscovery
             {
                 var fileAndContent = FindFileThatImplementsType(correspondingCsFiles, perfTestType);
                 if (fileAndContent is null) throw new Exception($"Could not find corresponding file for {perfTestType.Name}!");
-                var cases = TestCaseCreator.AssembleTestCases(perfTestType, fileAndContent.Content, fileAndContent.File, sourceDllPath, logger);
+                var cases = TestCaseItemCreator.AssembleTestCases(perfTestType, fileAndContent.Content, fileAndContent.File, sourceDllPath, logger);
                 testCases.AddRange(cases);
             }
         }
@@ -86,16 +83,4 @@ internal static class TestDiscovery
 
         return null;
     }
-}
-
-internal class FileAndContent
-{
-    public FileAndContent(string file, string content)
-    {
-        File = file;
-        Content = content;
-    }
-
-    public string File { get; }
-    public string Content { get; }
 }

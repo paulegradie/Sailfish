@@ -1,24 +1,34 @@
 ﻿using System.Threading;
 using System.Threading.Tasks;
+using Sailfish.AdapterUtils;
 using Sailfish.Attributes;
 
 namespace Tests.UsingTheIDE;
 
 [Sailfish(NumIterations = 3, NumWarmupIterations = 2)]
-public class SimplePerfTest : SailfishBase
+public class SimplePerfTest : ISailfishFixture<SailfishDependencies>
 {
-    private readonly ExampleDep exampleDep;
+    private readonly SailfishDependencies sailfishDependencies;
 
     [SailfishVariable(1, 2, 3)] public int VariableA { get; set; }
 
-    [SailfishMethod] 
+    [SailfishMethod]
     public async Task Go(CancellationToken cancellationToken)
     {
+        var testDependency = sailfishDependencies.ResolveType<ExampleDep>();
         await Task.Delay(1_000, cancellationToken);
     }
 
-    public SimplePerfTest(ExampleDep exampleDep, SailfishDependencies sailfishDependencies) : base(sailfishDependencies)
+    [SailfishMethod]
+    public async Task GoAgain(CancellationToken cancellationToken)
     {
-        this.exampleDep = exampleDep;
+        var testDependency = sailfishDependencies.ResolveType<ExampleDep>();
+        await Task.Delay(1_000, cancellationToken);
+    }
+
+
+    public SimplePerfTest(SailfishDependencies sailfishDependencies)
+    {
+        this.sailfishDependencies = sailfishDependencies;
     }
 }

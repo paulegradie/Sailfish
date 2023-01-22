@@ -20,4 +20,16 @@ public class WhenDiscoveringTests
         var testCases = TestDiscovery.DiscoverTests(sources, new LoggerHelper()).ToList();
         testCases.Count.ShouldBe(6);
     }
+
+    [TestMethod]
+    public void TestCasesAreAssembledCorrect()
+    {
+        var sources = DllFinder.FindAllDllsRecursively();
+        var testCases = TestDiscovery.DiscoverTests(sources, new LoggerHelper()).ToList();
+
+        var aTestCase = testCases.First();
+
+        ;
+
+    }
 }

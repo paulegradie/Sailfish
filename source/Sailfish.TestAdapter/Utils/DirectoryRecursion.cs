@@ -6,17 +6,16 @@ using Microsoft.VisualStudio.TestPlatform.ObjectModel.Logging;
 
 namespace Sailfish.TestAdapter.Utils;
 
-internal class DirectoryRecursion
+internal static class DirectoryRecursion
 {
-    public FileInfo RecurseUpwardsUntilFileIsFound(string suffixToMatch, string sourceFile, int maxParentDirLevel, IMessageLogger logger)
+    public static FileInfo RecurseUpwardsUntilFileIsFound(string suffixToMatch, string sourceFile, int maxParentDirLevel, IMessageLogger logger)
     {
         var result = RecurseUpwardsUntilFileIsFoundInner(suffixToMatch, sourceFile, maxParentDirLevel, logger);
         if (result is null) throw new Exception("Couldn't locate a csproj file in this project.");
-        logger.SendMessage(TestMessageLevel.Informational, $"Project found: {result.FullName}");
         return result;
     }
 
-    private FileInfo? RecurseUpwardsUntilFileIsFoundInner(string suffixToMatch, string sourceFile, int maxParentDirLevel, IMessageLogger logger)
+    private static FileInfo? RecurseUpwardsUntilFileIsFoundInner(string suffixToMatch, string sourceFile, int maxParentDirLevel, IMessageLogger logger)
     {
         if (maxParentDirLevel == 0) return null; // try and stave off disaster
 
@@ -31,12 +30,10 @@ internal class DirectoryRecursion
                 ? RecurseUpwardsUntilFileIsFoundInner(suffixToMatch, parentDir.FullName, maxParentDirLevel - 1, logger)
                 : null;
         }
-
-        logger.SendMessage(TestMessageLevel.Informational, $"Found the proj file! {csprojFile}");
         return new FileInfo(csprojFile);
     }
 
-    private bool ThereIsAParentDirectory(DirectoryInfo dir, out DirectoryInfo parentDir)
+    private static bool ThereIsAParentDirectory(DirectoryInfo dir, out DirectoryInfo parentDir)
     {
         if (dir.Parent is not null)
         {
@@ -56,13 +53,6 @@ internal class DirectoryRecursion
             SearchOption.AllDirectories);
 
         if (where is not null) filePaths = filePaths.Where(where).ToArray();
-
-        logger.SendMessage(TestMessageLevel.Informational, $"Corresponding {searchPattern} files in this assembly project");
-        foreach (var filePath in filePaths)
-        {
-            logger.SendMessage(TestMessageLevel.Informational, $"--- {filePath}");
-        }
-
         return filePaths.ToList();
     }
 

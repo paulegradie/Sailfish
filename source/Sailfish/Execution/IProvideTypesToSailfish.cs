@@ -9,5 +9,5 @@ public abstract class SailfishTypeProvider : ITypeResolver
     }
 
     public abstract object ResolveType(Type type);
+    public abstract T ResolveType<T>();
 }
-

@@ -1,7 +1,4 @@
 using System;
-using System.Collections.Generic;
-using System.Reflection;
-using NSubstitute;
 using Sailfish.AdapterUtils;
 using Sailfish.Attributes;
 using Sailfish.Execution;
@@ -15,21 +12,18 @@ public class WhenCreatingContainers
     [Fact]
     public void TheSailfishDependencyFixtureDependenciesAreFound()
     {
-        var testContainerCreator = new TestInstanceContainerProvider(
-            null,
-            typeof(TestSailfishTest),
-            new List<int[]>() { new[] { 1 } }.ToArray(),
-            new List<string>() { "VariableA" },
-            Substitute.For<MethodInfo>()
-        );
-
-        var result = testContainerCreator.GetSailfishFixtureGenericArgument();
+        var result = typeof(TestSailfishTest).GetSailfishFixtureGenericArgument();
         result.ShouldNotBeNull();
-
-        var testDep = result.ResolveType(typeof(AnyType));
-        testDep.GetType().ShouldBe(typeof(TestDependencies));
     }
 
+    [Fact]
+    public void NullIsReturnedWhenTheTypeDoesNotImplementISailfishFixtureDependency()
+    {
+        var result = typeof(AnyType).GetSailfishFixtureGenericArgument();
+        result.ShouldBeNull();
+    }
+
+    // ReSharper disable once ClassNeverInstantiated.Local
     private class AnyType
     {
     }
@@ -64,6 +58,11 @@ public class WhenCreatingContainers
         public object ResolveType(Type type)
         {
             return new TestDependencies();
+        }
+
+        public T ResolveType<T>()
+        {
+            return Activator.CreateInstance<T>();
         }
 
         public void Dispose()

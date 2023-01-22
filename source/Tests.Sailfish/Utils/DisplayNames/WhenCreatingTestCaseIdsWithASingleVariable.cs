@@ -5,9 +5,9 @@ using Sailfish.Utils;
 using Shouldly;
 using Xunit;
 
-namespace Test.Execution;
+namespace Test.Utils.DisplayNames;
 
-public class WhenFormingTestCaseNamesWithASingleVariable : IAsyncLifetime
+public class WhenCreatingTestCaseIdsWithASingleVariable : IAsyncLifetime
 {
     private TestCaseId testCaseId = null!;
     private const string VariableName = "YoMamma";
@@ -17,19 +17,19 @@ public class WhenFormingTestCaseNamesWithASingleVariable : IAsyncLifetime
     [Fact]
     public void DisplayNameIsFormedCorrectly()
     {
-        testCaseId.DisplayName.ShouldBe($"{nameof(WhenFormingTestCaseNamesWithASingleVariable)}.{MethodName}({VariableName}: {Param})");
+        testCaseId.DisplayName.ShouldBe($"{nameof(WhenCreatingTestCaseIdsWithASingleVariable)}.{MethodName}({VariableName}: {Param})");
     }
 
     [Fact]
     public void NamePropertyOfTestCaseNameIsCorrect()
     {
-        testCaseId.TestCaseName.Name.ShouldBe($"{nameof(WhenFormingTestCaseNamesWithASingleVariable)}.{MethodName}");
+        testCaseId.TestCaseName.Name.ShouldBe($"{nameof(WhenCreatingTestCaseIdsWithASingleVariable)}.{MethodName}");
     }
 
     [Fact]
     public void PartsPropertyOfTestCaseNameIsCorrect()
     {
-        testCaseId.TestCaseName.Parts.ShouldBeEquivalentTo(new[] { nameof(WhenFormingTestCaseNamesWithASingleVariable), MethodName });
+        testCaseId.TestCaseName.Parts.ShouldBeEquivalentTo(new[] { nameof(WhenCreatingTestCaseIdsWithASingleVariable), MethodName });
     }
 
     [Fact]
@@ -66,7 +66,7 @@ public class WhenFormingTestCaseNamesWithASingleVariable : IAsyncLifetime
     public async Task InitializeAsync()
     {
         testCaseId = DisplayNameHelper.CreateTestCaseId(
-            typeof(WhenFormingTestCaseNamesWithASingleVariable),
+            typeof(WhenCreatingTestCaseIdsWithASingleVariable),
             "TestMethod",
             new[] { VariableName },
             new[] { Param });

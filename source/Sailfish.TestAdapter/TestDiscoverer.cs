@@ -17,9 +17,6 @@ public class TestDiscoverer : ITestDiscoverer
     public void DiscoverTests(IEnumerable<string> sources, IDiscoveryContext discoveryContext, IMessageLogger logger, ITestCaseDiscoverySink discoverySink)
     {
         sources = sources.ToList();
-        logger.SendMessage(TestMessageLevel.Informational, "--------THIS IS A MESSAGE FROM DISCOVERY!-------------");
-        logger.SendMessage(TestMessageLevel.Informational, $"sources that were passed to this function: {string.Join(", ", sources.ToList())}");
-
         var filteredSource = sources.Where(x => !x.EndsWith("Sailfish.TestAdapter.dll") && !x.EndsWith("Tests.Sailfish.TestAdapter.dll"));
 
         logger.SendMessage(TestMessageLevel.Informational, $"All filteredSources: {JsonConvert.SerializeObject(filteredSource)}");

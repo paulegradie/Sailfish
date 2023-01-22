@@ -13,11 +13,16 @@ internal class DllTypeResolver : ITypeResolver
         AllTypesInDll = CollectSailfishTestTypesFromAssembly(dllSourceFile);
     }
 
-    public Type[] AllTypesInDll { get; set; }
+    private Type[] AllTypesInDll { get; set; }
 
     public object ResolveType(Type type)
     {
         return AllTypesInDll.Single(x => x == type);
+    }
+
+    public T ResolveType<T>()
+    {
+        return (T)ResolveType(typeof(T));
     }
 
     private static Type[] CollectSailfishTestTypesFromAssembly(string dllPath)

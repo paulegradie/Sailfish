@@ -1,4 +1,4 @@
-$version="0.0.232"
+$version="0.0.245"
 
 dotnet publish -c Release /p:Version=$version ./source/Sailfish.TestAdapter 
 

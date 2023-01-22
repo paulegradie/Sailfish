@@ -34,7 +34,8 @@ public class TestExecutor : ITestExecutor
     public void RunTests(IEnumerable<string>? sources, IRunContext? runContext, IFrameworkHandle? frameworkHandle)
     {
         sources = sources?.ToList();
-        frameworkHandle?.SendMessage(TestMessageLevel.Informational, $"sources that were passed to this function: {string.Join(", ", sources?.ToArray() ?? Array.Empty<string>())}");
+        frameworkHandle?.SendMessage(TestMessageLevel.Informational,
+            $"sources that were passed to this function: {string.Join(", ", sources?.ToArray() ?? Array.Empty<string>())}");
         frameworkHandle?.SendMessage(TestMessageLevel.Informational, "We are hitting RunTests(IEnumerable<string> tests");
 
         if (sources is null) throw new Exception("Tests was null in the test case list!");

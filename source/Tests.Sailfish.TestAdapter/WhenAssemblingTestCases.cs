@@ -14,10 +14,9 @@ public class WhenAssemblingTestCases
 {
     public string FindSpecificUniqueFile(string fileName)
     {
-        var recurse = new DirectoryRecursion();
         var refFile = Directory.GetFiles(".").First();
 
-        var projFile = recurse.RecurseUpwardsUntilFileIsFound(".csproj", refFile, 10, Substitute.For<IMessageLogger>());
+        var projFile = DirectoryRecursion.RecurseUpwardsUntilFileIsFound(".csproj", refFile, 10, Substitute.For<IMessageLogger>());
         var file = Directory.GetFiles(Directory.GetParent(projFile.FullName)!.FullName, fileName, SearchOption.AllDirectories).Single();
         return file;
     }
@@ -25,14 +24,12 @@ public class WhenAssemblingTestCases
     [TestMethod]
     public void AllTestCasesAreMade()
     {
-        var creator = new TestCaseItemCreator();
-
         var testResourceRelativePath = FindSpecificUniqueFile("TestResource.cs");
         var content = FileIo.ReadFileContents(testResourceRelativePath);
 
         var sourceDll = "C:/this/is/some/dll.dll";
 
-        var result = creator.AssembleTestCases(typeof(SimplePerfTest), content, testResourceRelativePath, sourceDll, Substitute.For<IMessageLogger>()).ToList();
+        var result = TestCaseItemCreator.AssembleTestCases(typeof(SimplePerfTest), content, testResourceRelativePath, sourceDll, Substitute.For<IMessageLogger>()).ToList();
 
         result.Count.ShouldBe(6);
         var first = result.First();

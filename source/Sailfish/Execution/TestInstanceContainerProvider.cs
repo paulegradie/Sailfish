@@ -58,7 +58,7 @@ internal class TestInstanceContainerProvider
 
     private object CreateTestInstance()
     {
-        var sailfishFixtureDependency = GetSailfishFixtureGenericArgument();
+        var sailfishFixtureDependency = test.GetSailfishFixtureGenericArgument();
 
         var ctorArgTypes = test.GetCtorParamTypes();
         var ctorArgs = ctorArgTypes.Select(x => ResolveObjectWrapper(x, sailfishFixtureDependency)).ToArray();
@@ -105,18 +105,19 @@ internal class TestInstanceContainerProvider
                 $"No way found to resolve type: {type.Name} - {ex.Message}... fixtureDependencyWasNull was {fixtureDependencyWasNull}, and typeResolverWasNull was {typeResolverWasNull}");
         }
     }
+}
 
-    public ISailfishFixtureDependency? GetSailfishFixtureGenericArgument()
+public static class FixtureGenericArgumentExtensionMethods
+{
+    public static ISailfishFixtureDependency? GetSailfishFixtureGenericArgument(this Type test)
     {
-        var sailfishFixtureType = test.GetInterfaces().SingleOrDefault(x => x.GetGenericTypeDefinition() == typeof(ISailfishFixture<>));
+        var sailfishFixtureType = test
+            .GetInterfaces()
+            .SingleOrDefault(x => x.GenericTypeArguments.Length > 0);
 
-        if (sailfishFixtureType is not null)
-        {
-            var fixtureType = sailfishFixtureType.GetGenericArguments()?.Single()!;
-            var fixtureDependencyInstance = Activator.CreateInstance(fixtureType);
-            return fixtureDependencyInstance as ISailfishFixtureDependency;
-        }
-
-        return null;
+        if (sailfishFixtureType is null) return null;
+        var fixtureType = sailfishFixtureType.GetGenericArguments()?.Single()!;
+        var fixtureDependencyInstance = Activator.CreateInstance(fixtureType);
+        return fixtureDependencyInstance as ISailfishFixtureDependency;
     }
 }

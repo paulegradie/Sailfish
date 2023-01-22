@@ -26,4 +26,9 @@ public class MyProvider : SailfishTypeProvider
     {
         return new MyProvider();
     }
+
+    public override T ResolveType<T>()
+    {
+        return Activator.CreateInstance<T>();
+    }
 }
