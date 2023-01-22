@@ -2,6 +2,7 @@
 using System.Threading.Tasks;
 using Sailfish.AdapterUtils;
 using Sailfish.Attributes;
+using Tests.UsingTheIDE.DemoUtils;
 
 namespace Tests.UsingTheIDE;
 

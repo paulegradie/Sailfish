@@ -1,6 +1,6 @@
 using System;
 
-namespace Tests.UsingTheIDE;
+namespace Tests.UsingTheIDE.DemoUtils;
 
 public class ExampleDep
 {
