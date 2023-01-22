@@ -3,7 +3,7 @@ using System.IO;
 using System.Linq;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.Logging;
 using NSubstitute;
-using Sailfish.TestAdapter.Utils;
+using Sailfish.TestAdapter.Discovery;
 
 namespace Tests.Sailfish.TestAdapter.Utils;
 

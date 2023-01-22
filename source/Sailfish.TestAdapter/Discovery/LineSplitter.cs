@@ -1,7 +1,7 @@
 ﻿using System.Linq;
 using System.Text.RegularExpressions;
 
-namespace Sailfish.TestAdapter.Utils;
+namespace Sailfish.TestAdapter.Discovery;
 
 internal static class LineSplitter
 {

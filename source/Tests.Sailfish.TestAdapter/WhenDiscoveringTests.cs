@@ -1,6 +1,6 @@
 ﻿using System.Linq;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Sailfish.TestAdapter.Utils;
+using Sailfish.TestAdapter.Discovery;
 using Shouldly;
 using Tests.Sailfish.TestAdapter.Utils;
 

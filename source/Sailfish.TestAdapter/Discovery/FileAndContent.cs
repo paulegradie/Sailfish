@@ -1,4 +1,4 @@
-namespace Sailfish.TestAdapter.Utils;
+namespace Sailfish.TestAdapter.Discovery;
 
 internal class FileAndContent
 {

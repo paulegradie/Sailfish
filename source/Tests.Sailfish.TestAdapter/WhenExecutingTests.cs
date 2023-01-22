@@ -3,7 +3,8 @@ using Microsoft.VisualStudio.TestPlatform.ObjectModel.Adapter;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.Logging;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using NSubstitute;
-using Sailfish.TestAdapter.Utils;
+using Sailfish.TestAdapter.Discovery;
+using Sailfish.TestAdapter.Execution;
 using Shouldly;
 using Tests.Sailfish.TestAdapter.Utils;
 

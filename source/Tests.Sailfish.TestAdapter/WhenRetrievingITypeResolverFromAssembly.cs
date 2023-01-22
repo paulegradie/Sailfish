@@ -1,7 +1,7 @@
 using System;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Sailfish.Execution;
-using Sailfish.TestAdapter.Utils;
+using Sailfish.TestAdapter.Execution;
 using Shouldly;
 
 namespace Tests.Sailfish.TestAdapter;

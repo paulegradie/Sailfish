@@ -1,4 +1,4 @@
-name: publish to nuget
+name: Test, Pack and Publish to nuget
 on:
   push:
     branches:
@@ -8,9 +8,7 @@ on:
       - '**/*.yml'
       - '**/.gitignore'
       - 'assets/*'
-      - 'source/Sailfish.TestAdapter/*'
-      - 'source/Sailfish.Tool/*'
-      - 'source/UsingTheIDE/*'
+      - 'source/Tests.UsingTheIDE/*'
       - 'source/AsAConsoleApp/*'
 
 jobs:
@@ -21,7 +19,7 @@ jobs:
 
     - name: Generate build number
       id: buildnumber
-      uses: einaregilsson/build-number@v3
+      uses: onyxmueller/build-tag-number@v1
       with:
         token: ${{secrets.github_token}}
 
@@ -29,7 +27,7 @@ jobs:
     - name: Setup dotnet
       uses: actions/setup-dotnet@v1
       with:
-        dotnet-version: 6.0.x
+        dotnet-version: 7.0.x
 
     - name: Checkout
       uses: actions/checkout@v2
@@ -43,11 +41,23 @@ jobs:
     - name: Build
       run: dotnet build ./source/Sailfish/Sailfish.csproj --configuration Release /p:Version=${VERSION}
 
+    - name: Build
+      run: dotnet build ./source/Sailfish/Sailfish.TestAdapter.csproj --configuration Release /p:Version=${VERSION}
+    
     - name: Test
       run: dotnet test ./source/Tests.Sailfish/Tests.Sailfish.csproj --verbosity normal
-
+    
+    - name: Test Adapter
+      run: dotnet test ./source/Tests.Sailfish.Adapter/Tests.Sailfish.TestAdapter.csproj --verbosity normal
+    
     - name: Pack
       run: dotnet pack ./source/Sailfish/Sailfish.csproj --configuration Release /p:Version=${VERSION} --no-build --output .
 
     - name: Push
       run: dotnet nuget push Sailfish.${VERSION}.nupkg --source https://www.nuget.org --api-key ${{secrets.NUGET_API_KEY}}
+      
+    - name: Pack Adapter
+      run: dotnet pack ./source/Sailfish/Sailfish.TestAdapter.csproj --configuration Release /p:Version=${VERSION} --no-build --output .
+    
+    - name: Push Adapter
+      run: dotnet nuget push Sailfish.TestAdapter.${VERSION}.nupkg --source https://www.nuget.org --api-key ${{secrets.NUGET_API_KEY}}

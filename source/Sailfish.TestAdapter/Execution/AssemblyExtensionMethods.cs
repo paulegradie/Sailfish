@@ -3,7 +3,7 @@ using System.Linq;
 using System.Reflection;
 using Sailfish.Execution;
 
-namespace Sailfish.TestAdapter.Utils;
+namespace Sailfish.TestAdapter.Execution;
 
 public static class AssemblyExtensionMethods
 {

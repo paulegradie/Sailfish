@@ -4,7 +4,7 @@ using System.Reflection;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.Logging;
 using Sailfish.Attributes;
 
-namespace Sailfish.TestAdapter.Utils;
+namespace Sailfish.TestAdapter.Discovery;
 
 internal static class TypeLoader
 {

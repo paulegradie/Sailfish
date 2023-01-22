@@ -7,13 +7,12 @@ using Accord.Collections;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.Adapter;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.Logging;
-using Newtonsoft.Json;
 using Sailfish.Execution;
 using Sailfish.Presentation;
-using Sailfish.Presentation.Console;
 using Sailfish.Statistics;
+using Sailfish.TestAdapter.Discovery;
 
-namespace Sailfish.TestAdapter.Utils;
+namespace Sailfish.TestAdapter.Execution;
 
 internal static class TestExecution
 {

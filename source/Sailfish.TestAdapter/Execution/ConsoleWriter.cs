@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Accord.Collections;
-using Microsoft.VisualStudio.TestPlatform.ObjectModel.Adapter;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.Logging;
 using Sailfish.Execution;
 using Sailfish.ExtensionMethods;
@@ -10,7 +9,7 @@ using Sailfish.Presentation;
 using Sailfish.Presentation.Console;
 using Sailfish.Statistics;
 
-namespace Sailfish.TestAdapter.Utils;
+namespace Sailfish.TestAdapter.Execution;
 
 internal class ConsoleWriter : IConsoleWriter
 {

@@ -4,7 +4,7 @@ using System.IO;
 using System.Linq;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.Logging;
 
-namespace Sailfish.TestAdapter.Utils;
+namespace Sailfish.TestAdapter.Discovery;
 
 internal static class DirectoryRecursion
 {

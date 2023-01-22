@@ -5,7 +5,7 @@ using Microsoft.VisualStudio.TestPlatform.ObjectModel;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.Adapter;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.Logging;
 using Newtonsoft.Json;
-using Sailfish.TestAdapter.Utils;
+using Sailfish.TestAdapter.Discovery;
 
 namespace Sailfish.TestAdapter;
 

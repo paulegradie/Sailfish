@@ -9,12 +9,12 @@ using Sailfish.Execution;
 using Sailfish.TestAdapter.TestProperties;
 using Sailfish.Utils;
 
-namespace Sailfish.TestAdapter.Utils;
+namespace Sailfish.TestAdapter.Discovery;
 
 internal static class TestCaseItemCreator
 {
     public const string TestTypeFullName = "TestTypeFullName";
-    public const string DisplayName = "DisplayName";
+    private const string DisplayName = "DisplayName";
 
     private static ParameterGridCreator ParameterGridCreator => new(new ParameterCombinator(), new IterationVariableRetriever());
 
@@ -24,12 +24,11 @@ internal static class TestCaseItemCreator
         var methods = testType.GetMethodsWithAttribute<SailfishMethodAttribute>()?.ToArray();
         if (methods is null)
         {
-            logger.SendMessage(TestMessageLevel.Informational, "No method with ExecutePerformanceCheck attribute found -- this shouldn't have made it into the test type scan!");
+            logger.SendMessage(TestMessageLevel.Informational, $"No method with {nameof(SailfishMethodAttribute)} attribute found -- this shouldn't have made it into the test type scan!");
             return testCaseSets;
         }
 
-        var (item1, combos) = ParameterGridCreator.GenerateParameterGrid(testType);
-        var propertyNames = item1.ToArray();
+        var (propertyNames, combos) = ParameterGridCreator.GenerateParameterGrid(testType);
 
         var contentLines = LineSplitter.SplitFileIntoLines(testCsFileContent);
 
@@ -40,9 +39,9 @@ internal static class TestCaseItemCreator
 
             foreach (var variableCombinations in combos)
             {
-                var testCaseId = DisplayNameHelper.CreateTestCaseId(testType, method.Name, propertyNames, variableCombinations);
+                var testCaseId = DisplayNameHelper.CreateTestCaseId(testType, method.Name, propertyNames.ToArray(), variableCombinations);
                 var fullyQualifiedName = $"{testType.Namespace}.{testType.Name}.{method.Name}.{testCaseId.TestCaseVariables.FormVariableSection()}";
-                var testCase = new TestCase(fullyQualifiedName + "ThisIsTheId", TestExecutor.ExecutorUri, sourceDll) // a test case is a method
+                var testCase = new TestCase(fullyQualifiedName, TestExecutor.ExecutorUri, sourceDll) // a test case is a method
                 {
                     CodeFilePath = testCsFilePath,
                     DisplayName = testCaseId.DisplayName,
@@ -73,7 +72,6 @@ internal static class TestCaseItemCreator
             .Select(
                 (line, index) =>
                 {
-                    logger.SendMessage(TestMessageLevel.Informational, $"Line {index}: {line}");
                     var methodKey = $" {method.Name}(";
                     return line.Trim().Contains(methodKey) ? index : -1;
                 })

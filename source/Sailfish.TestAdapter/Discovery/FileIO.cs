@@ -1,9 +1,9 @@
 ﻿using System;
 using System.IO;
 
-namespace Sailfish.TestAdapter.Utils;
+namespace Sailfish.TestAdapter.Discovery;
 
-internal static class FileIo // This is all DirectoryRecursion logic - should move this.
+internal static class FileIo
 {
     public static string ReadFileContents(string sourceFile)
     {
