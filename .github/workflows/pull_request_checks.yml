@@ -33,7 +33,7 @@ jobs:
       run: dotnet build ./source/Sailfish/Sailfish.csproj --configuration Release /p:Version=${VERSION}-pull-request
 
     - name: Build Adapter
-      run: dotnet build ./source/Sailfish/Sailfish.TestAdapter.csproj --configuration Release /p:Version=${VERSION}
+      run: dotnet build ./source/Sailfish.TestAdapter/Sailfish.TestAdapter.csproj --configuration Release /p:Version=${VERSION}
 
     - name: Test
       run: dotnet test ./source/Tests.Sailfish/Tests.Sailfish.csproj --verbosity normal
