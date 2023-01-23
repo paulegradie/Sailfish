@@ -5,37 +5,35 @@ jobs:
   build:
     runs-on: ubuntu-latest
     timeout-minutes: 15
-
     steps:
+      - name: Generate build number
+        id: buildnumber
+        uses: einaregilsson/build-number@v3
+        with:
+          token: ${{secrets.github_token}}
 
-    - name: Generate build number
-      id: buildnumber
-      uses: einaregilsson/build-number@v3
-      with:
-        token: ${{secrets.github_token}}
+      - name: Setup dotnet
+        uses: actions/setup-dotnet@v3
+        with:
+          dotnet-version: 7.0.x
 
-    - name: Setup dotnet
-      uses: actions/setup-dotnet@v3
-      with:
-        dotnet-version: 7.0.x
+      - name: Checkout
+        uses: actions/checkout@v2
 
-    - name: Checkout
-      uses: actions/checkout@v2
+      - name: Verify commit exists in origin/main
+        run: echo "Going to use ${{ steps.buildnumber.outputs.build_number }} for the package Id."
 
-    - name: Verify commit exists in origin/main
-      run: echo "Going to use ${{ steps.buildnumber.outputs.build_number }} for the package Id."
+      - name: Set VERSION variable from tag
+        run: echo "VERSION=0.0.${{ steps.buildnumber.outputs.build_number }}" >> $GITHUB_ENV
 
-    - name: Set VERSION variable from tag
-      run: echo "VERSION=0.0.${{ steps.buildnumber.outputs.build_number }}" >> $GITHUB_ENV
+      - name: Build
+        run: dotnet build ./source/Sailfish/Sailfish.csproj --configuration Release /p:Version=${VERSION}-pull-request
 
-    - name: Build
-      run: dotnet build ./source/Sailfish/Sailfish.csproj --configuration Release /p:Version=${VERSION}-pull-request
+      - name: Build Adapter
+        run: dotnet build ./source/Sailfish.TestAdapter/Sailfish.TestAdapter.csproj --configuration Release /p:Version=${VERSION}
 
-    - name: Build Adapter
-      run: dotnet build ./source/Sailfish.TestAdapter/Sailfish.TestAdapter.csproj --configuration Release /p:Version=${VERSION}
+      - name: Test
+        run: dotnet test ./source/Tests.Sailfish/Tests.Sailfish.csproj --verbosity normal
 
-    - name: Test
-      run: dotnet test ./source/Tests.Sailfish/Tests.Sailfish.csproj --verbosity normal
-      
-    - name: Test Adapter
-      run: dotnet test ./source/Tests.Sailfish.TestAdapter/Tests.Sailfish.TestAdapter.csproj --verbosity normal
+      - name: Test Adapter
+        run: dotnet test ./source/Tests.Sailfish.TestAdapter/Tests.Sailfish.TestAdapter.csproj --verbosity normal
