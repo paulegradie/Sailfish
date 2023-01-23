@@ -15,8 +15,8 @@ jobs:
   build:
     runs-on: ubuntu-latest
     timeout-minutes: 15
+    permissions: write-all
     steps:
-
     - name: Generate build number
       id: buildnumber
       uses: onyxmueller/build-tag-number@v1
