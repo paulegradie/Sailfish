@@ -9,18 +9,20 @@
             tests that assess the speed of your code, without weighing you down with all the extra ceremony.
         </Description>
         <RootNamespace>Sailfish.TestAdapter</RootNamespace>
-        <TargetFramework>net6.0</TargetFramework>
+        <TargetFramework>net7.0</TargetFramework>
         <Nullable>enable</Nullable>
+        <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     </PropertyGroup>
     <ItemGroup>
-        <PackageReference Include="NuGet.Build.Tasks.Pack" Version="6.2.0">
+        <PackageReference Include="Microsoft.TestPlatform.TestHost" Version="17.4.1" />
+        <PackageReference Include="NuGet.Build.Tasks.Pack" Version="6.4.0">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="Serilog.Sinks.Console" Version="4.0.1" />
+        <PackageReference Include="Serilog.Sinks.Console" Version="4.1.0" />
         <PackageReference Include="Serilog.Sinks.File" Version="5.0.0" />
-        <PackageReference Include="Serilog.Sinks.Seq" Version="5.1.1" />
-        <PackageReference Include="System.ComponentModel.Composition" Version="6.0.0" />
+        <PackageReference Include="Serilog.Sinks.Seq" Version="5.2.2" />
+        <PackageReference Include="System.ComponentModel.Composition" Version="7.0.0" />
         <PackageReference Include="Microsoft.VisualStudio.TestPlatform.ObjectModel" Version="14.0.0" />
     </ItemGroup>
     <ItemGroup>

@@ -23,7 +23,7 @@ internal class TestCaseIterator : ITestCaseIterator
             await testInstanceContainer.Invocation.IterationTearDown(cancellationToken).ConfigureAwait(false);
         }
 
-        return messages; // TODO: use this?
+        return messages;
     }
 
     private static async Task WarmupIterations(TestInstanceContainer testInstanceContainer, CancellationToken cancellationToken)

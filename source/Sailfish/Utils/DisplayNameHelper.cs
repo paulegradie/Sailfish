@@ -19,16 +19,26 @@ internal static class DisplayNameHelper
         return new TestCaseId(testCaseName, testCaseVariables);
     }
 
-    public static string CreateParamsDisplay(string[] variableNames, int[] paramSet)
+    public static string FullyQualifiedName(Type type, string methodName)
     {
-        if (variableNames.Length != paramSet.Length) throw new Exception("Number of variables and number of params does not match");
-        var namedParams = variableNames.Zip(paramSet);
+        var methodInfo = type.GetMethod(methodName);
+        if (methodInfo is null) throw new Exception($"Method name: {methodName} was not found on type {type.Name}");
 
-        return "(" + string.Join(", ", namedParams.Select(FormNameString).ToArray()) + ")";
-    }
+        var names = $"{type.Namespace}.{type.Name}.{methodName}";
 
-    private static string FormNameString((string First, int Second) pair)
-    {
-        return $"{pair.First}: {pair.Second}";
+        var parameters = methodInfo.GetParameters();
+        if (parameters.Length > 0)
+        {
+            var ps = parameters.Select(p => p.ParameterType.Name);
+            var parametersJoined = string.Join(", ", ps);
+
+            names += $"({parametersJoined})";
+        }
+        else
+        {
+            names += "()";
+        }
+
+        return names;
     }
 }

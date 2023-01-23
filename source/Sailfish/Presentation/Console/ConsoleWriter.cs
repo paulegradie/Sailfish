@@ -17,7 +17,7 @@ internal class ConsoleWriter : IConsoleWriter
         this.stringBuilder = stringBuilder;
     }
 
-    public string Present(List<ExecutionSummary> results, OrderedDictionary<string, string> tags)
+    public string Present(IEnumerable<ExecutionSummary> results, OrderedDictionary<string, string> tags)
     {
         foreach (var result in results.Where(result => result.Settings.AsConsole))
         {

@@ -10,7 +10,7 @@ jobs:
 
     - name: Generate build number
       id: buildnumber
-      uses: einaregilsson/build-number@v3
+      uses: onyxmueller/build-tag-number@v1
       with:
         token: ${{secrets.github_token}}
 
@@ -18,7 +18,7 @@ jobs:
     - name: Setup dotnet
       uses: actions/setup-dotnet@v1
       with:
-        dotnet-version: 6.0.x
+        dotnet-version: 7.0.x
 
     - name: Checkout
       uses: actions/checkout@v2
@@ -32,5 +32,11 @@ jobs:
     - name: Build
       run: dotnet build ./source/Sailfish/Sailfish.csproj --configuration Release /p:Version=${VERSION}-pull-request
 
+    - name: Build Adapter
+      run: dotnet build ./source/Sailfish.TestAdapter/Sailfish.TestAdapter.csproj --configuration Release /p:Version=${VERSION}
+
     - name: Test
       run: dotnet test ./source/Tests.Sailfish/Tests.Sailfish.csproj --verbosity normal
+      
+    - name: Test Adapter
+      run: dotnet test ./source/Tests.Sailfish.TestAdapter/Tests.Sailfish.TestAdapter.csproj --verbosity normal

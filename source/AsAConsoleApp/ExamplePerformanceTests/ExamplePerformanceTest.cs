@@ -27,13 +27,13 @@ public class ExamplePerformanceTest : TestBase
     }
 
     [SailfishMethodSetup]
-    public void ExecutionMethodSetup()
+    public void ExecutionMethodSetup(CancellationToken cancellationToken)
     {
         Console.WriteLine("This is the Execution Method Setup");
     }
 
     [SailfishIterationSetup]
-    public void IterationSetup()
+    public void IterationSetup(CancellationToken cancellationToken)
     {
         Console.WriteLine("This is the Iteration Setup - use sparingly");
     }
@@ -53,13 +53,13 @@ public class ExamplePerformanceTest : TestBase
     }
 
     [SailfishIterationTeardown]
-    public void IterationTeardown()
+    public void IterationTeardown(CancellationToken cancellationToken)
     {
         Console.WriteLine("This is the Iteration Teardown - use sparingly");
     }
 
     [SailfishMethodTeardown]
-    public void ExecutionMethodTeardown()
+    public void ExecutionMethodTeardown(CancellationToken cancellationToken)
     {
         Console.WriteLine("This is the Execution Method Teardown");
     }

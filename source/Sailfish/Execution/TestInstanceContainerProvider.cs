@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using Sailfish.AdapterUtils;
 using Sailfish.Exceptions;
 using Sailfish.ExtensionMethods;
 
@@ -11,59 +12,118 @@ internal class TestInstanceContainerProvider
 {
     public readonly MethodInfo Method;
 
-    private readonly ITypeResolver typeResolver;
+    private readonly ITypeResolver? typeResolver;
     private readonly Type test;
-    private readonly Queue<int[]> variableSets;
-    private readonly List<string> propertyNames;
-    private readonly Type[] ctorArgTypes;
+    private readonly IEnumerable<PropertySet> propertySets;
 
     public TestInstanceContainerProvider(
-        ITypeResolver typeResolver,
+        ITypeResolver? typeResolver,
         Type test,
-        IEnumerable<int[]> variableSets,
-        List<string> propertyNames,
+        IEnumerable<PropertySet> propertySets,
         MethodInfo method)
     {
         this.typeResolver = typeResolver;
         this.test = test;
-        this.variableSets = new Queue<int[]>(variableSets);
-        this.propertyNames = propertyNames;
+        this.propertySets = propertySets;
         Method = method;
-        ctorArgTypes = test.GetCtorParamTypes();
     }
 
-    private object? instance;
-
-    public int GetNumberOfVariableSetsInTheQueue()
+    public int GetNumberOfPropertySetsInTheQueue()
     {
-        return variableSets.Count;
+        return propertySets.Count();
     }
 
     public IEnumerable<TestInstanceContainer> ProvideNextTestInstanceContainer()
     {
-        foreach (var nextVariableSet in variableSets)
+        if (GetNumberOfPropertySetsInTheQueue() is 0)
         {
-            instance ??= CreateTestInstance();
+            var instance = CreateDehydratedTestInstance();
+            yield return TestInstanceContainer.CreateTestInstance(instance, Method, Array.Empty<string>(), Array.Empty<int>());
+        }
 
-            SetProperties(instance, nextVariableSet);
-            yield return TestInstanceContainer.CreateTestInstance(instance, Method, propertyNames.ToArray(), nextVariableSet);
+        foreach (var nextPropertySet in propertySets)
+        {
+            var instance = CreateDehydratedTestInstance();
+
+            HydrateInstance(instance, nextPropertySet);
+
+            var propertyNames = nextPropertySet.GetPropertyNames().ToArray();
+            var variableValues = nextPropertySet.GetPropertyValues().ToArray();
+            yield return TestInstanceContainer.CreateTestInstance(instance, Method, propertyNames, variableValues);
         }
     }
 
-    private void SetProperties(object obj, IEnumerable<int> nextVariableSet)
+    private static void HydrateInstance(object obj, PropertySet propertySet)
     {
-        foreach (var (propertyName, variableValue) in propertyNames.Zip(nextVariableSet))
+        foreach (var variable in propertySet.VariableSet)
         {
-            var prop = obj.GetType().GetProperties().Single(x => x.Name == propertyName);
-            prop.SetValue(obj, variableValue);
+            var prop = obj.GetType().GetProperties().Single(x => x.Name == variable.Name);
+            prop.SetValue(obj, variable.Value);
         }
     }
 
-    private object CreateTestInstance()
+    private object CreateDehydratedTestInstance()
     {
-        var ctorArgs = ctorArgTypes.Select(x => typeResolver.ResolveType(x)).ToArray();
+        var sailfishFixtureDependency = test.GetSailfishFixtureGenericArgument();
+
+        var ctorArgTypes = test.GetCtorParamTypes();
+        var ctorArgs = ctorArgTypes.Select(x => ResolveObjectWrapper(x, sailfishFixtureDependency)).ToArray();
         var obj = Activator.CreateInstance(test, ctorArgs);
         if (obj is null) throw new SailfishException($"Couldn't create instance of {test.Name}");
         return obj;
+    }
+
+    private object ResolveObjectWrapper(Type type, ISailfishFixtureDependency? sailfishFixtureDependency)
+    {
+        var fixtureDependencyWasNull = sailfishFixtureDependency is null;
+        var typeResolverWasNull = typeResolver is null;
+
+        if (sailfishFixtureDependency is not null)
+        {
+            try
+            {
+                var typeInstance = sailfishFixtureDependency.ResolveType(type);
+                return typeInstance;
+            }
+            catch
+            {
+                try
+                {
+                    if (typeResolver is null) throw;
+                    var typeInstance = typeResolver.ResolveType(type);
+                    return typeInstance;
+                }
+                catch (Exception ex)
+                {
+                    throw new SailfishException(ex.Message);
+                }
+            }
+        }
+
+        try
+        {
+            var typeInstance = typeResolver!.ResolveType(type);
+            return typeInstance;
+        }
+        catch (Exception ex)
+        {
+            throw new SailfishException(
+                $"No way found to resolve type: {type.Name} - {ex.Message}... fixtureDependencyWasNull was {fixtureDependencyWasNull}, and typeResolverWasNull was {typeResolverWasNull}");
+        }
+    }
+}
+
+public static class FixtureGenericArgumentExtensionMethods
+{
+    public static ISailfishFixtureDependency? GetSailfishFixtureGenericArgument(this Type test)
+    {
+        var sailfishFixtureType = test
+            .GetInterfaces()
+            .SingleOrDefault(x => x.GenericTypeArguments.Length > 0);
+
+        if (sailfishFixtureType is null) return null;
+        var fixtureType = sailfishFixtureType.GetGenericArguments()?.Single()!;
+        var fixtureDependencyInstance = Activator.CreateInstance(fixtureType);
+        return fixtureDependencyInstance as ISailfishFixtureDependency;
     }
 }

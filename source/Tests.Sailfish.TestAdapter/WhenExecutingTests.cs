@@ -1,8 +1,11 @@
 ﻿using System.Linq;
+using System.Threading;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.Adapter;
+using Microsoft.VisualStudio.TestPlatform.ObjectModel.Logging;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 using NSubstitute;
-using Sailfish.TestAdapter.Utils;
+using Sailfish.TestAdapter.Discovery;
+using Sailfish.TestAdapter.Execution;
 using Shouldly;
 using Tests.Sailfish.TestAdapter.Utils;
 
@@ -14,13 +17,11 @@ public class WhenExecutingTests
     [TestMethod]
     public void FilteredTestsAreSuccessfullyDiscovered()
     {
-        var executor = new TestExecution();
         var frameworkHandle = Substitute.For<IFrameworkHandle>();
-        var context = Substitute.For<IRunContext>();
 
         var allDllsInThisProject = DllFinder.FindAllDllsRecursively();
-        var testCases = new TestDiscovery().DiscoverTests(allDllsInThisProject).ToList();
+        var testCases = TestDiscovery.DiscoverTests(allDllsInThisProject, Substitute.For<IMessageLogger>()).ToList();
 
-        Should.NotThrow(() => executor.ExecuteTests(testCases.Take(1).ToList(), context, frameworkHandle));
+        Should.NotThrow(() => TestExecution.ExecuteTests(testCases.Take(1).ToList(), frameworkHandle, CancellationToken.None));
     }
 }
