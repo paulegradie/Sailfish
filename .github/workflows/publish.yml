@@ -57,7 +57,7 @@ jobs:
       run: dotnet nuget push Sailfish.${VERSION}.nupkg --source https://www.nuget.org --api-key ${{secrets.NUGET_API_KEY}}
       
     - name: Pack Adapter
-      run: dotnet pack ./source/Sailfish/Sailfish.TestAdapter.csproj --configuration Release /p:Version=${VERSION} --no-build --output .
+      run: dotnet pack ./source/Sailfish.TestAdapter/Sailfish.TestAdapter.csproj --configuration Release /p:Version=${VERSION} --no-build --output .
     
     - name: Push Adapter
       run: dotnet nuget push Sailfish.TestAdapter.${VERSION}.nupkg --source https://www.nuget.org --api-key ${{secrets.NUGET_API_KEY}}
