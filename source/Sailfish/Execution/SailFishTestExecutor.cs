@@ -79,13 +79,13 @@ internal class SailFishTestExecutor : ISailFishTestExecutor
 
         var methodIndex = 0;
         var totalMethodCount = testMethods.Count - 1;
-        foreach (var testMethod in testMethods.OrderBy(x => x.Method.Name))
+        foreach (var testInstanceContainerProvider in testMethods.OrderBy(x => x.Method.Name))
         {
             logger.Information(
                 "Executing test method {MethodIndex} of {TotalMethodCount}: {TestTypeName}.{TestMethodName}",
-                (methodIndex + 1).ToString(), (totalMethodCount + 1).ToString(), testMethod.Method.DeclaringType?.Name, testMethod.Method.Name);
-            var res = await engine.ActivateContainer(methodIndex, totalMethodCount, testMethod, callback, cancellationToken);
-            results.AddRange(res);
+                (methodIndex + 1).ToString(), (totalMethodCount + 1).ToString(), testInstanceContainerProvider.Method.DeclaringType?.Name, testInstanceContainerProvider.Method.Name);
+            var executionResults = await engine.ActivateContainer(methodIndex, totalMethodCount, testInstanceContainerProvider, callback, cancellationToken);
+            results.AddRange(executionResults);
             methodIndex += 1;
         }
 

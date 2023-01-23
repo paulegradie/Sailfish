@@ -18,16 +18,11 @@ public class TestDiscoverer : ITestDiscoverer
     {
         sources = sources.ToList();
         var filteredSource = sources.Where(x => !x.EndsWith("Sailfish.TestAdapter.dll") && !x.EndsWith("Tests.Sailfish.TestAdapter.dll"));
-
-        logger.SendMessage(TestMessageLevel.Informational, $"All filteredSources: {JsonConvert.SerializeObject(filteredSource)}");
-
         try
         {
             var testCases = TestDiscovery.DiscoverTests(filteredSource, logger).ToList();
-            logger.SendMessage(TestMessageLevel.Informational, $"Found {testCases.Count()} test cases!");
             foreach (var testCase in testCases)
             {
-                logger.SendMessage(TestMessageLevel.Informational, $"Sending test case {testCase.FullyQualifiedName}");
                 discoverySink.SendTestCase(testCase);
             }
         }

@@ -14,9 +14,11 @@ namespace Sailfish.TestAdapter.Discovery;
 internal static class TestCaseItemCreator
 {
     public const string TestTypeFullName = "TestTypeFullName";
-    private const string DisplayName = "DisplayName";
+    public const string DisplayName = "DisplayName";
+    public const string FormedVariableSection = "FormedVariableSection";
+    public const string MethodName = "MethodName";
 
-    private static ParameterGridCreator ParameterGridCreator => new(new ParameterCombinator(), new IterationVariableRetriever());
+    private static PropertySetGenerator PropertySetGenerator => new(new ParameterCombinator(), new IterationVariableRetriever());
 
     public static IEnumerable<TestCase> AssembleTestCases(Type testType, string testCsFileContent, string testCsFilePath, string sourceDll, IMessageLogger logger)
     {
@@ -24,12 +26,12 @@ internal static class TestCaseItemCreator
         var methods = testType.GetMethodsWithAttribute<SailfishMethodAttribute>()?.ToArray();
         if (methods is null)
         {
-            logger.SendMessage(TestMessageLevel.Informational, $"No method with {nameof(SailfishMethodAttribute)} attribute found -- this shouldn't have made it into the test type scan!");
+            logger.SendMessage(TestMessageLevel.Informational,
+                $"No method with {nameof(SailfishMethodAttribute)} attribute found -- this shouldn't have made it into the test type scan!");
             return testCaseSets;
         }
 
-        var (propertyNames, combos) = ParameterGridCreator.GenerateParameterGrid(testType);
-
+        var propertySets = PropertySetGenerator.GeneratePropertySets(testType).ToArray();
         var contentLines = LineSplitter.SplitFileIntoLines(testCsFileContent);
 
         foreach (var method in methods)
@@ -37,10 +39,12 @@ internal static class TestCaseItemCreator
             var methodNameLine = GetMethodNameLine(contentLines, method, logger);
             if (methodNameLine == 0) continue;
 
-            foreach (var variableCombinations in combos)
+            foreach (var propertySet in propertySets)
             {
-                var testCaseId = DisplayNameHelper.CreateTestCaseId(testType, method.Name, propertyNames.ToArray(), variableCombinations);
-                var fullyQualifiedName = $"{testType.Namespace}.{testType.Name}.{method.Name}.{testCaseId.TestCaseVariables.FormVariableSection()}";
+                var propertyNames = propertySet.GetPropertyNames();
+                var propertyValues = propertySet.GetPropertyValues();
+                var testCaseId = DisplayNameHelper.CreateTestCaseId(testType, method.Name, propertyNames.ToArray(), propertyValues.ToArray());
+                var fullyQualifiedName = $"{testType.Namespace}.{testType.Name}.{method.Name}{testCaseId.TestCaseVariables.FormVariableSection()}";
                 var testCase = new TestCase(fullyQualifiedName, TestExecutor.ExecutorUri, sourceDll) // a test case is a method
                 {
                     CodeFilePath = testCsFilePath,
@@ -57,8 +61,12 @@ internal static class TestCaseItemCreator
                     throw new Exception("Impossible!");
                 }
 
+                // Traits is not the right way to pass this information, but the Properties property keeps getting cleared on the test case when
+                // is passed to the executor -- I'm setting that property incorrectly probably
                 testCase.Traits.Add(new Trait(TestTypeFullName, testType.FullName));
                 testCase.Traits.Add(new Trait(DisplayName, testCaseId.DisplayName));
+                testCase.Traits.Add(new Trait(FormedVariableSection, testCaseId.TestCaseVariables.FormVariableSection()));
+                testCase.Traits.Add(new Trait(MethodName, method.Name));
                 testCaseSets.Add(testCase);
             }
         }
@@ -76,9 +84,6 @@ internal static class TestCaseItemCreator
                     return line.Trim().Contains(methodKey) ? index : -1;
                 })
             .SingleOrDefault(x => x >= 0);
-
-        logger.SendMessage(TestMessageLevel.Informational, $"Method discovered on line {lineNumber.ToString()} with signature: {fileLines[lineNumber]}");
-
         return lineNumber;
     }
 }

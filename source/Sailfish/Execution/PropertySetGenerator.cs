@@ -4,27 +4,19 @@ using System.Linq;
 
 namespace Sailfish.Execution;
 
-internal class ParameterGridCreator : IParameterGridCreator
+internal class PropertySetGenerator : IPropertySetGenerator
 {
     private readonly IParameterCombinator parameterCombinator;
     private readonly IIterationVariableRetriever iterationVariableRetriever;
 
-    public ParameterGridCreator(IParameterCombinator parameterCombinator, IIterationVariableRetriever iterationVariableRetriever)
+    public PropertySetGenerator(IParameterCombinator parameterCombinator, IIterationVariableRetriever iterationVariableRetriever)
     {
         this.parameterCombinator = parameterCombinator;
         this.iterationVariableRetriever = iterationVariableRetriever;
     }
 
-    // TODO: We could probably use a better data structure here
-    /// <summary>
-    /// Returns an tuple of (property name (as a string), variable groups of the structure
-    /// Propnames = ["A", "B"]
-    ///           A   B    A  B    A  B    A  B
-    /// combos = [[1, 2], [1, 4], [2, 2], [2, 4]
-    /// </summary>
-    /// <param name="test"></param>
-    /// <returns></returns>
-    public (List<string>, int[][]) GenerateParameterGrid(Type test)
+
+    public IEnumerable<PropertySet> GeneratePropertySets(Type test)
     {
         var variableProperties = iterationVariableRetriever.RetrieveIterationVariables(test);
 
@@ -36,8 +28,8 @@ internal class ParameterGridCreator : IParameterGridCreator
             propValues.Add(values.ToList());
         }
 
-        var combos = parameterCombinator.GetAllPossibleCombos(propValues);
+        var propertySets = parameterCombinator.GetAllPossibleCombos(propNames, propValues);
 
-        return (propNames, combos);
+        return propertySets;
     }
 }

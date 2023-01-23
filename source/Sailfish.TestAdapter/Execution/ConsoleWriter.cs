@@ -8,6 +8,7 @@ using Sailfish.ExtensionMethods;
 using Sailfish.Presentation;
 using Sailfish.Presentation.Console;
 using Sailfish.Statistics;
+using Serilog;
 
 namespace Sailfish.TestAdapter.Execution;
 
@@ -20,6 +21,10 @@ internal class ConsoleWriter : IConsoleWriter
     {
         this.stringBuilder = stringBuilder;
         this.messageLogger = messageLogger;
+
+        Log.Logger = new LoggerConfiguration()
+            .WriteTo.Console()
+            .CreateLogger();
     }
 
     public string Present(IEnumerable<ExecutionSummary> results, OrderedDictionary<string, string> tags)
@@ -33,13 +38,8 @@ internal class ConsoleWriter : IConsoleWriter
 
         var output = stringBuilder.Build();
 
-        if (tags.Any()) System.Console.WriteLine($"{Environment.NewLine}Tags:");
-        foreach (var (key, value) in tags)
-        {
-            messageLogger?.SendMessage(TestMessageLevel.Informational, $"{key}: {value}");
-        }
-
         messageLogger?.SendMessage(TestMessageLevel.Informational, output);
+        Log.Logger.Information(output);
         return output;
     }
 

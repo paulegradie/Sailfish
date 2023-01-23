@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Threading;
 using System.Threading.Tasks;
 using Serilog;
@@ -16,14 +17,14 @@ internal class SailfishExecutionEngine : ISailfishExecutionEngine
     }
 
     public async Task<List<TestExecutionResult>> ActivateContainer(
-        int testProviderIndex,
-        int totalTestProviderCount,
+        [Range(-1, int.MaxValue)]int testProviderIndex,
+        [Range(-1, int.MaxValue)]int totalTestProviderCount,
         TestInstanceContainerProvider testProvider,
         Action<TestExecutionResult>? callback = null,
         CancellationToken cancellationToken = default)
     {
         var currentVariableSetIndex = 0;
-        var totalNumVariableSets = testProvider.GetNumberOfVariableSetsInTheQueue() - 1;
+        var totalNumVariableSets = testProvider.GetNumberOfPropertySetsInTheQueue() - 1;
 
         var instanceContainerEnumerator = testProvider.ProvideNextTestInstanceContainer().GetEnumerator();
 
@@ -45,7 +46,7 @@ internal class SailfishExecutionEngine : ISailfishExecutionEngine
         {
             var testMethodContainer = instanceContainerEnumerator.Current;
 
-            if (ShouldCallGlobalSetup(testProviderIndex, currentVariableSetIndex))
+            if (testProviderIndex == -1 || ShouldCallGlobalSetup(testProviderIndex, currentVariableSetIndex))
             {
                 await testMethodContainer.Invocation.GlobalSetup(cancellationToken);
             }
@@ -59,7 +60,7 @@ internal class SailfishExecutionEngine : ISailfishExecutionEngine
 
             await testMethodContainer.Invocation.MethodTearDown(cancellationToken);
 
-            if (ShouldCallGlobalTeardown(testProviderIndex, totalTestProviderCount, currentVariableSetIndex, totalNumVariableSets))
+            if (testProviderIndex == -1 || ShouldCallGlobalTeardown(testProviderIndex, totalTestProviderCount, currentVariableSetIndex, totalNumVariableSets))
             {
                 await testMethodContainer.Invocation.GlobalTeardown(cancellationToken);
             }

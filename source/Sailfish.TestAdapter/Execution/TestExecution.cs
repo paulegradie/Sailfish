@@ -2,17 +2,29 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Text.Json;
 using System.Threading;
 using Accord.Collections;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.Adapter;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.Logging;
+using Sailfish.Analysis;
 using Sailfish.Execution;
 using Sailfish.Presentation;
 using Sailfish.Statistics;
 using Sailfish.TestAdapter.Discovery;
 
 namespace Sailfish.TestAdapter.Execution;
+
+class TestCaseGroupedByMethod
+{
+    private readonly TestCase[] testCases;
+
+    public TestCaseGroupedByMethod(TestCase[] testCases)
+    {
+        this.testCases = testCases;
+    }
+}
 
 internal static class TestExecution
 {
@@ -27,71 +39,78 @@ internal static class TestExecution
         var engine = new SailfishExecutionEngine(new TestCaseIterator());
         var rawResults = new List<RawExecutionResult>();
 
-        foreach (var testCase in testCases)
+        var testCaseGroups = testCases.GroupBy(testCase => testCase.Traits.Single(x => x.Name == TestCaseItemCreator.MethodName).Value);
+
+        foreach (var testCaseGroup in testCaseGroups)
         {
-            var testTypeTrait = testCase.Traits.Single(trait => trait.Name == TestCaseItemCreator.TestTypeFullName);
-            var testTypeFullName = testTypeTrait.Value;
-
-            var assembly = LoadAssemblyFromDll(testCase.Source);
-            var testType = assembly.GetType(testTypeFullName, true, true);
-            if (testType is null)
+            var groupResults = new List<TestExecutionResult>();
+            Type? testType = null;
+            foreach (var testCase in testCaseGroup)
             {
-                frameworkHandle?.SendMessage(TestMessageLevel.Error, $"Unable to find the following testType: {testTypeFullName}");
-                continue;
-            }
+                var testTypeTrait = testCase.Traits.Single(trait => trait.Name == TestCaseItemCreator.TestTypeFullName);
+                var testTypeFullName = testTypeTrait.Value;
 
-            var typeResolve = assembly.GetTypeResolverOrNull();
-            var testContainerCreator = new TestInstanceContainerCreator(
-                typeResolve,
-                new ParameterGridCreator(
-                    new ParameterCombinator(),
-                    new IterationVariableRetriever()));
+                var assembly = LoadAssemblyFromDll(testCase.Source);
 
-            void TestResultCallback(TestExecutionResult result)
-            {
-                var testResult = new TestResult(testCase);
+                var nextTestType = assembly.GetType(testTypeFullName, true, true);
 
-                if (result.Exception is not null)
+                if (nextTestType is null)
                 {
-                    testResult.ErrorMessage = result.Exception.Message;
-                    testResult.ErrorStackTrace = result.Exception.StackTrace;
+                    frameworkHandle?.SendMessage(TestMessageLevel.Error, $"Unable to find the following testType: {testTypeFullName}");
+                    continue;
                 }
 
-                testResult.Outcome = result.StatusCode == 0 ? TestOutcome.Passed : TestOutcome.Failed;
-                testResult.DisplayName = testCase.DisplayName;
- 
-                testResult.StartTime = result.PerformanceTimerResults.GlobalStart;
-                testResult.EndTime = result.PerformanceTimerResults.GlobalStop;
-                testResult.Duration = result.PerformanceTimerResults.GlobalDuration;
+                if (testType is not null && testType.FullName != nextTestType.FullName)
+                {
+                    throw new Exception($"The test types in the group should be matching: current: {testType.FullName} - next: {nextTestType.FullName}");
+                }
 
-                testResult.ErrorMessage = result.Exception?.Message;
+                testType = nextTestType;
 
-                LogTestResults(result, frameworkHandle);
+                var typeResolve = assembly.GetTypeResolverOrNull();
+                var testContainerCreator = new TestInstanceContainerCreator(
+                    typeResolve,
+                    new PropertySetGenerator(
+                        new ParameterCombinator(),
+                        new IterationVariableRetriever()));
 
-                frameworkHandle?.RecordResult(testResult);
-                frameworkHandle?.RecordEnd(testCase, testResult.Outcome);
-            }
+                var formedVariableSection = testCase.Traits.Single(t => t.Name == TestCaseItemCreator.FormedVariableSection).Value;
+                var methodName = testCase.Traits.Single(t => t.Name == TestCaseItemCreator.MethodName).Value;
 
-            // each provider is a method in the instance, which yields a number of cases based on the variable combos
-            var testMethods = testContainerCreator.CreateTestContainerInstanceProviders(testType);
+                bool PropertyFilter(PropertySet currentPropertySet)
+                {
+                    var currentVariableSection = currentPropertySet.FormTestCaseVariableSection();
+                    return currentVariableSection.Equals(formedVariableSection, StringComparison.InvariantCultureIgnoreCase);
+                }
 
-            var methodIndex = 0;
-            var totalMethodCount = testMethods.Count - 1;
-            foreach (var testMethod in testMethods.OrderBy(x => x.Method.Name))
-            {
+                bool MethodFilter(MethodInfo currentMethodInfo)
+                {
+                    var currentMethod = currentMethodInfo.Name;
+                    return currentMethod.Equals(methodName, StringComparison.InvariantCultureIgnoreCase);
+                }
+
+                var testInstanceContainerProviderToMatchTheCurrentTestCases = testContainerCreator.CreateTestContainerInstanceProviders(testType, PropertyFilter, MethodFilter);
+                var testInstanceContainerProviderToMatchTheCurrentTestCase = testInstanceContainerProviderToMatchTheCurrentTestCases.Single();
                 frameworkHandle?.RecordStart(testCase);
-                var results = engine.ActivateContainer(methodIndex, totalMethodCount, testMethod, TestResultCallback, CancellationToken.None).GetAwaiter().GetResult();
-                methodIndex += 1;
-
-                rawResults.Add(new RawExecutionResult(testType, results));
+                var results = engine.ActivateContainer(
+                        0,
+                        0,
+                        testInstanceContainerProviderToMatchTheCurrentTestCase,
+                        TestResultCallback(testCase, frameworkHandle),
+                        CancellationToken.None)
+                    .GetAwaiter().GetResult();
+                groupResults.AddRange(results);
             }
+
+            if (testType is null) throw new Exception($"Test type was null in TestExecution.cs: line 105");
+            rawResults.Add(new RawExecutionResult(testType, groupResults));
         }
+
 
         var summaryCompiler = new ExecutionSummaryCompiler(new StatisticsCompiler());
         var compiledResults = summaryCompiler.CompileToSummaries(rawResults, CancellationToken.None);
 
         new ConsoleWriter(new PresentationStringConstructor(), frameworkHandle).Present(compiledResults, new OrderedDictionary<string, string>());
-        
     }
 
     private static Assembly LoadAssemblyFromDll(string dllPath)
@@ -103,11 +122,37 @@ internal static class TestExecution
 
     private static void LogTestResults(TestExecutionResult result, IMessageLogger? logger)
     {
-        // var serialized = JsonConvert.SerializeObject(result);
-        logger?.SendMessage(TestMessageLevel.Informational, "This is the Test Results Section");
         foreach (var perf in result.PerformanceTimerResults.MethodIterationPerformances)
         {
             logger?.SendMessage(TestMessageLevel.Informational, $"Time: {perf.Duration.ToString()} ms");
         }
+    }
+
+    private static Action<TestExecutionResult> TestResultCallback(TestCase testCase, ITestExecutionRecorder? logger)
+    {
+        return (TestExecutionResult result) =>
+        {
+            var testResult = new TestResult(testCase);
+
+            if (result.Exception is not null)
+            {
+                testResult.ErrorMessage = result.Exception.Message;
+                testResult.ErrorStackTrace = result.Exception.StackTrace;
+            }
+
+            testResult.Outcome = result.StatusCode == 0 ? TestOutcome.Passed : TestOutcome.Failed;
+            testResult.DisplayName = testCase.DisplayName;
+
+            testResult.StartTime = result.PerformanceTimerResults.GlobalStart;
+            testResult.EndTime = result.PerformanceTimerResults.GlobalStop;
+            testResult.Duration = result.PerformanceTimerResults.GlobalDuration;
+
+            testResult.ErrorMessage = result.Exception?.Message;
+
+            LogTestResults(result, logger);
+
+            logger?.RecordResult(testResult);
+            logger?.RecordEnd(testCase, testResult.Outcome);
+        };
     }
 }

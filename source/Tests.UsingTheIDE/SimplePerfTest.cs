@@ -27,7 +27,6 @@ public class SimplePerfTest : ISailfishFixture<SailfishDependencies>
         await Task.Delay(1_000, cancellationToken);
     }
 
-
     public SimplePerfTest(SailfishDependencies sailfishDependencies)
     {
         this.sailfishDependencies = sailfishDependencies;

@@ -14,49 +14,55 @@ internal class TestInstanceContainerProvider
 
     private readonly ITypeResolver? typeResolver;
     private readonly Type test;
-    private readonly Queue<int[]> variableSets;
-    private readonly List<string> propertyNames;
+    private readonly IEnumerable<PropertySet> propertySets;
 
     public TestInstanceContainerProvider(
         ITypeResolver? typeResolver,
         Type test,
-        IEnumerable<int[]> variableSets,
-        List<string> propertyNames,
+        IEnumerable<PropertySet> propertySets,
         MethodInfo method)
     {
         this.typeResolver = typeResolver;
         this.test = test;
-        this.variableSets = new Queue<int[]>(variableSets.OrderBy(x => Guid.NewGuid()));
-        this.propertyNames = propertyNames;
+        this.propertySets = propertySets;
         Method = method;
     }
 
-    public int GetNumberOfVariableSetsInTheQueue()
+    public int GetNumberOfPropertySetsInTheQueue()
     {
-        return variableSets.Count;
+        return propertySets.Count();
     }
 
     public IEnumerable<TestInstanceContainer> ProvideNextTestInstanceContainer()
     {
-        foreach (var nextVariableSet in variableSets)
+        if (GetNumberOfPropertySetsInTheQueue() is 0)
         {
-            var instance = CreateTestInstance();
+            var instance = CreateDehydratedTestInstance();
+            yield return TestInstanceContainer.CreateTestInstance(instance, Method, Array.Empty<string>(), Array.Empty<int>());
+        }
 
-            SetProperties(instance, nextVariableSet);
-            yield return TestInstanceContainer.CreateTestInstance(instance, Method, propertyNames.ToArray(), nextVariableSet);
+        foreach (var nextPropertySet in propertySets)
+        {
+            var instance = CreateDehydratedTestInstance();
+
+            HydrateInstance(instance, nextPropertySet);
+
+            var propertyNames = nextPropertySet.GetPropertyNames().ToArray();
+            var variableValues = nextPropertySet.GetPropertyValues().ToArray();
+            yield return TestInstanceContainer.CreateTestInstance(instance, Method, propertyNames, variableValues);
         }
     }
 
-    private void SetProperties(object obj, IEnumerable<int> nextVariableSet)
+    private static void HydrateInstance(object obj, PropertySet propertySet)
     {
-        foreach (var (propertyName, variableValue) in propertyNames.Zip(nextVariableSet))
+        foreach (var variable in propertySet.VariableSet)
         {
-            var prop = obj.GetType().GetProperties().Single(x => x.Name == propertyName);
-            prop.SetValue(obj, variableValue);
+            var prop = obj.GetType().GetProperties().Single(x => x.Name == variable.Name);
+            prop.SetValue(obj, variable.Value);
         }
     }
 
-    private object CreateTestInstance()
+    private object CreateDehydratedTestInstance()
     {
         var sailfishFixtureDependency = test.GetSailfishFixtureGenericArgument();
 

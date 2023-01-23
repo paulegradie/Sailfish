@@ -12,7 +12,6 @@ internal static class TestDiscovery
 {
     /// <summary>
     /// This method should scan through the dlls provided, and extract each type that qualifies as a test type
-    /// Then, that 
     /// </summary>
     /// <param name="sourceDllPaths"></param>
     /// <param name="logger"></param>
