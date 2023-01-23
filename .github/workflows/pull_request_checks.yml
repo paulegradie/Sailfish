@@ -10,7 +10,7 @@ jobs:
 
     - name: Generate build number
       id: buildnumber
-      uses: onyxmueller/build-tag-number@v1
+      uses: einaregilsson/build-number@v3
       with:
         token: ${{secrets.github_token}}
 
