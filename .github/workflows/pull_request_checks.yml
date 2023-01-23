@@ -18,7 +18,7 @@ jobs:
         run: echo "Going to use ${{ github.run_number }} for the package Id."
 
       - name: Set VERSION variable from tag
-        run: echo "VERSION=0.0.${{ github.run_number }}" >> $GITHUB_ENV
+        run: echo "VERSION=0.1.${{ github.run_number }}" >> $GITHUB_ENV
 
       - name: Build
         run: dotnet build ./source/Sailfish/Sailfish.csproj --configuration Release /p:Version=${VERSION}-pull-request
