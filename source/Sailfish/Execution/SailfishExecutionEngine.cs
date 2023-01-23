@@ -17,8 +17,8 @@ internal class SailfishExecutionEngine : ISailfishExecutionEngine
     }
 
     public async Task<List<TestExecutionResult>> ActivateContainer(
-        [Range(-1, int.MaxValue)]int testProviderIndex,
-        [Range(-1, int.MaxValue)]int totalTestProviderCount,
+        [Range(0, int.MaxValue)] int testProviderIndex,
+        [Range(1, int.MaxValue)] int totalTestProviderCount,
         TestInstanceContainerProvider testProvider,
         Action<TestExecutionResult>? callback = null,
         CancellationToken cancellationToken = default)
@@ -46,7 +46,7 @@ internal class SailfishExecutionEngine : ISailfishExecutionEngine
         {
             var testMethodContainer = instanceContainerEnumerator.Current;
 
-            if (testProviderIndex == -1 || ShouldCallGlobalSetup(testProviderIndex, currentVariableSetIndex))
+            if (ShouldCallGlobalSetup(testProviderIndex, currentVariableSetIndex))
             {
                 await testMethodContainer.Invocation.GlobalSetup(cancellationToken);
             }
@@ -60,7 +60,7 @@ internal class SailfishExecutionEngine : ISailfishExecutionEngine
 
             await testMethodContainer.Invocation.MethodTearDown(cancellationToken);
 
-            if (testProviderIndex == -1 || ShouldCallGlobalTeardown(testProviderIndex, totalTestProviderCount, currentVariableSetIndex, totalNumVariableSets))
+            if (ShouldCallGlobalTeardown(testProviderIndex, totalTestProviderCount, currentVariableSetIndex, totalNumVariableSets))
             {
                 await testMethodContainer.Invocation.GlobalTeardown(cancellationToken);
             }

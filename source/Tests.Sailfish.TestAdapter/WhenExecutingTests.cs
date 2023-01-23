@@ -21,7 +21,6 @@ public class WhenExecutingTests
         var allDllsInThisProject = DllFinder.FindAllDllsRecursively();
         var testCases = TestDiscovery.DiscoverTests(allDllsInThisProject, Substitute.For<IMessageLogger>()).ToList();
 
-        
         Should.NotThrow(() => TestExecution.ExecuteTests(testCases.Take(1).ToList(), frameworkHandle));
     }
 }

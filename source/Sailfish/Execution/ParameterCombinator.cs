@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text.Json;
 using Sailfish.Analysis;
+using Sailfish.Exceptions;
 using Sailfish.ExtensionMethods;
 
 namespace Sailfish.Execution;
@@ -20,7 +20,8 @@ internal class ParameterCombinator : IParameterCombinator
         var ints = orderedPropertyValues.ToArray();
         if (ints.ToArray().Length != propNames.Length)
         {
-            throw new Exception($"The number of property names did not match the length of all discovered property values: {JsonSerializer.Serialize(ints)} and {JsonSerializer.Serialize(propNames)}");
+            throw new SailfishException(
+                $"The number of property {propNames.Length} names did not match the number of property value sets {ints.Length}");
         }
 
         var strings = ints.Select(x => x.Select(y => y.ToString()));
@@ -51,8 +52,8 @@ internal class ParameterCombinator : IParameterCombinator
 
             propertySets.Add(new PropertySet(variableSets));
         }
-        
-        
+
+
         return propertySets;
     }
 }

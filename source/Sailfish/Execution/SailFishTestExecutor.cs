@@ -60,7 +60,7 @@ internal class SailFishTestExecutor : ISailFishTestExecutor
         return rawResults;
     }
 
-    public async Task<List<TestExecutionResult>> Execute(
+    private async Task<List<TestExecutionResult>> Execute(
         Type test,
         Action<TestExecutionResult>? callback = null,
         CancellationToken cancellationToken = default)

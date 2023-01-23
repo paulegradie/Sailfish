@@ -2,13 +2,11 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using System.Text.Json;
 using System.Threading;
 using Accord.Collections;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.Adapter;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.Logging;
-using Sailfish.Analysis;
 using Sailfish.Execution;
 using Sailfish.Presentation;
 using Sailfish.Statistics;
@@ -94,7 +92,7 @@ internal static class TestExecution
                 frameworkHandle?.RecordStart(testCase);
                 var results = engine.ActivateContainer(
                         0,
-                        0,
+                        1,
                         testInstanceContainerProviderToMatchTheCurrentTestCase,
                         TestResultCallback(testCase, frameworkHandle),
                         CancellationToken.None)
@@ -105,7 +103,6 @@ internal static class TestExecution
             if (testType is null) throw new Exception($"Test type was null in TestExecution.cs: line 105");
             rawResults.Add(new RawExecutionResult(testType, groupResults));
         }
-
 
         var summaryCompiler = new ExecutionSummaryCompiler(new StatisticsCompiler());
         var compiledResults = summaryCompiler.CompileToSummaries(rawResults, CancellationToken.None);

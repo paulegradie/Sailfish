@@ -32,7 +32,5 @@ public class WhenAssemblingTestCases
         var result = TestCaseItemCreator.AssembleTestCases(typeof(SimplePerfTest), content, testResourceRelativePath, sourceDll, Substitute.For<IMessageLogger>()).ToList();
 
         result.Count.ShouldBe(6);
-        var first = result.First();
-        ;
     }
 }

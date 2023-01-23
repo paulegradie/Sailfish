@@ -9,6 +9,7 @@ using Sailfish.Presentation;
 using Sailfish.Presentation.Console;
 using Sailfish.Statistics;
 using Serilog;
+using Serilog.Core;
 
 namespace Sailfish.TestAdapter.Execution;
 
@@ -16,13 +17,13 @@ internal class ConsoleWriter : IConsoleWriter
 {
     private readonly IPresentationStringConstructor stringBuilder;
     private readonly IMessageLogger? messageLogger;
+    private readonly Logger consoleLogger;
 
     public ConsoleWriter(IPresentationStringConstructor stringBuilder, IMessageLogger? messageLogger)
     {
         this.stringBuilder = stringBuilder;
         this.messageLogger = messageLogger;
-
-        Log.Logger = new LoggerConfiguration()
+        consoleLogger = new LoggerConfiguration()
             .WriteTo.Console()
             .CreateLogger();
     }
@@ -39,7 +40,7 @@ internal class ConsoleWriter : IConsoleWriter
         var output = stringBuilder.Build();
 
         messageLogger?.SendMessage(TestMessageLevel.Informational, output);
-        Log.Logger.Information(output);
+        consoleLogger.Information(output);
         return output;
     }
 
