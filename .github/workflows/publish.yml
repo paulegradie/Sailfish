@@ -41,14 +41,14 @@ jobs:
     - name: Build
       run: dotnet build ./source/Sailfish/Sailfish.csproj --configuration Release /p:Version=${VERSION}
 
-    - name: Build
-      run: dotnet build ./source/Sailfish/Sailfish.TestAdapter.csproj --configuration Release /p:Version=${VERSION}
+    - name: Build Test Adapter
+      run: dotnet build ./source/Sailfish.TestAdapter/Sailfish.TestAdapter.csproj --configuration Release /p:Version=${VERSION}
     
     - name: Test
       run: dotnet test ./source/Tests.Sailfish/Tests.Sailfish.csproj --verbosity normal
     
     - name: Test Adapter
-      run: dotnet test ./source/Tests.Sailfish.Adapter/Tests.Sailfish.TestAdapter.csproj --verbosity normal
+      run: dotnet test ./source/Tests.Sailfish.TestAdapter/Tests.Sailfish.TestAdapter.csproj --verbosity normal
     
     - name: Pack
       run: dotnet pack ./source/Sailfish/Sailfish.csproj --configuration Release /p:Version=${VERSION} --no-build --output .

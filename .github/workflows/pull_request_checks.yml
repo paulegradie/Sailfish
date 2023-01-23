@@ -39,4 +39,4 @@ jobs:
       run: dotnet test ./source/Tests.Sailfish/Tests.Sailfish.csproj --verbosity normal
       
     - name: Test Adapter
-      run: dotnet test ./source/Tests.Sailfish.Adapter/Tests.Sailfish.TestAdapter.csproj --verbosity normal
+      run: dotnet test ./source/Tests.Sailfish.TestAdapter/Tests.Sailfish.TestAdapter.csproj --verbosity normal
