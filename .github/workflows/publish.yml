@@ -21,7 +21,7 @@ jobs:
       id: buildnumber
       uses: onyxmueller/build-tag-number@v1
       with:
-        token: ${{secrets.github_token}}
+        token: ${{secrets.ACTION_SECRET}}
 
     - uses: actions/checkout@v2
     - name: Setup dotnet
