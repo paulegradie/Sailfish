@@ -5,8 +5,6 @@ jobs:
   build:
     runs-on: ubuntu-latest
     timeout-minutes: 15
-    env:
-      INPUT_TOKEN: ""
     steps:
       - name: Generate build number
         id: buildnumber

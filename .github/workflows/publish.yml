@@ -17,8 +17,7 @@ on:
 jobs:
   build:
     env:
-      INPUT_TOKEN: ""
-
+      INPUT_TOKEN: ${{ secrets.NPM_TOKEN }}
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
