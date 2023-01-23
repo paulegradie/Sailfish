@@ -28,7 +28,7 @@ internal class ConsoleWriter : IConsoleWriter
             .CreateLogger();
     }
 
-    public string Present(IEnumerable<ExecutionSummary> results, OrderedDictionary<string, string> tags)
+    public string Present(IEnumerable<ExecutionSummary> results, OrderedDictionary<string, string>? tags = null)
     {
         foreach (var result in results.Where(result => result.Settings.AsConsole))
         {

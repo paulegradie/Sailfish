@@ -2,7 +2,7 @@ using Microsoft.VisualStudio.TestPlatform.ObjectModel;
 
 namespace Sailfish.TestAdapter.TestProperties;
 
-public class SailfishDisplayNameDefinition
+public static class SailfishDisplayNameDefinition
 {
     internal static readonly TestProperty SailfishDisplayNameDefinitionProperty = TestProperty.Register(
         "Sailfish.DisplayNameDefinition",

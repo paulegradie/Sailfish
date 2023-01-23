@@ -1,4 +1,5 @@
 ﻿using System.Linq;
+using System.Threading;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.Adapter;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.Logging;
 using Microsoft.VisualStudio.TestTools.UnitTesting;
@@ -21,6 +22,6 @@ public class WhenExecutingTests
         var allDllsInThisProject = DllFinder.FindAllDllsRecursively();
         var testCases = TestDiscovery.DiscoverTests(allDllsInThisProject, Substitute.For<IMessageLogger>()).ToList();
 
-        Should.NotThrow(() => TestExecution.ExecuteTests(testCases.Take(1).ToList(), frameworkHandle));
+        Should.NotThrow(() => TestExecution.ExecuteTests(testCases.Take(1).ToList(), frameworkHandle, CancellationToken.None));
     }
 }

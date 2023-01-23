@@ -26,7 +26,10 @@ class TestCaseGroupedByMethod
 
 internal static class TestExecution
 {
-    public static void ExecuteTests(List<TestCase> testCases, IFrameworkHandle? frameworkHandle)
+    private static readonly ExecutionSummaryCompiler SummaryCompiler = new(new StatisticsCompiler());
+    private static readonly Func<ITestExecutionRecorder?, ConsoleWriter> ConsoleWriter = handle => new(new PresentationStringConstructor(), handle);
+
+    public static void ExecuteTests(List<TestCase> testCases, IFrameworkHandle? frameworkHandle, CancellationToken cancellationToken)
     {
         if (testCases.Count == 0)
         {
@@ -37,7 +40,8 @@ internal static class TestExecution
         var engine = new SailfishExecutionEngine(new TestCaseIterator());
         var rawResults = new List<RawExecutionResult>();
 
-        var testCaseGroups = testCases.GroupBy(testCase => testCase.Traits.Single(x => x.Name == TestCaseItemCreator.MethodName).Value);
+        var testCaseGroups = testCases
+            .GroupBy(testCase => testCase.Traits.Single(x => x.Name == TestCaseItemCreator.MethodName).Value);
 
         foreach (var testCaseGroup in testCaseGroups)
         {
@@ -94,8 +98,8 @@ internal static class TestExecution
                         0,
                         1,
                         testInstanceContainerProviderToMatchTheCurrentTestCase,
-                        TestResultCallback(testCase, frameworkHandle),
-                        CancellationToken.None)
+                        TestResultCallback(testCase, frameworkHandle, cancellationToken),
+                        cancellationToken)
                     .GetAwaiter().GetResult();
                 groupResults.AddRange(results);
             }
@@ -104,10 +108,8 @@ internal static class TestExecution
             rawResults.Add(new RawExecutionResult(testType, groupResults));
         }
 
-        var summaryCompiler = new ExecutionSummaryCompiler(new StatisticsCompiler());
-        var compiledResults = summaryCompiler.CompileToSummaries(rawResults, CancellationToken.None);
-
-        new ConsoleWriter(new PresentationStringConstructor(), frameworkHandle).Present(compiledResults, new OrderedDictionary<string, string>());
+        var compiledResults = SummaryCompiler.CompileToSummaries(rawResults, CancellationToken.None);
+        ConsoleWriter(frameworkHandle).Present(compiledResults);
     }
 
     private static Assembly LoadAssemblyFromDll(string dllPath)
@@ -125,7 +127,7 @@ internal static class TestExecution
         }
     }
 
-    private static Action<TestExecutionResult> TestResultCallback(TestCase testCase, ITestExecutionRecorder? logger)
+    private static Action<TestExecutionResult> TestResultCallback(TestCase testCase, ITestExecutionRecorder? logger, CancellationToken cancellationToken)
     {
         return (TestExecutionResult result) =>
         {
@@ -145,6 +147,14 @@ internal static class TestExecution
             testResult.Duration = result.PerformanceTimerResults.GlobalDuration;
 
             testResult.ErrorMessage = result.Exception?.Message;
+
+            var rawResult = result.Exception is null
+                ? new RawExecutionResult(result.TestInstanceContainer.Type, new List<TestExecutionResult>() { result })
+                : new RawExecutionResult(result.TestInstanceContainer.Type, result.Exception);
+
+            var compiledResult = SummaryCompiler.CompileToSummaries(new List<RawExecutionResult>() { rawResult }, cancellationToken);
+            var outputs = ConsoleWriter(logger).Present(compiledResult);
+            testResult.Messages.Add(new TestResultMessage("Test Result", outputs));
 
             LogTestResults(result, logger);
 
