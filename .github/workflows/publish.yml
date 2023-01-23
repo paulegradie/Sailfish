@@ -19,9 +19,9 @@ jobs:
     steps:
     - name: Generate build number
       id: buildnumber
-      uses: onyxmueller/build-tag-number@v1
+      uses: einaregilsson/build-number@v3
       with:
-        token: ${{secrets.github_token}}
+        token: ${{secrets.github_secret}}
 
     - uses: actions/checkout@v2
     - name: Setup dotnet
