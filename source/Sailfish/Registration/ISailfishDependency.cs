@@ -9,11 +9,3 @@ namespace Sailfish.Registration;
 public interface ISailfishDependency
 {
 }
-
-// /// <summary>
-// /// This is just a hack to get around a container building bug when this interface doesn't have any implementations
-// /// </summary>
-// internal class SailfishInternalMockDep342sfs : ISailfishDependency
-// {
-//     
-// }

@@ -10,6 +10,7 @@ public static class AssemblyScannerCache
 {
     private static readonly MemoryCache Cache = new("AssemblyScanCache");
     private const string CacheKey = "AllTypes";
+    private const string AssemblyCacheKey = "AssemblyCache";
 
     /// <summary>
     /// Note - if we take types from multiple assemblies, this might fails to fine the new types

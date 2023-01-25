@@ -35,21 +35,6 @@ public class TestDiscoverer : ITestDiscoverer
         try
         {
             var testCases = TestDiscovery.DiscoverTests(filteredSource, logger).ToList();
-
-            // experimental
-            // var testCaseGroups = testCases.GroupBy(testCase => testCase.Traits.Single(x => x.Name == TestCaseItemCreator.MethodName).Value);
-            // foreach (var testCaseGroup in testCaseGroups)
-            // {
-            //     var cases = testCaseGroup.ToList();
-            //     for (int i = 1; i < cases.Count; i++)
-            //     {
-            //         var cur = ca
-            //     }
-            //
-            //     logger.SendMessage(TestMessageLevel.Informational, $"Sending TestCase: {testCase.DisplayName}");
-            //     discoverySink.SendTestCase(testCase);
-            // }
-
             foreach (var testCase in testCases)
             {
                 logger.SendMessage(TestMessageLevel.Informational, $"Sending TestCase: {testCase.DisplayName}");
