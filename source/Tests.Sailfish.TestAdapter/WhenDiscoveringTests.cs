@@ -28,6 +28,6 @@ public class WhenDiscoveringTests
         var sources = DllFinder.FindAllDllsRecursively();
         var testCases = TestDiscovery.DiscoverTests(sources, new LoggerHelper()).ToList();
         var aTestCase = testCases.First();
-        aTestCase.DisplayName.ShouldBe("SimplePerfTest.ExecutionMethod(VariableA: 1, VariableB: 1000000)");
+        aTestCase.DisplayName.ShouldBe("TestClassWithRegistrationProviderDependency.ExecutionMethodB()");
     }
 }
