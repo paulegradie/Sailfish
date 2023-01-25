@@ -67,7 +67,12 @@ internal class SailfishExecutor
                 await testResultAnalyzer.Analyze(timeStamp, runSettings, trackingDir, cancellationToken);
             }
 
-            var exceptions = compiledResults.SelectMany(x => x.CompiledResults.Select(j => j.Exception)).Where(x => x is not null);
+            var exceptions = compiledResults
+                .SelectMany(
+                    executionSummary => executionSummary
+                        .CompiledResults
+                        .Select(compiledResult => compiledResult.Exception))
+                .Where(x => x is not null);
             return rawExecutionResults.Select(x => x.IsSuccess).All(x => x)
                 ? SailfishValidity.CreateValidResult()
                 : SailfishValidity.CreateInvalidResult(exceptions!);

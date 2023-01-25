@@ -23,12 +23,36 @@ public class TestDiscoverer : ITestDiscoverer
     public void DiscoverTests(IEnumerable<string> sources, IDiscoveryContext discoveryContext, IMessageLogger logger, ITestCaseDiscoverySink discoverySink)
     {
         sources = sources.ToList();
-        var filteredSource = sources.Where(x => !exclusions.Contains(x));
+        logger.SendMessage(TestMessageLevel.Informational, $"Sources found in discoverer:\n{string.Join("\n-- ", sources)}");
+        var filteredSource = sources.Where(x => !exclusions.Contains(x)).ToArray();
+
+        if (filteredSource.Length == 0)
+        {
+            logger.SendMessage(TestMessageLevel.Warning, "No tests discovered.");
+            return;
+        }
+
         try
         {
             var testCases = TestDiscovery.DiscoverTests(filteredSource, logger).ToList();
+
+            // experimental
+            // var testCaseGroups = testCases.GroupBy(testCase => testCase.Traits.Single(x => x.Name == TestCaseItemCreator.MethodName).Value);
+            // foreach (var testCaseGroup in testCaseGroups)
+            // {
+            //     var cases = testCaseGroup.ToList();
+            //     for (int i = 1; i < cases.Count; i++)
+            //     {
+            //         var cur = ca
+            //     }
+            //
+            //     logger.SendMessage(TestMessageLevel.Informational, $"Sending TestCase: {testCase.DisplayName}");
+            //     discoverySink.SendTestCase(testCase);
+            // }
+
             foreach (var testCase in testCases)
             {
+                logger.SendMessage(TestMessageLevel.Informational, $"Sending TestCase: {testCase.DisplayName}");
                 discoverySink.SendTestCase(testCase);
             }
         }

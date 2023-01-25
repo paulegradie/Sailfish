@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Threading;
-using Accord.Collections;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.Adapter;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.Logging;
@@ -14,20 +13,22 @@ using Sailfish.TestAdapter.Discovery;
 
 namespace Sailfish.TestAdapter.Execution;
 
-class TestCaseGroupedByMethod
-{
-    private readonly TestCase[] testCases;
-
-    public TestCaseGroupedByMethod(TestCase[] testCases)
-    {
-        this.testCases = testCases;
-    }
-}
-
 internal static class TestExecution
 {
-    private static readonly ExecutionSummaryCompiler SummaryCompiler = new(new StatisticsCompiler());
-    private static readonly Func<ITestExecutionRecorder?, ConsoleWriter> ConsoleWriter = handle => new(new PresentationStringConstructor(), handle);
+    private static readonly ExecutionSummaryCompiler SummaryCompiler = new(
+        new StatisticsCompiler());
+
+    private static readonly Func<ITestExecutionRecorder?, ConsoleWriter> ConsoleWriter = handle =>
+        new(
+            new PresentationStringConstructor(), handle);
+
+    private static readonly TestInstanceContainerCreator TestInstanceContainerCreator = new(
+        new TypeResolutionUtility(),
+        new PropertySetGenerator(
+            new ParameterCombinator(),
+            new IterationVariableRetriever()),
+        Array.Empty<Type>());
+
 
     public static void ExecuteTests(List<TestCase> testCases, IFrameworkHandle? frameworkHandle, CancellationToken cancellationToken)
     {
@@ -69,13 +70,6 @@ internal static class TestExecution
 
                 testType = nextTestType;
 
-                var typeResolve = assembly.GetTypeResolverOrNull();
-                var testContainerCreator = new TestInstanceContainerCreator(
-                    typeResolve,
-                    new PropertySetGenerator(
-                        new ParameterCombinator(),
-                        new IterationVariableRetriever()));
-
                 var formedVariableSection = testCase.Traits.Single(t => t.Name == TestCaseItemCreator.FormedVariableSection).Value;
                 var methodName = testCase.Traits.Single(t => t.Name == TestCaseItemCreator.MethodName).Value;
 
@@ -91,13 +85,15 @@ internal static class TestExecution
                     return currentMethod.Equals(methodName, StringComparison.InvariantCultureIgnoreCase);
                 }
 
-                var testInstanceContainerProviderToMatchTheCurrentTestCases = testContainerCreator.CreateTestContainerInstanceProviders(testType, PropertyFilter, MethodFilter);
-                var testInstanceContainerProviderToMatchTheCurrentTestCase = testInstanceContainerProviderToMatchTheCurrentTestCases.Single();
+                var providerForCurrentTestCases = TestInstanceContainerCreator
+                    .CreateTestContainerInstanceProviders(testType, PropertyFilter, MethodFilter);
+
                 frameworkHandle?.RecordStart(testCase);
+
                 var results = engine.ActivateContainer(
                         0,
                         1,
-                        testInstanceContainerProviderToMatchTheCurrentTestCase,
+                        providerForCurrentTestCases.Single(),
                         TestResultCallback(testCase, frameworkHandle, cancellationToken),
                         cancellationToken)
                     .GetAwaiter().GetResult();

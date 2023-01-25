@@ -5,6 +5,7 @@ using System.Reflection;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.Logging;
 using Sailfish.Attributes;
+using Sailfish.Exceptions;
 using Sailfish.Execution;
 using Sailfish.TestAdapter.TestProperties;
 using Sailfish.Utils;
@@ -13,6 +14,7 @@ namespace Sailfish.TestAdapter.Discovery;
 
 internal static class TestCaseItemCreator
 {
+    // categories
     public const string TestTypeFullName = "TestTypeFullName";
     public const string DisplayName = "DisplayName";
     public const string FormedVariableSection = "FormedVariableSection";
@@ -36,37 +38,44 @@ internal static class TestCaseItemCreator
 
         foreach (var method in methods)
         {
-            var methodNameLine = GetMethodNameLine(contentLines, method, logger);
+            var methodNameLine = GetMethodNameLine(testType, contentLines, method, logger);
             if (methodNameLine == 0) continue;
 
-            foreach (var propertySet in propertySets)
+            if (propertySets.Length > 0)
             {
-                var propertyNames = propertySet.GetPropertyNames();
-                var propertyValues = propertySet.GetPropertyValues();
-                var testCaseId = DisplayNameHelper.CreateTestCaseId(testType, method.Name, propertyNames.ToArray(), propertyValues.ToArray());
-                var fullyQualifiedName = $"{testType.Namespace}.{testType.Name}.{method.Name}{testCaseId.TestCaseVariables.FormVariableSection()}";
-                var testCase = new TestCase(fullyQualifiedName, TestExecutor.ExecutorUri, sourceDll) // a test case is a method
+                var i = 0;
+                foreach (var propertySet in propertySets)
                 {
-                    CodeFilePath = testCsFilePath,
-                    DisplayName = testCaseId.DisplayName,
-                    ExecutorUri = TestExecutor.ExecutorUri,
-                    LineNumber = methodNameLine
-                };
-
-                testCase.SetPropertyValue(SailfishDisplayNameDefinition.SailfishDisplayNameDefinitionProperty, testCaseId.DisplayName);
-
-                if (testType.FullName is null)
-                {
-                    logger.SendMessage(TestMessageLevel.Informational, $"ERROR!: testType fullname not defined - fullname: {testType.FullName}");
-                    throw new Exception("Impossible!");
+                    var propertyNames = propertySet.GetPropertyNames();
+                    var propertyValues = propertySet.GetPropertyValues();
+                    var testCase = CreateTestCase(
+                        testType,
+                        sourceDll,
+                        logger,
+                        method,
+                        propertyNames,
+                        propertyValues,
+                        true); // TODO: Remove this once we have traits and properties sorted. see below
+                    i++;
+                    testCase.CodeFilePath = testCsFilePath;
+                    testCase.ExecutorUri = TestExecutor.ExecutorUri;
+                    testCase.LineNumber = methodNameLine;
+                    testCaseSets.Add(testCase);
                 }
-
-                // Traits is not the right way to pass this information, but the Properties property keeps getting cleared on the test case when
-                // is passed to the executor -- I'm setting that property incorrectly probably
-                testCase.Traits.Add(new Trait(TestTypeFullName, testType.FullName));
-                testCase.Traits.Add(new Trait(DisplayName, testCaseId.DisplayName));
-                testCase.Traits.Add(new Trait(FormedVariableSection, testCaseId.TestCaseVariables.FormVariableSection()));
-                testCase.Traits.Add(new Trait(MethodName, method.Name));
+            }
+            else
+            {
+                var testCase = CreateTestCase(
+                    testType,
+                    sourceDll,
+                    logger,
+                    method,
+                    Array.Empty<string>(),
+                    Array.Empty<int>(),
+                    true);
+                testCase.CodeFilePath = testCsFilePath;
+                testCase.ExecutorUri = TestExecutor.ExecutorUri;
+                testCase.LineNumber = methodNameLine;
                 testCaseSets.Add(testCase);
             }
         }
@@ -74,8 +83,46 @@ internal static class TestCaseItemCreator
         return testCaseSets;
     }
 
-    private static int GetMethodNameLine(IReadOnlyList<string> fileLines, MemberInfo method, IMessageLogger logger)
+    private static TestCase CreateTestCase(
+        Type testType,
+        string sourceDll,
+        IMessageLogger logger,
+        MemberInfo method,
+        IEnumerable<string> propertyNames,
+        IEnumerable<int> propertyValues,
+        bool shouldAddCategories)
     {
+        var testCaseId = DisplayNameHelper.CreateTestCaseId(testType, method.Name, propertyNames.ToArray(), propertyValues.ToArray());
+        var fullyQualifiedName = $"{testType.Namespace}.{testType.Name}.{method.Name}{testCaseId.TestCaseVariables.FormVariableSection()}";
+        var testCase = new TestCase(fullyQualifiedName, TestExecutor.ExecutorUri, sourceDll)
+        {
+            DisplayName = testCaseId.DisplayName
+        };
+
+        testCase.SetPropertyValue(SailfishDisplayNameDefinition.SailfishDisplayNameDefinitionProperty, testCaseId.DisplayName);
+
+        if (testType.FullName is null)
+        {
+            logger.SendMessage(TestMessageLevel.Informational, $"ERROR!: testType fullname not defined - fullname: {testType.FullName}");
+            throw new Exception("Impossible!");
+        }
+
+        if (!shouldAddCategories) return testCase;
+        // Traits is not the right way to pass this information, but the Properties property keeps getting cleared on the test case when
+        // is passed to the executor -- I'm setting that property incorrectly probably
+        testCase.Traits.Add(new Trait(TestTypeFullName, testType.FullName));
+        testCase.Traits.Add(new Trait(DisplayName, testCaseId.DisplayName));
+        testCase.Traits.Add(new Trait(FormedVariableSection, testCaseId.TestCaseVariables.FormVariableSection()));
+        testCase.Traits.Add(new Trait(MethodName, method.Name));
+
+        return testCase;
+    }
+
+    private static int GetMethodNameLine(Type testType, IReadOnlyList<string> fileLines, MemberInfo method, IMessageLogger logger)
+    {
+        // TODO: instead of throwing, keep track of the class and check if it matches the testType
+        // var className = testType.Name;
+
         var lineNumber = fileLines
             .Select(
                 (line, index) =>
@@ -83,7 +130,13 @@ internal static class TestCaseItemCreator
                     var methodKey = $" {method.Name}(";
                     return line.Trim().Contains(methodKey) ? index : -1;
                 })
-            .SingleOrDefault(x => x >= 0);
-        return lineNumber;
+            .Where(x => x > 0)
+            .ToArray();
+        if (lineNumber.Length > 1)
+        {
+            throw new SailfishException("Multiple method with the same name discovered in this file");
+        }
+
+        return lineNumber.Single();
     }
 }

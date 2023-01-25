@@ -15,7 +15,6 @@ internal class PropertySetGenerator : IPropertySetGenerator
         this.iterationVariableRetriever = iterationVariableRetriever;
     }
 
-
     public IEnumerable<PropertySet> GeneratePropertySets(Type test)
     {
         var variableProperties = iterationVariableRetriever.RetrieveIterationVariables(test);
