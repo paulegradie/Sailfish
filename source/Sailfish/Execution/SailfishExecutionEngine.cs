@@ -25,7 +25,7 @@ internal class SailfishExecutionEngine : ISailfishExecutionEngine
     {
         var currentVariableSetIndex = 0;
         var totalNumVariableSets = testProvider.GetNumberOfPropertySetsInTheQueue() - 1;
-
+ 
         var instanceContainerEnumerator = testProvider.ProvideNextTestInstanceContainer().GetEnumerator();
 
         try
@@ -111,9 +111,9 @@ internal class SailfishExecutionEngine : ISailfishExecutionEngine
         return currentVariableSetIndex == totalNumVariableSets;
     }
 
-    private static bool ShouldCallGlobalSetup(int methodIndex, int currentMethodIndex)
+    private static bool ShouldCallGlobalSetup(int testProviderIndex, int currentTestProviderIndex)
     {
-        return methodIndex == 0 && currentMethodIndex == 0;
+        return testProviderIndex == 0 && currentTestProviderIndex == 0;
     }
 
     private static async Task DisposeOfTestInstance(TestInstanceContainer? instanceContainer)

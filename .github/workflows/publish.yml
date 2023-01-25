@@ -8,8 +8,8 @@ on:
       - "**/*.yml"
       - "**/.gitignore"
       - "assets/*"
-      - "source/Tests.UsingTheIDE/*"
-      - "source/AsAConsoleApp/*"
+      - "source/PerformanceTests/*"
+      - "source/PerformanceTestingConsoleApp/*"
 
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:

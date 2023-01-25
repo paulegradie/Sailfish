@@ -20,7 +20,8 @@ public static class AssemblyRegistrationExtensionMethods
                 var c = context.Resolve<IComponentContext>();
                 return t => c.Resolve(t);
             });
-        builder.RegisterAssemblyTypes(typeof(SailfishExecutor).Assembly).AsImplementedInterfaces(); // via assembly scan
+
+        builder.RegisterAssemblyTypes(typeof(SailfishExecutor).Assembly).Where(x => x != typeof(ISailfishDependency)).AsImplementedInterfaces(); // via assembly scan
     }
 
     public static void RegisterPerformanceTypes(this ContainerBuilder builder, params Type[] sourceTypes)

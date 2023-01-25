@@ -12,15 +12,15 @@ public class WhenCreatingContainers
     [Fact]
     public void TheSailfishDependencyFixtureDependenciesAreFound()
     {
-        var result = typeof(TestSailfishTest).GetSailfishFixtureGenericArgument();
+        var result = typeof(TestSailfishTest).GetSailfishFixtureGenericArguments();
         result.ShouldNotBeNull();
     }
 
     [Fact]
     public void NullIsReturnedWhenTheTypeDoesNotImplementISailfishFixtureDependency()
     {
-        var result = typeof(AnyType).GetSailfishFixtureGenericArgument();
-        result.ShouldBeNull();
+        var result = typeof(AnyType).GetSailfishFixtureGenericArguments();
+        result.ShouldBeEmpty();
     }
 
     // ReSharper disable once ClassNeverInstantiated.Local

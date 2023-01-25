@@ -24,10 +24,10 @@ public class WhenAssemblingTestCases
     [TestMethod]
     public void AllTestCasesAreMade()
     {
-        var testResourceRelativePath = FindSpecificUniqueFile("TestResource.cs");
+        var testResourceRelativePath = FindSpecificUniqueFile("TestResourceDoNotRename.cs");
         var content = FileIo.ReadFileContents(testResourceRelativePath);
 
-        var sourceDll = "C:/this/is/some/dll.dll";
+        const string sourceDll = "C:/this/is/some/dll.dll";
 
         var result = TestCaseItemCreator.AssembleTestCases(typeof(SimplePerfTest), content, testResourceRelativePath, sourceDll, Substitute.For<IMessageLogger>()).ToList();
 

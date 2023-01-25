@@ -8,7 +8,6 @@ public class TestCaseVariables
 {
     private const string OpenBracket = "(";
     private const string CloseBracket = ")";
-    private const char Dot = '.';
     private const char Colon = ':';
 
     [JsonConstructor]
@@ -23,7 +22,7 @@ public class TestCaseVariables
 
     public TestCaseVariables(IEnumerable<TestCaseVariable> variables)
     {
-        Variables = variables;
+        Variables = variables.OrderBy(x => x.Name);
     }
 
     public IEnumerable<TestCaseVariable> Variables { get; set; } = null!;

@@ -14,20 +14,20 @@ internal class SailFishTestExecutor : ISailFishTestExecutor
     private readonly ITestInstanceContainerCreator testInstanceContainerCreator;
     private readonly ISailfishExecutionEngine engine;
 
-    public SailFishTestExecutor(ILogger logger, ITestInstanceContainerCreator testInstanceContainerCreator, ISailfishExecutionEngine engine)
+    public SailFishTestExecutor(
+        ILogger logger,
+        ITestInstanceContainerCreator testInstanceContainerCreator,
+        ISailfishExecutionEngine engine)
     {
         this.logger = logger;
         this.testInstanceContainerCreator = testInstanceContainerCreator;
         this.engine = engine;
     }
 
-    private static bool FilterEnabledType(IEnumerable<Type> testTypes, out Type[] enabledTypes)
-    {
-        enabledTypes = testTypes.Where(x => !x.SailfishTypeIsDisabled()).ToArray();
-        return enabledTypes.Length > 0;
-    }
-
-    public async Task<List<RawExecutionResult>> Execute(IEnumerable<Type> testTypes, Action<TestExecutionResult>? callback = null, CancellationToken cancellationToken = default)
+    public async Task<List<RawExecutionResult>> Execute(
+        IEnumerable<Type> testTypes,
+        Action<TestExecutionResult>? callback = null,
+        CancellationToken cancellationToken = default)
     {
         var rawResults = new List<RawExecutionResult>();
         if (!FilterEnabledType(testTypes, out var enabledTestTypes))
@@ -83,12 +83,19 @@ internal class SailFishTestExecutor : ISailFishTestExecutor
         {
             logger.Information(
                 "Executing test method {MethodIndex} of {TotalMethodCount}: {TestTypeName}.{TestMethodName}",
-                (methodIndex + 1).ToString(), (totalMethodCount + 1).ToString(), testInstanceContainerProvider.Method.DeclaringType?.Name, testInstanceContainerProvider.Method.Name);
+                (methodIndex + 1).ToString(), (totalMethodCount + 1).ToString(), testInstanceContainerProvider.Method.DeclaringType?.Name,
+                testInstanceContainerProvider.Method.Name);
             var executionResults = await engine.ActivateContainer(methodIndex, totalMethodCount, testInstanceContainerProvider, callback, cancellationToken);
             results.AddRange(executionResults);
             methodIndex += 1;
         }
 
         return results;
+    }
+
+    private static bool FilterEnabledType(IEnumerable<Type> testTypes, out Type[] enabledTypes)
+    {
+        enabledTypes = testTypes.Where(x => !x.SailfishTypeIsDisabled()).ToArray();
+        return enabledTypes.Length > 0;
     }
 }

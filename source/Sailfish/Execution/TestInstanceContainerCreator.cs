@@ -9,18 +9,23 @@ namespace Sailfish.Execution;
 
 internal class TestInstanceContainerCreator : ITestInstanceContainerCreator
 {
+    private readonly ITypeResolutionUtility typeResolutionUtility;
     private readonly IPropertySetGenerator propertySetGenerator;
-    private readonly ITypeResolver? typeResolver;
+    private readonly IEnumerable<Type> additionalAnchorTypes;
 
     public TestInstanceContainerCreator(
-        ITypeResolver? typeResolver,
-        IPropertySetGenerator propertySetGenerator)
+        ITypeResolutionUtility typeResolutionUtility,
+        IPropertySetGenerator propertySetGenerator,
+        IEnumerable<Type> additionalAnchorTypes)
     {
-        this.typeResolver = typeResolver;
+        this.typeResolutionUtility = typeResolutionUtility;
         this.propertySetGenerator = propertySetGenerator;
+        this.additionalAnchorTypes = additionalAnchorTypes;
     }
 
-    public List<TestInstanceContainerProvider> CreateTestContainerInstanceProviders(Type test, Func<PropertySet, bool>? propertySetFilter = null,
+    public List<TestInstanceContainerProvider> CreateTestContainerInstanceProviders(
+        Type test,
+        Func<PropertySet, bool>? propertySetFilter = null,
         Func<MethodInfo, bool>? methodFilter = null)
     {
         var propertySets = propertySetGenerator.GeneratePropertySets(test);
@@ -36,7 +41,9 @@ internal class TestInstanceContainerCreator : ITestInstanceContainerCreator
             methods = methods.Where(methodFilter);
         }
 
-
-        return methods.OrderBy(x => x.Name).Select(method => new TestInstanceContainerProvider(typeResolver, test, propertySets, method)).ToList();
+        return methods
+            .OrderBy(x => x.Name)
+            .Select(method => new TestInstanceContainerProvider(typeResolutionUtility, test, propertySets, method, additionalAnchorTypes))
+            .ToList();
     }
 }

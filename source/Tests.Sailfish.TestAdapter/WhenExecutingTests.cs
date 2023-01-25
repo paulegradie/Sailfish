@@ -24,4 +24,15 @@ public class WhenExecutingTests
 
         Should.NotThrow(() => TestExecution.ExecuteTests(testCases.Take(1).ToList(), frameworkHandle, CancellationToken.None));
     }
+
+    [TestMethod]
+    public void TestCasesAreExecutedCorrectly()
+    {
+        var frameworkHandle = Substitute.For<IFrameworkHandle>();
+
+        var sources = DllFinder.FindAllDllsRecursively();
+        var testCases = TestDiscovery.DiscoverTests(sources, new LoggerHelper()).ToList();
+
+        Should.NotThrow(() => TestExecution.ExecuteTests(testCases, frameworkHandle, CancellationToken.None));
+    }
 }

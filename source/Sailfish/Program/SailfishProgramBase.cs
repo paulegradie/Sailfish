@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using Accord.Collections;
@@ -10,9 +11,11 @@ using McMaster.Extensions.CommandLineUtils;
 using Sailfish.Analysis;
 using Sailfish.Utils;
 
+// ReSharper disable UnusedMember.Global
+
 namespace Sailfish.Program;
 
-public class SailfishProgramBase
+public abstract class SailfishProgramBase
 {
     protected static async Task SailfishMain<TProgram>(string[] userRequestedTestNames) where TProgram : class
     {
@@ -21,7 +24,7 @@ public class SailfishProgramBase
 
     protected async Task OnExecuteAsync(CancellationToken cancellationToken)
     {
-        var validityResult = await SailfishRunner.Run(AssembleRunRequest(SourceTypesProvider()), RegisterWithSailfish, cancellationToken);
+        var validityResult = await SailfishRunner.Run(AssembleRunRequest(SourceTypesProvider()), InternalRegisterWithSailfish, cancellationToken);
         var not = validityResult.IsValid ? string.Empty : "not ";
         Console.WriteLine($"Test run was {not}valid");
     }
@@ -31,8 +34,16 @@ public class SailfishProgramBase
         return Enumerable.Empty<Type>();
     }
 
+
     protected virtual void RegisterWithSailfish(ContainerBuilder builder)
     {
+    }
+
+    private void InternalRegisterWithSailfish(ContainerBuilder builder)
+    {
+        RegisterWithSailfish(builder);
+        var anchorTypes = SourceTypesProvider();
+        builder.RegisterInstance(anchorTypes);
     }
 
     protected virtual RunSettings AssembleRunRequest(IEnumerable<Type> sourceTypes)
@@ -95,10 +106,11 @@ public class SailfishProgramBase
             "A file name use to filter a specific tracking file for comparison when executing. This arg is passed to the BeforeAndAfterFileLocationCommand")]
     public string? BeforeTarget { get; set; }
 
+    [Obsolete("This parameter will be deprecated in future versions. Please use environment variables instead.")]
     [Option("-e|--environment", CommandOptionType.SingleValue,
         Description =
             "A flag you can use to specify a runtime environment. This can be used, e.g., to switch registrations.")]
-    public string? Environment { get; set; }
+    public static string? Environment { get; set; }
 
     [Option("-g|--tag", CommandOptionType.MultipleValue,
         Description =
