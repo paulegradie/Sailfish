@@ -1,6 +1,8 @@
 using System;
 using Autofac;
+using Microsoft.AspNetCore.Mvc.Testing;
 using Sailfish.AdapterUtils;
+using Test.API;
 
 namespace PerformanceTests.DemoUtils;
 
@@ -21,6 +23,7 @@ public class SailfishDependencies : ISailfishFixtureDependency
     {
         builder.RegisterType<ExampleDep>().AsSelf();
         builder.RegisterType<SailfishDependencies>().AsSelf();
+        builder.RegisterType<WebApplicationFactory<DemoApp>>();
     }
 
     public void Dispose()
@@ -33,7 +36,7 @@ public class SailfishDependencies : ISailfishFixtureDependency
         return Container.Resolve(type);
     }
 
-    public T ResolveType<T>()
+    public T ResolveType<T>() where T : notnull
     {
         return Container.Resolve<T>();
     }
