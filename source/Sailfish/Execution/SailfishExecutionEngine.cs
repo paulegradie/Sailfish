@@ -25,7 +25,7 @@ internal class SailfishExecutionEngine : ISailfishExecutionEngine
     {
         var currentVariableSetIndex = 0;
         var totalNumVariableSets = testProvider.GetNumberOfPropertySetsInTheQueue() - 1;
- 
+
         var instanceContainerEnumerator = testProvider.ProvideNextTestInstanceContainer().GetEnumerator();
 
         try
@@ -55,12 +55,9 @@ internal class SailfishExecutionEngine : ISailfishExecutionEngine
 
             var executionResult = await IterateOverVariableCombos(testMethodContainer, cancellationToken);
 
-            callback?.Invoke(executionResult);
-            results.Add(executionResult);
-
             await testMethodContainer.Invocation.MethodTearDown(cancellationToken);
 
-            if (ShouldCallGlobalTeardown(testProviderIndex, totalTestProviderCount, currentVariableSetIndex, totalNumVariableSets))
+            if (ShouldCallGlobalTeardown(testProviderIndex, totalTestProviderCount - 1, currentVariableSetIndex, totalNumVariableSets))
             {
                 await testMethodContainer.Invocation.GlobalTeardown(cancellationToken);
             }
@@ -81,6 +78,9 @@ internal class SailfishExecutionEngine : ISailfishExecutionEngine
                 await DisposeOfTestInstance(instanceContainerEnumerator.Current);
                 throw;
             }
+
+            callback?.Invoke(executionResult);
+            results.Add(executionResult);
         } while (continueIterating);
 
         instanceContainerEnumerator.Dispose();

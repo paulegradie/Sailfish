@@ -108,6 +108,7 @@ internal static class TestCaseItemCreator
         }
 
         if (!shouldAddCategories) return testCase;
+        // TODO: Send these traits over to the properties
         // Traits is not the right way to pass this information, but the Properties property keeps getting cleared on the test case when
         // is passed to the executor -- I'm setting that property incorrectly probably
         testCase.Traits.Add(new Trait(TestTypeFullName, testType.FullName));
