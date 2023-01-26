@@ -3,7 +3,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Autofac;
 using Sailfish.Execution;
-using Sailfish.Registration;
 
 namespace Sailfish;
 

@@ -1,7 +1,7 @@
+using Demo.API.Controllers.Base;
 using Microsoft.AspNetCore.Mvc;
-using Test.API.Controllers.Base;
 
-namespace Test.API.Controllers;
+namespace Demo.API.Controllers;
 
 public class TestController : BaseController
 {

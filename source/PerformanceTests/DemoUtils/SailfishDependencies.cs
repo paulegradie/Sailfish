@@ -1,8 +1,8 @@
 using System;
 using Autofac;
+using Demo.API;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Sailfish.AdapterUtils;
-using Test.API;
 
 namespace PerformanceTests.DemoUtils;
 

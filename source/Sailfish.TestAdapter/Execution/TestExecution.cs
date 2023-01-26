@@ -16,8 +16,7 @@ namespace Sailfish.TestAdapter.Execution;
 
 internal static class TestExecution
 {
-    private static readonly ExecutionSummaryCompiler SummaryCompiler = new(
-        new StatisticsCompiler());
+    private static readonly ExecutionSummaryCompiler SummaryCompiler = new(new StatisticsCompiler());
 
     private static readonly Func<ITestExecutionRecorder?, ConsoleWriter> ConsoleWriter = handle =>
         new(
