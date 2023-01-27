@@ -1,9 +1,9 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using Demo.API;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Sailfish.Attributes;
-using Test.API;
 
 // Tests here are automatically discovered and executed
 namespace PerformanceTests.ExamplePerformanceTests;

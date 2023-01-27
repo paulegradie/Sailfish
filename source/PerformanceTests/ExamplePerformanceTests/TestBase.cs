@@ -1,11 +1,11 @@
 ﻿using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
+using Demo.API;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
 using PerformanceTests.DemoUtils;
 using Sailfish.AdapterUtils;
-using Test.API;
 
 namespace PerformanceTests.ExamplePerformanceTests;
 

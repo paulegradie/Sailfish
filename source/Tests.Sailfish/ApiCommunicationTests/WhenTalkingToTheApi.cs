@@ -1,8 +1,8 @@
 ﻿using System.Threading.Tasks;
+using Demo.API;
+using Demo.API.Controllers;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Shouldly;
-using Test.API;
-using Test.API.Controllers;
 using Test.ApiCommunicationTests.Base;
 using Xunit;
 

@@ -1,7 +1,7 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using Test.API.Controllers.Base;
+﻿using Demo.API.Controllers.Base;
+using Microsoft.AspNetCore.Mvc;
 
-namespace Test.API.Controllers;
+namespace Demo.API.Controllers;
 
 public class CountToTenMillionController : BaseController
 {

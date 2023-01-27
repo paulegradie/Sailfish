@@ -1,6 +1,6 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 
-namespace Test.API.Controllers.Base;
+namespace Demo.API.Controllers.Base;
 
 [Route("/")]
 [ApiController]

@@ -6,6 +6,7 @@ using System.Threading;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.Adapter;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.Logging;
+using Sailfish.Exceptions;
 using Sailfish.Execution;
 using Sailfish.Presentation;
 using Sailfish.Statistics;
@@ -15,8 +16,7 @@ namespace Sailfish.TestAdapter.Execution;
 
 internal static class TestExecution
 {
-    private static readonly ExecutionSummaryCompiler SummaryCompiler = new(
-        new StatisticsCompiler());
+    private static readonly ExecutionSummaryCompiler SummaryCompiler = new(new StatisticsCompiler());
 
     private static readonly Func<ITestExecutionRecorder?, ConsoleWriter> ConsoleWriter = handle =>
         new(
@@ -28,7 +28,6 @@ internal static class TestExecution
             new ParameterCombinator(),
             new IterationVariableRetriever()),
         Array.Empty<Type>());
-
 
     public static void ExecuteTests(List<TestCase> testCases, IFrameworkHandle? frameworkHandle, CancellationToken cancellationToken)
     {
@@ -42,7 +41,9 @@ internal static class TestExecution
         var rawResults = new List<RawExecutionResult>();
 
         var testCaseGroups = testCases
-            .GroupBy(testCase => testCase.Traits.Single(x => x.Name == TestCaseItemCreator.MethodName).Value);
+            .GroupBy(
+                testCase =>
+                    testCase.Traits.Single(x => x.Name == TestCaseItemCreator.TestTypeFullName).Value);
 
         foreach (var testCaseGroup in testCaseGroups)
         {
@@ -127,6 +128,14 @@ internal static class TestExecution
     {
         return (TestExecutionResult result) =>
         {
+            var rawResult = result.Exception is null
+                ? new RawExecutionResult(result.TestInstanceContainer.Type, new List<TestExecutionResult>() { result })
+                : new RawExecutionResult(result.TestInstanceContainer.Type, result.Exception);
+
+            var compiledResult = SummaryCompiler.CompileToSummaries(new List<RawExecutionResult>() { rawResult }, cancellationToken);
+            var medianTestRuntime = compiledResult.Single().CompiledResults.Single().DescriptiveStatisticsResult?.Median ??
+                                    throw new SailfishException("Error computing compiled results");
+
             var testResult = new TestResult(testCase);
 
             if (result.Exception is not null)
@@ -140,15 +149,10 @@ internal static class TestExecution
 
             testResult.StartTime = result.PerformanceTimerResults.GlobalStart;
             testResult.EndTime = result.PerformanceTimerResults.GlobalStop;
-            testResult.Duration = result.PerformanceTimerResults.GlobalDuration;
+            testResult.Duration = TimeSpan.FromMilliseconds(medianTestRuntime);
 
             testResult.ErrorMessage = result.Exception?.Message;
 
-            var rawResult = result.Exception is null
-                ? new RawExecutionResult(result.TestInstanceContainer.Type, new List<TestExecutionResult>() { result })
-                : new RawExecutionResult(result.TestInstanceContainer.Type, result.Exception);
-
-            var compiledResult = SummaryCompiler.CompileToSummaries(new List<RawExecutionResult>() { rawResult }, cancellationToken);
             var outputs = ConsoleWriter(logger).Present(compiledResult);
             testResult.Messages.Add(new TestResultMessage("Test Result", outputs));
 
