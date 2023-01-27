@@ -24,7 +24,9 @@
         <PackageReference Include="Serilog.Sinks.File" Version="5.0.0" />
         <PackageReference Include="Serilog.Sinks.Seq" Version="5.2.2" />
         <PackageReference Include="System.ComponentModel.Composition" Version="7.0.0" />
-        <PackageReference Include="Microsoft.VisualStudio.TestPlatform.ObjectModel" Version="14.0.0" />
+        <PackageReference Include="Microsoft.VisualStudio.TestPlatform.ObjectModel" Version="14.0.0">
+            <NoWarn>NU1701</NoWarn>
+        </PackageReference>
     </ItemGroup>
     <ItemGroup>
         <ProjectReference Include="..\Sailfish\Sailfish.csproj" />
