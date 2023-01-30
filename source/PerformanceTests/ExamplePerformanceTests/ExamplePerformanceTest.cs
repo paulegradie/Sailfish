@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 using Demo.API;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Sailfish.Attributes;
+using Serilog;
 
 // Tests here are automatically discovered and executed
 namespace PerformanceTests.ExamplePerformanceTests;
@@ -13,8 +14,11 @@ namespace PerformanceTests.ExamplePerformanceTests;
 [Sailfish(5, 2, Disabled = false)]
 public class ExamplePerformanceTest : TestBase
 {
-    public ExamplePerformanceTest(WebApplicationFactory<DemoApp> factory) : base(factory)
+    private readonly ILogger logger;
+
+    public ExamplePerformanceTest(WebApplicationFactory<DemoApp> factory, ILogger logger) : base(factory)
     {
+        this.logger = logger;
     }
 
     [SailfishVariable(200, 300)] public int WaitPeriod { get; set; }
@@ -23,19 +27,19 @@ public class ExamplePerformanceTest : TestBase
     [SailfishGlobalSetup]
     public void GlobalSetup(CancellationToken cancellationToken)
     {
-        Console.WriteLine("This is the Global Setup");
+        // logger.Information("This is the Global Setup");
     }
 
     [SailfishMethodSetup]
     public void ExecutionMethodSetup(CancellationToken cancellationToken)
     {
-        Console.WriteLine("This is the Execution Method Setup");
+        // logger.Information("This is the Execution Method Setup");
     }
 
     [SailfishIterationSetup]
     public void IterationSetup(CancellationToken cancellationToken)
     {
-        Console.WriteLine("This is the Iteration Setup - use sparingly");
+        // logger.Warning("This is the Iteration Setup - use sparingly");
     }
 
     [SailfishMethod]
@@ -55,19 +59,19 @@ public class ExamplePerformanceTest : TestBase
     [SailfishIterationTeardown]
     public void IterationTeardown(CancellationToken cancellationToken)
     {
-        Console.WriteLine("This is the Iteration Teardown - use sparingly");
+        // logger.Warning("This is the Iteration Teardown - use sparingly");
     }
 
     [SailfishMethodTeardown]
     public void ExecutionMethodTeardown(CancellationToken cancellationToken)
     {
-        Console.WriteLine("This is the Execution Method Teardown");
+        // logger.Verbose("This is the Execution Method Teardown");
     }
 
     [SailfishGlobalTeardown]
     public override async Task GlobalTeardown(CancellationToken cancellationToken)
     {
         await Task.Yield();
-        Console.WriteLine("This is the Global Teardown");
+        // logger.Verbose("This is the Global Teardown");
     }
 }
