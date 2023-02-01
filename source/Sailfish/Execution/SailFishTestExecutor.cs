@@ -55,7 +55,6 @@ internal class SailFishTestExecutor : ISailFishTestExecutor
                 rawResults.Add(new RawExecutionResult(testType, ex));
             }
 
-            TestCaseCountPrinter.IncrementType();
         }
 
         return rawResults;

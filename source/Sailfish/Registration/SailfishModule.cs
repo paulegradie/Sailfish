@@ -18,7 +18,7 @@ public class SailfishModule : Module
 {
     protected override void Load(ContainerBuilder builder)
     {
-        var configuration = new ConfigurationBuilder().AddJsonFile("sailfish.logging.json").Build();
+        var configuration = new ConfigurationBuilder().AddJsonFile("sailfish.logging.json", true).Build();
 
         base.Load(builder);
         builder.Register<ILogger>(
