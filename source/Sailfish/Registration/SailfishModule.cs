@@ -1,4 +1,5 @@
 ﻿using Autofac;
+using Microsoft.Extensions.Configuration;
 using Sailfish.Analysis;
 using Sailfish.Contracts.Public;
 using Sailfish.Execution;
@@ -17,10 +18,16 @@ public class SailfishModule : Module
 {
     protected override void Load(ContainerBuilder builder)
     {
+        var configuration = new ConfigurationBuilder().AddJsonFile("sailfish.logging.json", true).Build();
+
         base.Load(builder);
         builder.Register<ILogger>(
-            (c, p) => new LoggerConfiguration()
-                .CreateLogger()).SingleInstance();
+            (c, p) =>
+                new LoggerConfiguration()
+                    .ReadFrom.Configuration(configuration)
+                    .WriteTo.Console()
+                    .MinimumLevel.Verbose()
+                    .CreateLogger()).SingleInstance();
 
         builder.RegisterType<SailfishExecutor>().AsSelf();
         builder.RegisterType<SailFishTestExecutor>().As<ISailFishTestExecutor>();

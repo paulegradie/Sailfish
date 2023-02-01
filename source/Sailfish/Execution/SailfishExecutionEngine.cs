@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Threading;
 using System.Threading.Tasks;
+using Sailfish.Program;
+using Sailfish.Registration;
 using Serilog;
 
 namespace Sailfish.Execution;
@@ -44,7 +46,9 @@ internal class SailfishExecutionEngine : ISailfishExecutionEngine
         bool continueIterating;
         do
         {
+
             var testMethodContainer = instanceContainerEnumerator.Current;
+            TestCaseCountPrinter.PrintCaseUpdate(testMethodContainer.TestCaseId.DisplayName);
 
             if (ShouldCallGlobalSetup(testProviderIndex, currentVariableSetIndex))
             {

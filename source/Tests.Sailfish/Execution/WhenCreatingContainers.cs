@@ -60,7 +60,7 @@ public class WhenCreatingContainers
             return new TestDependencies();
         }
 
-        public T ResolveType<T>()
+        public T ResolveType<T>() where T : notnull
         {
             return Activator.CreateInstance<T>();
         }

@@ -1,4 +1,3 @@
-using System.Diagnostics.CodeAnalysis;
 using Sailfish.Utils;
 using Shouldly;
 using Xunit;
@@ -22,8 +21,11 @@ public class WhenCreatingFullyQualifiedNames
         result.ShouldBe($"{typeof(WhenCreatingFullyQualifiedNames).Namespace}.{nameof(WhenCreatingFullyQualifiedNames)}.{nameof(HelperMethod)}(Int32, Int32)");
     }
 
-    [SuppressMessage("ReSharper", "UnusedParameter.Global")]
+#pragma warning disable xUnit1013
+#pragma warning disable CA1822
     public void HelperMethod(int x, int y)
+#pragma warning restore CA1822
+#pragma warning restore xUnit1013
     {
     }
 }

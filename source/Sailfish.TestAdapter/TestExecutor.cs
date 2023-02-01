@@ -6,6 +6,7 @@ using Microsoft.VisualStudio.TestPlatform.ObjectModel;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.Adapter;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.Logging;
 using Sailfish.Exceptions;
+using Sailfish.Program;
 using Sailfish.TestAdapter.Discovery;
 using Sailfish.TestAdapter.Execution;
 
@@ -27,7 +28,7 @@ public class TestExecutor : ITestExecutor
         var tests = testsCases?.ToList();
         if (tests is null) throw new Exception("Tests was null in the test case list!");
         if (runContext is null || frameworkHandle is null) throw new Exception("Wow more nulls");
-        
+
         frameworkHandle.SendMessage(TestMessageLevel.Informational, $"Test Cases in Executor:\n{string.Join("\n-- ", tests.Select(x => x.DisplayName))}");
         TestExecution.ExecuteTests(tests.ToList(), frameworkHandle, cancellationTokenSource.Token);
     }

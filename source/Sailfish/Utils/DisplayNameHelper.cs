@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using System.Reflection;
 using Sailfish.Analysis;
 
 namespace Sailfish.Utils;
@@ -22,6 +23,8 @@ internal static class DisplayNameHelper
     public static string FullyQualifiedName(Type type, string methodName)
     {
         var methodInfo = type.GetMethod(methodName);
+        if (methodInfo is null) throw new Exception($"Method name: {methodName} was not found on type {type.Name}");
+
         if (methodInfo is null) throw new Exception($"Method name: {methodName} was not found on type {type.Name}");
 
         var names = $"{type.Namespace}.{type.Name}.{methodName}";

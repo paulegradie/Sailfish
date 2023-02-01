@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Sailfish.ExtensionMethods;
+using Sailfish.Program;
 using Serilog;
 
 namespace Sailfish.Execution;
@@ -36,15 +37,15 @@ internal class SailFishTestExecutor : ISailFishTestExecutor
             return rawResults;
         }
 
-        var testIndex = 0;
-        var totalTestCount = enabledTestTypes.Length;
-
-        logger.Information("Discovered {TotalTestCount} enabled test types", totalTestCount);
+        SetConsoleTotals(enabledTestTypes);
+        TestCaseCountPrinter.SetLogger(logger);
+        TestCaseCountPrinter.SetTestTypeTotal(enabledTestTypes.Length);
+        TestCaseCountPrinter.PrintDiscoveredTotal();
         foreach (var testType in enabledTestTypes)
         {
+            TestCaseCountPrinter.PrintTypeUpdate(testType.Name);
             try
             {
-                logger.Information("Executing test type {TestIndex} of {TotalTestCount}: {TestName}", testIndex + 1, totalTestCount, testType.Name);
                 var rawResult = await Execute(testType, callback, cancellationToken);
                 rawResults.Add(new RawExecutionResult(testType, rawResult));
             }
@@ -54,10 +55,26 @@ internal class SailFishTestExecutor : ISailFishTestExecutor
                 rawResults.Add(new RawExecutionResult(testType, ex));
             }
 
-            testIndex += 1;
         }
 
         return rawResults;
+    }
+
+    private void SetConsoleTotals(IEnumerable<Type> enabledTestTypes)
+    {
+        var listOfProviders = enabledTestTypes.Select(x => testInstanceContainerCreator.CreateTestContainerInstanceProviders(x)).ToList();
+        var overallTotalCases = 0;
+        var overallMethods = 0;
+        foreach (var providers in listOfProviders)
+        {
+            var totalTestCases = 0;
+            totalTestCases = providers.Aggregate(totalTestCases, (i, provider) => i + provider.GetNumberOfPropertySetsInTheQueue());
+            overallTotalCases += totalTestCases;
+            overallMethods += providers.Select(x => x.Method).ToList().Count;
+        }
+
+        TestCaseCountPrinter.SetTestCaseTotal(overallTotalCases);
+        TestCaseCountPrinter.SetTestMethodTotal(overallMethods);
     }
 
     private async Task<List<TestExecutionResult>> Execute(
@@ -81,10 +98,7 @@ internal class SailFishTestExecutor : ISailFishTestExecutor
         var totalMethodCount = testMethods.Count - 1;
         foreach (var testInstanceContainerProvider in testMethods.OrderBy(x => x.Method.Name))
         {
-            logger.Information(
-                "Executing test method {MethodIndex} of {TotalMethodCount}: {TestTypeName}.{TestMethodName}",
-                (methodIndex + 1).ToString(), (totalMethodCount + 1).ToString(), testInstanceContainerProvider.Method.DeclaringType?.Name,
-                testInstanceContainerProvider.Method.Name);
+            TestCaseCountPrinter.PrintMethodUpdate(testInstanceContainerProvider.Method);
             var executionResults = await engine.ActivateContainer(methodIndex, totalMethodCount, testInstanceContainerProvider, callback, cancellationToken);
             results.AddRange(executionResults);
             methodIndex += 1;

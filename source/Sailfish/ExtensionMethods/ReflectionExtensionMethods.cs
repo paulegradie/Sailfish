@@ -17,19 +17,14 @@ public static class ReflectionExtensionMethods
         return type.GetCustomAttributes(typeof(TAttribute), inherit).Length > 0;
     }
 
-    internal static bool HasAttribute<TAttribute>(this MethodInfo method, bool inherit = false) where TAttribute : Attribute
+    private static bool HasAttribute<TAttribute>(this MethodInfo method, bool inherit = false) where TAttribute : Attribute
     {
         return method.GetCustomAttributes(typeof(TAttribute), inherit).Length > 0;
     }
 
-    internal static bool HasAttribute<TAttribute>(this PropertyInfo property, bool inherit = false) where TAttribute : Attribute
+    private static bool HasAttribute<TAttribute>(this PropertyInfo property, bool inherit = false) where TAttribute : Attribute
     {
         return property.GetCustomAttributes(typeof(TAttribute), inherit).Length > 0;
-    }
-
-    internal static bool IsMethodWithAttribute<TAttribute>(this MethodInfo method) where TAttribute : Attribute
-    {
-        return method.GetCustomAttributes(typeof(TAttribute), false).Length > 0;
     }
 
     internal static IEnumerable<PropertyInfo> GetPropertiesWithAttribute<TAttribute>(this Type type) where TAttribute : Attribute
@@ -39,7 +34,7 @@ public static class ReflectionExtensionMethods
 
     internal static IEnumerable<MethodInfo> GetMethodsWithAttribute<TAttribute>(this Type type) where TAttribute : Attribute
     {
-        return type.GetMethods().Where(x => x.IsPublic).Where(x => x.HasAttribute<TAttribute>());
+        return type.GetMethods(BindingFlags.Public | BindingFlags.Instance).Where(x => x.HasAttribute<TAttribute>());
     }
 
     internal static IEnumerable<MethodInfo> GetMethodsWithAttribute<TAttribute>(this object instance) where TAttribute : Attribute
@@ -52,12 +47,12 @@ public static class ReflectionExtensionMethods
         return instance.GetType().GetMethodsWithAttribute<TAttribute>().SingleOrDefault();
     }
 
-    internal static bool IsAsyncMethod(this MethodInfo method)
+    private static bool IsAsyncMethod(this MethodInfo method)
     {
         return method.HasAttribute<AsyncStateMachineAttribute>();
     }
 
-    public static async Task InvokeAs(this MethodInfo method, object instance)
+    private static async Task InvokeAs(this MethodInfo method, object instance)
     {
         if (method.IsAsyncMethod())
         {
@@ -66,7 +61,7 @@ public static class ReflectionExtensionMethods
         else method.Invoke(instance, null);
     }
 
-    public static async Task InvokeAsWithCancellation(this MethodInfo method, object instance, CancellationToken cancellationToken)
+    private static async Task InvokeAsWithCancellation(this MethodInfo method, object instance, CancellationToken cancellationToken)
     {
         var parameters = new object[] { cancellationToken };
         if (method.IsAsyncMethod()) await (Task)method.Invoke(instance, parameters)!;
