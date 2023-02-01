@@ -4,7 +4,7 @@ using Sailfish.Attributes;
 
 namespace PerformanceTests.ExamplePerformanceTests;
 
-[Sailfish]
+[Sailfish(Disabled = TestConstants.Disabled)]
 public class DemoPerformanceTest
 {
     [SailfishMethod]

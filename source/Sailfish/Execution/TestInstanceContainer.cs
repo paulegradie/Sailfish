@@ -17,7 +17,7 @@ internal class TestInstanceContainer
         object instance,
         MethodInfo method,
         TestCaseId testCaseId,
-        ExecutionSettings executionSettings
+        IExecutionSettings executionSettings
     )
     {
         Type = type;
@@ -39,9 +39,9 @@ internal class TestInstanceContainer
     public int NumIterations => ExecutionSettings.NumIterations;
 
 
-    public ExecutionSettings ExecutionSettings { get; }
+    public IExecutionSettings ExecutionSettings { get; }
 
-    public AncillaryInvocation Invocation { get; protected set; } = null!;
+    public AncillaryInvocation Invocation { get; private init; } = null!;
 
     public static TestInstanceContainer CreateTestInstance(object instance, MethodInfo method, string[] propertyNames, int[] variables)
     {

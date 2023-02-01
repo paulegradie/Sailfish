@@ -16,15 +16,15 @@ internal class ExecutionSummaryCompiler : IExecutionSummaryCompiler
         this.statsCompiler = statsCompiler;
     }
 
-    public List<ExecutionSummary> CompileToSummaries(List<RawExecutionResult> rawExecutionResults, CancellationToken cancellationToken)
+    public IEnumerable<IExecutionSummary> CompileToSummaries(IEnumerable<RawExecutionResult> rawExecutionResults, CancellationToken cancellationToken)
     {
         return rawExecutionResults.Select(rawExecutionResult => IterateExecutionResults(rawExecutionResult, cancellationToken)).ToList();
     }
 
-    private ExecutionSummary IterateExecutionResults(RawExecutionResult rawExecutionResult, CancellationToken cancellationToken)
+    private IExecutionSummary IterateExecutionResults(RawExecutionResult rawExecutionResult, CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
-        var compiledResults = new List<CompiledResult>();
+        var compiledResults = new List<ICompiledResult>();
 
         if (rawExecutionResult.ExecutionResults != null)
         {
@@ -36,12 +36,12 @@ internal class ExecutionSummaryCompiler : IExecutionSummaryCompiler
             return new ExecutionSummary(rawExecutionResult.TestType, compiledResults);
         }
 
-        if (rawExecutionResult.Exception is null) return new ExecutionSummary(rawExecutionResult.TestType, new List<CompiledResult>() { });
+        if (rawExecutionResult.Exception is null) return new ExecutionSummary(rawExecutionResult.TestType, new List<ICompiledResult>() { });
         var compiledResult = new CompiledResult(rawExecutionResult.Exception);
-        return new ExecutionSummary(rawExecutionResult.TestType, new List<CompiledResult>() { compiledResult });
+        return new ExecutionSummary(rawExecutionResult.TestType, new List<ICompiledResult>() { compiledResult });
     }
 
-    private void CompileTestResult(TestExecutionResult testExecutionResult, ICollection<CompiledResult> compiledResults)
+    private void CompileTestResult(TestExecutionResult testExecutionResult, ICollection<ICompiledResult> compiledResults)
     {
         if (testExecutionResult.IsSuccess)
         {

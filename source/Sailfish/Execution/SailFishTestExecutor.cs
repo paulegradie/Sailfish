@@ -54,7 +54,6 @@ internal class SailFishTestExecutor : ISailFishTestExecutor
                 logger.Fatal("The Test runner encountered a fatal error: {Message}", ex.Message);
                 rawResults.Add(new RawExecutionResult(testType, ex));
             }
-
         }
 
         return rawResults;
@@ -63,13 +62,11 @@ internal class SailFishTestExecutor : ISailFishTestExecutor
     private void SetConsoleTotals(IEnumerable<Type> enabledTestTypes)
     {
         var listOfProviders = enabledTestTypes.Select(x => testInstanceContainerCreator.CreateTestContainerInstanceProviders(x)).ToList();
-        var overallTotalCases = 0;
+        var overallTotalCases = 1;
         var overallMethods = 0;
         foreach (var providers in listOfProviders)
         {
-            var totalTestCases = 0;
-            totalTestCases = providers.Aggregate(totalTestCases, (i, provider) => i + provider.GetNumberOfPropertySetsInTheQueue());
-            overallTotalCases += totalTestCases;
+            overallTotalCases += providers.Sum(provider => provider.GetNumberOfPropertySetsInTheQueue());
             overallMethods += providers.Select(x => x.Method).ToList().Count;
         }
 
@@ -82,26 +79,26 @@ internal class SailFishTestExecutor : ISailFishTestExecutor
         Action<TestExecutionResult>? callback = null,
         CancellationToken cancellationToken = default)
     {
-        var testInstanceContainers = testInstanceContainerCreator.CreateTestContainerInstanceProviders(test);
-        var results = await Execute(testInstanceContainers, callback, cancellationToken);
+        var testInstanceContainerProviders = testInstanceContainerCreator.CreateTestContainerInstanceProviders(test);
+        var results = await Execute(testInstanceContainerProviders, callback, cancellationToken);
         return results;
     }
 
     private async Task<List<TestExecutionResult>> Execute(
-        IReadOnlyCollection<TestInstanceContainerProvider> testMethods,
+        IReadOnlyCollection<TestInstanceContainerProvider> testInstanceContainerProviders,
         Action<TestExecutionResult>? callback = null,
         CancellationToken cancellationToken = default)
     {
         var results = new List<TestExecutionResult>();
 
-        var methodIndex = 0;
-        var totalMethodCount = testMethods.Count - 1;
-        foreach (var testInstanceContainerProvider in testMethods.OrderBy(x => x.Method.Name))
+        var currentTestInstanceContainer = 1;
+        var totalMethodCount = testInstanceContainerProviders.Count;
+        foreach (var testInstanceContainerProvider in testInstanceContainerProviders.OrderBy(x => x.Method.Name))
         {
             TestCaseCountPrinter.PrintMethodUpdate(testInstanceContainerProvider.Method);
-            var executionResults = await engine.ActivateContainer(methodIndex, totalMethodCount, testInstanceContainerProvider, callback, cancellationToken);
+            var executionResults = await engine.ActivateContainer(currentTestInstanceContainer, totalMethodCount, testInstanceContainerProvider, callback, cancellationToken);
             results.AddRange(executionResults);
-            methodIndex += 1;
+            currentTestInstanceContainer += 1;
         }
 
         return results;

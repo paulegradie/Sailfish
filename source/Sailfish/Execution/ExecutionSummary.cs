@@ -5,9 +5,16 @@ using Sailfish.Statistics;
 
 namespace Sailfish.Execution;
 
-internal class ExecutionSummary
+public interface IExecutionSummary
 {
-    public ExecutionSummary(Type type, List<CompiledResult> compiledResults)
+    public Type Type { get; set; }
+    public IExecutionSettings Settings { get; }
+    public List<ICompiledResult> CompiledResults { get; set; }
+}
+
+internal class ExecutionSummary : IExecutionSummary
+{
+    public ExecutionSummary(Type type, List<ICompiledResult> compiledResults)
     {
         Type = type;
         CompiledResults = compiledResults;
@@ -15,6 +22,6 @@ internal class ExecutionSummary
     }
 
     public Type Type { get; set; }
-    public ExecutionSettings Settings { get; }
-    public List<CompiledResult> CompiledResults { get; set; }
+    public IExecutionSettings Settings { get; }
+    public List<ICompiledResult> CompiledResults { get; set; }
 }

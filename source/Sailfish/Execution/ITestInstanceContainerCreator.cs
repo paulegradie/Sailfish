@@ -8,6 +8,6 @@ internal interface ITestInstanceContainerCreator
 {
     List<TestInstanceContainerProvider> CreateTestContainerInstanceProviders(
         Type test,
-        Func<PropertySet, bool>? filter = null,
-        Func<MethodInfo, bool>? methodFilter = null);
+        Func<PropertySet, bool>? propertyTensorFilter = null,
+        Func<MethodInfo, bool>? instanceContainerFilter = null);
 }

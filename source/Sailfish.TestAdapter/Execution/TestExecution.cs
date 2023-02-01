@@ -19,8 +19,7 @@ internal static class TestExecution
     private static readonly ExecutionSummaryCompiler SummaryCompiler = new(new StatisticsCompiler());
 
     private static readonly Func<ITestExecutionRecorder?, ConsoleWriter> ConsoleWriter = handle =>
-        new(
-            new PresentationStringConstructor(), handle);
+        new(new MarkdownTableConverter(), handle);
 
     private static readonly TestInstanceContainerCreator TestInstanceContainerCreator = new(
         new TypeResolutionUtility(),

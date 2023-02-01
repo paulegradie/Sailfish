@@ -9,7 +9,7 @@ namespace Sailfish.Execution;
 internal static class SailfishExecutionCaller
 {
     [Obsolete("This method is no longer recommended. Instead, implement IProvideARegistrationCallback and let it be auto-discovered")]
-    internal static async Task<SailfishValidity> Run(RunSettings runSettings, Action<ContainerBuilder>? registerAdditionalTypes = null, CancellationToken? cancellationToken = null)
+    internal static async Task<SailfishRunResult> Run(RunSettings runSettings, Action<ContainerBuilder>? registerAdditionalTypes = null, CancellationToken? cancellationToken = null)
     {
         var builder = new ContainerBuilder();
         builder.RegisterSailfishTypes();
@@ -20,7 +20,7 @@ internal static class SailfishExecutionCaller
         return await builder.Build().Resolve<SailfishExecutor>().Run(runSettings, cancellationToken ?? default).ConfigureAwait(false);
     }
 
-    internal static async Task<SailfishValidity> Run(
+    internal static async Task<SailfishRunResult> Run(
         RunSettings runSettings,
         CancellationToken? cancellationToken = default)
     {

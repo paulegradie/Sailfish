@@ -6,7 +6,7 @@ using Sailfish.Attributes;
 
 namespace PerformanceTests.ExamplePerformanceTests;
 
-[Sailfish(NumIterations = 3, NumWarmupIterations = 2)]
+[Sailfish(NumIterations = 3, NumWarmupIterations = 2, Disabled = TestConstants.Disabled)]
 public class PerfTestWithISailfishFixture : ISailfishFixture<SailfishDependencies>
 {
     private readonly SailfishDependencies sailfishDependencies;

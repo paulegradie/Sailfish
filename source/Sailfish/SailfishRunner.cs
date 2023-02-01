@@ -12,12 +12,12 @@ namespace Sailfish;
 public static class SailfishRunner
 {
     [Obsolete("This method is no longer recommended. Instead, implement IProvideARegistrationCallback and let it be auto-discovered")]
-    public static async Task<SailfishValidity> Run(RunSettings runSettings, Action<ContainerBuilder>? registerAdditionalTypes = null, CancellationToken cancellationToken = default)
+    public static async Task<SailfishRunResult> Run(RunSettings runSettings, Action<ContainerBuilder>? registerAdditionalTypes = null, CancellationToken cancellationToken = default)
     {
         return await SailfishExecutionCaller.Run(runSettings, registerAdditionalTypes, cancellationToken);
     }
 
-    public static async Task<SailfishValidity> Run(RunSettings runSettings, CancellationToken cancellationToken = default)
+    public static async Task<SailfishRunResult> Run(RunSettings runSettings, CancellationToken cancellationToken = default)
     {
         return await SailfishExecutionCaller.Run(runSettings, cancellationToken);
     }

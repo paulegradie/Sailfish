@@ -16,7 +16,7 @@ internal class TestListValidator : ITestListValidator
         this.logger = logger;
     }
 
-    public TestValidationResult ValidateTests(string[] testsRequestedByUser, Type[] filteredTestNames)
+    public TestInitializationResult ValidateTests(string[] testsRequestedByUser, Type[] filteredTestNames)
     {
         var erroredTests = new Dictionary<string, List<string>>();
         if (TestsAreRequestedButCannotFindAllOfThem(testsRequestedByUser, filteredTestNames.Select(x => x.Name).ToArray(), out var missingTests))
@@ -31,7 +31,7 @@ internal class TestListValidator : ITestListValidator
             erroredTests.Add("The following tests have no execution method defined:", noExecutionMethodTests);
         }
 
-        return erroredTests.Keys.Count > 0 ? TestValidationResult.CreateFailure(filteredTestNames, erroredTests) : TestValidationResult.CreateSuccess(filteredTestNames);
+        return erroredTests.Keys.Count > 0 ? TestInitializationResult.CreateFailure(filteredTestNames, erroredTests) : TestInitializationResult.CreateSuccess(filteredTestNames);
     }
 
     private static bool AnyTestHasNoExecutionMethods(IEnumerable<Type> testClasses, out List<string> missingExecutionMethod)

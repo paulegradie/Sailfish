@@ -7,7 +7,7 @@ public static class TestCaseCountPrinter
 {
     static int testTypeTotal = 1;
     static int testMethodTotal = 1;
-    static int testCaseTotal = 1;
+    static int testCaseTotal = 0;
 
     static int currentType = 1;
     static int currentMethod = 1;
@@ -49,27 +49,27 @@ public static class TestCaseCountPrinter
     {
         if (testCaseTotal > 0)
         {
-            logger?.Verbose("Discovered {TotalTestCount} enabled test types", testCaseTotal);
+            logger?.Verbose("Discovered {TotalTestCaseCount} test cases across {TotalTestMethods} test methods from {TotalTestClasses} classes", testCaseTotal, testMethodTotal, testTypeTotal );
         }
     }
 
     public static void PrintTypeUpdate(string typeName)
     {
-        logger?.Verbose("Executing test class {TestIndex} of {TotalTestCount}: {TestName}", currentType, testTypeTotal, typeName);
+        logger?.Verbose("- class {TestIndex} of {TotalTestCount}: {TestName}", currentType, testTypeTotal, typeName);
         IncrementType();
     }
 
     public static void PrintMethodUpdate(MethodInfo methodInfo)
     {
         var name = $"{methodInfo.DeclaringType?.Name}.{methodInfo.Name}";
-        logger?.Verbose("- method {CurrentMethodCount} of {TotalMethodCount}: {Method}", currentMethod, testMethodTotal, name);
+        logger?.Verbose("  -- method {CurrentMethodCount} of {TotalMethodCount}: {Method}", currentMethod, testMethodTotal, name);
         IncrementMethod();
     }
 
     public static void PrintCaseUpdate(string displayName)
     {
     
-        logger?.Verbose("   -- test case {CurrentTestCase} of {TotalTestCases}: {TestCase}", currentTestCase, testCaseTotal, displayName);
+        logger?.Verbose("     --- test case {CurrentTestCase} of {TotalTestCases}: {TestCase}", currentTestCase, testCaseTotal, displayName);
         IncrementCase();
     }
 

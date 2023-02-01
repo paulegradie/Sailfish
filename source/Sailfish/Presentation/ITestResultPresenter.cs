@@ -9,7 +9,7 @@ namespace Sailfish.Presentation;
 internal interface ITestResultPresenter
 {
     Task PresentResults(
-        List<ExecutionSummary> resultContainers,
+        List<IExecutionSummary> resultContainers,
         DateTime timeStamp,
         string trackingDir,
         RunSettings runSettings,

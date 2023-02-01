@@ -7,5 +7,5 @@ namespace Sailfish.Presentation.Csv;
 
 internal interface IPerformanceCsvWriter
 {
-    Task Present(IEnumerable<ExecutionSummary> result, string filePath, CancellationToken cancellationToken);
+    Task Present(IEnumerable<IExecutionSummary> result, string filePath, CancellationToken cancellationToken);
 }

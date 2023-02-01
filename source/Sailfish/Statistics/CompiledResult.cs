@@ -4,7 +4,15 @@ using Sailfish.Contracts.Public;
 
 namespace Sailfish.Statistics;
 
-internal class CompiledResult
+public interface ICompiledResult
+{
+    public string? GroupingId { get; set; }
+    public DescriptiveStatisticsResult? DescriptiveStatisticsResult { get; set; }
+    public Exception? Exception { get; set; }
+    public TestCaseId? TestCaseId { get; set; }
+}
+
+internal class CompiledResult : ICompiledResult
 {
     public CompiledResult(TestCaseId testCaseId, string groupingId, DescriptiveStatisticsResult descriptiveStatisticsResult)
     {
@@ -22,5 +30,4 @@ internal class CompiledResult
     public DescriptiveStatisticsResult? DescriptiveStatisticsResult { get; set; }
     public Exception? Exception { get; set; }
     public TestCaseId? TestCaseId { get; set; }
-    
 }

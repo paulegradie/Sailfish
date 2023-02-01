@@ -24,26 +24,30 @@ internal class TestInstanceContainerCreator : ITestInstanceContainerCreator
     }
 
     public List<TestInstanceContainerProvider> CreateTestContainerInstanceProviders(
-        Type test,
-        Func<PropertySet, bool>? propertySetFilter = null,
-        Func<MethodInfo, bool>? methodFilter = null)
+        Type testType,
+        Func<PropertySet, bool>? propertyTensorFilter = null,
+        Func<MethodInfo, bool>? instanceContainerFilter = null)
     {
-        var propertySets = propertySetGenerator.GeneratePropertySets(test);
-        if (propertySetFilter is not null)
+        var propertyTensor = propertySetGenerator.GeneratePropertySets(testType);
+        if (propertyTensorFilter is not null)
         {
-            propertySets = propertySets.Where(propertySetFilter);
+            propertyTensor = propertyTensor.Where(propertyTensorFilter);
         }
 
-        var methods = test.GetMethodsWithAttribute<SailfishMethodAttribute>();
-
-        if (methodFilter is not null)
+        var instanceContainers = testType.GetMethodsWithAttribute<SailfishMethodAttribute>();
+        if (instanceContainerFilter is not null)
         {
-            methods = methods.Where(methodFilter);
+            instanceContainers = instanceContainers.Where(instanceContainerFilter);
         }
 
-        return methods
+        return instanceContainers
             .OrderBy(x => x.Name)
-            .Select(method => new TestInstanceContainerProvider(typeResolutionUtility, test, propertySets, method, additionalAnchorTypes))
+            .Select(instanceContainer => new TestInstanceContainerProvider(
+                typeResolutionUtility,
+                testType,
+                propertyTensor,
+                instanceContainer,
+                additionalAnchorTypes))
             .ToList();
     }
 }

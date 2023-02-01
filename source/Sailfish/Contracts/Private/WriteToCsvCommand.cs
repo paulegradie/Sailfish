@@ -9,7 +9,7 @@ namespace Sailfish.Contracts.Private;
 internal class WriteToCsvCommand : INotification
 {
     public WriteToCsvCommand(
-        List<ExecutionSummary> content,
+        List<IExecutionSummary> content,
         string outputDirectory,
         DateTime timeStamp,
         OrderedDictionary<string, string> tags,
@@ -24,7 +24,7 @@ internal class WriteToCsvCommand : INotification
         Settings = settings;
     }
 
-    public List<ExecutionSummary> Content { get; set; }
+    public List<IExecutionSummary> Content { get; set; }
     public string OutputDirectory { get; set; }
     public DateTime TimeStamp { get; }
     public OrderedDictionary<string, string> Tags { get; }

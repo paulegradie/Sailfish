@@ -13,7 +13,7 @@ internal class TestFilter : ITestFilter
         this.testListValidator = testListValidator;
     }
 
-    public TestValidationResult FilterAndValidate(Type[] tests, string[] testsRequestedByUser)
+    public TestInitializationResult FilterAndValidate(Type[] tests, string[] testsRequestedByUser)
     {
         var filtered = FilterTests(tests, testsRequestedByUser);
         var result = testListValidator.ValidateTests(testsRequestedByUser, filtered);

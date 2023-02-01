@@ -42,7 +42,6 @@ public class SailfishModule : Module
         builder.RegisterType<StatisticsCompiler>().As<IStatisticsCompiler>();
         builder.RegisterType<ExecutionSummaryCompiler>().As<IExecutionSummaryCompiler>();
         builder.RegisterType<TestResultPresenter>().As<ITestResultPresenter>();
-        builder.RegisterType<PresentationStringConstructor>().As<IPresentationStringConstructor>().InstancePerDependency();
         builder.RegisterType<FileIo>().As<IFileIo>();
         builder.RegisterType<MarkdownWriter>().As<IMarkdownWriter>();
         builder.RegisterType<ConsoleWriter>().As<IConsoleWriter>();
@@ -56,5 +55,6 @@ public class SailfishModule : Module
         builder.RegisterType<TestResultTableContentFormatter>().As<ITestResultTableContentFormatter>();
         builder.RegisterType<TestResultAnalyzer>().As<ITestResultAnalyzer>();
         builder.RegisterType<SailfishExecutionEngine>().As<ISailfishExecutionEngine>();
+        builder.RegisterType<MarkdownTableConverter>().As<IMarkdownTableConverter>().InstancePerDependency();
     }
 }

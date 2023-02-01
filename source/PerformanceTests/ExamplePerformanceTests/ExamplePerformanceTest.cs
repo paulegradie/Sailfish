@@ -1,4 +1,3 @@
-using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Demo.API;
@@ -11,7 +10,7 @@ namespace PerformanceTests.ExamplePerformanceTests;
 
 [WriteToMarkdown]
 [WriteToCsv]
-[Sailfish(5, 2, Disabled = false)]
+[Sailfish(5, 2, Disabled = true)]
 public class ExamplePerformanceTest : TestBase
 {
     private readonly ILogger logger;

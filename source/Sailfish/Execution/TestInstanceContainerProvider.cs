@@ -8,7 +8,6 @@ namespace Sailfish.Execution;
 internal class TestInstanceContainerProvider
 {
     public readonly MethodInfo Method;
-
     private readonly ITypeResolutionUtility typeResolutionUtility;
     private readonly Type test;
     private readonly IEnumerable<Type> additionalAnchorTypes;

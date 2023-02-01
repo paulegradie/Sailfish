@@ -7,7 +7,7 @@ namespace Sailfish.ExtensionMethods;
 
 internal static class ExecutionExtensionMethods
 {
-    public static ExecutionSettings RetrieveExecutionTestSettings(this Type type)
+    public static IExecutionSettings RetrieveExecutionTestSettings(this Type type)
     {
         var asMarkdown = type.GetCustomAttribute<WriteToMarkdownAttribute>();
         var asCsv = type.GetCustomAttribute<WriteToCsvAttribute>();
