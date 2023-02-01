@@ -12,7 +12,7 @@ namespace Sailfish.Presentation.Csv;
 
 internal class PerformanceCsvWriter : IPerformanceCsvWriter
 {
-    public async Task Present(IEnumerable<ExecutionSummary> result, string filePath, CancellationToken cancellationToken)
+    public async Task Present(IEnumerable<IExecutionSummary> result, string filePath, CancellationToken cancellationToken)
     {
         var writer = new StreamWriter(filePath);
         await using (writer.ConfigureAwait(false))

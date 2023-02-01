@@ -6,5 +6,5 @@ namespace Sailfish.Presentation.Csv;
 
 internal interface IPerformanceCsvTrackingWriter
 { 
-    Task<string> ConvertToCsvStringContent(List<ExecutionSummary> result);
+    Task<string> ConvertToCsvStringContent(IEnumerable<IExecutionSummary> result);
 }

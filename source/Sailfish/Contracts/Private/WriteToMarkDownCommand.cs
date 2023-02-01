@@ -8,7 +8,7 @@ namespace Sailfish.Contracts.Private;
 
 internal class WriteToMarkDownCommand : INotification
 {
-    public WriteToMarkDownCommand(List<ExecutionSummary> content, string outputDirectory, DateTime timeStamp, OrderedDictionary<string, string> tags, OrderedDictionary<string, string> args, RunSettings settings)
+    public WriteToMarkDownCommand(List<IExecutionSummary> content, string outputDirectory, DateTime timeStamp, OrderedDictionary<string, string> tags, OrderedDictionary<string, string> args, RunSettings settings)
     {
         Content = content;
         OutputDirectory = outputDirectory;
@@ -18,7 +18,7 @@ internal class WriteToMarkDownCommand : INotification
         Settings = settings;
     }
 
-    public List<ExecutionSummary> Content { get; set; }
+    public List<IExecutionSummary> Content { get; set; }
     public string OutputDirectory { get; set; }
     public DateTime TimeStamp { get; }
     public OrderedDictionary<string, string> Tags { get; set; }

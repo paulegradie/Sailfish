@@ -6,5 +6,5 @@ namespace Sailfish.Presentation.Console;
 
 internal interface IConsoleWriter
 {
-    string Present(IEnumerable<ExecutionSummary> result, OrderedDictionary<string, string> tags);
+    string Present(IEnumerable<IExecutionSummary> result, OrderedDictionary<string, string> tags);
 }   

@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Linq;
-using System.Reflection;
 using Sailfish.Analysis;
 
 namespace Sailfish.Utils;

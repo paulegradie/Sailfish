@@ -29,7 +29,7 @@ internal class TestExecutionResult
         PerformanceTimerResults = container.Invocation.GetPerformanceResults(false);
     }
 
-    public ExecutionSettings? ExecutionSettings { get; }
+    public IExecutionSettings? ExecutionSettings { get; }
     public List<string>? Messages { get; }
     public Exception? Exception { get; }
     public StatusCode StatusCode { get; }

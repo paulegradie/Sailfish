@@ -4,5 +4,5 @@ namespace Sailfish.Execution;
 
 internal interface ITestListValidator
 {
-    TestValidationResult ValidateTests(string[] testsRequestedByUser, Type[] filteredTestNames);
+    TestInitializationResult ValidateTests(string[] testsRequestedByUser, Type[] filteredTestNames);
 }

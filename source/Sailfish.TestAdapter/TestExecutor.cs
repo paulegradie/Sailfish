@@ -6,7 +6,6 @@ using Microsoft.VisualStudio.TestPlatform.ObjectModel;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.Adapter;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.Logging;
 using Sailfish.Exceptions;
-using Sailfish.Program;
 using Sailfish.TestAdapter.Discovery;
 using Sailfish.TestAdapter.Execution;
 

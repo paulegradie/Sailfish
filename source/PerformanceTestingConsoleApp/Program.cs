@@ -7,6 +7,7 @@ using Microsoft.Extensions.Configuration;
 using PerformanceTestingConsoleApp.CustomHandlerOverrideExamples;
 using PerformanceTests;
 using Sailfish.Contracts.Public.Commands;
+using Sailfish.Presentation;
 using Sailfish.Program;
 using Serilog;
 
@@ -14,7 +15,7 @@ using Serilog;
 
 namespace PerformanceTestingConsoleApp;
 
-internal class Program : SailfishProgramBase
+public class Program : SailfishProgramBase
 {
     public static async Task Main(string[] userRequestedTestNames)
     {
@@ -26,6 +27,13 @@ internal class Program : SailfishProgramBase
         Log.Logger = new LoggerConfiguration().ReadFrom.Configuration(configuration).CreateLogger();
 
         await SailfishMain<Program>(userRequestedTestNames);
+
+        // You can access your run result using this global static property if you'd like
+        if (RunResult.IsValid)
+        {
+            var executionSummaries = RunResult.ExecutionSummaries;
+            var markdown = new MarkdownTableConverter().ConvertToMarkdownTableString(executionSummaries);
+        }
     }
 
     protected override IEnumerable<Type> SourceTypesProvider()
@@ -36,7 +44,7 @@ internal class Program : SailfishProgramBase
 
     protected override void RegisterWithSailfish(ContainerBuilder builder)
     {
-        switch (System.Environment.GetEnvironmentVariable("environment")?.ToLowerInvariant())
+        switch (Environment.GetEnvironmentVariable("environment")?.ToLowerInvariant())
         {
             // These registrations can override the default handlers for
             // writing t-test results and reading/writing tracking files

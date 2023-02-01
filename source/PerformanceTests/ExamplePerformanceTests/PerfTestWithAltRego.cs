@@ -9,7 +9,7 @@ public class ExampleDependencyForAltRego : ISailfishDependency
 {
 }
 
-[Sailfish(NumIterations = 3, NumWarmupIterations = 2)]
+[Sailfish(NumIterations = 3, NumWarmupIterations = 2, Disabled = TestConstants.Enabled)]
 public class PerfTestWithAltRego
 {
     private readonly ExampleDependencyForAltRego dep;

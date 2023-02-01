@@ -4,5 +4,5 @@ namespace Sailfish.Execution;
 
 internal interface ITestFilter
 {
-    TestValidationResult FilterAndValidate(Type[] tests, string[] testsRequestedByUser);
+    TestInitializationResult FilterAndValidate(Type[] tests, string[] testsRequestedByUser);
 }

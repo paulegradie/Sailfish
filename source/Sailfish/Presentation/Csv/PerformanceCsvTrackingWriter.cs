@@ -11,7 +11,7 @@ namespace Sailfish.Presentation.Csv;
 
 internal class PerformanceCsvTrackingWriter : IPerformanceCsvTrackingWriter
 {
-    public async Task<string> ConvertToCsvStringContent(List<ExecutionSummary> result)
+    public async Task<string> ConvertToCsvStringContent(IEnumerable<IExecutionSummary> result)
     {
         var filePath = Path.GetTempFileName();
         await using (var writer = new StreamWriter(filePath))
