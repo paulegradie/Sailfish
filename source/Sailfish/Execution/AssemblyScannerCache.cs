@@ -30,7 +30,7 @@ public static class AssemblyScannerCache
         }
 
         // If not found in the cache, scan the assembly
-        var allAssemblyTypes = assemblies.Distinct().SelectMany(a => a.GetTypes());
+        var allAssemblyTypes = assemblies.Distinct().SelectMany(a => a.GetTypes()).Distinct();
 
         // Create a cache policy
         var policy = new CacheItemPolicy();

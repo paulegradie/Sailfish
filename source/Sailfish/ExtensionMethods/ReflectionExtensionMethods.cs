@@ -17,7 +17,7 @@ public static class ReflectionExtensionMethods
         return type.GetCustomAttributes(typeof(TAttribute), inherit).Length > 0;
     }
 
-    private static bool HasAttribute<TAttribute>(this MethodInfo method, bool inherit = false) where TAttribute : Attribute
+    internal static bool HasAttribute<TAttribute>(this MethodInfo method, bool inherit = false) where TAttribute : Attribute
     {
         return method.GetCustomAttributes(typeof(TAttribute), inherit).Length > 0;
     }
@@ -47,7 +47,7 @@ public static class ReflectionExtensionMethods
         return instance.GetType().GetMethodsWithAttribute<TAttribute>().SingleOrDefault();
     }
 
-    private static bool IsAsyncMethod(this MethodInfo method)
+    internal static bool IsAsyncMethod(this MethodInfo method)
     {
         return method.HasAttribute<AsyncStateMachineAttribute>();
     }

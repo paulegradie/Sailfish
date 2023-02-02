@@ -31,18 +31,18 @@ internal class TestInstanceContainerProvider
         return propertySets.Count();
     }
 
-    public async IAsyncEnumerable<TestInstanceContainer> ProvideNextTestInstanceContainer(Type[] additionalAnchorTypes)
+    public async IAsyncEnumerable<TestInstanceContainer> ProvideNextTestInstanceContainer(Type[] testDiscoveryAnchorTypes, Type[] registrationProviderAnchorTypes)
     {
         if (GetNumberOfPropertySetsInTheQueue() is 0)
         {
-            var instance = await typeResolutionUtility.CreateDehydratedTestInstance(test, additionalAnchorTypes);
+            var instance = await typeResolutionUtility.CreateDehydratedTestInstance(test, testDiscoveryAnchorTypes, registrationProviderAnchorTypes);
             yield return TestInstanceContainer.CreateTestInstance(instance, Method, Array.Empty<string>(), Array.Empty<int>());
         }
         else
         {
             foreach (var nextPropertySet in propertySets)
             {
-                var instance = await typeResolutionUtility.CreateDehydratedTestInstance(test, additionalAnchorTypes);
+                var instance = await typeResolutionUtility.CreateDehydratedTestInstance(test, testDiscoveryAnchorTypes, registrationProviderAnchorTypes);
 
                 HydrateInstance(instance, nextPropertySet);
 
