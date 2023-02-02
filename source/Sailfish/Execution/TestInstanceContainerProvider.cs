@@ -42,7 +42,7 @@ internal class TestInstanceContainerProvider
         {
             foreach (var nextPropertySet in propertySets)
             {
-                var instance = typeResolutionUtility.CreateDehydratedTestInstance(test, additionalAnchorTypes);
+                var instance = await typeResolutionUtility.CreateDehydratedTestInstance(test, additionalAnchorTypes);
 
                 HydrateInstance(instance, nextPropertySet);
 
