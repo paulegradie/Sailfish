@@ -41,15 +41,4 @@
     <ItemGroup>
         <ProjectReference Include="..\Sailfish\Sailfish.csproj"/>
     </ItemGroup>
-
-    <Target Name="MoveTestHostToLib" AfterTargets="Build;Publish" BeforeTargets="Pack">
-        <ItemGroup>
-            <TestHostContent Include="$(OutputPath)testhost.dll"/>
-        </ItemGroup>
-        <MakeDir Directories="$(OutputPath)lib\contentFiles\any\net6.0\"/>
-        <Copy SourceFiles="@(TestHostContent)" DestinationFolder="$(OutputPath)lib\contentFiles\any\net6.0\"/>
-
-        <MakeDir Directories="$(OutputPath)lib\content\"/>
-        <Copy SourceFiles="@(TestHostContent)" DestinationFolder="$(OutputPath)lib\content\"/>
-    </Target>
 </Project>
