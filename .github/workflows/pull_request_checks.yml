@@ -1,5 +1,5 @@
 name: Run Tests on pull request
-on: [pull_request]
+on: [ pull_request ]
 
 jobs:
   build:
@@ -25,7 +25,7 @@ jobs:
 
       - name: Build
         run: dotnet build ./source/Sailfish/Sailfish.csproj --configuration Release /p:Version=${VERSION}-pull-request
-
+    
       - name: Build Adapter
         run: dotnet build ./source/Sailfish.TestAdapter/Sailfish.TestAdapter.csproj --configuration Release /p:Version=${VERSION}
 
@@ -34,3 +34,10 @@ jobs:
 
       - name: Test Adapter
         run: dotnet test ./source/Tests.Sailfish.TestAdapter/Tests.Sailfish.TestAdapter.csproj --verbosity normal
+
+      - name: Pack
+        run: dotnet pack ./source/Sailfish/Sailfish.csproj --configuration Release /p:Version=${{ env.VERSION }} --no-build --output .
+
+      - name: Pack Adapter
+        run: dotnet pack ./source/Sailfish.TestAdapter/Sailfish.TestAdapter.csproj --configuration Release /p:Version=${{ env.VERSION }} --no-build --output .
+

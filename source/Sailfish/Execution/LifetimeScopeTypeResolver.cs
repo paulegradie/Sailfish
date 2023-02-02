@@ -20,10 +20,9 @@ internal class LifetimeScopeTypeResolver : ITypeResolver
         var message = $"Please register {type.Name} using the `registerAdditionalTypes` callback in "
                       + $"the main Run method.\r\nSee the Sailfish demo console app for an example.";
         throw new SailfishException(message);
-
     }
 
-    public T ResolveType<T>()
+    public T ResolveType<T>() where T : notnull
     {
         return (T)ResolveType(typeof(T));
     }

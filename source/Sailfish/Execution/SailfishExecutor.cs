@@ -17,6 +17,7 @@ internal class SailfishExecutor
     private readonly ITestResultPresenter testResultPresenter;
     private readonly ITestResultAnalyzer testResultAnalyzer;
     private readonly IMarkdownTableConverter markdownTableConverter;
+    private readonly RunSettings runSettings;
     private readonly ISailFishTestExecutor sailFishTestExecutor;
     private const string DefaultTrackingDirectory = "tracking_output";
 
@@ -27,7 +28,8 @@ internal class SailfishExecutor
         IExecutionSummaryCompiler executionSummaryCompiler,
         ITestResultPresenter testResultPresenter,
         ITestResultAnalyzer testResultAnalyzer,
-        IMarkdownTableConverter markdownTableConverter
+        IMarkdownTableConverter markdownTableConverter,
+        RunSettings runSettings
     )
     {
         this.sailFishTestExecutor = sailFishTestExecutor;
@@ -37,25 +39,12 @@ internal class SailfishExecutor
         this.testResultPresenter = testResultPresenter;
         this.testResultAnalyzer = testResultAnalyzer;
         this.markdownTableConverter = markdownTableConverter;
+        this.runSettings = runSettings;
     }
 
-    public async Task<SailfishRunResult> Run(RunSettings runSettings, CancellationToken cancellationToken)
+    public async Task<SailfishRunResult> Run(CancellationToken cancellationToken)
     {
-        return await Run(
-            testNames: runSettings.TestNames,
-            runSettings: runSettings,
-            cancellationToken: cancellationToken,
-            testLocationTypes: runSettings.TestLocationTypes
-        );
-    }
-
-    private async Task<SailfishRunResult> Run(
-        string[] testNames,
-        RunSettings runSettings,
-        CancellationToken cancellationToken,
-        params Type[] testLocationTypes)
-    {
-        var testInitializationResult = CollectTests(testNames, testLocationTypes);
+        var testInitializationResult = CollectTests(runSettings.TestNames, runSettings.TestLocationTypes);
         if (testInitializationResult.IsValid)
         {
             var timeStamp = runSettings.TimeStamp ?? DateTime.Now.ToLocalTime();

@@ -37,17 +37,16 @@ public static class FixtureGenericArgumentExtensionMethods
             .Cast<ITypeResolver>();
     }
 
-    public static IEnumerable<IProvideARegistrationCallback> GetRegistrationCallbackProviders(this IEnumerable<Type> allAssemblyTypes)
-    {
-        // 3. Search for Registration Callback types
-        return allAssemblyTypes
-            .Where(type => type.GetInterfaces().Contains(typeof(IProvideARegistrationCallback)))
-            .Select(Activator.CreateInstance)
-            .Cast<IProvideARegistrationCallback>();
-    }
+    public static IEnumerable<T> GetRegistrationCallbackProviders<T>(this IEnumerable<Type> allAssemblyTypes)
 
-    public static IEnumerable<Type> RetrieveAdditionalAssemblyTypes(this IEnumerable<Type> additionalAnchorTypes)
     {
-        return additionalAnchorTypes.SelectMany(t => t.Assembly.GetTypes());
+        // 3 / 4  Search for Registration Callback types
+        var providers = allAssemblyTypes
+            .Where(type => type.GetInterfaces().Contains(typeof(T)))
+            .Select(Activator.CreateInstance)
+            .Cast<T>()
+            .ToList();
+
+        return providers;
     }
 }

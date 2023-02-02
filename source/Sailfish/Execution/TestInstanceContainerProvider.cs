@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Threading.Tasks;
 
 namespace Sailfish.Execution;
 
@@ -10,22 +11,19 @@ internal class TestInstanceContainerProvider
     public readonly MethodInfo Method;
     private readonly ITypeResolutionUtility typeResolutionUtility;
     private readonly Type test;
-    private readonly IEnumerable<Type> additionalAnchorTypes;
     private readonly IEnumerable<PropertySet> propertySets;
 
     public TestInstanceContainerProvider(
         ITypeResolutionUtility typeResolutionUtility,
         Type test,
         IEnumerable<PropertySet> propertySets,
-        MethodInfo method,
-        IEnumerable<Type> additionalAnchorTypes)
+        MethodInfo method)
     {
         Method = method;
 
         this.typeResolutionUtility = typeResolutionUtility;
         this.test = test;
         this.propertySets = propertySets;
-        this.additionalAnchorTypes = additionalAnchorTypes;
     }
 
     public int GetNumberOfPropertySetsInTheQueue()
@@ -33,18 +31,18 @@ internal class TestInstanceContainerProvider
         return propertySets.Count();
     }
 
-    public IEnumerable<TestInstanceContainer> ProvideNextTestInstanceContainer()
+    public async IAsyncEnumerable<TestInstanceContainer> ProvideNextTestInstanceContainer(Type[] additionalAnchorTypes)
     {
         if (GetNumberOfPropertySetsInTheQueue() is 0)
         {
-            var instance = typeResolutionUtility.CreateDehydratedTestInstance(test, additionalAnchorTypes);
+            var instance = await typeResolutionUtility.CreateDehydratedTestInstance(test, additionalAnchorTypes);
             yield return TestInstanceContainer.CreateTestInstance(instance, Method, Array.Empty<string>(), Array.Empty<int>());
         }
         else
         {
             foreach (var nextPropertySet in propertySets)
             {
-                var instance = typeResolutionUtility.CreateDehydratedTestInstance(test, additionalAnchorTypes);
+                var instance = await typeResolutionUtility.CreateDehydratedTestInstance(test, additionalAnchorTypes);
 
                 HydrateInstance(instance, nextPropertySet);
 
