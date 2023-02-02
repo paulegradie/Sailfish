@@ -7,12 +7,12 @@ using Serilog;
 
 namespace PerformanceTestingConsoleApp;
 
-public class RegistrationProvider : IProvideRegistrationCallback
+public class RegistrationProvider : IProvideARegistrationCallback
 {
     public async Task RegisterAsync(ContainerBuilder builder)
     {
-        await Task.CompletedTask;
         builder.RegisterType<WebApplicationFactory<DemoApp>>();
         builder.RegisterInstance(Log.Logger).As<ILogger>();
+        await Task.Yield();
     }
 }

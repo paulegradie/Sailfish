@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using Autofac;
 using Sailfish.AdapterUtils;
@@ -15,13 +16,11 @@ public class TypeResolutionUtility : ITypeResolutionUtility
 {
     private readonly List<ITypeResolver> typeResolvers = new();
 
-    public async Task<object> CreateDehydratedTestInstance(Type test, IEnumerable<Type> anchorTypes)
+    public async Task<object> CreateDehydratedTestInstance(Type test, IEnumerable<Type> testDiscoveryAnchorTypes, IEnumerable<Type> registrationProviderAnchorTypes)
     {
         var allAssemblies = new List<Assembly> { test.Assembly };
-        allAssemblies.AddRange(anchorTypes.Select(t => t.Assembly));
-        var allAssemblyTypes = AssemblyScannerCache
-            .GetTypesInAssemblies(allAssemblies)
-            .ToArray();
+        allAssemblies.AddRange(testDiscoveryAnchorTypes.Select(t => t.Assembly));
+        var allAssemblyTypes = AssemblyScannerCache.GetTypesInAssemblies(allAssemblies.Distinct()).ToArray();
 
         // 1. Search for ISailfishFixtureDependency as generic args
         typeResolvers.AddRange(test.GetSailfishFixtureGenericArguments());
@@ -31,10 +30,23 @@ public class TypeResolutionUtility : ITypeResolutionUtility
 
         // 3. Search for registration callbacks
         var containerBuilder = new ContainerBuilder();
-        var asyncProviders = allAssemblyTypes.GetRegistrationCallbackProviders<IProvideRegistrationCallback>();
+        var registrationProviderAssemblyTypes = registrationProviderAnchorTypes.SelectMany(t => t.Assembly.GetTypes()).Distinct();
+        var asyncProviders = registrationProviderAssemblyTypes.GetRegistrationCallbackProviders<IProvideARegistrationCallback>();
         foreach (var asyncCallback in asyncProviders)
         {
-            await asyncCallback.RegisterAsync(containerBuilder);
+            var methodInfo = asyncCallback.GetType().GetMethod(nameof(IProvideARegistrationCallback.RegisterAsync));
+            if (methodInfo is not null && methodInfo.IsAsyncMethod())
+            {
+                await asyncCallback.RegisterAsync(containerBuilder).ConfigureAwait(false);
+            }
+            else
+            {
+                var task = asyncCallback.RegisterAsync(containerBuilder);
+                if (!task.IsCompletedSuccessfully)
+                {
+                    throw new Exception("Task error in your registration callback");
+                }
+            }
         }
 
         // 4. Look for all types that implement the ISailfishDependency interface - should have no ctor args or throw

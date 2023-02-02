@@ -4,7 +4,7 @@ using Sailfish.Registration;
 
 namespace Tests.Sailfish.TestAdapter.TestResources;
 
-public class RegoTestProvider : IProvideRegistrationCallback
+public class RegoTestProvider : IProvideARegistrationCallback
 {
     public async Task RegisterAsync(ContainerBuilder builder)
     {

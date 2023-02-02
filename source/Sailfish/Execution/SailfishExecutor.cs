@@ -44,7 +44,7 @@ internal class SailfishExecutor
 
     public async Task<SailfishRunResult> Run(CancellationToken cancellationToken)
     {
-        var testInitializationResult = CollectTests(runSettings.TestNames, runSettings.TestLocationTypes);
+        var testInitializationResult = CollectTests(runSettings.TestNames, runSettings.TestLocationAnchors);
         if (testInitializationResult.IsValid)
         {
             var timeStamp = runSettings.TimeStamp ?? DateTime.Now.ToLocalTime();
