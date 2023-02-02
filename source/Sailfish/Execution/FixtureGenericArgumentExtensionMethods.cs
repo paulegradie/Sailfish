@@ -43,6 +43,7 @@ public static class FixtureGenericArgumentExtensionMethods
         // 3 / 4  Search for Registration Callback types
         var providers = allAssemblyTypes
             .Where(type => type.GetInterfaces().Contains(typeof(T)))
+            .Distinct()
             .Select(Activator.CreateInstance)
             .Cast<T>()
             .ToList();
