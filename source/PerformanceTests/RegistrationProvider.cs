@@ -7,7 +7,7 @@ using Serilog;
 
 namespace PerformanceTests;
 
-public class RegistrationProvider : IProvideRegistrationCallback
+internal class RegistrationProvider : IProvideARegistrationCallback
 {
     public async Task RegisterAsync(ContainerBuilder builder)
     {

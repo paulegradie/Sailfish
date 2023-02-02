@@ -30,13 +30,19 @@ public abstract class SailfishProgramBase
 
     protected async Task OnExecuteAsync(CancellationToken cancellationToken)
     {
-        var sailfishRunResult = await SailfishRunner.Run(AssembleRunRequest(SourceTypesProvider()), InternalRegisterWithSailfish, cancellationToken);
+        var sailfishRunResult = await SailfishRunner.Run(AssembleRunRequest(SourceTypesProvider(), RegistrationProviderTypesProvider()), InternalRegisterWithSailfish,
+            cancellationToken);
         var not = sailfishRunResult.IsValid ? string.Empty : "not ";
         Console.WriteLine($"Test run was {not}valid");
         RunResult = sailfishRunResult;
     }
 
     protected virtual IEnumerable<Type> SourceTypesProvider()
+    {
+        return Enumerable.Empty<Type>();
+    }
+
+    protected virtual IEnumerable<Type> RegistrationProviderTypesProvider()
     {
         return Enumerable.Empty<Type>();
     }
@@ -53,7 +59,7 @@ public abstract class SailfishProgramBase
         builder.RegisterInstance(anchorTypes);
     }
 
-    protected virtual RunSettings AssembleRunRequest(IEnumerable<Type> sourceTypes)
+    protected virtual RunSettings AssembleRunRequest(IEnumerable<Type> sourceTypes, IEnumerable<Type> registrationProviderTypes)
     {
         if (OutputDirectory is null)
         {
@@ -99,8 +105,9 @@ public abstract class SailfishProgramBase
             parsedArgs,
             BeforeTarget,
             timestamp,
-            Debug,
-            sourceTypes.ToArray());
+            sourceTypes.ToArray(),
+            registrationProviderTypes.ToArray(),
+            Debug);
     }
 
     [Option("-a|--analyze", CommandOptionType.NoValue,

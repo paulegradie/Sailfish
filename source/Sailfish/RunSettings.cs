@@ -14,7 +14,8 @@ public class RunSettings
     public bool Analyze { get; }
     public bool Notify { get; set; }
     public TestSettings Settings { get; }
-    public Type[] TestLocationTypes { get; }
+    public Type[] TestLocationAnchors { get; }
+    public Type[] RegistrationProviderAnchors { get; }
     public OrderedDictionary<string, string> Tags { get; set; }
     public OrderedDictionary<string, string> Args { get; }
     public string BeforeTarget { get; }
@@ -33,7 +34,8 @@ public class RunSettings
         OrderedDictionary<string, string> args,
         string beforeTarget,
         DateTime? timeStamp,
-        params Type[] testLocationTypes)
+        Type[] testLocationAnchors,
+        Type[] registrationProviderAnchors)
     {
         TestNames = testNames;
         DirectoryPath = directoryPath;
@@ -47,7 +49,8 @@ public class RunSettings
         TimeStamp = timeStamp;
         Debug = false;
         Notify = notify;
-        TestLocationTypes = testLocationTypes;
+        TestLocationAnchors = testLocationAnchors;
+        RegistrationProviderAnchors = registrationProviderAnchors;
     }
 
 
@@ -63,8 +66,9 @@ public class RunSettings
         OrderedDictionary<string, string> args,
         string beforeTarget,
         DateTime? timeStamp,
-        bool debug = false,
-        params Type[] testLocationTypes)
+        Type[] testLocationAnchors,
+        Type[] registrationProviderAnchors,
+        bool debug = false)
     {
         TestNames = testNames;
         DirectoryPath = directoryPath;
@@ -78,14 +82,16 @@ public class RunSettings
         TimeStamp = timeStamp;
         Debug = debug;
         Notify = notify;
-        TestLocationTypes = testLocationTypes;
+        TestLocationAnchors = testLocationAnchors;
+        RegistrationProviderAnchors = registrationProviderAnchors;
     }
 
 #pragma warning disable CS8618
     private RunSettings()
 #pragma warning restore CS8618
     {
-        TestLocationTypes = Array.Empty<Type>();
+        TestLocationAnchors = Array.Empty<Type>();
+        RegistrationProviderAnchors = Array.Empty<Type>();
     }
 
     internal static RunSettings CreateTestAdapterSettings()

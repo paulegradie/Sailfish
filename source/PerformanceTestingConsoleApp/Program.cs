@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Autofac;
@@ -39,7 +40,13 @@ public class Program : SailfishProgramBase
     protected override IEnumerable<Type> SourceTypesProvider()
     {
         // Types used to resolve tests and dependencies
-        return new[] { typeof(PerformanceTestProjectDiscoveryAnchor), GetType() };
+        return new[] { typeof(PerformanceTestProjectDiscoveryAnchor) };
+    }
+
+    protected override IEnumerable<Type> RegistrationProviderTypesProvider()
+    {
+        // Types used to resolve registration providers
+        return new[] { GetType() };
     }
 
     protected override void RegisterWithSailfish(ContainerBuilder builder)

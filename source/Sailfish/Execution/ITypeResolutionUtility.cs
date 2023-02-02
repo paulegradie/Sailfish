@@ -6,5 +6,5 @@ namespace Sailfish.Execution;
 
 public interface ITypeResolutionUtility
 {
-    Task<object> CreateDehydratedTestInstance(Type test, IEnumerable<Type> anchorTypes);
+    Task<object> CreateDehydratedTestInstance(Type test, IEnumerable<Type> testDiscoveryAnchorTypes, IEnumerable<Type> registrationProviderAnchorTypes);
 }
