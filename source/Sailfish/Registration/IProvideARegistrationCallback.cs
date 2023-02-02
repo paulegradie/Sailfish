@@ -3,12 +3,7 @@ using Autofac;
 
 namespace Sailfish.Registration;
 
-public interface IProvideARegistrationCallback
-{
-    void Register(ContainerBuilder builder);
-}
-
-public interface IProvideAsyncRegistrationCallback
+public interface IProvideRegistrationCallback
 {
     Task RegisterAsync(ContainerBuilder builder);
 }

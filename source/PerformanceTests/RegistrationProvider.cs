@@ -7,13 +7,8 @@ using Serilog;
 
 namespace PerformanceTests;
 
-public class RegistrationProvider : IProvideAsyncRegistrationCallback
+public class RegistrationProvider : IProvideRegistrationCallback
 {
-    public void Register(ContainerBuilder builder)
-    {
-        // first one
-    }
-
     public async Task RegisterAsync(ContainerBuilder builder)
     {
         await Task.CompletedTask;

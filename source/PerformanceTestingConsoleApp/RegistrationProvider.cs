@@ -1,3 +1,4 @@
+using System.Threading.Tasks;
 using Autofac;
 using Demo.API;
 using Microsoft.AspNetCore.Mvc.Testing;
@@ -6,10 +7,11 @@ using Serilog;
 
 namespace PerformanceTestingConsoleApp;
 
-public class RegistrationProvider : IProvideARegistrationCallback
+public class RegistrationProvider : IProvideRegistrationCallback
 {
-    public void Register(ContainerBuilder builder)
+    public async Task RegisterAsync(ContainerBuilder builder)
     {
+        await Task.CompletedTask;
         builder.RegisterType<WebApplicationFactory<DemoApp>>();
         builder.RegisterInstance(Log.Logger).As<ILogger>();
     }

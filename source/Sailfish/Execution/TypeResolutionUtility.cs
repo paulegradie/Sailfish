@@ -31,13 +31,7 @@ public class TypeResolutionUtility : ITypeResolutionUtility
 
         // 3. Search for registration callbacks
         var containerBuilder = new ContainerBuilder();
-        var syncProviders = allAssemblyTypes.GetRegistrationCallbackProviders<IProvideARegistrationCallback>();
-        foreach (var callback in syncProviders)
-        {
-            callback.Register(containerBuilder);
-        }
-        // 3.1 Async Providers
-        var asyncProviders = allAssemblyTypes.GetRegistrationCallbackProviders<IProvideAsyncRegistrationCallback>();
+        var asyncProviders = allAssemblyTypes.GetRegistrationCallbackProviders<IProvideRegistrationCallback>();
         foreach (var asyncCallback in asyncProviders)
         {
             await asyncCallback.RegisterAsync(containerBuilder);
