@@ -25,8 +25,7 @@ internal static class TestExecution
         new TypeResolutionUtility(),
         new PropertySetGenerator(
             new ParameterCombinator(),
-            new IterationVariableRetriever()),
-        Array.Empty<Type>());
+            new IterationVariableRetriever()));
 
     public static void ExecuteTests(List<TestCase> testCases, IFrameworkHandle? frameworkHandle, CancellationToken cancellationToken)
     {
@@ -36,7 +35,9 @@ internal static class TestExecution
             return;
         }
 
-        var engine = new SailfishExecutionEngine(new TestCaseIterator());
+        var adapterRunSettings = RunSettings.CreateTestAdapterSettings();
+
+        var engine = new SailfishExecutionEngine(new TestCaseIterator(), adapterRunSettings);
         var rawResults = new List<RawExecutionResult>();
 
         var testCaseGroups = testCases
@@ -131,7 +132,7 @@ internal static class TestExecution
                 ? new RawExecutionResult(result.TestInstanceContainer.Type, new List<TestExecutionResult>() { result })
                 : new RawExecutionResult(result.TestInstanceContainer.Type, result.Exception);
 
-            var compiledResult = SummaryCompiler.CompileToSummaries(new List<RawExecutionResult>() { rawResult }, cancellationToken);
+            var compiledResult = SummaryCompiler.CompileToSummaries(new List<RawExecutionResult>() { rawResult }, cancellationToken).ToList();
             var medianTestRuntime = compiledResult.Single().CompiledResults.Single().DescriptiveStatisticsResult?.Median ??
                                     throw new SailfishException("Error computing compiled results");
 

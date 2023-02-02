@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Threading.Tasks;
 using Autofac;
 using Sailfish.AdapterUtils;
 using Sailfish.Exceptions;
@@ -14,7 +15,7 @@ public class TypeResolutionUtility : ITypeResolutionUtility
 {
     private readonly List<ITypeResolver> typeResolvers = new();
 
-    public object CreateDehydratedTestInstance(Type test, IEnumerable<Type> anchorTypes)
+    public async Task<object> CreateDehydratedTestInstance(Type test, IEnumerable<Type> anchorTypes)
     {
         var allAssemblies = new List<Assembly> { test.Assembly };
         allAssemblies.AddRange(anchorTypes.Select(t => t.Assembly));
@@ -30,11 +31,16 @@ public class TypeResolutionUtility : ITypeResolutionUtility
 
         // 3. Search for registration callbacks
         var containerBuilder = new ContainerBuilder();
-        var providers = allAssemblyTypes.GetRegistrationCallbackProviders();
-
-        foreach (var callback in providers)
+        var syncProviders = allAssemblyTypes.GetRegistrationCallbackProviders<IProvideARegistrationCallback>();
+        foreach (var callback in syncProviders)
         {
             callback.Register(containerBuilder);
+        }
+        // 3.1 Async Providers
+        var asyncProviders = allAssemblyTypes.GetRegistrationCallbackProviders<IProvideAsyncRegistrationCallback>();
+        foreach (var asyncCallback in asyncProviders)
+        {
+            await asyncCallback.RegisterAsync(containerBuilder);
         }
 
         // 4. Look for all types that implement the ISailfishDependency interface - should have no ctor args or throw

@@ -1,5 +1,5 @@
 # manually increment this until you figure out how to autoincrement :D 
-$version="0.0.278"  
+$version="0.0.279"  
 
 dotnet publish -c Release /p:Version=$version ./source/Sailfish.TestAdapter 
 

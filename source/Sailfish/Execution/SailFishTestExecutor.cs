@@ -59,21 +59,6 @@ internal class SailFishTestExecutor : ISailFishTestExecutor
         return rawResults;
     }
 
-    private void SetConsoleTotals(IEnumerable<Type> enabledTestTypes)
-    {
-        var listOfProviders = enabledTestTypes.Select(x => testInstanceContainerCreator.CreateTestContainerInstanceProviders(x)).ToList();
-        var overallTotalCases = 1;
-        var overallMethods = 0;
-        foreach (var providers in listOfProviders)
-        {
-            overallTotalCases += providers.Sum(provider => provider.GetNumberOfPropertySetsInTheQueue());
-            overallMethods += providers.Select(x => x.Method).ToList().Count;
-        }
-
-        TestCaseCountPrinter.SetTestCaseTotal(overallTotalCases);
-        TestCaseCountPrinter.SetTestMethodTotal(overallMethods);
-    }
-
     private async Task<List<TestExecutionResult>> Execute(
         Type test,
         Action<TestExecutionResult>? callback = null,
@@ -108,5 +93,20 @@ internal class SailFishTestExecutor : ISailFishTestExecutor
     {
         enabledTypes = testTypes.Where(x => !x.SailfishTypeIsDisabled()).ToArray();
         return enabledTypes.Length > 0;
+    }
+
+    private void SetConsoleTotals(IEnumerable<Type> enabledTestTypes)
+    {
+        var listOfProviders = enabledTestTypes.Select(x => testInstanceContainerCreator.CreateTestContainerInstanceProviders(x)).ToList();
+        var overallTotalCases = 1;
+        var overallMethods = 0;
+        foreach (var providers in listOfProviders)
+        {
+            overallTotalCases += providers.Sum(provider => provider.GetNumberOfPropertySetsInTheQueue());
+            overallMethods += providers.Select(x => x.Method).ToList().Count;
+        }
+
+        TestCaseCountPrinter.SetTestCaseTotal(overallTotalCases);
+        TestCaseCountPrinter.SetTestMethodTotal(overallMethods);
     }
 }
