@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Mvc.Testing;
 using Sailfish.Registration;
 using Serilog;
 
-namespace PerformanceTests;
+namespace PerformanceTestingConsoleApp;
 
 public class RegistrationProvider : IProvideRegistrationCallback
 {

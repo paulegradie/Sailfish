@@ -1,9 +1,10 @@
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace Sailfish.Execution;
 
 public interface ITypeResolutionUtility
 {
-    object CreateDehydratedTestInstance(Type test, IEnumerable<Type> anchorTypes);
+    Task<object> CreateDehydratedTestInstance(Type test, IEnumerable<Type> anchorTypes);
 }

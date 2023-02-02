@@ -21,7 +21,7 @@ public class RunSettings
     public DateTime? TimeStamp { get; }
     public bool Debug { get; set; }
 
-public RunSettings(
+    public RunSettings(
         string[] testNames,
         string directoryPath,
         string trackingDirectoryPath,
@@ -79,5 +79,17 @@ public RunSettings(
         Debug = debug;
         Notify = notify;
         TestLocationTypes = testLocationTypes;
+    }
+
+#pragma warning disable CS8618
+    private RunSettings()
+#pragma warning restore CS8618
+    {
+        TestLocationTypes = Array.Empty<Type>();
+    }
+
+    internal static RunSettings CreateTestAdapterSettings()
+    {
+        return new RunSettings();
     }
 }

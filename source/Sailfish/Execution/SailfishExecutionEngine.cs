@@ -12,10 +12,12 @@ namespace Sailfish.Execution;
 internal class SailfishExecutionEngine : ISailfishExecutionEngine
 {
     private readonly ITestCaseIterator testCaseIterator;
+    private readonly RunSettings runSettings;
 
-    public SailfishExecutionEngine(ITestCaseIterator testCaseIterator)
+    public SailfishExecutionEngine(ITestCaseIterator testCaseIterator, RunSettings runSettings)
     {
         this.testCaseIterator = testCaseIterator;
+        this.runSettings = runSettings;
     }
 
     /// <summary>
@@ -45,16 +47,16 @@ internal class SailfishExecutionEngine : ISailfishExecutionEngine
         var currentPropertyTensorIndex = 1;
         var totalPropertyTensorElements = testProvider.GetNumberOfPropertySetsInTheQueue();
 
-        var instanceContainerEnumerator = testProvider.ProvideNextTestInstanceContainer().GetEnumerator();
+        var instanceContainerEnumerator = testProvider.ProvideNextTestInstanceContainer(runSettings.TestLocationTypes).GetAsyncEnumerator(cancellationToken);
 
         try
         {
-            instanceContainerEnumerator.MoveNext();
+            await instanceContainerEnumerator.MoveNextAsync(cancellationToken);
         }
         catch (Exception ex)
         {
             await DisposeOfTestInstance(instanceContainerEnumerator.Current);
-            instanceContainerEnumerator.Dispose();
+            await instanceContainerEnumerator.DisposeAsync();
             Log.Logger.Fatal(ex, "Error encountered when getting next test");
             throw;
         }
@@ -91,7 +93,7 @@ internal class SailfishExecutionEngine : ISailfishExecutionEngine
 
             try
             {
-                continueIterating = instanceContainerEnumerator.MoveNext();
+                continueIterating = await instanceContainerEnumerator.MoveNextAsync(cancellationToken);
             }
             catch
             {
@@ -103,7 +105,7 @@ internal class SailfishExecutionEngine : ISailfishExecutionEngine
             results.Add(executionResult);
         } while (continueIterating);
 
-        instanceContainerEnumerator.Dispose();
+        await instanceContainerEnumerator.DisposeAsync();
 
         return results;
     }

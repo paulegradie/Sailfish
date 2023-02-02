@@ -1,8 +1,9 @@
+using System.Threading.Tasks;
 using Autofac;
 
 namespace Sailfish.Registration;
 
-public interface IProvideARegistrationCallback
+public interface IProvideRegistrationCallback
 {
-    void Register(ContainerBuilder builder);
+    Task RegisterAsync(ContainerBuilder builder);
 }

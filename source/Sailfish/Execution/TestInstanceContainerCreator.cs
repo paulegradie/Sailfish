@@ -11,16 +11,13 @@ internal class TestInstanceContainerCreator : ITestInstanceContainerCreator
 {
     private readonly ITypeResolutionUtility typeResolutionUtility;
     private readonly IPropertySetGenerator propertySetGenerator;
-    private readonly IEnumerable<Type> additionalAnchorTypes;
 
     public TestInstanceContainerCreator(
         ITypeResolutionUtility typeResolutionUtility,
-        IPropertySetGenerator propertySetGenerator,
-        IEnumerable<Type> additionalAnchorTypes)
+        IPropertySetGenerator propertySetGenerator)
     {
         this.typeResolutionUtility = typeResolutionUtility;
         this.propertySetGenerator = propertySetGenerator;
-        this.additionalAnchorTypes = additionalAnchorTypes;
     }
 
     public List<TestInstanceContainerProvider> CreateTestContainerInstanceProviders(
@@ -46,8 +43,7 @@ internal class TestInstanceContainerCreator : ITestInstanceContainerCreator
                 typeResolutionUtility,
                 testType,
                 propertyTensor,
-                instanceContainer,
-                additionalAnchorTypes))
+                instanceContainer))
             .ToList();
     }
 }
