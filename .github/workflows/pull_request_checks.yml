@@ -1,5 +1,5 @@
 name: Run Tests on pull request
-on: [pull_request]
+on: [ pull_request ]
 
 jobs:
   build:
@@ -26,9 +26,6 @@ jobs:
       - name: Build
         run: dotnet build ./source/Sailfish/Sailfish.csproj --configuration Release /p:Version=${VERSION}-pull-request
     
-      - name: Restore Adapter
-        run: dotnet restore ./source/Sailfish.TestAdapter/Sailfish.TestAdapter.csproj
-
       - name: Build Adapter
         run: dotnet build ./source/Sailfish.TestAdapter/Sailfish.TestAdapter.csproj --configuration Release /p:Version=${VERSION}
 
