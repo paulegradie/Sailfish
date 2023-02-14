@@ -36,6 +36,7 @@ internal class SailfishExecutionEngine : ISailfishExecutionEngine
         [Range(1, int.MaxValue)] int testProviderIndex,
         [Range(1, int.MaxValue)] int totalTestProviderCount,
         TestInstanceContainerProvider testProvider,
+        Action<TestInstanceContainerProvider>? preCallback = null,
         Action<TestExecutionResult>? callback = null,
         CancellationToken cancellationToken = default)
     {
@@ -47,7 +48,8 @@ internal class SailfishExecutionEngine : ISailfishExecutionEngine
         var currentPropertyTensorIndex = 0;
         var totalPropertyTensorElements = testProvider.GetNumberOfPropertySetsInTheQueue();
 
-        var instanceContainerEnumerator = testProvider.ProvideNextTestInstanceContainer(runSettings.TestLocationAnchors, runSettings.RegistrationProviderAnchors).GetAsyncEnumerator(cancellationToken);
+        var instanceContainerEnumerator = testProvider.ProvideNextTestInstanceContainer(runSettings.TestLocationAnchors, runSettings.RegistrationProviderAnchors)
+            .GetAsyncEnumerator(cancellationToken);
 
         try
         {
@@ -63,6 +65,7 @@ internal class SailfishExecutionEngine : ISailfishExecutionEngine
 
         var results = new List<TestExecutionResult>();
         bool continueIterating;
+        preCallback?.Invoke(testProvider);
         do
         {
             var testMethodContainer = instanceContainerEnumerator.Current;

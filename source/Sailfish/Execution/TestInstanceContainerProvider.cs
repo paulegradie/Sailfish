@@ -9,8 +9,8 @@ namespace Sailfish.Execution;
 internal class TestInstanceContainerProvider
 {
     public readonly MethodInfo Method;
+    public readonly Type Test;
     private readonly ITypeResolutionUtility typeResolutionUtility;
-    private readonly Type test;
     private readonly IEnumerable<PropertySet> propertySets;
 
     public TestInstanceContainerProvider(
@@ -20,9 +20,9 @@ internal class TestInstanceContainerProvider
         MethodInfo method)
     {
         Method = method;
+        Test = test;
 
         this.typeResolutionUtility = typeResolutionUtility;
-        this.test = test;
         this.propertySets = propertySets;
     }
 
@@ -35,14 +35,14 @@ internal class TestInstanceContainerProvider
     {
         if (GetNumberOfPropertySetsInTheQueue() is 0)
         {
-            var instance = await typeResolutionUtility.CreateDehydratedTestInstance(test, testDiscoveryAnchorTypes, registrationProviderAnchorTypes);
+            var instance = await typeResolutionUtility.CreateDehydratedTestInstance(Test, testDiscoveryAnchorTypes, registrationProviderAnchorTypes);
             yield return TestInstanceContainer.CreateTestInstance(instance, Method, Array.Empty<string>(), Array.Empty<int>());
         }
         else
         {
             foreach (var nextPropertySet in propertySets)
             {
-                var instance = await typeResolutionUtility.CreateDehydratedTestInstance(test, testDiscoveryAnchorTypes, registrationProviderAnchorTypes);
+                var instance = await typeResolutionUtility.CreateDehydratedTestInstance(Test, testDiscoveryAnchorTypes, registrationProviderAnchorTypes);
 
                 HydrateInstance(instance, nextPropertySet);
 
