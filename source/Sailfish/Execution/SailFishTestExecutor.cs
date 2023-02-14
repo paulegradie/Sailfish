@@ -27,7 +27,7 @@ internal class SailFishTestExecutor : ISailFishTestExecutor
 
     public async Task<List<RawExecutionResult>> Execute(
         IEnumerable<Type> testTypes,
-        Action<TestExecutionResult>? callback = null,
+        Action<TestExecutionResult, TestInstanceContainer>? callback = null,
         CancellationToken cancellationToken = default)
     {
         var rawResults = new List<RawExecutionResult>();
@@ -61,7 +61,7 @@ internal class SailFishTestExecutor : ISailFishTestExecutor
 
     private async Task<List<TestExecutionResult>> Execute(
         Type test,
-        Action<TestExecutionResult>? callback = null,
+        Action<TestExecutionResult, TestInstanceContainer>? callback = null,
         CancellationToken cancellationToken = default)
     {
         var testInstanceContainerProviders = testInstanceContainerCreator.CreateTestContainerInstanceProviders(test);
@@ -71,7 +71,7 @@ internal class SailFishTestExecutor : ISailFishTestExecutor
 
     private async Task<List<TestExecutionResult>> Execute(
         IReadOnlyCollection<TestInstanceContainerProvider> testInstanceContainerProviders,
-        Action<TestExecutionResult>? callback = null,
+        Action<TestExecutionResult, TestInstanceContainer>? callback = null,
         CancellationToken cancellationToken = default)
     {
         var results = new List<TestExecutionResult>();

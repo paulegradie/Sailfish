@@ -9,6 +9,6 @@ internal interface ISailFishTestExecutor
 {
     Task<List<RawExecutionResult>> Execute(
         IEnumerable<Type> testTypes,
-        Action<TestExecutionResult>? callback = null,
+        Action<TestExecutionResult, TestInstanceContainer>? callback = null,
         CancellationToken cancellationToken = default);
 }
