@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Collections.Specialized;
 using System.Linq;
 using System.Reflection;
 using System.Threading;
@@ -46,7 +45,6 @@ internal static class TestExecution
                 testCase =>
                     testCase.Traits.Single(x => x.Name == TestCaseItemCreator.TestTypeFullName).Value);
 
-        Type? testType = null;
         foreach (var testCaseGroup in testCaseGroups)
         {
             var groupResults = new List<TestExecutionResult>();
@@ -55,19 +53,12 @@ internal static class TestExecution
             var testTypeTrait = firstTestCase.Traits.Single(trait => trait.Name == TestCaseItemCreator.TestTypeFullName);
             var testTypeFullName = testTypeTrait.Value;
             var assembly = LoadAssemblyFromDll(firstTestCase.Source);
-            var nextTestType = assembly.GetType(testTypeFullName, true, true);
-            if (nextTestType is null)
+            var testType = assembly.GetType(testTypeFullName, true, true);
+            if (testType is null)
             {
                 frameworkHandle?.SendMessage(TestMessageLevel.Error, $"Unable to find the following testType: {testTypeFullName}");
                 continue;
             }
-
-            if (testType is not null && testType.FullName != nextTestType.FullName)
-            {
-                throw new Exception($"The test types in the group should be matching: current: {testType.FullName} - next: {nextTestType.FullName}");
-            }
-
-            testType = nextTestType; // what the hell TODO: Fix this since the refactor
 
             var availableVariableSections = testCases.Select(x => x.Traits.Single(y => y.Name == TestCaseItemCreator.FormedVariableSection).Value).Distinct();
 
