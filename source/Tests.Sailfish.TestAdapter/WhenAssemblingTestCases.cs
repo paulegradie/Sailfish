@@ -1,18 +1,17 @@
 ﻿using System.IO;
 using System.Linq;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.Logging;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using NSubstitute;
 using Sailfish.TestAdapter.Discovery;
 using Shouldly;
 using Tests.Sailfish.TestAdapter.TestResources;
+using Xunit;
 
 namespace Tests.Sailfish.TestAdapter;
 
-[TestClass]
 public class WhenAssemblingTestCases
 {
-    public string FindSpecificUniqueFile(string fileName)
+    public static string FindSpecificUniqueFile(string fileName)
     {
         var refFile = Directory.GetFiles(".").First();
 
@@ -21,7 +20,7 @@ public class WhenAssemblingTestCases
         return file;
     }
 
-    [TestMethod]
+    [Fact]
     public void AllTestCasesAreMade()
     {
         var testResourceRelativePath = FindSpecificUniqueFile("TestResourceDoNotRename.cs");

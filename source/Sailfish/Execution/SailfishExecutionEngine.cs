@@ -29,6 +29,7 @@ internal class SailfishExecutionEngine : ISailfishExecutionEngine
     /// <param name="testProviderIndex"></param>
     /// <param name="totalTestProviderCount"></param>
     /// <param name="testProvider"></param>
+    /// <param name="preCallback"></param>
     /// <param name="callback"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
@@ -36,7 +37,8 @@ internal class SailfishExecutionEngine : ISailfishExecutionEngine
         [Range(1, int.MaxValue)] int testProviderIndex,
         [Range(1, int.MaxValue)] int totalTestProviderCount,
         TestInstanceContainerProvider testProvider,
-        Action<TestExecutionResult>? callback = null,
+        Action<TestInstanceContainer>? preCallback = null,
+        Action<TestExecutionResult, TestInstanceContainer>? callback = null,
         CancellationToken cancellationToken = default)
     {
         if (testProviderIndex > totalTestProviderCount)
@@ -44,10 +46,11 @@ internal class SailfishExecutionEngine : ISailfishExecutionEngine
             throw new SailfishException($"test provider index {testProviderIndex} cannot be greater than total test provider count {totalTestProviderCount}");
         }
 
-        var currentPropertyTensorIndex = 1;
-        var totalPropertyTensorElements = testProvider.GetNumberOfPropertySetsInTheQueue();
+        var currentPropertyTensorIndex = 0;
+        var totalPropertyTensorElements = testProvider.GetNumberOfPropertySetsInTheQueue() - 1;
 
-        var instanceContainerEnumerator = testProvider.ProvideNextTestInstanceContainer(runSettings.TestLocationAnchors, runSettings.RegistrationProviderAnchors).GetAsyncEnumerator(cancellationToken);
+        var instanceContainerEnumerator = testProvider.ProvideNextTestInstanceContainer(runSettings.TestLocationAnchors, runSettings.RegistrationProviderAnchors)
+            .GetAsyncEnumerator(cancellationToken);
 
         try
         {
@@ -66,6 +69,7 @@ internal class SailfishExecutionEngine : ISailfishExecutionEngine
         do
         {
             var testMethodContainer = instanceContainerEnumerator.Current;
+            preCallback?.Invoke(testMethodContainer);
             TestCaseCountPrinter.PrintCaseUpdate(testMethodContainer.TestCaseId.DisplayName);
 
             if (ShouldCallGlobalSetup(testProviderIndex, currentPropertyTensorIndex))
@@ -84,6 +88,9 @@ internal class SailfishExecutionEngine : ISailfishExecutionEngine
                 await testMethodContainer.Invocation.GlobalTeardown(cancellationToken);
             }
 
+            callback?.Invoke(executionResult, testMethodContainer);
+            results.Add(executionResult);
+
             if (ShouldDisposeOfInstance(currentPropertyTensorIndex, totalPropertyTensorElements))
             {
                 await DisposeOfTestInstance(testMethodContainer);
@@ -100,9 +107,6 @@ internal class SailfishExecutionEngine : ISailfishExecutionEngine
                 await DisposeOfTestInstance(instanceContainerEnumerator.Current);
                 throw;
             }
-
-            callback?.Invoke(executionResult);
-            results.Add(executionResult);
         } while (continueIterating);
 
         await instanceContainerEnumerator.DisposeAsync();

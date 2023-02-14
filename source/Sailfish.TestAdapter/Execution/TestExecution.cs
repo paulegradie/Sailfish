@@ -48,54 +48,47 @@ internal static class TestExecution
         foreach (var testCaseGroup in testCaseGroups)
         {
             var groupResults = new List<TestExecutionResult>();
-            Type? testType = null;
-            foreach (var testCase in testCaseGroup)
+
+            var firstTestCase = testCaseGroup.First();
+            var testTypeTrait = firstTestCase.Traits.Single(trait => trait.Name == TestCaseItemCreator.TestTypeFullName);
+            var testTypeFullName = testTypeTrait.Value;
+            var assembly = LoadAssemblyFromDll(firstTestCase.Source);
+            var testType = assembly.GetType(testTypeFullName, true, true);
+            if (testType is null)
             {
-                var testTypeTrait = testCase.Traits.Single(trait => trait.Name == TestCaseItemCreator.TestTypeFullName);
-                var testTypeFullName = testTypeTrait.Value;
+                frameworkHandle?.SendMessage(TestMessageLevel.Error, $"Unable to find the following testType: {testTypeFullName}");
+                continue;
+            }
 
-                var assembly = LoadAssemblyFromDll(testCase.Source);
+            var availableVariableSections = testCases.Select(x => x.Traits.Single(y => y.Name == TestCaseItemCreator.FormedVariableSection).Value).Distinct();
 
-                var nextTestType = assembly.GetType(testTypeFullName, true, true);
+            bool PropertyFilter(PropertySet currentPropertySet)
+            {
+                var currentVariableSection = currentPropertySet.FormTestCaseVariableSection();
+                return availableVariableSections.Contains(currentVariableSection);
+            }
 
-                if (nextTestType is null)
-                {
-                    frameworkHandle?.SendMessage(TestMessageLevel.Error, $"Unable to find the following testType: {testTypeFullName}");
-                    continue;
-                }
+            var availableMethods = testCases.Select(x => x.Traits.Single(y => y.Name == TestCaseItemCreator.MethodName).Value).Distinct();
 
-                if (testType is not null && testType.FullName != nextTestType.FullName)
-                {
-                    throw new Exception($"The test types in the group should be matching: current: {testType.FullName} - next: {nextTestType.FullName}");
-                }
+            bool MethodFilter(MethodInfo currentMethodInfo)
+            {
+                var currentMethod = currentMethodInfo.Name;
+                return availableMethods.Contains(currentMethod);
+            }
 
-                testType = nextTestType;
+            // list of methods with their many variable combos. Each element is a container, which represents a SailfishMethod
+            var providerForCurrentTestCases = TestInstanceContainerCreator.CreateTestContainerInstanceProviders(testType, PropertyFilter, MethodFilter);
 
-                var formedVariableSection = testCase.Traits.Single(t => t.Name == TestCaseItemCreator.FormedVariableSection).Value;
-                var methodName = testCase.Traits.Single(t => t.Name == TestCaseItemCreator.MethodName).Value;
-
-                bool PropertyFilter(PropertySet currentPropertySet)
-                {
-                    var currentVariableSection = currentPropertySet.FormTestCaseVariableSection();
-                    return currentVariableSection.Equals(formedVariableSection, StringComparison.InvariantCultureIgnoreCase);
-                }
-
-                bool MethodFilter(MethodInfo currentMethodInfo)
-                {
-                    var currentMethod = currentMethodInfo.Name;
-                    return currentMethod.Equals(methodName, StringComparison.InvariantCultureIgnoreCase);
-                }
-
-                var providerForCurrentTestCases = TestInstanceContainerCreator
-                    .CreateTestContainerInstanceProviders(testType, PropertyFilter, MethodFilter);
-
-                frameworkHandle?.RecordStart(testCase);
-
+            var totalTestProviderCount = providerForCurrentTestCases.Count - 1;
+            for (var i = 0; i < providerForCurrentTestCases.Count; i++)
+            {
+                var provider = providerForCurrentTestCases[i];
                 var results = engine.ActivateContainer(
-                        0,
-                        1,
-                        providerForCurrentTestCases.Single(),
-                        TestResultCallback(testCase, frameworkHandle, cancellationToken),
+                        i,
+                        totalTestProviderCount,
+                        provider,
+                        PreTestResultCallback(frameworkHandle, testCaseGroup),
+                        PostTestResultCallback(testCaseGroup, frameworkHandle, cancellationToken),
                         cancellationToken)
                     .GetAwaiter().GetResult();
                 groupResults.AddRange(results);
@@ -124,10 +117,27 @@ internal static class TestExecution
         }
     }
 
-    private static Action<TestExecutionResult> TestResultCallback(TestCase testCase, ITestExecutionRecorder? logger, CancellationToken cancellationToken)
+    private static Action<TestInstanceContainer> PreTestResultCallback(ITestExecutionRecorder? logger, IGrouping<string, TestCase> testCaseGroup)
     {
-        return (TestExecutionResult result) =>
+        return container =>
         {
+            var currentTestCase = GetTestCaseFromTestCaseGroupMatchingCurrentContainer(container, testCaseGroup);
+            logger?.RecordStart(currentTestCase);
+        };
+    }
+
+    private static TestCase GetTestCaseFromTestCaseGroupMatchingCurrentContainer(TestInstanceContainer container, IGrouping<string, TestCase> testCaseGroup)
+    {
+        return testCaseGroup.Single(x => string.Equals(x.DisplayName, container.TestCaseId.DisplayName, StringComparison.InvariantCultureIgnoreCase));
+    }
+
+    private static Action<TestExecutionResult, TestInstanceContainer> PostTestResultCallback(IGrouping<string, TestCase> testCaseGroups, ITestExecutionRecorder? logger,
+        CancellationToken cancellationToken)
+    {
+        return (result, container) =>
+        {
+            var currentTestCase = GetTestCaseFromTestCaseGroupMatchingCurrentContainer(container, testCaseGroups);
+
             var rawResult = result.Exception is null
                 ? new RawExecutionResult(result.TestInstanceContainer.Type, new List<TestExecutionResult>() { result })
                 : new RawExecutionResult(result.TestInstanceContainer.Type, result.Exception);
@@ -136,7 +146,7 @@ internal static class TestExecution
             var medianTestRuntime = compiledResult.Single().CompiledResults.Single().DescriptiveStatisticsResult?.Median ??
                                     throw new SailfishException("Error computing compiled results");
 
-            var testResult = new TestResult(testCase);
+            var testResult = new TestResult(currentTestCase);
 
             if (result.Exception is not null)
             {
@@ -145,7 +155,7 @@ internal static class TestExecution
             }
 
             testResult.Outcome = result.StatusCode == 0 ? TestOutcome.Passed : TestOutcome.Failed;
-            testResult.DisplayName = testCase.DisplayName;
+            testResult.DisplayName = currentTestCase.DisplayName;
 
             testResult.StartTime = result.PerformanceTimerResults.GlobalStart;
             testResult.EndTime = result.PerformanceTimerResults.GlobalStop;
@@ -159,7 +169,7 @@ internal static class TestExecution
             LogTestResults(result, logger);
 
             logger?.RecordResult(testResult);
-            logger?.RecordEnd(testCase, testResult.Outcome);
+            logger?.RecordEnd(currentTestCase, testResult.Outcome);
         };
     }
 }

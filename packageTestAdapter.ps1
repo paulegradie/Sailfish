@@ -1,7 +1,14 @@
-# manually increment this until you figure out how to autoincrement :D 
-$version="0.0.280"  
+# manually increment this until you figure out how to autoincrement :D
+$version="0.0.299"
+$path = "../SailfishLocalPackages"
+If(!(test-path -PathType container $path))
+{
+    New-Item -ItemType Directory -Path $path
+}
 
-dotnet publish -c Release /p:Version=$version ./source/Sailfish.TestAdapter 
 
-Move-Item -Force ./source/Sailfish.TestAdapter/bin/Release/Sailfish.TestAdapter.$version.nupkg ../SailfishLocalPackages
+dotnet build -c Release /p:Version=$version ./source/Sailfish.TestAdapter
+
+
+Move-Item -Force ./source/Sailfish.TestAdapter/bin/Release/Sailfish.TestAdapter.$version.nupkg ../SailfishLocalPackages/Sailfish.TestAdapter.$version.nupkg
 

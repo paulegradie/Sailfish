@@ -27,7 +27,7 @@ internal class SailFishTestExecutor : ISailFishTestExecutor
 
     public async Task<List<RawExecutionResult>> Execute(
         IEnumerable<Type> testTypes,
-        Action<TestExecutionResult>? callback = null,
+        Action<TestExecutionResult, TestInstanceContainer>? callback = null,
         CancellationToken cancellationToken = default)
     {
         var rawResults = new List<RawExecutionResult>();
@@ -61,7 +61,7 @@ internal class SailFishTestExecutor : ISailFishTestExecutor
 
     private async Task<List<TestExecutionResult>> Execute(
         Type test,
-        Action<TestExecutionResult>? callback = null,
+        Action<TestExecutionResult, TestInstanceContainer>? callback = null,
         CancellationToken cancellationToken = default)
     {
         var testInstanceContainerProviders = testInstanceContainerCreator.CreateTestContainerInstanceProviders(test);
@@ -71,7 +71,7 @@ internal class SailFishTestExecutor : ISailFishTestExecutor
 
     private async Task<List<TestExecutionResult>> Execute(
         IReadOnlyCollection<TestInstanceContainerProvider> testInstanceContainerProviders,
-        Action<TestExecutionResult>? callback = null,
+        Action<TestExecutionResult, TestInstanceContainer>? callback = null,
         CancellationToken cancellationToken = default)
     {
         var results = new List<TestExecutionResult>();
@@ -81,7 +81,7 @@ internal class SailFishTestExecutor : ISailFishTestExecutor
         foreach (var testInstanceContainerProvider in testInstanceContainerProviders.OrderBy(x => x.Method.Name))
         {
             TestCaseCountPrinter.PrintMethodUpdate(testInstanceContainerProvider.Method);
-            var executionResults = await engine.ActivateContainer(currentTestInstanceContainer, totalMethodCount, testInstanceContainerProvider, callback, cancellationToken);
+            var executionResults = await engine.ActivateContainer(currentTestInstanceContainer, totalMethodCount, testInstanceContainerProvider, null, callback, cancellationToken);
             results.AddRange(executionResults);
             currentTestInstanceContainer += 1;
         }
