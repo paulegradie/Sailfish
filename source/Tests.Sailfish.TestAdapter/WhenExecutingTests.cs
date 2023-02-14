@@ -2,19 +2,18 @@
 using System.Threading;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.Adapter;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.Logging;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using NSubstitute;
 using Sailfish.TestAdapter.Discovery;
 using Sailfish.TestAdapter.Execution;
 using Shouldly;
 using Tests.Sailfish.TestAdapter.Utils;
+using Xunit;
 
 namespace Tests.Sailfish.TestAdapter;
 
-[TestClass]
 public class WhenExecutingTests
 {
-    [TestMethod]
+    [Fact]
     public void FilteredTestsAreSuccessfullyDiscovered()
     {
         var frameworkHandle = Substitute.For<IFrameworkHandle>();
@@ -25,7 +24,7 @@ public class WhenExecutingTests
         Should.NotThrow(() => TestExecution.ExecuteTests(testCases.Take(1).ToList(), frameworkHandle, CancellationToken.None));
     }
 
-    [TestMethod]
+    [Fact]
     public void TestCasesAreExecutedCorrectly()
     {
         var frameworkHandle = Substitute.For<IFrameworkHandle>();

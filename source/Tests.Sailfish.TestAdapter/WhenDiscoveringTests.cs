@@ -1,15 +1,15 @@
 ﻿using System.Linq;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Sailfish.TestAdapter.Discovery;
 using Shouldly;
 using Tests.Sailfish.TestAdapter.Utils;
+using Xunit;
 
 namespace Tests.Sailfish.TestAdapter;
 
-[TestClass]
+
 public class WhenDiscoveringTests
 {
-    [TestMethod]
+    [Fact]
     public void AllTestsAreDiscovered()
     {
         // sources is a list of dlls that we've discovered in this project
@@ -21,7 +21,7 @@ public class WhenDiscoveringTests
         testCases.Count.ShouldBe(7);
     }
 
-    [TestMethod]
+    [Fact]
     public void TestCasesAreAssembledCorrect()
     {
         var sources = DllFinder.FindAllDllsRecursively();
