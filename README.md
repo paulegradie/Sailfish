@@ -2,13 +2,18 @@
 
 Sailfish is a .NET library used to perform low resolution performance analysis of your component or API.
 
-Available on [https://www.nuget.org/packages/Sailfish/](https://www.nuget.org/packages/Sailfish/)
+Available on [Nuget](https://www.nuget.org/packages/Sailfish/)
 
 ## [Visit the Wiki](https://github.com/paulegradie/Sailfish/wiki)
 
-Visit the [wiki](https://github.com/paulegradie/Sailfish/wiki) to view the [getting started guide](https://github.com/paulegradie/Sailfish/wiki/Using-Sailfish-as-a-C%23-console-app) and other helpful details.
+Visit the [wiki](https://github.com/paulegradie/Sailfish/wiki) to view the [full getting started guide](https://github.com/paulegradie/Sailfish/wiki/Using-Sailfish-as-a-C%23-console-app) and other helpful details.
+
+# Getting Started
 
 ## Quick Start Guide
+
+✨Sailfish tests are now able to be run directly from the IDE!✨
+
 
 ```csharp
 class Program : SailfishProgramBase
