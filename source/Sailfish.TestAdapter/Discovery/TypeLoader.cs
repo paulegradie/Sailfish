@@ -22,7 +22,6 @@ internal static class TypeLoader
             .Where(x => x.HasAttribute<SailfishAttribute>())
             .ToArray();
 
-        logger.SendMessage(TestMessageLevel.Informational, $"\rTest Types Discovered in {assembly.FullName ?? "Couldn't Find the assembly name property"}:\r");
         foreach (var testType in perfTestTypes) logger.SendMessage(TestMessageLevel.Informational, $"--- Perf tests: {testType.Name}");
 
         return perfTestTypes;

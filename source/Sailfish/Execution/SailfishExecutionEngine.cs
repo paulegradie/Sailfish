@@ -47,7 +47,7 @@ internal class SailfishExecutionEngine : ISailfishExecutionEngine
         }
 
         var currentPropertyTensorIndex = 0;
-        var totalPropertyTensorElements = testProvider.GetNumberOfPropertySetsInTheQueue() - 1;
+        var totalPropertyTensorElements = Math.Max(testProvider.GetNumberOfPropertySetsInTheQueue() - 1, 0);
 
         var instanceContainerEnumerator = testProvider.ProvideNextTestInstanceContainer(runSettings.TestLocationAnchors, runSettings.RegistrationProviderAnchors)
             .GetAsyncEnumerator(cancellationToken);
