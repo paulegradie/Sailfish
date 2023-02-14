@@ -4,11 +4,9 @@ using Sailfish.Attributes;
 
 namespace PerformanceTests.ExamplePerformanceTests;
 
-[Sailfish(NumIterations = 3, NumWarmupIterations = 2, Disabled = TestConstants.Disabled)]
+[Sailfish(NumIterations = 1, NumWarmupIterations = 0, Disabled = TestConstants.Disabled)]
 public class SimplePerfTest
 {
-    [SailfishVariable(1, 2, 3)] public int VariableA { get; set; }
-
     [SailfishGlobalSetup]
     public async Task GlobalSetup(CancellationToken cancellationToken)
     {
