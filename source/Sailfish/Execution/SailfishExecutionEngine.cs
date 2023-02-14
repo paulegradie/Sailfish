@@ -44,7 +44,7 @@ internal class SailfishExecutionEngine : ISailfishExecutionEngine
             throw new SailfishException($"test provider index {testProviderIndex} cannot be greater than total test provider count {totalTestProviderCount}");
         }
 
-        var currentPropertyTensorIndex = 1;
+        var currentPropertyTensorIndex = 0;
         var totalPropertyTensorElements = testProvider.GetNumberOfPropertySetsInTheQueue();
 
         var instanceContainerEnumerator = testProvider.ProvideNextTestInstanceContainer(runSettings.TestLocationAnchors, runSettings.RegistrationProviderAnchors).GetAsyncEnumerator(cancellationToken);

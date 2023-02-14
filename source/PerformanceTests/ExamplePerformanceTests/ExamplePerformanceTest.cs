@@ -26,12 +26,14 @@ public class ExamplePerformanceTest : TestBase
     [SailfishGlobalSetup]
     public void GlobalSetup(CancellationToken cancellationToken)
     {
+        ;
         // logger.Information("This is the Global Setup");
     }
 
     [SailfishMethodSetup]
     public void ExecutionMethodSetup(CancellationToken cancellationToken)
     {
+        ;
         // logger.Information("This is the Execution Method Setup");
     }
 
@@ -58,12 +60,14 @@ public class ExamplePerformanceTest : TestBase
     [SailfishIterationTeardown]
     public void IterationTeardown(CancellationToken cancellationToken)
     {
+        
         // logger.Warning("This is the Iteration Teardown - use sparingly");
     }
 
     [SailfishMethodTeardown]
     public void ExecutionMethodTeardown(CancellationToken cancellationToken)
     {
+        ;
         // logger.Verbose("This is the Execution Method Teardown");
     }
 
