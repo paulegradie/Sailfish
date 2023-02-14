@@ -10,7 +10,7 @@ namespace PerformanceTests.ExamplePerformanceTests;
 
 [WriteToMarkdown]
 [WriteToCsv]
-[Sailfish(5, 2, Disabled = true)]
+[Sailfish(1, 0, Disabled = true)]
 public class ExamplePerformanceTest : TestBase
 {
     private readonly ILogger logger;
@@ -40,6 +40,7 @@ public class ExamplePerformanceTest : TestBase
     [SailfishIterationSetup]
     public void IterationSetup(CancellationToken cancellationToken)
     {
+        ;
         // logger.Warning("This is the Iteration Setup - use sparingly");
     }
 
@@ -60,7 +61,7 @@ public class ExamplePerformanceTest : TestBase
     [SailfishIterationTeardown]
     public void IterationTeardown(CancellationToken cancellationToken)
     {
-        
+        ;
         // logger.Warning("This is the Iteration Teardown - use sparingly");
     }
 

@@ -81,7 +81,7 @@ internal class SailFishTestExecutor : ISailFishTestExecutor
         foreach (var testInstanceContainerProvider in testInstanceContainerProviders.OrderBy(x => x.Method.Name))
         {
             TestCaseCountPrinter.PrintMethodUpdate(testInstanceContainerProvider.Method);
-            var executionResults = await engine.ActivateContainer(currentTestInstanceContainer, totalMethodCount, testInstanceContainerProvider, callback, cancellationToken);
+            var executionResults = await engine.ActivateContainer(currentTestInstanceContainer, totalMethodCount, testInstanceContainerProvider, null, callback, cancellationToken);
             results.AddRange(executionResults);
             currentTestInstanceContainer += 1;
         }
