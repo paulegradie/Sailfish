@@ -1,8 +1,9 @@
 ﻿using System.Threading;
 using System.Threading.Tasks;
+using PerformanceTests.DemoUtils;
 using Sailfish.Attributes;
 
-namespace PerformanceTests.ExamplePerformanceTests;
+namespace PerformanceTests.ExamplePerformanceTests.Discoverable;
 
 [Sailfish(NumIterations = 1, NumWarmupIterations = 0, Disabled = TestConstants.Disabled)]
 public class SimplePerfTest

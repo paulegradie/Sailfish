@@ -1,4 +1,4 @@
-namespace PerformanceTests.ExamplePerformanceTests;
+namespace PerformanceTests.DemoUtils;
 
 public class TestConstants
 {

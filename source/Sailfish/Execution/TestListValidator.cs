@@ -31,7 +31,18 @@ internal class TestListValidator : ITestListValidator
             erroredTests.Add("The following tests have no execution method defined:", noExecutionMethodTests);
         }
 
-        return erroredTests.Keys.Count > 0 ? TestInitializationResult.CreateFailure(filteredTestNames, erroredTests) : TestInitializationResult.CreateSuccess(filteredTestNames);
+        if (erroredTests.Keys.Count > 0)
+        {
+            return TestInitializationResult.CreateFailure(filteredTestNames, erroredTests);
+        }
+
+        if (!filteredTestNames.Any())
+        {
+            erroredTests.Add("No Tests Found", new List<string>());
+            return TestInitializationResult.CreateFailure(filteredTestNames, erroredTests);
+        }
+
+        return TestInitializationResult.CreateSuccess(filteredTestNames);
     }
 
     private static bool AnyTestHasNoExecutionMethods(IEnumerable<Type> testClasses, out List<string> missingExecutionMethod)
@@ -56,7 +67,8 @@ internal class TestListValidator : ITestListValidator
             .Length > 0;
     }
 
-    private static bool TestsAreRequestedButCannotFindAllOfThem(IReadOnlyCollection<string> testsRequestedByUser, IReadOnlyCollection<string> filteredTestNames, out List<string> missingTests)
+    private static bool TestsAreRequestedButCannotFindAllOfThem(IReadOnlyCollection<string> testsRequestedByUser, IReadOnlyCollection<string> filteredTestNames,
+        out List<string> missingTests)
     {
         missingTests = testsRequestedByUser.Except(filteredTestNames).ToList();
         return testsRequestedByUser.Count > 0 && filteredTestNames.Count != testsRequestedByUser.Count;

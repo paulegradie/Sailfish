@@ -1,15 +1,11 @@
 using System.Threading;
 using System.Threading.Tasks;
+using PerformanceTests.DemoUtils;
 using Sailfish.Attributes;
-using Sailfish.Registration;
 
-namespace PerformanceTests.ExamplePerformanceTests;
+namespace PerformanceTests.ExamplePerformanceTests.Discoverable;
 
-public class ExampleDependencyForAltRego : ISailfishDependency
-{
-}
-
-[Sailfish(NumIterations = 3, NumWarmupIterations = 2, Disabled = TestConstants.Enabled)]
+[Sailfish(NumIterations = 3, NumWarmupIterations = 2, Disabled = true)]
 public class PerfTestWithAltRego
 {
     private readonly ExampleDependencyForAltRego dep;

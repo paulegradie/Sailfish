@@ -6,5 +6,4 @@ namespace PerformanceTests;
 // ReSharper disable once UnusedType.Global
 public class PerformanceTestProjectDiscoveryAnchor
 {
-    
 }

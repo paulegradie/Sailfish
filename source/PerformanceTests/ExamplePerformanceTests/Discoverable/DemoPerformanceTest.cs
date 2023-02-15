@@ -1,10 +1,11 @@
 using System.Threading;
 using System.Threading.Tasks;
+using PerformanceTests.DemoUtils;
 using Sailfish.Attributes;
 
-namespace PerformanceTests.ExamplePerformanceTests;
+namespace PerformanceTests.ExamplePerformanceTests.Discoverable;
 
-[Sailfish(Disabled = TestConstants.Disabled)]
+[Sailfish(Disabled = true)]
 public class DemoPerformanceTest
 {
     [SailfishMethod]

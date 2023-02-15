@@ -1,7 +1,7 @@
 ﻿using System;
 using Sailfish.Attributes;
 
-namespace PerformanceTests.ExamplePerformanceTests;
+namespace PerformanceTests.ExamplePerformanceTests.NonDiscoverable;
 
 [Sailfish(Disabled = true)]
 public class FaultyTestStructure
