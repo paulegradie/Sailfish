@@ -13,5 +13,6 @@ internal interface ISailfishExecutionEngine
         TestInstanceContainerProvider testProvider,
         Action<TestInstanceContainer>? preCallback = null,
         Action<TestExecutionResult, TestInstanceContainer>? callback = null,
+        Action<TestInstanceContainer?>? exceptionCallback = null,
         CancellationToken cancellationToken = default);
 }

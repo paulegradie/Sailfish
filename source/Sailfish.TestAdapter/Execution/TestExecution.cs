@@ -87,9 +87,10 @@ internal static class TestExecution
                         i,
                         totalTestProviderCount,
                         provider,
-                        PreTestResultCallback(frameworkHandle, testCaseGroup),
+                        PreTestResultCallback(testCaseGroup, frameworkHandle),
                         PostTestResultCallback(testCaseGroup, frameworkHandle, cancellationToken),
-                        cancellationToken)
+                        ExceptionCallback(testCaseGroup, frameworkHandle),
+                        cancellationToken: cancellationToken)
                     .GetAwaiter().GetResult();
                 groupResults.AddRange(results);
             }
@@ -117,7 +118,26 @@ internal static class TestExecution
         }
     }
 
-    private static Action<TestInstanceContainer> PreTestResultCallback(ITestExecutionRecorder? logger, IGrouping<string, TestCase> testCaseGroup)
+    private static Action<TestInstanceContainer?> ExceptionCallback(IGrouping<string, TestCase> testCaseGroup, ITestExecutionRecorder? logger)
+    {
+        return (container) =>
+        {
+            if (container is null)
+            {
+                foreach (var testCase in testCaseGroup)
+                {
+                    logger?.RecordEnd(testCase, TestOutcome.Failed);
+                }
+            }
+            else
+            {
+                var currentTestCase = GetTestCaseFromTestCaseGroupMatchingCurrentContainer(container, testCaseGroup);
+                logger?.RecordEnd(currentTestCase, TestOutcome.Failed);
+            }
+        };
+    }
+
+    private static Action<TestInstanceContainer> PreTestResultCallback(IGrouping<string, TestCase> testCaseGroup, ITestExecutionRecorder? logger)
     {
         return container =>
         {
