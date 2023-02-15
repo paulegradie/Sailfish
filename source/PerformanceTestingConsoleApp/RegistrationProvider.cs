@@ -1,3 +1,4 @@
+using System.Threading;
 using System.Threading.Tasks;
 using Autofac;
 using Demo.API;
@@ -9,7 +10,7 @@ namespace PerformanceTestingConsoleApp;
 
 public class RegistrationProvider : IProvideARegistrationCallback
 {
-    public async Task RegisterAsync(ContainerBuilder builder)
+    public async Task RegisterAsync(ContainerBuilder builder, CancellationToken cancellationToken)
     {
         builder.RegisterType<WebApplicationFactory<DemoApp>>();
         builder.RegisterInstance(Log.Logger).As<ILogger>();

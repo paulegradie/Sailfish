@@ -15,6 +15,9 @@ public class TypeResolutionUtility : ITypeResolutionUtility
 {
     private readonly List<ITypeResolver> typeResolvers = new();
 
+    // TODO: This was original intended to provide a means to resolve types - but it looks we are also registering types here - that should only be done once at program startup.
+    // I'm going to bring the provider registrations - and perhaps all - into the SailfishRunner and register them there as well, and then try to remove that registration from here
+    
     public async Task<object> CreateDehydratedTestInstance(Type test, IEnumerable<Type> testDiscoveryAnchorTypes, IEnumerable<Type> registrationProviderAnchorTypes)
     {
         var allAssemblies = new List<Assembly> { test.Assembly };

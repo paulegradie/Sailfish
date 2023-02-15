@@ -2,7 +2,7 @@
 
 namespace PerformanceTests.ExamplePerformanceTests;
 
-[Sailfish]
+[Sailfish(Disabled = true)]
 public class EmptyTest
 {
 }
