@@ -16,7 +16,6 @@ internal class SailfishExecutor
     private readonly IExecutionSummaryCompiler executionSummaryCompiler;
     private readonly ITestResultPresenter testResultPresenter;
     private readonly ITestResultAnalyzer testResultAnalyzer;
-    private readonly IMarkdownTableConverter markdownTableConverter;
     private readonly RunSettings runSettings;
     private readonly ISailFishTestExecutor sailFishTestExecutor;
     private const string DefaultTrackingDirectory = "tracking_output";
@@ -28,7 +27,6 @@ internal class SailfishExecutor
         IExecutionSummaryCompiler executionSummaryCompiler,
         ITestResultPresenter testResultPresenter,
         ITestResultAnalyzer testResultAnalyzer,
-        IMarkdownTableConverter markdownTableConverter,
         RunSettings runSettings
     )
     {
@@ -38,7 +36,6 @@ internal class SailfishExecutor
         this.executionSummaryCompiler = executionSummaryCompiler;
         this.testResultPresenter = testResultPresenter;
         this.testResultAnalyzer = testResultAnalyzer;
-        this.markdownTableConverter = markdownTableConverter;
         this.runSettings = runSettings;
     }
 

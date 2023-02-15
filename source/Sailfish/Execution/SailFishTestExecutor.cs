@@ -73,8 +73,8 @@ internal class SailFishTestExecutor : ISailFishTestExecutor
     {
         var results = new List<TestExecutionResult>();
 
-        var currentTestInstanceContainer = 1;
-        var totalMethodCount = testInstanceContainerProviders.Count;
+        var currentTestInstanceContainer = 0;
+        var totalMethodCount = testInstanceContainerProviders.Count - 1;
         foreach (var testInstanceContainerProvider in testInstanceContainerProviders.OrderBy(x => x.Method.Name))
         {
             TestCaseCountPrinter.PrintMethodUpdate(testInstanceContainerProvider.Method);
@@ -99,11 +99,11 @@ internal class SailFishTestExecutor : ISailFishTestExecutor
     private void SetConsoleTotals(IEnumerable<Type> enabledTestTypes)
     {
         var listOfProviders = enabledTestTypes.Select(x => testInstanceContainerCreator.CreateTestContainerInstanceProviders(x)).ToList();
-        var overallTotalCases = 1;
+        var overallTotalCases = 0;
         var overallMethods = 0;
         foreach (var providers in listOfProviders)
         {
-            overallTotalCases += providers.Sum(provider => provider.GetNumberOfPropertySetsInTheQueue());
+            overallTotalCases += providers.Sum(provider => Math.Max(provider.GetNumberOfPropertySetsInTheQueue(), 1));
             overallMethods += providers.Select(x => x.Method).ToList().Count;
         }
 
