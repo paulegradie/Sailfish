@@ -31,14 +31,14 @@
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="Serilog.Sinks.Console" Version="4.1.0"/>
-        <PackageReference Include="Serilog.Sinks.File" Version="5.0.0"/>
-        <PackageReference Include="Serilog.Sinks.Seq" Version="5.2.2"/>
-        <PackageReference Include="System.ComponentModel.Composition" Version="7.0.0"/>
-        <PackageReference Include="Microsoft.TestPlatform.ObjectModel" Version="16.11.0"/>
-        <PackageReference Include="Microsoft.TestPlatform.TestHost" Version="16.11.0"/>
+        <PackageReference Include="Serilog.Sinks.Console" Version="4.1.0" />
+        <PackageReference Include="Serilog.Sinks.File" Version="5.0.0" />
+        <PackageReference Include="Serilog.Sinks.Seq" Version="5.2.2" />
+        <PackageReference Include="System.ComponentModel.Composition" Version="7.0.0" />
+        <PackageReference Include="Microsoft.TestPlatform.ObjectModel" Version="16.11.0" />
+        <PackageReference Include="Microsoft.TestPlatform.TestHost" Version="16.11.0" />
     </ItemGroup>
     <ItemGroup>
-        <ProjectReference Include="..\Sailfish\Sailfish.csproj"/>
+        <ProjectReference Include="..\Sailfish\Sailfish.csproj" />
     </ItemGroup>
 </Project>

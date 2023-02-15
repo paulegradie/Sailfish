@@ -2,12 +2,11 @@ using System;
 using Autofac;
 using Demo.API;
 using Microsoft.AspNetCore.Mvc.Testing;
-using Sailfish.AdapterUtils;
 
 namespace PerformanceTests.DemoUtils;
 
 // Example of what they can implement
-public class SailfishDependencies : ISailfishFixtureDependency
+public class SailfishDependencies : IDisposable
 {
     private IContainer Container { get; set; }
 

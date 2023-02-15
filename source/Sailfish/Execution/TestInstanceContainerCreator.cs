@@ -9,14 +9,14 @@ namespace Sailfish.Execution;
 
 internal class TestInstanceContainerCreator : ITestInstanceContainerCreator
 {
-    private readonly ITypeResolutionUtility typeResolutionUtility;
+    private readonly ITypeActivator typeActivator;
     private readonly IPropertySetGenerator propertySetGenerator;
 
     public TestInstanceContainerCreator(
-        ITypeResolutionUtility typeResolutionUtility,
+        ITypeActivator typeActivator,
         IPropertySetGenerator propertySetGenerator)
     {
-        this.typeResolutionUtility = typeResolutionUtility;
+        this.typeActivator = typeActivator;
         this.propertySetGenerator = propertySetGenerator;
     }
 
@@ -40,7 +40,7 @@ internal class TestInstanceContainerCreator : ITestInstanceContainerCreator
         return instanceContainers
             .OrderBy(x => x.Name)
             .Select(instanceContainer => new TestInstanceContainerProvider(
-                typeResolutionUtility,
+                typeActivator,
                 testType,
                 propertyTensor,
                 instanceContainer))

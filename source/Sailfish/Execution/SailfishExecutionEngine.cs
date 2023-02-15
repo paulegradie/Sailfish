@@ -12,12 +12,10 @@ namespace Sailfish.Execution;
 internal class SailfishExecutionEngine : ISailfishExecutionEngine
 {
     private readonly ITestCaseIterator testCaseIterator;
-    private readonly RunSettings runSettings;
 
-    public SailfishExecutionEngine(ITestCaseIterator testCaseIterator, RunSettings runSettings)
+    public SailfishExecutionEngine(ITestCaseIterator testCaseIterator)
     {
         this.testCaseIterator = testCaseIterator;
-        this.runSettings = runSettings;
     }
 
     /// <summary>
@@ -51,19 +49,18 @@ internal class SailfishExecutionEngine : ISailfishExecutionEngine
         var currentPropertyTensorIndex = 0;
         var totalPropertyTensorElements = Math.Max(testProvider.GetNumberOfPropertySetsInTheQueue() - 1, 0);
 
-        var instanceContainerEnumerator = testProvider.ProvideNextTestInstanceContainer(runSettings.TestLocationAnchors, runSettings.RegistrationProviderAnchors)
-            .GetAsyncEnumerator(cancellationToken);
+        var instanceContainerEnumerator = testProvider.ProvideNextTestInstanceContainer().GetEnumerator();
 
         try
         {
-            await instanceContainerEnumerator.MoveNextAsync(cancellationToken);
+            instanceContainerEnumerator.MoveNext();
         }
         catch (Exception ex)
         {
             exceptionCallback?.Invoke(instanceContainerEnumerator.Current);
 
             await DisposeOfTestInstance(instanceContainerEnumerator.Current);
-            await instanceContainerEnumerator.DisposeAsync();
+            instanceContainerEnumerator.Dispose();
             var msg = $"Error resolving test from {testProvider.Test.FullName}";
             Log.Logger.Fatal(ex, "{Message}", msg);
             if (exceptionCallback is not null)
@@ -111,7 +108,7 @@ internal class SailfishExecutionEngine : ISailfishExecutionEngine
 
             try
             {
-                continueIterating = await instanceContainerEnumerator.MoveNextAsync(cancellationToken);
+                continueIterating = instanceContainerEnumerator.MoveNext();
             }
             catch
             {
@@ -130,7 +127,7 @@ internal class SailfishExecutionEngine : ISailfishExecutionEngine
             }
         } while (continueIterating);
 
-        await instanceContainerEnumerator.DisposeAsync();
+        instanceContainerEnumerator.Dispose();
 
         return results;
     }

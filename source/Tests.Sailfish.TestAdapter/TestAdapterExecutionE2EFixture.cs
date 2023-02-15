@@ -1,7 +1,4 @@
-﻿using System.Threading.Tasks;
-using Xunit;
-
-namespace Tests.Sailfish.TestAdapter;
+﻿namespace Tests.Sailfish.TestAdapter;
 
 
 public class TestAdapterExecutionE2EFixture

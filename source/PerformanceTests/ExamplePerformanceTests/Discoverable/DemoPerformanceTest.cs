@@ -1,6 +1,5 @@
 using System.Threading;
 using System.Threading.Tasks;
-using PerformanceTests.DemoUtils;
 using Sailfish.Attributes;
 
 namespace PerformanceTests.ExamplePerformanceTests.Discoverable;

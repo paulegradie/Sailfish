@@ -53,7 +53,6 @@ public class RunSettings
         RegistrationProviderAnchors = registrationProviderAnchors;
     }
 
-
     public RunSettings(
         string[] testNames,
         string directoryPath,
