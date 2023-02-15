@@ -9,11 +9,11 @@ internal class TestInstanceContainerProvider
 {
     public readonly MethodInfo Method;
     public readonly Type Test;
-    private readonly ITypeResolutionUtility typeResolutionUtility;
+    private readonly ITypeActivator typeActivator;
     private readonly IEnumerable<PropertySet> propertySets;
 
     public TestInstanceContainerProvider(
-        ITypeResolutionUtility typeResolutionUtility,
+        ITypeActivator typeActivator,
         Type test,
         IEnumerable<PropertySet> propertySets,
         MethodInfo method)
@@ -21,7 +21,7 @@ internal class TestInstanceContainerProvider
         Method = method;
         Test = test;
 
-        this.typeResolutionUtility = typeResolutionUtility;
+        this.typeActivator = typeActivator;
         this.propertySets = propertySets;
     }
 
@@ -30,18 +30,18 @@ internal class TestInstanceContainerProvider
         return propertySets.Count();
     }
 
-    public async IAsyncEnumerable<TestInstanceContainer> ProvideNextTestInstanceContainer(Type[] testDiscoveryAnchorTypes, Type[] registrationProviderAnchorTypes)
+    public IEnumerable<TestInstanceContainer> ProvideNextTestInstanceContainer()
     {
         if (GetNumberOfPropertySetsInTheQueue() is 0)
         {
-            var instance = await typeResolutionUtility.CreateDehydratedTestInstance(Test, testDiscoveryAnchorTypes, registrationProviderAnchorTypes);
+            var instance = typeActivator.CreateDehydratedTestInstance(Test);
             yield return TestInstanceContainer.CreateTestInstance(instance, Method, Array.Empty<string>(), Array.Empty<int>());
         }
         else
         {
             foreach (var nextPropertySet in propertySets)
             {
-                var instance = await typeResolutionUtility.CreateDehydratedTestInstance(Test, testDiscoveryAnchorTypes, registrationProviderAnchorTypes);
+                var instance = typeActivator.CreateDehydratedTestInstance(Test);
 
                 HydrateInstance(instance, nextPropertySet);
 
