@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using Accord.Statistics;
 using Accord.Statistics.Testing;
 using Sailfish.Analysis;
@@ -67,6 +68,6 @@ public class MannWhitneyWilcoxonTest : IMannWhitneyWilcoxonTest
         if (!settings.UseInnerQuartile) return rawData;
         if (rawData.Length < MinimumSampleSizeForTruncation) return rawData;
         var quartiles = ComputeQuartiles.GetInnerQuartileValues(rawData);
-        return quartiles;
+        return quartiles.Sum() == 0 ? quartiles.Select(x => x + 0.0000000001).ToArray() : quartiles;
     }
 }

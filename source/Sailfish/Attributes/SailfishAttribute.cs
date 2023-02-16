@@ -10,13 +10,13 @@ public sealed class SailfishAttribute : Attribute
     {
     }
 
-    public SailfishAttribute([Range(2, int.MaxValue)]int numIterations = 3, [Range(0, int.MaxValue)]int numWarmupIterations = 3)
+    public SailfishAttribute([Range(2, int.MaxValue)] int numIterations = 3, [Range(0, int.MaxValue)] int numWarmupIterations = 3)
     {
         NumIterations = numIterations;
         NumWarmupIterations = numWarmupIterations;
     }
 
-    public int NumIterations { get; set; } = 1;
-    public int NumWarmupIterations { get; set; } = 1;
+    [Range(2, int.MaxValue)] public int NumIterations { get; set; } = 1;
+    [Range(0, int.MaxValue)] public int NumWarmupIterations { get; set; } = 1;
     public bool Disabled { get; set; }
 }
