@@ -27,6 +27,12 @@ internal static class SailfishExecutionCaller
         builder.RegisterInstance(runSettings).SingleInstance();
         registerAdditionalTypes?.Invoke(builder);
 
+        await SailfishTypeRegistrationUtility.InvokeRegistrationProviderCallbackMain(
+            builder,
+            runSettings.TestLocationAnchors,
+            runSettings.RegistrationProviderAnchors,
+            cancellationToken ?? CancellationToken.None);
+
         CancellationToken ct;
         if (cancellationToken is null)
         {

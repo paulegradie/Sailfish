@@ -14,7 +14,7 @@ Visit the [wiki](https://github.com/paulegradie/Sailfish/wiki) to view the [full
 
 ✨Sailfish tests are now able to be run directly from the IDE!✨
 
-
+### A most basic Console App
 ```csharp
 class Program : SailfishProgramBase
 {
@@ -29,14 +29,22 @@ class Program : SailfishProgramBase
        // provide types from the same assembly as your performance tests
        return new[] { GetType() };
     }
-
-    protected override void RegisterWithSailfish(ContainerBuilder builder)
-    {
-       // register anything that you need to inject into your performance tests
-       builder.RegisterType<MyType>().AsSelf();
-    }
 }
 
+public class RegoProvider : IProvideARegistrationCallback
+{
+
+    public async Task RegisterAsync(ContainerBuilder builder)
+    {
+       builder.RegisterType<MyType>().AsSelf();
+    }
+
+}
+```
+
+### A most basic test
+
+```csharp
 [Sailfish]
 public class AMostBasicTest
 {
@@ -55,7 +63,18 @@ public class AMostBasicTest
 }
 ```
 
-## General Performance testing
+## Critical Details
+
+**Tests are always run in sequence**
+
+Sailfish does not parallelize test executions. The simple reason is that we are assessing how quickly your code executes and by parallelizing tests, the execution time would likely increase. To eliminate noise test neighbors on the machine executing the tests, only one test runs at a time.
+
+**Tests are run in ordered sequence**
+
+Sailfish does not currently randomize test order execution.
+
+
+## Limitations
 
 Benchmarking software or hardware often involves taking precise measurements on stable, controlled hardware using highly optimized tools and protocols. Furthermore, understanding software efficiency often involves using algorithm complexity analysis.
 

@@ -4,9 +4,9 @@ using PerformanceTests.DemoUtils;
 using Sailfish.AdapterUtils;
 using Sailfish.Attributes;
 
-namespace PerformanceTests.ExamplePerformanceTests;
+namespace PerformanceTests.ExamplePerformanceTests.Discoverable;
 
-[Sailfish(NumIterations = 3, NumWarmupIterations = 2, Disabled = TestConstants.Disabled)]
+[Sailfish(NumIterations = 3, NumWarmupIterations = 2, Disabled = false)]
 public class PerfTestWithISailfishFixture : ISailfishFixture<SailfishDependencies>
 {
     private readonly SailfishDependencies sailfishDependencies;

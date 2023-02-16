@@ -12,12 +12,10 @@ namespace Sailfish.Execution;
 internal class SailfishExecutionEngine : ISailfishExecutionEngine
 {
     private readonly ITestCaseIterator testCaseIterator;
-    private readonly RunSettings runSettings;
 
-    public SailfishExecutionEngine(ITestCaseIterator testCaseIterator, RunSettings runSettings)
+    public SailfishExecutionEngine(ITestCaseIterator testCaseIterator)
     {
         this.testCaseIterator = testCaseIterator;
-        this.runSettings = runSettings;
     }
 
     /// <summary>
@@ -31,6 +29,7 @@ internal class SailfishExecutionEngine : ISailfishExecutionEngine
     /// <param name="testProvider"></param>
     /// <param name="preCallback"></param>
     /// <param name="callback"></param>
+    /// <param name="exceptionCallback"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
     public async Task<List<TestExecutionResult>> ActivateContainer(
@@ -39,6 +38,7 @@ internal class SailfishExecutionEngine : ISailfishExecutionEngine
         TestInstanceContainerProvider testProvider,
         Action<TestInstanceContainer>? preCallback = null,
         Action<TestExecutionResult, TestInstanceContainer>? callback = null,
+        Action<TestInstanceContainer?>? exceptionCallback = null,
         CancellationToken cancellationToken = default)
     {
         if (testProviderIndex > totalTestProviderCount)
@@ -49,22 +49,30 @@ internal class SailfishExecutionEngine : ISailfishExecutionEngine
         var currentPropertyTensorIndex = 0;
         var totalPropertyTensorElements = Math.Max(testProvider.GetNumberOfPropertySetsInTheQueue() - 1, 0);
 
-        var instanceContainerEnumerator = testProvider.ProvideNextTestInstanceContainer(runSettings.TestLocationAnchors, runSettings.RegistrationProviderAnchors)
-            .GetAsyncEnumerator(cancellationToken);
+        var instanceContainerEnumerator = testProvider.ProvideNextTestInstanceContainer().GetEnumerator();
 
         try
         {
-            await instanceContainerEnumerator.MoveNextAsync(cancellationToken);
+            instanceContainerEnumerator.MoveNext();
         }
         catch (Exception ex)
         {
+            exceptionCallback?.Invoke(instanceContainerEnumerator.Current);
+
             await DisposeOfTestInstance(instanceContainerEnumerator.Current);
-            await instanceContainerEnumerator.DisposeAsync();
-            Log.Logger.Fatal(ex, "Error encountered when getting next test");
+            instanceContainerEnumerator.Dispose();
+            var msg = $"Error resolving test from {testProvider.Test.FullName}";
+            Log.Logger.Fatal(ex, "{Message}", msg);
+            if (exceptionCallback is not null)
+            {
+                return new List<TestExecutionResult>();
+            }
+
             throw;
         }
 
         var results = new List<TestExecutionResult>();
+
         bool continueIterating;
         do
         {
@@ -100,16 +108,26 @@ internal class SailfishExecutionEngine : ISailfishExecutionEngine
 
             try
             {
-                continueIterating = await instanceContainerEnumerator.MoveNextAsync(cancellationToken);
+                continueIterating = instanceContainerEnumerator.MoveNext();
             }
             catch
             {
-                await DisposeOfTestInstance(instanceContainerEnumerator.Current);
-                throw;
+                if (exceptionCallback is not null)
+                {
+                    exceptionCallback.Invoke(instanceContainerEnumerator.Current);
+                    await DisposeOfTestInstance(instanceContainerEnumerator.Current);
+                    continueIterating = true;
+                }
+
+                else
+                {
+                    await DisposeOfTestInstance(instanceContainerEnumerator.Current);
+                    throw;
+                }
             }
         } while (continueIterating);
 
-        await instanceContainerEnumerator.DisposeAsync();
+        instanceContainerEnumerator.Dispose();
 
         return results;
     }

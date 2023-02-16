@@ -12,7 +12,9 @@ internal class TestCollector : ITestCollector
     public Type[] CollectTestTypes(params Type[] sourceTypes)
     {
         if (sourceTypes.Length == 0)
+        {
             return CollectTestTypes();
+        }
 
         var allTests = new List<Type>();
         foreach (var sourceType in sourceTypes)

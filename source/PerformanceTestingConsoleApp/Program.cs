@@ -1,13 +1,8 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Threading.Tasks;
-using Autofac;
-using MediatR;
 using Microsoft.Extensions.Configuration;
-using PerformanceTestingConsoleApp.CustomHandlerOverrideExamples;
 using PerformanceTests;
-using Sailfish.Contracts.Public.Commands;
 using Sailfish.Presentation;
 using Sailfish.Program;
 using Serilog;
@@ -34,6 +29,7 @@ public class Program : SailfishProgramBase
         {
             var executionSummaries = RunResult.ExecutionSummaries;
             var markdown = new MarkdownTableConverter().ConvertToMarkdownTableString(executionSummaries);
+            Console.WriteLine(markdown);
         }
     }
 
@@ -46,26 +42,6 @@ public class Program : SailfishProgramBase
     protected override IEnumerable<Type> RegistrationProviderTypesProvider()
     {
         // Types used to resolve registration providers
-        return new[] { GetType() };
-    }
-
-    protected override void RegisterWithSailfish(ContainerBuilder builder)
-    {
-        switch (Environment.GetEnvironmentVariable("environment")?.ToLowerInvariant())
-        {
-            // These registrations can override the default handlers for
-            // writing t-test results and reading/writing tracking files
-            // This is useful if you've got a system for running automated perf
-            // tests that record data to the cloud or some other non-default target.
-            case "notify":
-                builder.RegisterType<CustomNotificationHandler>().As<INotificationHandler<NotifyOnTestResultCommand>>();
-                break;
-            case "cloud":
-                builder.RegisterType<CloudWriter>().As<ICloudWriter>();
-                builder.RegisterType<CustomWriteToCloudHandler>().As<INotificationHandler<WriteCurrentTrackingFileCommand>>();
-                break;
-        }
-
-        base.RegisterWithSailfish(builder);
+        return new[] { typeof(RegistrationProvider) };
     }
 }

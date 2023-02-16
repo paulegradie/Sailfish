@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using Accord.Statistics;
 using Accord.Statistics.Testing;
 using Sailfish.Analysis;
@@ -22,10 +23,12 @@ public class MannWhitneyWilcoxonTest : IMannWhitneyWilcoxonTest
     {
         var sigDig = settings.Round;
 
-        var test = new Accord.Statistics.Testing.MannWhitneyWilcoxonTest(
+        Accord.Statistics.Testing.MannWhitneyWilcoxonTest test = null!;
+        test = new Accord.Statistics.Testing.MannWhitneyWilcoxonTest(
             PreProcessSample(before, settings),
             PreProcessSample(after, settings),
             TwoSampleHypothesis.ValuesAreDifferent);
+
 
         var meanBefore = Math.Round(before.Mean(), sigDig);
         var meanAfter = Math.Round(after.Mean(), sigDig);
@@ -65,6 +68,6 @@ public class MannWhitneyWilcoxonTest : IMannWhitneyWilcoxonTest
         if (!settings.UseInnerQuartile) return rawData;
         if (rawData.Length < MinimumSampleSizeForTruncation) return rawData;
         var quartiles = ComputeQuartiles.GetInnerQuartileValues(rawData);
-        return quartiles;
+        return quartiles.Sum() == 0 ? quartiles.Select(x => x + 0.0000000001).ToArray() : quartiles;
     }
 }

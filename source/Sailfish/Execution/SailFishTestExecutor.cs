@@ -27,7 +27,6 @@ internal class SailFishTestExecutor : ISailFishTestExecutor
 
     public async Task<List<RawExecutionResult>> Execute(
         IEnumerable<Type> testTypes,
-        Action<TestExecutionResult, TestInstanceContainer>? callback = null,
         CancellationToken cancellationToken = default)
     {
         var rawResults = new List<RawExecutionResult>();
@@ -46,7 +45,7 @@ internal class SailFishTestExecutor : ISailFishTestExecutor
             TestCaseCountPrinter.PrintTypeUpdate(testType.Name);
             try
             {
-                var rawResult = await Execute(testType, callback, cancellationToken);
+                var rawResult = await Execute(testType, cancellationToken);
                 rawResults.Add(new RawExecutionResult(testType, rawResult));
             }
             catch (Exception ex)
@@ -61,27 +60,29 @@ internal class SailFishTestExecutor : ISailFishTestExecutor
 
     private async Task<List<TestExecutionResult>> Execute(
         Type test,
-        Action<TestExecutionResult, TestInstanceContainer>? callback = null,
         CancellationToken cancellationToken = default)
     {
         var testInstanceContainerProviders = testInstanceContainerCreator.CreateTestContainerInstanceProviders(test);
-        var results = await Execute(testInstanceContainerProviders, callback, cancellationToken);
+        var results = await Execute(testInstanceContainerProviders, cancellationToken);
         return results;
     }
 
     private async Task<List<TestExecutionResult>> Execute(
         IReadOnlyCollection<TestInstanceContainerProvider> testInstanceContainerProviders,
-        Action<TestExecutionResult, TestInstanceContainer>? callback = null,
         CancellationToken cancellationToken = default)
     {
         var results = new List<TestExecutionResult>();
 
-        var currentTestInstanceContainer = 1;
-        var totalMethodCount = testInstanceContainerProviders.Count;
+        var currentTestInstanceContainer = 0;
+        var totalMethodCount = testInstanceContainerProviders.Count - 1;
         foreach (var testInstanceContainerProvider in testInstanceContainerProviders.OrderBy(x => x.Method.Name))
         {
             TestCaseCountPrinter.PrintMethodUpdate(testInstanceContainerProvider.Method);
-            var executionResults = await engine.ActivateContainer(currentTestInstanceContainer, totalMethodCount, testInstanceContainerProvider, null, callback, cancellationToken);
+            var executionResults = await engine.ActivateContainer(
+                currentTestInstanceContainer,
+                totalMethodCount,
+                testInstanceContainerProvider,
+                cancellationToken: cancellationToken);
             results.AddRange(executionResults);
             currentTestInstanceContainer += 1;
         }
@@ -98,11 +99,11 @@ internal class SailFishTestExecutor : ISailFishTestExecutor
     private void SetConsoleTotals(IEnumerable<Type> enabledTestTypes)
     {
         var listOfProviders = enabledTestTypes.Select(x => testInstanceContainerCreator.CreateTestContainerInstanceProviders(x)).ToList();
-        var overallTotalCases = 1;
+        var overallTotalCases = 0;
         var overallMethods = 0;
         foreach (var providers in listOfProviders)
         {
-            overallTotalCases += providers.Sum(provider => provider.GetNumberOfPropertySetsInTheQueue());
+            overallTotalCases += providers.Sum(provider => Math.Max(provider.GetNumberOfPropertySetsInTheQueue(), 1));
             overallMethods += providers.Select(x => x.Method).ToList().Count;
         }
 

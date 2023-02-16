@@ -4,10 +4,9 @@ using System.Threading.Tasks;
 using Demo.API;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
-using PerformanceTests.DemoUtils;
 using Sailfish.AdapterUtils;
 
-namespace PerformanceTests.ExamplePerformanceTests;
+namespace PerformanceTests.DemoUtils;
 
 public class TestBase : ISailfishFixture<SailfishDependencies>
 {

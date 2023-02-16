@@ -2,11 +2,12 @@ using System.Threading;
 using System.Threading.Tasks;
 using Demo.API;
 using Microsoft.AspNetCore.Mvc.Testing;
+using PerformanceTests.DemoUtils;
 using Sailfish.Attributes;
 using Serilog;
 
 // Tests here are automatically discovered and executed
-namespace PerformanceTests.ExamplePerformanceTests;
+namespace PerformanceTests.ExamplePerformanceTests.NonDiscoverable;
 
 [WriteToMarkdown]
 [WriteToCsv]

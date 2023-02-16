@@ -1,8 +1,8 @@
 ﻿using Sailfish.Attributes;
 
-namespace PerformanceTests.ExamplePerformanceTests;
+namespace PerformanceTests.ExamplePerformanceTests.Discoverable;
 
-[Sailfish]
+[Sailfish(Disabled = false)]
 public class MinimalTest
 {
     [SailfishMethod]

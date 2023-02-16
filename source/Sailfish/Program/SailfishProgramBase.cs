@@ -30,7 +30,9 @@ public abstract class SailfishProgramBase
 
     protected async Task OnExecuteAsync(CancellationToken cancellationToken)
     {
-        var sailfishRunResult = await SailfishRunner.Run(AssembleRunRequest(SourceTypesProvider(), RegistrationProviderTypesProvider()), InternalRegisterWithSailfish,
+        var sailfishRunResult = await SailfishRunner.Run(
+            AssembleRunRequest(SourceTypesProvider(), RegistrationProviderTypesProvider()),
+            InternalRegisterWithSailfish,
             cancellationToken);
         var not = sailfishRunResult.IsValid ? string.Empty : "not ";
         Console.WriteLine($"Test run was {not}valid");
