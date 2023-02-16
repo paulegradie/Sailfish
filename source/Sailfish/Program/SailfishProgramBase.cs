@@ -49,7 +49,6 @@ public abstract class SailfishProgramBase
         return Enumerable.Empty<Type>();
     }
 
-
     protected virtual void RegisterWithSailfish(ContainerBuilder builder)
     {
     }

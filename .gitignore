@@ -1,3 +1,5 @@
+site/*
+*deploy-website.yml
 # User-specific files
 *.suo
 *.user

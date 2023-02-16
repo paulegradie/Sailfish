@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using Accord.Collections;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.Logging;
@@ -31,7 +32,7 @@ internal class ConsoleWriter : IConsoleWriter
         var markdownStringTable = markdownTableConverter.ConvertToMarkdownTableString(results);
 
         messageLogger?.SendMessage(TestMessageLevel.Informational, markdownStringTable);
-        consoleLogger.Information(markdownStringTable);
+        consoleLogger.Information("{MarkdownTable}", markdownStringTable);
         return markdownStringTable;
     }
 }

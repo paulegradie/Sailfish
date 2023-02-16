@@ -25,8 +25,8 @@ public class DescriptiveStatisticsResult
         var executionIterations = performanceTimer.ExecutionIterationPerformances.Select(x => (double)x.Duration).ToArray();
 
         var mean = executionIterations.Mean();
-        var stdDev = executionIterations.StandardDeviation();
-        var variance = executionIterations.Variance();
+        var stdDev = executionIterations.StandardDeviation() + 0.000000001;
+        var variance = executionIterations.Variance() + 0.000000001;
         var median = executionIterations.Median();
 
         return new DescriptiveStatisticsResult

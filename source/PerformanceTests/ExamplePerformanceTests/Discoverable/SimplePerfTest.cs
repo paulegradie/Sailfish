@@ -5,7 +5,7 @@ using Sailfish.Attributes;
 
 namespace PerformanceTests.ExamplePerformanceTests.Discoverable;
 
-[Sailfish(NumIterations = 1, NumWarmupIterations = 0, Disabled = TestConstants.Disabled)]
+[Sailfish(NumIterations = 1, NumWarmupIterations = 0, Disabled = true)]
 public class SimplePerfTest
 {
     [SailfishGlobalSetup]
@@ -13,7 +13,7 @@ public class SimplePerfTest
     {
         await Task.CompletedTask;
     }
- 
+
     [SailfishMethod]
     public async Task TestA(CancellationToken cancellationToken)
     {

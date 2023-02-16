@@ -26,13 +26,12 @@ internal static class TestExecution
                 cancellationToken)
             .Wait(cancellationToken);
 
-
         var container = builder.Build();
 
         container.Resolve<ITestAdapterExecutionProgram>().Run(testCases, frameworkHandle, cancellationToken);
     }
 
-    private static Type RetrieveReferenceTypeForTestProject(List<TestCase> testCases)
+    private static Type RetrieveReferenceTypeForTestProject(IReadOnlyCollection<TestCase> testCases)
     {
         var assembly = Assembly.LoadFile(testCases.First().Source);
         AppDomain.CurrentDomain.Load(assembly.GetName()); // is this necessary?

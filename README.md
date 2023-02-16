@@ -1,113 +1,160 @@
-<h1 align="center" style="flex-direction: column;"><img src="assets/Sailfish.png" alt="Sailfish" width="700" /></h1>
+<h3 align="center"><div style="display: flex; justify-content: center"><img src="assets/Sailfish.png" alt="Sailfish" /></div></h3>
 
-Sailfish is a .NET library used to perform low resolution performance analysis of your component or API.
+<h3 align="center">
 
 Available on [Nuget](https://www.nuget.org/packages/Sailfish/)
 
-## [Visit the Wiki](https://github.com/paulegradie/Sailfish/wiki)
+</h3>
 
-Visit the [wiki](https://github.com/paulegradie/Sailfish/wiki) to view the [full getting started guide](https://github.com/paulegradie/Sailfish/wiki/Using-Sailfish-as-a-C%23-console-app) and other helpful details.
+<h3 align="center" style="display: flex; flex-direction: row; justify-content: center;">
 
-# Getting Started
+![GitHub Workflow Status (with branch)](https://img.shields.io/github/actions/workflow/status/paulegradie/sailfish/publish.yml)
+![Nuget](https://img.shields.io/nuget/dt/Sailfish)
+
+</h3>
+
+<span align="center">
+
+> **Note**: Sailfish tests are now able to be run directly from the IDE
+
+</span>
+
+<h2 align="center">
+
+[Documentation](https://github.com/paulegradie/Sailfish/blob/main/docs/home.md)
+
+</h2>
+
+# Introduction
+
+**Sailfish is a .NET library that you can use to write performance tests that are**:
+
+- styled in a simple, consistent, familiar way
+- run in process (for easy debugging and development)
+- millisecond-resolution
+- sychronous or asynchronous
+- flexible and controllable via lifecycle methods
+- executable via:
+  - a console app
+  - your IDE (using the new `Sailfish.TestAdapter`)
+- compatible with standard dependency injection
+
+**Sailfish ships with various tools that facilitate**:
+
+- data format conversion between:
+  - markdown tables
+  - csv tables
+  - C# objects
+- result tracking:
+  - automatically by default
+  - extensibilty points that are highly customizable
+- data parsing:
+  - file I/O (for reading back tracking data)
+  - test key parsing (for extracting test case details)
+- statistical analysis:
+  - comparing normal or non-normal data distributions for pre/post comparative analysis
+  - descriptive statistics
 
 ## Quick Start Guide
 
-✨Sailfish tests are now able to be run directly from the IDE!✨
+Follow these steps to stand up a simple test project. This guide assumes you've already created a solution and are ready to add a new project.
 
-### A most basic Console App
-```csharp
-class Program : SailfishProgramBase
-{
-    public static async Task Main(string[] testNamesToFilterBy)
-    {
-        // provided via the SailfishProgramBase
-        await SailfishMain<Program>(testNamesToFilterBy);
-    }
+## 1. Create a project
 
-    protected override IEnumerable<Type> SourceTypesProvider()
-    {
-       // provide types from the same assembly as your performance tests
-       return new[] { GetType() };
-    }
-}
+Create a class library project and delete any default files. Install the [Sailfish Test Adapter](https://www.nuget.org/packages/Sailfish.TestAdapter);
 
-public class RegoProvider : IProvideARegistrationCallback
-{
+    dotnet add package Sailfish.TestAdapter
 
-    public async Task RegisterAsync(ContainerBuilder builder)
-    {
-       builder.RegisterType<MyType>().AsSelf();
-    }
-
-}
-```
-
-### A most basic test
+## 2. Write a Sailfish Test
 
 ```csharp
-[Sailfish]
 public class AMostBasicTest
 {
-    private readonly MyType myType;
+    private readonly IClient myClient;
 
-    public AMostBasicTest(MyType myType)
+    [SailfishVariable(1, 10)]
+    public int N { get; set; }
+
+    public AMostBasicTest(IClient myClient) // type is injected so long as its registered
     {
-        this.myType = myType;
+        this.myClient = myClient;
     }
 
-    [SailfishMethod] // checkout all of the attributes provided by sailfish
+    [SailfishMethod]
     public async Task TestMethod(CancellationToken cancellationToken) // token is injected when requested
     {
-        await Task.Delay(2000, cancellationToken);
+        await Task.Delay(100 * N, cancellationToken);
+        await myClient.GetAll("/api/models", cancellationToken);
     }
 }
 ```
 
-## Critical Details
+## 3. Register a Dependency
 
-**Tests are always run in sequence**
+```csharp
+public class RegistrationProvider : IProvideARegistrationCallback
+{
+    public async Task RegisterAsync(ContainerBuilder builder, CancellationToken ct)
+    {
+       var typeInstance = await MyClientFactory.Create(ct);
+       builder.RegisterType(typeInstance).As<IClient>();
+    }
+}
+```
+
+## 4. Inspect your results
+
+```
+-----------------------------------
+ReadmeExample
+-----------------------------------
+
+ | DisplayName                      | Median  | Mean         | StdDev     | Variance |
+ |-----------------------------------------------------------------------------------|
+ | ReadmeExample.TestMethod(N: 1)   | 109 ms  | 108.66667 ms | 3.01109 ms | 9.06667  |
+ | ReadmeExample.TestMethod(N: 10)  | 1010 ms | 1011.5 ms    | 8.96103 ms | 80.3     |
+
+-----------------------------------
+WilcoxonRankSumTest results comparing:
+Before: ~\tracking_directory\PerformanceTracking_2023-19-2--09-02-00.csv.tracking
+After: ~\tracking_directory\PerformanceTracking_2023-19-2--09-02-51.csv.tracking
+-----------------------------------
+Note: The change in execution time is significant if the PValue is less than 0.005
+
+ | DisplayName | MeanOfBefore | MeanOfAfter  | MedianOfBefore | MedianOfAfter | PValue | TestStatistic | ChangeDescription |
+ |-------------------------------------------------------------------------------------------------------------------------|
+ | ReadmeExample.TestMethod(N: 1)   | 108.66 ms  | 111.16 ms  | 109 ms   | 111 ms     | 0.3008  | 25   | No Change   |
+ | ReadmeExample.TestMethod(N: 10)  | 1011.5 ms  | 1013.33 ms | 1010 ms  | 1013.5 ms  | 0.5541  | 22   | No Change   |
+
+
+No regressions or improvements found.
+Test run was valid
+```
+
+# Critical Details
+
+## **Tests are always run in sequence**
 
 Sailfish does not parallelize test executions. The simple reason is that we are assessing how quickly your code executes and by parallelizing tests, the execution time would likely increase. To eliminate noise test neighbors on the machine executing the tests, only one test runs at a time.
 
-**Tests are run in ordered sequence**
+## **Tests run order is deterministic**
 
 Sailfish does not currently randomize test order execution.
 
+## **Tests are run in-process**
 
-## Limitations
+Sailfish does not perform the optimizations necessary to achieve reliable sub-millisecond-resolution results. If you are interested in rigorous benchmarking, please consider using an alternative tool, such as BenchmarkDotNet. Sailfish was produced to remove much of the complexities and boilerplate required to write performance tests that don't need highly optimized execution.
 
-Benchmarking software or hardware often involves taking precise measurements on stable, controlled hardware using highly optimized tools and protocols. Furthermore, understanding software efficiency often involves using algorithm complexity analysis.
+The allows you to debug your tests directly in the IDE without the need to attach to an external process.
 
-For productionized systems, this tends to be a somewhat academic pursuit. Instead, production systems tend to require performance trends data, as apposed to snapshot data. For example, as you ship new versions of your API, its a good idea to keep an eye on response times.
+## **Test classes are instantiated just-in-time**
 
-Sailfish provides the tool that can be used to write performance type interrogative tests that run against your application, and handle the creating of tracking data that you can then provide to consumers (e.g. dashboard apps, notification tools, etc).
+Sailfish uses enumerators to ensure that all of your test classes are not instantiated all at the same time. This is very convenient in cases where you are doing a lot of setup work in your constructors - for example if you are creating in memory server instances you wish you run tests against.
 
+# License
 
-## Using Sailfish to write and execute performance tests
-
-Sailfish is a system that collects and executes your Sailfish tests. When you write a test, you simply create a class and mark it with attributes provided by the Sailfish library. At runtime, Sailfish will discover your tests (by looking for types annotated with the SailfishAttribute using reflection), instantiate them, and then call the implemented execution methods in a specific way - all the while recording how long everything took.
-
-So to use sailfish, you'll simply write your tests, and then invoke sailfish's main execution method (e.g. `SailfishRunner.Run`)
-
-
-## Intended Use
-
-Sailfish is intended to be used as a quick-to-setup console app for local testing, or as part of a productionized performance monitoring system. Execution of Sailfish tests is kept in process (to improve your development experience) at the expense of certain internal optimizations. For this reason, results produced by Sailfish have a minimum resolution of milliseconds.
-
-Sailfish includes an optional (opt-in) outlier removal, which can truncate the outer quartiles of your performance result data. So if you're running Sailfish tests against an application running in the cloud (for example as part of a live system performance monitoring application) you can take the approach of increasing the number of samples you collect (over different parts of the day) and removing the first and fourth quartiles (to remove the majority of outlier data).
-
-Sailfish does not go to the extent that other more rigorous benchmark analysis tools such as, say, BenchmarkDotNet do to mitigate the effects of hardware, compute sharing, or general compilation concerns. Sailfish will, however, perform warmup executions.
-
-## A Production Performance Monitor
-
-You can use Sailfish to create a continuous monitor that will execute your performance tests against your product in a production setting. To do this, imagine an application that runs a loop - and every time the loop executes, you register a client with the Sailfish internal registrations (so that it can be used in your test). Then, you register a custom `WriteCurrentTrackingFileCommandHandler` implementation that saves your tracking data to a persistence location of your choosing. With this data in place, your application can execute t-tests to look for significant differences between runs. In this way, you can produce performance monitor data for versions of your software as its deployed, and consume this for presenting or notifications (if you, say, discover a regression).
-
-Please visit our wiki for examples on how to use Sailfish effectively for your project or organization.
-
-
-## License
 Sailfish is [MIT licensed](./LICENSE).
 
-## Acknowledgements
+# Acknowledgements
 
 Sailfish is inspired by the [BenchmarkDotNet](https://benchmarkdotnet.org/) precision benchmarking library.

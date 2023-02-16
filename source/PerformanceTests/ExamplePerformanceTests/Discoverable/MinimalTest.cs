@@ -2,6 +2,8 @@
 
 namespace PerformanceTests.ExamplePerformanceTests.Discoverable;
 
+[WriteToCsv]
+[WriteToMarkdown]
 [Sailfish(Disabled = true)]
 public class MinimalTest
 {
