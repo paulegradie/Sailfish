@@ -1,50 +1,90 @@
-<h1 align="center" style="flex-direction: column;"><img src="assets/Sailfish.png" alt="Sailfish" width="700" /></h1>
+<div style="display: flex; justify-content: center"><img src="assets/Sailfish.png" alt="Sailfish" width="700" /></div>
 
-Sailfish is a .NET library used to perform low resolution performance analysis of your component or API.
+
+<h3 align="center">
 
 Available on [Nuget](https://www.nuget.org/packages/Sailfish/)
 
-## [Visit the Wiki](https://github.com/paulegradie/Sailfish/wiki)
+✨Sailfish tests are now able to be run directly from the IDE!✨
 
-Visit the [wiki](https://github.com/paulegradie/Sailfish/wiki) to view the [full getting started guide](https://github.com/paulegradie/Sailfish/wiki/Using-Sailfish-as-a-C%23-console-app) and other helpful details.
+
+
+# Introduction
+
+**Sailfish is a .NET library that you can use to write performance tests that are**:
+ - styled in a simple, consistent, familiar way
+ - run in process (for easy debugging and development)
+ - millisecond-resolution 
+ - sychronous or asynchronous
+ - flexible and controllable via lifecycle methods
+ - executable via:
+    - a console app
+    - the ✨ IDE ✨ (using the new `Sailfish.TestAdapter`)
+ - compatible with standard dependency injection
+
+**Sailfish ships with various tools that facilitate**:
+ - data format conversion between:
+    - markdown tables
+    - csv tables
+    - C# objects
+ - result tracking:
+    - automatically by default
+    - extensibilty points that are highly customizable 
+ - data parsing:
+    - file I/O (for reading back tracking data)
+    - test key parsing (for extracting test case details)
+ - statistical analysis:
+    - comparing normal or non-normal data distributions for pre/post comparative analysis
+    - descriptive statistics
+
+
 
 # Getting Started
+For thorough guides on how to effectively use Sailfish, please consider [visiting the Wiki](https://github.com/paulegradie/Sailfish/wiki). There you will find the [full getting started guide](https://github.com/paulegradie/Sailfish/wiki/Using-Sailfish-as-a-C%23-console-app) in depth information about how Sailfish works, and how to make the most of its feature set.
 
 ## Quick Start Guide
 
-✨Sailfish tests are now able to be run directly from the IDE!✨
+There are several options to choose from when setting up your Sailfish test project. You can:
+ 1. create a console app that:
+    - uses the built-in command line tool (recommended for simple quick start apps)
+    - uses your own execution logic (recommended for more custom control)
+ 2. create a class library project and install the `Sailfish.TestAdapter` and run your tests from the IDE
+ 3. create both a class library AND a console app project (that references the class library) and **get the best of both worlds**. 
 
-### A most basic Console App
+
+### Option 1: A basic console app using the builtin program base
+
+This example provides an example implementation for:
+ - the program main metho
+
 ```csharp
 class Program : SailfishProgramBase
 {
     public static async Task Main(string[] testNamesToFilterBy)
     {
-        // provided via the SailfishProgramBase
         await SailfishMain<Program>(testNamesToFilterBy);
     }
 
     protected override IEnumerable<Type> SourceTypesProvider()
     {
-       // provide types from the same assembly as your performance tests
        return new[] { GetType() };
     }
+
+    protected override RegistrationTypeProvider()
+    {
+        return new[] {typeof(RegistrationProvider)}
+    }
 }
 
-public class RegoProvider : IProvideARegistrationCallback
+public class RegistrationProvider : IProvideARegistrationCallback
 {
-
-    public async Task RegisterAsync(ContainerBuilder builder)
+    public async Task RegisterAsync(ContainerBuilder builder, CancellationToken ct)
     {
        builder.RegisterType<MyType>().AsSelf();
+       await Task.Yield();
     }
 
 }
-```
-
-### A most basic test
-
-```csharp
 [Sailfish]
 public class AMostBasicTest
 {
@@ -61,6 +101,11 @@ public class AMostBasicTest
         await Task.Delay(2000, cancellationToken);
     }
 }
+```
+
+### A most basic test
+
+```csharp
 ```
 
 ## Critical Details
