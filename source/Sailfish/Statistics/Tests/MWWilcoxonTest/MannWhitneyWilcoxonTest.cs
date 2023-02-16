@@ -23,17 +23,11 @@ public class MannWhitneyWilcoxonTest : IMannWhitneyWilcoxonTest
         var sigDig = settings.Round;
 
         Accord.Statistics.Testing.MannWhitneyWilcoxonTest test = null!;
-        try
-        { 
-            test = new Accord.Statistics.Testing.MannWhitneyWilcoxonTest(
-                PreProcessSample(before, settings),
-                PreProcessSample(after, settings),
-                TwoSampleHypothesis.ValuesAreDifferent);
-        }
-        catch (Exception ex)
-        {
-            ;
-        }
+        test = new Accord.Statistics.Testing.MannWhitneyWilcoxonTest(
+            PreProcessSample(before, settings),
+            PreProcessSample(after, settings),
+            TwoSampleHypothesis.ValuesAreDifferent);
+
 
         var meanBefore = Math.Round(before.Mean(), sigDig);
         var meanAfter = Math.Round(after.Mean(), sigDig);

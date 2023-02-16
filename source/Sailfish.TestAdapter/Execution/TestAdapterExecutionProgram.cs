@@ -15,19 +15,24 @@ namespace Sailfish.TestAdapter.Execution;
 internal class TestAdapterExecutionProgram : ITestAdapterExecutionProgram
 {
     private readonly ITestInstanceContainerCreator testInstanceContainerCreator;
-    private readonly Func<ITestExecutionRecorder?, ConsoleWriter> consoleWriter;
+
+    private readonly IConsoleWriterFactory consoleWriterFactory;
+
+    // private readonly Func<ITestExecutionRecorder?, ConsoleWriter> consoleWriter;
     private readonly IExecutionSummaryCompiler executionSummaryCompiler;
     private readonly ISailfishExecutionEngine engine;
 
     public TestAdapterExecutionProgram(
         ITestInstanceContainerCreator testInstanceContainerCreator,
-        Func<ITestExecutionRecorder?, ConsoleWriter> consoleWriter,
+        // Func<ITestExecutionRecorder?, ConsoleWriter> consoleWriter,
+        IConsoleWriterFactory consoleWriterFactory,
         IExecutionSummaryCompiler executionSummaryCompiler,
         ISailfishExecutionEngine engine
     )
     {
         this.testInstanceContainerCreator = testInstanceContainerCreator;
-        this.consoleWriter = consoleWriter;
+        this.consoleWriterFactory = consoleWriterFactory;
+        // this.consoleWriter = consoleWriter;
         this.executionSummaryCompiler = executionSummaryCompiler;
         this.engine = engine;
     }
@@ -102,7 +107,7 @@ internal class TestAdapterExecutionProgram : ITestAdapterExecutionProgram
         }
 
         var compiledResults = executionSummaryCompiler.CompileToSummaries(rawResults, CancellationToken.None);
-        consoleWriter(frameworkHandle).Present(compiledResults);
+        consoleWriterFactory.CreateConsoleWriter(frameworkHandle).Present(compiledResults);
     }
 
     private static Assembly LoadAssemblyFromDll(string dllPath)
@@ -185,7 +190,7 @@ internal class TestAdapterExecutionProgram : ITestAdapterExecutionProgram
 
             testResult.ErrorMessage = result.Exception?.Message;
 
-            var outputs = consoleWriter(logger).Present(compiledResult);
+            var outputs = consoleWriterFactory.CreateConsoleWriter(logger).Present(compiledResult);
             testResult.Messages.Add(new TestResultMessage("Test Result", outputs));
 
             LogTestResults(result, logger);

@@ -37,7 +37,6 @@ public class SailfishModule : Module
         builder.RegisterType<ParameterCombinator>().As<IParameterCombinator>();
         builder.RegisterType<PropertySetGenerator>().As<IPropertySetGenerator>();
         builder.RegisterType<TestInstanceContainerCreator>().As<ITestInstanceContainerCreator>();
-        // builder.RegisterType<LifetimeScopeTypeResolver>().As<ITypeResolver>();
         builder.RegisterType<TestCaseIterator>().As<ITestCaseIterator>();
         builder.RegisterType<StatisticsCompiler>().As<IStatisticsCompiler>();
         builder.RegisterType<ExecutionSummaryCompiler>().As<IExecutionSummaryCompiler>();

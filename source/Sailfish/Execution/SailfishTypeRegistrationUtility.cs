@@ -14,17 +14,17 @@ namespace Sailfish.Execution;
 
 internal static class SailfishTypeRegistrationUtility
 {
-    public static async Task InvokeRegistrationProviderCallbackMain(ContainerBuilder containerBuilder, IEnumerable<Type> testDiscoveryAnchorTypes, Type[] registrationProviderAnchorTypes,
+    public static async Task InvokeRegistrationProviderCallbackMain(
+        ContainerBuilder containerBuilder,
+        IEnumerable<Type> testDiscoveryAnchorTypes,
+        Type[] registrationProviderAnchorTypes,
         CancellationToken cancellationToken = default)
     {
         if (registrationProviderAnchorTypes == null) throw new ArgumentNullException(nameof(registrationProviderAnchorTypes));
         var allAssemblies = testDiscoveryAnchorTypes.Select(t => t.Assembly);
         var allAssemblyTypes = allAssemblies.Distinct().SelectMany(a => a.GetTypes()).Distinct().ToArray();
 
-        await RegisterCallbackProviders(containerBuilder, registrationProviderAnchorTypes, cancellationToken, allAssemblyTypes);
-        RegisterISailfishDependencies(containerBuilder, allAssemblyTypes);
-        RegisterISailfishFixtureGenericTypes(containerBuilder, allAssemblyTypes);
-        RegisterBasicISailfishDependencyTypes(containerBuilder, allAssemblyTypes);
+        await RegisterSupportedIdentifierTypes(containerBuilder, allAssemblyTypes, registrationProviderAnchorTypes, cancellationToken);
     }
 
     public static async Task InvokeRegistrationProviderCallbackAdapter(
@@ -35,14 +35,20 @@ internal static class SailfishTypeRegistrationUtility
         var allAssemblies = new List<Assembly>() { aTestType.Assembly };
         var allAssemblyTypes = allAssemblies.Distinct().SelectMany(a => a.GetTypes()).Distinct().ToArray();
 
-        await RegisterCallbackProviders(containerBuilder, new List<Type>() { aTestType }, cancellationToken, allAssemblyTypes);
+        await RegisterSupportedIdentifierTypes(containerBuilder, allAssemblyTypes, new List<Type>() { aTestType }, cancellationToken);
+    }
+
+    private static async Task RegisterSupportedIdentifierTypes(ContainerBuilder containerBuilder, Type[] allAssemblyTypes, IEnumerable<Type> registrationProviderAnchorTypes,
+        CancellationToken cancellationToken)
+    {
+        await RegisterCallbackProviders(containerBuilder, registrationProviderAnchorTypes, allAssemblyTypes, cancellationToken);
+
         RegisterISailfishDependencies(containerBuilder, allAssemblyTypes);
         RegisterISailfishFixtureGenericTypes(containerBuilder, allAssemblyTypes);
         RegisterBasicISailfishDependencyTypes(containerBuilder, allAssemblyTypes);
     }
 
-
-    private static void RegisterBasicISailfishDependencyTypes(ContainerBuilder containerBuilder, Type[] allAssemblyTypes)
+    private static void RegisterBasicISailfishDependencyTypes(ContainerBuilder containerBuilder, IEnumerable<Type> allAssemblyTypes)
     {
         var basicTypes = allAssemblyTypes.Where(t => t.GetInterfaces().Contains(typeof(ISailfishDependency)));
         foreach (var basicType in basicTypes)
@@ -53,22 +59,35 @@ internal static class SailfishTypeRegistrationUtility
 
     private static void RegisterISailfishFixtureGenericTypes(ContainerBuilder containerBuilder, IEnumerable<Type> allAssemblyTypes)
     {
-        var typesInsideTheGenericISailfishFixture = allAssemblyTypes
-            .Where(type => type.GetInterfaces().FirstOrDefault(t => t.IsGenericType && t.GetGenericTypeDefinition() == typeof(ISailfishFixture<>)) is not null)
-            .Select(i => i.GetGenericArguments().FirstOrDefault())
-            .Where(v => v is not null)
-            .Cast<Type>();
-        foreach (var type in typesInsideTheGenericISailfishFixture)
+        var typesInsideTheGenericISailfishFixture = allAssemblyTypes.Where(IsISailfishFixture);
+        var genericTypeArgs = typesInsideTheGenericISailfishFixture.SelectMany(GetISailfishFixtureGenericArgs).Distinct();
+        containerBuilder.RegisterTypes(genericTypeArgs.ToArray());
+    }
+
+    private static bool IsISailfishFixture(Type type)
+    {
+        return type.GetInterfaces().Any(i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof(ISailfishFixture<>));
+    }
+
+    private static IEnumerable<Type> GetISailfishFixtureGenericArgs(Type type)
+    {
+        var typeInterfaces = type.GetInterfaces().Where(i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof(ISailfishFixture<>));
+        var genericArgTypes = new List<Type>();
+        foreach (var interfaceType in typeInterfaces)
         {
-            containerBuilder.RegisterType(type.GetType());
+            var arg = interfaceType.GetGenericArguments();
+            if (arg.Length != 1) throw new SailfishException($"{typeof(ISailfishFixture<>).Name} is only allowed to have a single generic argument");
+            genericArgTypes.Add(arg.Single());
         }
+
+        return genericArgTypes;
     }
 
     private static async Task RegisterCallbackProviders(
         ContainerBuilder containerBuilder,
         IEnumerable<Type> registrationProviderAnchorTypes,
-        CancellationToken cancellationToken,
-        Type[] allAssemblyTypes)
+        Type[] allAssemblyTypes,
+        CancellationToken cancellationToken)
     {
         if (allAssemblyTypes == null) throw new ArgumentNullException(nameof(allAssemblyTypes));
         var registrationProviderAssemblyTypes = registrationProviderAnchorTypes.SelectMany(t => t.Assembly.GetTypes()).Distinct();
@@ -97,9 +116,7 @@ internal static class SailfishTypeRegistrationUtility
     }
 
     public static IEnumerable<T> GetRegistrationCallbackProviders<T>(IEnumerable<Type> allAssemblyTypes)
-
     {
-        // 3 / 4  Search for Registration Callback types
         var providers = allAssemblyTypes
             .Where(type => type.GetInterfaces().Contains(typeof(T)))
             .Distinct()
@@ -110,7 +127,7 @@ internal static class SailfishTypeRegistrationUtility
         return providers;
     }
 
-    private static void RegisterISailfishDependencies(ContainerBuilder containerBuilder, Type[] allAssemblyTypes)
+    private static void RegisterISailfishDependencies(ContainerBuilder containerBuilder, IEnumerable<Type> allAssemblyTypes)
     {
         var individualDependencies = allAssemblyTypes.Where(type => type.IsAssignableTo(typeof(ISailfishDependency)));
         foreach (var dependency in individualDependencies)

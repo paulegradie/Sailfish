@@ -2,7 +2,7 @@
 
 namespace PerformanceTests.ExamplePerformanceTests.Discoverable;
 
-[Sailfish(Disabled = true)]
+[Sailfish(Disabled = false)]
 public class MinimalTest
 {
     [SailfishMethod]
