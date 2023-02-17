@@ -13,7 +13,7 @@ public class SimplePerfTest
     {
         await Task.CompletedTask;
     }
- 
+
     [SailfishMethod]
     public async Task TestA(CancellationToken cancellationToken)
     {
