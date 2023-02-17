@@ -1,4 +1,4 @@
-<div style="display: flex; justify-content: center"><img src="assets/Sailfish.png" alt="Sailfish" width="700" /></div>
+<div style="display: flex; justify-content: center"><img src="assets/Sailfish.png" alt="Sailfish" /></div>
 
 
 <h3 align="center">
