@@ -4,13 +4,20 @@
 <h3 align="center">
 
 Available on [Nuget](https://www.nuget.org/packages/Sailfish/)
+</h3>
 
+<h3 align="center" style="display: flex; flex-direction: row; justify-content: center;">
+
+![GitHub Workflow Status (with branch)](https://img.shields.io/github/actions/workflow/status/paulegradie/sailfish/publish.yml)
+![Nuget](https://img.shields.io/nuget/dt/Sailfish)
+</h3>
+
+<h3 align="center">
 ✨Sailfish tests are now able to be run directly from the IDE!✨
-
+</h3>
 
 
 # Introduction
-
 **Sailfish is a .NET library that you can use to write performance tests that are**:
  - styled in a simple, consistent, familiar way
  - run in process (for easy debugging and development)
@@ -40,22 +47,25 @@ Available on [Nuget](https://www.nuget.org/packages/Sailfish/)
 
 
 # Getting Started
-For thorough guides on how to effectively use Sailfish, please consider [visiting the Wiki](https://github.com/paulegradie/Sailfish/wiki). There you will find the [full getting started guide](https://github.com/paulegradie/Sailfish/wiki/Using-Sailfish-as-a-C%23-console-app) in depth information about how Sailfish works, and how to make the most of its feature set.
+For guides on how to effectively use Sailfish, please consider [visiting the Wiki](https://github.com/paulegradie/Sailfish/wiki). There you will find:
+ - the [full getting started guide](https://github.com/paulegradie/Sailfish/wiki/Using-Sailfish-as-a-C%23-console-app) 
+ - in depth information on how Sailfish works
+ - details on how to make the most of its feature set
 
 ## Quick Start Guide
 
 There are several options to choose from when setting up your Sailfish test project. You can:
  1. create a console app that:
-    - uses the built-in command line tool (recommended for simple quick start apps)
-    - uses your own execution logic (recommended for more custom control)
+    - uses the built-in command line tool (recommended for simple quick-start apps)
+    - uses your own execution logic (recommended for more production oriented applications)
  2. create a class library project and install the `Sailfish.TestAdapter` and run your tests from the IDE
- 3. create both a class library AND a console app project (that references the class library) and **get the best of both worlds**. 
+ 3. create a class library project for your tests and a separate console app project (that references the class library) and **get the best of both worlds**. 
 
 
 ### Option 1: A basic console app using the builtin program base
 
 This example provides an example implementation for:
- - the program main metho
+ - a quick-start console app
 
 ```csharp
 class Program : SailfishProgramBase
@@ -76,6 +86,7 @@ class Program : SailfishProgramBase
     }
 }
 
+// this will be picked up by Sailfish's dependency scanner
 public class RegistrationProvider : IProvideARegistrationCallback
 {
     public async Task RegisterAsync(ContainerBuilder builder, CancellationToken ct)
