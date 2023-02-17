@@ -6,7 +6,7 @@ using Sailfish.Attributes;
 namespace PerformanceTests.ExamplePerformanceTests.Discoverable;
 
 [Sailfish(NumIterations = 1, NumWarmupIterations = 0, Disabled = TestConstants.Disabled)]
-public class SimplePerfTest
+    public class SimplePerfTest
 {
     [SailfishGlobalSetup]
     public async Task GlobalSetup(CancellationToken cancellationToken)
