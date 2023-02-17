@@ -90,25 +90,25 @@ public class RegistrationProvider : IProvideARegistrationCallback
 {
     public async Task RegisterAsync(ContainerBuilder builder, CancellationToken ct)
     {
-       var typeInstance = await MyTypeFactory.Create(ct);
-       builder.RegisterType(typeInstance).As<IMyType>();
+       var typeInstance = await MyClientFactory.Create(ct);
+       builder.RegisterType(typeInstance).As<IClient>();
     }
 }
 
-[Sailfish]
+[Sailfish] // default method iteration count is 3
 public class AMostBasicTest
 {
-    private readonly IMyType myType;
+    private readonly IClient myClient;
 
-    public AMostBasicTest(IMyType myType) // type is injected so long as its registered
+    public AMostBasicTest(IClient myClient) // type is injected so long as its registered
     {
-        this.myType = myType;
+        this.myClient = myClient;
     }
 
     [SailfishMethod] // checkout all of the attributes provided by sailfish
     public async Task TestMethod(CancellationToken cancellationToken) // token is injected when requested
     {
-        await Task.Delay(2000, cancellationToken);
+        await myClient.Get("/api", cancellationToken);
     }
 }
 ```
@@ -119,11 +119,11 @@ public class AMostBasicTest
 
 Sailfish does not parallelize test executions. The simple reason is that we are assessing how quickly your code executes and by parallelizing tests, the execution time would likely increase. To eliminate noise test neighbors on the machine executing the tests, only one test runs at a time.
 
-## **Tests are run in ordered sequence**
+## **Tests run order is deterministic**
 
 Sailfish does not currently randomize test order execution.
 
-## **Tests are run in process**
+## **Tests are run in-process**
 
 Sailfish does not perform the optimizations necessary to achieve reliable sub-millisecond-resolution results. If you are interested in rigorous benchmarking, please consider using an alternative tool, such as BenchmarkDotNet. Sailfish was produced to remove much of the complexities and boilerplate required to write performance tests that don't need highly optimized execution.
 
