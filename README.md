@@ -68,14 +68,14 @@ Create a class library project and delete any default files. Install the [Sailfi
 ## 2. Write a Sailfish Test
 
 ```csharp
-public class AMostBasicTest
+public class ReadmeExample
 {
     private readonly IClient myClient;
 
     [SailfishVariable(1, 10)]
     public int N { get; set; }
 
-    public AMostBasicTest(IClient myClient) // type is injected so long as its registered
+    public ReadmeExample(IClient myClient) // type is injected so long as its registered
     {
         this.myClient = myClient;
     }
@@ -83,8 +83,8 @@ public class AMostBasicTest
     [SailfishMethod]
     public async Task TestMethod(CancellationToken cancellationToken) // token is injected when requested
     {
-        await Task.Delay(100 * N, cancellationToken);
-        await myClient.GetAll("/api/models", cancellationToken);
+        var tasks = Enumerable.Range(0, N).Select(_ => mylient.Get("/api", cancellationToken));
+        await Task.WhenAll(tasks);
     }
 }
 ```
