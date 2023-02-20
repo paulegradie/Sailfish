@@ -16,7 +16,7 @@ Sailfish exposes six (6) lifecycle attributes that give you fine-grain control w
 ### The setup phase
 ```csharp
 [SailfishGlobalSetup]
-public void GlobalSetup(CancellationToken cancellationToken)
+public async Task GlobalSetup(CancellationToken cancellationToken)
 {
   // This will be called once at the beginning of all test cases produced from the test class
 }
@@ -24,7 +24,7 @@ public void GlobalSetup(CancellationToken cancellationToken)
 
 ```csharp
 [SailfishMethodSetup]
-public void MethodSetup(CancellationToken cancellationToken)
+public async Task MethodSetup(CancellationToken cancellationToken)
 {
     // This will be called once BEFORE each method inside the test class
 }
@@ -32,7 +32,7 @@ public void MethodSetup(CancellationToken cancellationToken)
 
 ```csharp
 [SailfishIterationSetup]
-public void IterationSetup(CancellationToken cancellationToken)
+public async Task IterationSetup(CancellationToken cancellationToken)
 {
     // This will be called once BEFORE each invocation of a test method.
     // So, if you have define NumIterations = 3 in your `Sailfish` class attribute,
@@ -42,7 +42,7 @@ public void IterationSetup(CancellationToken cancellationToken)
 ### The Teardown Phase
 ```csharp
 [SailfishIterationTeardown]
-public void IterationTeardown(CancellationToken cancellationToken)
+public async Task IterationTeardown(CancellationToken cancellationToken)
 {
     // This will be called once AFTER each invocation of a test method.
     // So, if you have define NumIterations = 3 in your `Sailfish` class attribute,
@@ -51,7 +51,7 @@ public void IterationTeardown(CancellationToken cancellationToken)
 ```
 ```csharp
 [SailfishMethodTeardown]
-public void ExecutionMethodTeardown(CancellationToken cancellationToken)
+public async Task ExecutionMethodTeardown(CancellationToken cancellationToken)
 {
     // This will be called once AFTER each method inside the test class
 }
