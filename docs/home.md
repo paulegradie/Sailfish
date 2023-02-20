@@ -4,6 +4,8 @@ Welcome, and thank you for taking the time to explore the Sailfish Documentation
 
 This documentation provides all of the information you will need to make the most of Sailfish.
 
+> **Warning**: The vast majority of these docs are complete, but some sections are still a work in progress. Please feel free to open issues with requests for clarification or additions.
+
 ## Table of Contents
 
 [1. How to set up Sailfish for your project](./1/how-to-set-up-sailfish-for-your-project.md)
@@ -23,7 +25,6 @@ This documentation provides all of the information you will need to make the mos
   - [Using the ISailfishDependency](./4/using-the-ISailfishDependency.md)
 
 [5. Sailfish Result Analysis](./5/saiflish-result-analysis.md)
-  - [Basic Sailfish Analysis](./5/basic-sailfish-analysis.md)
   - [Customizing Sailfish Result Analysis](./5/customizing-sailfish-result-analysis.md)
 
 [6. Sailfish extensibility](./6/sailfish-extensibility.md)
@@ -40,6 +41,4 @@ This documentation provides all of the information you will need to make the mos
 [9. Interpreting your results](./9/interpreting-your-results.md)
 
 [10. Utilities](./10/utilities.md)
-  - [FileTagParsing]()
-  - [](./7/selecting-the-right-statistical-test.md)
 
