@@ -14,12 +14,6 @@ namespace Sailfish.TestAdapter.Discovery;
 
 internal static class TestCaseItemCreator
 {
-    // categories
-    public const string TestTypeFullName = "TestTypeFullName";
-    public const string DisplayName = "DisplayName";
-    public const string FormedVariableSection = "FormedVariableSection";
-    public const string MethodName = "MethodName";
-
     private static PropertySetGenerator PropertySetGenerator => new(new ParameterCombinator(), new IterationVariableRetriever());
 
     public static IEnumerable<TestCase> AssembleTestCases(Type testType, string testCsFileContent, string testCsFilePath, string sourceDll, IMessageLogger logger)
@@ -43,7 +37,6 @@ internal static class TestCaseItemCreator
 
             if (propertySets.Length > 0)
             {
-                var i = 0;
                 foreach (var propertySet in propertySets)
                 {
                     var propertyNames = propertySet.GetPropertyNames();
@@ -56,7 +49,6 @@ internal static class TestCaseItemCreator
                         propertyNames,
                         propertyValues,
                         true); // TODO: Remove this once we have traits and properties sorted. see below
-                    i++;
                     testCase.CodeFilePath = testCsFilePath;
                     testCase.ExecutorUri = TestExecutor.ExecutorUri;
                     testCase.LineNumber = methodNameLine;
@@ -108,13 +100,10 @@ internal static class TestCaseItemCreator
         }
 
         if (!shouldAddCategories) return testCase;
-        // TODO: Send these traits over to the properties
-        // Traits is not the right way to pass this information, but the Properties property keeps getting cleared on the test case when
-        // is passed to the executor -- I'm setting that property incorrectly probably
-        testCase.Traits.Add(new Trait(TestTypeFullName, testType.FullName));
-        testCase.Traits.Add(new Trait(DisplayName, testCaseId.DisplayName));
-        testCase.Traits.Add(new Trait(FormedVariableSection, testCaseId.TestCaseVariables.FormVariableSection()));
-        testCase.Traits.Add(new Trait(MethodName, method.Name));
+        testCase.SetPropertyValue(SailfishTestTypeFullNameDefinition.SailfishTestTypeFullNameDefinitionProperty, testType.FullName);
+        testCase.SetPropertyValue(SailfishDisplayNameDefinition.SailfishDisplayNameDefinitionProperty, testCaseId.DisplayName);
+        testCase.SetPropertyValue(SailfishFormedVariableSectionDefinition.SailfishFormedVariableSectionDefinitionProperty, testCaseId.TestCaseVariables.FormVariableSection());
+        testCase.SetPropertyValue(SailfishMethodNameDefinition.SailfishMethodNameDefinitionProperty, method.Name);
 
         return testCase;
     }

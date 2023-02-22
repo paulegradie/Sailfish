@@ -63,12 +63,9 @@ internal class SailfishExecutionEngine : ISailfishExecutionEngine
             instanceContainerEnumerator.Dispose();
             var msg = $"Error resolving test from {testProvider.Test.FullName}";
             Log.Logger.Fatal(ex, "{Message}", msg);
-            if (exceptionCallback is not null)
-            {
-                return new List<TestExecutionResult>();
-            }
-
-            throw;
+            if (exceptionCallback is null) throw;
+            var exceptionResult = new TestExecutionResult(testProvider, ex);
+            return new List<TestExecutionResult>() { exceptionResult };
         }
 
         var results = new List<TestExecutionResult>();

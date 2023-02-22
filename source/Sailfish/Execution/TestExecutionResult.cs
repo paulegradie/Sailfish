@@ -29,11 +29,25 @@ internal class TestExecutionResult
         PerformanceTimerResults = container.Invocation.GetPerformanceResults(false);
     }
 
+    public TestExecutionResult(TestInstanceContainerProvider testProvider, Exception exception)
+    {
+        Exception = exception;
+        IsSuccess = false;
+        StatusCode = StatusCode.Failure;
+
+        TestInstanceContainer = null;
+        TestInstanceContainerProvider = testProvider;
+        Messages = null;
+        ExecutionSettings = null;
+        PerformanceTimerResults = null;
+    }
+
     public IExecutionSettings? ExecutionSettings { get; }
     public List<string>? Messages { get; }
     public Exception? Exception { get; }
     public StatusCode StatusCode { get; }
     public bool IsSuccess { get; }
-    public TestInstanceContainer TestInstanceContainer { get; set; }
-    public PerformanceTimer PerformanceTimerResults { get; }
+    public TestInstanceContainer? TestInstanceContainer { get; set; }
+    public TestInstanceContainerProvider? TestInstanceContainerProvider { get; set; }
+    public PerformanceTimer? PerformanceTimerResults { get; }
 }
