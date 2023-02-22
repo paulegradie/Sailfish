@@ -33,19 +33,26 @@ internal static class SailfishTypeRegistrationUtility
         CancellationToken cancellationToken = default)
     {
         var allAssemblies = new List<Assembly>() { aTestType.Assembly };
-        var allAssemblyTypes = allAssemblies.Distinct().SelectMany(a => a.GetTypes()).Distinct().ToArray();
+        var testAssemblyTypes = allAssemblies.Distinct().SelectMany(a => a.GetTypes()).Distinct().ToArray();
 
-        await RegisterSupportedIdentifierTypes(containerBuilder, allAssemblyTypes, new List<Type>() { aTestType }, cancellationToken);
+        await RegisterSupportedIdentifierTypes(containerBuilder, testAssemblyTypes, new[] { aTestType }, cancellationToken);
     }
 
-    private static async Task RegisterSupportedIdentifierTypes(ContainerBuilder containerBuilder, Type[] allAssemblyTypes, IEnumerable<Type> registrationProviderAnchorTypes,
+    private static async Task RegisterSupportedIdentifierTypes(
+        ContainerBuilder containerBuilder,
+        IEnumerable<Type> allAssemblyTypes,
+        IEnumerable<Type> registrationProviderAnchorTypes,
         CancellationToken cancellationToken)
     {
-        await RegisterCallbackProviders(containerBuilder, registrationProviderAnchorTypes, allAssemblyTypes, cancellationToken);
+        var allTypesFromDiscoverySources = allAssemblyTypes.ToList();
+        allTypesFromDiscoverySources.AddRange(registrationProviderAnchorTypes.SelectMany(at => at.Assembly.GetTypes()));
+        var dependencySourceTypeSet = allTypesFromDiscoverySources.ToArray();
 
-        RegisterISailfishDependencies(containerBuilder, registrationProviderAnchorTypes);
-        RegisterISailfishFixtureGenericTypes(containerBuilder, registrationProviderAnchorTypes);
-        RegisterBasicISailfishDependencyTypes(containerBuilder, registrationProviderAnchorTypes);
+        await RegisterCallbackProviders(containerBuilder, dependencySourceTypeSet, cancellationToken);
+
+        RegisterISailfishDependencies(containerBuilder, dependencySourceTypeSet);
+        RegisterISailfishFixtureGenericTypes(containerBuilder, dependencySourceTypeSet);
+        RegisterBasicISailfishDependencyTypes(containerBuilder, dependencySourceTypeSet);
     }
 
     private static void RegisterBasicISailfishDependencyTypes(ContainerBuilder containerBuilder, IEnumerable<Type> allAssemblyTypes)
@@ -85,13 +92,10 @@ internal static class SailfishTypeRegistrationUtility
 
     private static async Task RegisterCallbackProviders(
         ContainerBuilder containerBuilder,
-        IEnumerable<Type> registrationProviderAnchorTypes,
         Type[] allAssemblyTypes,
         CancellationToken cancellationToken)
     {
-        if (allAssemblyTypes == null) throw new ArgumentNullException(nameof(allAssemblyTypes));
-        var registrationProviderAssemblyTypes = registrationProviderAnchorTypes.SelectMany(t => t.Assembly.GetTypes()).Distinct();
-        var asyncProviders = GetRegistrationCallbackProviders<IProvideARegistrationCallback>(registrationProviderAssemblyTypes).ToList();
+        var asyncProviders = GetRegistrationCallbackProviders<IProvideARegistrationCallback>(allAssemblyTypes).ToList();
         if (!asyncProviders.Any())
         {
             asyncProviders = GetRegistrationCallbackProviders<IProvideARegistrationCallback>(allAssemblyTypes).ToList();

@@ -7,7 +7,7 @@ using Autofac;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.Adapter;
 using Sailfish.Execution;
-using Sailfish.TestAdapter.Discovery;
+using Sailfish.TestAdapter.TestProperties;
 
 namespace Sailfish.TestAdapter.Execution;
 
@@ -35,8 +35,11 @@ internal static class TestExecution
     {
         var assembly = Assembly.LoadFile(testCases.First().Source);
         AppDomain.CurrentDomain.Load(assembly.GetName()); // is this necessary?
-        var testTypeTrait = testCases.First().Traits.Single(trait => trait.Name == TestCaseItemCreator.TestTypeFullName);
-        var testTypeFullName = testTypeTrait.Value;
+
+        var testTypeFullName = testCases
+            .First()
+            .GetPropertyHelper(SailfishTestTypeFullNameDefinition.SailfishTestTypeFullNameDefinitionProperty);
+
         var refTestType = assembly.GetType(testTypeFullName, true, true);
         if (refTestType is null) throw new Exception("First test type was null when starting test execution");
         return refTestType;

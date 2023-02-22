@@ -8,35 +8,28 @@ using Microsoft.VisualStudio.TestPlatform.ObjectModel.Adapter;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.Logging;
 using Sailfish.Exceptions;
 using Sailfish.Execution;
-using Sailfish.TestAdapter.Discovery;
+using Sailfish.TestAdapter.TestProperties;
 
 namespace Sailfish.TestAdapter.Execution;
 
 internal class TestAdapterExecutionProgram : ITestAdapterExecutionProgram
 {
     private readonly ITestInstanceContainerCreator testInstanceContainerCreator;
-
     private readonly IConsoleWriterFactory consoleWriterFactory;
-
-    // private readonly Func<ITestExecutionRecorder?, ConsoleWriter> consoleWriter;
     private readonly IExecutionSummaryCompiler executionSummaryCompiler;
     private readonly ISailfishExecutionEngine engine;
 
     public TestAdapterExecutionProgram(
         ITestInstanceContainerCreator testInstanceContainerCreator,
-        // Func<ITestExecutionRecorder?, ConsoleWriter> consoleWriter,
         IConsoleWriterFactory consoleWriterFactory,
         IExecutionSummaryCompiler executionSummaryCompiler,
-        ISailfishExecutionEngine engine
-    )
+        ISailfishExecutionEngine engine)
     {
         this.testInstanceContainerCreator = testInstanceContainerCreator;
         this.consoleWriterFactory = consoleWriterFactory;
-        // this.consoleWriter = consoleWriter;
         this.executionSummaryCompiler = executionSummaryCompiler;
         this.engine = engine;
     }
-
 
     public void Run(List<TestCase> testCases, IFrameworkHandle? frameworkHandle, CancellationToken cancellationToken)
     {
@@ -47,18 +40,14 @@ internal class TestAdapterExecutionProgram : ITestAdapterExecutionProgram
         }
 
         var rawResults = new List<RawExecutionResult>();
-        var testCaseGroups = testCases
-            .GroupBy(
-                testCase =>
-                    testCase.Traits.Single(x => x.Name == TestCaseItemCreator.TestTypeFullName).Value);
+        var testCaseGroups = testCases.GroupBy(testCase => testCase.GetPropertyHelper(SailfishTestTypeFullNameDefinition.SailfishTestTypeFullNameDefinitionProperty));
 
         foreach (var testCaseGroup in testCaseGroups)
         {
             var groupResults = new List<TestExecutionResult>();
 
             var firstTestCase = testCaseGroup.First();
-            var testTypeTrait = firstTestCase.Traits.Single(trait => trait.Name == TestCaseItemCreator.TestTypeFullName);
-            var testTypeFullName = testTypeTrait.Value;
+            var testTypeFullName = firstTestCase.GetPropertyHelper(SailfishTestTypeFullNameDefinition.SailfishTestTypeFullNameDefinitionProperty);
             var assembly = LoadAssemblyFromDll(firstTestCase.Source);
             var testType = assembly.GetType(testTypeFullName, true, true);
             if (testType is null)
@@ -67,7 +56,8 @@ internal class TestAdapterExecutionProgram : ITestAdapterExecutionProgram
                 continue;
             }
 
-            var availableVariableSections = testCases.Select(x => x.Traits.Single(y => y.Name == TestCaseItemCreator.FormedVariableSection).Value).Distinct();
+            var availableVariableSections =
+                testCases.Select(x => x.GetPropertyHelper(SailfishFormedVariableSectionDefinition.SailfishFormedVariableSectionDefinitionProperty)).Distinct();
 
             bool PropertyFilter(PropertySet currentPropertySet)
             {
@@ -75,7 +65,9 @@ internal class TestAdapterExecutionProgram : ITestAdapterExecutionProgram
                 return availableVariableSections.Contains(currentVariableSection);
             }
 
-            var availableMethods = testCases.Select(x => x.Traits.Single(y => y.Name == TestCaseItemCreator.MethodName).Value).Distinct();
+            var availableMethods = testCases
+                .Select(x => x.GetPropertyHelper(SailfishMethodNameDefinition.SailfishMethodNameDefinitionProperty))
+                .Distinct();
 
             bool MethodFilter(MethodInfo currentMethodInfo)
             {
@@ -153,12 +145,14 @@ internal class TestAdapterExecutionProgram : ITestAdapterExecutionProgram
         };
     }
 
-    private static TestCase GetTestCaseFromTestCaseGroupMatchingCurrentContainer(TestInstanceContainer container, IGrouping<string, TestCase> testCaseGroup)
+    private static TestCase GetTestCaseFromTestCaseGroupMatchingCurrentContainer(TestInstanceContainer container, IEnumerable<TestCase> testCaseGroup)
     {
         return testCaseGroup.Single(x => string.Equals(x.DisplayName, container.TestCaseId.DisplayName, StringComparison.InvariantCultureIgnoreCase));
     }
 
-    private Action<TestExecutionResult, TestInstanceContainer> PostTestResultCallback(IGrouping<string, TestCase> testCaseGroups, ITestExecutionRecorder? logger,
+    private Action<TestExecutionResult, TestInstanceContainer> PostTestResultCallback(
+        IGrouping<string, TestCase> testCaseGroups,
+        ITestExecutionRecorder? logger,
         CancellationToken cancellationToken)
     {
         return (result, container) =>

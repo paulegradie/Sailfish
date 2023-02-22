@@ -2,11 +2,13 @@ using Microsoft.VisualStudio.TestPlatform.ObjectModel;
 
 namespace Sailfish.TestAdapter.TestProperties;
 
-public static class SailfishDisplayNameDefinition
+public static class SailfishTestTypeFullNameDefinition
 {
-    internal static readonly TestProperty SailfishDisplayNameDefinitionProperty = TestProperty.Register(
-        "Sailfish.DisplayNameDefinition",
-        "DisplayNameDefinition",
+    public const string TestTypeFullName = "TestTypeFullName";
+
+    internal static readonly TestProperty SailfishTestTypeFullNameDefinitionProperty = TestProperty.Register(
+        $"Sailfish.{TestTypeFullName}Definition",
+        $"{TestTypeFullName}Definition",
         typeof(string),
         TestPropertyAttributes.Immutable,
         typeof(TestCase)
