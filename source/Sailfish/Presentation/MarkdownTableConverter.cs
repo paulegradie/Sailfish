@@ -40,7 +40,6 @@ public class MarkdownTableConverter : IMarkdownTableConverter
     private void AppendHeader(string typeName)
     {
         stringBuilder.AppendLine();
-        stringBuilder.AppendLine("\r-----------------------------------");
         stringBuilder.AppendLine($"\r{typeName}\r");
         stringBuilder.AppendLine("-----------------------------------\r");
     }

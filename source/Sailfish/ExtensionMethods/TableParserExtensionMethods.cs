@@ -10,30 +10,24 @@ namespace Sailfish.ExtensionMethods;
 
 internal static class TableParserExtensionMethods
 {
-    public static string ToStringTable<T>(this IEnumerable<T> values, List<string> headerSuffixes, List<Expression<Func<T, object>>> valueSelectors)
-    {
-        return ToStringTable(values, headerSuffixes, valueSelectors.ToArray());
-    }
-
-    public static string ToStringTable<T>(this IEnumerable<T> values, List<string> headerSuffixes, params Expression<Func<T, object>>[] valueSelectors)
+    public static string ToStringTable<T>(this IEnumerable<T> values, IEnumerable<string> headerSuffixes, params Expression<Func<T, object>>[] valueSelectors)
     {
         var headers = valueSelectors.Select(func => GetProperty<T>(func)!.Name).ToArray();
         var selectors = valueSelectors.Select(exp => exp.Compile()).ToArray();
-        return ToStringTable(values, headers.ToArray(), headerSuffixes, selectors);
+        return ToStringTable(values.ToArray(), headers.ToArray(), headerSuffixes.ToArray(), selectors);
     }
 
-    public static string ToStringTable<T>(this IEnumerable<T> values, string[] columnHeaders, List<string> headerSuffixes, params Func<T, object>[] valueSelectors)
+    private static string ToStringTable<T>(
+        this IReadOnlyList<T> values,
+        IReadOnlyList<string> columnHeaders,
+        IReadOnlyList<string> headerSuffixes,
+        params Func<T, object>[] valueSelectors)
     {
-        return ToStringTable(values.ToArray(), columnHeaders, headerSuffixes, valueSelectors);
-    }
+        Debug.Assert(columnHeaders.Count == valueSelectors.Length);
 
-    public static string ToStringTable<T>(this T[] values, string[] columnHeaders, List<string> headerSuffixes, params Func<T, object>[] valueSelectors)
-    {
-        Debug.Assert(columnHeaders.Length == valueSelectors.Length);
+        var arrValues = new string[values.Count + 1, valueSelectors.Length];
 
-        var arrValues = new string[values.Length + 1, valueSelectors.Length];
-
-        if (headerSuffixes.Count > 0 && headerSuffixes.Count != columnHeaders.Length) throw new Exception("Header suffix array length must match num columns");
+        if (headerSuffixes.Count > 0 && headerSuffixes.Count != columnHeaders.Count) throw new Exception("Header suffix array length must match num columns");
 
         // Fill headers
         for (var colIndex = 0; colIndex < arrValues.GetLength(1); colIndex++)
@@ -59,14 +53,7 @@ internal static class TableParserExtensionMethods
             }
         }
 
-        return ToStringTable(arrValues);
-    }
-
-    public static string ToStringTable(this string[,] arrValues)
-    {
         var maxColumnsWidth = GetMaxColumnsWidth(arrValues);
-        var headerSplitter = new string('-', maxColumnsWidth.Sum(i => i + 3) - 1);
-
         var sb = new StringBuilder();
         for (var rowIndex = 0; rowIndex < arrValues.GetLength(0); rowIndex++)
         {
@@ -85,7 +72,17 @@ internal static class TableParserExtensionMethods
 
             // Print splitter
             if (rowIndex != 0) continue;
-            sb.AppendFormat(" |{0}| ", headerSplitter);
+
+            for (var colIndex = 0; colIndex < arrValues.GetLength(1); colIndex++)
+            {
+                // Print cell
+                var cell = " ---"; //arrValues[rowIndex, colIndex];
+                cell = cell.PadRight(maxColumnsWidth[colIndex]);
+                sb.Append(" | ");
+                sb.Append(cell);
+            }
+
+            sb.Append(" |");
             sb.AppendLine();
         }
 
