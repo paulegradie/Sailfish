@@ -1,0 +1,54 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq.Expressions;
+using Sailfish.Analysis;
+using Sailfish.Contracts.Public;
+using Sailfish.ExtensionMethods;
+using Shouldly;
+using Xunit;
+
+namespace Test.ExtensionMethods;
+
+public class TableParserExtensionMethodsFixture
+{
+    [Fact]
+    public void TableIsParsedCorrectly()
+    {
+        var selectors = new Expression<Func<TestCaseResults, object>>[]
+        {
+            m => m.TestCaseId.DisplayName,
+            m => m.TestResults.MeanOfBefore,
+            m => m.TestResults.MeanOfAfter,
+            m => m.TestResults.MedianOfBefore,
+            m => m.TestResults.MedianOfAfter,
+            m => m.TestResults.PValue,
+            m => m.TestResults.TestStatistic,
+            m => m.TestResults.ChangeDescription
+        };
+
+        var headerSuffixes = new[]
+        {
+            "", "ms", "ms", "ms", "ms", "", "", ""
+        };
+
+        var result = new StatisticalTestExecutor().ExecuteStatisticalTest(
+            new double[] { 2, 3, 4, 4, 5, 5, 6, 6, 6 },
+            new double[] { 9, 8, 7, 6, 4, 4, 1, 2, 3, 2 },
+            new TestSettings(0.01, 0));
+
+
+        var testCaseId = new TestCaseId("MyClass.MySampleTest(N: 2, X: 4)");
+        var testCaseResults = new List<TestCaseResults>() { new TestCaseResults(testCaseId, result) };
+
+        var res = testCaseResults.ToStringTable(headerSuffixes, selectors);
+
+        const string expected =
+            @"
+| DisplayName                        | MeanOfBefore | MeanOfAfter | MedianOfBefore | MedianOfAfter | PValue        | TestStatistic | ChangeDescription | 
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| MyClass.MySampleTest( X: 4, N: 2)  | 5 ms         | 5 ms        | 5 ms           | 4 ms          | 0.8896057503  | 47            | No Change         |
+";
+
+        res.Trim().Replace(" ", "").ShouldBe(expected.Trim().Replace(" ", ""));
+    }
+}

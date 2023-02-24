@@ -84,17 +84,4 @@ public class RunSettings
         TestLocationAnchors = testLocationAnchors;
         RegistrationProviderAnchors = registrationProviderAnchors;
     }
-
-#pragma warning disable CS8618
-    private RunSettings()
-#pragma warning restore CS8618
-    {
-        TestLocationAnchors = Array.Empty<Type>();
-        RegistrationProviderAnchors = Array.Empty<Type>();
-    }
-
-    internal static RunSettings CreateTestAdapterSettings()
-    {
-        return new RunSettings();
-    }
 }

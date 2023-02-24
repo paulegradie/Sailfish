@@ -29,7 +29,7 @@ public class TestResultTableContentFormatter : ITestResultTableContentFormatter
 
     private static string FormatAsMarkdown(IEnumerable<TestCaseResults> testCaseResults)
     {
-        var selectors = new List<Expression<Func<TestCaseResults, object>>>
+        var selectors = new Expression<Func<TestCaseResults, object>>[]
         {
             m => m.TestCaseId.DisplayName,
             m => m.TestResults.MeanOfBefore,
@@ -41,7 +41,7 @@ public class TestResultTableContentFormatter : ITestResultTableContentFormatter
             m => m.TestResults.ChangeDescription
         };
 
-        var headerSuffixes = new List<string>
+        var headerSuffixes = new[]
         {
             "", "ms", "ms", "ms", "ms", "", "", ""
         };
