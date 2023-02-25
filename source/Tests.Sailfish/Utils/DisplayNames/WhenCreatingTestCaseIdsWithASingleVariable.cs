@@ -63,6 +63,12 @@ public class WhenCreatingTestCaseIdsWithASingleVariable : IAsyncLifetime
         result.ShouldBeNull();
     }
 
+    [Fact]
+    public void TheTestCaseDisplayNameIsRendered()
+    {
+        // var result = 
+    }
+
     public async Task InitializeAsync()
     {
         testCaseId = DisplayNameHelper.CreateTestCaseId(

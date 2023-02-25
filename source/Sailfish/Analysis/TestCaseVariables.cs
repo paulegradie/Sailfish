@@ -42,7 +42,7 @@ public class TestCaseVariables
     public string FormVariableSection()
     {
         var parts = Variables.Select(variable => $"{variable.Name}: {variable.Value.ToString()}").ToList();
-        return OpenBracket + string.Join(", ", parts) + CloseBracket;
+        return OpenBracket + string.Join(", ", parts).Trim() + CloseBracket;
     }
 
     private static TestCaseVariable ParseVariable(string variable)

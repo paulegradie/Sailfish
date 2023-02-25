@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Linq.Expressions;
+using Accord.Math;
 using Sailfish.Analysis;
 using Sailfish.Contracts.Public;
 using Sailfish.ExtensionMethods;
@@ -40,15 +42,19 @@ public class TableParserExtensionMethodsFixture
         var testCaseId = new TestCaseId("MyClass.MySampleTest(N: 2, X: 4)");
         var testCaseResults = new List<TestCaseResults>() { new TestCaseResults(testCaseId, result) };
 
-        var res = testCaseResults.ToStringTable(headerSuffixes, selectors);
+        var res = testCaseResults
+            .ToStringTable(headerSuffixes, selectors)
+            .Trim()
+            .Split("\r\n")
+            .Select(x => x.Trim())
+            .ToArray();
 
-        const string expected =
-            @"
-| DisplayName                        | MeanOfBefore | MeanOfAfter | MedianOfBefore | MedianOfAfter | PValue        | TestStatistic | ChangeDescription | 
-| --- | --- | --- | --- | --- | --- | --- | --- |
-| MyClass.MySampleTest( X: 4, N: 2)  | 5 ms         | 5 ms        | 5 ms           | 4 ms          | 0.8896057503  | 47            | No Change         |
-";
-
-        res.Trim().Replace(" ", "").ShouldBe(expected.Trim().Replace(" ", ""));
+        var expected = new[]
+        {
+            "| DisplayName                       | MeanOfBefore | MeanOfAfter | MedianOfBefore | MedianOfAfter | PValue        | TestStatistic | ChangeDescription |",
+            "| ---                               | ---          | ---         | ---            | ---           | ---           | ---           | ---               |",
+            "| MyClass.MySampleTest(X: 4, N: 2)  | 5 ms         | 5 ms        | 5 ms           | 4 ms          | 0.8896057503  | 47            | No Change         |"
+        };
+        res.ShouldBeEquivalentTo(expected);
     }
 }
