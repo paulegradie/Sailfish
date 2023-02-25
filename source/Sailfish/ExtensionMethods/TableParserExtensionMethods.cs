@@ -76,7 +76,7 @@ internal static class TableParserExtensionMethods
             for (var colIndex = 0; colIndex < arrValues.GetLength(1); colIndex++)
             {
                 // Print cell
-                var cell = "---"; //arrValues[rowIndex, colIndex];
+                var cell = "---";
                 cell = cell.PadRight(maxColumnsWidth[colIndex]);
                 sb.Append(" | ");
                 sb.Append(cell);
