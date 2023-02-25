@@ -7,19 +7,24 @@ using Sailfish.ExtensionMethods;
 
 namespace Sailfish.Execution;
 
+internal interface IIterationVariableRetriever
+{
+    Dictionary<string, T[]> RetrieveIterationVariables<T>(Type type);
+}
+
 internal class IterationVariableRetriever : IIterationVariableRetriever
 {
-    public Dictionary<string, int[]> RetrieveIterationVariables(Type type)
+    public Dictionary<string, T[]> RetrieveIterationVariables<T>(Type type)
     {
-        var dict = new Dictionary<string, int[]>();
-        var propertiesWithAttribute = type.GetPropertiesWithAttribute<SailfishVariableAttribute>();
+        var dict = new Dictionary<string, T[]>();
+        var propertiesWithAttribute = type.GetPropertiesWithAttribute<SailfishVariableAttribute<T>>();
         foreach (var property in propertiesWithAttribute)
         {
             var variableValues = property
                 .GetCustomAttributes()
-                .OfType<SailfishVariableAttribute>()
+                .OfType<SailfishVariableAttribute<T>>()
                 .Single() // multiple prop on the attribute is false, so this shouldn't throw - we validate first to give feedback
-                .N
+                .GetVariables()
                 .Distinct() // Duplicate values are currently allowed until we have an analyzer that prevents folks from providing duplicate values
                 .OrderBy(x => x)
                 .ToArray();

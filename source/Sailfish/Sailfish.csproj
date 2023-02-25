@@ -9,7 +9,7 @@
             tests that assess the speed of your code, without weighing you down with all the extra ceremony.
         </Description>
         <TargetFramework>net6.0</TargetFramework>
-        <LangVersion>10</LangVersion>
+        <LangVersion>latest</LangVersion>
         <Nullable>enable</Nullable>
         <IsPackable>true</IsPackable>
         <DebugSymbols>True</DebugSymbols>

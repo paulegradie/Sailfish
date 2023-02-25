@@ -24,7 +24,7 @@ public class WhenSettingSailfishAttributes
         var testClass = new TestClass();
 
         var propertyRetriever = new IterationVariableRetriever();
-        var variables = propertyRetriever.RetrieveIterationVariables(testClass.GetType());
+        var variables = propertyRetriever.RetrieveIterationVariables<int>(testClass.GetType());
 
         var propName = variables.Keys.Single();
         propName.ShouldBe(nameof(testClass.Count));

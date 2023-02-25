@@ -11,7 +11,7 @@ namespace Sailfish.Execution;
 /// </summary>
 public class PropertySet
 {
-    public PropertySet(List<TestCaseVariable> variableSet)
+    public  PropertySet(List<TestCaseVariable> variableSet)
     {
         VariableSet = variableSet;
     }
@@ -23,7 +23,7 @@ public class PropertySet
         return VariableSet.Select(x => x.Name.ToString());
     }
 
-    public IEnumerable<int> GetPropertyValues()
+    public IEnumerable<object> GetPropertyValues()
     {
         return VariableSet.Select(x => x.Value);
     }

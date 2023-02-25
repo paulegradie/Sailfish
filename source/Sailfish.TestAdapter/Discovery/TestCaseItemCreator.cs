@@ -63,7 +63,7 @@ internal static class TestCaseItemCreator
                     logger,
                     method,
                     Array.Empty<string>(),
-                    Array.Empty<int>(),
+                    Array.Empty<object>(),
                     true);
                 testCase.CodeFilePath = testCsFilePath;
                 testCase.ExecutorUri = TestExecutor.ExecutorUri;
@@ -81,7 +81,7 @@ internal static class TestCaseItemCreator
         IMessageLogger logger,
         MemberInfo method,
         IEnumerable<string> propertyNames,
-        IEnumerable<int> propertyValues,
+        IEnumerable<object> propertyValues,
         bool shouldAddCategories)
     {
         var testCaseId = DisplayNameHelper.CreateTestCaseId(testType, method.Name, propertyNames.ToArray(), propertyValues.ToArray());

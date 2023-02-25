@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using Sailfish.Exceptions;
 
 namespace Sailfish.Attributes;
@@ -10,13 +12,26 @@ namespace Sailfish.Attributes;
 ///     Sailfish attribute
 /// </summary>
 [AttributeUsage(AttributeTargets.Property)]
-public sealed class SailfishVariableAttribute : Attribute
+public class SailfishVariableAttribute<T> : Attribute
 {
-    public SailfishVariableAttribute(params int[] n)
+    public SailfishVariableAttribute([MinLength(1)] params T[] n)
     {
-        if (n.Length == 0) throw new SailfishException("No values were provided to the IterationVariable attribute.");
-        N = n;
+        if (n.Length == 0) throw new SailfishException($"No values were provided to the {nameof(SailfishVariableAttribute<T>)} attribute.");
+        N.AddRange(n);
     }
 
-    public int[] N { get; set; }
+    public List<T> N { get; } = new();
+
+    public T[] GetVariables()
+    {
+        return N.ToArray();
+    }
+}
+
+[AttributeUsage(AttributeTargets.Property)]
+public sealed class SailfishVariableAttribute : SailfishVariableAttribute<int>
+{
+    public SailfishVariableAttribute([MinLength(1)] params int[] n) : base(n)
+    {
+    }
 }

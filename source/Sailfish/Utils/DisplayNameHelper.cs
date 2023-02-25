@@ -6,7 +6,7 @@ namespace Sailfish.Utils;
 
 internal static class DisplayNameHelper
 {
-    public static TestCaseId CreateTestCaseId(Type testType, string methodName, string[] variableNames, int[] paramSet)
+    public static TestCaseId CreateTestCaseId(Type testType, string methodName, string[] variableNames, object[] paramSet)
     {
         var nameParts = new[] { testType.Name, methodName };
         var testCaseName = new TestCaseName(nameParts);
