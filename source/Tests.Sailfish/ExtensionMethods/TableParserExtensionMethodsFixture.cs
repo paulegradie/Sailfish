@@ -45,7 +45,7 @@ public class TableParserExtensionMethodsFixture
         var res = testCaseResults
             .ToStringTable(headerSuffixes, selectors)
             .Trim()
-            .Split("\r\n")
+            .Split(Environment.NewLine)
             .Select(x => x.Trim())
             .ToArray();
 
