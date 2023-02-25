@@ -66,7 +66,16 @@ public class WhenCreatingTestCaseIdsWithASingleVariable : IAsyncLifetime
     [Fact]
     public void TheTestCaseDisplayNameIsRendered()
     {
-        // var result = 
+        var varA = "First";
+        var varB = "Second";
+        var tci = DisplayNameHelper.CreateTestCaseId(
+            typeof(WhenCreatingTestCaseIdsWithASingleVariable),
+            "TestMethod",
+            new[] { varA, varB },
+            new[] { 10, 50 });
+        
+        var result = tci.TestCaseVariables.FormVariableSection();
+        result.ShouldBe($"({varA}: 10, {varB}: 50)");
     }
 
     public async Task InitializeAsync()
