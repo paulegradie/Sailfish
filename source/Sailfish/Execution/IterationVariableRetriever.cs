@@ -9,20 +9,20 @@ namespace Sailfish.Execution;
 
 internal interface IIterationVariableRetriever
 {
-    Dictionary<string, T[]> RetrieveIterationVariables<T>(Type type);
+    Dictionary<string, object[]> RetrieveIterationVariables(Type type);
 }
 
 internal class IterationVariableRetriever : IIterationVariableRetriever
 {
-    public Dictionary<string, T[]> RetrieveIterationVariables<T>(Type type)
+    public Dictionary<string, object[]> RetrieveIterationVariables(Type type)
     {
-        var dict = new Dictionary<string, T[]>();
-        var propertiesWithAttribute = type.GetPropertiesWithAttribute<SailfishVariableAttribute<T>>();
+        var dict = new Dictionary<string, object[]>();
+        var propertiesWithAttribute = type.GetPropertiesWithAttribute<SailfishVariableAttribute>();
         foreach (var property in propertiesWithAttribute)
         {
             var variableValues = property
                 .GetCustomAttributes()
-                .OfType<SailfishVariableAttribute<T>>()
+                .OfType<SailfishVariableAttribute>()
                 .Single() // multiple prop on the attribute is false, so this shouldn't throw - we validate first to give feedback
                 .GetVariables()
                 .Distinct() // Duplicate values are currently allowed until we have an analyzer that prevents folks from providing duplicate values

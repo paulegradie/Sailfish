@@ -17,16 +17,11 @@ internal class PropertySetGenerator : IPropertySetGenerator
 
     public IEnumerable<PropertySet> GeneratePropertySets(Type test)
     {
-        var stringVariableProperties = iterationVariableRetriever.RetrieveIterationVariables<string>(test);
-        var intVariableProperties = iterationVariableRetriever.RetrieveIterationVariables<int>(test);
-
-        var combined = stringVariableProperties
-            .ToDynamic()
-            .Concat(intVariableProperties.ToDynamic());
+        var variableProperties = iterationVariableRetriever.RetrieveIterationVariables(test);
 
         var propNames = new List<string>();
         var propValues = new List<List<dynamic>>();
-        foreach (var (propertyName, values) in combined)
+        foreach (var (propertyName, values) in variableProperties)
         {
             propNames.Add(propertyName);
             propValues.Add(values.ToList());

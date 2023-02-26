@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
 using Sailfish.Attributes;
 using System.Threading;
 using System.Threading.Tasks;
@@ -12,13 +11,13 @@ namespace PerformanceTests.ExamplePerformanceTests.Discoverable
     {
         private ConcurrentDictionary<string, string> scenarioMap = null!;
 
-        [SailfishVariable<string>("wow", "ok")]
+        [SailfishVariable("wow", "ok")]
         public string N { get; set; } = null!;
 
         private const string ScenarioA = "ScenarioA";
         private const string ScenarioB = "ScenarioB";
 
-        [SailfishVariable<string>(ScenarioA, ScenarioB)]
+        [SailfishVariable(ScenarioA, ScenarioB)]
         public string Scenario { get; set; } = null!;
 
         [SailfishGlobalSetup]
@@ -27,11 +26,6 @@ namespace PerformanceTests.ExamplePerformanceTests.Discoverable
             scenarioMap = new ConcurrentDictionary<string, string>();
             scenarioMap.AddOrUpdate(ScenarioA, (val) => "WOW", (old, newish) => "OK");
             scenarioMap.AddOrUpdate(ScenarioB, (val) => "ok", (old, newish) => "wow");
-
-            // {
-            //     { ScenarioA, "WOW" },
-            //     { ScenarioB, "WOOOOZER" }
-            // };
         }
 
         [SailfishMethod]

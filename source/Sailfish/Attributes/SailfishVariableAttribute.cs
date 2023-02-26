@@ -12,26 +12,18 @@ namespace Sailfish.Attributes;
 ///     Sailfish attribute
 /// </summary>
 [AttributeUsage(AttributeTargets.Property)]
-public class SailfishVariableAttribute<T> : Attribute
+public class SailfishVariableAttribute : Attribute
 {
-    public SailfishVariableAttribute([MinLength(1)] params T[] n)
+    public SailfishVariableAttribute([MinLength(1)] params object[] n)
     {
-        if (n.Length == 0) throw new SailfishException($"No values were provided to the {nameof(SailfishVariableAttribute<T>)} attribute.");
+        if (n.Length == 0) throw new SailfishException($"No values were provided to the {nameof(SailfishVariableAttribute)} attribute.");
         N.AddRange(n);
     }
 
-    public List<T> N { get; } = new();
+    public List<object> N { get; } = new();
 
-    public T[] GetVariables()
+    public IEnumerable<object> GetVariables()
     {
         return N.ToArray();
-    }
-}
-
-[AttributeUsage(AttributeTargets.Property)]
-public sealed class SailfishVariableAttribute : SailfishVariableAttribute<int>
-{
-    public SailfishVariableAttribute([MinLength(1)] params int[] n) : base(n)
-    {
     }
 }

@@ -1,9 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using Sailfish.Analysis;
 using Sailfish.Exceptions;
-using Sailfish.ExtensionMethods;
 
 namespace Sailfish.Execution;
 

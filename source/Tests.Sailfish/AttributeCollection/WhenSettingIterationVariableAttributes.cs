@@ -11,7 +11,7 @@ public class WhenSettingSailfishAttributes
     [Fact]
     public void TheNPropertyIsSet()
     {
-        var parameters = new[] { 1, 2, 3 };
+        var parameters = new object[] { 1, 2, 3 };
 
         var atty = new SailfishVariableAttribute(parameters);
 
@@ -24,13 +24,13 @@ public class WhenSettingSailfishAttributes
         var testClass = new TestClass();
 
         var propertyRetriever = new IterationVariableRetriever();
-        var variables = propertyRetriever.RetrieveIterationVariables<int>(testClass.GetType());
+        var variables = propertyRetriever.RetrieveIterationVariables(testClass.GetType());
 
         var propName = variables.Keys.Single();
         propName.ShouldBe(nameof(testClass.Count));
 
         var variableSet = variables[propName];
-        variableSet.ShouldBe(new[] { 1, 2, 3 });
+        variableSet.ShouldBe(new object[] { 1, 2, 3 });
     }
 }
 
