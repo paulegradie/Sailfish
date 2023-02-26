@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.ComponentModel.DataAnnotations;
+using System.Runtime.Caching;
 using System.Threading;
 using System.Threading.Tasks;
 using Sailfish.Exceptions;
@@ -13,6 +15,8 @@ internal class SailfishExecutionEngine : ISailfishExecutionEngine
 {
     private readonly ITestCaseIterator testCaseIterator;
 
+    private MemoryCache GlobalStateMemoryCache = new(nameof(GlobalStateMemoryCache));
+    private MemoryCache MethodStateMemeoryCache = new(nameof(MethodStateMemeoryCache));
     public SailfishExecutionEngine(ITestCaseIterator testCaseIterator)
     {
         this.testCaseIterator = testCaseIterator;
@@ -43,7 +47,7 @@ internal class SailfishExecutionEngine : ISailfishExecutionEngine
     {
         if (testProviderIndex > totalTestProviderCount)
         {
-            throw new SailfishException($"test provider index {testProviderIndex} cannot be greater than total test provider count {totalTestProviderCount}");
+            throw new SailfishException($"The test provider index {testProviderIndex} cannot be greater than total test provider count {totalTestProviderCount}");
         }
 
         var currentPropertyTensorIndex = 0;
