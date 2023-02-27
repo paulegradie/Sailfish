@@ -5,16 +5,18 @@ namespace Sailfish.Analysis;
 public class TestCaseVariable
 {
     [JsonConstructor]
+#pragma warning disable CS8618
     public TestCaseVariable()
+#pragma warning restore CS8618
     {
     }
 
-    public TestCaseVariable(string name, int value)
+    public TestCaseVariable(string name, object value)
     {
         Name = name;
         Value = value;
     }
 
     public string Name { get; set; } = null!;
-    public int Value { get; set; }
+    public object Value { get; set; }
 }

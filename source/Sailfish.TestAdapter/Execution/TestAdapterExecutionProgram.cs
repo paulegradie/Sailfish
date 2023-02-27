@@ -158,39 +158,80 @@ internal class TestAdapterExecutionProgram : ITestAdapterExecutionProgram
         return (result, container) =>
         {
             var currentTestCase = GetTestCaseFromTestCaseGroupMatchingCurrentContainer(container, testCaseGroups);
-
-            var rawResult = result.Exception is null
-                ? new RawExecutionResult(result.TestInstanceContainer.Type, new List<TestExecutionResult>() { result })
-                : new RawExecutionResult(result.TestInstanceContainer.Type, result.Exception);
-
-            var compiledResult = executionSummaryCompiler.CompileToSummaries(new List<RawExecutionResult>() { rawResult }, cancellationToken).ToList();
-            var medianTestRuntime = compiledResult.Single().CompiledResults.Single().DescriptiveStatisticsResult?.Median ??
-                                    throw new SailfishException("Error computing compiled results");
-
-            var testResult = new TestResult(currentTestCase);
-
-            if (result.Exception is not null)
+            if (result.IsSuccess)
             {
-                testResult.ErrorMessage = result.Exception.Message;
-                testResult.ErrorStackTrace = result.Exception.StackTrace;
+                HandleSuccessfulTestCase(
+                    result,
+                    currentTestCase,
+                    new RawExecutionResult(result.TestInstanceContainer.Type, new List<TestExecutionResult>() { result }),
+                    logger,
+                    cancellationToken);
             }
-
-            testResult.Outcome = result.StatusCode == 0 ? TestOutcome.Passed : TestOutcome.Failed;
-            testResult.DisplayName = currentTestCase.DisplayName;
-
-            testResult.StartTime = result.PerformanceTimerResults.GlobalStart;
-            testResult.EndTime = result.PerformanceTimerResults.GlobalStop;
-            testResult.Duration = TimeSpan.FromMilliseconds(medianTestRuntime);
-
-            testResult.ErrorMessage = result.Exception?.Message;
-
-            var outputs = consoleWriterFactory.CreateConsoleWriter(logger).Present(compiledResult);
-            testResult.Messages.Add(new TestResultMessage("Test Result", outputs));
-
-            LogTestResults(result, logger);
-
-            logger?.RecordResult(testResult);
-            logger?.RecordEnd(currentTestCase, testResult.Outcome);
+            else
+            {
+                HandleFailureTestCase(
+                    result,
+                    currentTestCase,
+                    new RawExecutionResult(result.TestInstanceContainer.Type, result.Exception),
+                    logger,
+                    cancellationToken);
+            }
         };
+    }
+
+    void HandleSuccessfulTestCase(TestExecutionResult result, TestCase currentTestCase, RawExecutionResult rawResult, ITestExecutionRecorder? logger, CancellationToken cancellationToken)
+    {
+        var compiledResult = executionSummaryCompiler.CompileToSummaries(new List<RawExecutionResult>() { rawResult }, cancellationToken).ToList();
+        var medianTestRuntime = compiledResult.Single().CompiledResults.Single().DescriptiveStatisticsResult?.Median ??
+                                throw new SailfishException("Error computing compiled results");
+
+        var testResult = new TestResult(currentTestCase);
+
+        if (result.Exception is not null)
+        {
+            testResult.ErrorMessage = result.Exception.Message;
+            testResult.ErrorStackTrace = result.Exception.StackTrace;
+        }
+
+        testResult.Outcome = result.StatusCode == 0 ? TestOutcome.Passed : TestOutcome.Failed;
+        testResult.DisplayName = currentTestCase.DisplayName;
+
+        testResult.StartTime = result.PerformanceTimerResults.GlobalStart;
+        testResult.EndTime = result.PerformanceTimerResults.GlobalStop;
+        testResult.Duration = TimeSpan.FromMilliseconds(medianTestRuntime);
+
+        testResult.ErrorMessage = result.Exception?.Message;
+
+        var outputs = consoleWriterFactory.CreateConsoleWriter(logger).Present(compiledResult);
+        testResult.Messages.Add(new TestResultMessage("Test Result", outputs));
+
+        LogTestResults(result, logger);
+
+        logger?.RecordResult(testResult);
+        logger?.RecordEnd(currentTestCase, testResult.Outcome);
+    }
+
+    void HandleFailureTestCase(TestExecutionResult result, TestCase currentTestCase, RawExecutionResult rawResult, ITestExecutionRecorder? logger, CancellationToken cancellationToken)
+    {
+        var testResult = new TestResult(currentTestCase);
+
+        if (result.Exception is not null)
+        {
+            testResult.ErrorMessage = result.Exception.Message;
+            testResult.ErrorStackTrace = result.Exception.StackTrace;
+        }
+
+        testResult.Outcome = result.StatusCode == 0 ? TestOutcome.Passed : TestOutcome.Failed;
+        testResult.DisplayName = currentTestCase.DisplayName;
+
+        testResult.StartTime = result.PerformanceTimerResults.GlobalStart;
+        testResult.EndTime = result.PerformanceTimerResults.GlobalStop;
+        testResult.Duration = TimeSpan.Zero;
+
+        testResult.ErrorMessage = result.Exception?.Message;
+
+        logger?.SendMessage(TestMessageLevel.Error, rawResult.Exception.Message);
+        logger?.RecordResult(testResult);
+        logger?.RecordEnd(currentTestCase, testResult.Outcome);
     }
 }

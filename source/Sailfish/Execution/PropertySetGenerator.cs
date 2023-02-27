@@ -18,17 +18,8 @@ internal class PropertySetGenerator : IPropertySetGenerator
     public IEnumerable<PropertySet> GeneratePropertySets(Type test)
     {
         var variableProperties = iterationVariableRetriever.RetrieveIterationVariables(test);
-
-        var propNames = new List<string>();
-        var propValues = new List<List<int>>();
-        foreach (var (propertyName, values) in variableProperties)
-        {
-            propNames.Add(propertyName);
-            propValues.Add(values.ToList());
-        }
-
-        var propertySets = parameterCombinator.GetAllPossibleCombos(propNames, propValues);
-
-        return propertySets;
+        var propNames = variableProperties.Select(vp => vp.Key);
+        var propValues = variableProperties.Select(vp => vp.Value);
+        return parameterCombinator.GetAllPossibleCombos(propNames, propValues);
     }
 }

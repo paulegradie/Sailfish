@@ -35,7 +35,7 @@ internal class TestInstanceContainerProvider
         if (GetNumberOfPropertySetsInTheQueue() is 0)
         {
             var instance = typeActivator.CreateDehydratedTestInstance(Test);
-            yield return TestInstanceContainer.CreateTestInstance(instance, Method, Array.Empty<string>(), Array.Empty<int>());
+            yield return TestInstanceContainer.CreateTestInstance(instance, Method, Array.Empty<string>(), Array.Empty<object>());
         }
         else
         {

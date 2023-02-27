@@ -1,10 +1,12 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.Runtime.Caching;
 using System.Threading;
 using System.Threading.Tasks;
 using Sailfish.Exceptions;
 using Sailfish.Program;
+using Sailfish.Utils;
 using Serilog;
 
 namespace Sailfish.Execution;
@@ -41,9 +43,11 @@ internal class SailfishExecutionEngine : ISailfishExecutionEngine
         Action<TestInstanceContainer?>? exceptionCallback = null,
         CancellationToken cancellationToken = default)
     {
+        var providerPropertiesCacheKey = testProvider.Test.FullName ?? throw new SailfishException($"Failed to read the FullName of {testProvider.Test.Name}");
+
         if (testProviderIndex > totalTestProviderCount)
         {
-            throw new SailfishException($"test provider index {testProviderIndex} cannot be greater than total test provider count {totalTestProviderCount}");
+            throw new SailfishException($"The test provider index {testProviderIndex} cannot be greater than total test provider count {totalTestProviderCount}");
         }
 
         var currentPropertyTensorIndex = 0;
@@ -70,16 +74,24 @@ internal class SailfishExecutionEngine : ISailfishExecutionEngine
 
         var results = new List<TestExecutionResult>();
 
+        var memoryCache = new MemoryCache("GlobalStateMemoryCache");
         bool continueIterating;
         do
         {
             var testMethodContainer = instanceContainerEnumerator.Current;
+            if (memoryCache.Contains(providerPropertiesCacheKey))
+            {
+                var savedState = (PropertiesAndFields)memoryCache.Get(providerPropertiesCacheKey);
+                savedState.ApplyPropertiesAndFieldsTo(testMethodContainer.Instance);
+            }
+
             preCallback?.Invoke(testMethodContainer);
             TestCaseCountPrinter.PrintCaseUpdate(testMethodContainer.TestCaseId.DisplayName);
 
             if (ShouldCallGlobalSetup(testProviderIndex, currentPropertyTensorIndex))
             {
                 await testMethodContainer.Invocation.GlobalSetup(cancellationToken);
+                memoryCache.Add(new CacheItem(providerPropertiesCacheKey, testMethodContainer.Instance.RetrievePropertiesAndFields()), new CacheItemPolicy());
             }
 
             await testMethodContainer.Invocation.MethodSetup(cancellationToken);
@@ -91,6 +103,7 @@ internal class SailfishExecutionEngine : ISailfishExecutionEngine
             if (ShouldCallGlobalTeardown(testProviderIndex, totalTestProviderCount, currentPropertyTensorIndex, totalPropertyTensorElements))
             {
                 await testMethodContainer.Invocation.GlobalTeardown(cancellationToken);
+                memoryCache.Remove(providerPropertiesCacheKey);
             }
 
             callback?.Invoke(executionResult, testMethodContainer);

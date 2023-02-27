@@ -1,11 +1,10 @@
 ﻿using System.Threading;
 using System.Threading.Tasks;
-using PerformanceTests.DemoUtils;
 using Sailfish.Attributes;
 
 namespace PerformanceTests.ExamplePerformanceTests.Discoverable;
 
-[Sailfish(NumIterations = 1, NumWarmupIterations = 0, Disabled = true)]
+[Sailfish(NumIterations = 1, NumWarmupIterations = 0, Disabled = false)]
 public class SimplePerfTest
 {
     [SailfishGlobalSetup]

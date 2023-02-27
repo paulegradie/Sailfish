@@ -49,7 +49,7 @@ public class TestCaseVariables
     {
         // like varName:int
         var parts = variable.Split(Colon);
-        return new TestCaseVariable(parts[0], int.Parse(parts[1]));
+        return int.TryParse(parts[1], out var value) ? new TestCaseVariable(parts[0], value) : new TestCaseVariable(parts[0], parts[1]);
     }
 
     private static IEnumerable<TestCaseVariable> GetElements(string s)

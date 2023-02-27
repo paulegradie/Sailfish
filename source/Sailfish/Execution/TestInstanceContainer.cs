@@ -43,7 +43,7 @@ internal class TestInstanceContainer
 
     public AncillaryInvocation Invocation { get; private init; } = null!;
 
-    public static TestInstanceContainer CreateTestInstance(object instance, MethodInfo method, string[] propertyNames, int[] variables)
+    public static TestInstanceContainer CreateTestInstance(object instance, MethodInfo method, string[] propertyNames, object[] variables)
     {
         if (propertyNames.Length != variables.Length) throw new Exception("Property names and variables do not match");
 

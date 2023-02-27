@@ -1,5 +1,4 @@
-﻿using System;
-using Autofac;
+﻿using Autofac;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.Adapter;
 using Sailfish.Execution;
 using Sailfish.Presentation;
@@ -15,18 +14,13 @@ internal static class TestAdapterContainerRegistrationExtensionMethods
         builder.RegisterType<ParameterCombinator>().As<IParameterCombinator>();
         builder.RegisterType<PropertySetGenerator>().As<IPropertySetGenerator>();
         builder.RegisterType<TestInstanceContainerCreator>().As<ITestInstanceContainerCreator>();
-        // builder.RegisterType<Func<ITestExecutionRecorder?, ConsoleWriter>>(); // not supported until autofac 6
         builder.RegisterType<MarkdownTableConverter>().As<IMarkdownTableConverter>();
         builder.RegisterType<ExecutionSummaryCompiler>().As<IExecutionSummaryCompiler>();
         builder.RegisterType<StatisticsCompiler>().As<IStatisticsCompiler>();
         builder.RegisterType<TestCaseIterator>().As<ITestCaseIterator>();
         builder.RegisterType<TestAdapterExecutionProgram>().As<ITestAdapterExecutionProgram>();
         builder.RegisterType<TypeActivator>().As<ITypeActivator>();
-        builder.Register(ctx =>
-        {
-            var iterator = ctx.Resolve<ITestCaseIterator>();
-            return new SailfishExecutionEngine(iterator);
-        }).As<ISailfishExecutionEngine>();
+        builder.Register(ctx => new SailfishExecutionEngine(ctx.Resolve<ITestCaseIterator>())).As<ISailfishExecutionEngine>();
         builder.RegisterType<ConsoleWriterFactory>().As<IConsoleWriterFactory>();
     }
 }

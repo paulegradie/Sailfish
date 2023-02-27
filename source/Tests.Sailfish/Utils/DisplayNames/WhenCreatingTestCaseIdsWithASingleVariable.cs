@@ -72,7 +72,7 @@ public class WhenCreatingTestCaseIdsWithASingleVariable : IAsyncLifetime
             typeof(WhenCreatingTestCaseIdsWithASingleVariable),
             "TestMethod",
             new[] { varA, varB },
-            new[] { 10, 50 });
+            new object[] { 10, 50 });
         
         var result = tci.TestCaseVariables.FormVariableSection();
         result.ShouldBe($"({varA}: 10, {varB}: 50)");
@@ -84,7 +84,7 @@ public class WhenCreatingTestCaseIdsWithASingleVariable : IAsyncLifetime
             typeof(WhenCreatingTestCaseIdsWithASingleVariable),
             "TestMethod",
             new[] { VariableName },
-            new[] { Param });
+            new object[] { Param });
         await Task.Yield();
     }
 

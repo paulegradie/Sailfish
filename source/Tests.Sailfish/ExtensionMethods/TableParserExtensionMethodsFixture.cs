@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
-using Accord.Math;
 using Sailfish.Analysis;
 using Sailfish.Contracts.Public;
 using Sailfish.ExtensionMethods;
