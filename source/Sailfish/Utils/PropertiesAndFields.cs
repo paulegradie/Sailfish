@@ -5,12 +5,12 @@ namespace Sailfish.Utils;
 
 internal class PropertiesAndFields
 {
-    public PropertiesAndFields(Dictionary<PropertyInfo, dynamic?> properties, Dictionary<FieldInfo, dynamic?> fields)
+    public PropertiesAndFields(Dictionary<PropertyInfo, object?> properties, Dictionary<FieldInfo, object?> fields)
     {
         Properties = properties;
         Fields = fields;
     }
 
-    public Dictionary<PropertyInfo, dynamic?> Properties { get; set; }
-    public Dictionary<FieldInfo, dynamic?> Fields { get; set; }
+    public Dictionary<PropertyInfo, object?> Properties { get; set; }
+    public Dictionary<FieldInfo, object?> Fields { get; set; }
 }

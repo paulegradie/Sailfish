@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using Accord.Collections;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.Logging;

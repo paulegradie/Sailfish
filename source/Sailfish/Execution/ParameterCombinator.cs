@@ -7,7 +7,7 @@ namespace Sailfish.Execution;
 
 internal class ParameterCombinator : IParameterCombinator
 {
-    public IEnumerable<PropertySet> GetAllPossibleCombos(IEnumerable<string> orderedPropertyNames, IEnumerable<IEnumerable<dynamic>> orderedPropertyValues)
+    public IEnumerable<PropertySet> GetAllPossibleCombos(IEnumerable<string> orderedPropertyNames, IEnumerable<IEnumerable<object>> orderedPropertyValues)
     {
         var propNames = orderedPropertyNames.ToArray();
         if (propNames.Length == 0)
@@ -42,8 +42,7 @@ internal class ParameterCombinator : IParameterCombinator
 
         return propertySets;
     }
-    
-    // thanks chatgpt for the help
+
     public static IEnumerable<object[]> GetAllCombinations(object[][] arrays)
     {
         var indices = new int[arrays.Length];

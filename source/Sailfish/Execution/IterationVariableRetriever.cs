@@ -7,11 +7,6 @@ using Sailfish.ExtensionMethods;
 
 namespace Sailfish.Execution;
 
-internal interface IIterationVariableRetriever
-{
-    Dictionary<string, object[]> RetrieveIterationVariables(Type type);
-}
-
 internal class IterationVariableRetriever : IIterationVariableRetriever
 {
     public Dictionary<string, object[]> RetrieveIterationVariables(Type type)
