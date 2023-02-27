@@ -16,7 +16,7 @@ public class WhenCompilingIterationVariables
         var combinator = new ParameterCombinator();
         var result = combinator.GetAllPossibleCombos(
             new List<string>() { "PropA", "PropB" },
-            new List<IEnumerable<dynamic>>() { new List<dynamic>() { 1, 2 }, new List<dynamic>() { 20, 50 } }).ToArray();
+            new List<IEnumerable<dynamic>>() { new List<object>() { 1, 2 }, new List<object>() { 20, 50 } }).ToArray();
 
         result.Length.ShouldBe(4);
     }
@@ -30,7 +30,7 @@ public class WhenCompilingIterationVariables
         var combinator = new ParameterCombinator();
         var result = combinator.GetAllPossibleCombos(
                 new List<string>() { propA, propB },
-                new List<IEnumerable<dynamic>>() { new List<dynamic>() { 1, 2 }, new List<dynamic>() { 20, 50 } })
+                new List<IEnumerable<object>>() { new List<object>() { 1, 2 }, new List<object>() { 20, 50 } })
             .ToList();
 
         var expected = new List<PropertySet>()
@@ -50,7 +50,7 @@ public class WhenCompilingIterationVariables
         const string propA = nameof(propA);
         const string propB = nameof(propB);
         var propertyNames = new List<string>() { propA, propB };
-        var propertyValueSets = new List<IEnumerable<dynamic>>() { new List<dynamic>() { 1, 2 } };
+        var propertyValueSets = new List<IEnumerable<object>>() { new List<object>() { 1, 2 } };
 
         var combinator = new ParameterCombinator();
         var exception = Should.Throw<SailfishException>(() => combinator.GetAllPossibleCombos(propertyNames, propertyValueSets));
