@@ -4,7 +4,7 @@ namespace PerformanceTests.ExamplePerformanceTests.Discoverable;
 
 [WriteToCsv]
 [WriteToMarkdown]
-[Sailfish(Disabled = true)]
+[Sailfish(Disabled = false)]
 public class MinimalTest
 {
     [SailfishMethod]
