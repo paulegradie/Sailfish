@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Threading.Tasks;
 using Accord.Collections;
 using Sailfish;
@@ -32,11 +33,9 @@ public class FullE2EFixture
 
 
         var result = await SailfishRunner.Run(runSettings);
-        ;
 
         result.IsValid.ShouldBe(true);
-        result.Exceptions.ShouldBeNull();
-        
-
+        result.Exceptions.Count().ShouldBe(0);
+        result.ExecutionSummaries.Count().ShouldBe(7);
     }
 }
