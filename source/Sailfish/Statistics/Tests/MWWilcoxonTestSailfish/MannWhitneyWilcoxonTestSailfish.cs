@@ -1,34 +1,35 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using Accord.Statistics;
 using Accord.Statistics.Testing;
 using Sailfish.Analysis;
 using Sailfish.Contracts;
-using Sailfish.MathOps;
 
-namespace Sailfish.Statistics.Tests.MWWilcoxonTest;
+namespace Sailfish.Statistics.Tests.MWWilcoxonTestSailfish;
 
-public class MannWhitneyWilcoxonTest : IMannWhitneyWilcoxonTest
+public class MannWhitneyWilcoxonTestSailfish : IMannWhitneyWilcoxonTestSailfish
 {
+    private readonly ITestPreprocessor preprocessor;
+
+    public MannWhitneyWilcoxonTestSailfish(ITestPreprocessor preprocessor)
+    {
+        this.preprocessor = preprocessor;
+    }
+
     public class AdditionalResults
     {
         public const string Statistic1 = "Statistic1";
         public const string Statistic2 = "Statistic2";
     }
 
-    private const int MinimumSampleSizeForTruncation = 10;
-
     public TestResults ExecuteTest(double[] before, double[] after, TestSettings settings)
     {
         var sigDig = settings.Round;
 
-        Accord.Statistics.Testing.MannWhitneyWilcoxonTest test = null!;
-        test = new Accord.Statistics.Testing.MannWhitneyWilcoxonTest(
-            PreProcessSample(before, settings),
-            PreProcessSample(after, settings),
-            TwoSampleHypothesis.ValuesAreDifferent);
+        var sample1 = preprocessor.Preprocess(before, settings.UseInnerQuartile);
+        var sample2 = preprocessor.Preprocess(after, settings.UseInnerQuartile);
 
+        var test = new MannWhitneyWilcoxonTest(sample1, sample2, TwoSampleHypothesis.ValuesAreDifferent);
 
         var meanBefore = Math.Round(before.Mean(), sigDig);
         var meanAfter = Math.Round(after.Mean(), sigDig);
@@ -61,13 +62,5 @@ public class MannWhitneyWilcoxonTest : IMannWhitneyWilcoxonTest
             before.Length,
             after.Length,
             additionalResults);
-    }
-
-    private static double[] PreProcessSample(double[] rawData, TestSettings settings)
-    {
-        if (!settings.UseInnerQuartile) return rawData;
-        if (rawData.Length < MinimumSampleSizeForTruncation) return rawData;
-        var quartiles = ComputeQuartiles.GetInnerQuartileValues(rawData);
-        return quartiles.Sum() == 0 ? quartiles.Select(x => x + 0.0000000001).ToArray() : quartiles;
     }
 }

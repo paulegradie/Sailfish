@@ -3,6 +3,10 @@ using Microsoft.VisualStudio.TestPlatform.ObjectModel.Adapter;
 using Sailfish.Execution;
 using Sailfish.Presentation;
 using Sailfish.Statistics;
+using Sailfish.Statistics.Tests;
+using Sailfish.Statistics.Tests.MWWilcoxonTestSailfish;
+using Sailfish.Statistics.Tests.TTestSailfish;
+using Sailfish.Statistics.Tests.TwoSampleWilcoxonSignedRankTestSailfish;
 
 namespace Sailfish.TestAdapter.Execution;
 
@@ -22,6 +26,10 @@ internal static class TestAdapterContainerRegistrationExtensionMethods
         builder.RegisterType<TypeActivator>().As<ITypeActivator>();
         builder.Register(ctx => new SailfishExecutionEngine(ctx.Resolve<ITestCaseIterator>())).As<ISailfishExecutionEngine>();
         builder.RegisterType<ConsoleWriterFactory>().As<IConsoleWriterFactory>();
+        builder.RegisterType<TTestSailfish>().As<ITTestSailfish>();
+        builder.RegisterType<MannWhitneyWilcoxonTestSailfish>().As<IMannWhitneyWilcoxonTestSailfish>();
+        builder.RegisterType<TwoSampleWilcoxonSignedRankTestSailfish>().As<ITwoSampleWilcoxonSignedRankTestSailfish>();
+        builder.RegisterType<TestPreprocessor>().As<ITestPreprocessor>();
     }
 }
 

@@ -27,5 +27,6 @@
     <ItemGroup>
         <ProjectReference Include="..\Sailfish\Sailfish.csproj" />
         <ProjectReference Include="..\Demo.API\Demo.API.csproj" />
+        <ProjectReference Include="..\Tests.E2ETestSuite\Tests.E2ETestSuite.csproj" />
     </ItemGroup>
 </Project>

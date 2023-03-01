@@ -1,10 +1,7 @@
-﻿using System.Collections.Generic;
-using System.Threading;
-using System.Threading.Tasks;
-using Sailfish.Attributes;
-using Sailfish.Registration;
+﻿using Sailfish.Attributes;
+using Tests.E2ETestSuite.Utils;
 
-namespace PerformanceTests.ExamplePerformanceTests.Discoverable;
+namespace Tests.E2ETestSuite.Discoverable;
 
 [Sailfish(NumIterations = 3, Disabled = false)]
 public class TestWithStringVariable
@@ -34,7 +31,7 @@ public class TestWithStringVariable
     [SailfishMethodSetup]
     public void MethodSetup()
     {
-        client = ClientFactory.CreateClient(scenarioMap[Scenario].Url);
+        client = ClientFactory.CreateClient(scenarioMap[Scenario!].Url);
     }
 
     [SailfishMethod]
@@ -42,44 +39,5 @@ public class TestWithStringVariable
     {
         await Task.Delay(100, ct);
         await client.Get(ct);
-    }
-}
-
-internal interface IClient
-{
-    Task Get(CancellationToken cancellationToken);
-}
-
-public class Client : IClient
-{
-    public async Task Get(CancellationToken cancellationToken)
-    {
-        await Task.Delay(200, cancellationToken);
-    }
-}
-
-internal static class ClientFactory
-{
-    public static IClient CreateClient(string url)
-    {
-        return new Client();
-    }
-}
-
-public class ScenarioData
-{
-    public ScenarioData(string key)
-    {
-        Url = "https://example.com";
-    }
-
-    public string Url { get; set; }
-}
-
-public class Configuration : ISailfishDependency
-{
-    public ScenarioData Get(string key)
-    {
-        return new ScenarioData(key);
     }
 }

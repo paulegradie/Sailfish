@@ -8,8 +8,10 @@ using Sailfish.Presentation.Console;
 using Sailfish.Presentation.Csv;
 using Sailfish.Presentation.Markdown;
 using Sailfish.Statistics;
-using Sailfish.Statistics.Tests.MWWilcoxonTest;
-using Sailfish.Statistics.Tests.TTest;
+using Sailfish.Statistics.Tests;
+using Sailfish.Statistics.Tests.MWWilcoxonTestSailfish;
+using Sailfish.Statistics.Tests.TTestSailfish;
+using Sailfish.Statistics.Tests.TwoSampleWilcoxonSignedRankTestSailfish;
 using Serilog;
 
 namespace Sailfish.Registration;
@@ -45,8 +47,6 @@ public class SailfishModule : Module
         builder.RegisterType<MarkdownWriter>().As<IMarkdownWriter>();
         builder.RegisterType<ConsoleWriter>().As<IConsoleWriter>();
         builder.RegisterType<PerformanceCsvWriter>().As<IPerformanceCsvWriter>();
-        builder.RegisterType<TTest>().As<ITTest>();
-        builder.RegisterType<MannWhitneyWilcoxonTest>().As<IMannWhitneyWilcoxonTest>();
         builder.RegisterType<TrackingFileFinder>().As<ITrackingFileFinder>();
         builder.RegisterType<PerformanceCsvTrackingWriter>().As<IPerformanceCsvTrackingWriter>();
         builder.RegisterType<IterationVariableRetriever>().As<IIterationVariableRetriever>();
@@ -55,5 +55,12 @@ public class SailfishModule : Module
         builder.RegisterType<TestResultAnalyzer>().As<ITestResultAnalyzer>();
         builder.RegisterType<SailfishExecutionEngine>().As<ISailfishExecutionEngine>();
         builder.RegisterType<MarkdownTableConverter>().As<IMarkdownTableConverter>().InstancePerDependency();
+
+        builder.RegisterType<TTestSailfish>().As<ITTestSailfish>();
+        builder.RegisterType<MannWhitneyWilcoxonTestSailfish>().As<IMannWhitneyWilcoxonTestSailfish>();
+        builder.RegisterType<TwoSampleWilcoxonSignedRankTestSailfish>().As<ITwoSampleWilcoxonSignedRankTestSailfish>();
+        builder.RegisterType<TestPreprocessor>().As<ITestPreprocessor>();
+
+        builder.RegisterType<StatisticalTestExecutor>().As<IStatisticalTestExecutor>();
     }
 }
