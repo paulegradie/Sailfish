@@ -4,15 +4,18 @@ using Accord.Statistics;
 using Accord.Statistics.Testing;
 using Sailfish.Analysis;
 using Sailfish.Contracts;
-using Sailfish.MathOps;
 
-namespace Sailfish.Statistics.Tests.TTest;
+namespace Sailfish.Statistics.Tests.TTestSailfish;
 
-internal class TTest : ITTest
+internal class TTestSailfish : ITTestSailfish
 {
-    // inner quartile values must be enough to produce a valid statistic
-    // valid statistics require a minimum of 5 samples
-    private const int MinimumSampleSizeForTruncation = 10;
+    private readonly ITestPreprocessor preprocessor;
+
+    public TTestSailfish(ITestPreprocessor preprocessor)
+    {
+        this.preprocessor = preprocessor;
+    }
+
     public class AdditionalResults
     {
         public const string DegreesOfFreedom = "DegreesOfFreedom";
@@ -22,10 +25,11 @@ internal class TTest : ITTest
     {
         var sigDig = settings.Round;
 
-        var test = new TwoSampleTTest(
-            PreProcessSample(before, settings),
-            PreProcessSample(after, settings),
-            false);
+
+        var sample1 = preprocessor.Preprocess(before, settings.UseInnerQuartile);
+        var sample2 = preprocessor.Preprocess(after, settings.UseInnerQuartile);
+
+        var test = new TwoSampleTTest(sample1, sample2, false);
 
         var meanBefore = Math.Round(test.EstimatedValue1, sigDig);
         var meanAfter = Math.Round(test.EstimatedValue2, sigDig);
@@ -58,13 +62,5 @@ internal class TTest : ITTest
             before.Length,
             after.Length,
             additionalResults);
-    }
-
-    private static double[] PreProcessSample(double[] rawData, TestSettings settings)
-    {
-        if (!settings.UseInnerQuartile) return rawData;
-        if (rawData.Length < MinimumSampleSizeForTruncation) return rawData;
-        var quartiles = ComputeQuartiles.GetInnerQuartileValues(rawData);
-        return quartiles;
     }
 }

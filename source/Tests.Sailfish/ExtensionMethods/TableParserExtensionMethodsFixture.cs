@@ -5,6 +5,10 @@ using System.Linq.Expressions;
 using Sailfish.Analysis;
 using Sailfish.Contracts.Public;
 using Sailfish.ExtensionMethods;
+using Sailfish.Statistics.Tests;
+using Sailfish.Statistics.Tests.MWWilcoxonTestSailfish;
+using Sailfish.Statistics.Tests.TTestSailfish;
+using Sailfish.Statistics.Tests.TwoSampleWilcoxonSignedRankTestSailfish;
 using Shouldly;
 using Xunit;
 
@@ -32,7 +36,13 @@ public class TableParserExtensionMethodsFixture
             "", "ms", "ms", "ms", "ms", "", "", ""
         };
 
-        var result = new StatisticalTestExecutor().ExecuteStatisticalTest(
+        var preprocessor = new TestPreprocessor();
+
+        var result = new StatisticalTestExecutor(
+            new MannWhitneyWilcoxonTestSailfish(preprocessor),
+            new TTestSailfish(preprocessor),
+            new TwoSampleWilcoxonSignedRankTestSailfish(preprocessor)
+        ).ExecuteStatisticalTest(
             new double[] { 2, 3, 4, 4, 5, 5, 6, 6, 6 },
             new double[] { 9, 8, 7, 6, 4, 4, 1, 2, 3, 2 },
             new TestSettings(0.01, 0));

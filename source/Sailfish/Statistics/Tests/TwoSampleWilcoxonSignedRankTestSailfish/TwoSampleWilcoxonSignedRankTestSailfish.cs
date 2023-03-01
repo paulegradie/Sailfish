@@ -4,22 +4,28 @@ using Accord.Statistics;
 using Accord.Statistics.Testing;
 using Sailfish.Analysis;
 using Sailfish.Contracts;
-using Sailfish.MathOps;
 
-namespace Sailfish.Statistics.Tests.TwoSampleWilcoxonSignedRankTest;
+namespace Sailfish.Statistics.Tests.TwoSampleWilcoxonSignedRankTestSailfish;
 
-public class TwoSampleWilcoxonSignedRankTest : ITwoSampleWilcoxonSignedRankTest
+public class TwoSampleWilcoxonSignedRankTestSailfish : ITwoSampleWilcoxonSignedRankTestSailfish
 {
-    private const int MinimumSampleSizeForTruncation = 10;
+    private readonly ITestPreprocessor preprocessor;
 
+    public TwoSampleWilcoxonSignedRankTestSailfish(ITestPreprocessor preprocessor)
+    {
+        this.preprocessor = preprocessor;
+    }
 
     public TestResults ExecuteTest(double[] before, double[] after, TestSettings settings)
     {
         var sigDig = settings.Round;
 
-        var test = new Accord.Statistics.Testing.TwoSampleWilcoxonSignedRankTest(
-            PreProcessSample(before, settings),
-            PreProcessSample(after, settings),
+        var sample1 = preprocessor.Preprocess(before, settings.UseInnerQuartile);
+        var sample2 = preprocessor.Preprocess(after, settings.UseInnerQuartile);
+
+        var test = new TwoSampleWilcoxonSignedRankTest(
+            sample1,
+            sample2,
             TwoSampleHypothesis.ValuesAreDifferent);
 
         var meanBefore = Math.Round(before.Mean(), sigDig);
@@ -48,13 +54,5 @@ public class TwoSampleWilcoxonSignedRankTest : ITwoSampleWilcoxonSignedRankTest
             before.Length,
             after.Length,
             additionalResults);
-    }
-
-    private static double[] PreProcessSample(double[] rawData, TestSettings settings)
-    {
-        if (!settings.UseInnerQuartile) return rawData;
-        if (rawData.Length < MinimumSampleSizeForTruncation) return rawData;
-        var quartiles = ComputeQuartiles.GetInnerQuartileValues(rawData);
-        return quartiles;
     }
 }

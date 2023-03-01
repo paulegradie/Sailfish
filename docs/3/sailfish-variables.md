@@ -2,7 +2,9 @@
 
 A powerful feature of the Sailfish library is the ability to define variables that can be used in your tests.
 
-Sailfish variables are properties on your class that are decorated with a `[SailfishVariable]` attribute. The attribute takes a `params` array of integers, which will be used to form test cases for your test method.
+Sailfish variables are properties on your class that are decorated with a `[SailfishVariable]` attribute. The attribute takes a `params` array of any constant object type, which will be used to form test cases for your test method.
+
+> **warning** Sailfish does not yet attempt to protect against the inclusion of mixed runtime types in the SailfishVariableAttribute constructor. In the future, an analyzer will be provided to to provide compilation errors in this case.
 
 ## An Example
 
@@ -21,6 +23,49 @@ public class TestWithSingleVariable
     {
 
         await Task.Sleep(SleepPeriod, ct)
+    }
+}
+```
+
+## An example with string variables
+
+
+```csharp
+[Sailfish(NumIterations = 3)]
+public class TestWithMuchVariable
+{
+    private readonly IConfiguration configuration = null!;
+    private readonly IClient client = null!;
+    private readonly Dictionary<string, ScenarioData> = new();
+
+    public TestWithMuchVariable(IConfiguration configuration)
+    {
+        this.configuration = configuration;
+    }
+
+    private const string ScenarioA = "ScenarioA";
+    private const string ScenarioB = "ScenarioB";
+
+    [SailfishVariable(ScenarioA, ScenarioB)]
+    public string Scenario { get; set; }
+
+    [SailfishGlobalSetup]
+    public void Setup()
+    {
+        scenarioMap.Add(ScenarioA, new ScenarioData(configuration.Get<Scenario>(ScenarioA));
+        scenarioMap.Add(ScenarioB, new ScenarioData(configuration.Get<Scenario>(ScenarioB));
+    }
+
+    [SailfishMethodSetup]
+    public void MethodSetup()
+    {
+        client = ClientFactory.CreateClient(scenarioMap[Scenario].Url)
+    }
+
+    [SailfishMethod]
+    public async Task TestMethod(CancellationToken ct)
+    {
+        await client.createA(NumAToCreate, ct);
     }
 }
 ```
@@ -61,8 +106,18 @@ If we define one variable with `N` values, we'll create `N` test cases for each 
 
 ```csharp
 [Sailfish(NumIterations = 3)]
-public class TestWithSingleVariable
+public class TestWithMuchVariable
 {
+    private readonly IConfiguration configuration = null!;
+    private readonly IClient client = null!;
+
+    public TestWithMuchVariable(IConfiguration configuration)
+    {
+        this.configuration = configuration;
+    }
+
+    private const string ScenarioA = "ScenarioA";
+    private const string ScenarioB = ScenarioB;
 
     [SailfishVariable(10, 100, 1000)]
     public int SleepPeriod { get; set; }
@@ -72,6 +127,25 @@ public class TestWithSingleVariable
 
     [SailfishVariable(5, 10, 100)]
     public int NumBToCreate { get; set; }
+
+    [SailfishVariable("scenarioA", ScenarioB)]
+    public string Scenario { get; set; }
+
+    [SailfishGlobalSetup]
+    public void Setup()
+    {
+        scenarioMap = new Dictionary<string, ScenarioData>()
+        {
+            {"scenarioA", new ScenarioData(configuration.Get<Scenario>(ScenarioA))},
+            {ScenarioB, new ScenarioData(configuration.Get<Scenario>(ScenarioB))}
+        }
+    }
+
+    [SailfishMethodSetup]
+    public void MethodSetup()
+    {
+        client = ClientFactory.CreateClient(scenarioMap[Scenario].Url)
+    }
 
     [SailfishMethod]
     public async Task TestMethod(CancellationToken ct)

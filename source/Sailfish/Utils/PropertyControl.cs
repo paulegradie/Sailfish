@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Reflection;
+using Sailfish.Attributes;
 
 namespace Sailfish.Utils;
 
@@ -31,30 +33,29 @@ internal static class Cloner
 
         var typeSrc = source.GetType();
 
-        foreach (var srcProp in typeSrc.GetProperties(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance))
+        var customProperties = typeSrc
+            .GetProperties(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)
+            .Where(x => !x.GetCustomAttributes<SailfishVariableAttribute>().Any());
+        foreach (var property in customProperties)
         {
-            if (!srcProp.CanRead) continue;
-
-            var property = typeSrc.GetProperty(srcProp.Name, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
-            if (property == null || !property.CanWrite || property.GetSetMethod(true)?.IsPrivate == true
-                || (property.GetSetMethod()?.Attributes & MethodAttributes.Static) != 0
-                || !property.PropertyType.IsAssignableFrom(srcProp.PropertyType))
+            if ((property.GetSetMethod()?.Attributes & MethodAttributes.Static) != 0 || !property.PropertyType.IsAssignableFrom(property.PropertyType))
             {
                 continue;
             }
 
-            properties.Add(property, srcProp.GetValue(source));
+            properties.Add(property, property.GetValue(source));
         }
 
-        foreach (var srcField in typeSrc.GetFields(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance))
+        var customFields = typeSrc.GetFields(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
+        foreach (var field in customFields)
         {
-            var field = typeSrc.GetField(srcField.Name, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
-            if (field == null || field.IsInitOnly || !field.FieldType.IsAssignableFrom(srcField.FieldType))
+            if (!field.FieldType.IsAssignableFrom(field.FieldType))
             {
                 continue;
             }
 
-            fields.Add(field, srcField.GetValue(source));
+            var fieldValue = field.GetValue(source);
+            fields.Add(field, fieldValue);
         }
 
         return new PropertiesAndFields(properties, fields);
