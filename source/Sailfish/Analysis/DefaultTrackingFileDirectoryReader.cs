@@ -7,11 +7,20 @@ namespace Sailfish.Analysis;
 
 internal class DefaultTrackingFileDirectoryReader : ITrackingFileDirectoryReader
 {
-    public virtual List<string> FindTrackingFilesInDirectory(string directory)
+    public virtual List<string> FindTrackingFilesInDirectoryOrderedByLastModified(string directory, bool ascending = false)
     {
-        return Directory.GetFiles(directory)
-            .Where(x => x.EndsWith(DefaultFileSettings.TrackingSuffix))
-            .OrderByDescending(file =>
+        var files = Directory.GetFiles(directory).Where(x => x.EndsWith(DefaultFileSettings.TrackingSuffix));
+        if (ascending)
+        {
+            return files.OrderBy(file =>
+                {
+                    var fileInfo = new FileInfo(file);
+                    return fileInfo.LastWriteTimeUtc;
+                })
+                .ToList();
+        }
+
+        return files.OrderByDescending(file =>
             {
                 var fileInfo = new FileInfo(file);
                 return fileInfo.LastWriteTimeUtc;

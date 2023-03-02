@@ -60,7 +60,7 @@ public abstract class SailfishProgramBase
         builder.RegisterInstance(anchorTypes);
     }
 
-    protected virtual RunSettings AssembleRunRequest(IEnumerable<Type> sourceTypes, IEnumerable<Type> registrationProviderTypes)
+    protected virtual IRunSettings AssembleRunRequest(IEnumerable<Type> sourceTypes, IEnumerable<Type> registrationProviderTypes)
     {
         if (OutputDirectory is null)
         {
@@ -94,21 +94,20 @@ public abstract class SailfishProgramBase
             timestamp = DateTime.Parse(TimeStamp);
         }
 
-        return new RunSettings(
-            TestNames,
-            OutputDirectory,
-            TrackingDirectory,
-            NoTrack,
-            Analyze,
-            Notify,
-            new TestSettings(Alpha, Round, useInnerQuartile: true),
-            parsedTags,
-            parsedArgs,
-            BeforeTarget,
-            timestamp,
-            sourceTypes.ToArray(),
-            registrationProviderTypes.ToArray(),
-            Debug);
+        var settings = RunSettingsBuilder.CreateBuilder()
+            .WithTestNames(TestNames)
+            .WithLocalOutputDirectory(OutputDirectory)
+            .CreateTrackingFiles()
+            .WithAnalysis()
+            .ExecuteNotificationHandler()
+            .WithTags(parsedTags)
+            .WithArgs(parsedArgs)
+            .WithProvidedBeforeTrackingFiles(new List<string> { BeforeTarget }) // TODO: update this to array
+            .WithTimeStamp(DateTime.Now)
+            .InDebugMode(Debug)
+            .Build();
+
+        return settings;
     }
 
     [Option("-a|--analyze", CommandOptionType.NoValue,

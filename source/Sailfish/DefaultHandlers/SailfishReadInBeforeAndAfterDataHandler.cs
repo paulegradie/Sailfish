@@ -42,7 +42,7 @@ internal class SailfishReadInBeforeAndAfterDataHandler : IRequestHandler<ReadInB
         {
             foreach (var key in fileKeys)
             {
-                var datum = await fileIo.ReadCsvFile<TestCaseDescriptiveStatisticsMap, DescriptiveStatisticsResult>(key, cancellationToken).ConfigureAwait(false);
+                var datum = await fileIo.ReadCsvFile<DescriptiveStatisticsResultCsvMap, DescriptiveStatisticsResult>(key, cancellationToken).ConfigureAwait(false);
                 temp.AddRange(datum);
             }
 

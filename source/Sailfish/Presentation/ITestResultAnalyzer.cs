@@ -8,7 +8,7 @@ public interface ITestResultAnalyzer
 {
     public Task Analyze(
         DateTime timeStamp,
-        RunSettings runSettings,
+        IRunSettings runSettings,
         string trackingDir,
         CancellationToken cancellationToken);
 }

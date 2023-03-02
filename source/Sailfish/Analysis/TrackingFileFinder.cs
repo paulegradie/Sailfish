@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using Accord.Collections;
 using Sailfish.Exceptions;
@@ -17,24 +18,22 @@ internal class TrackingFileFinder : ITrackingFileFinder
 
     public BeforeAndAfterTrackingFiles GetBeforeAndAfterTrackingFiles(string directory, string beforeTarget, OrderedDictionary<string, string> tags)
     {
-        
-        var files = trackingFileDirectoryReader.FindTrackingFilesInDirectory(directory);
-
-        string? beforeTargetOverride = null;
-        if (!string.IsNullOrEmpty(beforeTarget) && !string.IsNullOrWhiteSpace(beforeTarget))
-        {
-            beforeTargetOverride = files.Select(Path.GetFileName).SingleOrDefault(x => x?.ToLowerInvariant() == beforeTarget);
-            if (beforeTargetOverride is null)
-            {
-                throw new SailfishException("The file name provided for the before target was not found");
-            }
-        }
+        var files = trackingFileDirectoryReader.FindTrackingFilesInDirectoryOrderedByLastModified(directory);
+        //
+        // string? beforeTargetOverride = null;
+        // if (!string.IsNullOrEmpty(beforeTarget) && !string.IsNullOrWhiteSpace(beforeTarget))
+        // {
+        //     beforeTargetOverride = files.Select(Path.GetFileName).SingleOrDefault(x => x?.ToLowerInvariant() == beforeTarget);
+        //     if (beforeTargetOverride is null)
+        //     {
+        //         throw new SailfishException("The file name provided for the before target was not found");
+        //     }
+        // }
 
         if (tags.Any())
         {
             var joinedTags = DefaultFileSettings.JoinTags(tags); // empty string
-            files = files.Where(x => x.Replace(DefaultFileSettings.TrackingSuffix, string.Empty).EndsWith(joinedTags))
-                .ToList();
+            files = files.Where(x => x.Replace(DefaultFileSettings.TrackingSuffix, string.Empty).EndsWith(joinedTags)).ToList();
         }
         else
         {
@@ -42,7 +41,7 @@ internal class TrackingFileFinder : ITrackingFileFinder
         }
 
         return files.Count < 2
-            ? new BeforeAndAfterTrackingFiles(string.Empty, string.Empty)
-            : new BeforeAndAfterTrackingFiles(beforeTargetOverride ?? files[1], files[0]);
+            ? new BeforeAndAfterTrackingFiles(new List<string>(), new List<string>())
+            : new BeforeAndAfterTrackingFiles(new List<string> { files[1] }, new List<string>() { files[0] });
     }
 }

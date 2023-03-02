@@ -21,9 +21,10 @@ internal static class TestExecution
 
         var refTestType = RetrieveReferenceTypeForTestProject(testCases);
 
-        SailfishTypeRegistrationUtility.InvokeRegistrationProviderCallbackAdapter(
+        SailfishTypeRegistrationUtility.InvokeRegistrationProviderCallbackMain(
                 builder,
-                refTestType,
+                new[] { refTestType },
+                new[] { refTestType },
                 cancellationToken)
             .Wait(cancellationToken);
 

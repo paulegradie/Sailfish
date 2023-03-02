@@ -33,7 +33,7 @@ public class TestResultAnalyzer : ITestResultAnalyzer
 
     public async Task Analyze(
         DateTime timeStamp,
-        RunSettings runSettings,
+        IRunSettings runSettings,
         string trackingDir,
         CancellationToken cancellationToken
     )
@@ -98,7 +98,7 @@ public class TestResultAnalyzer : ITestResultAnalyzer
         await mediator.Publish(
                 new WriteTestResultsAsMarkdownCommand(
                     testResultFormats.MarkdownFormat,
-                    runSettings.LocalOutputDirectory,
+                    runSettings.LocalOutputDirectory ?? DefaultFileSettings.DefaultOutputDirectory,
                     runSettings.Settings,
                     timeStamp,
                     runSettings.Tags,
@@ -109,7 +109,7 @@ public class TestResultAnalyzer : ITestResultAnalyzer
         await mediator.Publish(
                 new WriteTestResultsAsCsvCommand(
                     testResultFormats.CsvFormat,
-                    runSettings.LocalOutputDirectory,
+                    runSettings.LocalOutputDirectory ?? DefaultFileSettings.DefaultOutputDirectory,
                     runSettings.Settings,
                     timeStamp,
                     runSettings.Tags,

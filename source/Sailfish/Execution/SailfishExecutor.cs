@@ -17,7 +17,7 @@ internal class SailfishExecutor
     private readonly IExecutionSummaryCompiler executionSummaryCompiler;
     private readonly ITestResultPresenter testResultPresenter;
     private readonly ITestResultAnalyzer testResultAnalyzer;
-    private readonly RunSettings runSettings;
+    private readonly IRunSettings runSettings;
     private readonly ISailFishTestExecutor sailFishTestExecutor;
 
     public SailfishExecutor(
@@ -27,7 +27,7 @@ internal class SailfishExecutor
         IExecutionSummaryCompiler executionSummaryCompiler,
         ITestResultPresenter testResultPresenter,
         ITestResultAnalyzer testResultAnalyzer,
-        RunSettings runSettings
+        IRunSettings runSettings
     )
     {
         this.sailFishTestExecutor = sailFishTestExecutor;
@@ -74,7 +74,7 @@ internal class SailfishExecutor
         return SailfishRunResult.CreateInvalidResult(Enumerable.Empty<Exception>());
     }
 
-    private static string GetRunSettingsTrackingDirectoryPath(RunSettings runSettings)
+    private static string GetRunSettingsTrackingDirectoryPath(IRunSettings runSettings)
     {
         if (string.IsNullOrEmpty(runSettings.LocalOutputDirectory) | string.IsNullOrWhiteSpace(runSettings.LocalOutputDirectory))
         {

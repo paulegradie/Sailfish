@@ -27,7 +27,7 @@ internal class TestResultPresenter : ITestResultPresenter
         List<IExecutionSummary> resultContainers,
         DateTime timeStamp,
         string trackingDir,
-        RunSettings runSettings,
+        IRunSettings runSettings,
         CancellationToken cancellationToken)
     {
         await mediator.Publish(
@@ -41,7 +41,7 @@ internal class TestResultPresenter : ITestResultPresenter
         await mediator.Publish(
                 new WriteToMarkDownCommand(
                     resultContainers,
-                    runSettings.LocalOutputDirectory,
+                    runSettings.LocalOutputDirectory ?? DefaultFileSettings.DefaultOutputDirectory,
                     timeStamp,
                     runSettings.Tags,
                     runSettings.Args,
@@ -52,7 +52,7 @@ internal class TestResultPresenter : ITestResultPresenter
         await mediator.Publish(
                 new WriteToCsvCommand(
                     resultContainers,
-                    runSettings.LocalOutputDirectory,
+                    runSettings.LocalOutputDirectory ?? DefaultFileSettings.DefaultOutputDirectory,
                     timeStamp,
                     runSettings.Tags,
                     runSettings.Args,

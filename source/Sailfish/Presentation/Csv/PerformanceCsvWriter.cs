@@ -20,7 +20,7 @@ internal class PerformanceCsvWriter : IPerformanceCsvWriter
             var csv = new CsvWriter(writer, CultureInfo.InvariantCulture);
             await using (csv.ConfigureAwait(false))
             {
-                csv.Context.RegisterClassMap<TestCaseDescriptiveStatisticsMap>();
+                csv.Context.RegisterClassMap<DescriptiveStatisticsResultCsvMap>();
 
                 foreach (var records in from container in result where container.Settings.AsCsv select container.CompiledResults.Select(x => x.DescriptiveStatisticsResult))
                 {

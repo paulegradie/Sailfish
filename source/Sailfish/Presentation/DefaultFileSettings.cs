@@ -19,6 +19,7 @@ public static class DefaultFileSettings
     public const string KeyValueDelimiter = "=";
     public const string MapDelimiter = "__";
     public const string DefaultTrackingDirectory = "sailfish_tracking_output";
+    public const string DefaultOutputDirectory = "sailfish_default_output";
     
     public static readonly Func<DateTime, string> DefaultPerformanceFileNameStem =
         (DateTime timestamp) =>

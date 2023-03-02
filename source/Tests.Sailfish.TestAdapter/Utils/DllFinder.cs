@@ -13,7 +13,8 @@ public static class DllFinder
     {
         var projFile = DirectoryRecursion.RecurseUpwardsUntilFileIsFound(".csproj", Directory.GetFiles(".").First(), 5, Substitute.For<IMessageLogger>());
 
-        var allDlls = DirectoryRecursion.FindAllFilesRecursively(projFile, "*.dll", Substitute.For<IMessageLogger>(), path => !path.Contains($"{Path.DirectorySeparatorChar}obj{Path.DirectorySeparatorChar}"));
+        var allDlls = DirectoryRecursion.FindAllFilesRecursively(projFile, "*.dll", Substitute.For<IMessageLogger>(),
+            path => !path.Contains($"{Path.DirectorySeparatorChar}obj{Path.DirectorySeparatorChar}"));
         return allDlls;
     }
 }

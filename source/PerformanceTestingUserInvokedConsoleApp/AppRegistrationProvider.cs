@@ -6,7 +6,7 @@ using Serilog;
 
 namespace PerformanceTestingUserInvokedConsoleApp;
 
-public class RegistrationProvider : IProvideARegistrationCallback
+public class AppRegistrationProvider : IProvideARegistrationCallback
 {
     public async Task RegisterAsync(ContainerBuilder builder, CancellationToken cancellationToken)
     {

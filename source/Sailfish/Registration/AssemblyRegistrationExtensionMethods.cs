@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using Autofac;
 using MediatR;
 using Sailfish.Execution;
@@ -28,6 +29,6 @@ public static class AssemblyRegistrationExtensionMethods
     {
         var testCollector = new TestCollector();
         var allPerfTypes = testCollector.CollectTestTypes(sourceTypes);
-        builder.RegisterTypes(allPerfTypes);
+        builder.RegisterTypes(allPerfTypes.ToArray());
     }
 }

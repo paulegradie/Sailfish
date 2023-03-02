@@ -12,6 +12,6 @@ internal interface ITestResultPresenter
         List<IExecutionSummary> resultContainers,
         DateTime timeStamp,
         string trackingDir,
-        RunSettings runSettings,
+        IRunSettings runSettings,
         CancellationToken cancellationToken);
 }
