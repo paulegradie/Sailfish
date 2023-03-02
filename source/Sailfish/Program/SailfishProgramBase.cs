@@ -9,6 +9,7 @@ using Autofac;
 using McMaster.Extensions.CommandLineUtils;
 using Sailfish.Analysis;
 using Sailfish.Execution;
+using Sailfish.Presentation;
 using Sailfish.Utils;
 
 // ReSharper disable UnusedMember.Global
@@ -30,10 +31,8 @@ public abstract class SailfishProgramBase
 
     protected async Task OnExecuteAsync(CancellationToken cancellationToken)
     {
-        var sailfishRunResult = await SailfishRunner.Run(
-            AssembleRunRequest(SourceTypesProvider(), RegistrationProviderTypesProvider()),
-            InternalRegisterWithSailfish,
-            cancellationToken);
+        var settings = AssembleRunSettings(SourceTypesProvider(), RegistrationProviderTypesProvider());
+        var sailfishRunResult = await SailfishRunner.Run(settings, cancellationToken);
         var not = sailfishRunResult.IsValid ? string.Empty : "not ";
         Console.WriteLine($"Test run was {not}valid");
         RunResult = sailfishRunResult;
@@ -53,24 +52,23 @@ public abstract class SailfishProgramBase
     {
     }
 
-    private void InternalRegisterWithSailfish(ContainerBuilder builder)
+    private IEnumerable<Type> InternalRegisterWithSailfish(ContainerBuilder builder)
     {
         RegisterWithSailfish(builder);
-        var anchorTypes = SourceTypesProvider();
-        builder.RegisterInstance(anchorTypes);
+        return SourceTypesProvider();
     }
 
-    protected virtual IRunSettings AssembleRunRequest(IEnumerable<Type> sourceTypes, IEnumerable<Type> registrationProviderTypes)
+    protected virtual IRunSettings AssembleRunSettings(IEnumerable<Type> sourceTypes, IEnumerable<Type> registrationProviderTypes)
     {
         if (OutputDirectory is null)
         {
-            OutputDirectory = Path.Combine(Directory.GetCurrentDirectory(), "performance_output");
+            OutputDirectory = Path.Combine(Directory.GetCurrentDirectory(), DefaultFileSettings.DefaultOutputDirectory);
             Directories.EnsureDirectoryExists(OutputDirectory);
         }
 
         if (TrackingDirectory is null)
         {
-            TrackingDirectory = Path.Combine(Directory.GetCurrentDirectory(), OutputDirectory, "tracking_directory");
+            TrackingDirectory = Path.Combine(Directory.GetCurrentDirectory(), OutputDirectory, DefaultFileSettings.DefaultTrackingDirectory);
             Directories.EnsureDirectoryExists(TrackingDirectory);
         }
 
@@ -86,8 +84,6 @@ public abstract class SailfishProgramBase
             parsedArgs = ColonParser.Parse(Args);
         }
 
-        BeforeTarget ??= string.Empty;
-
         DateTime? timestamp = null;
         if (TimeStamp is not null)
         {
@@ -102,9 +98,11 @@ public abstract class SailfishProgramBase
             .ExecuteNotificationHandler()
             .WithTags(parsedTags)
             .WithArgs(parsedArgs)
-            .WithProvidedBeforeTrackingFiles(new List<string> { BeforeTarget }) // TODO: update this to array
+            .WithProvidedBeforeTrackingFiles(BeforeTargets ?? Array.Empty<string>())
             .WithTimeStamp(DateTime.Now)
             .InDebugMode(Debug)
+            .RegistrationProvidersFromAssembliesFromAnchorTypes(registrationProviderTypes.ToArray())
+            .TestsFromAssembliesFromAnchorTypes(sourceTypes.ToArray())
             .Build();
 
         return settings;
@@ -115,10 +113,10 @@ public abstract class SailfishProgramBase
             "Use this option to enable analysis mode, where a directory is nominated, and it is used to track and retrieve historical performance test runs for use in statistical tests against new runs")]
     public bool Analyze { get; set; } = true;
 
-    [Option("-b|--before-target", CommandOptionType.SingleValue,
+    [Option("-b|--before-target", CommandOptionType.MultipleValue,
         Description =
-            "A file name use to filter a specific tracking file for comparison when executing. This arg is passed to the BeforeAndAfterFileLocationCommand")]
-    public string? BeforeTarget { get; set; }
+            "A file name use to filter a specific tracking file for comparison when executing. Can use multiple times to specify multiple files of the same structure. This arg is passed to the BeforeAndAfterFileLocationCommand")]
+    public string[]? BeforeTargets { get; set; }
 
     [Option("-g|--tag", CommandOptionType.MultipleValue,
         Description =

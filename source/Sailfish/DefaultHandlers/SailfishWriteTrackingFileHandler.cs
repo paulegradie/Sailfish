@@ -11,7 +11,7 @@ internal class SailfishWriteTrackingFileHandler : INotificationHandler<WriteCurr
 {
     public async Task Handle(WriteCurrentTrackingFileCommand notification, CancellationToken cancellationToken)
     {
-        var output = notification.DefaultOutputDirectory;
+        var output = notification.LocalOutputDirectory;
         if (!Directory.Exists(output))
         {
             Directory.CreateDirectory(output);

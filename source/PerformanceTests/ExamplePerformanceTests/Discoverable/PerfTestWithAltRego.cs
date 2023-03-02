@@ -20,12 +20,12 @@ public class PerfTestWithAltRego
     [SailfishMethod]
     public async Task TestA(CancellationToken cancellationToken)
     {
-        await Task.Delay(1_000, cancellationToken);
+        await Task.Delay(100, cancellationToken);
     }
 
     [SailfishMethod]
     public async Task TestB(CancellationToken cancellationToken)
     {
-        await Task.Delay(1_000, cancellationToken);
+        await Task.Delay(100, cancellationToken);
     }
 }

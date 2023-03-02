@@ -16,13 +16,13 @@ public class SimplePerfTest
     [SailfishMethod]
     public async Task TestA(CancellationToken cancellationToken)
     {
-        await Task.Delay(500, cancellationToken);
+        await Task.Delay(200, cancellationToken);
     }
 
     [SailfishMethod]
     public async Task TestB(CancellationToken cancellationToken)
     {
-        await Task.Delay(300, cancellationToken);
+        await Task.Delay(100, cancellationToken);
     }
 
     [SailfishGlobalTeardown]
