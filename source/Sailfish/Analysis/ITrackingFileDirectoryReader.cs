@@ -4,5 +4,5 @@ namespace Sailfish.Analysis;
 
 internal interface ITrackingFileDirectoryReader
 {
-    List<string> DefaultReadDirectory(string directory);
+    List<string> FindTrackingFilesInDirectoryOrderedByLastModified(string directory, bool ascending = false);
 }

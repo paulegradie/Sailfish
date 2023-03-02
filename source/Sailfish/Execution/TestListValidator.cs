@@ -16,33 +16,35 @@ internal class TestListValidator : ITestListValidator
         this.logger = logger;
     }
 
-    public TestInitializationResult ValidateTests(string[] testsRequestedByUser, Type[] filteredTestNames)
+    public TestInitializationResult ValidateTests(IEnumerable<string> testsRequestedByUser, IEnumerable<Type> filteredTestNames)
     {
         var erroredTests = new Dictionary<string, List<string>>();
-        if (TestsAreRequestedButCannotFindAllOfThem(testsRequestedByUser, filteredTestNames.Select(x => x.Name).ToArray(), out var missingTests))
+        var requestedByUser = testsRequestedByUser.ToList();
+        var testClasses = filteredTestNames.ToList();
+        if (TestsAreRequestedButCannotFindAllOfThem(requestedByUser, testClasses.Select(x => x.Name).ToArray(), out var missingTests))
         {
-            logger.Fatal("Could not find the tests specified: {Tests}", testsRequestedByUser.Where(x => !filteredTestNames.Select(x => x.Name).Contains(x)));
+            logger.Fatal("Could not find the tests specified: {Tests}", requestedByUser.Where(x => !testClasses.Select(x => x.Name).Contains(x)));
             erroredTests.Add("Could not find the following tests:", missingTests);
         }
 
 
-        if (AnyTestHasNoExecutionMethods(filteredTestNames, out var noExecutionMethodTests))
+        if (AnyTestHasNoExecutionMethods(testClasses, out var noExecutionMethodTests))
         {
             erroredTests.Add("The following tests have no execution method defined:", noExecutionMethodTests);
         }
 
         if (erroredTests.Keys.Count > 0)
         {
-            return TestInitializationResult.CreateFailure(filteredTestNames, erroredTests);
+            return TestInitializationResult.CreateFailure(testClasses, erroredTests);
         }
 
-        if (!filteredTestNames.Any())
+        if (!testClasses.Any())
         {
             erroredTests.Add("No Tests Found", new List<string>());
-            return TestInitializationResult.CreateFailure(filteredTestNames, erroredTests);
+            return TestInitializationResult.CreateFailure(testClasses, erroredTests);
         }
 
-        return TestInitializationResult.CreateSuccess(filteredTestNames);
+        return TestInitializationResult.CreateSuccess(testClasses);
     }
 
     private static bool AnyTestHasNoExecutionMethods(IEnumerable<Type> testClasses, out List<string> missingExecutionMethod)
@@ -67,10 +69,14 @@ internal class TestListValidator : ITestListValidator
             .Length > 0;
     }
 
-    private static bool TestsAreRequestedButCannotFindAllOfThem(IReadOnlyCollection<string> testsRequestedByUser, IReadOnlyCollection<string> filteredTestNames,
+    private static bool TestsAreRequestedButCannotFindAllOfThem(
+        IEnumerable<string> testsRequestedByUser,
+        IEnumerable<string> filteredTestNames,
         out List<string> missingTests)
     {
-        missingTests = testsRequestedByUser.Except(filteredTestNames).ToList();
-        return testsRequestedByUser.Count > 0 && filteredTestNames.Count != testsRequestedByUser.Count;
+        var requestedByUser = testsRequestedByUser.ToList();
+        var testNames = filteredTestNames.ToList();
+        missingTests = requestedByUser.Except(testNames).ToList();
+        return requestedByUser.Count > 0 && testNames.Count != requestedByUser.Count;
     }
 }

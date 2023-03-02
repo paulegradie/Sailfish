@@ -7,5 +7,5 @@ namespace Sailfish.Presentation.Markdown;
 
 internal interface IMarkdownWriter
 {
-    Task Present(IEnumerable<IExecutionSummary> result, string filePath, RunSettings settings, CancellationToken cancellationToken);
+    Task Present(IEnumerable<IExecutionSummary> result, string filePath, IRunSettings settings, CancellationToken cancellationToken);
 }

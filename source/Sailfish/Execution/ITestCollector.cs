@@ -1,9 +1,9 @@
 using System;
+using System.Collections.Generic;
 
 namespace Sailfish.Execution;
 
 internal interface ITestCollector
 {
-    Type[] CollectTestTypes(params Type[] sourceTypes);
-    Type[] CollectTestTypes();
+    IEnumerable<Type> CollectTestTypes(IEnumerable<Type> sourceTypes);
 }

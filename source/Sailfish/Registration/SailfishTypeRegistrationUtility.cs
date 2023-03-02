@@ -6,58 +6,55 @@ using System.Threading;
 using System.Threading.Tasks;
 using Autofac;
 using Sailfish.AdapterUtils;
+using Sailfish.Attributes;
 using Sailfish.Exceptions;
 using Sailfish.ExtensionMethods;
-using Sailfish.Registration;
 
-namespace Sailfish.Execution;
+namespace Sailfish.Registration;
 
 internal static class SailfishTypeRegistrationUtility
 {
     public static async Task InvokeRegistrationProviderCallbackMain(
         ContainerBuilder containerBuilder,
         IEnumerable<Type> testDiscoveryAnchorTypes,
-        Type[] registrationProviderAnchorTypes,
+        IEnumerable<Type> registrationProviderAnchorTypes,
         CancellationToken cancellationToken = default)
     {
         if (registrationProviderAnchorTypes == null) throw new ArgumentNullException(nameof(registrationProviderAnchorTypes));
-        var allAssemblies = testDiscoveryAnchorTypes.Select(t => t.Assembly);
-        var allAssemblyTypes = allAssemblies.Distinct().SelectMany(a => a.GetTypes()).Distinct().ToArray();
 
-        await RegisterSupportedIdentifierTypes(containerBuilder, allAssemblyTypes, registrationProviderAnchorTypes, cancellationToken);
+        var registrationProviderAssembliesTypes = registrationProviderAnchorTypes
+            .Select(t => t.Assembly)
+            .Distinct()
+            .SelectMany(x => x.GetTypes())
+            .ToList();
+        await RegisterCallbackProviders(containerBuilder, registrationProviderAssembliesTypes, cancellationToken);
+
+        var testAssembliesTypes = testDiscoveryAnchorTypes
+            .Select(t => t.Assembly)
+            .Distinct()
+            .SelectMany(x => x.GetTypes())
+            .ToList();
+
+        var allSourcesForOtherRegistrations = new List<Type>();
+        allSourcesForOtherRegistrations.AddRange(registrationProviderAssembliesTypes);
+        allSourcesForOtherRegistrations.AddRange(testAssembliesTypes);
+        RegisterISailfishFixtureGenericTypes(containerBuilder, allSourcesForOtherRegistrations);
+        RegisterISailfishDependencyTypes(containerBuilder, allSourcesForOtherRegistrations);
+
+        RegisterAllTestTypes(containerBuilder, testAssembliesTypes);
     }
 
-    public static async Task InvokeRegistrationProviderCallbackAdapter(
-        ContainerBuilder containerBuilder,
-        Type aTestType,
-        CancellationToken cancellationToken = default)
-    {
-        var allAssemblies = new List<Assembly>() { aTestType.Assembly };
-        var testAssemblyTypes = allAssemblies.Distinct().SelectMany(a => a.GetTypes()).Distinct().ToArray();
 
-        await RegisterSupportedIdentifierTypes(containerBuilder, testAssemblyTypes, new[] { aTestType }, cancellationToken);
+    private static void RegisterAllTestTypes(ContainerBuilder containerBuilder, IEnumerable<Type> testAssembliesTypes)
+    {
+        var testTypes = testAssembliesTypes.Distinct().Where(type => type.HasAttribute<SailfishAttribute>());
+        containerBuilder.RegisterTypes(testTypes.ToArray());
     }
 
-    private static async Task RegisterSupportedIdentifierTypes(
-        ContainerBuilder containerBuilder,
-        IEnumerable<Type> allAssemblyTypes,
-        IEnumerable<Type> registrationProviderAnchorTypes,
-        CancellationToken cancellationToken)
+
+    private static void RegisterISailfishDependencyTypes(ContainerBuilder containerBuilder, IEnumerable<Type> types)
     {
-        var allTypesFromDiscoverySources = allAssemblyTypes.ToList();
-        allTypesFromDiscoverySources.AddRange(registrationProviderAnchorTypes.SelectMany(at => at.Assembly.GetTypes()));
-        var dependencySourceTypeSet = allTypesFromDiscoverySources.ToArray();
-
-        await RegisterCallbackProviders(containerBuilder, dependencySourceTypeSet, cancellationToken);
-
-        RegisterISailfishDependencies(containerBuilder, dependencySourceTypeSet);
-        RegisterISailfishFixtureGenericTypes(containerBuilder, dependencySourceTypeSet);
-        RegisterBasicISailfishDependencyTypes(containerBuilder, dependencySourceTypeSet);
-    }
-
-    private static void RegisterBasicISailfishDependencyTypes(ContainerBuilder containerBuilder, IEnumerable<Type> allAssemblyTypes)
-    {
-        var basicTypes = allAssemblyTypes.Where(t => t.GetInterfaces().Contains(typeof(ISailfishDependency)));
+        var basicTypes = types.Where(t => t.GetInterfaces().Contains(typeof(ISailfishDependency)));
         foreach (var basicType in basicTypes)
         {
             containerBuilder.RegisterType(basicType).AsSelf();
@@ -92,13 +89,14 @@ internal static class SailfishTypeRegistrationUtility
 
     private static async Task RegisterCallbackProviders(
         ContainerBuilder containerBuilder,
-        Type[] allAssemblyTypes,
+        IEnumerable<Type> allAssemblyTypes,
         CancellationToken cancellationToken)
     {
-        var asyncProviders = GetRegistrationCallbackProviders<IProvideARegistrationCallback>(allAssemblyTypes).ToList();
+        var assemblyTypes = allAssemblyTypes.ToList();
+        var asyncProviders = GetRegistrationCallbackProviders<IProvideARegistrationCallback>(assemblyTypes).ToList();
         if (!asyncProviders.Any())
         {
-            asyncProviders = GetRegistrationCallbackProviders<IProvideARegistrationCallback>(allAssemblyTypes).ToList();
+            asyncProviders = GetRegistrationCallbackProviders<IProvideARegistrationCallback>(assemblyTypes).ToList();
         }
 
         foreach (var asyncCallback in asyncProviders)
@@ -129,20 +127,5 @@ internal static class SailfishTypeRegistrationUtility
             .ToList();
 
         return providers;
-    }
-
-    private static void RegisterISailfishDependencies(ContainerBuilder containerBuilder, IEnumerable<Type> allAssemblyTypes)
-    {
-        var individualDependencies = allAssemblyTypes.Where(type => type.IsAssignableTo(typeof(ISailfishDependency)));
-        foreach (var dependency in individualDependencies)
-        {
-            if (dependency.GetConstructors().Length > 1 || dependency.GetConstructors().Length > 0 && dependency.GetCtorParamTypes().Length > 0)
-            {
-                const string errorMessage = $"Implementations of {nameof(ISailfishDependency)} can only have 1 parameterless ctor";
-                throw new SailfishException(errorMessage);
-            }
-
-            containerBuilder.RegisterType(dependency).AsSelf();
-        }
     }
 }

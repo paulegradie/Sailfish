@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -16,9 +17,8 @@ internal class SailfishExecutor
     private readonly IExecutionSummaryCompiler executionSummaryCompiler;
     private readonly ITestResultPresenter testResultPresenter;
     private readonly ITestResultAnalyzer testResultAnalyzer;
-    private readonly RunSettings runSettings;
+    private readonly IRunSettings runSettings;
     private readonly ISailFishTestExecutor sailFishTestExecutor;
-    private const string DefaultTrackingDirectory = "tracking_output";
 
     public SailfishExecutor(
         ISailFishTestExecutor sailFishTestExecutor,
@@ -27,7 +27,7 @@ internal class SailfishExecutor
         IExecutionSummaryCompiler executionSummaryCompiler,
         ITestResultPresenter testResultPresenter,
         ITestResultAnalyzer testResultAnalyzer,
-        RunSettings runSettings
+        IRunSettings runSettings
     )
     {
         this.sailFishTestExecutor = sailFishTestExecutor;
@@ -41,7 +41,7 @@ internal class SailfishExecutor
 
     public async Task<SailfishRunResult> Run(CancellationToken cancellationToken)
     {
-        var testInitializationResult = CollectTests(runSettings.TestNames, runSettings.TestLocationAnchors);
+        var testInitializationResult = CollectTests(runSettings.TestNames, runSettings.TestLocationAnchors.ToArray());
         if (testInitializationResult.IsValid)
         {
             var timeStamp = runSettings.TimeStamp ?? DateTime.Now.ToLocalTime();
@@ -74,14 +74,17 @@ internal class SailfishExecutor
         return SailfishRunResult.CreateInvalidResult(Enumerable.Empty<Exception>());
     }
 
-    private static string GetRunSettingsTrackingDirectoryPath(RunSettings runSettings)
+    private static string GetRunSettingsTrackingDirectoryPath(IRunSettings runSettings)
     {
-        return string.IsNullOrEmpty(runSettings.TrackingDirectoryPath)
-            ? Path.Combine(runSettings.DirectoryPath, DefaultTrackingDirectory)
-            : runSettings.TrackingDirectoryPath;
+        if (string.IsNullOrEmpty(runSettings.LocalOutputDirectory) | string.IsNullOrWhiteSpace(runSettings.LocalOutputDirectory))
+        {
+            return DefaultFileSettings.DefaultTrackingDirectory;
+        }
+
+        return Path.Join(runSettings.LocalOutputDirectory, DefaultFileSettings.DefaultTrackingDirectory);
     }
 
-    private TestInitializationResult CollectTests(string[] testNames, params Type[] locationTypes)
+    private TestInitializationResult CollectTests(IEnumerable<string> testNames, IEnumerable<Type> locationTypes)
     {
         var perfTests = testCollector.CollectTestTypes(locationTypes);
         return testFilter.FilterAndValidate(perfTests, testNames);

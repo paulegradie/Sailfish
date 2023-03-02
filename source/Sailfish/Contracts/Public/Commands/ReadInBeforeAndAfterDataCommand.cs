@@ -6,22 +6,19 @@ namespace Sailfish.Contracts.Public.Commands;
 
 public class ReadInBeforeAndAfterDataCommand : IRequest<ReadInBeforeAndAfterDataResponse>
 {
-    public IEnumerable<string> BeforeFilePath { get; set; }
-    public IEnumerable<string> AfterFilePath { get; set; }
+    public IEnumerable<string> BeforeFilePaths { get; set; }
+    public IEnumerable<string> AfterFilePaths { get; set; }
     public OrderedDictionary<string, string> Tags { get; set; }
     public OrderedDictionary<string, string> Args { get; set; }
-    public string BeforeTarget { get; set; }
 
     public ReadInBeforeAndAfterDataCommand(
-        IEnumerable<string> beforeFilePath,
-        IEnumerable<string> afterFilePath,
-        string beforeTarget,
+        IEnumerable<string> beforeFilePaths,
+        IEnumerable<string> afterFilePaths,
         OrderedDictionary<string, string> tags,
         OrderedDictionary<string, string> args)
     {
-        BeforeFilePath = beforeFilePath;
-        AfterFilePath = afterFilePath;
-        BeforeTarget = beforeTarget;
+        BeforeFilePaths = beforeFilePaths;
+        AfterFilePaths = afterFilePaths;
         Tags = tags;
         Args = args;
     }

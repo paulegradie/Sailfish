@@ -17,7 +17,7 @@ internal class PerformanceCsvTrackingWriter : IPerformanceCsvTrackingWriter
         await using (var writer = new StreamWriter(filePath))
         await using (var csv = new CsvWriter(writer, CultureInfo.InvariantCulture))
         {
-            csv.Context.RegisterClassMap<TestCaseDescriptiveStatisticsMap>();
+            csv.Context.RegisterClassMap<DescriptiveStatisticsResultCsvMap>();
 
             foreach (var records in result.Select(container => container
                          .CompiledResults

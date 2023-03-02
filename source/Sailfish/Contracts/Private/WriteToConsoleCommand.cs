@@ -7,7 +7,7 @@ namespace Sailfish.Contracts.Private;
 
 internal class WriteToConsoleCommand : INotification
 {
-    public WriteToConsoleCommand(List<IExecutionSummary> content, OrderedDictionary<string, string> tags, RunSettings settings)
+    public WriteToConsoleCommand(List<IExecutionSummary> content, OrderedDictionary<string, string> tags, IRunSettings settings)
     {
         Content = content;
         Tags = tags;
@@ -16,5 +16,5 @@ internal class WriteToConsoleCommand : INotification
 
     public List<IExecutionSummary> Content { get; set; }
     public OrderedDictionary<string, string> Tags { get; }
-    public RunSettings Settings { get; }
+    public IRunSettings Settings { get; }
 }

@@ -7,6 +7,7 @@ using Autofac;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.Adapter;
 using Sailfish.Execution;
+using Sailfish.Registration;
 using Sailfish.TestAdapter.TestProperties;
 
 namespace Sailfish.TestAdapter.Execution;
@@ -20,9 +21,10 @@ internal static class TestExecution
 
         var refTestType = RetrieveReferenceTypeForTestProject(testCases);
 
-        SailfishTypeRegistrationUtility.InvokeRegistrationProviderCallbackAdapter(
+        SailfishTypeRegistrationUtility.InvokeRegistrationProviderCallbackMain(
                 builder,
-                refTestType,
+                new[] { refTestType },
+                new[] { refTestType },
                 cancellationToken)
             .Wait(cancellationToken);
 

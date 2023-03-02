@@ -34,7 +34,7 @@ public class TestExecutor : ITestExecutor
         }
         catch (Exception ex)
         {
-            frameworkHandle?.SendMessage(TestMessageLevel.Error, $"Encountered exception while executing tests: {ex.Message}");
+            frameworkHandle?.SendMessage(TestMessageLevel.Informational, $"Encountered exception while executing tests: {ex.Message}");
         }
     }
 

@@ -1,13 +1,15 @@
-﻿namespace Sailfish.Analysis;
+﻿using System.Collections.Generic;
+
+namespace Sailfish.Analysis;
 
 internal class BeforeAndAfterTrackingFiles
 {
-    public BeforeAndAfterTrackingFiles(string beforeFilePath, string afterFilePath)
+    public BeforeAndAfterTrackingFiles(List<string> beforeFilePaths, List<string> afterFilePaths)
     {
-        BeforeFilePath = beforeFilePath;
-        AfterFilePath = afterFilePath;
+        BeforeFilePaths = beforeFilePaths;
+        AfterFilePaths = afterFilePaths;
     }
 
-    public string BeforeFilePath { get; set; }
-    public string AfterFilePath { get; set; }
+    public List<string> BeforeFilePaths { get; set; }
+    public List<string> AfterFilePaths { get; set; }
 }

@@ -14,7 +14,7 @@ internal class WriteToCsvCommand : INotification
         DateTime timeStamp,
         OrderedDictionary<string, string> tags,
         OrderedDictionary<string, string> args,
-        RunSettings settings)
+        IRunSettings settings)
     {
         Content = content;
         OutputDirectory = outputDirectory;
@@ -29,5 +29,5 @@ internal class WriteToCsvCommand : INotification
     public DateTime TimeStamp { get; }
     public OrderedDictionary<string, string> Tags { get; }
     public OrderedDictionary<string, string> Args { get; }
-    public RunSettings Settings { get; }
+    public IRunSettings Settings { get; }
 }
