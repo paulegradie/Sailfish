@@ -25,14 +25,14 @@ internal class SailfishReadInBeforeAndAfterDataHandler : IRequestHandler<ReadInB
     public async Task<ReadInBeforeAndAfterDataResponse> Handle(ReadInBeforeAndAfterDataCommand request, CancellationToken cancellationToken)
     {
         var beforeData = new List<DescriptiveStatisticsResult>();
-        if (!await TryAddDataFile(request.BeforeFilePath, beforeData, cancellationToken).ConfigureAwait(false)) return new ReadInBeforeAndAfterDataResponse(null, null);
+        if (!await TryAddDataFile(request.BeforeFilePaths, beforeData, cancellationToken).ConfigureAwait(false)) return new ReadInBeforeAndAfterDataResponse(null, null);
 
         var afterData = new List<DescriptiveStatisticsResult>();
-        if (!await TryAddDataFile(request.AfterFilePath, afterData, cancellationToken).ConfigureAwait(false)) return new ReadInBeforeAndAfterDataResponse(null, null);
+        if (!await TryAddDataFile(request.AfterFilePaths, afterData, cancellationToken).ConfigureAwait(false)) return new ReadInBeforeAndAfterDataResponse(null, null);
 
         if (!beforeData.Any() || !afterData.Any()) return new ReadInBeforeAndAfterDataResponse(null, null);
 
-        return new ReadInBeforeAndAfterDataResponse(new TestData(request.BeforeFilePath, beforeData), new TestData(request.AfterFilePath, afterData));
+        return new ReadInBeforeAndAfterDataResponse(new TestData(request.BeforeFilePaths, beforeData), new TestData(request.AfterFilePaths, afterData));
     }
 
     private async Task<bool> TryAddDataFile(IEnumerable<string> fileKeys, List<DescriptiveStatisticsResult> data, CancellationToken cancellationToken)

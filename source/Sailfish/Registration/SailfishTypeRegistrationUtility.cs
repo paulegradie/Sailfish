@@ -8,16 +8,15 @@ using Autofac;
 using Sailfish.AdapterUtils;
 using Sailfish.Exceptions;
 using Sailfish.ExtensionMethods;
-using Sailfish.Registration;
 
-namespace Sailfish.Execution;
+namespace Sailfish.Registration;
 
 internal static class SailfishTypeRegistrationUtility
 {
     public static async Task InvokeRegistrationProviderCallbackMain(
         ContainerBuilder containerBuilder,
         IEnumerable<Type> testDiscoveryAnchorTypes,
-        Type[] registrationProviderAnchorTypes,
+        IEnumerable<Type> registrationProviderAnchorTypes,
         CancellationToken cancellationToken = default)
     {
         if (registrationProviderAnchorTypes == null) throw new ArgumentNullException(nameof(registrationProviderAnchorTypes));

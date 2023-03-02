@@ -9,24 +9,25 @@ namespace Sailfish.Execution;
 
 internal class TestCollector : ITestCollector
 {
-    public Type[] CollectTestTypes(params Type[] sourceTypes)
+    public IEnumerable<Type> CollectTestTypes(IEnumerable<Type> sourceTypes)
     {
-        if (sourceTypes.Length == 0)
+        var enumerable = sourceTypes.ToList();
+        if (!enumerable.Any())
         {
             return CollectTestTypes();
         }
 
         var allTests = new List<Type>();
-        foreach (var sourceType in sourceTypes)
+        foreach (var sourceType in enumerable)
         {
-            var allTypes = sourceType.Assembly.GetTypes().Where(t => t.HasAttribute<SailfishAttribute>());
-            allTests.AddRange(allTypes);
+            var testTypes = sourceType.Assembly.GetTypes().Where(t => t.HasAttribute<SailfishAttribute>());
+            allTests.AddRange(testTypes);
         }
 
         return allTests.Distinct().ToArray();
     }
 
-    public Type[] CollectTestTypes()
+    private static IEnumerable<Type> CollectTestTypes()
     {
         var types = Assembly.GetCallingAssembly().GetTypes().Where(t => t.HasAttribute<SailfishAttribute>()).ToArray();
         return types;

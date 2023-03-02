@@ -17,7 +17,8 @@ internal class TrackingFileFinder : ITrackingFileFinder
 
     public BeforeAndAfterTrackingFiles GetBeforeAndAfterTrackingFiles(string directory, string beforeTarget, OrderedDictionary<string, string> tags)
     {
-        var files = trackingFileDirectoryReader.DefaultReadDirectory(directory);
+        
+        var files = trackingFileDirectoryReader.FindTrackingFilesInDirectory(directory);
 
         string? beforeTargetOverride = null;
         if (!string.IsNullOrEmpty(beforeTarget) && !string.IsNullOrWhiteSpace(beforeTarget))

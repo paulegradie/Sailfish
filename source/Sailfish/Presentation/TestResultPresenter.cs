@@ -41,7 +41,7 @@ internal class TestResultPresenter : ITestResultPresenter
         await mediator.Publish(
                 new WriteToMarkDownCommand(
                     resultContainers,
-                    runSettings.DirectoryPath,
+                    runSettings.LocalOutputDirectory,
                     timeStamp,
                     runSettings.Tags,
                     runSettings.Args,
@@ -52,7 +52,7 @@ internal class TestResultPresenter : ITestResultPresenter
         await mediator.Publish(
                 new WriteToCsvCommand(
                     resultContainers,
-                    runSettings.DirectoryPath,
+                    runSettings.LocalOutputDirectory,
                     timeStamp,
                     runSettings.Tags,
                     runSettings.Args,
@@ -60,7 +60,7 @@ internal class TestResultPresenter : ITestResultPresenter
                 cancellationToken)
             .ConfigureAwait(false);
 
-        if (!runSettings.NoTrack)
+        if (runSettings.CreateTrackingFiles)
         {
             var trackingContent = await performanceCsvTrackingWriter.ConvertToCsvStringContent(resultContainers);
             await mediator.Publish(

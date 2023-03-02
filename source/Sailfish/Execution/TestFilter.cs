@@ -13,18 +13,20 @@ internal class TestFilter : ITestFilter
         this.testListValidator = testListValidator;
     }
 
-    public TestInitializationResult FilterAndValidate(Type[] tests, string[] testsRequestedByUser)
+    public TestInitializationResult FilterAndValidate(IEnumerable<Type> tests, IEnumerable<string> testsRequestedByUser)
     {
-        var filtered = FilterTests(tests, testsRequestedByUser);
-        var result = testListValidator.ValidateTests(testsRequestedByUser, filtered);
+        var requestedByUser = testsRequestedByUser.ToList();
+        var filtered = FilterTests(tests, requestedByUser);
+        var result = testListValidator.ValidateTests(requestedByUser, filtered);
         return result;
     }
 
-    private static Type[] FilterTests(Type[] tests, IReadOnlyCollection<string> testsRequestedByUser)
+    private static IEnumerable<Type> FilterTests(IEnumerable<Type> tests, IEnumerable<string> testsRequestedByUser)
     {
-        if (testsRequestedByUser.Count > 0)
+        var requestedByUser = testsRequestedByUser as string[] ?? testsRequestedByUser.ToArray();
+        if (requestedByUser.Any())
             return tests
-                .Where(test => testsRequestedByUser.Contains(test.Name))
+                .Where(test => requestedByUser.Contains(test.Name))
                 .ToArray();
 
         return tests;

@@ -18,7 +18,8 @@ public static class DefaultFileSettings
     public const string TagsPrefix = "tags-";
     public const string KeyValueDelimiter = "=";
     public const string MapDelimiter = "__";
-
+    public const string DefaultTrackingDirectory = "sailfish_tracking_output";
+    
     public static readonly Func<DateTime, string> DefaultPerformanceFileNameStem =
         (DateTime timestamp) =>
             $"PerformanceResults_{timestamp.ToString(SortableFormat)}"; // sortable file name with date

@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -18,7 +19,6 @@ internal class SailfishExecutor
     private readonly ITestResultAnalyzer testResultAnalyzer;
     private readonly RunSettings runSettings;
     private readonly ISailFishTestExecutor sailFishTestExecutor;
-    private const string DefaultTrackingDirectory = "tracking_output";
 
     public SailfishExecutor(
         ISailFishTestExecutor sailFishTestExecutor,
@@ -41,7 +41,7 @@ internal class SailfishExecutor
 
     public async Task<SailfishRunResult> Run(CancellationToken cancellationToken)
     {
-        var testInitializationResult = CollectTests(runSettings.TestNames, runSettings.TestLocationAnchors);
+        var testInitializationResult = CollectTests(runSettings.TestNames, runSettings.TestLocationAnchors.ToArray());
         if (testInitializationResult.IsValid)
         {
             var timeStamp = runSettings.TimeStamp ?? DateTime.Now.ToLocalTime();
@@ -76,12 +76,15 @@ internal class SailfishExecutor
 
     private static string GetRunSettingsTrackingDirectoryPath(RunSettings runSettings)
     {
-        return string.IsNullOrEmpty(runSettings.TrackingDirectoryPath)
-            ? Path.Combine(runSettings.DirectoryPath, DefaultTrackingDirectory)
-            : runSettings.TrackingDirectoryPath;
+        if (string.IsNullOrEmpty(runSettings.LocalOutputDirectory) | string.IsNullOrWhiteSpace(runSettings.LocalOutputDirectory))
+        {
+            return DefaultFileSettings.DefaultTrackingDirectory;
+        }
+
+        return Path.Join(runSettings.LocalOutputDirectory, DefaultFileSettings.DefaultTrackingDirectory);
     }
 
-    private TestInitializationResult CollectTests(string[] testNames, params Type[] locationTypes)
+    private TestInitializationResult CollectTests(IEnumerable<string> testNames, IEnumerable<Type> locationTypes)
     {
         var perfTests = testCollector.CollectTestTypes(locationTypes);
         return testFilter.FilterAndValidate(perfTests, testNames);

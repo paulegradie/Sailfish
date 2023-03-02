@@ -42,7 +42,7 @@ public class TestResultAnalyzer : ITestResultAnalyzer
                 new BeforeAndAfterFileLocationCommand(
                     trackingDir,
                     runSettings.Tags,
-                    runSettings.BeforeTarget,
+                    runSettings.ProvidedBeforeTrackingFiles,
                     runSettings.Args),
                 cancellationToken)
             .ConfigureAwait(false);
@@ -69,7 +69,6 @@ public class TestResultAnalyzer : ITestResultAnalyzer
                 new ReadInBeforeAndAfterDataCommand(
                     beforeAndAfterFileLocations.BeforeFilePaths,
                     beforeAndAfterFileLocations.AfterFilePaths,
-                    runSettings.BeforeTarget,
                     runSettings.Tags,
                     runSettings.Args),
                 cancellationToken)
@@ -99,7 +98,7 @@ public class TestResultAnalyzer : ITestResultAnalyzer
         await mediator.Publish(
                 new WriteTestResultsAsMarkdownCommand(
                     testResultFormats.MarkdownFormat,
-                    runSettings.DirectoryPath,
+                    runSettings.LocalOutputDirectory,
                     runSettings.Settings,
                     timeStamp,
                     runSettings.Tags,
@@ -110,7 +109,7 @@ public class TestResultAnalyzer : ITestResultAnalyzer
         await mediator.Publish(
                 new WriteTestResultsAsCsvCommand(
                     testResultFormats.CsvFormat,
-                    runSettings.DirectoryPath,
+                    runSettings.LocalOutputDirectory,
                     runSettings.Settings,
                     timeStamp,
                     runSettings.Tags,
