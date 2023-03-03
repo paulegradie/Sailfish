@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.Specialized;
 using Accord.Collections;
 using Sailfish.Analysis;
+using Sailfish.Presentation;
 
 namespace Sailfish;
 
@@ -140,7 +141,7 @@ public class RunSettingsBuilder
     {
         return new RunSettings(
             names,
-            localOutputDir ?? ".",
+            localOutputDir ?? DefaultFileSettings.DefaultOutputDirectory,
             createTrackingFiles,
             analyze,
             executeNotificationHandler,
