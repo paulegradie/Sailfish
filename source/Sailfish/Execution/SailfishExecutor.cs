@@ -76,12 +76,22 @@ internal class SailfishExecutor
 
     private static string GetRunSettingsTrackingDirectoryPath(IRunSettings runSettings)
     {
-        if (string.IsNullOrEmpty(runSettings.LocalOutputDirectory) | string.IsNullOrWhiteSpace(runSettings.LocalOutputDirectory))
+        string trackingDirectoryPath;
+        if (string.IsNullOrEmpty(runSettings.LocalOutputDirectory) || string.IsNullOrWhiteSpace(runSettings.LocalOutputDirectory))
         {
-            return DefaultFileSettings.DefaultTrackingDirectory;
+            trackingDirectoryPath = DefaultFileSettings.DefaultTrackingDirectory;
+        }
+        else
+        {
+            trackingDirectoryPath = Path.Join(runSettings.LocalOutputDirectory, DefaultFileSettings.DefaultTrackingDirectory);
         }
 
-        return Path.Join(runSettings.LocalOutputDirectory, DefaultFileSettings.DefaultTrackingDirectory);
+        if (!Directory.Exists(trackingDirectoryPath))
+        {
+            Directory.CreateDirectory(trackingDirectoryPath);
+        }
+
+        return trackingDirectoryPath;
     }
 
     private TestInitializationResult CollectTests(IEnumerable<string> testNames, IEnumerable<Type> locationTypes)

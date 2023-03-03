@@ -7,7 +7,6 @@ using System.Threading.Tasks;
 using Accord.Collections;
 using Autofac;
 using McMaster.Extensions.CommandLineUtils;
-using Sailfish.Analysis;
 using Sailfish.Execution;
 using Sailfish.Presentation;
 using Sailfish.Utils;
