@@ -31,7 +31,7 @@ public class VariablesIterateTest
         Expected.Add(N);
     }
 
-    private static readonly List<int> Expected = new();
+    private static List<int> Expected = new();
 
     [SailfishMethod]
     public void SecondIncrement()
@@ -46,5 +46,6 @@ public class VariablesIterateTest
     {
         FieldMan.ShouldBe("WOW");
         Expected.ShouldBe(new List<int>() { 1, 2, 1, 2 });
+        Expected = new List<int>();
     }
 }

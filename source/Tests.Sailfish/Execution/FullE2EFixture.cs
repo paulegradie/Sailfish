@@ -30,7 +30,6 @@ public class FullE2EFixture
     public async Task AFullTestRunOfTheDemoShouldFind8Tests()
     {
         var runSettings = RunSettingsBuilder.CreateBuilder()
-            .WithTestNames(nameof(VariablesIterateTest))
             .RegistrationProvidersFromAssembliesFromAnchorTypes(typeof(E2ETestRegistrationProvider))
             .TestsFromAssembliesFromAnchorTypes(typeof(E2ETestRegistrationProvider))
             .Build();

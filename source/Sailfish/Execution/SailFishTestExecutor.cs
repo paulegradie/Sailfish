@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.Caching;
 using System.Threading;
 using System.Threading.Tasks;
+using Sailfish.Exceptions;
 using Sailfish.ExtensionMethods;
 using Sailfish.Program;
 using Serilog;
@@ -14,6 +16,7 @@ internal class SailFishTestExecutor : ISailFishTestExecutor
     private readonly ILogger logger;
     private readonly ITestInstanceContainerCreator testInstanceContainerCreator;
     private readonly ISailfishExecutionEngine engine;
+    private const string MemoryCacheName = "GlobalStateMemoryCache";
 
     public SailFishTestExecutor(
         ILogger logger,
@@ -73,18 +76,23 @@ internal class SailFishTestExecutor : ISailFishTestExecutor
     {
         var results = new List<TestExecutionResult>();
 
-        var currentTestInstanceContainer = 0;
+        var testProviderIndex = 0;
         var totalMethodCount = testInstanceContainerProviders.Count - 1;
-        foreach (var testInstanceContainerProvider in testInstanceContainerProviders.OrderBy(x => x.Method.Name))
+        
+        var memoryCache = new MemoryCache(MemoryCacheName);
+        foreach (var testProvider in testInstanceContainerProviders.OrderBy(x => x.Method.Name))
         {
-            TestCaseCountPrinter.PrintMethodUpdate(testInstanceContainerProvider.Method);
+            var providerPropertiesCacheKey = testProvider.Test.FullName ?? throw new SailfishException($"Failed to read the FullName of {testProvider.Test.Name}");
+            TestCaseCountPrinter.PrintMethodUpdate(testProvider.Method);
             var executionResults = await engine.ActivateContainer(
-                currentTestInstanceContainer,
+                testProviderIndex,
                 totalMethodCount,
-                testInstanceContainerProvider,
+                testProvider,
+                memoryCache,
+                providerPropertiesCacheKey,
                 cancellationToken: cancellationToken);
             results.AddRange(executionResults);
-            currentTestInstanceContainer += 1;
+            testProviderIndex += 1;
         }
 
         return results;
