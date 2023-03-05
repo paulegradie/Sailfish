@@ -34,13 +34,12 @@ public class TestWithStringVariable
     [SailfishMethodSetup]
     public void MethodSetup()
     {
-        client = ClientFactory.CreateClient(scenarioMap[Scenario].Url);
+        client = ClientFactory.CreateClient(scenarioMap[Scenario!].Url);
     }
 
     [SailfishMethod]
     public async Task TestMethod(CancellationToken ct)
     {
-        await Task.Delay(100, ct);
         await client.Get(ct);
     }
 }

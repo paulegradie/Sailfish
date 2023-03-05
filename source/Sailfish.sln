@@ -22,6 +22,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tests.E2ETestSuite", "Tests
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PerformanceTestingUserInvokedConsoleApp", "PerformanceTestingUserInvokedConsoleApp\PerformanceTestingUserInvokedConsoleApp.csproj", "{EBBA336B-1931-4340-82F5-C31815DE5357}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tests.ExternalTests", "Tests.ExternalTests\Tests.ExternalTests.csproj", "{6D19EE4F-228D-45BA-A674-295EC74352D8}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -64,6 +66,10 @@ Global
 		{EBBA336B-1931-4340-82F5-C31815DE5357}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{EBBA336B-1931-4340-82F5-C31815DE5357}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{EBBA336B-1931-4340-82F5-C31815DE5357}.Release|Any CPU.Build.0 = Release|Any CPU
+		{6D19EE4F-228D-45BA-A674-295EC74352D8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{6D19EE4F-228D-45BA-A674-295EC74352D8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{6D19EE4F-228D-45BA-A674-295EC74352D8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{6D19EE4F-228D-45BA-A674-295EC74352D8}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{EE33D17C-3F19-40A9-8394-D966232723A6} = {AA777AE3-7608-4068-9BDE-3AE366657722}
@@ -73,5 +79,6 @@ Global
 		{2B832E9F-13DC-482C-8391-6E3ADA2CA49B} = {AA777AE3-7608-4068-9BDE-3AE366657722}
 		{E48F48D1-A39A-4F19-BE07-2312244284AA} = {74A88B77-784B-4600-9F69-097A6CDF71D5}
 		{EBBA336B-1931-4340-82F5-C31815DE5357} = {AA777AE3-7608-4068-9BDE-3AE366657722}
+		{6D19EE4F-228D-45BA-A674-295EC74352D8} = {74A88B77-784B-4600-9F69-097A6CDF71D5}
 	EndGlobalSection
 EndGlobal
