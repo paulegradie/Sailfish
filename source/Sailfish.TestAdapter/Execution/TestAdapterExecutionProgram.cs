@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.Caching;
 using System.Threading;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.Adapter;
@@ -18,6 +19,7 @@ internal class TestAdapterExecutionProgram : ITestAdapterExecutionProgram
     private readonly IConsoleWriterFactory consoleWriterFactory;
     private readonly IExecutionSummaryCompiler executionSummaryCompiler;
     private readonly ISailfishExecutionEngine engine;
+    private const string MemoryCacheName = "GlobalStateMemoryCache";
 
     public TestAdapterExecutionProgram(
         ITestInstanceContainerCreator testInstanceContainerCreator,
@@ -79,13 +81,17 @@ internal class TestAdapterExecutionProgram : ITestAdapterExecutionProgram
             var providerForCurrentTestCases = testInstanceContainerCreator.CreateTestContainerInstanceProviders(testType, PropertyFilter, MethodFilter);
 
             var totalTestProviderCount = providerForCurrentTestCases.Count - 1;
+            var memoryCache = new MemoryCache(MemoryCacheName);
             for (var i = 0; i < providerForCurrentTestCases.Count; i++)
             {
-                var provider = providerForCurrentTestCases[i];
+                var testProvider = providerForCurrentTestCases[i];
+                var providerPropertiesCacheKey = testProvider.Test.FullName ?? throw new SailfishException($"Failed to read the FullName of {testProvider.Test.Name}");
                 var results = engine.ActivateContainer(
                         i,
                         totalTestProviderCount,
-                        provider,
+                        testProvider,
+                        memoryCache,
+                        providerPropertiesCacheKey,
                         PreTestResultCallback(testCaseGroup, frameworkHandle),
                         PostTestResultCallback(testCaseGroup, frameworkHandle, cancellationToken),
                         ExceptionCallback(testCaseGroup, frameworkHandle),
@@ -94,7 +100,6 @@ internal class TestAdapterExecutionProgram : ITestAdapterExecutionProgram
                 groupResults.AddRange(results);
             }
 
-            if (testType is null) throw new Exception($"Test type was null in TestExecution.cs: line 105");
             rawResults.Add(new RawExecutionResult(testType, groupResults));
         }
 

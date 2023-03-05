@@ -3,6 +3,7 @@ using System.Threading.Tasks;
 using Sailfish;
 using Shouldly;
 using Tests.E2ETestSuite;
+using Tests.E2ETestSuite.Discoverable;
 using Xunit;
 
 namespace Test.Execution;
@@ -21,6 +22,21 @@ public class FullE2EFixture
 
         result.IsValid.ShouldBe(true);
         result.Exceptions.Count().ShouldBe(0);
-        result.ExecutionSummaries.Count().ShouldBe(7);
+    }
+
+
+    // will need to update this if more tests are added to the the project
+    [Fact]
+    public async Task AFullTestRunOfTheDemoShouldFind8Tests()
+    {
+        var runSettings = RunSettingsBuilder.CreateBuilder()
+            .RegistrationProvidersFromAssembliesFromAnchorTypes(typeof(E2ETestRegistrationProvider))
+            .TestsFromAssembliesFromAnchorTypes(typeof(E2ETestRegistrationProvider))
+            .Build();
+
+        var result = await SailfishRunner.Run(runSettings);
+
+        result.IsValid.ShouldBe(true);
+        result.ExecutionSummaries.Count().ShouldBe(8);
     }
 }

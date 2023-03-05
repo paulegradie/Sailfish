@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using Sailfish.Attributes;
+using System.Text.RegularExpressions;
 
 namespace Sailfish.Utils;
 
@@ -35,7 +36,9 @@ internal static class Cloner
 
         var customProperties = typeSrc
             .GetProperties(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)
-            .Where(x => !x.GetCustomAttributes<SailfishVariableAttribute>().Any());
+            .Where(x => !x.GetCustomAttributes<SailfishVariableAttribute>().Any())
+            .ToList();
+
         foreach (var property in customProperties)
         {
             if ((property.GetSetMethod()?.Attributes & MethodAttributes.Static) != 0 || !property.PropertyType.IsAssignableFrom(property.PropertyType))
@@ -46,7 +49,9 @@ internal static class Cloner
             properties.Add(property, property.GetValue(source));
         }
 
-        var customFields = typeSrc.GetFields(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance);
+        var customFields = typeSrc
+            .GetFields(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)
+            .Where(field => !field.Name.EndsWith("BackingField"));
         foreach (var field in customFields)
         {
             if (!field.FieldType.IsAssignableFrom(field.FieldType))

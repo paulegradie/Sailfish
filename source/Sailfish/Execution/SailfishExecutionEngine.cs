@@ -38,12 +38,13 @@ internal class SailfishExecutionEngine : ISailfishExecutionEngine
         [Range(1, int.MaxValue)] int testProviderIndex,
         [Range(1, int.MaxValue)] int totalTestProviderCount,
         TestInstanceContainerProvider testProvider,
+        MemoryCache memoryCache,
+        string providerPropertiesCacheKey,
         Action<TestInstanceContainer>? preCallback = null,
         Action<TestExecutionResult, TestInstanceContainer>? callback = null,
         Action<TestInstanceContainer?>? exceptionCallback = null,
         CancellationToken cancellationToken = default)
     {
-        var providerPropertiesCacheKey = testProvider.Test.FullName ?? throw new SailfishException($"Failed to read the FullName of {testProvider.Test.Name}");
 
         if (testProviderIndex > totalTestProviderCount)
         {
@@ -74,7 +75,6 @@ internal class SailfishExecutionEngine : ISailfishExecutionEngine
 
         var results = new List<TestExecutionResult>();
 
-        var memoryCache = new MemoryCache("GlobalStateMemoryCache");
         bool continueIterating;
         do
         {

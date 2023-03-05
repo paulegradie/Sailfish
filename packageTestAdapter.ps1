@@ -1,5 +1,5 @@
 # manually increment this until you figure out how to autoincrement :D
-$version="0.0.333"
+$version="0.0.340"
 $path = "../SailfishLocalPackages"
 If(!(test-path -PathType container $path))
 {

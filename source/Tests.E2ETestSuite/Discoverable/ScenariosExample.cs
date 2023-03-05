@@ -29,6 +29,6 @@ public class ScenariosExample
     public async Task TestMethod(CancellationToken cancellationToken) // token is injected when requested
     {
         Console.WriteLine(scenarioMap[Scenario]);
-        await Task.Delay(100, cancellationToken);
+        await Task.Delay(18, cancellationToken);
     }
 }

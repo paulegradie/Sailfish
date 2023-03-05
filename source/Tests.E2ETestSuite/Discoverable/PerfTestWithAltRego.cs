@@ -3,7 +3,7 @@ using Tests.E2ETestSuite.Utils;
 
 namespace Tests.E2ETestSuite.Discoverable;
 
-[Sailfish(NumIterations = 3, NumWarmupIterations = 2, Disabled = false)]
+[Sailfish(NumIterations = 1, NumWarmupIterations = 1, Disabled = false)]
 public class PerfTestWithAltRego
 {
     private readonly ExampleDependencyForAltRego dep;
@@ -13,17 +13,17 @@ public class PerfTestWithAltRego
         this.dep = dep;
     }
 
-    [SailfishVariable(1, 2, 3)] public int VariableA { get; set; }
+    [SailfishVariable(1, 2)] public int VariableA { get; set; }
 
     [SailfishMethod]
     public async Task TestA(CancellationToken cancellationToken)
     {
-        await Task.Delay(1_000, cancellationToken);
+        await Task.Delay(15, cancellationToken);
     }
 
     [SailfishMethod]
     public async Task TestB(CancellationToken cancellationToken)
     {
-        await Task.Delay(1_000, cancellationToken);
+        await Task.Delay(12, cancellationToken);
     }
 }
