@@ -65,22 +65,4 @@ internal static class Cloner
 
         return new PropertiesAndFields(properties, fields);
     }
-    
-
-    public static bool MatchString(string input, string match)
-    {
-        // Define the regular expression pattern to match "<MATCH_ME>_backing"
-        const string pattern = @"<(.*?)>*";
-
-        // Use Regex.Match to extract the word between < and > in the input string
-        var m = Regex.Match(input, pattern);
-
-        // If a match is found, check if it equals the input string
-        if (m.Success && m.Groups[1].Value == match)
-        {
-            return true;
-        }
-
-        return false;
-    }
 }
