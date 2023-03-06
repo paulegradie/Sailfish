@@ -33,7 +33,7 @@ internal class TestCaseIterator : ITestCaseIterator
             cancellationToken.ThrowIfCancellationRequested();
             await testInstanceContainer.Invocation.IterationSetup(cancellationToken).ConfigureAwait(false);
             cancellationToken.ThrowIfCancellationRequested();
-            await testInstanceContainer.Invocation.ExecutionMethod(cancellationToken).ConfigureAwait(false);
+            await testInstanceContainer.Invocation.ExecutionMethod(cancellationToken, timed: false).ConfigureAwait(false);
             cancellationToken.ThrowIfCancellationRequested();
             await testInstanceContainer.Invocation.IterationTearDown(cancellationToken).ConfigureAwait(false);
         }
