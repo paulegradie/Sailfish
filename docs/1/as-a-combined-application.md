@@ -38,6 +38,7 @@ public class RegistrationProvider : IProvideARegistrationCallback
     }
 }
 ```
+## Wow
 
 ### MyApp.PerformanceTests (a project)
 **PerformanceTests.csproj**
@@ -75,6 +76,3 @@ public class AMostBasicTest
 ```
 
 This design is ideal since you will be able to execute your tests from the console app, as well as the IDE.
-
----
-### Next: [The Sailfish Test lifecycle](../2/the-sailfish-test-lifecycle.md)
