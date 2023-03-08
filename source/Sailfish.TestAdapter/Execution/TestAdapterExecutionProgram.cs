@@ -96,7 +96,7 @@ internal class TestAdapterExecutionProgram : ITestAdapterExecutionProgram
                         PostTestResultCallback(testCaseGroup, frameworkHandle, cancellationToken),
                         ExceptionCallback(testCaseGroup, frameworkHandle),
                         cancellationToken: cancellationToken)
-                    .Result;
+                    .GetAwaiter().GetResult();
                 groupResults.AddRange(results);
             }
 
