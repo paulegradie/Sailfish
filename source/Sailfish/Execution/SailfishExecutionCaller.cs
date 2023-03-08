@@ -45,6 +45,9 @@ internal static class SailfishExecutionCaller
             ct = (CancellationToken)cancellationToken;
         }
 
-        return await builder.Build().Resolve<SailfishExecutor>().Run(ct).ConfigureAwait(false);
+        var container = builder.Build();
+
+        using var scope = container.BeginLifetimeScope("MainExecutionScope");
+        return await scope.Resolve<SailfishExecutor>().Run(ct).ConfigureAwait(false);
     }
 }

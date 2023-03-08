@@ -151,7 +151,7 @@ internal class SailfishExecutionEngine : ISailfishExecutionEngine
         }
         catch (Exception exception)
         {
-            return new TestExecutionResult(testInstanceContainer, exception);
+            return new TestExecutionResult(testInstanceContainer, exception.InnerException ?? exception);
         }
     }
 
