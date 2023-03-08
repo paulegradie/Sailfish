@@ -28,8 +28,8 @@ internal static class TestExecution
             .Wait(cancellationToken);
 
         var container = builder.Build();
-
-        container.Resolve<ITestAdapterExecutionProgram>().Run(testCases, frameworkHandle, cancellationToken);
+        using var scope = container.BeginLifetimeScope("TestAdapterScope");
+        scope.Resolve<ITestAdapterExecutionProgram>().Run(testCases, frameworkHandle, cancellationToken);
     }
 
     private static Type RetrieveReferenceTypeForTestProject(IReadOnlyCollection<TestCase> testCases)
