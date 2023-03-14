@@ -7,11 +7,11 @@ using Sailfish.Attributes;
 using Serilog;
 
 // Tests here are automatically discovered and executed
-namespace PerformanceTests.ExamplePerformanceTests.NonDiscoverable;
+namespace PerformanceTests.ExamplePerformanceTests.Discoverable;
 
 [WriteToMarkdown]
 [WriteToCsv]
-[Sailfish(1, 0, Disabled = true)]
+[Sailfish]
 public class ExamplePerformanceTest : TestBase
 {
     private readonly ILogger logger;
