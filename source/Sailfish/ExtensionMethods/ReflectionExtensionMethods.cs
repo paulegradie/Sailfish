@@ -44,7 +44,9 @@ public static class ReflectionExtensionMethods
 
     internal static MethodInfo? GetMethodWithAttribute<TAttribute>(this object instance) where TAttribute : Attribute
     {
-        return instance.GetType().GetMethodsWithAttribute<TAttribute>().SingleOrDefault();
+        var methods = instance.GetType().GetMethodsWithAttribute<TAttribute>().ToList();
+        if (methods.Count > 1) throw new SailfishException($"Multiple methods with attribute {typeof(TAttribute).Name} found");
+        return methods.SingleOrDefault();
     }
 
     internal static bool IsAsyncMethod(this MethodInfo method)

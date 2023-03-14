@@ -3,7 +3,6 @@ using System.Threading.Tasks;
 using Sailfish;
 using Shouldly;
 using Tests.E2ETestSuite;
-using Tests.E2ETestSuite.Discoverable;
 using Xunit;
 
 namespace Test.Execution;
@@ -11,7 +10,7 @@ namespace Test.Execution;
 public class FullE2EFixture
 {
     [Fact]
-    public async Task AFullTestRunOfTheDemoDoesNotContainErrors()
+    public async Task AFullTestRunOfTheDemoDoesNotError()
     {
         var runSettings = RunSettingsBuilder.CreateBuilder()
             .RegistrationProvidersFromAssembliesFromAnchorTypes(typeof(E2ETestRegistrationProvider))
@@ -21,6 +20,7 @@ public class FullE2EFixture
         var result = await SailfishRunner.Run(runSettings);
 
         result.IsValid.ShouldBe(true);
+        result.Exceptions.ShouldNotBeNull();
         result.Exceptions.Count().ShouldBe(0);
     }
 
@@ -37,6 +37,6 @@ public class FullE2EFixture
         var result = await SailfishRunner.Run(runSettings);
 
         result.IsValid.ShouldBe(true);
-        result.ExecutionSummaries.Count().ShouldBe(8);
+        result.ExecutionSummaries.Count().ShouldBe(9);
     }
 }
