@@ -25,7 +25,6 @@ internal class TTestSailfish : ITTestSailfish
     {
         var sigDig = settings.Round;
 
-
         var sample1 = preprocessor.Preprocess(before, settings.UseInnerQuartile);
         var sample2 = preprocessor.Preprocess(after, settings.UseInnerQuartile);
 
@@ -46,7 +45,7 @@ internal class TTestSailfish : ITTestSailfish
 
         var description = isSignificant ? changeDirection : SailfishChangeDirection.NoChange;
 
-        var additionalResults = new Dictionary<string, double>()
+        var additionalResults = new Dictionary<string, object>()
         {
             { AdditionalResults.DegreesOfFreedom, dof }
         };

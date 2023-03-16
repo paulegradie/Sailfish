@@ -14,7 +14,7 @@ public class TestResults
         string changeDescription,
         int sampleSizeBefore,
         int sampleSizeAfter,
-        Dictionary<string, double> additionalResults)
+        Dictionary<string, object> additionalResults)
     {
         MeanOfBefore = meanOfBefore;
         MeanOfAfter = meanOfAfter;
@@ -37,5 +37,5 @@ public class TestResults
     public string ChangeDescription { get; set; }
     public int SampleSizeBefore { get; }
     public int SampleSizeAfter { get; }
-    public Dictionary<string, double> AdditionalResults { get; }
+    public Dictionary<string, object> AdditionalResults { get; }
 }

@@ -20,8 +20,11 @@ public class TwoSampleWilcoxonSignedRankTestSailfish : ITwoSampleWilcoxonSignedR
     {
         var sigDig = settings.Round;
 
-        var sample1 = preprocessor.Preprocess(before, settings.UseInnerQuartile);
-        var sample2 = preprocessor.Preprocess(after, settings.UseInnerQuartile);
+        var downSampleSize = Math.Min(before.Length, after.Length);
+        var minSampleSize = Math.Min(downSampleSize, 3);
+
+        var sample1 = preprocessor.PreprocessWithDownSample(before, settings.UseInnerQuartile, true, downSampleSize, minSampleSize);
+        var sample2 = preprocessor.PreprocessWithDownSample(after, settings.UseInnerQuartile, true, downSampleSize, minSampleSize);
 
         var test = new TwoSampleWilcoxonSignedRankTest(
             sample1,
@@ -41,7 +44,7 @@ public class TwoSampleWilcoxonSignedRankTestSailfish : ITwoSampleWilcoxonSignedR
 
         var description = isSignificant ? changeDirection : SailfishChangeDirection.NoChange;
 
-        var additionalResults = new Dictionary<string, double>();
+        var additionalResults = new Dictionary<string, object>();
 
         return new TestResults(
             meanBefore,

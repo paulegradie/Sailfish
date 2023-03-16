@@ -5,32 +5,36 @@ using Accord.Statistics.Testing;
 using Sailfish.Analysis;
 using Sailfish.Contracts;
 
-namespace Sailfish.Statistics.Tests.MWWilcoxonTestSailfish;
+namespace Sailfish.Statistics.Tests.KolmogorovSmirnovTestSailfish;
 
-public class MannWhitneyWilcoxonTestSailfish : IMannWhitneyWilcoxonTestSailfish
+public class KolmogorovSmirnovTestSailfish : IKolmogorovSmirnovTestSailfish
 {
     private readonly ITestPreprocessor preprocessor;
 
-    public MannWhitneyWilcoxonTestSailfish(ITestPreprocessor preprocessor)
+    public KolmogorovSmirnovTestSailfish(ITestPreprocessor preprocessor)
     {
         this.preprocessor = preprocessor;
     }
 
     public class AdditionalResults
     {
-        public const string Statistic1 = "Statistic1";
         public const string Statistic2 = "Statistic2";
+        public const string EmpiricalDistribution1 = "EmpiricalDistribution1";
+        public const string EmpiricalDistribution2 = "EmpiricalDistribution2";
+        public const string Significant = "Significant";
+        public const string Size = "Size";
+        public const string Tail = "Tail";
     }
+
 
     public TestResults ExecuteTest(double[] before, double[] after, TestSettings settings)
     {
         var sigDig = settings.Round;
 
-        const int maxArraySize = 10;
-        var sample1 = preprocessor.PreprocessWithDownSample(before, settings.UseInnerQuartile, true, maxArraySize);
-        var sample2 = preprocessor.PreprocessWithDownSample(after, settings.UseInnerQuartile, true, maxArraySize);
+        var sample1 = preprocessor.Preprocess(before, settings.UseInnerQuartile);
+        var sample2 = preprocessor.Preprocess(after, settings.UseInnerQuartile);
 
-        var test = new MannWhitneyWilcoxonTest(sample1, sample2, TwoSampleHypothesis.ValuesAreDifferent);
+        var test = new TwoSampleKolmogorovSmirnovTest(sample1, sample2, TwoSampleKolmogorovSmirnovTestHypothesis.SamplesDistributionsAreUnequal);
 
         var meanBefore = Math.Round(before.Mean(), sigDig);
         var meanAfter = Math.Round(after.Mean(), sigDig);
@@ -48,8 +52,11 @@ public class MannWhitneyWilcoxonTestSailfish : IMannWhitneyWilcoxonTestSailfish
 
         var additionalResults = new Dictionary<string, object>
         {
-            { AdditionalResults.Statistic1, test.Statistic1 },
-            { AdditionalResults.Statistic2, test.Statistic2 }
+            { AdditionalResults.EmpiricalDistribution1, test.EmpiricalDistribution1 },
+            { AdditionalResults.EmpiricalDistribution2, test.EmpiricalDistribution2 },
+            { AdditionalResults.Significant, test.Significant },
+            { AdditionalResults.Size, test.Size },
+            { AdditionalResults.Tail, test.Tail }
         };
 
         return new TestResults(
