@@ -18,7 +18,6 @@ public class KolmogorovSmirnovTestSailfish : IKolmogorovSmirnovTestSailfish
 
     public class AdditionalResults
     {
-        public const string Statistic2 = "Statistic2";
         public const string EmpiricalDistribution1 = "EmpiricalDistribution1";
         public const string EmpiricalDistribution2 = "EmpiricalDistribution2";
         public const string Significant = "Significant";
