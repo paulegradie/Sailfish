@@ -4,5 +4,6 @@ public enum TestType
 {
     TwoSampleWilcoxonSignedRankTest,
     WilcoxonRankSumTest,
-    TTest
+    TTest,
+    KolmogorovSmirnovTest
 }

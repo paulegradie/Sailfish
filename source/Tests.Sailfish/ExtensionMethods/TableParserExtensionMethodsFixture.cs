@@ -6,6 +6,7 @@ using Sailfish.Analysis;
 using Sailfish.Contracts.Public;
 using Sailfish.ExtensionMethods;
 using Sailfish.Statistics.Tests;
+using Sailfish.Statistics.Tests.KolmogorovSmirnovTestSailfish;
 using Sailfish.Statistics.Tests.MWWilcoxonTestSailfish;
 using Sailfish.Statistics.Tests.TTestSailfish;
 using Sailfish.Statistics.Tests.TwoSampleWilcoxonSignedRankTestSailfish;
@@ -41,11 +42,12 @@ public class TableParserExtensionMethodsFixture
         var result = new StatisticalTestExecutor(
             new MannWhitneyWilcoxonTestSailfish(preprocessor),
             new TTestSailfish(preprocessor),
-            new TwoSampleWilcoxonSignedRankTestSailfish(preprocessor)
+            new TwoSampleWilcoxonSignedRankTestSailfish(preprocessor), 
+            new KolmogorovSmirnovTestSailfish(preprocessor)
         ).ExecuteStatisticalTest(
             new double[] { 2, 3, 4, 4, 5, 5, 6, 6, 6 },
             new double[] { 9, 8, 7, 6, 4, 4, 1, 2, 3, 2 },
-            new TestSettings(0.01, 0));
+            new TestSettings(0.01, 0, false, TestType.WilcoxonRankSumTest));
 
 
         var testCaseId = new TestCaseId("MyClass.MySampleTest(N: 2, X: 4)");

@@ -10,7 +10,7 @@ public class TestSettings
     /// <param name="round">The number of decimal places to round to. Typical is 4.</param>
     /// <param name="testType"></param>
     /// <param name="useInnerQuartile"></param>
-    public TestSettings(double alpha = 0.001, int round = 3, bool useInnerQuartile = false, TestType testType = TestType.WilcoxonRankSumTest)
+    public TestSettings(double alpha = 0.001, int round = 3, bool useInnerQuartile = false, TestType testType = TestType.KolmogorovSmirnovTest)
     {
         Alpha = alpha;
         Round = round;
