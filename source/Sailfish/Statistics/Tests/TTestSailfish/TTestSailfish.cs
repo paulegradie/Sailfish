@@ -33,8 +33,8 @@ internal class TTestSailfish : ITTestSailfish
         var meanBefore = Math.Round(test.EstimatedValue1, sigDig);
         var meanAfter = Math.Round(test.EstimatedValue2, sigDig);
 
-        var medianBefore = Math.Round(before.Median(), sigDig);
-        var medianAfter = Math.Round(after.Median(), sigDig);
+        var medianBefore = Math.Round(sample1.Median(), sigDig);
+        var medianAfter = Math.Round(sample2.Median(), sigDig);
 
         var testStatistic = Math.Round(test.Statistic, sigDig);
         var dof = Math.Round(test.DegreesOfFreedom, sigDig);
@@ -60,6 +60,8 @@ internal class TTestSailfish : ITTestSailfish
             description,
             before.Length,
             after.Length,
+            before,
+            after,
             additionalResults);
     }
 }

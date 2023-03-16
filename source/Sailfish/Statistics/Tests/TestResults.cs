@@ -14,6 +14,8 @@ public class TestResults
         string changeDescription,
         int sampleSizeBefore,
         int sampleSizeAfter,
+        double[] rawDataBefore,
+        double[] rawDataAfter,
         Dictionary<string, object> additionalResults)
     {
         MeanOfBefore = meanOfBefore;
@@ -25,6 +27,8 @@ public class TestResults
         ChangeDescription = changeDescription;
         SampleSizeBefore = sampleSizeBefore;
         SampleSizeAfter = sampleSizeAfter;
+        RawDataBefore = rawDataBefore;
+        RawDataAfter = rawDataAfter;
         AdditionalResults = additionalResults;
     }
 
@@ -35,7 +39,9 @@ public class TestResults
     public double TestStatistic { get; set; }
     public double PValue { get; set; }
     public string ChangeDescription { get; set; }
-    public int SampleSizeBefore { get; }
-    public int SampleSizeAfter { get; }
+    public int SampleSizeBefore { get; set; }
+    public int SampleSizeAfter { get; set; }
+    public double[] RawDataBefore { get; set; }
+    public double[] RawDataAfter { get; set; }
     public Dictionary<string, object> AdditionalResults { get; }
 }
