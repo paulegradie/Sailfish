@@ -35,11 +35,11 @@ public class KolmogorovSmirnovTestSailfish : IKolmogorovSmirnovTestSailfish
 
         var test = new TwoSampleKolmogorovSmirnovTest(sample1, sample2, TwoSampleKolmogorovSmirnovTestHypothesis.SamplesDistributionsAreUnequal);
 
-        var meanBefore = Math.Round(before.Mean(), sigDig);
-        var meanAfter = Math.Round(after.Mean(), sigDig);
+        var meanBefore = Math.Round(sample1.Mean(), sigDig);
+        var meanAfter = Math.Round(sample2.Mean(), sigDig);
 
-        var medianBefore = Math.Round(before.Median(), sigDig);
-        var medianAfter = Math.Round(after.Median(), sigDig);
+        var medianBefore = Math.Round(sample1.Median(), sigDig);
+        var medianAfter = Math.Round(sample2.Median(), sigDig);
 
         var testStatistic = Math.Round(test.Statistic, sigDig);
         var pVal = Math.Round(test.PValue, TestConstants.PValueSigDig);
@@ -68,6 +68,8 @@ public class KolmogorovSmirnovTestSailfish : IKolmogorovSmirnovTestSailfish
             description,
             before.Length,
             after.Length,
+            before,
+            after,
             additionalResults);
     }
 }

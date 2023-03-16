@@ -31,11 +31,11 @@ public class TwoSampleWilcoxonSignedRankTestSailfish : ITwoSampleWilcoxonSignedR
             sample2,
             TwoSampleHypothesis.ValuesAreDifferent);
 
-        var meanBefore = Math.Round(before.Mean(), sigDig);
-        var meanAfter = Math.Round(after.Mean(), sigDig);
+        var meanBefore = Math.Round(sample1.Mean(), sigDig);
+        var meanAfter = Math.Round(sample2.Mean(), sigDig);
 
-        var medianBefore = Math.Round(before.Median(), sigDig);
-        var medianAfter = Math.Round(after.Median(), sigDig);
+        var medianBefore = Math.Round(sample1.Median(), sigDig);
+        var medianAfter = Math.Round(sample2.Median(), sigDig);
 
         var testStatistic = test.Statistic;
         var isSignificant = test.PValue <= settings.Alpha;
@@ -56,6 +56,8 @@ public class TwoSampleWilcoxonSignedRankTestSailfish : ITwoSampleWilcoxonSignedR
             description,
             before.Length,
             after.Length,
+            before,
+            after,
             additionalResults);
     }
 }
