@@ -9,6 +9,7 @@ namespace Sailfish.Contracts.Public;
 public interface IFileIo
 {
     Task WriteToFile(string content, string filePath, CancellationToken cancellationToken);
+    Task<string> WriteToString<TMap, TData>(IEnumerable<TData> csvRows, CancellationToken cancellationToken) where TMap : ClassMap where TData : class;
     Task<List<TData>> ReadCsvFile<TMap, TData>(string filePath, CancellationToken cancellationToken) where TMap : ClassMap where TData : class;
     Task<List<TData>> ReadCsvString<TMap, TData>(string csvContent, CancellationToken cancellationToken) where TMap : ClassMap where TData : class;
     List<TData> ReadCsvFileAsSync<TMap, TData>(string filePath) where TMap : ClassMap where TData : class;

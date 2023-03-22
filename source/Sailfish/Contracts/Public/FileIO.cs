@@ -19,6 +19,15 @@ public class FileIo : IFileIo
         File.SetAttributes(filePath, FileAttributes.ReadOnly);
     }
 
+    public async Task<string> WriteToString<TMap, TData>(IEnumerable<TData> csvRows, CancellationToken cancellationToken) where TMap : ClassMap where TData : class
+    {
+        await using var writer = new StringWriter();
+        await using var csv = new CsvWriter(writer, CultureInfo.InvariantCulture);
+        csv.Context.RegisterClassMap<TMap>();
+        await csv.WriteRecordsAsync(csvRows, cancellationToken);
+        return writer.ToString();
+    }
+
     public async Task<List<TData>> ReadCsvFile<TMap, TData>(string filePath, CancellationToken cancellationToken) where TMap : ClassMap where TData : class
     {
         using var reader = new StreamReader(filePath);
