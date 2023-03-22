@@ -18,4 +18,12 @@ public class TestResultsCsvWriter : ITestResultsCsvWriter
         csv.Context.RegisterClassMap<TestResultCsvMap>();
         await csv.WriteRecordsAsync(csvRows, cancellationToken).ConfigureAwait(false);
     }
+
+    public async Task<string> WriteToString(IEnumerable<TestCaseResults> csvRows, CancellationToken cancellationToken)
+    {
+        await using var writer = new StringWriter();
+        await using var csv = new CsvWriter(writer, CultureInfo.InvariantCulture);
+        await csv.WriteRecordsAsync(csvRows, cancellationToken);
+        return writer.ToString();
+    }
 }

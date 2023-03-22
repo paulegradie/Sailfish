@@ -19,7 +19,7 @@ public class FileIo : IFileIo
         File.SetAttributes(filePath, FileAttributes.ReadOnly);
     }
 
-    public  async Task<List<TData>> ReadCsvFile<TMap, TData>(string filePath, CancellationToken cancellationToken) where TMap : ClassMap where TData : class
+    public async Task<List<TData>> ReadCsvFile<TMap, TData>(string filePath, CancellationToken cancellationToken) where TMap : ClassMap where TData : class
     {
         using var reader = new StreamReader(filePath);
         using var csv = new CsvReader(reader, CultureInfo.InvariantCulture);
