@@ -1,8 +1,11 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections;
+using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text.Json;
+using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
 using CsvHelper;
@@ -12,12 +15,16 @@ namespace Sailfish.Contracts.Public;
 
 public class FileIo : IFileIo
 {
-    public Task WriteDataAsJsonToFile<TData>(TData data, string outputPath, CancellationToken cancellationToken) where TData : class
+    private readonly JsonSerializerOptions DefaultSerializerOptions = new();
+
+    public async Task WriteDataAsJsonToFile<TData>(TData data, string outputPath, CancellationToken cancellationToken, JsonSerializerOptions? options = null)
+        where TData : class, IEnumerable
     {
-        // 
+        var serialized = WriteAsJsonToString(data, options);
+        await WriteStringToFile(serialized, outputPath, cancellationToken);
     }
 
-    public async Task WriteDataAsCsvToFile<TMap, TData>(IEnumerable<TData> data, string outputPath, CancellationToken cancellationToken) where TMap : ClassMap where TData : class
+    public async Task WriteDataAsCsvToFile<TMap, TData>(TData data, string outputPath, CancellationToken cancellationToken) where TMap : ClassMap where TData : class, IEnumerable
     {
         await using var writer = new StreamWriter(outputPath);
         await using var csv = new CsvWriter(writer, CultureInfo.InvariantCulture);
@@ -33,7 +40,7 @@ public class FileIo : IFileIo
         File.SetAttributes(filePath, FileAttributes.ReadOnly);
     }
 
-    public async Task<string> WriteAsCsvToString<TMap, TData>(IEnumerable<TData> csvRows, CancellationToken cancellationToken) where TMap : ClassMap where TData : class
+    public async Task<string> WriteAsCsvToString<TMap, TData>(TData csvRows, CancellationToken cancellationToken) where TMap : ClassMap where TData : class, IEnumerable
     {
         await using var writer = new StringWriter();
         await using var csv = new CsvWriter(writer, CultureInfo.InvariantCulture);
@@ -42,19 +49,20 @@ public class FileIo : IFileIo
         return writer.ToString();
     }
 
-    public string WriteAsJsonToString<TData>(IEnumerable<TData> csvRows) where TData : class
+    public string WriteAsJsonToString<TData>(TData data, JsonSerializerOptions? options = null) where TData : class, IEnumerable
     {
-        var serialized = JsonSerializer.Serialize(csvRows, new JsonSerializerOptions());
-        return serialized;
+        var opts = options ?? DefaultSerializerOptions;
+        opts.Converters.Add(new JsonNanConverter());
+        return JsonSerializer.Serialize(data, options ?? DefaultSerializerOptions);
     }
 
-    public TData? ReadFromJson<TData>(string content, JsonSerializerOptions options) where TData : class
+    public TData? ReadFromJson<TData>(string content, JsonSerializerOptions? options = null) where TData : class
     {
-        var data = JsonSerializer.Deserialize<TData>(content, options);
+        var data = JsonSerializer.Deserialize<TData>(content, options ?? DefaultSerializerOptions);
         return data;
     }
 
-    public async Task<string> WriteToString<TMap, TData>(IEnumerable<TData> csvRows, CancellationToken cancellationToken) where TMap : ClassMap where TData : class
+    public async Task<string> WriteToString<TMap, TData>(TData csvRows, CancellationToken cancellationToken) where TMap : ClassMap where TData : class, IEnumerable
     {
         await using var writer = new StringWriter();
         await using var csv = new CsvWriter(writer, CultureInfo.InvariantCulture);
@@ -111,5 +119,36 @@ public class FileIo : IFileIo
 
         var records = csv.GetRecords<TData>().ToList();
         return records;
+    }
+}
+
+internal class JsonNanConverter : JsonConverter<double>
+{
+    public override double Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+    {
+        if (reader.TryGetDouble(out var value))
+        {
+            return value;
+        }
+
+        var stringValue = reader.GetString();
+        if (stringValue != null && stringValue.Equals("NaN", StringComparison.InvariantCultureIgnoreCase))
+        {
+            return double.NaN;
+        }
+
+        throw new JsonException($"Unable to parse value (using custom parser): {stringValue}");
+    }
+
+    public override void Write(Utf8JsonWriter writer, double value, JsonSerializerOptions options)
+    {
+        if (double.IsNaN(value))
+        {
+            writer.WriteStringValue("NaN");
+        }
+        else
+        {
+            writer.WriteNumberValue(value);
+        }
     }
 }

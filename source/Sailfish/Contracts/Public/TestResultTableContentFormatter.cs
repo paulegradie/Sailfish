@@ -22,7 +22,7 @@ public class TestResultTableContentFormatter : ITestResultTableContentFormatter
         return new TestResultFormats(markdownFormat, csvFormat, testIds);
     }
 
-    private static List<TestCaseResults> FormatAsCsv(List<TestCaseResults> testCaseResults)
+    private static IEnumerable<TestCaseResults> FormatAsCsv(IEnumerable<TestCaseResults> testCaseResults)
     {
         return testCaseResults;
     }
@@ -46,7 +46,6 @@ public class TestResultTableContentFormatter : ITestResultTableContentFormatter
             "", "ms", "ms", "ms", "ms", "", "", ""
         };
 
-        var markdownTable = testCaseResults.ToStringTable(headerSuffixes, selectors);
-        return markdownTable;
+        return testCaseResults.ToStringTable(headerSuffixes, selectors);
     }
 }

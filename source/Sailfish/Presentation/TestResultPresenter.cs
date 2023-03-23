@@ -4,6 +4,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using MediatR;
 using Sailfish.Contracts.Private;
+using Sailfish.Contracts.Public;
 using Sailfish.Contracts.Public.Commands;
 using Sailfish.Execution;
 using Sailfish.Presentation.Csv;
@@ -13,14 +14,17 @@ namespace Sailfish.Presentation;
 internal class TestResultPresenter : ITestResultPresenter
 {
     private readonly IMediator mediator;
-    private readonly IPerformanceCsvTrackingWriter performanceCsvTrackingWriter;
+    private readonly IFileIo fileIo;
+    private readonly IPerformanceResultPresenter performanceResultPresenter;
 
     public TestResultPresenter(
         IMediator mediator,
-        IPerformanceCsvTrackingWriter performanceCsvTrackingWriter)
+        IFileIo fileIo,
+        IPerformanceResultPresenter performanceResultPresenter)
     {
         this.mediator = mediator;
-        this.performanceCsvTrackingWriter = performanceCsvTrackingWriter;
+        this.fileIo = fileIo;
+        this.performanceResultPresenter = performanceResultPresenter;
     }
 
     public async Task PresentResults(
@@ -62,10 +66,14 @@ internal class TestResultPresenter : ITestResultPresenter
 
         if (runSettings.CreateTrackingFiles)
         {
-            var trackingContent = await performanceCsvTrackingWriter.ConvertToCsvStringContent(resultContainers);
+            var trackingDataAsCsv = await performanceResultPresenter.ConvertToCsvStringContent(resultContainers, cancellationToken);
+            var trackingDataAsJson = await performanceResultPresenter.ConvertToJson(resultContainers, cancellationToken);
+            var trackingDataFormats = new TrackingDataFormats(trackingDataAsJson, trackingDataAsCsv, resultContainers);
+
             await mediator.Publish(
                     new WriteCurrentTrackingFileCommand(
-                        trackingContent,
+                        trackingDataFormats,
+                        trackingDataAsCsv,
                         trackingDir,
                         timeStamp,
                         runSettings.Tags,

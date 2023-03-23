@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
 using Accord.Collections;
 using MediatR;
@@ -9,14 +10,14 @@ namespace Sailfish.Contracts.Public.Commands;
 public class WriteTestResultsAsCsvCommand : INotification
 {
     public readonly DateTime TimeStamp;
-    public List<TestCaseResults> CsvFormat { get; }
+    public IEnumerable<TestCaseResults> CsvFormat { get; }
     public string OutputDirectory { get; }
     public TestSettings TestSettings { get; }
     public OrderedDictionary<string, string> Tags { get; }
     public OrderedDictionary<string, string> Args { get; }
 
     public WriteTestResultsAsCsvCommand(
-        List<TestCaseResults> csvFormat,
+        IEnumerable<TestCaseResults> csvFormat,
         string outputDirectory,
         TestSettings testSettings,
         DateTime timeStamp,
