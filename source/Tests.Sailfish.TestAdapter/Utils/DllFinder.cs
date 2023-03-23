@@ -15,6 +15,6 @@ public static class DllFinder
 
         var allDlls = DirectoryRecursion.FindAllFilesRecursively(projFile, "*.dll", Substitute.For<IMessageLogger>(),
             path => !path.Contains($"{Path.DirectorySeparatorChar}obj{Path.DirectorySeparatorChar}"));
-        return allDlls;
+        return allDlls.DistinctBy(x => x.EndsWith("Tests.Sailfish.TestAdapter.dll")); // will discover release and debug dlls
     }
 }

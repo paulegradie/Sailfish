@@ -35,7 +35,7 @@ internal static class TestDiscovery
                 previousSearchDir = currentSearchDir;
             }
 
-            if (project is null) throw new Exception();
+            if (project is null) throw new Exception("Failed to discover the test project");
 
             Type[] perfTestTypes;
             try
