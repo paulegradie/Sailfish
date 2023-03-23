@@ -1,11 +1,9 @@
-﻿using System;
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text.Json;
-using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
 using CsvHelper;
@@ -119,36 +117,5 @@ public class FileIo : IFileIo
 
         var records = csv.GetRecords<TData>().ToList();
         return records;
-    }
-}
-
-internal class JsonNanConverter : JsonConverter<double>
-{
-    public override double Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
-    {
-        if (reader.TryGetDouble(out var value))
-        {
-            return value;
-        }
-
-        var stringValue = reader.GetString();
-        if (stringValue != null && stringValue.Equals("NaN", StringComparison.InvariantCultureIgnoreCase))
-        {
-            return double.NaN;
-        }
-
-        throw new JsonException($"Unable to parse value (using custom parser): {stringValue}");
-    }
-
-    public override void Write(Utf8JsonWriter writer, double value, JsonSerializerOptions options)
-    {
-        if (double.IsNaN(value))
-        {
-            writer.WriteStringValue("NaN");
-        }
-        else
-        {
-            writer.WriteNumberValue(value);
-        }
     }
 }
