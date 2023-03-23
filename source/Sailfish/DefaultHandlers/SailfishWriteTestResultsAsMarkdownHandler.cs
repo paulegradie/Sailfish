@@ -23,7 +23,7 @@ internal class SailfishWriteTestResultsAsMarkdownHandler : INotificationHandler<
         var outputPath = Path.Join(notification.OutputDirectory, filename);
         if (!string.IsNullOrEmpty(notification.MarkdownTable))
         {
-            await fileIo.WriteToFile(notification.MarkdownTable, outputPath, cancellationToken).ConfigureAwait(false);
+            await fileIo.WriteStringToFile(notification.MarkdownTable, outputPath, cancellationToken).ConfigureAwait(false);
         }
     }
 }

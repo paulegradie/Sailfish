@@ -26,10 +26,10 @@ public class MannWhitneyWilcoxonTestSailfish : IMannWhitneyWilcoxonTestSailfish
     {
         var sigDig = settings.Round;
 
-        const int maxArraySize = 10;
+        const int maxArraySize = 12;
         var sample1 = preprocessor.PreprocessWithDownSample(before, settings.UseInnerQuartile, true, maxArraySize);
         var sample2 = preprocessor.PreprocessWithDownSample(after, settings.UseInnerQuartile, true, maxArraySize);
-        
+
         var test = new MannWhitneyWilcoxonTest(sample1, sample2, TwoSampleHypothesis.ValuesAreDifferent);
 
         var meanBefore = Math.Round(sample1.Mean(), sigDig);

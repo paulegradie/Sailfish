@@ -24,7 +24,7 @@ internal class MarkdownWriter : IMarkdownWriter
         var markdownStringTable = markdownTableConverter.ConvertToMarkdownTableString(results, result => result.Settings.AsMarkdown);
         if (!string.IsNullOrEmpty(markdownStringTable))
         {
-            await fileIo.WriteToFile(markdownStringTable, filePath, cancellationToken).ConfigureAwait(false);
+            await fileIo.WriteStringToFile(markdownStringTable, filePath, cancellationToken).ConfigureAwait(false);
         }
     }
 }

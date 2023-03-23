@@ -1,4 +1,5 @@
-﻿using System.Threading;
+﻿using System;
+using System.Threading;
 using System.Threading.Tasks;
 using MediatR;
 using Sailfish.Contracts.Public.Commands;
@@ -16,6 +17,8 @@ public class CustomWriteToCloudHandler : INotificationHandler<WriteCurrentTracki
 
     public async Task Handle(WriteCurrentTrackingFileCommand request, CancellationToken cancellationToken)
     {
-        await cloudWriter.WriteToMyCloudStorageContainer(request.DefaultFileName, request.TrackingFileContent);
+        await cloudWriter.WriteToMyCloudStorageContainer(request.DefaultFileName, request.TrackingDataFormats.Csv);
+        Console.WriteLine("-------------- NOW AS JSON ---------------");
+        await cloudWriter.WriteToMyCloudStorageContainer(request.DefaultFileName, request.TrackingDataFormats.Json);
     }
 }

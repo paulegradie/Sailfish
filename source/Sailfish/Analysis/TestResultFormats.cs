@@ -5,7 +5,7 @@ namespace Sailfish.Analysis;
 
 public class TestResultFormats
 {
-    public TestResultFormats(string markdownFormat, List<TestCaseResults> csvFormat, TestIds testIds)
+    public TestResultFormats(string markdownFormat, IEnumerable<TestCaseResults> csvFormat, TestIds testIds)
     {
         MarkdownFormat = markdownFormat;
         CsvFormat = csvFormat;
@@ -13,6 +13,6 @@ public class TestResultFormats
     }
 
     public string MarkdownFormat { get; set; }
-    public List<TestCaseResults> CsvFormat { get; set; }
+    public IEnumerable<TestCaseResults> CsvFormat { get; set; }
     public TestIds TestIds { get; set; }
 }

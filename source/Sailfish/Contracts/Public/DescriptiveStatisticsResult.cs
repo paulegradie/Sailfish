@@ -8,17 +8,17 @@ namespace Sailfish.Contracts.Public;
 
 public class DescriptiveStatisticsResult
 {
-    public string DisplayName { get; set; } = null!;
-    public double Mean { get; set; }
-    public double Median { get; set; }
-    public double StdDev { get; set; }
-    public double Variance { get; set; }
+    public string DisplayName { get; init; } = null!;
+    public double Mean { get; init; }
+    public double Median { get; init; }
+    public double StdDev { get; init; }
+    public double Variance { get; init; }
 
-    public double GlobalDuration { get; set; }
-    public DateTimeOffset GlobalStart { get; set; }
-    public DateTimeOffset GlobalEnd { get; set; }
+    public double GlobalDuration { get; init; }
+    public DateTimeOffset GlobalStart { get; init; }
+    public DateTimeOffset GlobalEnd { get; init; }
 
-    public double[] RawExecutionResults { get; set; } = null!; // milliseconds
+    public double[] RawExecutionResults { get; init; } = null!; // milliseconds
 
     public static DescriptiveStatisticsResult ConvertFromPerfTimer(TestCaseId testCaseId, PerformanceTimer performanceTimer)
     {
@@ -35,10 +35,10 @@ public class DescriptiveStatisticsResult
             GlobalStart = performanceTimer.GlobalStart,
             GlobalEnd = performanceTimer.GlobalStop,
             GlobalDuration = performanceTimer.GlobalDuration.TotalSeconds,
-            Mean = Math.Round(mean, 5),
-            StdDev = Math.Round(stdDev, 5),
-            Variance = Math.Round(variance, 5),
-            Median = Math.Round(median, 5),
+            Mean = mean,
+            StdDev = stdDev,
+            Variance = variance,
+            Median = median,
             RawExecutionResults = executionIterations
         };
     }
