@@ -7,7 +7,7 @@ using Sailfish.Contracts.Private;
 using Sailfish.Contracts.Public;
 using Sailfish.Contracts.Public.Commands;
 using Sailfish.Execution;
-using Sailfish.Presentation.Csv;
+using Sailfish.Presentation.CsvAndJson;
 
 namespace Sailfish.Presentation;
 

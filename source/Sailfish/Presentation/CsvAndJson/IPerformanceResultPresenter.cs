@@ -4,7 +4,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Sailfish.Execution;
 
-namespace Sailfish.Presentation.Csv;
+namespace Sailfish.Presentation.CsvAndJson;
 
 internal interface IPerformanceResultPresenter
 {

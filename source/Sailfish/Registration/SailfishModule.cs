@@ -5,7 +5,7 @@ using Sailfish.Contracts.Public;
 using Sailfish.Execution;
 using Sailfish.Presentation;
 using Sailfish.Presentation.Console;
-using Sailfish.Presentation.Csv;
+using Sailfish.Presentation.CsvAndJson;
 using Sailfish.Presentation.Markdown;
 using Sailfish.Statistics;
 using Sailfish.Statistics.Tests;

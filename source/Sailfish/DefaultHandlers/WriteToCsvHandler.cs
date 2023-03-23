@@ -4,7 +4,7 @@ using System.Threading.Tasks;
 using MediatR;
 using Sailfish.Contracts.Private;
 using Sailfish.Presentation;
-using Sailfish.Presentation.Csv;
+using Sailfish.Presentation.CsvAndJson;
 
 namespace Sailfish.DefaultHandlers;
 

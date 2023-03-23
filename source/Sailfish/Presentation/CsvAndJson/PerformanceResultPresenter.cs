@@ -7,7 +7,7 @@ using Sailfish.Contracts.Public;
 using Sailfish.Contracts.Public.CsvMaps;
 using Sailfish.Execution;
 
-namespace Sailfish.Presentation.Csv;
+namespace Sailfish.Presentation.CsvAndJson;
 
 internal class PerformanceResultPresenter : IPerformanceResultPresenter
 {
