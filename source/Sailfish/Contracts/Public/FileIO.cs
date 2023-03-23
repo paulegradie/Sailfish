@@ -1,11 +1,9 @@
-﻿using System;
-using System.Collections;
+﻿using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Text.Json;
-using System.Text.Json.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
 using CsvHelper;
@@ -15,13 +13,31 @@ namespace Sailfish.Contracts.Public;
 
 public class FileIo : IFileIo
 {
-    private readonly JsonSerializerOptions DefaultSerializerOptions = new();
+    public FileIo()
+    {
+        var defaultOptions = new JsonSerializerOptions();
+        defaultOptions.Converters.Add(new JsonNanConverter());
+        DefaultSerializerOptions = defaultOptions;
+    }
+
+    public JsonSerializerOptions DefaultSerializerOptions { get; }
 
     public async Task WriteDataAsJsonToFile<TData>(TData data, string outputPath, CancellationToken cancellationToken, JsonSerializerOptions? options = null)
         where TData : class, IEnumerable
     {
         var serialized = WriteAsJsonToString(data, options);
         await WriteStringToFile(serialized, outputPath, cancellationToken);
+    }
+
+    public string WriteAsJsonToString<TData>(TData data, JsonSerializerOptions? options = null) where TData : class, IEnumerable
+    {
+        return JsonSerializer.Serialize(data, options ?? DefaultSerializerOptions);
+    }
+
+    public TData? ReadFromJson<TData>(string content, JsonSerializerOptions? options = null) where TData : class
+    {
+        var data = JsonSerializer.Deserialize<TData>(content, options ?? DefaultSerializerOptions);
+        return data;
     }
 
     public async Task WriteDataAsCsvToFile<TMap, TData>(TData data, string outputPath, CancellationToken cancellationToken) where TMap : ClassMap where TData : class, IEnumerable
@@ -47,19 +63,6 @@ public class FileIo : IFileIo
         csv.Context.RegisterClassMap<TMap>();
         await csv.WriteRecordsAsync(csvRows, cancellationToken);
         return writer.ToString();
-    }
-
-    public string WriteAsJsonToString<TData>(TData data, JsonSerializerOptions? options = null) where TData : class, IEnumerable
-    {
-        var opts = options ?? DefaultSerializerOptions;
-        opts.Converters.Add(new JsonNanConverter());
-        return JsonSerializer.Serialize(data, options ?? DefaultSerializerOptions);
-    }
-
-    public TData? ReadFromJson<TData>(string content, JsonSerializerOptions? options = null) where TData : class
-    {
-        var data = JsonSerializer.Deserialize<TData>(content, options ?? DefaultSerializerOptions);
-        return data;
     }
 
     public async Task<string> WriteToString<TMap, TData>(TData csvRows, CancellationToken cancellationToken) where TMap : ClassMap where TData : class, IEnumerable
@@ -119,36 +122,5 @@ public class FileIo : IFileIo
 
         var records = csv.GetRecords<TData>().ToList();
         return records;
-    }
-}
-
-internal class JsonNanConverter : JsonConverter<double>
-{
-    public override double Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
-    {
-        if (reader.TryGetDouble(out var value))
-        {
-            return value;
-        }
-
-        var stringValue = reader.GetString();
-        if (stringValue != null && stringValue.Equals("NaN", StringComparison.InvariantCultureIgnoreCase))
-        {
-            return double.NaN;
-        }
-
-        throw new JsonException($"Unable to parse value (using custom parser): {stringValue}");
-    }
-
-    public override void Write(Utf8JsonWriter writer, double value, JsonSerializerOptions options)
-    {
-        if (double.IsNaN(value))
-        {
-            writer.WriteStringValue("NaN");
-        }
-        else
-        {
-            writer.WriteNumberValue(value);
-        }
     }
 }
