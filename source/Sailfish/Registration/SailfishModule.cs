@@ -50,7 +50,6 @@ public class SailfishModule : Module
         builder.RegisterType<TrackingFileFinder>().As<ITrackingFileFinder>();
         builder.RegisterType<PerformanceCsvTrackingWriter>().As<IPerformanceCsvTrackingWriter>();
         builder.RegisterType<IterationVariableRetriever>().As<IIterationVariableRetriever>();
-        builder.RegisterType<TestResultsCsvWriter>().As<ITestResultsCsvWriter>();
         builder.RegisterType<TestResultTableContentFormatter>().As<ITestResultTableContentFormatter>();
         builder.RegisterType<TestResultAnalyzer>().As<ITestResultAnalyzer>();
         builder.RegisterType<SailfishExecutionEngine>().As<ISailfishExecutionEngine>();

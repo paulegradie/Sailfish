@@ -2,6 +2,7 @@
 using System.Globalization;
 using System.IO;
 using System.Linq;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 using CsvHelper;
@@ -11,12 +12,46 @@ namespace Sailfish.Contracts.Public;
 
 public class FileIo : IFileIo
 {
-    public async Task WriteToFile(string content, string filePath, CancellationToken cancellationToken)
+    public Task WriteDataAsJsonToFile<TData>(TData data, string outputPath, CancellationToken cancellationToken) where TData : class
+    {
+        // 
+    }
+
+    public async Task WriteDataAsCsvToFile<TMap, TData>(IEnumerable<TData> data, string outputPath, CancellationToken cancellationToken) where TMap : ClassMap where TData : class
+    {
+        await using var writer = new StreamWriter(outputPath);
+        await using var csv = new CsvWriter(writer, CultureInfo.InvariantCulture);
+        csv.Context.RegisterClassMap<TMap>();
+        await csv.WriteRecordsAsync(data, cancellationToken).ConfigureAwait(false);
+    }
+
+    public async Task WriteStringToFile(string content, string filePath, CancellationToken cancellationToken)
     {
         if (Directory.Exists(filePath)) throw new IOException("Cannot write to a directory");
 
         await File.WriteAllTextAsync(filePath, content, cancellationToken).ConfigureAwait(false);
         File.SetAttributes(filePath, FileAttributes.ReadOnly);
+    }
+
+    public async Task<string> WriteAsCsvToString<TMap, TData>(IEnumerable<TData> csvRows, CancellationToken cancellationToken) where TMap : ClassMap where TData : class
+    {
+        await using var writer = new StringWriter();
+        await using var csv = new CsvWriter(writer, CultureInfo.InvariantCulture);
+        csv.Context.RegisterClassMap<TMap>();
+        await csv.WriteRecordsAsync(csvRows, cancellationToken);
+        return writer.ToString();
+    }
+
+    public string WriteAsJsonToString<TData>(IEnumerable<TData> csvRows) where TData : class
+    {
+        var serialized = JsonSerializer.Serialize(csvRows, new JsonSerializerOptions());
+        return serialized;
+    }
+
+    public TData? ReadFromJson<TData>(string content, JsonSerializerOptions options) where TData : class
+    {
+        var data = JsonSerializer.Deserialize<TData>(content, options);
+        return data;
     }
 
     public async Task<string> WriteToString<TMap, TData>(IEnumerable<TData> csvRows, CancellationToken cancellationToken) where TMap : ClassMap where TData : class
