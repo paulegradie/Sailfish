@@ -1,12 +1,12 @@
-﻿using Accord.Collections;
+﻿using System.Collections.Specialized;
 
 namespace Sailfish.Utils;
 
 internal static class ColonParser
 {
-    public static OrderedDictionary<string, string> Parse(string[]? tags)
+    public static OrderedDictionary Parse(string[]? tags)
     {
-        var keyValues = new OrderedDictionary<string, string>();
+        var keyValues = new OrderedDictionary();
         if (tags is null) return keyValues;
 
         foreach (var tag in tags)

@@ -1,7 +1,7 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
-using Accord.Collections;
+using System.Collections.Specialized;
 using Sailfish.Execution;
 
 namespace Sailfish.Presentation.Console;
@@ -15,14 +15,14 @@ internal class ConsoleWriter : IConsoleWriter
         this.markdownTableConverter = markdownTableConverter;
     }
 
-    public string Present(IEnumerable<IExecutionSummary> results, OrderedDictionary<string, string> tags)
+    public string Present(IEnumerable<IExecutionSummary> results, OrderedDictionary tags)
     {
         var markdownStringTable = markdownTableConverter.ConvertToMarkdownTableString(results);
 
-        if (tags.Any()) System.Console.WriteLine($"{Environment.NewLine}Tags:");
-        foreach (var (key, value) in tags)
+        if ((tags.Count > 0)) System.Console.WriteLine($"{Environment.NewLine}Tags:");
+        foreach (DictionaryEntry entry in tags)
         {
-            System.Console.WriteLine($"{key}: {value}");
+            System.Console.WriteLine($"{entry.Key}: {entry.Value}");
         }
 
         System.Console.WriteLine(markdownStringTable);

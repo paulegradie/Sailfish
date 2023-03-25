@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Linq;
-using Accord.Statistics;
+using MathNet.Numerics.Statistics;
 using Sailfish.Analysis;
 using Sailfish.Execution;
 

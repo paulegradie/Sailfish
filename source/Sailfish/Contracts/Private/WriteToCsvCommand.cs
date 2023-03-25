@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using Accord.Collections;
+using System.Collections.Specialized;
 using MediatR;
 using Sailfish.Execution;
 
@@ -12,8 +12,8 @@ internal class WriteToCsvCommand : INotification
         List<IExecutionSummary> content,
         string outputDirectory,
         DateTime timeStamp,
-        OrderedDictionary<string, string> tags,
-        OrderedDictionary<string, string> args,
+        OrderedDictionary tags,
+        OrderedDictionary args,
         IRunSettings settings)
     {
         Content = content;
@@ -27,7 +27,7 @@ internal class WriteToCsvCommand : INotification
     public List<IExecutionSummary> Content { get; set; }
     public string OutputDirectory { get; set; }
     public DateTime TimeStamp { get; }
-    public OrderedDictionary<string, string> Tags { get; }
-    public OrderedDictionary<string, string> Args { get; }
+    public OrderedDictionary Tags { get; }
+    public OrderedDictionary Args { get; }
     public IRunSettings Settings { get; }
 }

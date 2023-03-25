@@ -1,5 +1,5 @@
 ﻿using System;
-using Accord.Collections;
+using System.Collections.Specialized;
 using MediatR;
 using Sailfish.Analysis;
 
@@ -12,8 +12,8 @@ public class WriteTestResultsAsMarkdownCommand : INotification
         string outputDirectory,
         TestSettings testSettings,
         DateTime timeStamp,
-        OrderedDictionary<string, string> tags,
-        OrderedDictionary<string, string> args)
+        OrderedDictionary tags,
+        OrderedDictionary args)
     {
         MarkdownTable = markdownTable;
         OutputDirectory = outputDirectory;
@@ -26,7 +26,7 @@ public class WriteTestResultsAsMarkdownCommand : INotification
     public string MarkdownTable { get; set; }
     public string OutputDirectory { get; set; }
     public DateTime TimeStamp { get; }
-    public OrderedDictionary<string, string> Tags { get; }
-    public OrderedDictionary<string, string> Args { get; }
+    public OrderedDictionary Tags { get; }
+    public OrderedDictionary Args { get; }
     public TestSettings TestSettings { get; set; }
 }

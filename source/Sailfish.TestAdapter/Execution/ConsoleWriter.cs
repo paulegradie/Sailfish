@@ -1,12 +1,12 @@
 using System.Collections.Generic;
 using System.Linq;
-using Accord.Collections;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.Logging;
 using Sailfish.Execution;
 using Sailfish.Presentation;
 using Sailfish.Presentation.Console;
 using Serilog;
 using Serilog.Core;
+using System.Collections.Specialized;
 
 namespace Sailfish.TestAdapter.Execution;
 
@@ -27,7 +27,7 @@ internal class ConsoleWriter : IConsoleWriter
         this.messageLogger = messageLogger;
     }
 
-    public string Present(IEnumerable<IExecutionSummary> results, OrderedDictionary<string, string>? tags = null)
+    public string Present(IEnumerable<IExecutionSummary> results, OrderedDictionary? tags = null)
     {
         var summaryResults = results.ToList();
         foreach (var result in summaryResults)

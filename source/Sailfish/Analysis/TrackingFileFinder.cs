@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.Linq;
-using Accord.Collections;
 using Sailfish.Presentation;
 
 namespace Sailfish.Analysis;
@@ -14,23 +14,13 @@ internal class TrackingFileFinder : ITrackingFileFinder
         this.trackingFileDirectoryReader = trackingFileDirectoryReader;
     }
 
-    public BeforeAndAfterTrackingFiles GetBeforeAndAfterTrackingFiles(string directory, string beforeTarget, OrderedDictionary<string, string> tags)
+    public BeforeAndAfterTrackingFiles GetBeforeAndAfterTrackingFiles(string directory, string beforeTarget, OrderedDictionary tags)
     {
         var files = trackingFileDirectoryReader.FindTrackingFilesInDirectoryOrderedByLastModified(directory);
-        //
-        // string? beforeTargetOverride = null;
-        // if (!string.IsNullOrEmpty(beforeTarget) && !string.IsNullOrWhiteSpace(beforeTarget))
-        // {
-        //     beforeTargetOverride = files.Select(Path.GetFileName).SingleOrDefault(x => x?.ToLowerInvariant() == beforeTarget);
-        //     if (beforeTargetOverride is null)
-        //     {
-        //         throw new SailfishException("The file name provided for the before target was not found");
-        //     }
-        // }
 
-        if (tags.Any())
+        if (tags.Count > 0)
         {
-            var joinedTags = DefaultFileSettings.JoinTags(tags); // empty string
+            var joinedTags = DefaultFileSettings.JoinTags(tags);
             files = files.Where(x => x.Replace(DefaultFileSettings.TrackingSuffix, string.Empty).EndsWith(joinedTags)).ToList();
         }
         else

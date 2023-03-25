@@ -1,5 +1,5 @@
 ﻿using System;
-using Accord.Collections;
+using System.Collections.Specialized;
 using MediatR;
 using Sailfish.Analysis;
 
@@ -11,8 +11,8 @@ public class NotifyOnTestResultCommand : INotification
         TestResultFormats testResultFormats,
         TestSettings testSettings,
         DateTime timeStamp,
-        OrderedDictionary<string, string> tags,
-        OrderedDictionary<string, string> args)
+        OrderedDictionary tags,
+        OrderedDictionary args)
     {
         TestResultFormats = testResultFormats;
         TestSettings = testSettings;
@@ -24,6 +24,6 @@ public class NotifyOnTestResultCommand : INotification
     public TestResultFormats TestResultFormats { get; }
     public TestSettings TestSettings { get; }
     public DateTime TimeStamp { get; }
-    public OrderedDictionary<string, string> Tags { get; }
-    public OrderedDictionary<string, string> Args { get; }
+    public OrderedDictionary Tags { get; }
+    public OrderedDictionary Args { get; }
 }

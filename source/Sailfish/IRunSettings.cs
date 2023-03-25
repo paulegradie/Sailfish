@@ -1,6 +1,6 @@
 using System;
 using System.Collections.Generic;
-using Accord.Collections;
+using System.Collections.Specialized;
 using Sailfish.Analysis;
 
 namespace Sailfish;
@@ -15,8 +15,8 @@ public interface IRunSettings
     TestSettings Settings { get; }
     IEnumerable<Type> TestLocationAnchors { get; }
     IEnumerable<Type> RegistrationProviderAnchors { get; }
-    OrderedDictionary<string, string> Tags { get; set; }
-    OrderedDictionary<string, string> Args { get; }
+    OrderedDictionary Tags { get; set; }
+    OrderedDictionary Args { get; }
     IEnumerable<string> ProvidedBeforeTrackingFiles { get; }
     DateTime? TimeStamp { get; }
     bool Debug { get; set; }
