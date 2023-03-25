@@ -1,5 +1,5 @@
 ﻿using System;
-using Accord.Collections;
+using System.Collections.Specialized;
 using MediatR;
 using Sailfish.Presentation;
 
@@ -12,8 +12,8 @@ public class WriteCurrentTrackingFileCommand : INotification
         string trackingFileTrackingFileContent,
         string localOutputDirectory,
         DateTime timeStamp,
-        OrderedDictionary<string, string> tags,
-        OrderedDictionary<string, string> args)
+        OrderedDictionary tags,
+        OrderedDictionary args)
     {
         TrackingDataFormats = trackingDataFormats;
         TrackingFileContent = trackingFileTrackingFileContent;
@@ -26,7 +26,7 @@ public class WriteCurrentTrackingFileCommand : INotification
     public ITrackingDataFormats TrackingDataFormats { get; }
     public string TrackingFileContent { get; }
     public string LocalOutputDirectory { get; }
-    public OrderedDictionary<string, string> Tags { get; }
-    public OrderedDictionary<string, string> Args { get; }
+    public OrderedDictionary Tags { get; }
+    public OrderedDictionary Args { get; }
     public string DefaultFileName { get; }
 }

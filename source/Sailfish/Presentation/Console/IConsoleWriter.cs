@@ -1,10 +1,10 @@
 ﻿using System.Collections.Generic;
-using Accord.Collections;
+using System.Collections.Specialized;
 using Sailfish.Execution;
 
 namespace Sailfish.Presentation.Console;
 
 internal interface IConsoleWriter
 {
-    string Present(IEnumerable<IExecutionSummary> result, OrderedDictionary<string, string> tags);
-}   
+    string Present(IEnumerable<IExecutionSummary> result, OrderedDictionary tags);
+}

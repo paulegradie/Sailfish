@@ -1,10 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Accord.Collections;
 using Autofac;
 using McMaster.Extensions.CommandLineUtils;
 using Sailfish.Execution;
@@ -17,7 +17,7 @@ namespace Sailfish.Program;
 
 public abstract class SailfishProgramBase
 {
-    public static SailfishRunResult RunResult { get; set; } = null!;
+    protected static SailfishRunResult RunResult { get; set; } = null!;
 
     protected static async Task SailfishMain<TProgram>(string[] userRequestedTestNames) where TProgram : class
     {
@@ -71,13 +71,13 @@ public abstract class SailfishProgramBase
             Directories.EnsureDirectoryExists(TrackingDirectory);
         }
 
-        var parsedTags = new OrderedDictionary<string, string>();
+        var parsedTags = new OrderedDictionary();
         if (Tags is not null)
         {
             parsedTags = ColonParser.Parse(Tags);
         }
 
-        var parsedArgs = new OrderedDictionary<string, string>();
+        var parsedArgs = new OrderedDictionary();
         if (Args is not null)
         {
             parsedArgs = ColonParser.Parse(Args);
