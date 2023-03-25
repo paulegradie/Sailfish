@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using Accord.Statistics;
 using Accord.Statistics.Testing;
+using MathNet.Numerics.Statistics;
 using Sailfish.Analysis;
 using Sailfish.Contracts;
 

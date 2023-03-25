@@ -1,5 +1,5 @@
 ﻿using System.Collections.Generic;
-using Accord.Collections;
+using System.Collections.Specialized;
 using MediatR;
 
 namespace Sailfish.Contracts.Public.Commands;
@@ -8,9 +8,9 @@ public class BeforeAndAfterFileLocationCommand : IRequest<BeforeAndAfterFileLoca
 {
     public BeforeAndAfterFileLocationCommand(
         string trackingDirectory,
-        OrderedDictionary<string, string> tags,
+        OrderedDictionary tags,
         IEnumerable<string> providedBeforeTrackingFiles,
-        OrderedDictionary<string, string> args)
+        OrderedDictionary args)
     {
         TrackingDirectory = trackingDirectory;
         Tags = tags;
@@ -19,7 +19,7 @@ public class BeforeAndAfterFileLocationCommand : IRequest<BeforeAndAfterFileLoca
     }
 
     public string TrackingDirectory { get; set; }
-    public OrderedDictionary<string, string> Tags { get; }
+    public OrderedDictionary Tags { get; }
     public IEnumerable<string> ProvidedBeforeTrackingFiles { get; }
-    public OrderedDictionary<string, string> Args { get; }
+    public OrderedDictionary Args { get; }
 }

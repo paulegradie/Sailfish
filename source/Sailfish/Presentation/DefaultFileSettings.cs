@@ -1,9 +1,10 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
+using System.Collections.Specialized;
 using System.IO;
 using System.Linq;
 using System.Text;
-using Accord.Collections;
 using Sailfish.Analysis;
 using Sailfish.Exceptions;
 
@@ -20,7 +21,7 @@ public static class DefaultFileSettings
     public const string MapDelimiter = "__";
     public const string DefaultTrackingDirectory = "sailfish_tracking_output";
     public const string DefaultOutputDirectory = "sailfish_default_output";
-    
+
     public static readonly Func<DateTime, string> DefaultPerformanceFileNameStem =
         (DateTime timestamp) =>
             $"PerformanceResults_{timestamp.ToString(SortableFormat)}"; // sortable file name with date
@@ -34,24 +35,24 @@ public static class DefaultFileSettings
     public static readonly Func<DateTime, string> DefaultTrackingFileName = (timeStamp) =>
         $"PerformanceTracking_{timeStamp.ToLocalTime().ToString(SortableFormat)}{TrackingSuffix}";
 
-    public static string JoinTags(OrderedDictionary<string, string> tags)
+    public static string JoinTags(OrderedDictionary tags)
     {
-        if (!tags.Any()) return string.Empty;
+        if (!(tags.Count > 0)) return string.Empty;
 
         var result = new StringBuilder();
         result.Append(TagsPrefix);
-        foreach (var tagPair in tags)
+        foreach (DictionaryEntry entry in tags)
         {
-            var joinedTag = string.Join(KeyValueDelimiter, tagPair.Key, tagPair.Value);
+            var joinedTag = string.Join(KeyValueDelimiter, entry.Key, entry.Value);
             result.Append(joinedTag + MapDelimiter);
         }
 
         return result.ToString().TrimEnd(MapDelimiter.ToCharArray());
     }
 
-    public static string AppendTagsToFilename(string fileName, OrderedDictionary<string, string> tags)
+    public static string AppendTagsToFilename(string fileName, OrderedDictionary tags)
     {
-        if (!tags.Any()) return fileName;
+        if (!(tags.Count > 0)) return fileName;
         var joinedTags = JoinTags(tags);
 
         if (fileName.EndsWith(TrackingSuffix))

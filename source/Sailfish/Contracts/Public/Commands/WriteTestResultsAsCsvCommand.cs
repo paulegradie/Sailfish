@@ -1,7 +1,6 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
-using Accord.Collections;
+using System.Collections.Specialized;
 using MediatR;
 using Sailfish.Analysis;
 
@@ -13,16 +12,16 @@ public class WriteTestResultsAsCsvCommand : INotification
     public IEnumerable<TestCaseResults> CsvFormat { get; }
     public string OutputDirectory { get; }
     public TestSettings TestSettings { get; }
-    public OrderedDictionary<string, string> Tags { get; }
-    public OrderedDictionary<string, string> Args { get; }
+    public OrderedDictionary Tags { get; }
+    public OrderedDictionary Args { get; }
 
     public WriteTestResultsAsCsvCommand(
         IEnumerable<TestCaseResults> csvFormat,
         string outputDirectory,
         TestSettings testSettings,
         DateTime timeStamp,
-        OrderedDictionary<string, string> tags,
-        OrderedDictionary<string, string> args)
+        OrderedDictionary tags,
+        OrderedDictionary args)
     {
         TimeStamp = timeStamp;
         CsvFormat = csvFormat;

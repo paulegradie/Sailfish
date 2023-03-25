@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using Accord.Collections;
+using System.Collections.Specialized;
 using Sailfish.Analysis;
 using Sailfish.Presentation;
 
@@ -16,8 +16,8 @@ public class RunSettingsBuilder
     private readonly List<Type> testAssembliesAnchorTypes = new();
     private readonly List<Type> registrationProviderAnchorTypes = new();
     private readonly List<string> providedBeforeTrackingFiles = new();
-    private OrderedDictionary<string, string> tags = new();
-    private OrderedDictionary<string, string> args = new();
+    private OrderedDictionary tags = new();
+    private OrderedDictionary args = new();
     private string? localOutputDir;
     private TestSettings? tSettings;
     private DateTime? timeStamp;
@@ -94,7 +94,7 @@ public class RunSettingsBuilder
         return this;
     }
 
-    public RunSettingsBuilder WithTags(OrderedDictionary<string, string> tags)
+    public RunSettingsBuilder WithTags(OrderedDictionary tags)
     {
         this.tags = tags;
         return this;
@@ -107,7 +107,7 @@ public class RunSettingsBuilder
         return this;
     }
 
-    public RunSettingsBuilder WithArgs(OrderedDictionary<string, string> args)
+    public RunSettingsBuilder WithArgs(OrderedDictionary args)
     {
         this.args = args;
         return this;
