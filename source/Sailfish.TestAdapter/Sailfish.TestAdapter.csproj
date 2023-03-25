@@ -5,9 +5,8 @@
         <Version>0.0.111</Version>
         <Authors>Paul E. Gradie</Authors>
         <Description>
-            Sailfish is a simple, unambitious, low resolution performace test framework for writing clean, manageable performance tests
-            against your component or API. The general intention is to provide a simple tool that teams can use to write straight forward
-            tests that assess the speed of your code, without weighing you down with all the extra ceremony.
+            Sailfish is a user friendly performace test suite for writing clean, manageable performance tests
+            against your component or API - without with all the extra ceremony.
         </Description>
         <RootNamespace>Sailfish.TestAdapter</RootNamespace>
         <TargetFramework>net6.0</TargetFramework>
@@ -31,11 +30,11 @@
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="Serilog.Sinks.Console" Version="4.1.0" />
-        <PackageReference Include="Serilog.Sinks.File" Version="5.0.0" />
-        <PackageReference Include="Serilog.Sinks.Seq" Version="5.2.2" />
-        <PackageReference Include="System.ComponentModel.Composition" Version="7.0.0" />
-        <PackageReference Include="Microsoft.TestPlatform.ObjectModel" Version="16.11.0" />
+        <PackageReference Include="Serilog.Sinks.Console" Version="4.1.0"/>
+        <PackageReference Include="Serilog.Sinks.File" Version="5.0.0"/>
+        <PackageReference Include="Serilog.Sinks.Seq" Version="5.2.2"/>
+        <PackageReference Include="System.ComponentModel.Composition" Version="7.0.0"/>
+        <PackageReference Include="Microsoft.TestPlatform.ObjectModel" Version="16.11.0" PrivateAssets="All"/>
     </ItemGroup>
     <ItemGroup>
         <ProjectReference Include="..\Sailfish\Sailfish.csproj"/>
