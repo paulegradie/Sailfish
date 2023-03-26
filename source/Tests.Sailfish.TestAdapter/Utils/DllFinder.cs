@@ -9,12 +9,17 @@ namespace Tests.Sailfish.TestAdapter.Utils;
 
 public static class DllFinder
 {
-    public static IEnumerable<string> FindAllDllsRecursively()
+    public static string FindThisProjectsDllRecursively()
     {
         var projFile = DirectoryRecursion.RecurseUpwardsUntilFileIsFound(".csproj", Directory.GetFiles(".").First(), 5, Substitute.For<IMessageLogger>());
-
-        var allDlls = DirectoryRecursion.FindAllFilesRecursively(projFile, "*.dll", Substitute.For<IMessageLogger>(),
+        var dllName = projFile.Name.Replace("csproj", "dll");
+        var allDlls = DirectoryRecursion.FindAllFilesRecursively(projFile, dllName, Substitute.For<IMessageLogger>(),
             path => !path.Contains($"{Path.DirectorySeparatorChar}obj{Path.DirectorySeparatorChar}"));
-        return allDlls.DistinctBy(x => x.EndsWith("Tests.Sailfish.TestAdapter.dll")); // will discover release and debug dlls
+
+#if DEBUG
+        return allDlls.Single(x => x.Contains(Path.Join("bin", "Debug")));
+#else
+        return allDlls.Single(x => x.Contains(Path.Join("bin", "Release")));
+#endif
     }
 }

@@ -1,4 +1,4 @@
-namespace Sailfish.AdapterUtils;
+namespace Sailfish.Registration;
 
 /// <summary>
 /// Like xunit, this provides a way to specify registrations that you can resolve in your sailfish tests

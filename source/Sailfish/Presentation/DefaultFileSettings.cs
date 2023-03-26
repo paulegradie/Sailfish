@@ -1,12 +1,13 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Collections.Specialized;
+
 using System.IO;
 using System.Linq;
 using System.Text;
 using Sailfish.Analysis;
 using Sailfish.Exceptions;
+using Sailfish.Extensions.Types;
 
 namespace Sailfish.Presentation;
 
@@ -41,7 +42,7 @@ public static class DefaultFileSettings
 
         var result = new StringBuilder();
         result.Append(TagsPrefix);
-        foreach (DictionaryEntry entry in tags)
+        foreach (var entry in tags)
         {
             var joinedTag = string.Join(KeyValueDelimiter, entry.Key, entry.Value);
             result.Append(joinedTag + MapDelimiter);

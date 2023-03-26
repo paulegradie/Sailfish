@@ -4,10 +4,9 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Autofac;
-using Sailfish.AdapterUtils;
 using Sailfish.Attributes;
 using Sailfish.Exceptions;
-using Sailfish.ExtensionMethods;
+using Sailfish.Extensions.Methods;
 
 namespace Sailfish.Registration;
 

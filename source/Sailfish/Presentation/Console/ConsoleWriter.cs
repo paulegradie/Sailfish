@@ -1,8 +1,9 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Collections.Specialized;
+
 using Sailfish.Execution;
+using Sailfish.Extensions.Types;
 
 namespace Sailfish.Presentation.Console;
 
@@ -20,7 +21,7 @@ internal class ConsoleWriter : IConsoleWriter
         var markdownStringTable = markdownTableConverter.ConvertToMarkdownTableString(results);
 
         if ((tags.Count > 0)) System.Console.WriteLine($"{Environment.NewLine}Tags:");
-        foreach (DictionaryEntry entry in tags)
+        foreach (var entry in tags)
         {
             System.Console.WriteLine($"{entry.Key}: {entry.Value}");
         }

@@ -21,7 +21,7 @@ internal class ParameterCombinator : IParameterCombinator
             throw new SailfishException(
                 $"The number of property {propNames.Length} names did not match the number of property value sets {ints.Length}");
         }
-        
+
         var combos = GetAllCombinations(ints).ToArray();
 
         var propertySets = new List<PropertySet>();
@@ -53,7 +53,7 @@ internal class ParameterCombinator : IParameterCombinator
             var combination = new object[arrays.Length];
             for (var i = 0; i < indices.Length; i++)
             {
-                combination[i] = arrays[i].GetValue(indices[i]);
+                combination[i] = arrays[i].GetValue(indices[i])!;
             }
 
             yield return combination;
@@ -71,5 +71,4 @@ internal class ParameterCombinator : IParameterCombinator
             }
         }
     }
-
 }

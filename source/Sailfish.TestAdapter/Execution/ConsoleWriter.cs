@@ -2,11 +2,12 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.Logging;
 using Sailfish.Execution;
+using Sailfish.Extensions.Types;
 using Sailfish.Presentation;
 using Sailfish.Presentation.Console;
 using Serilog;
 using Serilog.Core;
-using System.Collections.Specialized;
+
 
 namespace Sailfish.TestAdapter.Execution;
 
@@ -38,15 +39,21 @@ internal class ConsoleWriter : IConsoleWriter
                 messageLogger?.SendMessage(TestMessageLevel.Error, compiledResult.Exception.Message);
                 consoleLogger.Error("{Error}", compiledResult.Exception.Message);
 
-                messageLogger?.SendMessage(TestMessageLevel.Error, compiledResult.Exception.StackTrace);
-                consoleLogger.Error("{StackTrace}", compiledResult.Exception.Message);
+                if (compiledResult.Exception.StackTrace != null)
+                {
+                    messageLogger?.SendMessage(TestMessageLevel.Error, compiledResult.Exception.StackTrace);
+                    consoleLogger.Error("{StackTrace}", compiledResult.Exception.Message);
 
-                if (compiledResult.Exception.InnerException is null) continue;
-                messageLogger?.SendMessage(TestMessageLevel.Error, compiledResult.Exception.InnerException.Message);
-                consoleLogger.Error("{InnerError}", compiledResult.Exception.InnerException.Message);
+                    if (compiledResult.Exception.InnerException is null) continue;
+                    messageLogger?.SendMessage(TestMessageLevel.Error, compiledResult.Exception.InnerException.Message);
+                    consoleLogger.Error("{InnerError}", compiledResult.Exception.InnerException.Message);
 
-                messageLogger?.SendMessage(TestMessageLevel.Error, compiledResult.Exception.InnerException.StackTrace);
-                consoleLogger.Error("{InnerStackTrace}", compiledResult.Exception.InnerException.StackTrace);
+                    if (compiledResult.Exception.InnerException.StackTrace != null)
+                    {
+                        messageLogger?.SendMessage(TestMessageLevel.Error, compiledResult.Exception.InnerException.StackTrace);
+                        consoleLogger.Error("{InnerStackTrace}", compiledResult.Exception.InnerException.StackTrace);
+                    }
+                }
             }
         }
 

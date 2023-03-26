@@ -6,7 +6,7 @@ using Tests.E2E.ExceptionHandling;
 using Tests.E2E.ExceptionHandling.Tests;
 using Xunit;
 
-namespace Test.Execution;
+namespace Test.E2EScenarios;
 
 public class FullE2EExceptionCases
 {

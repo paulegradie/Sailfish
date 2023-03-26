@@ -2,7 +2,7 @@ using System;
 using System.Linq;
 using Autofac;
 using Sailfish.Exceptions;
-using Sailfish.ExtensionMethods;
+using Sailfish.Extensions.Methods;
 
 namespace Sailfish.Execution;
 

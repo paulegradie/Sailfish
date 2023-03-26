@@ -1,7 +1,8 @@
 using System;
 using System.Collections.Generic;
-using System.Collections.Specialized;
+
 using Sailfish.Analysis;
+using Sailfish.Extensions.Types;
 
 namespace Sailfish;
 

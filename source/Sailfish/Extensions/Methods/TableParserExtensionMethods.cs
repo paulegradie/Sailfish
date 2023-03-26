@@ -6,7 +6,7 @@ using System.Linq.Expressions;
 using System.Reflection;
 using System.Text;
 
-namespace Sailfish.ExtensionMethods;
+namespace Sailfish.Extensions.Methods;
 
 internal static class TableParserExtensionMethods
 {

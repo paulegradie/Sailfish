@@ -1,4 +1,4 @@
-using Sailfish.AdapterUtils;
+using Sailfish.Registration;
 
 namespace PerformanceTests.DemoUtils;
 

@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace Sailfish.ExtensionMethods;
+namespace Sailfish.Extensions.Methods;
 
 internal static class ParameterCombinatorExtensionMethods
 {
