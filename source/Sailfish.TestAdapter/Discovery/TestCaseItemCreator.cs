@@ -91,8 +91,9 @@ internal static class TestCaseItemCreator
 
         if (testType.FullName is null)
         {
-            logger.SendMessage(TestMessageLevel.Informational, $"ERROR!: testType fullname not defined - fullname: {testType.FullName}");
-            throw new Exception("Impossible!");
+            var msg = $"ERROR!: testType fullname not defined - fullname: {testType.FullName}";
+            logger.SendMessage(TestMessageLevel.Informational, msg);
+            throw new Exception(msg);
         }
 
         testCase.SetPropertyValue(SailfishTestTypeFullNameDefinition.SailfishTestTypeFullNameDefinitionProperty, testType.FullName);
@@ -103,7 +104,7 @@ internal static class TestCaseItemCreator
         return testCase;
     }
 
-    private static int GetMethodNameLine(MemberInfo testType, IEnumerable<string> fileLines, MemberInfo method, IMessageLogger logger)
+    private static int GetMethodNameLine(MemberInfo testType, string[] fileLines, MemberInfo method, IMessageLogger logger)
     {
         var currentlyInTheRightClass = false;
         var index = 0;
@@ -126,6 +127,13 @@ internal static class TestCaseItemCreator
             }
 
             index++;
+        }
+
+        if (methodLine != 0) return methodLine;
+        logger.SendMessage(TestMessageLevel.Error, $"Failed to discover the test method for {method.Name} in type {testType.Name} amongst these file lines:\n");
+        foreach (var line in fileLines)
+        {
+            logger.SendMessage(TestMessageLevel.Error, line);
         }
 
         return methodLine;

@@ -11,7 +11,6 @@ namespace Sailfish.TestAdapter;
 
 [FileExtension(".dll")]
 [DefaultExecutorUri(TestExecutor.ExecutorUriString)]
-// ReSharper disable once UnusedType.Global
 public class TestDiscoverer : ITestDiscoverer
 {
     private readonly List<string> exclusions = new()
@@ -43,6 +42,8 @@ public class TestDiscoverer : ITestDiscoverer
         }
         catch (Exception ex)
         {
+            logger.SendMessage(TestMessageLevel.Error, "Exception encountered in the Sailfish TestDiscoverer. :( ");
+            logger.SendMessage(TestMessageLevel.Error, ex.Message);
             throw new SailfishException(ex);
         }
     }

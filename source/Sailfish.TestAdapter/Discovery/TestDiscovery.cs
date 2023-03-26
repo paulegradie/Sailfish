@@ -24,8 +24,8 @@ internal static class TestDiscovery
         foreach (var sourceDllPath in sourceDllPaths.Distinct())
         {
             var currentSearchDir = new FileInfo(sourceDllPath);
-            if (previousSearchDir is null || (currentSearchDir.Directory is not null && (previousSearchDir.Directory is not null) &&
-                                              (currentSearchDir.Directory?.FullName != previousSearchDir.Directory?.FullName)))
+            if (previousSearchDir is null || (currentSearchDir.Directory is not null && previousSearchDir.Directory is not null &&
+                                              currentSearchDir.Directory?.FullName != previousSearchDir.Directory?.FullName))
             {
                 project = DirectoryRecursion.RecurseUpwardsUntilFileIsFound(
                     ".csproj",
@@ -35,7 +35,12 @@ internal static class TestDiscovery
                 previousSearchDir = currentSearchDir;
             }
 
-            if (project is null) throw new Exception("Failed to discover the test project");
+            if (project is null)
+            {
+                const string msg = "Failed to discover the test project";
+                logger.SendMessage(TestMessageLevel.Error, msg);
+                throw new Exception(msg);
+            }
 
             Type[] perfTestTypes;
             try
@@ -44,6 +49,7 @@ internal static class TestDiscovery
             }
             catch
             {
+                logger.SendMessage(TestMessageLevel.Warning, $"Skipping {sourceDllPath} ");
                 continue;
             }
 

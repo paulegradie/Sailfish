@@ -116,7 +116,7 @@ internal class TestAdapterExecutionProgram : ITestAdapterExecutionProgram
 
     private static void LogTestResults(TestExecutionResult result, IMessageLogger? logger)
     {
-        foreach (var perf in result.PerformanceTimerResults.MethodIterationPerformances)
+        foreach (var perf in result.PerformanceTimerResults?.MethodIterationPerformances!)
         {
             logger?.SendMessage(TestMessageLevel.Informational, $"Time: {perf.Duration.ToString()} ms");
         }
@@ -162,13 +162,28 @@ internal class TestAdapterExecutionProgram : ITestAdapterExecutionProgram
     {
         return (result, container) =>
         {
+            if (result.PerformanceTimerResults is null)
+            {
+                var msg = $"PerformanceTimerResults was null for {container.Type.Name}";
+                logger?.SendMessage(TestMessageLevel.Error, msg);
+                throw new SailfishException(msg);
+            }
+
+            if (result.TestInstanceContainer is null)
+            {
+                var msg = $"TestInstanceContainer was null for {container.Type.Name}";
+                logger?.SendMessage(TestMessageLevel.Error, msg);
+                throw new SailfishException(msg);
+            }
+
+
             var currentTestCase = GetTestCaseFromTestCaseGroupMatchingCurrentContainer(container, testCaseGroups);
             if (result.IsSuccess)
             {
                 HandleSuccessfulTestCase(
                     result,
                     currentTestCase,
-                    new RawExecutionResult(result.TestInstanceContainer.Type, new List<TestExecutionResult>() { result }),
+                    new RawExecutionResult(result.TestInstanceContainer.Type, new List<TestExecutionResult> { result }),
                     logger,
                     cancellationToken);
             }
@@ -177,7 +192,8 @@ internal class TestAdapterExecutionProgram : ITestAdapterExecutionProgram
                 HandleFailureTestCase(
                     result,
                     currentTestCase,
-                    new RawExecutionResult(result.TestInstanceContainer.Type, result.Exception),
+                    new RawExecutionResult(result.TestInstanceContainer.Type,
+                        result.Exception ?? new Exception($"The exception details were null for {result.TestInstanceContainer.Type.Name}")),
                     logger,
                     cancellationToken);
             }
@@ -201,8 +217,8 @@ internal class TestAdapterExecutionProgram : ITestAdapterExecutionProgram
         testResult.Outcome = result.StatusCode == 0 ? TestOutcome.Passed : TestOutcome.Failed;
         testResult.DisplayName = currentTestCase.DisplayName;
 
-        testResult.StartTime = result.PerformanceTimerResults.GlobalStart;
-        testResult.EndTime = result.PerformanceTimerResults.GlobalStop;
+        testResult.StartTime = result.PerformanceTimerResults?.GlobalStart ?? new DateTimeOffset();
+        testResult.EndTime = result.PerformanceTimerResults?.GlobalStop ?? new DateTimeOffset();
         testResult.Duration = TimeSpan.FromMilliseconds(medianTestRuntime);
 
         testResult.ErrorMessage = result.Exception?.Message;
@@ -229,13 +245,13 @@ internal class TestAdapterExecutionProgram : ITestAdapterExecutionProgram
         testResult.Outcome = result.StatusCode == 0 ? TestOutcome.Passed : TestOutcome.Failed;
         testResult.DisplayName = currentTestCase.DisplayName;
 
-        testResult.StartTime = result.PerformanceTimerResults.GlobalStart;
-        testResult.EndTime = result.PerformanceTimerResults.GlobalStop;
+        testResult.StartTime = result.PerformanceTimerResults?.GlobalStart ?? new DateTimeOffset();
+        testResult.EndTime = result.PerformanceTimerResults?.GlobalStop ?? new DateTimeOffset();
         testResult.Duration = TimeSpan.Zero;
 
         testResult.ErrorMessage = result.Exception?.Message;
 
-        logger?.SendMessage(TestMessageLevel.Error, rawResult.Exception.Message);
+        logger?.SendMessage(TestMessageLevel.Error, rawResult.Exception?.Message ?? $"Exception was null for {rawResult.TestType.Name}");
         logger?.RecordResult(testResult);
         logger?.RecordEnd(currentTestCase, testResult.Outcome);
     }
