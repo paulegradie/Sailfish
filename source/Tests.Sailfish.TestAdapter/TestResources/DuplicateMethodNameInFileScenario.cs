@@ -3,7 +3,7 @@ using Sailfish.Attributes;
 
 namespace Tests.Sailfish.TestAdapter.TestResources;
 
-[Sailfish(NumIterations = 6)]
+[Sailfish(Disabled = true)]
 public class ExampleComponentTest
 {
     public const string A = "Wow";
@@ -17,7 +17,7 @@ public class ExampleComponentTest
     {
         for (var i = 0; i < N; i++)
         {
-            ExampleOctopusComponent.InterpolateStrings(A, B);
+            ExampleComponent.InterpolateStrings(A, B);
         }
     }
 
@@ -26,7 +26,7 @@ public class ExampleComponentTest
     {
         for (var i = 0; i < N; i++)
         {
-            ExampleOctopusComponent.ConcatenateStrings(A, B);
+            ExampleComponent.ConcatenateStrings(A, B);
         }
     }
 
@@ -35,12 +35,12 @@ public class ExampleComponentTest
     {
         for (var i = 0; i < N; i++)
         {
-            ExampleOctopusComponent.StringBuilder(A, B);
+            ExampleComponent.StringBuilder(A, B);
         }
     }
 }
 
-public class ExampleOctopusComponent
+public class ExampleComponent
 {
     public static string InterpolateStrings(string a, string b)
     {
