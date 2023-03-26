@@ -1,8 +1,8 @@
 using System.Threading;
 using System.Threading.Tasks;
 using PerformanceTests.DemoUtils;
-using Sailfish.AdapterUtils;
 using Sailfish.Attributes;
+using Sailfish.Registration;
 
 namespace PerformanceTests.ExamplePerformanceTests.Discoverable;
 

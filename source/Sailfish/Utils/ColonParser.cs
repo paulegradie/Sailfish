@@ -1,4 +1,6 @@
-﻿using System.Collections.Specialized;
+﻿
+
+using Sailfish.Extensions.Types;
 
 namespace Sailfish.Utils;
 

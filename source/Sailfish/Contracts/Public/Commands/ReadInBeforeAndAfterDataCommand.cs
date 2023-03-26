@@ -1,15 +1,16 @@
 ﻿using System.Collections.Generic;
-using System.Collections.Specialized;
+
 using MediatR;
+using Sailfish.Extensions.Types;
 
 namespace Sailfish.Contracts.Public.Commands;
 
 public class ReadInBeforeAndAfterDataCommand : IRequest<ReadInBeforeAndAfterDataResponse>
 {
-    public IEnumerable<string> BeforeFilePaths { get; set; }
-    public IEnumerable<string> AfterFilePaths { get; set; }
-    public OrderedDictionary Tags { get; set; }
-    public OrderedDictionary Args { get; set; }
+    public IEnumerable<string> BeforeFilePaths { get; }
+    public IEnumerable<string> AfterFilePaths { get; }
+    public OrderedDictionary Tags { get; }
+    public OrderedDictionary Args { get; }
 
     public ReadInBeforeAndAfterDataCommand(
         IEnumerable<string> beforeFilePaths,

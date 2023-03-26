@@ -1,7 +1,8 @@
 ﻿using System;
-using System.Collections.Specialized;
+
 using MediatR;
 using Sailfish.Analysis;
+using Sailfish.Extensions.Types;
 
 namespace Sailfish.Contracts.Public.Commands;
 
@@ -23,10 +24,10 @@ public class WriteTestResultsAsMarkdownCommand : INotification
         Args = args;
     }
 
-    public string MarkdownTable { get; set; }
-    public string OutputDirectory { get; set; }
+    public string MarkdownTable { get; }
+    public string OutputDirectory { get; }
     public DateTime TimeStamp { get; }
     public OrderedDictionary Tags { get; }
     public OrderedDictionary Args { get; }
-    public TestSettings TestSettings { get; set; }
+    public TestSettings TestSettings { get; }
 }

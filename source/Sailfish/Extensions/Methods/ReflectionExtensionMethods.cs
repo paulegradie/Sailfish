@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 using Sailfish.Attributes;
 using Sailfish.Exceptions;
 
-namespace Sailfish.ExtensionMethods;
+namespace Sailfish.Extensions.Methods;
 
 public static class ReflectionExtensionMethods
 {

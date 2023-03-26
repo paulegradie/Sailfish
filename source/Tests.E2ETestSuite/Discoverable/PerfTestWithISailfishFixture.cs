@@ -1,5 +1,5 @@
-using Sailfish.AdapterUtils;
 using Sailfish.Attributes;
+using Sailfish.Registration;
 using Tests.E2ETestSuite.Utils;
 
 namespace Tests.E2ETestSuite.Discoverable;

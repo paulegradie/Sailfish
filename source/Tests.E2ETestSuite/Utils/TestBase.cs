@@ -1,7 +1,7 @@
 ﻿using Demo.API;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
-using Sailfish.AdapterUtils;
+using Sailfish.Registration;
 
 namespace Tests.E2ETestSuite.Utils;
 

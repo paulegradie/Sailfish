@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
-using System.Collections.Specialized;
+
 using System.Linq;
+using Sailfish.Extensions.Types;
 using Sailfish.Presentation;
 
 namespace Sailfish.Analysis;
