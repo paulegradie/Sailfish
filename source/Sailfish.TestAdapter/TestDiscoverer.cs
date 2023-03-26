@@ -11,7 +11,6 @@ namespace Sailfish.TestAdapter;
 
 [FileExtension(".dll")]
 [DefaultExecutorUri(TestExecutor.ExecutorUriString)]
-// ReSharper disable once UnusedType.Global
 public class TestDiscoverer : ITestDiscoverer
 {
     private readonly List<string> exclusions = new()
@@ -32,18 +31,24 @@ public class TestDiscoverer : ITestDiscoverer
             return;
         }
 
+        var testCases = new List<TestCase>();
         try
         {
-            var testCases = TestDiscovery.DiscoverTests(filteredSource, logger).ToList();
-            foreach (var testCase in testCases)
-            {
-                logger.SendMessage(TestMessageLevel.Informational, $"Sending TestCase: {testCase.DisplayName}");
-                discoverySink.SendTestCase(testCase);
-            }
+            var discoveredCases = TestDiscovery.DiscoverTests(filteredSource, logger).ToList();
+            testCases.AddRange(discoveredCases);
         }
         catch (Exception ex)
         {
+            logger.SendMessage(TestMessageLevel.Error, "Exception encountered in the Sailfish TestDiscoverer. :( ");
+            logger.SendMessage(TestMessageLevel.Error, ex.Message);
+            logger.SendMessage(TestMessageLevel.Error, string.Join("\n", ex.StackTrace));
             throw new SailfishException(ex);
+        }
+
+        foreach (var testCase in testCases)
+        {
+            logger.SendMessage(TestMessageLevel.Informational, $"Sending TestCase: {testCase.DisplayName}");
+            discoverySink.SendTestCase(testCase);
         }
     }
 }
