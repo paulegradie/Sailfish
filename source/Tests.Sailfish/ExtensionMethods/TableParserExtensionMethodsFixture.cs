@@ -4,7 +4,7 @@ using System.Linq;
 using System.Linq.Expressions;
 using Sailfish.Analysis;
 using Sailfish.Contracts.Public;
-using Sailfish.ExtensionMethods;
+using Sailfish.Extensions.Methods;
 using Sailfish.Statistics.Tests;
 using Sailfish.Statistics.Tests.KolmogorovSmirnovTestSailfish;
 using Sailfish.Statistics.Tests.MWWilcoxonTestSailfish;

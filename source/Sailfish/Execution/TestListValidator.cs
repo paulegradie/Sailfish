@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using Sailfish.Attributes;
-using Sailfish.ExtensionMethods;
+using Sailfish.Extensions.Methods;
 using Serilog;
 
 namespace Sailfish.Execution;

@@ -1,6 +1,7 @@
 ﻿using System;
-using System.Collections.Specialized;
+
 using MediatR;
+using Sailfish.Extensions.Types;
 using Sailfish.Presentation;
 
 namespace Sailfish.Contracts.Public.Commands;

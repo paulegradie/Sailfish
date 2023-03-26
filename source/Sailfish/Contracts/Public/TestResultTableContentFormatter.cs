@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq.Expressions;
 using System.Threading;
 using Sailfish.Analysis;
-using Sailfish.ExtensionMethods;
+using Sailfish.Extensions.Methods;
 
 namespace Sailfish.Contracts.Public;
 

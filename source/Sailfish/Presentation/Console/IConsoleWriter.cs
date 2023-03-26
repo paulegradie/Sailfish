@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
-using System.Collections.Specialized;
 using Sailfish.Execution;
+using Sailfish.Extensions.Types;
 
 namespace Sailfish.Presentation.Console;
 

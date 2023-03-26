@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using Sailfish.ExtensionMethods;
+using Sailfish.Extensions.Methods;
 using Sailfish.Statistics;
 
 namespace Sailfish.Execution;

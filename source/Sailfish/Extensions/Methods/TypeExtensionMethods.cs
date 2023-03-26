@@ -2,7 +2,7 @@
 using System.Linq;
 using System.Reflection;
 
-namespace Sailfish.ExtensionMethods;
+namespace Sailfish.Extensions.Methods;
 
 internal static class TypeExtensionMethods
 {

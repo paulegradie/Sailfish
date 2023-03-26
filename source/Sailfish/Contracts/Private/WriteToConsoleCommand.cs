@@ -1,7 +1,8 @@
 ﻿using System.Collections.Generic;
 using MediatR;
 using Sailfish.Execution;
-using System.Collections.Specialized;
+using Sailfish.Extensions.Types;
+
 
 namespace Sailfish.Contracts.Private;
 
@@ -14,7 +15,7 @@ internal class WriteToConsoleCommand : INotification
         Settings = settings;
     }
 
-    public List<IExecutionSummary> Content { get; set; }
+    public List<IExecutionSummary> Content { get; }
     public OrderedDictionary Tags { get; }
     public IRunSettings Settings { get; }
 }

@@ -5,7 +5,7 @@ using System.Runtime.Caching;
 using System.Threading;
 using System.Threading.Tasks;
 using Sailfish.Exceptions;
-using Sailfish.ExtensionMethods;
+using Sailfish.Extensions.Methods;
 using Sailfish.Program;
 using Serilog;
 

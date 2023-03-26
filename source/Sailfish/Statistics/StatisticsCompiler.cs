@@ -1,7 +1,7 @@
 ﻿using Sailfish.Analysis;
 using Sailfish.Contracts.Public;
 using Sailfish.Execution;
-using Sailfish.ExtensionMethods;
+using Sailfish.Extensions.Methods;
 
 namespace Sailfish.Statistics;
 

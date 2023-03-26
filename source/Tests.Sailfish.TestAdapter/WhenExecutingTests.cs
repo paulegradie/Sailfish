@@ -18,8 +18,8 @@ public class WhenExecutingTests
     {
         var frameworkHandle = Substitute.For<IFrameworkHandle>();
 
-        var allDllsInThisProject = DllFinder.FindAllDllsRecursively();
-        var testCases = TestDiscovery.DiscoverTests(allDllsInThisProject, Substitute.For<IMessageLogger>()).ToList();
+        var projectDll = DllFinder.FindThisProjectsDllRecursively();
+        var testCases = TestDiscovery.DiscoverTests(new[] { projectDll }, Substitute.For<IMessageLogger>()).ToList();
 
         Should.NotThrow(() => TestExecution.ExecuteTests(testCases.Take(1).ToList(), frameworkHandle, CancellationToken.None));
     }
@@ -29,8 +29,8 @@ public class WhenExecutingTests
     {
         var frameworkHandle = Substitute.For<IFrameworkHandle>();
 
-        var sources = DllFinder.FindAllDllsRecursively();
-        var testCases = TestDiscovery.DiscoverTests(sources, new LoggerHelper()).ToList();
+        var source = DllFinder.FindThisProjectsDllRecursively();
+        var testCases = TestDiscovery.DiscoverTests(new[] { source }, new LoggerHelper()).ToList();
 
         Should.NotThrow(() => TestExecution.ExecuteTests(testCases, frameworkHandle, CancellationToken.None));
     }

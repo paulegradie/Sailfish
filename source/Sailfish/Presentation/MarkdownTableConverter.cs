@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Sailfish.Execution;
-using Sailfish.ExtensionMethods;
+using Sailfish.Extensions.Methods;
 using Sailfish.Statistics;
 
 namespace Sailfish.Presentation;

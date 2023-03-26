@@ -2,7 +2,7 @@
 using Sailfish.Contracts.Public;
 using Sailfish.Execution;
 
-namespace Sailfish.ExtensionMethods;
+namespace Sailfish.Extensions.Methods;
 
 internal static class PerformanceTimerExtensionMethod
 {

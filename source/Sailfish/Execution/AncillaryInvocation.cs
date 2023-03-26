@@ -2,7 +2,7 @@
 using System.Threading;
 using System.Threading.Tasks;
 using Sailfish.Attributes;
-using Sailfish.ExtensionMethods;
+using Sailfish.Extensions.Methods;
 
 namespace Sailfish.Execution;
 

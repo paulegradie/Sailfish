@@ -10,6 +10,6 @@ public class BeforeAndAfterFileLocationResponse
         AfterFilePaths = afterFilePaths;
     }
 
-    public IEnumerable<string> BeforeFilePaths { get; set; }
-    public IEnumerable<string> AfterFilePaths { get; set; }
+    public IEnumerable<string> BeforeFilePaths { get; }
+    public IEnumerable<string> AfterFilePaths { get; }
 }
