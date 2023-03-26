@@ -200,7 +200,7 @@ internal class TestAdapterExecutionProgram : ITestAdapterExecutionProgram
         };
     }
 
-    void HandleSuccessfulTestCase(TestExecutionResult result, TestCase currentTestCase, RawExecutionResult rawResult, ITestExecutionRecorder? logger, CancellationToken cancellationToken)
+    private void HandleSuccessfulTestCase(TestExecutionResult result, TestCase currentTestCase, RawExecutionResult rawResult, ITestExecutionRecorder? logger, CancellationToken cancellationToken)
     {
         var compiledResult = executionSummaryCompiler.CompileToSummaries(new List<RawExecutionResult>() { rawResult }, cancellationToken).ToList();
         var medianTestRuntime = compiledResult.Single().CompiledResults.Single().DescriptiveStatisticsResult?.Median ??
@@ -232,7 +232,7 @@ internal class TestAdapterExecutionProgram : ITestAdapterExecutionProgram
         logger?.RecordEnd(currentTestCase, testResult.Outcome);
     }
 
-    void HandleFailureTestCase(TestExecutionResult result, TestCase currentTestCase, RawExecutionResult rawResult, ITestExecutionRecorder? logger, CancellationToken cancellationToken)
+    private static void HandleFailureTestCase(TestExecutionResult result, TestCase currentTestCase, RawExecutionResult rawResult, ITestExecutionRecorder? logger, CancellationToken cancellationToken)
     {
         var testResult = new TestResult(currentTestCase);
 
