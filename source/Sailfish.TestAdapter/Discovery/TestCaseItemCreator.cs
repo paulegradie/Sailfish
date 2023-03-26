@@ -5,7 +5,6 @@ using System.Reflection;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.Logging;
 using Sailfish.Attributes;
-using Sailfish.Exceptions;
 using Sailfish.Execution;
 using Sailfish.TestAdapter.TestProperties;
 using Sailfish.Utils;
@@ -47,8 +46,7 @@ internal static class TestCaseItemCreator
                         logger,
                         method,
                         propertyNames,
-                        propertyValues,
-                        true); // TODO: Remove this once we have traits and properties sorted. see below
+                        propertyValues);
                     testCase.CodeFilePath = testCsFilePath;
                     testCase.ExecutorUri = TestExecutor.ExecutorUri;
                     testCase.LineNumber = methodNameLine;
@@ -63,8 +61,7 @@ internal static class TestCaseItemCreator
                     logger,
                     method,
                     Array.Empty<string>(),
-                    Array.Empty<object>(),
-                    true);
+                    Array.Empty<object>());
                 testCase.CodeFilePath = testCsFilePath;
                 testCase.ExecutorUri = TestExecutor.ExecutorUri;
                 testCase.LineNumber = methodNameLine;
@@ -81,8 +78,7 @@ internal static class TestCaseItemCreator
         IMessageLogger logger,
         MemberInfo method,
         IEnumerable<string> propertyNames,
-        IEnumerable<object> propertyValues,
-        bool shouldAddCategories)
+        IEnumerable<object> propertyValues)
     {
         var testCaseId = DisplayNameHelper.CreateTestCaseId(testType, method.Name, propertyNames.ToArray(), propertyValues.ToArray());
         var fullyQualifiedName = $"{testType.Namespace}.{testType.Name}.{method.Name}{testCaseId.TestCaseVariables.FormVariableSection()}";
@@ -99,7 +95,6 @@ internal static class TestCaseItemCreator
             throw new Exception("Impossible!");
         }
 
-        if (!shouldAddCategories) return testCase;
         testCase.SetPropertyValue(SailfishTestTypeFullNameDefinition.SailfishTestTypeFullNameDefinitionProperty, testType.FullName);
         testCase.SetPropertyValue(SailfishDisplayNameDefinition.SailfishDisplayNameDefinitionProperty, testCaseId.DisplayName);
         testCase.SetPropertyValue(SailfishFormedVariableSectionDefinition.SailfishFormedVariableSectionDefinitionProperty, testCaseId.TestCaseVariables.FormVariableSection());
@@ -108,25 +103,31 @@ internal static class TestCaseItemCreator
         return testCase;
     }
 
-    private static int GetMethodNameLine(Type testType, IReadOnlyList<string> fileLines, MemberInfo method, IMessageLogger logger)
+    private static int GetMethodNameLine(MemberInfo testType, IEnumerable<string> fileLines, MemberInfo method, IMessageLogger logger)
     {
-        // TODO: instead of throwing, keep track of the class and check if it matches the testType
-        // var className = testType.Name;
-
-        var lineNumber = fileLines
-            .Select(
-                (line, index) =>
-                {
-                    var methodKey = $" {method.Name}(";
-                    return line.Trim().Contains(methodKey) ? index : -1;
-                })
-            .Where(x => x > 0)
-            .ToArray();
-        if (lineNumber.Length > 1)
+        var currentlyInTheRightClass = false;
+        var index = 0;
+        var methodLine = 0;
+        foreach (var fileLine in fileLines)
         {
-            throw new SailfishException("Multiple method with the same name discovered in this file");
+            if (fileLine.Contains($"class {testType.Name}"))
+            {
+                currentlyInTheRightClass = true;
+            }
+            else if (fileLine.Contains("class"))
+            {
+                currentlyInTheRightClass = false;
+            }
+
+            var methodKey = $" {method.Name}(";
+            if (currentlyInTheRightClass && fileLine.Trim().Contains(methodKey))
+            {
+                methodLine = index;
+            }
+
+            index++;
         }
 
-        return lineNumber.Single();
+        return methodLine;
     }
 }

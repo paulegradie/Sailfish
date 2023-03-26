@@ -17,7 +17,7 @@ public class WhenDiscoveringTests
         // Assumes there is one valid test file.
         // And The discoverer tests will be those found from inside the 
         var testCases = TestDiscovery.DiscoverTests(sources, new LoggerHelper()).ToList();
-        testCases.Count.ShouldBe(7);
+        testCases.Count.ShouldBe(16);
     }
 
     [Fact]
@@ -26,6 +26,6 @@ public class WhenDiscoveringTests
         var sources = DllFinder.FindAllDllsRecursively();
         var testCases = TestDiscovery.DiscoverTests(sources, new LoggerHelper()).ToList();
         var aTestCase = testCases.First();
-        aTestCase.DisplayName.ShouldBe("TestClassWithRegistrationProviderDependency.ExecutionMethodB()");
+        aTestCase.DisplayName.ShouldBe("ExampleComponentTest.Interpolate(N: 1)");
     }
 }

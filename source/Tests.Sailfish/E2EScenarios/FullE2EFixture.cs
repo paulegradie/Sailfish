@@ -5,7 +5,7 @@ using Shouldly;
 using Tests.E2ETestSuite;
 using Xunit;
 
-namespace Test.Execution;
+namespace Test.E2EScenarios;
 
 public class FullE2EFixture
 {
