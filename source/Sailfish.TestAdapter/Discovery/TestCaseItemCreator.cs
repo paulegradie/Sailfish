@@ -15,7 +15,7 @@ internal static class TestCaseItemCreator
 {
     private static PropertySetGenerator PropertySetGenerator => new(new ParameterCombinator(), new IterationVariableRetriever());
 
-    public static IEnumerable<TestCase> AssembleTestCases(Type testType, string testCsFileContent, string testCsFilePath, string sourceDll, IMessageLogger logger)
+    public static IEnumerable<TestCase> AssembleTestCases(Type testType, List<string> testCsFileContent, string testCsFilePath, string sourceDll, IMessageLogger logger)
     {
         var testCaseSets = new List<TestCase>();
         var methods = testType.GetMethodsWithAttribute<SailfishMethodAttribute>()?.ToArray();
@@ -27,11 +27,10 @@ internal static class TestCaseItemCreator
         }
 
         var propertySets = PropertySetGenerator.GeneratePropertySets(testType).ToArray();
-        var contentLines = LineSplitter.SplitFileIntoLines(testCsFileContent);
 
         foreach (var method in methods)
         {
-            var methodNameLine = GetMethodNameLine(testType, contentLines, method, logger);
+            var methodNameLine = GetMethodNameLine(testType, testCsFileContent, method, logger);
             if (methodNameLine == 0) continue;
 
             if (propertySets.Length > 0)
@@ -104,7 +103,7 @@ internal static class TestCaseItemCreator
         return testCase;
     }
 
-    private static int GetMethodNameLine(MemberInfo testType, string[] fileLines, MemberInfo method, IMessageLogger logger)
+    private static int GetMethodNameLine(MemberInfo testType, List<string> fileLines, MemberInfo method, IMessageLogger logger)
     {
         var currentlyInTheRightClass = false;
         var index = 0;
