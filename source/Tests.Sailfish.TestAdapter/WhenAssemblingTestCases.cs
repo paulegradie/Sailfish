@@ -24,7 +24,7 @@ public class WhenAssemblingTestCases
     public void AllTestCasesAreMade()
     {
         var testResourceRelativePath = FindSpecificUniqueFile("TestResourceDoNotRename.cs");
-        var content = FileIo.ReadFileContents(testResourceRelativePath);
+        var content = File.ReadAllLines(testResourceRelativePath).Select(x => x.Trim()).Where(x => !string.IsNullOrEmpty(x) && !string.IsNullOrWhiteSpace(x)).ToList();
 
         const string sourceDll = "C:/this/is/some/dll.dll";
 

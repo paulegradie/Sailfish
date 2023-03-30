@@ -78,9 +78,8 @@ internal static class TestDiscovery
     {
         foreach (var file in files)
         {
-            var content = File.ReadAllText(file);
-            var className = $"class {type.Name}";
-            if (content.Contains(className, StringComparison.InvariantCultureIgnoreCase))
+            var content = File.ReadAllLines(file).Select(x => x.Trim()).Where(x => !string.IsNullOrEmpty(x) && !string.IsNullOrWhiteSpace(x)).ToList();
+            if (content.Any(x => x.Contains($"class {type.Name}")))
             {
                 return new FileAndContent(file, content);
             }
