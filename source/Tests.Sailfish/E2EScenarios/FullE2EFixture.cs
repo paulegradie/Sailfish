@@ -27,7 +27,7 @@ public class FullE2EFixture
 
     // will need to update this if more tests are added to the the project
     [Fact]
-    public async Task AFullTestRunOfTheDemoShouldFind8Tests()
+    public async Task AFullTestRunOfTheDemoShouldFind11Tests()
     {
         var runSettings = RunSettingsBuilder.CreateBuilder()
             .RegistrationProvidersFromAssembliesFromAnchorTypes(typeof(E2ETestRegistrationProvider))
@@ -37,6 +37,6 @@ public class FullE2EFixture
         var result = await SailfishRunner.Run(runSettings);
 
         result.IsValid.ShouldBe(true);
-        result.ExecutionSummaries.Count().ShouldBe(9);
+        result.ExecutionSummaries.Count().ShouldBe(11);
     }
 }

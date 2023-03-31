@@ -45,7 +45,6 @@ internal class SailfishExecutionEngine : ISailfishExecutionEngine
         Action<TestInstanceContainer?>? exceptionCallback = null,
         CancellationToken cancellationToken = default)
     {
-
         if (testProviderIndex > totalTestProviderCount)
         {
             throw new SailfishException($"The test provider index {testProviderIndex} cannot be greater than total test provider count {totalTestProviderCount}");

@@ -51,11 +51,11 @@ jobs:
       - name: Pack
         run: dotnet pack ./source/Sailfish/Sailfish.csproj --configuration Release /p:Version=${{ env.VERSION }} --no-build --output .
 
-      - name: Push
-        run: dotnet nuget push Sailfish.${{ env.VERSION }}.nupkg --source https://www.nuget.org --api-key ${{secrets.NUGET_API_KEY}}
-
       - name: Pack Adapter
         run: dotnet pack ./source/Sailfish.TestAdapter/Sailfish.TestAdapter.csproj --configuration Release /p:Version=${{ env.VERSION }} --no-build --output .
+
+      - name: Push
+        run: dotnet nuget push Sailfish.${{ env.VERSION }}.nupkg --source https://www.nuget.org --api-key ${{secrets.NUGET_API_KEY}}
 
       - name: Push Adapter
         run: dotnet nuget push Sailfish.TestAdapter.${{ env.VERSION }}.nupkg --source https://www.nuget.org --api-key ${{secrets.NUGET_API_KEY}}
