@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using Sailfish.Utils;
 
 namespace Sailfish.Execution;
 
@@ -34,19 +35,21 @@ internal class TestInstanceContainerProvider
     {
         if (GetNumberOfPropertySetsInTheQueue() is 0)
         {
-            var instance = typeActivator.CreateDehydratedTestInstance(Test);
+            var testCaseId = DisplayNameHelper.CreateTestCaseId(Test, Method.Name, Array.Empty<string>(), Array.Empty<object>()); // a uniq id
+            var instance = typeActivator.CreateDehydratedTestInstance(Test, testCaseId);
             yield return TestInstanceContainer.CreateTestInstance(instance, Method, Array.Empty<string>(), Array.Empty<object>());
         }
         else
         {
             foreach (var nextPropertySet in propertySets)
             {
-                var instance = typeActivator.CreateDehydratedTestInstance(Test);
-
-                HydrateInstance(instance, nextPropertySet);
-
                 var propertyNames = nextPropertySet.GetPropertyNames().ToArray();
                 var variableValues = nextPropertySet.GetPropertyValues().ToArray();
+                var testCaseId = DisplayNameHelper.CreateTestCaseId(Test, Method.Name, propertyNames, variableValues); // a uniq id
+
+                var instance = typeActivator.CreateDehydratedTestInstance(Test, testCaseId);
+                HydrateInstance(instance, nextPropertySet);
+
                 yield return TestInstanceContainer.CreateTestInstance(instance, Method, propertyNames, variableValues);
             }
         }
