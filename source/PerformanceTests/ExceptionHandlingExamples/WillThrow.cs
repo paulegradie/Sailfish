@@ -1,7 +1,7 @@
 ﻿using System;
 using Sailfish.Attributes;
 
-namespace PerformanceTests.ExamplePerformanceTests.Discoverable;
+namespace PerformanceTests.ExceptionHandlingExamples;
 
 [Sailfish]
 public class WillThrow

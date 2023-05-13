@@ -23,24 +23,20 @@ public class ExamplePerformanceTestFull : TestBase
     [SailfishVariable(1, 2)] public int NTries { get; set; } // try to avoid multiple variables if you can manage
 
     [SailfishGlobalSetup]
-    public void GlobalSetup(CancellationToken cancellationToken)
+    public void GlobalSetup()
     {
-        ;
         // logger.Information("This is the Global Setup");
     }
 
     [SailfishMethodSetup]
-    public void ExecutionMethodSetup(CancellationToken cancellationToken)
+    public void ExecutionMethodSetup()
     {
-        ;
         // logger.Information("This is the Execution Method Setup");
     }
 
     [SailfishIterationSetup]
-    public void IterationSetup(CancellationToken cancellationToken)
+    public void IterationSetup()
     {
-        ;
-        // logger.Warning("This is the Iteration Setup - use sparingly");
     }
 
     [SailfishMethod]
@@ -58,16 +54,14 @@ public class ExamplePerformanceTestFull : TestBase
     }
 
     [SailfishIterationTeardown]
-    public void IterationTeardown(CancellationToken cancellationToken)
+    public void IterationTeardown()
     {
-        ;
         // logger.Warning("This is the Iteration Teardown - use sparingly");
     }
 
     [SailfishMethodTeardown]
-    public void ExecutionMethodTeardown(CancellationToken cancellationToken)
+    public void ExecutionMethodTeardown()
     {
-        ;
         // logger.Verbose("This is the Execution Method Teardown");
     }
 

@@ -29,6 +29,8 @@ internal class SailfishExecutionEngine : ISailfishExecutionEngine
     /// <param name="testProviderIndex"></param>
     /// <param name="totalTestProviderCount"></param>
     /// <param name="testProvider"></param>
+    /// <param name="memoryCache"></param>
+    /// <param name="providerPropertiesCacheKey"></param>
     /// <param name="preCallback"></param>
     /// <param name="callback"></param>
     /// <param name="exceptionCallback"></param>
@@ -78,42 +80,82 @@ internal class SailfishExecutionEngine : ISailfishExecutionEngine
         do
         {
             var testMethodContainer = instanceContainerEnumerator.Current;
-            if (memoryCache.Contains(providerPropertiesCacheKey))
+            try
             {
-                var savedState = (PropertiesAndFields)memoryCache.Get(providerPropertiesCacheKey);
-                savedState.ApplyPropertiesAndFieldsTo(testMethodContainer.Instance);
+                if (memoryCache.Contains(providerPropertiesCacheKey))
+                {
+                    var savedState = (PropertiesAndFields)memoryCache.Get(providerPropertiesCacheKey);
+                    savedState.ApplyPropertiesAndFieldsTo(testMethodContainer.Instance);
+                }
+
+                preCallback?.Invoke(testMethodContainer);
+                TestCaseCountPrinter.PrintCaseUpdate(testMethodContainer.TestCaseId.DisplayName);
+
+                if (ShouldCallGlobalSetup(testProviderIndex, currentPropertyTensorIndex))
+                {
+                    try
+                    {
+                        await testMethodContainer.Invocation.GlobalSetup(cancellationToken);
+                        memoryCache.Add(new CacheItem(providerPropertiesCacheKey, testMethodContainer.Instance.RetrievePropertiesAndFields()), new CacheItemPolicy());
+                    }
+                    catch (Exception ex)
+                    {
+                        return CatchAndReturn(testProvider, ex);
+                    }
+                }
+
+                try
+                {
+                    await testMethodContainer.Invocation.MethodSetup(cancellationToken);
+                }
+                catch (Exception ex)
+                {
+                    return CatchAndReturn(testProvider, ex);
+                }
+
+                var executionResult = await IterateOverVariableCombos(testMethodContainer, cancellationToken);
+                if (!executionResult.IsSuccess)
+                {
+                    return new() { executionResult };
+                }
+
+                try
+                {
+                    await testMethodContainer.Invocation.MethodTearDown(cancellationToken);
+                }
+                catch (Exception ex)
+                {
+                    return CatchAndReturn(testProvider, ex);
+                }
+
+                if (ShouldCallGlobalTeardown(testProviderIndex, totalTestProviderCount, currentPropertyTensorIndex, totalPropertyTensorElements))
+                {
+                    try
+                    {
+                        await testMethodContainer.Invocation.GlobalTeardown(cancellationToken);
+                        memoryCache.Remove(providerPropertiesCacheKey);
+                    }
+                    catch (Exception ex)
+                    {
+                        return CatchAndReturn(testProvider, ex);
+                    }
+                }
+
+                callback?.Invoke(executionResult, testMethodContainer);
+                results.Add(executionResult);
+
+                if (ShouldDisposeOfInstance(currentPropertyTensorIndex, totalPropertyTensorElements))
+                {
+                    await DisposeOfTestInstance(testMethodContainer);
+                }
+
+                currentPropertyTensorIndex += 1;
             }
-
-            preCallback?.Invoke(testMethodContainer);
-            TestCaseCountPrinter.PrintCaseUpdate(testMethodContainer.TestCaseId.DisplayName);
-
-            if (ShouldCallGlobalSetup(testProviderIndex, currentPropertyTensorIndex))
+            catch (Exception ex)
             {
-                await testMethodContainer.Invocation.GlobalSetup(cancellationToken);
-                memoryCache.Add(new CacheItem(providerPropertiesCacheKey, testMethodContainer.Instance.RetrievePropertiesAndFields()), new CacheItemPolicy());
+                var errorResult = new TestExecutionResult(testMethodContainer, ex);
+                results.Add(errorResult);
             }
-
-            await testMethodContainer.Invocation.MethodSetup(cancellationToken);
-
-            var executionResult = await IterateOverVariableCombos(testMethodContainer, cancellationToken);
-
-            await testMethodContainer.Invocation.MethodTearDown(cancellationToken);
-
-            if (ShouldCallGlobalTeardown(testProviderIndex, totalTestProviderCount, currentPropertyTensorIndex, totalPropertyTensorElements))
-            {
-                await testMethodContainer.Invocation.GlobalTeardown(cancellationToken);
-                memoryCache.Remove(providerPropertiesCacheKey);
-            }
-
-            callback?.Invoke(executionResult, testMethodContainer);
-            results.Add(executionResult);
-
-            if (ShouldDisposeOfInstance(currentPropertyTensorIndex, totalPropertyTensorElements))
-            {
-                await DisposeOfTestInstance(testMethodContainer);
-            }
-
-            currentPropertyTensorIndex += 1;
 
             try
             {
@@ -141,12 +183,18 @@ internal class SailfishExecutionEngine : ISailfishExecutionEngine
         return results;
     }
 
+    private static List<TestExecutionResult> CatchAndReturn(TestInstanceContainerProvider testProvider, Exception ex)
+    {
+        var exceptionResult = new TestExecutionResult(testProvider, ex);
+        return new List<TestExecutionResult>() { exceptionResult };
+    }
+
     private async Task<TestExecutionResult> IterateOverVariableCombos(TestInstanceContainer testInstanceContainer, CancellationToken cancellationToken = default)
     {
         try
         {
-            var messages = await testCaseIterator.Iterate(testInstanceContainer, cancellationToken);
-            return new TestExecutionResult(testInstanceContainer, messages);
+            var testExecutionResult = await testCaseIterator.Iterate(testInstanceContainer, cancellationToken);
+            return testExecutionResult;
         }
         catch (Exception exception)
         {

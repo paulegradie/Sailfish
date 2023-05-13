@@ -49,7 +49,19 @@ internal class SailFishTestExecutor : ISailFishTestExecutor
             try
             {
                 var rawResult = await Execute(testType, cancellationToken);
-                rawResults.Add(new RawExecutionResult(testType, rawResult));
+
+                if (rawResult.All(x => x.IsSuccess))
+                {
+                    rawResults.Add(new RawExecutionResult(testType, rawResult));
+                }
+                else
+                {
+                    var exceptions = rawResult
+                        .Where(x => x.Exception != null)
+                        .Select(e => e.Exception)
+                        .Cast<Exception>();
+                    rawResults.Add(new RawExecutionResult(testType, exceptions));
+                }
             }
             catch (Exception ex)
             {
@@ -78,10 +90,12 @@ internal class SailFishTestExecutor : ISailFishTestExecutor
 
         var testProviderIndex = 0;
         var totalMethodCount = testInstanceContainerProviders.Count - 1;
-        
+
         var memoryCache = new MemoryCache(MemoryCacheName);
         foreach (var testProvider in testInstanceContainerProviders.OrderBy(x => x.Method.Name))
         {
+            // Do not early bail on additional methods in case the exception comes from the sailfish method itself - later can consider tagging executions to make that call
+            // we currently have tests that expect multiple exceptions to surface
             var providerPropertiesCacheKey = testProvider.Test.FullName ?? throw new SailfishException($"Failed to read the FullName of {testProvider.Test.Name}");
             TestCaseCountPrinter.PrintMethodUpdate(testProvider.Method);
             var executionResults = await engine.ActivateContainer(

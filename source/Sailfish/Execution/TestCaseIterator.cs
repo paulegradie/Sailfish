@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -6,36 +6,89 @@ namespace Sailfish.Execution;
 
 internal class TestCaseIterator : ITestCaseIterator
 {
-    public async Task<List<string>> Iterate(TestInstanceContainer testInstanceContainer, CancellationToken cancellationToken)
+    public async Task<TestExecutionResult> Iterate(TestInstanceContainer testInstanceContainer, CancellationToken cancellationToken)
     {
-        await WarmupIterations(testInstanceContainer, cancellationToken);
+        var warmupResult = await WarmupIterations(testInstanceContainer, cancellationToken);
+        if (!warmupResult.IsSuccess)
+        {
+            return warmupResult;
+        }
 
-        var messages = new List<string>();
         for (var i = 0; i < testInstanceContainer.NumIterations; i++)
         {
             cancellationToken.ThrowIfCancellationRequested();
-            await testInstanceContainer.Invocation.IterationSetup(cancellationToken).ConfigureAwait(false);
+
+            try
+            {
+                await testInstanceContainer.Invocation.IterationSetup(cancellationToken).ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                return CatchAndReturn(testInstanceContainer, ex);
+            }
 
             cancellationToken.ThrowIfCancellationRequested();
+
             await testInstanceContainer.Invocation.ExecutionMethod(cancellationToken).ConfigureAwait(false);
 
             cancellationToken.ThrowIfCancellationRequested();
-            await testInstanceContainer.Invocation.IterationTearDown(cancellationToken).ConfigureAwait(false);
+
+            try
+            {
+                await testInstanceContainer.Invocation.IterationTearDown(cancellationToken).ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                return CatchAndReturn(testInstanceContainer, ex);
+            }
         }
 
-        return messages;
+        return new TestExecutionResult(testInstanceContainer);
     }
 
-    private static async Task WarmupIterations(TestInstanceContainer testInstanceContainer, CancellationToken cancellationToken)
+    private static async Task<TestExecutionResult> WarmupIterations(TestInstanceContainer testInstanceContainer, CancellationToken cancellationToken)
     {
         for (var i = 0; i < testInstanceContainer.NumWarmupIterations; i++)
         {
             cancellationToken.ThrowIfCancellationRequested();
-            await testInstanceContainer.Invocation.IterationSetup(cancellationToken).ConfigureAwait(false);
+
+            try
+            {
+                await testInstanceContainer.Invocation.IterationSetup(cancellationToken).ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                return CatchAndReturn(testInstanceContainer, ex);
+            }
+
             cancellationToken.ThrowIfCancellationRequested();
-            await testInstanceContainer.Invocation.ExecutionMethod(cancellationToken, timed: false).ConfigureAwait(false);
+
+            try
+            {
+                await testInstanceContainer.Invocation.ExecutionMethod(cancellationToken, timed: false).ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                return CatchAndReturn(testInstanceContainer, ex);
+            }
+
             cancellationToken.ThrowIfCancellationRequested();
-            await testInstanceContainer.Invocation.IterationTearDown(cancellationToken).ConfigureAwait(false);
+
+            try
+            {
+                await testInstanceContainer.Invocation.IterationTearDown(cancellationToken).ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                return CatchAndReturn(testInstanceContainer, ex);
+            }
         }
+
+        return new TestExecutionResult(testInstanceContainer);
+    }
+
+    private static TestExecutionResult CatchAndReturn(TestInstanceContainer testProvider, Exception ex)
+    {
+        return new TestExecutionResult(testProvider, ex);
     }
 }
