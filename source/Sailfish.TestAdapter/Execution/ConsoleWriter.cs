@@ -35,23 +35,26 @@ internal class ConsoleWriter : IConsoleWriter
         {
             foreach (var compiledResult in result.CompiledResults)
             {
-                if (compiledResult.Exception is null) continue;
-                messageLogger?.SendMessage(TestMessageLevel.Error, compiledResult.Exception.Message);
-                consoleLogger.Error("{Error}", compiledResult.Exception.Message);
-
-                if (compiledResult.Exception.StackTrace != null)
+                if (!compiledResult.Exceptions.Any()) continue;
+                foreach (var exception in compiledResult.Exceptions)
                 {
-                    messageLogger?.SendMessage(TestMessageLevel.Error, compiledResult.Exception.StackTrace);
-                    consoleLogger.Error("{StackTrace}", compiledResult.Exception.Message);
+                    messageLogger?.SendMessage(TestMessageLevel.Error, exception.Message);
+                    consoleLogger.Error("{Error}", exception.Message);
 
-                    if (compiledResult.Exception.InnerException is null) continue;
-                    messageLogger?.SendMessage(TestMessageLevel.Error, compiledResult.Exception.InnerException.Message);
-                    consoleLogger.Error("{InnerError}", compiledResult.Exception.InnerException.Message);
-
-                    if (compiledResult.Exception.InnerException.StackTrace != null)
+                    if (exception.StackTrace != null)
                     {
-                        messageLogger?.SendMessage(TestMessageLevel.Error, compiledResult.Exception.InnerException.StackTrace);
-                        consoleLogger.Error("{InnerStackTrace}", compiledResult.Exception.InnerException.StackTrace);
+                        messageLogger?.SendMessage(TestMessageLevel.Error, exception.StackTrace);
+                        consoleLogger.Error("{StackTrace}", exception.Message);
+
+                        if (exception.InnerException is null) continue;
+                        messageLogger?.SendMessage(TestMessageLevel.Error, exception.InnerException.Message);
+                        consoleLogger.Error("{InnerError}", exception.InnerException.Message);
+
+                        if (exception.InnerException.StackTrace != null)
+                        {
+                            messageLogger?.SendMessage(TestMessageLevel.Error, exception.InnerException.StackTrace);
+                            consoleLogger.Error("{InnerStackTrace}", exception.InnerException.StackTrace);
+                        }
                     }
                 }
             }

@@ -176,7 +176,6 @@ internal class TestAdapterExecutionProgram : ITestAdapterExecutionProgram
                 throw new SailfishException(msg);
             }
 
-
             var currentTestCase = GetTestCaseFromTestCaseGroupMatchingCurrentContainer(container, testCaseGroups);
             if (result.IsSuccess)
             {
@@ -200,7 +199,8 @@ internal class TestAdapterExecutionProgram : ITestAdapterExecutionProgram
         };
     }
 
-    private void HandleSuccessfulTestCase(TestExecutionResult result, TestCase currentTestCase, RawExecutionResult rawResult, ITestExecutionRecorder? logger, CancellationToken cancellationToken)
+    private void HandleSuccessfulTestCase(TestExecutionResult result, TestCase currentTestCase, RawExecutionResult rawResult, ITestExecutionRecorder? logger,
+        CancellationToken cancellationToken)
     {
         var compiledResult = executionSummaryCompiler.CompileToSummaries(new List<RawExecutionResult>() { rawResult }, cancellationToken).ToList();
         var medianTestRuntime = compiledResult.Single().CompiledResults.Single().DescriptiveStatisticsResult?.Median ??
@@ -232,7 +232,8 @@ internal class TestAdapterExecutionProgram : ITestAdapterExecutionProgram
         logger?.RecordEnd(currentTestCase, testResult.Outcome);
     }
 
-    private static void HandleFailureTestCase(TestExecutionResult result, TestCase currentTestCase, RawExecutionResult rawResult, ITestExecutionRecorder? logger, CancellationToken cancellationToken)
+    private static void HandleFailureTestCase(TestExecutionResult result, TestCase currentTestCase, RawExecutionResult rawResult, ITestExecutionRecorder? logger,
+        CancellationToken cancellationToken)
     {
         var testResult = new TestResult(currentTestCase);
 
@@ -251,7 +252,12 @@ internal class TestAdapterExecutionProgram : ITestAdapterExecutionProgram
 
         testResult.ErrorMessage = result.Exception?.Message;
 
-        logger?.SendMessage(TestMessageLevel.Error, rawResult.Exception?.Message ?? $"Exception was null for {rawResult.TestType.Name}");
+        foreach (var exception in rawResult.Exceptions)
+        {
+            logger?.SendMessage(TestMessageLevel.Error, "----- Exception -----");
+            logger?.SendMessage(TestMessageLevel.Error, exception.Message);
+        }
+
         logger?.RecordResult(testResult);
         logger?.RecordEnd(currentTestCase, testResult.Outcome);
     }

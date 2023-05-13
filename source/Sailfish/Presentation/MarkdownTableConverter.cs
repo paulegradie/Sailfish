@@ -30,7 +30,7 @@ public class MarkdownTableConverter : IMarkdownTableConverter
             AppendHeader(result.Type.Name);
             AppendResults(result.CompiledResults);
 
-            var exceptions = result.CompiledResults.Where(x => x.Exception is not null).Select(x => x.Exception).ToList();
+            var exceptions = result.CompiledResults.SelectMany(x => x.Exceptions).ToList();
             AppendExceptions(exceptions);
         }
 

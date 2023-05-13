@@ -12,15 +12,21 @@ internal class RawExecutionResult
         ExecutionResults = executionResults;
     }
 
-
     public RawExecutionResult(Type testType, Exception exception)
     {
         IsSuccess = false;
-        Exception = exception;
+        Exceptions.Add(exception);
         TestType = testType;
     }
 
-    public Exception? Exception { get; }
+    public RawExecutionResult(Type testType, IEnumerable<Exception> exceptions)
+    {
+        IsSuccess = false;
+        Exceptions.AddRange(exceptions);
+        TestType = testType;
+    }
+
+    public List<Exception> Exceptions { get; } = new();
     public bool IsSuccess { get; }
     public Type TestType { get; }
     public List<TestExecutionResult>? ExecutionResults { get; }

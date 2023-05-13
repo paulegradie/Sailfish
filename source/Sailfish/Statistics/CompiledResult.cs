@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using Sailfish.Analysis;
 using Sailfish.Contracts.Public;
 
@@ -8,7 +9,7 @@ public interface ICompiledResult
 {
     public string? GroupingId { get; set; }
     public DescriptiveStatisticsResult? DescriptiveStatisticsResult { get; set; }
-    public Exception? Exception { get; set; }
+    public List<Exception> Exceptions { get; set; }
     public TestCaseId? TestCaseId { get; set; }
 }
 
@@ -21,13 +22,17 @@ internal class CompiledResult : ICompiledResult
         DescriptiveStatisticsResult = descriptiveStatisticsResult;
     }
 
-    public CompiledResult(Exception exception)
+    public CompiledResult(Exception exception) : this(new List<Exception>() { exception })
     {
-        Exception = exception;
+    }
+
+    public CompiledResult(IEnumerable<Exception> exceptions)
+    {
+        Exceptions.AddRange(exceptions);
     }
 
     public string? GroupingId { get; set; }
     public DescriptiveStatisticsResult? DescriptiveStatisticsResult { get; set; }
-    public Exception? Exception { get; set; }
+    public List<Exception> Exceptions { get; set; } = new();
     public TestCaseId? TestCaseId { get; set; }
 }

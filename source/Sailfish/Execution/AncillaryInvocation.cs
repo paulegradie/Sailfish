@@ -38,6 +38,7 @@ internal class AncillaryInvocation
         // TODO: we can make this more precise by timing the outside, and then returning
         // a timespan from the wasted bits inside the try invoke
         // add method to timer to .StopExecutionTimerWithAdjustment(timespan);
+        // TODO: Action this when we switch over to using ticks instead of ms
         if (timed) performanceTimer.StartExecutionTimer();
         await mainMethod.TryInvoke(instance, cancellationToken).ConfigureAwait(false);
         if (timed) performanceTimer.StopExecutionTimer();

@@ -1,18 +1,16 @@
 ﻿using System;
-using System.Collections.Generic;
 
 namespace Sailfish.Execution;
 
 internal class TestExecutionResult
 {
-    public TestExecutionResult(TestInstanceContainer container, List<string> messages)
+    public TestExecutionResult(TestInstanceContainer container)
     {
         Exception = null;
         IsSuccess = true;
         StatusCode = StatusCode.Success;
 
         TestInstanceContainer = container;
-        Messages = messages;
         ExecutionSettings = container.ExecutionSettings;
         PerformanceTimerResults = container.Invocation.GetPerformanceResults();
     }
@@ -24,7 +22,6 @@ internal class TestExecutionResult
         StatusCode = StatusCode.Failure;
 
         TestInstanceContainer = container;
-        Messages = null;
         ExecutionSettings = container.ExecutionSettings;
         PerformanceTimerResults = container.Invocation.GetPerformanceResults(false);
     }
@@ -37,13 +34,11 @@ internal class TestExecutionResult
 
         TestInstanceContainer = null;
         TestInstanceContainerProvider = testProvider;
-        Messages = null;
         ExecutionSettings = null;
         PerformanceTimerResults = null;
     }
 
     public IExecutionSettings? ExecutionSettings { get; }
-    public List<string>? Messages { get; }
     public Exception? Exception { get; }
     public StatusCode StatusCode { get; }
     public bool IsSuccess { get; }

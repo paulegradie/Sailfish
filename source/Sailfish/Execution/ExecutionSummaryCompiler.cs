@@ -36,8 +36,8 @@ internal class ExecutionSummaryCompiler : IExecutionSummaryCompiler
             return new ExecutionSummary(rawExecutionResult.TestType, compiledResults);
         }
 
-        if (rawExecutionResult.Exception is null) return new ExecutionSummary(rawExecutionResult.TestType, new List<ICompiledResult>() { });
-        var compiledResult = new CompiledResult(rawExecutionResult.Exception);
+        if (!rawExecutionResult.Exceptions.Any()) return new ExecutionSummary(rawExecutionResult.TestType, new List<ICompiledResult>() { });
+        var compiledResult = new CompiledResult(rawExecutionResult.Exceptions);
         return new ExecutionSummary(rawExecutionResult.TestType, new List<ICompiledResult>() { compiledResult });
     }
 
@@ -60,7 +60,7 @@ internal class ExecutionSummaryCompiler : IExecutionSummaryCompiler
 
             if (testExecutionResult.Exception is not null)
             {
-                compiledResult.Exception = testExecutionResult.Exception;
+                compiledResult.Exceptions.Add(testExecutionResult.Exception);
             }
 
             compiledResults.Add(compiledResult);
