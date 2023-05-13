@@ -6,8 +6,9 @@ namespace Tests.E2E.ExceptionHandling.Tests;
 public class IterationSetupExceptionComesFirst
 {
     [SailfishIterationSetup]
-    public void IterationSetup(CancellationToken cancellationToken)
+    public async Task IterationSetup(CancellationToken cancellationToken)
     {
+        await Task.CompletedTask;
         throw new Exception("Iteration Setup Exception");
     }
 

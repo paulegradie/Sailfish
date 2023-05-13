@@ -73,20 +73,36 @@ public static class ReflectionExtensionMethods
     public static async Task TryInvoke(this MethodInfo? methodInfo, object instance, CancellationToken cancellationToken)
     {
         if (methodInfo is null) return;
-
         var parameters = methodInfo.GetParameters().ToList();
-        switch (parameters.Count)
+        if (methodInfo.IsAsyncMethod())
         {
-            case 0:
+            switch (parameters.Count)
+            {
+                case 0:
+                    await methodInfo.InvokeAs(instance);
+                    break;
+                case 1:
+                {
+                    var paramIsCancellationToken = parameters.Single().ParameterType == typeof(CancellationToken);
+                    if (!paramIsCancellationToken) throw new TestFormatException($"Parameter injection is only supported for the ${nameof(CancellationToken)} type");
+                    await methodInfo.InvokeAsWithCancellation(instance, cancellationToken).ConfigureAwait(false);
+                    break;
+                }
+                default:
+                    throw new TestFormatException($"Parameter injection is only supported for a single parameter which must be a the {nameof(CancellationToken)} type");
+            }
+        }
+        else
+        {
+            try
+            {
+                if (parameters.Count > 0) throw new SailfishException("Parameter injection is not supported for void methods");
                 await methodInfo.InvokeAs(instance);
-                break;
-            case 1:
-                var paramIsCancellationToken = parameters.SingleOrDefault()?.ParameterType == typeof(CancellationToken);
-                if (!paramIsCancellationToken) throw new TestFormatException("Parameter injection is only supported for the CancellationToken type");
-                await methodInfo.InvokeAsWithCancellation(instance, cancellationToken).ConfigureAwait(false);
-                break;
-            default:
-                throw new TestFormatException("Parameter injection is only supported for the CancellationToken type");
+            }
+            catch (TargetInvocationException ex)
+            {
+                throw new SailfishException(ex.InnerException?.Message ?? $"Unhandled unknown exception has occurred: {ex.Message}");
+            }
         }
     }
 

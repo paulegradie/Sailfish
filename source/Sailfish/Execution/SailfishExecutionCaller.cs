@@ -24,7 +24,6 @@ internal static class SailfishExecutionCaller
     {
         var builder = new ContainerBuilder();
         builder.RegisterSailfishTypes();
-        builder.RegisterPerformanceTypes(runSettings.TestLocationAnchors.ToArray());
         builder.RegisterInstance(runSettings).SingleInstance();
         registerAdditionalTypes?.Invoke(builder);
 

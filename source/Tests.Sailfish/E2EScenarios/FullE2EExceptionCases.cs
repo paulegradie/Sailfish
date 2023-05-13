@@ -92,7 +92,8 @@ public class FullE2EExceptionCases
         result.IsValid.ShouldBeFalse();
         result.Exceptions.ShouldNotBeNull();
         result.Exceptions.Count().ShouldBe(1);
-        result.Exceptions.Single().Message.ShouldBe("Iteration Teardown Exception");;
+        result.Exceptions.Single().Message.ShouldBe("Iteration Teardown Exception");
+        ;
     }
 
     [Fact]
@@ -145,7 +146,7 @@ public class FullE2EExceptionCases
         result.Exceptions.Count().ShouldBe(1);
         result.Exceptions.Single().Message.ShouldBe("Method Teardown Exception");
     }
-    
+
     [Fact]
     public async Task MultipleLifecycleExceptionsAreHandledWithIterationSetupSurfacing()
     {
@@ -160,6 +161,7 @@ public class FullE2EExceptionCases
         result.IsValid.ShouldBeFalse();
         result.Exceptions.ShouldNotBeNull();
         result.Exceptions.Count().ShouldBe(2);
+
         result.Exceptions.ToList()[0].Message.ShouldBe("Iteration Setup Exception");
         result.Exceptions.ToList()[1].Message.ShouldBe("Iteration Setup Exception");
     }
@@ -179,5 +181,39 @@ public class FullE2EExceptionCases
         result.Exceptions.ShouldNotBeNull();
         result.Exceptions.Count().ShouldBe(1);
         result.Exceptions.Single().Message.ShouldBe("Sailfish Method Exception");
+    }
+
+    [Fact]
+    public async Task VoidMethodRequestsCancellationTokenThrows()
+    {
+        var runSettings = RunSettingsBuilder.CreateBuilder()
+            .WithTestNames(nameof(VoidMethodRequestsCancellationToken))
+            .RegistrationProvidersFromAssembliesFromAnchorTypes(typeof(E2ETestExceptionHandlingProvider))
+            .TestsFromAssembliesFromAnchorTypes(typeof(E2ETestExceptionHandlingProvider))
+            .Build();
+
+        var result = await SailfishRunner.Run(runSettings);
+
+        result.IsValid.ShouldBeFalse();
+        result.Exceptions.ShouldNotBeNull();
+        result.Exceptions.Count().ShouldBe(1);
+        result.Exceptions.Single().Message.ShouldBe("Parameter injection is not supported for void methods");
+    }
+    
+    [Fact]
+    public async Task MultipleInjectionsOnAMethodThrows()
+    {
+        var runSettings = RunSettingsBuilder.CreateBuilder()
+            .WithTestNames(nameof(MultipleInjectionsOnAsyncMethod))
+            .RegistrationProvidersFromAssembliesFromAnchorTypes(typeof(E2ETestExceptionHandlingProvider))
+            .TestsFromAssembliesFromAnchorTypes(typeof(E2ETestExceptionHandlingProvider))
+            .Build();
+
+        var result = await SailfishRunner.Run(runSettings);
+
+        result.IsValid.ShouldBeFalse();
+        result.Exceptions.ShouldNotBeNull();
+        result.Exceptions.Count().ShouldBe(1);
+        result.Exceptions.Single().Message.ShouldBe("Parameter injection is only supported for a single parameter which must be a the CancellationToken type");
     }
 }

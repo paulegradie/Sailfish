@@ -6,7 +6,7 @@ namespace Tests.E2E.ExceptionHandling.Tests;
 public class MethodSetupExceptionIsHandled
 {
     [SailfishMethodSetup]
-    public void MethodSetup(CancellationToken cancellationToken)
+    public void MethodSetup()
     {
         throw new Exception("Method Setup Exception");
     }

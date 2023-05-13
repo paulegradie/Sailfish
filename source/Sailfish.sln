@@ -18,7 +18,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{74A88B77
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tests.Sailfish.TestAdapter", "Tests.Sailfish.TestAdapter\Tests.Sailfish.TestAdapter.csproj", "{46F5F8AF-033A-4DE4-BDC3-134AEED4551A}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tests.E2ETestSuite", "Tests.E2ETestSuite\Tests.E2ETestSuite.csproj", "{E48F48D1-A39A-4F19-BE07-2312244284AA}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tests.E2E.TestSuite", "Tests.E2E.TestSuite\Tests.E2E.TestSuite.csproj", "{E48F48D1-A39A-4F19-BE07-2312244284AA}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PerformanceTestingUserInvokedConsoleApp", "PerformanceTestingUserInvokedConsoleApp\PerformanceTestingUserInvokedConsoleApp.csproj", "{EBBA336B-1931-4340-82F5-C31815DE5357}"
 EndProject

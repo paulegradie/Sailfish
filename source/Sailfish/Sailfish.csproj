@@ -21,8 +21,15 @@
         <RepositoryType>git</RepositoryType>
         <RepositoryUrl>https://github.com/paulegradie/Sailfish</RepositoryUrl>
     </PropertyGroup>
-    <ItemGroup>
+
+    <ItemGroup Condition="'$(BuildingPackage)' != 'true'">
+        <PackageReference Include="Accord.Statistics" Version="3.8.0" />
+    </ItemGroup>
+    <ItemGroup Condition="'$(BuildingPackage)' == 'true'">
         <PackageReference Include="Accord.Statistics" Version="3.8.0" PrivateAssets="All" />
+    </ItemGroup>
+    
+    <ItemGroup>
         <PackageReference Include="MathNet.Numerics" Version="5.0.0" />
         <PackageReference Include="Autofac" Version="4.9.2" />
         <PackageReference Include="CsvHelper" Version="30.0.1" />
