@@ -118,18 +118,18 @@ jobs:
       - name: Look around
         run: |
           ls
-          cd site
+          cd out
           ls
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v1
         with:
-          path: ./site
+          path: ./out
 
   # Deployment job
   deploy:
     defaults:
       run:
-        working-directory: ./site
+        working-directory: ./out
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
