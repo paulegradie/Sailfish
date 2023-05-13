@@ -35,7 +35,7 @@ jobs:
         uses: JamesIves/github-pages-deploy-action@v4
         with:
           branch: gh-pages
-          folder: out
+          folder: site
 
 
 # # Sample workflow for building and deploying a Next.js site to GitHub Pages
