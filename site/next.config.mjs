@@ -8,6 +8,10 @@ const nextConfig = {
   experimental: {
     scrollRestoration: true,
   },
+  images: {
+    loader: 'akamai',
+    path: '',
+  },
 }
 
 module.exports = withMarkdoc()(nextConfig)
