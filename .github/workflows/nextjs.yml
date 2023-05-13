@@ -115,10 +115,15 @@ jobs:
         run: npx --no-install next build
       - name: Static HTML export with Next.js
         run: npx --no-install next export
+      - name: Look around
+        run: |
+          ls
+          cd site
+          ls
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v1
         with:
-          path: ./out
+          path: ./site
 
   # Deployment job
   deploy:
