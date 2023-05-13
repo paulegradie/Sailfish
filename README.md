@@ -21,7 +21,7 @@ Available on [Nuget](https://www.nuget.org/packages/Sailfish/)
 
 <h2 align="center">
 
-[Documentation](https://github.com/paulegradie/Sailfish/blob/main/docs/home.md)
+[Documentation](https://sailfish.github.io)
 
 </h2>
 

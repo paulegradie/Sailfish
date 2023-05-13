@@ -1,10 +1,13 @@
-# Using Sailfish as a combined application
+---
+title: Using Sailfish as a combined application
+---
 
 One very appropriate use of Sailfish in a combined solution that holds both a console app project and a test library project (distinct from one another), where the console app project references the test project.
 
 ## Performance Test Solution
 
 ### MyApp.CLI (a project)
+
 **PerformanceTests.csproj**
 
     <ProjectReference Include="..\MyApp.PerformanceTests\PerformanceTests.csproj" />
@@ -38,9 +41,9 @@ public class RegistrationProvider : IProvideARegistrationCallback
     }
 }
 ```
-## Wow
 
 ### MyApp.PerformanceTests (a project)
+
 **PerformanceTests.csproj**
 
     <PackageReference Include="Sailfish.TestAdapter" Version="0.1.132" />
