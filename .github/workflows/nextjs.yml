@@ -28,6 +28,10 @@ jobs:
   # Build job
   build:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./site
+
     steps:
       - name: Checkout
         uses: actions/checkout@v3
@@ -84,6 +88,9 @@ jobs:
 
   # Deployment job
   deploy:
+    defaults:
+      run:
+        working-directory: ./site
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
