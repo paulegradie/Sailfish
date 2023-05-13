@@ -1,19 +1,21 @@
-# Extensibility Commands
+---
+title: Extensibility Commands
+---
 
 Sailfish exposes several public commands that can be implemented and registered to extend (or in some cases, modify) the behaviour of Sailfish.
 
-### MediatR
+## MediatR
 
 Sailfish uses MediatR to pass messages between internal components. Some of these message contracts are publicly exposed so that you may provide custom implementation logic for a given behaviour. To do this, you will implement a mediator handler for one of the below commands and register it with sailfish.
 
 You can use this effectively, for example, to change the output location for various Sailfish outputs depending on parameters provided to the console app. This is used in some scenarios to track performance across multiple branches.
 
-### Commands
+## Commands
 
 `BeforeAndAfterFileLocationCommand / BeforeAndAfterFileLocationResponse` [**Default handler implemented**]
 
- - Used to provide tracking file location data to the t-test executor. E.g. Reading tracking data from blob storage.
- - Registering an implementation of this will customize existing behaviour
+- Used to provide tracking file location data to the t-test executor. E.g. Reading tracking data from blob storage.
+- Registering an implementation of this will customize existing behaviour
 
 ```csharp
 
@@ -49,11 +51,12 @@ public class BeforeAndAfterFileLocationResponse
 ```
 
 ---
-`ReadInBeforeAndAfterDataCommand` / `ReadInBeforeAndAfterDataCommand`  [**Default handler implemented**]
 
- - Used to convert file locations into `TestData` objects that can be passed to the analyzer functions
- - May be used to bypass the need to download data when read data from cloud storage
- - Registering an implementation of this will customize existing behaviour
+`ReadInBeforeAndAfterDataCommand` / `ReadInBeforeAndAfterDataCommand` [**Default handler implemented**]
+
+- Used to convert file locations into `TestData` objects that can be passed to the analyzer functions
+- May be used to bypass the need to download data when read data from cloud storage
+- Registering an implementation of this will customize existing behaviour
 
 ```csharp
 public class ReadInBeforeAndAfterDataCommand : IRequest<ReadInBeforeAndAfterDataResponse>
@@ -79,11 +82,12 @@ public class ReadInBeforeAndAfterDataCommand : IRequest<ReadInBeforeAndAfterData
     }
 }
 ```
+
 ---
 
 `NotifyOnTestResultCommand`
 
- - Used to induce behaviour when a t-test result is produced. E.g. writing the t-test result to a blob storage container for later consumption.
+- Used to induce behaviour when a t-test result is produced. E.g. writing the t-test result to a blob storage container for later consumption.
 
 ```csharp
 public class NotifyOnTestResultCommand : INotification
@@ -109,12 +113,13 @@ public class NotifyOnTestResultCommand : INotification
     public OrderedDictionary<string, string> Args { get; }
 }
 ```
+
 ---
 
 `WriteCurrentTrackingFileCommand` [**Default handler implemented**]
 
- - Used to direct tracking file outputs to a custom location. E.g. Writing tracking files to blob storage.
- - Registering an implementation of this will customize existing behavior
+- Used to direct tracking file outputs to a custom location. E.g. Writing tracking files to blob storage.
+- Registering an implementation of this will customize existing behavior
 
 ```csharp
 public class WriteCurrentTrackingFileCommand : INotification
@@ -135,11 +140,12 @@ public class WriteCurrentTrackingFileCommand : INotification
     public string DefaultFileName { get; }
 }
 ```
+
 ---
 
 `WriteTestResultsAsMarkdownCommand`
 
- - Used to direct t-test markdown result files to a custom location. E.g. Writing to blob storage.
+- Used to direct t-test markdown result files to a custom location. E.g. Writing to blob storage.
 
 ```csharp
 public class WriteTestResultsAsMarkdownCommand : INotification
@@ -173,7 +179,7 @@ public class WriteTestResultsAsMarkdownCommand : INotification
 
 `WriteTestResultsAsCsvCommand`
 
- - Used to direct the t-test csv result file to a custom location. E.g. Blob storage.
+- Used to direct the t-test csv result file to a custom location. E.g. Blob storage.
 
 ```csharp
 public class WriteTestResultsAsCsvCommand : INotification
@@ -202,6 +208,3 @@ public class WriteTestResultsAsCsvCommand : INotification
     }
 }
 ```
-
-
-## Next: [Implementing your own Command Handler](./implementing-your-own-command-handlers.md)

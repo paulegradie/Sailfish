@@ -1,4 +1,6 @@
-# Implementing your own command handlers for custom behavior.
+---
+title: Implementing your own command handlers for custom behavior
+---
 
 Commands are packets of information that get passed to a command handler. The handler is a type you will implement in order to override default handlers and their functionality to introduce your own logic.
 
@@ -27,10 +29,9 @@ public class CustomHandler: IRequestHandler<BeforeAndAfterFileLocationCommand, B
 You would then register this implementation as described in the [Registering Dependencies for your tests](../4/registering-dependencies-for-your-tests.md) section.
 
 For example:
+
 ```csharp
 builder.RegisterType<WriteTrackingDataToAzureBlobHandler>().As<INotificationHandler<WriteCurrentTrackingFileCommand>>();
 
 builder.RegisterType<ReadBeforeAndAfterFromBlobStorageHandler>().As<IRequestHandler<BeforeAndAfterFileLocationCommand, BeforeAndAfterFileLocationResponse>>();
 ```
-
-## Next: [Statistical Analysis](../7/statistical-analysis.md)

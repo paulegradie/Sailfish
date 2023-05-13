@@ -1,8 +1,10 @@
-# Interpreting Your Results
+---
+title: Interpreting Your Results
+---
 
 The tables that are produced by Sailfish are intended to be self-explanatory. They will contain your unique test case id (referred to in the tables as the 'display name'), various descriptive statistics about your test run, and if applicable, the statistical comparison test.
 
-Yuo'll notice below that results are grouped first by test class, e.g. `ReadmeExample`, then by test method, then ordered by variable.
+You'll notice below that results are grouped first by test class, e.g. `ReadmeExample`, then by test method, then ordered by variable.
 
 ```
 -----------------------------------
@@ -30,5 +32,3 @@ Note: The change in execution time is significant if the PValue is less than 0.0
 No regressions or improvements found.
 Test run was valid
 ```
-
-## Next: [Utilities](../10/utilities.md)

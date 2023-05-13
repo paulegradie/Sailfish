@@ -1,4 +1,6 @@
-# Sailfish Variables
+---
+title: Sailfish Variables
+---
 
 A powerful feature of the Sailfish library is the ability to define variables that can be used in your tests.
 
@@ -28,7 +30,6 @@ public class TestWithSingleVariable
 ```
 
 ## An example with string variables
-
 
 ```csharp
 [Sailfish(NumIterations = 3)]
@@ -86,8 +87,8 @@ public class TestWithMuchVariable
 >
 > - a matrix (rank-2)
 >   [[1, 2, 3],
->   [4, 5, 6],
->   [7, 8, 9]]
+> [4, 5, 6],
+> [7, 8, 9]]
 > ```
 >
 > You can image that a rank-3 tensor would take on something of a cube shape. However, we don't have a specific word for rank-(N + 3) tensors. We just call them `tensors`.
@@ -174,7 +175,4 @@ public class TestWithMuchVariable
 
 This example will result in the creation of 54 test cases (3 x 3 x 3 \* 2).
 
-> **Warning**:  Avoid the mistake of designing tests that use multiple sailfish methods and define multiple SailfishVariables, but only some tests utilize certain variables. If you find yourself in this situation, split your methods into separate test classes.
-
----
-### Next: [Registering Dependencies For Your Tests](../4/registering-dependencies-for-your-tests.md)
+> **Warning**: Avoid the mistake of designing tests that use multiple sailfish methods and define multiple SailfishVariables, but only some tests utilize certain variables. If you find yourself in this situation, split your methods into separate test classes.

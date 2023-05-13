@@ -1,4 +1,6 @@
-# Customizing Sailfish Analysis
+---
+title: Customizing Sailfish Analysis
+---
 
 By default, Sailfish will look for the most recent file in the default tracking directory when you execute a test run via a console app.
 
@@ -10,7 +12,7 @@ If you'd like to customize the behavior of Sailfish's analysis logic, you can us
 
 The flow of the analysis is
 
-> Program Execution > WriteDataHandler > `IRequestHandler<BeforeAndAfterFileLocationCommand, BeforeAndAfterFileLocationResponse>` > `IRequestHandler<ReadInBeforeAndAfterDataCommand, ReadInBeforeAndAfterDataResponse>` > Analyze
+Program Execution > WriteDataHandler > `IRequestHandler<BeforeAndAfterFileLocationCommand, BeforeAndAfterFileLocationResponse>` > `IRequestHandler<ReadInBeforeAndAfterDataCommand, ReadInBeforeAndAfterDataResponse>` > Analyze
 
 This flow shows that there are two points at which you can minipulate the data inputs:
 
@@ -51,6 +53,7 @@ internal class SailfishBeforeAndAfterFileLocationHandler : IRequestHandler<Befor
 ```
 
 ### Reading Tracking Data that you wish to aggregate prior to testing
+
 `
 This handler is available for scenarios where simply pointing to the right file location is not sufficient, and instead need to manaully combine your data in a particular way. For example, you need to combine the last N files based on an external configuration for the 'before' data set, and one or more files worth of data for the 'after' data set. by hooking into this step, you can perform custom outlier removal, heuristic-based processing, or other pre-processing as you wish.
 
@@ -73,5 +76,3 @@ If you inspect the `TestData` source code, you will find that it takes an IEnume
 The default behavior of the Analyzer is to read a single before and after file, however Sailfish is actually capable of automatically aggregating as many result files as you'd like. The only requirement is that the data satisifies the correct struture when being returned from the handler.
 
 We'll explore more about extensibility points in the next section.
-
-## Next: [Sailfish Extensibility](../6/sailfish-extensibility.md)

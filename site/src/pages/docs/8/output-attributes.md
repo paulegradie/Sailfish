@@ -1,4 +1,6 @@
-# Output Attributes
+---
+title: Output Attributes
+---
 
 Currently, Sailfish exposes two attributes that you can use to produce output files you can use for things like PR submissions, team reviews, or other scenarios where you need to keep a separate record that you may wish to share around.
 
@@ -33,5 +35,3 @@ public class MinimalTest
     }
 }
 ```
-
-## Next: [Interpreting your Results](../9/interpreting-your-results.md)

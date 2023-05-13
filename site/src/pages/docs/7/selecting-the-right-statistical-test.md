@@ -1,4 +1,6 @@
-# Selecting the right Statistical Test
+---
+title: Selecting the right Statistical Test
+---
 
 Choosing the right statistical test for your experiment is of utmost importance.
 
@@ -11,5 +13,3 @@ When you want to compare two distributions (e.g. a before and after), then the t
 Typically, you will want to avoid using a 'T-test', since there is an underlaying assumption that the data must follow a normal distribution, and this will rarely be the case.
 
 This is why we provide alternate tests, such as the MannWhitneyWilcoxonTest, which do not assume normally distributed data.
-
-## Next: [Output Attributes](../8/output-attributes.md)

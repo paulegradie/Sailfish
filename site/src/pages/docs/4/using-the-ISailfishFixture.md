@@ -1,4 +1,6 @@
-# Using the ISailfishFixture
+---
+title: Using the ISailfishFixture
+---
 
 The `ISailfishFixture` interface is intended to facilitate an xUnit-like experience, so its behavior is much the same.
 
@@ -41,10 +43,6 @@ public class AMostBasicTest : ISailfishFixture<MyDependency>
 }
 ```
 
-### Requirements of the ISailfishFixture generic argument
+## Requirements of the ISailfishFixture generic argument
 
 The generic argument provided to the fixture interface must be a public class with a parameterless constructor. This type will be registered with Sailfish's inner container, making it available for dependency injection.
-
----
-
-### Next: [Using the ISailfishDependency](./using-the-ISailfishDependency.md)

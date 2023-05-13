@@ -1,4 +1,6 @@
-# Sailfish Lifecycle Method Attributes
+---
+title: Sailfish Lifecycle Method Attributes
+---
 
 Sailfish lifecycle methods provide flexibility in the setup and teardown phases of your performance tests.
 
@@ -8,12 +10,12 @@ You are interested in monitoring how long it takes to create a resource via your
 
 This is the problem that lifecycle methods solve.
 
-
 ## Lifecycle Method Attributes
 
 Sailfish exposes six (6) lifecycle attributes that give you fine-grain control within your test class. Below are methods that demonstrate how to use each lifecycle method:
 
 ### The setup phase
+
 ```csharp
 [SailfishGlobalSetup]
 public async Task GlobalSetup(CancellationToken cancellationToken)
@@ -39,7 +41,9 @@ public async Task IterationSetup(CancellationToken cancellationToken)
     // this will be invoked before each of the 3 test method invocations
 }
 ```
+
 ### The Teardown Phase
+
 ```csharp
 [SailfishIterationTeardown]
 public async Task IterationTeardown(CancellationToken cancellationToken)
@@ -49,6 +53,7 @@ public async Task IterationTeardown(CancellationToken cancellationToken)
     // this will be invoked after each of the 3 test method invocations
 }
 ```
+
 ```csharp
 [SailfishMethodTeardown]
 public async Task ExecutionMethodTeardown(CancellationToken cancellationToken)
@@ -56,6 +61,7 @@ public async Task ExecutionMethodTeardown(CancellationToken cancellationToken)
     // This will be called once AFTER each method inside the test class
 }
 ```
+
 ```csharp
 [SailfishGlobalTeardown]
 public async Task GlobalTeardown(CancellationToken cancellationToken)
@@ -74,7 +80,6 @@ You may have noticed that these lifecycle methods are asynchronous (i.e. they ar
 
 If you do not need to execute code asynchronously, you have the option of defining these methods synchronously as well. For example, the following is a valid global setup method:
 
-
 ```csharp
 [SailfishGlobalSetup]
 public void GlobalSetup()
@@ -82,6 +87,3 @@ public void GlobalSetup()
     // do nothing
 }
 ```
-
----
-### Next: [Sailfish Variables](../3/sailfish-variables.md)

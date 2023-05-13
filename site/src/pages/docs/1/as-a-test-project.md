@@ -1,4 +1,6 @@
-# As a Test Project
+---
+title: As a Test Project
+---
 
 Using Sailfish as a test project is a simple way to encourage you and your fellow developers to write basic benchmarking tests when making changes to your code base.
 
@@ -69,11 +71,9 @@ public class AMostBasicTest : ISailfishFixture<MyDependency>
 ```
 
 With this setup, you will:
- - register `MyDependency`
- - create a lazy instance of the IClient implementation (created via the `ClientFactory`)
- - Resolve the dependency in the test
- - Set the Client instance as a property in the Global Setup [Lifecycle Method](../2/the-sailfish-test-lifecycle.md)
- - Invoke the client in the SailfishMethod you wish to time
 
----
-### Next: [As A Combined Application](./as-a-combined-application.md)
+- register `MyDependency`
+- create a lazy instance of the IClient implementation (created via the `ClientFactory`)
+- Resolve the dependency in the test
+- Set the Client instance as a property in the Global Setup [Lifecycle Method](../2/the-sailfish-test-lifecycle.md)
+- Invoke the client in the SailfishMethod you wish to time
