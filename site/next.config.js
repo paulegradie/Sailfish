@@ -2,7 +2,7 @@ const withMarkdoc = require('@markdoc/next.js')
 
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  basePath: '/github-pages',
+  basePath: '',
   reactStrictMode: true,
   pageExtensions: ['js', 'jsx', 'md'],
   experimental: {
