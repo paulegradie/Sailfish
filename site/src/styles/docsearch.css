@@ -1,4 +1,4 @@
-! @docsearch/css 3.1.0 | MIT License | © Algolia, Inc. and contributors | https://docsearch.algolia.com
+/* ! @docsearch/css 3.1.0 | MIT License | © Algolia, Inc. and contributors | https://docsearch.algolia.com
 :root {
   --docsearch-primary-color: red;
   --docsearch-highlight-color: var(--docsearch-primary-color);
@@ -500,4 +500,4 @@ svg.DocSearch-Hit-Select-Icon {
         var(--docsearch-footer-height)
     );
   }
-}
+} */
