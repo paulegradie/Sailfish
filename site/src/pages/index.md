@@ -1,8 +1,6 @@
 ---
-title: Sailfish
+title: 'Hello!'
 ---
-
-# Welcome to the Sailfish Documentation
 
 Welcome, and thank you for taking the time to explore the Sailfish Documentation.
 

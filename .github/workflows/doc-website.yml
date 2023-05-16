@@ -1,49 +1,4 @@
-# .github/workflows/build-and-deploy.yml
-
-# name: Node.js CI
-
-# on:
-#   push:
-#     branches: [main]
-
-# jobs:
-#   build:
-#     runs-on: ubuntu-latest
-
-#     steps:
-#       # https://github.com/actions/checkout
-#       - uses: actions/checkout@v3
-
-#       # a standard step for GitHub actions on Node
-#       # https://github.com/actions/setup-node
-#       - uses: actions/setup-node@v3
-#         with:
-#           # update the Node version to meet your needs
-#           node-version: 18
-#           cache: npm
-#           cache-dependency-path: site/package-lock.json
-
-#       - name: Build
-#         run: |
-#           cd site
-#           npm install
-#           npm run build
-#           npm run export
-#           touch .nojekyll
-
-#       - name: Deploy
-#         # https://github.com/JamesIves/github-pages-deploy-action
-#         uses: JamesIves/github-pages-deploy-action@v4
-#         with:
-#           branch: gh-pages
-#           folder: site
-
-
-# Sample workflow for building and deploying a Next.js site to GitHub Pages
-#
-# To get started with Next.js see: https://nextjs.org/docs/getting-started
-#
-name: Deploy Next.js site to Pages
+name: Deploy Sailfish Website
 
 on:
   # Runs on pushes targeting the default branch
@@ -94,10 +49,6 @@ jobs:
         uses: actions/configure-pages@v3
         with:
           directory: /site
-          # Automatically inject basePath in your Next.js configuration file and disable
-          # server side image optimization (https://nextjs.org/docs/api-reference/next/image#unoptimized).
-          #
-          # You may remove this line if you want to manage the configuration yourself.
           static_site_generator: next
       - name: Restore cache
         uses: actions/cache@v3
@@ -122,9 +73,6 @@ jobs:
 
   # Deployment job
   deploy:
-    # defaults:
-    #   run:
-    #     working-directory: ./out
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}

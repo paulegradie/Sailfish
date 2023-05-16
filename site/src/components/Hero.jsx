@@ -7,9 +7,11 @@ import { Button } from '@/components/Button'
 import { HeroBackground } from '@/components/HeroBackground'
 import blurCyanImage from '@/images/blur-cyan.png'
 import blurIndigoImage from '@/images/blur-indigo.png'
+import Sailfish from '@/images/Sailfish.png'
 
 const codeLanguage = 'javascript'
-const code = `public class AMostBasicTest
+const code = `[Sailfish]
+public class AMostBasicTest
 {
     [SailfishVariable(10, 100, 1000)]
     public int N { get; set; }
@@ -50,7 +52,16 @@ export function Hero() {
             />
             <div className="relative">
               <p className="inline bg-gradient-to-r from-indigo-200 via-sky-400 to-indigo-200 bg-clip-text font-display text-5xl tracking-tight text-transparent">
-                Sailfish
+                <Image
+                  className="rounded-2xl shadow-inner-xl"
+
+                  // style={{ "boxShadow": "10px 10px 51px 22px rgba(15,23,42,0.75) inset", "WebkitBoxShadow": "10px 10px 51px 22px rgba(15,23,42,0.75) inset", "MozBoxShadow": "10px 10px 51px 22px rgba(15,23,42,0.75) inset" }}
+                  src={Sailfish}
+                  alt=""
+                  width={650}
+                  unoptimized
+                  priority
+                />
               </p>
               <p className="mt-3 text-2xl tracking-tight text-slate-400">
                 A user friendly performance test runner for .NET
