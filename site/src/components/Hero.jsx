@@ -53,7 +53,7 @@ export function Hero() {
             <div className="relative">
               <p className="inline bg-gradient-to-r from-indigo-200 via-sky-400 to-indigo-200 bg-clip-text font-display text-5xl tracking-tight text-transparent">
                 <Image
-                  className="rounded-2xl shadow-inner-xl"
+                  className="rounded-2xl shadow-xl"
 
                   // style={{ "boxShadow": "10px 10px 51px 22px rgba(15,23,42,0.75) inset", "WebkitBoxShadow": "10px 10px 51px 22px rgba(15,23,42,0.75) inset", "MozBoxShadow": "10px 10px 51px 22px rgba(15,23,42,0.75) inset" }}
                   src={Sailfish}
@@ -63,9 +63,9 @@ export function Hero() {
                   priority
                 />
               </p>
-              <p className="mt-3 text-2xl tracking-tight text-slate-400">
+              {/* <p className="mt-3 text-2xl tracking-tight text-slate-400">
                 A user friendly performance test runner for .NET
-              </p>
+              </p> */}
               <div className="mt-8 flex gap-4 md:justify-center lg:justify-start">
                 <Button href="/docs/0/getting-started">Get started</Button>
                 <Button href="https://github.com/paulegradie/Sailfish" variant="secondary">
