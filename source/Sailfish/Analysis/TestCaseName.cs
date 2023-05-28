@@ -4,11 +4,15 @@ using System.Text.Json.Serialization;
 
 namespace Sailfish.Analysis;
 
+/// <summary>
+/// Class to hold and manipulate the test case name
+/// Name will be like
+/// some.test(maybe:20,other:30)
+/// some.other.test(maybe:10,other:30)
+/// 
+/// </summary>
 public class TestCaseName
 {
-    // name will be like
-    // some.test(maybe:20,other:30)
-    // some.other.test(maybe:10,other:30)
 
     private const char OpenBracket = '(';
     private const char Dot = '.';
@@ -38,6 +42,12 @@ public class TestCaseName
         return displayName.Split(OpenBracket).First().Split(Dot).ToArray();
     }
 
+    /// <summary>
+    /// Method to parse and return an index of the '.' delimited test name.
+    /// /// e.g. some.test, index 0 = 
+    /// </summary>
+    /// <param name="index"></param>
+    /// <returns></returns>
     public string? GetNamePart(int index)
     {
         try
