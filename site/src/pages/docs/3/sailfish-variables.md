@@ -74,7 +74,7 @@ public class TestWithMuchVariable
 ## Test Cases Based on the Variable Tensor
 
 > **Note**
-> A `tensor` is a generic algebraic term for an object that holds nubmers.
+> A `tensor` is a generic algebraic term for an object that holds numbers.
 >
 > The following are all tensors:
 >
@@ -87,8 +87,8 @@ public class TestWithMuchVariable
 >
 > - a matrix (rank-2)
 >   [[1, 2, 3],
-> [4, 5, 6],
-> [7, 8, 9]]
+>   [4, 5, 6],
+>   [7, 8, 9]]
 > ```
 >
 > You can image that a rank-3 tensor would take on something of a cube shape. However, we don't have a specific word for rank-(N + 3) tensors. We just call them `tensors`.

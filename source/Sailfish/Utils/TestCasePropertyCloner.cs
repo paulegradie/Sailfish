@@ -7,7 +7,7 @@ using System.Text.RegularExpressions;
 
 namespace Sailfish.Utils;
 
-internal static class Cloner
+internal static class TestCasePropertyCloner
 {
     public static void ApplyPropertiesAndFieldsTo(this PropertiesAndFields propertiesAndFields, object destination)
     {

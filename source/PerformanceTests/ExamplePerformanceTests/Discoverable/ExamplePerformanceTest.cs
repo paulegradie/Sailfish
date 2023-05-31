@@ -36,7 +36,7 @@ public class ExamplePerformanceTest : TestBase
         // logger.Information("This is the Execution Method Setup");
     }
 
-    [SailfishIterationSetup]
+    [SailfishIterationSetup(nameof(WaitPeriodPerfTest))]
     public void IterationSetup()
     {
         // logger.Warning("This is the Iteration Setup - use sparingly");
