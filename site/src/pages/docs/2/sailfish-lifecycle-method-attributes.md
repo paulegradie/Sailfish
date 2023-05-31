@@ -42,6 +42,17 @@ public async Task IterationSetup(CancellationToken cancellationToken)
 }
 ```
 
+### The main execution method
+
+```csharp
+[SailfishMethod]
+public async Task SailfishMethod(CancellationToken cancellationToken)
+{
+    // This is where you place code you which to be timed
+}
+```
+
+
 ### The Teardown Phase
 
 ```csharp
