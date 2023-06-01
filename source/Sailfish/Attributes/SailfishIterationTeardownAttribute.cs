@@ -3,10 +3,14 @@ using System;
 namespace Sailfish.Attributes;
 
 /// <summary>
-/// Specifies that the attributed method is a Sailfish iteration teardown method.
+/// Specifies that the attributed method is responsible for Sailfish iteration teardown.
 /// </summary>
+/// <remarks>
+/// This attribute should be placed on a single method. Multiple attributes per class are allowed.
+/// </remarks>
+/// <seealso href="https://paulgradie.com/Sailfish/docs/2/sailfish-lifecycle-method-attributes">Sailfish Lifecycle Method Attributes</seealso>
 [AttributeUsage(AttributeTargets.Method, AllowMultiple = false)]
-public sealed class SailfishIterationTeardownAttribute : Attribute
+public sealed class SailfishIterationTeardownAttribute : Attribute, IInnerLifecycleAttribute
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="SailfishIterationTeardownAttribute"/> class
@@ -23,13 +27,3 @@ public sealed class SailfishIterationTeardownAttribute : Attribute
     /// </summary>
     public string[] MethodNames { get; }
 }
-
-
-
-
-/// <summary>
-/// Attribute to be placed on a single method responsible for Iteration Teardown.
-/// See: <a href="https://paulgradie.com/Sailfish/docs/2/sailfish-lifecycle-method-attributes">Sailfish Lifecycle Method Attributes</a>
-/// </summary>
-/// <param name="methodNames">A params array (comma delimited values) of string names for SailfishMethods this attribute will be applied to</param>
-/// <note>The IterationTeardown method is called once after each invocation of the SailfishMethod, which in turn is executed numIterations + numWarmupIterations times. Method will be executed before each each SailfishMethod that is indicated in its params array. If no params are specified, all methods are included. If multiple methods contain overlapping method names, they will both be applied, in which case, order of method invocation is determined alphabetically</note>

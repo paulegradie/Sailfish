@@ -10,8 +10,14 @@ namespace Sailfish.Attributes;
 /// </remarks>
 /// <seealso href="https://paulgradie.com/Sailfish/docs/2/sailfish-lifecycle-method-attributes">Sailfish Lifecycle Method Attributes</seealso>
 [AttributeUsage(AttributeTargets.Method, AllowMultiple = false)]
-public sealed class SailfishIterationSetupAttribute : Attribute
+public sealed class SailfishIterationSetupAttribute : Attribute, IInnerLifecycleAttribute
 {
+    
+    /// <summary>
+    /// Initializes a new instance of the <see cref="SailfishIterationSetupAttribute"/> class
+    /// with the specified method names.
+    /// </summary>
+    /// <param name="methodNames">The names of the methods to be called during the setup phase.</param>
     public SailfishIterationSetupAttribute(params string[] methodNames)
     {
         MethodNames = methodNames;

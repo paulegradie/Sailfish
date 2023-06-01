@@ -10,7 +10,7 @@ namespace Sailfish.Attributes;
 /// </remarks>
 /// <seealso href="https://paulgradie.com/Sailfish/docs/2/sailfish-lifecycle-method-attributes">Sailfish Lifecycle Method Attributes</seealso>
 [AttributeUsage(AttributeTargets.Method, AllowMultiple = false)]
-public sealed class SailfishMethodTeardownAttribute : Attribute
+public sealed class SailfishMethodTeardownAttribute : Attribute, IInnerLifecycleAttribute
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="SailfishMethodTeardownAttribute"/> class with the specified method names.

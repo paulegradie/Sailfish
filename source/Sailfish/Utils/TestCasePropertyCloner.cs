@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using Sailfish.Attributes;
-using System.Text.RegularExpressions;
 
 namespace Sailfish.Utils;
 

@@ -36,7 +36,7 @@ public class ExamplePerformanceTest : TestBase
         // logger.Information("This is the Execution Method Setup");
     }
 
-    [SailfishIterationSetup(nameof(WaitPeriodPerfTest))]
+    [SailfishIterationSetup]
     public void IterationSetup()
     {
         // logger.Warning("This is the Iteration Setup - use sparingly");
@@ -53,7 +53,6 @@ public class ExamplePerformanceTest : TestBase
     public async Task Other(CancellationToken cancellationToken)
     {
         await Task.Delay(WaitPeriod, cancellationToken);
-        await Task.CompletedTask;
     }
 
     [SailfishIterationTeardown]

@@ -34,14 +34,14 @@ public sealed class PerformanceTimer
         IsValid = false;
     }
 
-    public void StartExecutionTimer()
+    public void StartSailfishMethodExecutionTimer()
     {
         if (executionTimer.IsRunning) return;
         executionIterationStart = DateTimeOffset.Now;
         executionTimer.Start();
     }
 
-    public void StopExecutionTimer()
+    public void StopSailfishMethodExecutionTimer()
     {
         if (!executionTimer.IsRunning) return;
         executionTimer.Stop();
@@ -50,14 +50,14 @@ public sealed class PerformanceTimer
         executionTimer.Reset();
     }
 
-    public void StartMethodTimer()
+    public void StartMethodLifecycleTimer()
     {
         if (methodIterationTimer.IsRunning) return;
         methodIterationStart = DateTimeOffset.Now;
         methodIterationTimer.Start();
     }
 
-    public void StopMethodTimer()
+    public void StopMethodLifecycleTimer()
     {
         if (!methodIterationTimer.IsRunning) return;
         methodIterationTimer.Stop();
@@ -66,14 +66,14 @@ public sealed class PerformanceTimer
         methodIterationTimer.Reset();
     }
 
-    public void StartGlobalTimer()
+    public void StartGlobalLifecycleTimer()
     {
         if (globalTimer.IsRunning) return;
         GlobalStart = DateTimeOffset.Now;
         globalTimer.Start();
     }
 
-    public void StopGlobalTimer()
+    public void StopGlobalLifecycleTimer()
     {
         if (!globalTimer.IsRunning) return;
         globalTimer.Stop();

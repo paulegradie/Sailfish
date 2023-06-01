@@ -1,6 +1,5 @@
 using System;
 using System.IO;
-using System.Text;
 using Sailfish.Attributes;
 
 namespace Tests.Sailfish.TestAdapter.TestResources;
