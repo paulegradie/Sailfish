@@ -17,6 +17,7 @@ public sealed class SailfishIterationTeardownAttribute : Attribute, IInnerLifecy
     /// with the specified method names.
     /// </summary>
     /// <param name="methodNames">The names of the methods to be called during the teardown phase.</param>
+    /// <remarks>This feature is EXPERIMENTAL</remarks>
     public SailfishIterationTeardownAttribute(params string[] methodNames)
     {
         MethodNames = methodNames;

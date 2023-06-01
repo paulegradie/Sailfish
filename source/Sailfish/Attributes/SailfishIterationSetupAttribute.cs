@@ -18,6 +18,7 @@ public sealed class SailfishIterationSetupAttribute : Attribute, IInnerLifecycle
     /// with the specified method names.
     /// </summary>
     /// <param name="methodNames">The names of the methods to be called during the setup phase.</param>
+    /// <remarks>This feature is EXPERIMENTAL</remarks>
     public SailfishIterationSetupAttribute(params string[] methodNames)
     {
         MethodNames = methodNames;

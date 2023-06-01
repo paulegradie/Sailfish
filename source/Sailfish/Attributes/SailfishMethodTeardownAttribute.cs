@@ -16,6 +16,7 @@ public sealed class SailfishMethodTeardownAttribute : Attribute, IInnerLifecycle
     /// Initializes a new instance of the <see cref="SailfishMethodTeardownAttribute"/> class with the specified method names.
     /// </summary>
     /// <param name="methodNames">A params array of string names for SailfishMethods this attribute will be applied to.</param>
+    /// <remarks>This feature is EXPERIMENTAL</remarks>
     public SailfishMethodTeardownAttribute(params string[] methodNames)
     {
         MethodNames = methodNames;

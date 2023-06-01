@@ -16,6 +16,7 @@ public sealed class SailfishMethodSetupAttribute : Attribute, IInnerLifecycleAtt
     /// Initializes a new instance of the <see cref="SailfishMethodSetupAttribute"/> class with the specified method names.
     /// </summary>
     /// <param name="methodNames">A params array of string names for SailfishMethods this attribute will be applied to.</param>
+    /// <remarks>This feature is EXPERIMENTAL</remarks>
     public SailfishMethodSetupAttribute(params string[] methodNames)
     {
         MethodNames = methodNames;
