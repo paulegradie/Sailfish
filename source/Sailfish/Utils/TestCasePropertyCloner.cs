@@ -12,12 +12,12 @@ internal static class TestCasePropertyCloner
     {
         foreach (var (key, value) in propertiesAndFields.Properties)
         {
-            key.SetValue(destination, value, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance, null, null, null);
+            key.SetValue(destination, value);
         }
 
         foreach (var (key, value) in propertiesAndFields.Fields)
         {
-            key.SetValue(destination, value, BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance, null, null);
+            key.SetValue(destination, value);
         }
     }
 
