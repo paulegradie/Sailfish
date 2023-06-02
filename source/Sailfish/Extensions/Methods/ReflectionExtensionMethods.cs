@@ -37,9 +37,9 @@ public static class ReflectionExtensionMethods
         return type.GetMethods(BindingFlags.Public | BindingFlags.Instance).Where(x => x.HasAttribute<TAttribute>());
     }
 
-    internal static IEnumerable<MethodInfo> GetMethodsWithAttribute<TAttribute>(this object instance) where TAttribute : Attribute
+    internal static List<MethodInfo> GetMethodsWithAttribute<TAttribute>(this object instance) where TAttribute : Attribute
     {
-        return instance.GetType().GetMethodsWithAttribute<TAttribute>();
+        return instance.GetType().GetMethodsWithAttribute<TAttribute>().ToList();
     }
 
     internal static MethodInfo? GetMethodWithAttribute<TAttribute>(this object instance) where TAttribute : Attribute

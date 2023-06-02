@@ -4,7 +4,7 @@ using Sailfish.Attributes;
 
 namespace PerformanceTests.ExamplePerformanceTests.Discoverable;
 
-[Sailfish(NumIterations = 1, NumWarmupIterations = 0, Disabled = false)]
+[Sailfish(NumIterations = 2, NumWarmupIterations = 0, Disabled = false)]
 public class SimplePerfTest
 {
     [SailfishGlobalSetup]

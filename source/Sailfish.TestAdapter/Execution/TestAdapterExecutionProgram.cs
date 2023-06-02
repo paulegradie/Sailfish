@@ -219,7 +219,7 @@ internal class TestAdapterExecutionProgram : ITestAdapterExecutionProgram
 
         testResult.StartTime = result.PerformanceTimerResults?.GlobalStart ?? new DateTimeOffset();
         testResult.EndTime = result.PerformanceTimerResults?.GlobalStop ?? new DateTimeOffset();
-        testResult.Duration = TimeSpan.FromMilliseconds(medianTestRuntime);
+        testResult.Duration = TimeSpan.FromMilliseconds(double.IsNaN(medianTestRuntime) ? 0 : medianTestRuntime);
 
         testResult.ErrorMessage = result.Exception?.Message;
 

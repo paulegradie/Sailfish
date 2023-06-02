@@ -3,6 +3,9 @@ using System.Text.Json.Serialization;
 
 namespace Sailfish.Analysis;
 
+/// <summary>
+/// Strong Typing for Test Case strings
+/// </summary>
 public class TestCaseId
 {
     [JsonConstructor]

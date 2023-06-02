@@ -54,7 +54,6 @@ internal class SailfishExecutionEngine : ISailfishExecutionEngine
 
         var currentPropertyTensorIndex = 0;
         var totalPropertyTensorElements = Math.Max(testProvider.GetNumberOfPropertySetsInTheQueue() - 1, 0);
-
         var instanceContainerEnumerator = testProvider.ProvideNextTestInstanceContainer().GetEnumerator();
 
         try

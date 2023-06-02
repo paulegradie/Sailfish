@@ -53,7 +53,6 @@ public class ExamplePerformanceTest : TestBase
     public async Task Other(CancellationToken cancellationToken)
     {
         await Task.Delay(WaitPeriod, cancellationToken);
-        await Task.CompletedTask;
     }
 
     [SailfishIterationTeardown]

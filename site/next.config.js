@@ -12,6 +12,10 @@ const nextConfig = {
   experimental: {
     scrollRestoration: true,
   },
+  webpack(config) {
+    config.experiments = { ...config.experiments, topLevelAwait: true }
+    return config
+  },
   images: {
     loader: 'akamai',
     path: '',

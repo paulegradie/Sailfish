@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.Logging;
@@ -60,10 +61,16 @@ internal class ConsoleWriter : IConsoleWriter
             }
         }
 
-        var markdownStringTable = markdownTableConverter.ConvertToMarkdownTableString(summaryResults);
+        var rawData = summaryResults
+            .SelectMany(x =>
+                x.CompiledResults.SelectMany(y =>
+                    y.DescriptiveStatisticsResult?.RawExecutionResults ?? Array.Empty<double>()))
+            .ToArray();
+        var markdownStringTable = markdownTableConverter.ConvertToMarkdownTableString(summaryResults) + "Raw results: \n" + string.Join(", ", rawData.OrderBy(x => x));
 
         messageLogger?.SendMessage(TestMessageLevel.Informational, markdownStringTable);
         consoleLogger.Information("{MarkdownTable}", markdownStringTable);
+
         return markdownStringTable;
     }
 }

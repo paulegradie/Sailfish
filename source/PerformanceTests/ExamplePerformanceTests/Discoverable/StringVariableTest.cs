@@ -6,7 +6,7 @@ using Sailfish.Registration;
 
 namespace PerformanceTests.ExamplePerformanceTests.Discoverable;
 
-[Sailfish(NumIterations = 3, Disabled = true)]
+[Sailfish(NumIterations = 3, Disabled = false)]
 public class TestWithStringVariable
 {
     private IClient client = null!;
