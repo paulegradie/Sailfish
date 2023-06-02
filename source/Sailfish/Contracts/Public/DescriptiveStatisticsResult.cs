@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Linq;
+using MathNet.Numerics;
 using MathNet.Numerics.Statistics;
 using Sailfish.Analysis;
 using Sailfish.Execution;
@@ -24,9 +25,9 @@ public class DescriptiveStatisticsResult
     {
         var executionIterations = performanceTimer.ExecutionIterationPerformances.Select(x => (double)x.Duration).ToArray();
 
-        var mean = executionIterations.Mean();
-        var stdDev = executionIterations.StandardDeviation() + 0.000000001;
-        var variance = executionIterations.Variance() + 0.000000001;
+        var mean = executionIterations.Mean().Round(5);
+        var stdDev = (executionIterations.StandardDeviation() + 0.000000001).Round(5);
+        var variance = (executionIterations.Variance() + 0.000000001).Round(5);
         var median = executionIterations.Median();
 
         return new DescriptiveStatisticsResult
