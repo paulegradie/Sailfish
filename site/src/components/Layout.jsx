@@ -46,6 +46,7 @@ const navigation = [
       { title: 'The Sailfish Test Lifecycle', href: '/docs/2/the-sailfish-test-lifecycle' },
       { title: 'The Sailfish Attribute', href: '/docs/2/the-sailfish-attribute' },
       { title: 'Sailfish Lifecycle Method Attibutes', href: '/docs/2/sailfish-lifecycle-method-attributes' },
+      { title: 'Property and Field management', href: '/docs/2/property-and-field-management' },
     ],
   },
   {

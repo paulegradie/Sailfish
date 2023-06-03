@@ -10,14 +10,14 @@ internal static class TestCasePropertyCloner
 {
     public static void ApplyPropertiesAndFieldsTo(this PropertiesAndFields propertiesAndFields, object destination)
     {
-        foreach (var property in propertiesAndFields.Properties)
+        foreach (var (key, value) in propertiesAndFields.Properties)
         {
-            property.Key.SetValue(destination, property.Value);
+            key.SetValue(destination, value);
         }
 
-        foreach (var field in propertiesAndFields.Fields)
+        foreach (var (key, value) in propertiesAndFields.Fields)
         {
-            field.Key.SetValue(destination, field.Value);
+            key.SetValue(destination, value);
         }
     }
 
