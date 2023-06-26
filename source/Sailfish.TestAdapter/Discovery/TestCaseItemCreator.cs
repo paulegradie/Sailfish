@@ -108,9 +108,13 @@ internal static class TestCaseItemCreator
         var currentlyInTheRightClass = false;
         var index = 0;
         var methodLine = 0;
-        foreach (var fileLine in fileLines)
+        var methodKey = $" {method.Name}(";
+        var classKey = $"class {testType.Name}";
+
+        foreach (var line in fileLines)
         {
-            if (fileLine.Contains($"class {testType.Name}"))
+            var fileLine = line.Trim().Split("//").First();
+            if (fileLine.Contains(classKey))
             {
                 currentlyInTheRightClass = true;
             }
@@ -119,7 +123,6 @@ internal static class TestCaseItemCreator
                 currentlyInTheRightClass = false;
             }
 
-            var methodKey = $" {method.Name}(";
             if (currentlyInTheRightClass && fileLine.Trim().Contains(methodKey))
             {
                 methodLine = index;
