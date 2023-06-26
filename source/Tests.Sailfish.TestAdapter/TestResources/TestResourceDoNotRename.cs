@@ -12,6 +12,7 @@ public class SimplePerfTest
     [SailfishVariable(1_000_000, 4_000_000)]
     public int VariableB { get; set; }
 
+    // class
     [SailfishMethod]
     public void ExecutionMethod()
     {
