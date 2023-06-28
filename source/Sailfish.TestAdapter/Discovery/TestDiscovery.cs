@@ -2,9 +2,10 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Reflection;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.Logging;
+using Sailfish.Analyzers.Discovery;
+using Sailfish.Attributes;
 
 namespace Sailfish.TestAdapter.Discovery;
 
@@ -55,36 +56,32 @@ internal static class TestDiscovery
 
             if (perfTestTypes.Length == 0) continue;
 
-            var correspondingCsFiles = DirectoryRecursion.FindAllFilesRecursively(
+            var projectSourceCodeFilePaths = DirectoryRecursion.FindAllFilesRecursively(
                 project,
                 "*.cs",
                 logger,
                 DirectoryRecursion.FileSearchFilters.FilePathDoesNotContainBinOrObjDirs);
-            if (correspondingCsFiles.Count == 0) continue;
+            if (projectSourceCodeFilePaths.Count == 0) continue;
 
-            foreach (var perfTestType in perfTestTypes)
+            var sourceCache = DiscoveryAnalysisMethods.CompilePreRenderedSourceMap(
+                    projectSourceCodeFilePaths,
+                    nameof(SailfishAttribute).Replace(nameof(Attribute), ""),
+                    nameof(SailfishMethodAttribute).Replace(nameof(Attribute), ""))
+                .OrderBy(meta => meta.ClassName);
+
+            foreach (var classMetaData in sourceCache)
             {
-                var fileAndContent = FindFileThatImplementsType(correspondingCsFiles, perfTestType);
-                if (fileAndContent is null) throw new Exception($"Could not find corresponding file for {perfTestType.Name}!");
-                var cases = TestCaseItemCreator.AssembleTestCases(perfTestType, fileAndContent.Content, fileAndContent.File, sourceDllPath, logger);
-                testCases.AddRange(cases);
+                var index = perfTestTypes
+                    .Select(t => t.Name)
+                    .ToList()
+                    .IndexOf(classMetaData.ClassName);
+                var perfTestType = perfTestTypes[index];
+
+                var classTestCases = TestCaseItemCreator.AssembleTestCases(perfTestType, classMetaData, sourceDllPath, logger);
+                testCases.AddRange(classTestCases);
             }
         }
 
         return testCases;
-    }
-
-    private static FileAndContent? FindFileThatImplementsType(IEnumerable<string> files, MemberInfo type)
-    {
-        foreach (var file in files)
-        {
-            var content = File.ReadAllLines(file).Select(x => x.Trim()).Where(x => !string.IsNullOrEmpty(x) && !string.IsNullOrWhiteSpace(x)).ToList();
-            if (content.Any(x => x.Contains($"class {type.Name}")))
-            {
-                return new FileAndContent(file, content);
-            }
-        }
-
-        return null;
     }
 }

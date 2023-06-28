@@ -24,6 +24,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PerformanceTestingUserInvok
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tests.E2E.ExceptionHandling", "Tests.E2E.ExceptionHandling\Tests.E2E.ExceptionHandling.csproj", "{F806AE1E-4D04-4EBF-BEA5-47731A37B0F0}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sailfish.Analyzers", "Sailfish.Analyzers\Sailfish.Analyzers.csproj", "{042345EC-1A8D-41CC-BB57-8D8354D5F698}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -70,6 +72,10 @@ Global
 		{F806AE1E-4D04-4EBF-BEA5-47731A37B0F0}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F806AE1E-4D04-4EBF-BEA5-47731A37B0F0}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F806AE1E-4D04-4EBF-BEA5-47731A37B0F0}.Release|Any CPU.Build.0 = Release|Any CPU
+		{042345EC-1A8D-41CC-BB57-8D8354D5F698}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{042345EC-1A8D-41CC-BB57-8D8354D5F698}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{042345EC-1A8D-41CC-BB57-8D8354D5F698}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{042345EC-1A8D-41CC-BB57-8D8354D5F698}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
 		{EE33D17C-3F19-40A9-8394-D966232723A6} = {AA777AE3-7608-4068-9BDE-3AE366657722}

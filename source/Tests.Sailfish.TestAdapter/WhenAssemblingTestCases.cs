@@ -2,6 +2,8 @@
 using System.Linq;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.Logging;
 using NSubstitute;
+using Sailfish.Analyzers.Discovery;
+using Sailfish.Attributes;
 using Sailfish.TestAdapter.Discovery;
 using Shouldly;
 using Tests.Sailfish.TestAdapter.TestResources;
@@ -11,7 +13,7 @@ namespace Tests.Sailfish.TestAdapter;
 
 public class WhenAssemblingTestCases
 {
-    public static string FindSpecificUniqueFile(string fileName)
+    private static string FindSpecificUniqueFile(string fileName)
     {
         var refFile = Directory.GetFiles(".").First();
 
@@ -24,11 +26,17 @@ public class WhenAssemblingTestCases
     public void AllTestCasesAreMade()
     {
         var testResourceRelativePath = FindSpecificUniqueFile("TestResourceDoNotRename.cs");
-        var content = File.ReadAllLines(testResourceRelativePath).Select(x => x.Trim()).Where(x => !string.IsNullOrEmpty(x) && !string.IsNullOrWhiteSpace(x)).ToList();
-
         const string sourceDll = "C:/this/is/some/dll.dll";
+        var sourceCache = DiscoveryAnalysisMethods.CompilePreRenderedSourceMap(
+                new[] { testResourceRelativePath },
+                nameof(SailfishAttribute).Replace("Attribute", ""),
+                nameof(SailfishMethodAttribute).Replace("Attribute", ""))
+            .ToList();
 
-        var result = TestCaseItemCreator.AssembleTestCases(typeof(SimplePerfTest), content, testResourceRelativePath, sourceDll, Substitute.For<IMessageLogger>()).ToList();
+        var classMetaData = sourceCache.Single();
+        var result = TestCaseItemCreator
+            .AssembleTestCases(typeof(SimplePerfTest), classMetaData, sourceDll, Substitute.For<IMessageLogger>())
+            .ToList();
 
         result.Count.ShouldBe(6);
     }
