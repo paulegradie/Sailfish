@@ -23,7 +23,7 @@ public class FullE2EFixture
         result.Exceptions.ShouldNotBeNull();
         result.Exceptions.Count().ShouldBe(0);
     }
-    
+
     // will need to update this if more tests are added to the the project
     [Fact]
     public async Task AFullTestRunOfTheDemoShouldFind11Tests()

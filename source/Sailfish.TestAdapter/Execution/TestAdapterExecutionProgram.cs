@@ -11,6 +11,7 @@ using Sailfish.Exceptions;
 using Sailfish.Execution;
 using Sailfish.TestAdapter.TestProperties;
 
+
 namespace Sailfish.TestAdapter.Execution;
 
 internal class TestAdapterExecutionProgram : ITestAdapterExecutionProgram
@@ -105,6 +106,12 @@ internal class TestAdapterExecutionProgram : ITestAdapterExecutionProgram
 
         var compiledResults = executionSummaryCompiler.CompileToSummaries(rawResults, CancellationToken.None);
         consoleWriterFactory.CreateConsoleWriter(frameworkHandle).Present(compiledResults);
+
+        if (frameworkHandle is not null)
+        {
+            // Let the test platform know that it should tear down the test host process
+            frameworkHandle.EnableShutdownAfterTestRun = true;
+        }
     }
 
     private static Assembly LoadAssemblyFromDll(string dllPath)
@@ -223,16 +230,23 @@ internal class TestAdapterExecutionProgram : ITestAdapterExecutionProgram
 
         testResult.ErrorMessage = result.Exception?.Message;
 
+        testResult.Messages.Clear();
+
         var outputs = consoleWriterFactory.CreateConsoleWriter(logger).Present(compiledResult);
-        testResult.Messages.Add(new TestResultMessage("Test Result", outputs));
+
+        testResult.Messages.Add(new TestResultMessage(TestResultMessage.StandardOutCategory, outputs));
 
         LogTestResults(result, logger);
 
-        logger?.RecordResult(testResult);
         logger?.RecordEnd(currentTestCase, testResult.Outcome);
+        logger?.RecordResult(testResult);
     }
 
-    private static void HandleFailureTestCase(TestExecutionResult result, TestCase currentTestCase, RawExecutionResult rawResult, ITestExecutionRecorder? logger,
+    private static void HandleFailureTestCase(
+        TestExecutionResult result,
+        TestCase currentTestCase,
+        RawExecutionResult rawResult,
+        ITestExecutionRecorder? logger,
         CancellationToken cancellationToken)
     {
         var testResult = new TestResult(currentTestCase);
@@ -250,6 +264,7 @@ internal class TestAdapterExecutionProgram : ITestAdapterExecutionProgram
         testResult.EndTime = result.PerformanceTimerResults?.GlobalStop ?? new DateTimeOffset();
         testResult.Duration = TimeSpan.Zero;
 
+        testResult.Messages.Clear();
         testResult.ErrorMessage = result.Exception?.Message;
 
         foreach (var exception in rawResult.Exceptions)
