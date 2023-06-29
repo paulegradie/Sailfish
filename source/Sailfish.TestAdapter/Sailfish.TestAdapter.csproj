@@ -37,7 +37,6 @@
         <PackageReference Include="Microsoft.TestPlatform.ObjectModel" Version="17.6.2" PrivateAssets="All" />
     </ItemGroup>
     <ItemGroup>
-        <ProjectReference Include="..\Sailfish.Analyzers\Sailfish.Analyzers.csproj" />
-        <ProjectReference Include="..\Sailfish\Sailfish.csproj" IncludeAssets="All" />
+        <ProjectReference Include="..\Sailfish\Sailfish.csproj" />
     </ItemGroup>
 </Project>

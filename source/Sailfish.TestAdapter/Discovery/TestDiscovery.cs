@@ -4,7 +4,6 @@ using System.IO;
 using System.Linq;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.Logging;
-using Sailfish.Analyzers.Discovery;
 using Sailfish.Attributes;
 
 namespace Sailfish.TestAdapter.Discovery;

@@ -4,7 +4,7 @@ namespace Sailfish.Exceptions;
 
 public class SailfishException : Exception
 {
-    public SailfishException(string? message) : base(message)
+    public SailfishException(string? message = null) : base(message)
     {
     }
 

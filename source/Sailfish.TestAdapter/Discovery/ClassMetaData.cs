@@ -1,6 +1,6 @@
 using Microsoft.CodeAnalysis;
 
-namespace Sailfish.Analyzers.Discovery;
+namespace Sailfish.TestAdapter.Discovery;
 
 public sealed class ClassMetaData
 {

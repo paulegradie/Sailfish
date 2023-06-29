@@ -230,10 +230,9 @@ internal class TestAdapterExecutionProgram : ITestAdapterExecutionProgram
 
         testResult.ErrorMessage = result.Exception?.Message;
 
-        testResult.Messages.Clear();
-
         var outputs = consoleWriterFactory.CreateConsoleWriter(logger).Present(compiledResult);
 
+        testResult.Messages.Clear();
         testResult.Messages.Add(new TestResultMessage(TestResultMessage.StandardOutCategory, outputs));
 
         LogTestResults(result, logger);
