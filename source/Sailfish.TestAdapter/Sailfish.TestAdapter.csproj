@@ -43,8 +43,8 @@
         <ProjectReference Include="..\Sailfish\Sailfish.csproj"/>
     </ItemGroup>
 
-    <!-- <ItemGroup>
+    <ItemGroup>
         <None Include="$(OutputPath)\Sailfish.Analyzers.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false"/>
-    </ItemGroup> -->
+    </ItemGroup>
 
 </Project>
