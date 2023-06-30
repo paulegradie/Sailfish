@@ -70,5 +70,8 @@ jobs:
       - name: Push Adapter
         run: dotnet nuget push Sailfish.TestAdapter.${{ env.VERSION }}.nupkg --source https://www.nuget.org --api-key ${{secrets.NUGET_API_KEY}}
 
+      - name: discover contents
+        run: ls
+
       - name: Push Analyzers
         run: dotnet nuget push Sailfish.Analyzers.${{ env.VERSION }}.nupkg --source https://www.nuget.org --api-key ${{secrets.NUGET_API_KEY}}
