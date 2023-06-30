@@ -21,9 +21,6 @@
         <RepositoryType>git</RepositoryType>
         <RepositoryUrl>https://github.com/paulegradie/Sailfish</RepositoryUrl>
     </PropertyGroup>
-    <ItemGroup>
-        <Content Include="$(OutputPath)Sailfish.Analyzers.dll" Pack="true" PackagePath="analyzers\dotnet\cs" />
-    </ItemGroup>
 
     <ItemGroup Condition="'$(BuildingPackage)' != 'true'">
         <PackageReference Include="Accord.Statistics" Version="3.8.0" />
