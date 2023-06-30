@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.Logging;
-using Sailfish.Analyzers.Discovery;
 using Sailfish.Execution;
 using Sailfish.TestAdapter.TestProperties;
 using Sailfish.Utils;

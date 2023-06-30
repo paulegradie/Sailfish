@@ -36,6 +36,6 @@ public class FullE2EFixture
         var result = await SailfishRunner.Run(runSettings);
 
         result.IsValid.ShouldBe(true);
-        result.ExecutionSummaries.Count().ShouldBe(12);
+        result.ExecutionSummaries.Count().ShouldBe(13);
     }
 }

@@ -2,7 +2,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
     <PropertyGroup>
         <PackageId>Sailfish.TestAdapter</PackageId>
-        <Version>0.0.111</Version>
+        <Version>0.0.0</Version>
         <Authors>Paul E. Gradie</Authors>
         <Description>
             Sailfish is a user friendly performace test suite for writing clean, manageable performance tests
@@ -14,6 +14,7 @@
         <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
         <LangVersion>10</LangVersion>
         <IncludeSymbols>true</IncludeSymbols>
+        <EnforceExtendedAnalyzerRules>true</EnforceExtendedAnalyzerRules>
     </PropertyGroup>
     <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
         <DebugSymbols>true</DebugSymbols>
@@ -30,14 +31,20 @@
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
-        <PackageReference Include="Serilog.Sinks.Console" Version="4.1.0" />
-        <PackageReference Include="Serilog.Sinks.File" Version="5.0.0" />
-        <PackageReference Include="Serilog.Sinks.Seq" Version="5.2.2" />
-        <PackageReference Include="System.ComponentModel.Composition" Version="7.0.0" />
-        <PackageReference Include="Microsoft.TestPlatform.ObjectModel" Version="17.6.2" PrivateAssets="All" />
+        <PackageReference Include="Serilog.Sinks.Console" Version="4.1.0"/>
+        <PackageReference Include="Serilog.Sinks.File" Version="5.0.0"/>
+        <PackageReference Include="Serilog.Sinks.Seq" Version="5.2.2"/>
+        <PackageReference Include="System.ComponentModel.Composition" Version="7.0.0"/>
+        <PackageReference Include="Microsoft.TestPlatform.ObjectModel" Version="17.6.2" PrivateAssets="All"/>
+        <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.2.0" />
     </ItemGroup>
     <ItemGroup>
-        <ProjectReference Include="..\Sailfish.Analyzers\Sailfish.Analyzers.csproj" />
-        <ProjectReference Include="..\Sailfish\Sailfish.csproj" IncludeAssets="All" />
+        <ProjectReference Include="..\Sailfish.Analyzers\Sailfish.Analyzers.csproj"/>
+        <ProjectReference Include="..\Sailfish\Sailfish.csproj"/>
     </ItemGroup>
+
+    <ItemGroup>
+        <None Include="$(OutputPath)\Sailfish.Analyzers.dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false"/>
+    </ItemGroup>
+
 </Project>

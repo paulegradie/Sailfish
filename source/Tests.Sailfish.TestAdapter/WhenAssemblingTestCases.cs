@@ -2,7 +2,6 @@
 using System.Linq;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.Logging;
 using NSubstitute;
-using Sailfish.Analyzers.Discovery;
 using Sailfish.Attributes;
 using Sailfish.TestAdapter.Discovery;
 using Shouldly;
