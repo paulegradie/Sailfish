@@ -16,7 +16,7 @@
         <PackageReference Include="xunit.runner.visualstudio" Version="2.4.5" />
     </ItemGroup>
     <ItemGroup>
-        <ProjectReference Include="..\Sailfish.TestAdapter\Sailfish.TestAdapter.csproj" />
+        <ProjectReference Include="..\Sailfish.TestAdapter\Sailfish.TestAdapter.csproj" IncludeAssets="all"/>
     </ItemGroup>
 
 </Project>
