@@ -2,7 +2,6 @@
 
     <PropertyGroup>
         <IncludeBuildOutput>false</IncludeBuildOutput>
-        <GeneratePackageOnBuild>True</GeneratePackageOnBuild> <!-- It will generate the NuGet package when you build the project -->
     </PropertyGroup>
 
     <PropertyGroup>
@@ -24,14 +23,17 @@
         <ImplicitUsings>enable</ImplicitUsings>
         <EnforceExtendedAnalyzerRules>true</EnforceExtendedAnalyzerRules>
         <IsPackable>true</IsPackable>
-        <DebugSymbols>True</DebugSymbols>
         <DebugType>Embedded</DebugType>
         <EmbedAllSources>True</EmbedAllSources>
-        <IncludeSymbols>true</IncludeSymbols>
         <SymbolPackageFormat>snupkg</SymbolPackageFormat>
         <RepositoryType>git</RepositoryType>
         <RepositoryUrl>https://github.com/paulegradie/Sailfish</RepositoryUrl>
-        <GenerateAppxPackageOnBuild>true</GenerateAppxPackageOnBuild>
+        <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    </PropertyGroup>
+
+    <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
+        <DebugType>pdbonly</DebugType>
+        <Optimize>true</Optimize>
     </PropertyGroup>
 
     <ItemGroup>
@@ -42,8 +44,4 @@
     <ItemGroup>
         <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.2.0"/>
     </ItemGroup>
-
-<!--    <ItemGroup Condition="'$(BuildingPackage)' == 'false'">-->
-<!--        <Analyzer Include="bin\$(Configuration)\Sailfish.Analyzers.dll" Pack="true"/>-->
-<!--    </ItemGroup>-->
 </Project>
