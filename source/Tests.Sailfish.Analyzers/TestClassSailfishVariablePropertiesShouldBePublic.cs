@@ -15,7 +15,8 @@ public class TestClassSailfishVariablePropertiesShouldBePublic
 [Sailfish]
 public class WarningIsReturnedWhenPropertyIsNotPublic
 {
-    [SailfishVariable(1, 2, 3)] private int {|#0:Placeholder|} { get; set; }
+    [SailfishVariable(1, 2, 3)] 
+    private int {|#0:Placeholder|} { get; set; }
 
     [SailfishMethod]
     public void MainMethod()

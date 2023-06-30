@@ -43,11 +43,17 @@ jobs:
       - name: Build Test Adapter
         run: dotnet build ./source/Sailfish.TestAdapter/Sailfish.TestAdapter.csproj --configuration Release /p:Version=${{ env.VERSION }}
 
+      - name: Build Analyzer
+        run: dotnet build ./source/Sailfish.Analyzers/Sailfish.Analyzers.csproj --configuration Release /p:Version=${VERSION}
+
       - name: Test
         run: dotnet test ./source/Tests.Sailfish/Tests.Sailfish.csproj --verbosity normal
 
       - name: Test Adapter
         run: dotnet test ./source/Tests.Sailfish.TestAdapter/Tests.Sailfish.TestAdapter.csproj --verbosity normal
+
+      - name: Test Analyzer
+        run: dotnet test ./source/Tests.Sailfish.Analyzers/Tests.Sailfish.Analyzers.csproj --verbosity normal
 
       - name: Pack
         run: dotnet pack ./source/Sailfish/Sailfish.csproj --configuration Release /p:Version=${{ env.VERSION }} --no-build --output .
@@ -55,8 +61,14 @@ jobs:
       - name: Pack Adapter
         run: dotnet pack ./source/Sailfish.TestAdapter/Sailfish.TestAdapter.csproj --configuration Release /p:Version=${{ env.VERSION }} --no-build --output .
 
+      - name: Pack Analyzers
+        run: dotnet pack ./source/Sailfish.TestAdapter/Sailfish.Analyzers.csproj --configuration Release /p:Version=${{ env.VERSION }} --no-build --output .
+
       - name: Push
         run: dotnet nuget push Sailfish.${{ env.VERSION }}.nupkg --source https://www.nuget.org --api-key ${{secrets.NUGET_API_KEY}}
 
       - name: Push Adapter
         run: dotnet nuget push Sailfish.TestAdapter.${{ env.VERSION }}.nupkg --source https://www.nuget.org --api-key ${{secrets.NUGET_API_KEY}}
+
+      - name: Push Analyzers
+        run: dotnet nuget push Sailfish.Analyzers.${{ env.VERSION }}.nupkg --source https://www.nuget.org --api-key ${{secrets.NUGET_API_KEY}}

@@ -13,7 +13,7 @@ namespace Sailfish.Analyzers.DiagnosticAnalyzers
     {
         public static readonly DiagnosticDescriptor SailfishVariablesShouldBePublicDescriptor = DescriptorHelper.CreateDescriptor(
             AnalyzerGroups.EssentialAnalyzers,
-            1001,
+            1000,
             isEnabledByDefault: true,
             title: "SailfishVariable properties should be public",
             description: "SailfishVariables are get and set using by the test framework and should therefore should be public",
@@ -23,7 +23,6 @@ namespace Sailfish.Analyzers.DiagnosticAnalyzers
 
         public override void Initialize(AnalysisContext context)
         {
-            SupportedDiagnostics.Add(SailfishVariablesShouldBePublicDescriptor);
             context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None);
             if (!Debugger.IsAttached) context.EnableConcurrentExecution();
             context.RegisterSyntaxNodeAction(Analyze, SyntaxKind.ClassDeclaration);
