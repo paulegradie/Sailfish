@@ -8,7 +8,7 @@ namespace PerformanceTests.DemoUtils;
 // Example of what they can implement
 public class SailfishDependencies : IDisposable
 {
-    private IContainer Container { get; set; }
+    public IContainer Container { get; set; }
 
     // single parameterless ctor is all this is allowed
     public SailfishDependencies()
