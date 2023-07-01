@@ -5,60 +5,46 @@ using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Diagnostics;
 using Sailfish.Analyzers.DiagnosticAnalyzers.Utils;
+using Sailfish.Analyzers.DiagnosticAnalyzers.Utils.TreeParsingExtensionMethods;
 
-namespace Sailfish.Analyzers.DiagnosticAnalyzers
+namespace Sailfish.Analyzers.DiagnosticAnalyzers;
+
+[DiagnosticAnalyzer(LanguageNames.CSharp)]
+public class SailfishVariablesShouldBePublicAnalyzer : DiagnosticAnalyzer
 {
-    [DiagnosticAnalyzer(LanguageNames.CSharp)]
-    public class SailfishVariablesShouldBePublicAnalyzer : DiagnosticAnalyzer
+    public static readonly DiagnosticDescriptor SailfishVariablesShouldBePublicDescriptor = DescriptorHelper.CreateDescriptor(
+        AnalyzerGroups.EssentialAnalyzers,
+        1000,
+        isEnabledByDefault: true,
+        title: "SailfishVariable properties should be public",
+        description: "SailfishVariables are get and set using by the test framework and should therefore should be public",
+        severity: DiagnosticSeverity.Error);
+
+    public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(SailfishVariablesShouldBePublicDescriptor);
+
+    public override void Initialize(AnalysisContext context)
     {
-        public static readonly DiagnosticDescriptor SailfishVariablesShouldBePublicDescriptor = DescriptorHelper.CreateDescriptor(
-            AnalyzerGroups.EssentialAnalyzers,
-            1000,
-            isEnabledByDefault: true,
-            title: "SailfishVariable properties should be public",
-            description: "SailfishVariables are get and set using by the test framework and should therefore should be public",
-            severity: DiagnosticSeverity.Error);
+        context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.Analyze | GeneratedCodeAnalysisFlags.ReportDiagnostics);
+        if (!Debugger.IsAttached) context.EnableConcurrentExecution();
+        context.RegisterSyntaxNodeAction(analyzeContext => AnalyzeSyntaxNode((ClassDeclarationSyntax)analyzeContext.Node, analyzeContext.SemanticModel, analyzeContext),
+            SyntaxKind.ClassDeclaration);
+    }
 
-        public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(SailfishVariablesShouldBePublicDescriptor);
+    private static void AnalyzeSyntaxNode(TypeDeclarationSyntax classDeclaration, SemanticModel semanticModel, SyntaxNodeAnalysisContext context)
+    {
+        if (!classDeclaration.HasSailfishAttribute(semanticModel)) return;
 
-        public override void Initialize(AnalysisContext context)
+        var nonPublicProperties = GetNonPublicProperties(classDeclaration);
+        foreach (var property in nonPublicProperties)
         {
-            context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None);
-            if (!Debugger.IsAttached) context.EnableConcurrentExecution();
-            context.RegisterSyntaxNodeAction(Analyze, SyntaxKind.ClassDeclaration);
+            if (!property.IsSailfishVariableProperty(context)) continue;
+            var diagnostic = Diagnostic.Create(SailfishVariablesShouldBePublicDescriptor, property.Identifier.GetLocation(), property.Identifier.Text);
+            context.ReportDiagnostic(diagnostic);
         }
+    }
 
-        private static void Analyze(SyntaxNodeAnalysisContext context)
-        {
-            var classDeclaration = (ClassDeclarationSyntax)context.Node;
-            if (classDeclaration.AttributeLists.Count <= 0) return;
-
-            foreach (var attributeList in classDeclaration.AttributeLists)
-            {
-                foreach (var attribute in attributeList.Attributes)
-                {
-                    var attributeType = context.SemanticModel.GetTypeInfo(attribute).Type;
-
-                    if (attributeType is not ({ Name: "Sailfish" } or { Name: "SailfishAttribute" })) continue;
-
-                    foreach (var member in classDeclaration.Members)
-                    {
-                        if (member is not PropertyDeclarationSyntax propertyDeclaration) continue;
-                        var variableAttribute = propertyDeclaration.AttributeLists
-                            .SelectMany(list => list.Attributes)
-                            .FirstOrDefault(attr => context.SemanticModel.GetTypeInfo(attr).Type?.Name == "SailfishVariableAttribute");
-
-                        if (variableAttribute == null || propertyDeclaration.Modifiers.Any(SyntaxKind.PublicKeyword)) continue;
-
-                        var diagnostic = Diagnostic.Create(
-                            SailfishVariablesShouldBePublicDescriptor,
-                            propertyDeclaration.Identifier.GetLocation(),
-                            propertyDeclaration.Identifier.Text);
-
-                        context.ReportDiagnostic(diagnostic);
-                    }
-                }
-            }
-        }
+    private static IEnumerable<PropertyDeclarationSyntax> GetNonPublicProperties(TypeDeclarationSyntax classDeclaration)
+    {
+        return classDeclaration.Members.OfType<PropertyDeclarationSyntax>().Where(property => !property.Modifiers.Any(SyntaxKind.PublicKeyword));
     }
 }

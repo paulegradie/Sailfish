@@ -13,7 +13,7 @@ namespace Sailfish.Attributes;
 /// <remarks>
 /// This attribute should be applied to properties. It has no effect when applied to fields.
 /// </remarks>
-[AttributeUsage(AttributeTargets.Property)]
+[AttributeUsage(AttributeTargets.Property, AllowMultiple = false)]
 public class SailfishVariableAttribute : Attribute
 {
     /// <summary>
