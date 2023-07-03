@@ -13,10 +13,16 @@ public class TryToDoSomethingIllegalHere : BaseAnalyzerClass
     public string MustHavePublicSettersAndGettersAndPublicModifier { get; set; } = null!;
 
     [SailfishGlobalSetup]
-    public async Task GlobalSetupAsync(CancellationToken cancellationToken)
+    public async Task AGlobalSetupAsync(CancellationToken cancellationToken)
     {
         await Task.CompletedTask;
         MustHavePublicSettersAndGettersAndPublicModifier = "WOW!";
+    }
+
+    [SailfishMethodSetup]
+    public void BSetup()
+    {
+        Console.WriteLine("FIRST");
     }
 
     [SailfishMethod]

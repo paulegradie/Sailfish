@@ -1,3 +1,4 @@
+using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Sailfish.Attributes;
@@ -8,13 +9,18 @@ public class BaseAnalyzerClass
 {
     [SailfishVariable(1, 2, 3)] public int MyVar { get; set; }
 
-
     private int myField;
 
     public string BaseValue { get; set; }
 
+    [SailfishMethodSetup]
+    public void ASetup()
+    {
+        Console.WriteLine("Second");
+    }
+
     [SailfishGlobalSetup]
-    public async Task GlobalSetupBaseAsync(CancellationToken cancellationToken)
+    public async Task BGlobalSetupBaseAsync(CancellationToken cancellationToken)
     {
         await Task.CompletedTask;
         BaseValue = "WOW!";

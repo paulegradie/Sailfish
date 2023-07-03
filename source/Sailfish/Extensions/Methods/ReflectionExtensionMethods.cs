@@ -135,4 +135,28 @@ public static class ReflectionExtensionMethods
             .Disabled;
         return disabled;
     }
+
+    public static List<MethodInfo> FindMethodsDecoratedWithAttribute<TAttribute>(this object obj) where TAttribute : Attribute
+    {
+        var type = obj.GetType();
+
+        var methods = type.GetMethods(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.DeclaredOnly)
+            .Where(method => method.GetCustomAttributes(typeof(TAttribute), true).Length > 0)
+            .OrderBy(m => m.Name)
+            .ToArray();
+
+        var baseType = type.BaseType;
+        while (baseType != null)
+        {
+            var baseMethods = baseType.GetMethods(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)
+                .Where(method => method.GetCustomAttributes(typeof(TAttribute), true).Length > 0)
+                .OrderBy(m => m.Name)
+                .ToArray();
+
+            methods = baseMethods.Concat(methods).ToArray();
+            baseType = baseType.BaseType;
+        }
+
+        return methods.ToList();
+    }
 }
