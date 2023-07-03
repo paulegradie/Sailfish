@@ -8,17 +8,17 @@ public static class Descriptors
         AnalyzerGroups.EssentialAnalyzers,
         1000,
         isEnabledByDefault: true,
-        title: "Properties initialized in the global setup should be public",
+        title: "Properties initialized in the global setup must be public",
         description: "Properties that are assigned in the SailfishGlobalSetup must be public",
-        messageFormat: "Property '{0}' must be public when used within a method decorated with the SailfishGlobalSetup attribute",
+        messageFormat: "Property '{0}' must be public when assigned within a method decorated with the SailfishGlobalSetup attribute",
         severity: DiagnosticSeverity.Error);
 
     public static readonly DiagnosticDescriptor PropertiesAssignedInGlobalSetupShouldHavePublicGettersDescriptor = DescriptorHelper.CreateDescriptor(
         AnalyzerGroups.EssentialAnalyzers,
         1001,
         isEnabledByDefault: true,
-        title: "Properties assigned in the global setup should have public getters",
-        description: "Properties assigned in the global setup should have public getters",
+        title: "Properties assigned in the global setup must have public getters",
+        description: "Properties assigned in the global setup must have public getters",
         messageFormat: "Property '{0}' must have a public getter when assigned within a method decorated with the SailfishGlobalSetup attribute",
         severity: DiagnosticSeverity.Error);
 
@@ -26,8 +26,8 @@ public static class Descriptors
         AnalyzerGroups.EssentialAnalyzers,
         1002,
         isEnabledByDefault: true,
-        title: "Properties assigned in the global setup have public setters",
-        description: "Properties assigned in the global setup should have public setters",
+        title: "Properties assigned in the global setup must have public setters",
+        description: "Properties assigned in the global setup must have public setters",
         messageFormat: "Property '{0}' must have a public setter when assigned within a method decorated with the SailfishGlobalSetup attribute",
         severity: DiagnosticSeverity.Error);
 
@@ -35,7 +35,7 @@ public static class Descriptors
         AnalyzerGroups.EssentialAnalyzers,
         1010,
         isEnabledByDefault: true,
-        title: "Properties decorated with the SailfishVariableAttribute should be public",
+        title: "Properties decorated with the SailfishVariableAttribute must be public",
         description: "Property '{0}' must be public",
         severity: DiagnosticSeverity.Error);
 
@@ -43,7 +43,7 @@ public static class Descriptors
         AnalyzerGroups.EssentialAnalyzers,
         1011,
         isEnabledByDefault: true,
-        title: "Properties decorated with the SailfishVariableAttribute should have public getters",
+        title: "Properties decorated with the SailfishVariableAttribute must have public getters",
         description: "Property '{0}' getter must be public",
         severity: DiagnosticSeverity.Error);
 
@@ -51,7 +51,7 @@ public static class Descriptors
         AnalyzerGroups.EssentialAnalyzers,
         1012,
         isEnabledByDefault: true,
-        title: "Properties decorated with the SailfishVariableAttribute should have public setters",
+        title: "Properties decorated with the SailfishVariableAttribute must have public setters",
         description: "Property '{0}' setter must be public",
         severity: DiagnosticSeverity.Error);
 
