@@ -1,4 +1,4 @@
-namespace Sailfish.Analyzers.DiagnosticAnalyzers.Utils;
+namespace Sailfish.Analyzers.Utils;
 
 public class DescriptorGroup
 {

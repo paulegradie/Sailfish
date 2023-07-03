@@ -1,6 +1,6 @@
 using Microsoft.CodeAnalysis;
 
-namespace Sailfish.Analyzers.DiagnosticAnalyzers.Utils;
+namespace Sailfish.Analyzers.Utils;
 
 public static class DescriptorHelper
 {

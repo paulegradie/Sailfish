@@ -21,11 +21,11 @@ public class ExamplePerformanceTest : TestBase
         this.logger = logger;
     }
 
-    private int Type { get; set; }
-    
-    
+    public int Type { get; private set; }
+
     [SailfishVariable(200, 300)] public int WaitPeriod { get; set; }
     [SailfishVariable(1, 2)] public int NTries { get; set; } // try to avoid multiple variables if you can manage
+    [SailfishVariable(1, 2)] public int NTriess { get; set; } // try to avoid multiple variables if you can manage
 
     [SailfishGlobalSetup]
     public void GlobalSetup()

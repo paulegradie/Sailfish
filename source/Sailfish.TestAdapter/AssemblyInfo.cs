@@ -5,4 +5,4 @@ using System.Runtime.CompilerServices;
 [assembly: InternalsVisibleTo("Tests.E2E.ExceptionHandling", AllInternalsVisible = true)]
 [assembly: InternalsVisibleTo("Tests.E2E.TestSuite", AllInternalsVisible = true)]
 
-namespace Test;
+namespace Sailfish.TestAdapter;
