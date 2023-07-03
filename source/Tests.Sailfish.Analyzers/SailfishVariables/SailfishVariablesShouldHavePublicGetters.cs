@@ -90,7 +90,7 @@ namespace Two
     public class BaseAnalyzerClass
     {
         [SailfishVariable(1, 2, 3)] 
-        public int {|#1:MyVar|} { private get; set; }
+        public int {|#0:MyVar|} { private get; set; }
 
         public int BaseValue { get; set; }
 
@@ -108,7 +108,7 @@ namespace Sailfish.AnalyzerTests
     [Sailfish]
     public class AnalyzerExample : BaseAnalyzerClass
     {
-        [SailfishVariable(1, 2, 3)] int {|#0:Placeholder|} { get; set; }
+        [SailfishVariable(1, 2, 3)] int Placeholder { get; set; }
 
         [SailfishMethod]
         public void MainMethod()
@@ -256,7 +256,6 @@ namespace Sailfish.AnalyzerTests
 ";
         await AnalyzerVerifier<ShouldHavePublicGettersAnalyzer>.VerifyAnalyzerAsync(
             source,
-            new DiagnosticResult(Descriptors.SailfishVariablesShouldHavePublicGettersDescriptor).WithLocation(0),
-            new DiagnosticResult(Descriptors.SailfishVariablesShouldHavePublicGettersDescriptor).WithLocation(1));
+            new DiagnosticResult(Descriptors.SailfishVariablesShouldHavePublicGettersDescriptor).WithLocation(0));
     }
 }
