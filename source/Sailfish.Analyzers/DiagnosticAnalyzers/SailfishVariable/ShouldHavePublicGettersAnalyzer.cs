@@ -45,7 +45,7 @@ public class ShouldHavePublicGettersAnalyzer : DiagnosticAnalyzer
             if (!isSailfishVariableProperty) continue;
 
             var propertySymbol = context.SemanticModel.GetDeclaredSymbol(property);
-            if (propertySymbol is null) continue;
+            if (propertySymbol is null || propertySymbol.DeclaredAccessibility != Accessibility.Public) continue;
 
             var getterIsPublic = propertySymbol
                 .ContainingType
