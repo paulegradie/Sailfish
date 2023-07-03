@@ -19,7 +19,7 @@ public sealed class SailfishMethodSetupAttribute : Attribute, IInnerLifecycleAtt
     /// <remarks>This feature is EXPERIMENTAL</remarks>
     public SailfishMethodSetupAttribute(params string[] methodNames)
     {
-        MethodNames = methodNames;
+        MethodNames = methodNames.Length > 0 ? methodNames : Array.Empty<string>();
     }
 
     /// <summary>

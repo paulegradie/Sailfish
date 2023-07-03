@@ -55,6 +55,22 @@ public static class Descriptors
         description: "Property '{0}' setter must be public",
         severity: DiagnosticSeverity.Error);
 
+    public static readonly DiagnosticDescriptor LifecycleMethodsShouldBePublic = DescriptorHelper.CreateDescriptor(
+        AnalyzerGroups.EssentialAnalyzers,
+        1020,
+        isEnabledByDefault: true,
+        title: "Sailfish lifecycle methods must be public",
+        description: "Method '{0}' must be public",
+        severity: DiagnosticSeverity.Error);    
+    
+    public static readonly DiagnosticDescriptor OnlyOneLifecycleAttributePerMethod = DescriptorHelper.CreateDescriptor(
+        AnalyzerGroups.EssentialAnalyzers,
+        1021,
+        isEnabledByDefault: true,
+        title: "Only one Sailfish lifecycle attribute is allowed per method",
+        description: "Method '{0}' may only be decorated with a single Sailfish lifecycle attribute",
+        severity: DiagnosticSeverity.Error);
+
     public static readonly DiagnosticDescriptor SuppressNonNullablePropertiesNotSetRule = DescriptorHelper.CreateDescriptor(
         AnalyzerGroups.SuppressionAnalyzers,
         idValue: 7000,

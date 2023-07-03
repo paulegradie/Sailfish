@@ -51,6 +51,16 @@ public static class NodeExtensionMethods
         return methodDeclarationSyntax.AttributeLists.SelectMany(x => x.Attributes).All(a => attributeName.Contains(a.Name.ToString()));
     }
 
+    public static bool HasAttributeAmong(this MethodDeclarationSyntax methodDeclarationSyntax, IEnumerable<string> attributeNames)
+    {
+        return methodDeclarationSyntax.GetAllAttributesAmong(attributeNames).Any();
+    }
+
+    public static IEnumerable<string> GetAllAttributesAmong(this MethodDeclarationSyntax methodDeclarationSyntax, IEnumerable<string> attributeNames)
+    {
+        return methodDeclarationSyntax.AttributeLists.SelectMany(a => a.Attributes).Select(s => s.Name.ToString()).Intersect(attributeNames);
+    }
+
     public static bool HasAttributesWithNames(this PropertyDeclarationSyntax propertyDeclarationSyntax, params string[] attributeNames)
     {
         var foundAttributes = propertyDeclarationSyntax

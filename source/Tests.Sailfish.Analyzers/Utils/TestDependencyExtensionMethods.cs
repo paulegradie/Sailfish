@@ -8,6 +8,8 @@ public static class TestDependencyExtensionMethods
 using System;
 using System.ComponentModel.DataAnnotations;
 using System.Collections.Generic;
+using System.Threading.Tasks;
+using System.Threading;
 
 namespace Sailfish.AnalyzerTests;
 
