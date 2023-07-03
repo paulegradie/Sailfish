@@ -20,7 +20,7 @@ public sealed class SailfishIterationTeardownAttribute : Attribute, IInnerLifecy
     /// <remarks>This feature is EXPERIMENTAL</remarks>
     public SailfishIterationTeardownAttribute(params string[] methodNames)
     {
-        MethodNames = methodNames;
+        MethodNames = methodNames.Length > 0 ? methodNames : Array.Empty<string>();
     }
 
     /// <summary>

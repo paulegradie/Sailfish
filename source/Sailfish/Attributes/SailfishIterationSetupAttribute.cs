@@ -12,7 +12,6 @@ namespace Sailfish.Attributes;
 [AttributeUsage(AttributeTargets.Method, AllowMultiple = false)]
 public sealed class SailfishIterationSetupAttribute : Attribute, IInnerLifecycleAttribute
 {
-    
     /// <summary>
     /// Initializes a new instance of the <see cref="SailfishIterationSetupAttribute"/> class
     /// with the specified method names.
@@ -21,7 +20,7 @@ public sealed class SailfishIterationSetupAttribute : Attribute, IInnerLifecycle
     /// <remarks>This feature is EXPERIMENTAL</remarks>
     public SailfishIterationSetupAttribute(params string[] methodNames)
     {
-        MethodNames = methodNames;
+        MethodNames = methodNames.Length > 0 ? methodNames : Array.Empty<string>();
     }
 
     /// <summary>
