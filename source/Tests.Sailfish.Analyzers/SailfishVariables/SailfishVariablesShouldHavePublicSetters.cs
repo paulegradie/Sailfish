@@ -1,22 +1,23 @@
+using Microsoft.CodeAnalysis.CSharp.Testing.XUnit;
 using Microsoft.CodeAnalysis.Testing;
-using Sailfish.Analyzers.DiagnosticAnalyzers;
+using Sailfish.Analyzers.DiagnosticAnalyzers.SailfishVariable;
+using Sailfish.Analyzers.Utils;
 using Tests.Sailfish.Analyzers.Utils;
 using Xunit;
-using Verify = Microsoft.CodeAnalysis.CSharp.Testing.XUnit.AnalyzerVerifier<Sailfish.Analyzers.DiagnosticAnalyzers.SailfishVariablesShouldBePublicAnalyzer>;
 
-namespace Tests.Sailfish.Analyzers;
+namespace Tests.Sailfish.Analyzers.SailfishVariables;
 
-public class TestClassSailfishVariablePropertiesShouldBePublic
+public class SailfishVariablesShouldHavePublicSetters
 {
     [Fact]
-    public async Task WarningIsReturnedWhenPropertyIsNotPublic()
+    public async Task WarningIsReturnedWhenPropertySetterIsNotPublic()
     {
         const string source = @"
 [Sailfish]
-public class WarningIsReturnedWhenPropertyIsNotPublic
+public class TestClass
 {
     [SailfishVariable(1, 2, 3)] 
-    private int {|#0:Placeholder|} { get; set; }
+    public int {|#0:Placeholder|} { get; private set; }
 
     [SailfishMethod]
     public void MainMethod()
@@ -25,76 +26,56 @@ public class WarningIsReturnedWhenPropertyIsNotPublic
     }
 }
 ";
-        await Verify.VerifyAnalyzerAsync(
+        await AnalyzerVerifier<ShouldHavePublicSettersAnalyzer>.VerifyAnalyzerAsync(
             source.AddSailfishAttributeDependencies(),
-            new DiagnosticResult(SailfishVariablesShouldBePublicAnalyzer.SailfishVariablesShouldBePublicDescriptor).WithLocation(0));
+            new DiagnosticResult(Descriptors.SailfishVariablesShouldHavePublicSettersDescriptor).WithLocation(0));
     }
 
     [Fact]
-    public async Task NoWarningIsProducedWhenPropertyIsPublic()
+    public async Task PublicPropertyWithPrivateSetterShouldNotError()
     {
-        const string source = @"[Sailfish]
-public class NoWarningIsProducedWhenPropertyIsPublic
+        const string source = @"
+[Sailfish]
+public class TestClass
 {
-    [SailfishVariable(1, 2, 3)] public int Placeholder { get; set; }
+    public int PublicProperty { get; private set; }
 
     [SailfishMethod]
     public void MainMethod()
     {
         // do nothing
     }
-}";
-        await Verify.VerifyAnalyzerAsync(source.AddSailfishAttributeDependencies());
+}
+";
+        await AnalyzerVerifier<ShouldHavePublicSettersAnalyzer>.VerifyAnalyzerAsync(source.AddSailfishAttributeDependencies());
     }
 
+
     [Fact]
-    public async Task NonSailfishTestClassesDoNotCauseWarningWhenSailfishVariableAttributeIsApplied()
+    public async Task PrivatePropertyWithPublicSetterShouldNotErrorWhenASailfishVariableIsPresent()
     {
         const string source = @"
-public class NonSailfishTestClassesDoNotCauseWarningWhenSailfishVariableAttributeIsApplied
+[Sailfish]
+public class TestClass
 {
-    [SailfishVariable(1, 2, 3)] private int Placeholder { get; set; }
+    private int Type { get; set; }
+    public int TypeTwo { private get; set; }
+    public int TypeThree { get; private set; }    
+
+    [SailfishVariable(200, 300)] public int WaitPeriod { get; set; }
 
     [SailfishMethod]
     public void MainMethod()
     {
         // do nothing
     }
-}";
-        await Verify.VerifyAnalyzerAsync(source.AddSailfishAttributeDependencies());
+}
+";
+        await AnalyzerVerifier<ShouldHavePublicSettersAnalyzer>.VerifyAnalyzerAsync(source.AddSailfishAttributeDependencies());
     }
 
     [Fact]
-    public async Task SimpleClassWithVariableAttributeShouldNotError()
-    {
-        const string source = @"
-public class Bonkers
-{
-    [SailfishVariable(1, 2, 3)] 
-    private int Placeholder { get; set; }
-}";
-
-        await Verify.VerifyAnalyzerAsync(source.AddSailfishAttributeDependencies());
-    }
-
-    [Fact]
-    public async Task NonSailfishTestClassesDoNotCauseWarnings()
-    {
-        const string source = @"
-public class NonSailfishTestClassesDoNotCauseWarnings
-{
-    int Placeholder { get; set; }
-
-    public void MainMethod()
-    {
-        // do nothing
-    }
-}";
-        await Verify.VerifyAnalyzerAsync(source.AddSailfishAttributeDependencies());
-    }
-
-    [Fact]
-    public async Task NonPublicVariablePropertiesShouldBeDiscoveredOnSailfishTestBaseClasses()
+    public async Task NonPublicSetterOnBaseClassSailfishVariableShouldError()
     {
         const string source = @"
 using System;
@@ -110,7 +91,7 @@ namespace Two
     public class BaseAnalyzerClass
     {
         [SailfishVariable(1, 2, 3)] 
-        private int {|#1:MyVar|} { get; set; }
+        public int {|#1:MyVar|} { get; private set; }
 
         public int BaseValue { get; set; }
 
@@ -128,7 +109,7 @@ namespace Sailfish.AnalyzerTests
     [Sailfish]
     public class AnalyzerExample : BaseAnalyzerClass
     {
-        [SailfishVariable(1, 2, 3)] int {|#0:Placeholder|} { get; set; }
+        [SailfishVariable(1, 2, 3)] public int {|#0:Placeholder|} { get; private set; }
 
         [SailfishMethod]
         public void MainMethod()
@@ -274,9 +255,9 @@ namespace Sailfish.AnalyzerTests
     }
 }
 ";
-        await Verify.VerifyAnalyzerAsync(
+        await AnalyzerVerifier<ShouldHavePublicSettersAnalyzer>.VerifyAnalyzerAsync(
             source,
-            new DiagnosticResult(SailfishVariablesShouldBePublicAnalyzer.SailfishVariablesShouldBePublicDescriptor).WithLocation(0),
-            new DiagnosticResult(SailfishVariablesShouldBePublicAnalyzer.SailfishVariablesShouldBePublicDescriptor).WithLocation(1));
+            new DiagnosticResult(Descriptors.SailfishVariablesShouldHavePublicSettersDescriptor).WithLocation(0),
+            new DiagnosticResult(Descriptors.SailfishVariablesShouldHavePublicSettersDescriptor).WithLocation(1));
     }
 }

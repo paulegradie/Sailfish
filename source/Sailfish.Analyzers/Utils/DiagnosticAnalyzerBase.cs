@@ -2,7 +2,7 @@ using System.Diagnostics;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Diagnostics;
 
-namespace Sailfish.Analyzers.DiagnosticAnalyzers.Utils;
+namespace Sailfish.Analyzers.Utils;
 
 public abstract class DiagnosticAnalyzerBase : DiagnosticAnalyzer
 {
