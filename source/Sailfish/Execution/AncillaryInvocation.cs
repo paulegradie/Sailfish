@@ -13,8 +13,8 @@ namespace Sailfish.Execution;
 internal class AncillaryInvocation
 {
     private readonly object instance;
-    private readonly MethodInfo? globalSetup;
-    private readonly MethodInfo? globalTeardown;
+    private readonly List<MethodInfo> globalSetup;
+    private readonly List<MethodInfo> globalTeardown;
     private readonly List<MethodInfo> iterationSetup;
     private readonly List<MethodInfo> iterationTeardown;
     private readonly List<MethodInfo> methodSetup;
@@ -29,12 +29,12 @@ internal class AncillaryInvocation
         this.performanceTimer = performanceTimer;
 
         mainMethod = method;
-        globalSetup = instance.GetMethodWithAttribute<SailfishGlobalSetupAttribute>();
-        globalTeardown = instance.GetMethodWithAttribute<SailfishGlobalTeardownAttribute>();
-        methodSetup = instance.GetMethodsWithAttribute<SailfishMethodSetupAttribute>();
-        methodTeardown = instance.GetMethodsWithAttribute<SailfishMethodTeardownAttribute>();
-        iterationSetup = instance.GetMethodsWithAttribute<SailfishIterationSetupAttribute>();
-        iterationTeardown = instance.GetMethodsWithAttribute<SailfishIterationTeardownAttribute>();
+        globalSetup = instance.FindMethodsDecoratedWithAttribute<SailfishGlobalSetupAttribute>();
+        globalTeardown = instance.FindMethodsDecoratedWithAttribute<SailfishGlobalTeardownAttribute>();
+        methodSetup = instance.FindMethodsDecoratedWithAttribute<SailfishMethodSetupAttribute>();
+        methodTeardown = instance.FindMethodsDecoratedWithAttribute<SailfishMethodTeardownAttribute>();
+        iterationSetup = instance.FindMethodsDecoratedWithAttribute<SailfishIterationSetupAttribute>();
+        iterationTeardown = instance.FindMethodsDecoratedWithAttribute<SailfishIterationTeardownAttribute>();
     }
 
     private string MainMethodName => mainMethod.Name;
@@ -49,7 +49,7 @@ internal class AncillaryInvocation
     private async Task InvokeLifecycleMethods<TAttribute>(IEnumerable<MethodInfo> lifecycleMethods, CancellationToken cancellationToken)
         where TAttribute : Attribute, IInnerLifecycleAttribute
     {
-        foreach (var lifecycleMethod in lifecycleMethods.OrderBy(x => x.Name))
+        foreach (var lifecycleMethod in lifecycleMethods)
         {
             var attribute = lifecycleMethod.GetCustomAttribute<TAttribute>();
             if (attribute is null) throw new SailfishException($"{nameof(TAttribute)}, was somehow missing");
@@ -63,7 +63,10 @@ internal class AncillaryInvocation
     public async Task GlobalSetup(CancellationToken cancellationToken)
     {
         performanceTimer.StartGlobalLifecycleTimer();
-        if (globalSetup is not null) await globalSetup.TryInvoke(instance, cancellationToken).ConfigureAwait(false);
+        foreach (var lifecycleMethod in globalSetup)
+        {
+            await lifecycleMethod.TryInvoke(instance, cancellationToken).ConfigureAwait(false);
+        }
     }
 
     public async Task MethodSetup(CancellationToken cancellationToken)
@@ -101,7 +104,11 @@ internal class AncillaryInvocation
 
     public async Task GlobalTeardown(CancellationToken cancellationToken)
     {
-        if (globalTeardown is not null) await globalTeardown.TryInvoke(instance, cancellationToken).ConfigureAwait(false);
+        foreach (var lifecycleMethod in globalTeardown)
+        {
+            await lifecycleMethod.TryInvoke(instance, cancellationToken).ConfigureAwait(false);
+        }
+
         performanceTimer.StopGlobalLifecycleTimer();
     }
 
