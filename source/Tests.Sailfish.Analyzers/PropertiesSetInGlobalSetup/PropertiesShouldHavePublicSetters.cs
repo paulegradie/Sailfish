@@ -2,6 +2,7 @@ using Microsoft.CodeAnalysis.CSharp.Testing.XUnit;
 using Microsoft.CodeAnalysis.Testing;
 using Sailfish.Analyzers.DiagnosticAnalyzers.PropertiesSetInAnySailfishGlobalSetup;
 using Sailfish.Analyzers.Utils;
+using Sailfish.Attributes;
 using Tests.Sailfish.Analyzers.Utils;
 using Xunit;
 
@@ -64,5 +65,49 @@ public class TestClass
 ";
         await AnalyzerVerifier<ShouldHavePublicSettersAnalyzer>.VerifyAnalyzerAsync(
             source.AddSailfishAttributeDependencies());
+    }
+
+    [Fact]
+    public async Task OverridesShouldBeDiscoveredToo()
+    {
+        const string source = @"
+[Sailfish]
+class TestClass : BaseClass
+{
+    public int {|#0:PrivateSetter|} { get; private set; }
+
+    protected override async Task MySetup(CancellationToken ct)
+    {
+        await Task.CompletedTask;
+        {|#1:PrivateSetter|} = 99;
+    }
+
+    [SailfishMethod]
+    public void MainMethod()
+    {
+        // do nothing
+    }
+}
+
+abstract class BaseClass
+{
+    protected virtual async Task MySetup(CancellationToken ct)
+    {
+        await Task.CompletedTask;
+        // be overriden
+    }
+
+    [SailfishGlobalSetup]
+    public async Task GlobalSetupBase(CancellationToken ct)
+    {
+        await MySetup(ct);
+    }
+}
+";
+        await AnalyzerVerifier<ShouldHavePublicSettersAnalyzer>.VerifyAnalyzerAsync(
+            source.AddSailfishAttributeDependencies(),
+            new DiagnosticResult(Descriptors.PropertiesAssignedInGlobalSetupShouldHavePublicSettersDescriptor).WithLocation(0).WithArguments("PrivateSetter"),
+            new DiagnosticResult(Descriptors.PropertiesAssignedInGlobalSetupShouldHavePublicSettersDescriptor).WithLocation(1).WithArguments("PrivateSetter")
+        );
     }
 }

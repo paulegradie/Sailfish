@@ -25,6 +25,14 @@ public class TryToDoSomethingIllegalHere : BaseAnalyzerClass
         Console.WriteLine("FIRST");
     }
 
+    public int MyInt { get; set; }
+
+    protected override async Task MyBaseMethod(CancellationToken ct)
+    {
+        await Task.CompletedTask;
+        MyInt = 123;
+    }
+
     [SailfishMethod]
     public async Task MainMethod()
     {
