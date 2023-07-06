@@ -28,7 +28,7 @@ public class TestClass
 ";
         await AnalyzerVerifier<ShouldHavePublicGettersAnalyzer>.VerifyAnalyzerAsync(
             source.AddSailfishAttributeDependencies(),
-            new DiagnosticResult(Descriptors.SailfishVariablesShouldHavePublicGettersDescriptor).WithLocation(0));
+            new DiagnosticResult(Descriptors.SailfishVariablesShouldHavePublicGettersDescriptor).WithLocation(0).WithArguments("Placeholder"));
     }
 
     [Fact]
@@ -256,6 +256,6 @@ namespace Sailfish.AnalyzerTests
 ";
         await AnalyzerVerifier<ShouldHavePublicGettersAnalyzer>.VerifyAnalyzerAsync(
             source,
-            new DiagnosticResult(Descriptors.SailfishVariablesShouldHavePublicGettersDescriptor).WithLocation(0));
+            new DiagnosticResult(Descriptors.SailfishVariablesShouldHavePublicGettersDescriptor).WithLocation(0).WithArguments("MyVar"));
     }
 }

@@ -131,14 +131,14 @@ public class MethodSpecificLifecycles
 
         await AnalyzerVerifier<LifecycleMethodsShouldBePublicAnalyzer>.VerifyAnalyzerAsync(
             source.AddSailfishAttributeDependencies(),
-            new DiagnosticResult(Descriptors.LifecycleMethodsShouldBePublic).WithLocation(0),
-            new DiagnosticResult(Descriptors.LifecycleMethodsShouldBePublic).WithLocation(1),
-            new DiagnosticResult(Descriptors.LifecycleMethodsShouldBePublic).WithLocation(2),
-            new DiagnosticResult(Descriptors.LifecycleMethodsShouldBePublic).WithLocation(3),
-            new DiagnosticResult(Descriptors.LifecycleMethodsShouldBePublic).WithLocation(4),
-            new DiagnosticResult(Descriptors.LifecycleMethodsShouldBePublic).WithLocation(5),
-            new DiagnosticResult(Descriptors.LifecycleMethodsShouldBePublic).WithLocation(6),
-            new DiagnosticResult(Descriptors.LifecycleMethodsShouldBePublic).WithLocation(7)
+            new DiagnosticResult(Descriptors.LifecycleMethodsShouldBePublic).WithLocation(0).WithArguments("GlobalSetup"),
+            new DiagnosticResult(Descriptors.LifecycleMethodsShouldBePublic).WithLocation(1).WithArguments("ExecutionMethodSetup"),
+            new DiagnosticResult(Descriptors.LifecycleMethodsShouldBePublic).WithLocation(2).WithArguments("IterationSetup"),
+            new DiagnosticResult(Descriptors.LifecycleMethodsShouldBePublic).WithLocation(3).WithArguments("TestOne"),
+            new DiagnosticResult(Descriptors.LifecycleMethodsShouldBePublic).WithLocation(4).WithArguments("TestTwo"),
+            new DiagnosticResult(Descriptors.LifecycleMethodsShouldBePublic).WithLocation(5).WithArguments("IterationTeardown"),
+            new DiagnosticResult(Descriptors.LifecycleMethodsShouldBePublic).WithLocation(6).WithArguments("ExecutionMethodTeardown"),
+            new DiagnosticResult(Descriptors.LifecycleMethodsShouldBePublic).WithLocation(7).WithArguments("GlobalTeardown")
         );
     }
 }

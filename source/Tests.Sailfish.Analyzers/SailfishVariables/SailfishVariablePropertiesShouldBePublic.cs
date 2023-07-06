@@ -277,7 +277,7 @@ namespace Sailfish.AnalyzerTests
 ";
         await Verify.VerifyAnalyzerAsync(
             source,
-            new DiagnosticResult(ShouldBePublicAnalyzer.Descriptor).WithLocation(0),
-            new DiagnosticResult(ShouldBePublicAnalyzer.Descriptor).WithLocation(1));
+            new DiagnosticResult(ShouldBePublicAnalyzer.Descriptor).WithLocation(0).WithArguments("Placeholder"),
+            new DiagnosticResult(ShouldBePublicAnalyzer.Descriptor).WithLocation(1).WithArguments("MyVar"));
     }
 }
