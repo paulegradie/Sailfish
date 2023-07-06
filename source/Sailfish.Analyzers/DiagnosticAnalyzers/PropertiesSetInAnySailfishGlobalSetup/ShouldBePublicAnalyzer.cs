@@ -17,14 +17,22 @@ namespace Sailfish.Analyzers.DiagnosticAnalyzers.PropertiesSetInAnySailfishGloba
 
         public override void Initialize(AnalysisContext context)
         {
-            context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.Analyze | GeneratedCodeAnalysisFlags.ReportDiagnostics);
-            if (!Debugger.IsAttached) context.EnableConcurrentExecution();
-            context.RegisterSyntaxNodeAction(
-                analyzeContext =>
-                    AnalyzeSyntaxNode((ClassDeclarationSyntax)analyzeContext.Node,
-                        analyzeContext.SemanticModel,
-                        analyzeContext),
-                SyntaxKind.ClassDeclaration);
+            try
+            {
+                context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.Analyze | GeneratedCodeAnalysisFlags.ReportDiagnostics);
+                if (!Debugger.IsAttached) context.EnableConcurrentExecution();
+                context.RegisterSyntaxNodeAction(
+                    analyzeContext =>
+                        AnalyzeSyntaxNode((ClassDeclarationSyntax)analyzeContext.Node,
+                            analyzeContext.SemanticModel,
+                            analyzeContext),
+                    SyntaxKind.ClassDeclaration);
+            }
+            catch (Exception ex)
+            {
+                var trace = string.Join("\n", ex.StackTrace);
+                throw new SailfishAnalyzerException($"Unexpected exception ~ {ex.Message} - {trace}");
+            }
         }
 
         private static void AnalyzeSyntaxNode(TypeDeclarationSyntax classDeclaration, SemanticModel semanticModel, SyntaxNodeAnalysisContext context)
@@ -50,7 +58,7 @@ namespace Sailfish.Analyzers.DiagnosticAnalyzers.PropertiesSetInAnySailfishGloba
 
                 // No Non Public
                 if (symbol is not IPropertySymbol publicPropertySymbol || publicPropertySymbol.DeclaredAccessibility.HasFlag(Accessibility.Public)) continue;
-                
+
                 context.ReportDiagnostic(Diagnostic.Create(Descriptor, propertyInsideOfSetupMethod.Identifier.GetLocation(), propertyInsideOfSetupMethod.Identifier.Text));
 
                 var propertyDeclaration = classDeclaration.Members.OfType<PropertyDeclarationSyntax>().SingleOrDefault(p => p.Identifier.Text == symbol.Name);
