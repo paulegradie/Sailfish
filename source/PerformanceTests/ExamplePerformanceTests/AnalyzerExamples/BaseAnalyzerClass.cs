@@ -19,6 +19,12 @@ public class BaseAnalyzerClass
         Console.WriteLine("Second");
     }
 
+    protected virtual async Task MyBaseMethod(CancellationToken ct)
+    {
+        await Task.CompletedTask;
+        // do nothing yet
+    }
+
     [SailfishGlobalSetup]
     public async Task BGlobalSetupBaseAsync(CancellationToken cancellationToken)
     {
