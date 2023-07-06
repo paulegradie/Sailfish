@@ -19,7 +19,7 @@
     <ItemGroup>
         <ProjectReference Include="..\Sailfish.TestAdapter\Sailfish.TestAdapter.csproj" />
     </ItemGroup>
-    <ItemGroup>
-        <Analyzer Include="..\Sailfish.TestAdapter\bin\Debug\net6.0\Sailfish.Analyzers.dll" />
-    </ItemGroup>
+<!--    <ItemGroup>-->
+<!--        <Analyzer Include="..\Sailfish.TestAdapter\bin\Debug\net6.0\Sailfish.Analyzers.dll" />-->
+<!--    </ItemGroup>-->
 </Project>
