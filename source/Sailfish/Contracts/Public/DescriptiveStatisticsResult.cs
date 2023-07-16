@@ -23,7 +23,10 @@ public class DescriptiveStatisticsResult
 
     public static DescriptiveStatisticsResult ConvertFromPerfTimer(TestCaseId testCaseId, PerformanceTimer performanceTimer)
     {
-        var executionIterations = performanceTimer.ExecutionIterationPerformances.Select(x => (double)x.Duration).ToArray();
+        var executionIterations = performanceTimer.ExecutionIterationPerformances
+            .Select(x => x.GetDurationFromTicks())
+            .Select(x => x.MilliSeconds.Duration)
+            .ToArray();
 
         var mean = executionIterations.Mean().Round(5);
         var stdDev = (executionIterations.StandardDeviation() + 0.000000001).Round(5);

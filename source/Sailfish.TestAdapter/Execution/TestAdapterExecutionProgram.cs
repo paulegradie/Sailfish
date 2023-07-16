@@ -125,7 +125,8 @@ internal class TestAdapterExecutionProgram : ITestAdapterExecutionProgram
     {
         foreach (var perf in result.PerformanceTimerResults?.MethodIterationPerformances!)
         {
-            logger?.SendMessage(TestMessageLevel.Informational, $"Time: {perf.Duration.ToString()} ms");
+            var timeResult = perf.GetDurationFromTicks().MilliSeconds;
+            logger?.SendMessage(TestMessageLevel.Informational, $"Time: {timeResult.Duration.ToString()} {timeResult.TimeScale.ToString().ToLowerInvariant()}");
         }
     }
 

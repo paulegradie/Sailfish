@@ -38,10 +38,11 @@ internal class TestInstanceContainer
     public int NumWarmupIterations => ExecutionSettings.NumWarmupIterations;
     public int NumIterations => ExecutionSettings.NumIterations;
 
-
     public IExecutionSettings ExecutionSettings { get; }
 
-    public AncillaryInvocation Invocation { get; private init; } = null!;
+    public CoreInvoker Invocation { get; private init; } = null!;
+
+    public OverheadEstimator OverheadEstimator { get; private init; }
 
     public static TestInstanceContainer CreateTestInstance(object instance, MethodInfo method, string[] propertyNames, object[] variables)
     {
@@ -53,7 +54,8 @@ internal class TestInstanceContainer
 
         return new TestInstanceContainer(instance.GetType(), instance, method, testCaseId, executionSettings)
         {
-            Invocation = new AncillaryInvocation(instance, method, new PerformanceTimer())
+            Invocation = new CoreInvoker(instance, method, new PerformanceTimer()),
+            OverheadEstimator = new OverheadEstimator()
         };
     }
 }
