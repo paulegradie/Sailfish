@@ -14,6 +14,8 @@ public sealed class PerformanceTimer
     private readonly Stopwatch methodIterationTimer;
     private DateTimeOffset executionIterationStart;
 
+    private readonly OverheadEstimator overheadEstimator;
+
     // transient fields
     private DateTimeOffset methodIterationStart;
 
@@ -22,9 +24,13 @@ public sealed class PerformanceTimer
         globalTimer = new Stopwatch();
         methodIterationTimer = new Stopwatch();
         executionTimer = new Stopwatch();
+        overheadEstimator = new OverheadEstimator();
     }
 
+    private DateTimeOffset globalStart;
     public DateTimeOffset GlobalStart { get; private set; }
+
+
     public DateTimeOffset GlobalStop { get; private set; }
     public TimeSpan GlobalDuration { get; private set; }
     public bool IsValid { get; private set; } = true;
@@ -45,8 +51,24 @@ public sealed class PerformanceTimer
     {
         if (!executionTimer.IsRunning) return;
         executionTimer.Stop();
+
         var executionIterationStop = DateTimeOffset.Now;
-        ExecutionIterationPerformances.Add(new IterationPerformance(executionIterationStart, executionIterationStop, executionTimer.ElapsedMilliseconds));
+        var overhead = overheadEstimator.Estimate();
+
+        var elapsedTicks = executionIterationStop.Ticks - executionIterationStart.Ticks;
+
+        IterationPerformance iterationPerformance;
+        if (elapsedTicks - overhead < 0)
+        {
+            iterationPerformance = new IterationPerformance(executionIterationStart, executionIterationStop, executionTimer.ElapsedTicks);
+        }
+        else
+        {
+            iterationPerformance = new IterationPerformance(executionIterationStart, executionIterationStop, executionTimer.ElapsedTicks - overhead);
+        }
+
+        ExecutionIterationPerformances.Add(iterationPerformance);
+
         executionTimer.Reset();
     }
 
@@ -62,7 +84,7 @@ public sealed class PerformanceTimer
         if (!methodIterationTimer.IsRunning) return;
         methodIterationTimer.Stop();
         var methodIterationStop = DateTimeOffset.Now;
-        MethodIterationPerformances.Add(new IterationPerformance(methodIterationStart, methodIterationStop, methodIterationTimer.ElapsedMilliseconds));
+        MethodIterationPerformances.Add(new IterationPerformance(methodIterationStart, methodIterationStop, methodIterationTimer.ElapsedTicks));
         methodIterationTimer.Reset();
     }
 

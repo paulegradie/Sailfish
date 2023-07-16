@@ -4,14 +4,19 @@ namespace Sailfish.Execution;
 
 public class IterationPerformance
 {
-    public IterationPerformance(DateTimeOffset startTime, DateTimeOffset endTime, long elapsedMilliseconds)
+    public IterationPerformance(DateTimeOffset startTime, DateTimeOffset endTime, long elapsedTicks)
     {
         StartTime = startTime;
         StopTime = endTime;
-        Duration = elapsedMilliseconds;
+        ElapsedTicks = elapsedTicks;
     }
 
     public DateTimeOffset StartTime { get; }
     public DateTimeOffset StopTime { get; }
-    public long Duration { get; } // milliseconds
+    private long ElapsedTicks { get; }
+
+    public TimeResult GetDurationFromTicks()
+    {
+        return TickAutoConverter.ConvertToTime(ElapsedTicks);
+    }
 }

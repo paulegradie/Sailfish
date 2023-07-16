@@ -7,6 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Sailfish.Attributes;
 using Sailfish.Exceptions;
+using Sailfish.Execution;
 
 namespace Sailfish.Extensions.Methods;
 
@@ -63,11 +64,45 @@ public static class ReflectionExtensionMethods
         else method.Invoke(instance, null);
     }
 
+    private static async Task InvokeAsWithTimer(this MethodInfo method, object instance, PerformanceTimer performanceTimer)
+    {
+        if (method.IsAsyncMethod())
+        {
+            performanceTimer.StartSailfishMethodExecutionTimer();
+            await (Task)method.Invoke(instance, null)!;
+            performanceTimer.StopSailfishMethodExecutionTimer();
+        }
+        else
+        {
+            performanceTimer.StartSailfishMethodExecutionTimer();
+            method.Invoke(instance, null);
+            performanceTimer.StopSailfishMethodExecutionTimer();
+        }
+    }
+
+
     private static async Task InvokeAsWithCancellation(this MethodInfo method, object instance, CancellationToken cancellationToken)
     {
         var parameters = new object[] { cancellationToken };
         if (method.IsAsyncMethod()) await (Task)method.Invoke(instance, parameters)!;
         else method.Invoke(instance, parameters);
+    }
+
+    private static async Task InvokeAsWithCancellationWithTimer(this MethodInfo method, object instance, PerformanceTimer performanceTimer, CancellationToken cancellationToken)
+    {
+        var parameters = new object[] { cancellationToken };
+        if (method.IsAsyncMethod())
+        {
+            performanceTimer.StartSailfishMethodExecutionTimer();
+            await (Task)method.Invoke(instance, parameters)!;
+            performanceTimer.StopSailfishMethodExecutionTimer();
+        }
+        else
+        {
+            performanceTimer.StartSailfishMethodExecutionTimer();
+            method.Invoke(instance, parameters);
+            performanceTimer.StopSailfishMethodExecutionTimer();
+        }
     }
 
     public static async Task TryInvoke(this MethodInfo? methodInfo, object instance, CancellationToken cancellationToken)
@@ -98,6 +133,45 @@ public static class ReflectionExtensionMethods
             {
                 if (parameters.Count > 0) throw new SailfishException("Parameter injection is not supported for void methods");
                 await methodInfo.InvokeAs(instance);
+            }
+            catch (TargetInvocationException ex)
+            {
+                throw new SailfishException(ex.InnerException?.Message ?? $"Unhandled unknown exception has occurred: {ex.Message}");
+            }
+        }
+    }
+
+    public static async Task TryInvokeWithTimer(this MethodInfo? methodInfo, object instance, PerformanceTimer performanceTimer, CancellationToken cancellationToken)
+    {
+        if (methodInfo is null) return;
+        var parameters = methodInfo.GetParameters().ToList();
+        if (methodInfo.IsAsyncMethod())
+        {
+            switch (parameters.Count)
+            {
+                case 0:
+                    
+                    await methodInfo.InvokeAsWithTimer(instance, performanceTimer);
+                    break;
+                case 1:
+                {
+                    var paramIsCancellationToken = parameters.Single().ParameterType == typeof(CancellationToken);
+                    if (!paramIsCancellationToken) throw new TestFormatException($"Parameter injection is only supported for the ${nameof(CancellationToken)} type");
+
+                    await methodInfo.InvokeAsWithCancellationWithTimer(instance, performanceTimer, cancellationToken).ConfigureAwait(false);
+                    break;
+                }
+                default:
+                    throw new TestFormatException($"Parameter injection is only supported for a single parameter which must be a the {nameof(CancellationToken)} type");
+            }
+        }
+        else
+        {
+            try
+            {
+                if (parameters.Count > 0) throw new SailfishException("Parameter injection is not supported for void methods");
+
+                await methodInfo.InvokeAsWithTimer(instance, performanceTimer);
             }
             catch (TargetInvocationException ex)
             {

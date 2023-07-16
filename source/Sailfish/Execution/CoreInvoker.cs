@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Reflection.Emit;
 using System.Threading;
 using System.Threading.Tasks;
 using Sailfish.Attributes;
@@ -10,7 +11,7 @@ using Sailfish.Extensions.Methods;
 
 namespace Sailfish.Execution;
 
-internal class AncillaryInvocation
+internal class CoreInvoker
 {
     private readonly object instance;
     private readonly List<MethodInfo> globalSetup;
@@ -23,7 +24,7 @@ internal class AncillaryInvocation
 
     private readonly MethodInfo mainMethod;
 
-    public AncillaryInvocation(object instance, MethodInfo method, PerformanceTimer performanceTimer)
+    public CoreInvoker(object instance, MethodInfo method, PerformanceTimer performanceTimer)
     {
         this.instance = instance;
         this.performanceTimer = performanceTimer;
@@ -82,13 +83,14 @@ internal class AncillaryInvocation
 
     public async Task ExecutionMethod(CancellationToken cancellationToken, bool timed = true)
     {
-        // TODO: we can make this more precise by timing the outside, and then returning
-        // a timespan from the wasted bits inside the try invoke
-        // add method to timer to .StopExecutionTimerWithAdjustment(timespan);
-        // TODO: Action this when we switch over to using ticks instead of ms
-        if (timed) performanceTimer.StartSailfishMethodExecutionTimer();
-        await mainMethod.TryInvoke(instance, cancellationToken).ConfigureAwait(false);
-        if (timed) performanceTimer.StopSailfishMethodExecutionTimer();
+        if (timed)
+        {
+            await mainMethod.TryInvokeWithTimer(instance, performanceTimer, cancellationToken).ConfigureAwait(false);
+        }
+        else
+        {
+            await mainMethod.TryInvoke(instance, cancellationToken).ConfigureAwait(false);
+        }
     }
 
     public async Task IterationTearDown(CancellationToken cancellationToken)
