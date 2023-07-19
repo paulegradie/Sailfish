@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel;
+using Microsoft.VisualStudio.TestPlatform.ObjectModel.Adapter;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.Logging;
 using Sailfish.Attributes;
 
@@ -30,8 +31,7 @@ internal static class TestDiscovery
                 project = DirectoryRecursion.RecurseUpwardsUntilFileIsFound(
                     ".csproj",
                     sourceDllPath,
-                    10,
-                    logger);
+                    10);
                 previousSearchDir = currentSearchDir;
             }
 

@@ -1,7 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.Logging;
+using Sailfish.Analysis;
 using Sailfish.Execution;
 using Sailfish.Extensions.Types;
 using Sailfish.Presentation;
@@ -15,7 +17,7 @@ namespace Sailfish.TestAdapter.Execution;
 internal class ConsoleWriter : IConsoleWriter
 {
     private readonly IMarkdownTableConverter markdownTableConverter;
-    private readonly IMessageLogger? messageLogger;
+    private IMessageLogger? messageLogger;
 
     private readonly Logger consoleLogger = new LoggerConfiguration()
         .WriteTo.Console()
@@ -72,5 +74,32 @@ internal class ConsoleWriter : IConsoleWriter
         consoleLogger.Information("{MarkdownTable}", markdownStringTable);
 
         return markdownStringTable;
+    }
+
+    public void WriteStatTestResultsToConsole(string markdownBody, TestIds testIds, TestSettings testSettings)
+    {
+        var stringBuilder = new StringBuilder();
+        BuildHeader(stringBuilder, testIds.BeforeTestIds, testIds.AfterTestIds, testSettings);
+        stringBuilder.AppendLine(markdownBody);
+        var result = stringBuilder.ToString();
+        consoleLogger.Information(result);
+        messageLogger?.SendMessage(TestMessageLevel.Informational, result);
+    }
+
+    public void WriteString(string content)
+    {
+        consoleLogger.Information(content);
+        messageLogger?.SendMessage(TestMessageLevel.Informational, content);
+    }
+
+    private static void BuildHeader(StringBuilder stringBuilder, IEnumerable<string> beforeIds, IEnumerable<string> afterIds, TestSettings testSettings)
+    {
+        stringBuilder.AppendLine();
+        stringBuilder.AppendLine("-----------------------------------");
+        stringBuilder.AppendLine($"{testSettings.TestType} results comparing:");
+        stringBuilder.AppendLine($"Before: {string.Join(", ", beforeIds)}");
+        stringBuilder.AppendLine($"After: {string.Join(", ", afterIds)}");
+        stringBuilder.AppendLine("-----------------------------------\r");
+        stringBuilder.AppendLine($"Note: The change in execution time is significant if the PValue is less than {testSettings.Alpha}");
     }
 }

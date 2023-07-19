@@ -4,7 +4,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using MediatR;
 using Sailfish.Contracts.Private;
-using Sailfish.Contracts.Public;
 using Sailfish.Contracts.Public.Commands;
 using Sailfish.Execution;
 using Sailfish.Presentation.CsvAndJson;
@@ -14,16 +13,13 @@ namespace Sailfish.Presentation;
 internal class TestResultPresenter : ITestResultPresenter
 {
     private readonly IMediator mediator;
-    private readonly IFileIo fileIo;
     private readonly IPerformanceResultPresenter performanceResultPresenter;
 
     public TestResultPresenter(
         IMediator mediator,
-        IFileIo fileIo,
         IPerformanceResultPresenter performanceResultPresenter)
     {
         this.mediator = mediator;
-        this.fileIo = fileIo;
         this.performanceResultPresenter = performanceResultPresenter;
     }
 
