@@ -23,6 +23,7 @@ public class SailfishTestSettings
     [JsonPropertyName("Round")] public int Round { get; }
 
     [JsonPropertyName("UseInnerQuartile")] public bool UseInnerQuartile { get; set; }
+    [JsonPropertyName("Disabled")] public bool Disabled { get; set; }
 }
 
 public class SailfishSettings
@@ -45,6 +46,6 @@ public class SailfishSettingsParser
             ReadCommentHandling = JsonCommentHandling.Skip,
         };
 
-        return JsonSerializer.Deserialize<SailfishSettings>(json, options);
+        return JsonSerializer.Deserialize<SailfishSettings>(json, options) ?? new SailfishSettings();
     }
 }

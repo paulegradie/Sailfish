@@ -128,7 +128,8 @@ internal class TestAdapterExecutionProgram : ITestAdapterExecutionProgram
             frameworkHandle.EnableShutdownAfterTestRun = true;
         }
 
-        if (!AnalysisEnabled(out var testSettings)) return;
+        if (!AnalysisEnabled(out var testSettings)) return; 
+        if (testSettings.TestSettings.Disabled) return;
 
         var mappedTestSettings = MapToTestSettings(testSettings.TestSettings);
         var runSettingsBuilder = RunSettingsBuilder.CreateBuilder();
@@ -213,7 +214,7 @@ internal class TestAdapterExecutionProgram : ITestAdapterExecutionProgram
         try
         {
             var settingsFile = DirectoryRecursion.RecurseUpwardsUntilFileIsFound(
-                ".sailfish",
+                ".sailfish.json",
                 Directory.GetCurrentDirectory(),
                 6);
             testSettings = SailfishSettingsParser.Parse(settingsFile.FullName);

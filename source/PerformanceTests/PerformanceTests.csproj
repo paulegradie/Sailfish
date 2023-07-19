@@ -20,7 +20,7 @@
         <ProjectReference Include="..\Sailfish.TestAdapter\Sailfish.TestAdapter.csproj" />
     </ItemGroup>
     <ItemGroup>
-      <None Include=".sailfish">
+      <None Include=".sailfish.json">
         <CopyToOutputDirectory>Always</CopyToOutputDirectory>
       </None>
     </ItemGroup>
