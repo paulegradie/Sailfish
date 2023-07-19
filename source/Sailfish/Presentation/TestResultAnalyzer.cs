@@ -7,6 +7,7 @@ using MediatR;
 using Sailfish.Analysis;
 using Sailfish.Contracts.Public;
 using Sailfish.Contracts.Public.Commands;
+using Sailfish.Presentation.Console;
 using Serilog;
 
 namespace Sailfish.Presentation;
@@ -17,18 +18,20 @@ public class TestResultAnalyzer : ITestResultAnalyzer
     private readonly ILogger logger;
     private readonly ITestComputer testComputer;
     private readonly ITestResultTableContentFormatter testResultTableContentFormatter;
+    private readonly IConsoleWriter consoleWriter;
 
     public TestResultAnalyzer(
         IMediator mediator,
         ILogger logger,
         ITestComputer testComputer,
-        ITestResultTableContentFormatter testResultTableContentFormatter
-    )
+        ITestResultTableContentFormatter testResultTableContentFormatter,
+        IConsoleWriter consoleWriter)
     {
         this.mediator = mediator;
         this.logger = logger;
         this.testComputer = testComputer;
         this.testResultTableContentFormatter = testResultTableContentFormatter;
+        this.consoleWriter = consoleWriter;
     }
 
     public async Task Analyze(
@@ -93,7 +96,8 @@ public class TestResultAnalyzer : ITestResultAnalyzer
 
         var testIds = new TestIds(beforeAndAfterData.BeforeData.TestIds, beforeAndAfterData.AfterData.TestIds);
         var testResultFormats = testResultTableContentFormatter.CreateTableFormats(testResults, testIds, cancellationToken);
-        TestResultConsoleWriter.WriteToConsole(testResultFormats.MarkdownFormat, testIds, runSettings.Settings);
+
+        consoleWriter.WriteStatTestResultsToConsole(testResultFormats.MarkdownFormat, testIds, runSettings.Settings);
 
         await mediator.Publish(
                 new WriteTestResultsAsMarkdownCommand(

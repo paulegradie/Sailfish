@@ -18,8 +18,28 @@ public class TestSettings
         TestType = testType;
     }
 
-    public double Alpha { get; set; }
-    public int Round { get; }
-    public bool UseInnerQuartile { get; set; }
-    public TestType TestType { get; }
+    public double Alpha { get; private set; }
+    public int Round { get; private set; }
+    public bool UseInnerQuartile { get; private set; }
+    public TestType TestType { get; private set; }
+
+    public void SetAlpha(double alpha)
+    {
+        Alpha = alpha;
+    }
+
+    public void SetRound(int round)
+    {
+        Round = round;
+    }
+
+    public void SetUseInnerQuartile(bool use)
+    {
+        UseInnerQuartile = use;
+    }
+
+    public void SetTestType(TestType testType)
+    {
+        TestType = testType;
+    }
 }

@@ -1,0 +1,24 @@
+{
+  "_comment": "Sailfish adapter statistical test settings",
+  "TestSettings": {
+    "_comment": "Specify a test result directory",
+    "ResultsDirectory": "UrMUM",
+
+    "_comment": "Specify a statistical test - default is: KolmogorovSmirnovTest",
+    "_comment_options": "public enum TestType",
+    "_comment_options_values": ["TwoSampleWilcoxonSignedRankTest", "WilcoxonRankSumTest", "TTest", "KolmogorovSmirnovTest"],
+    "TestType": "TTest",
+
+    "_comment": "Specify a resolution - default is millisecond (ms)",
+    "_comment_options": "Options are: ns,us,ms,s,m",
+    "Resolution": "ms",
+
+    "_comment": "Statistical test settings",
+    "Alpha": 0.05,
+    "Round": 2,
+    "UseInnerQuartile": true,
+    
+    "_comment": "Disable analysis logic",
+    "Disabled": false
+  }
+}

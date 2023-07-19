@@ -50,15 +50,14 @@ public class SailfishModule : Module
         builder.RegisterType<TrackingFileFinder>().As<ITrackingFileFinder>();
         builder.RegisterType<IterationVariableRetriever>().As<IIterationVariableRetriever>();
         builder.RegisterType<TestResultTableContentFormatter>().As<ITestResultTableContentFormatter>();
-        builder.RegisterType<TestResultAnalyzer>().As<ITestResultAnalyzer>();
         builder.RegisterType<SailfishExecutionEngine>().As<ISailfishExecutionEngine>();
         builder.RegisterType<MarkdownTableConverter>().As<IMarkdownTableConverter>().InstancePerDependency();
 
+        builder.RegisterType<TestResultAnalyzer>().As<ITestResultAnalyzer>();
         builder.RegisterType<TTestSailfish>().As<ITTestSailfish>();
         builder.RegisterType<MannWhitneyWilcoxonTestSailfish>().As<IMannWhitneyWilcoxonTestSailfish>();
         builder.RegisterType<TwoSampleWilcoxonSignedRankTestSailfish>().As<ITwoSampleWilcoxonSignedRankTestSailfish>();
         builder.RegisterType<TestPreprocessor>().As<ITestPreprocessor>();
-
         builder.RegisterType<StatisticalTestExecutor>().As<IStatisticalTestExecutor>();
     }
 }

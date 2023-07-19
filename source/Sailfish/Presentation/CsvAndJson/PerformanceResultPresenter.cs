@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
 using System.Threading;
@@ -35,9 +36,10 @@ internal class PerformanceResultPresenter : IPerformanceResultPresenter
                 cancellationToken);
     }
 
-    public async Task WriteToFileAsCsv(IEnumerable<IExecutionSummary> results, string filePath, CancellationToken cancellationToken)
+    public async Task WriteToFileAsCsv(IEnumerable<IExecutionSummary> results, string filePath, Func<IExecutionSummary, bool> summaryFilter, CancellationToken cancellationToken)
     {
-        var summaryToDescriptive = ExtractDescriptiveStatistics(results);
+        var summaryToDescriptive = ExtractDescriptiveStatistics(results.Where(summaryFilter)).ToList();
+        if (summaryToDescriptive.Count == 0) return;
         await fileIo
             .WriteDataAsCsvToFile<DescriptiveStatisticsResultCsvMap, IEnumerable<DescriptiveStatisticsResult>>(
                 summaryToDescriptive,

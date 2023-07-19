@@ -10,13 +10,6 @@ namespace Sailfish.Presentation;
 
 public class MarkdownTableConverter : IMarkdownTableConverter
 {
-    private readonly StringBuilder stringBuilder;
-
-    public MarkdownTableConverter()
-    {
-        stringBuilder = new StringBuilder();
-    }
-
     public string ConvertToMarkdownTableString(IEnumerable<IExecutionSummary> executionSummaries, Func<IExecutionSummary, bool> summaryFilter)
     {
         var filteredSummaries = executionSummaries.Where(summaryFilter);
@@ -25,26 +18,27 @@ public class MarkdownTableConverter : IMarkdownTableConverter
 
     public string ConvertToMarkdownTableString(IEnumerable<IExecutionSummary> executionSummaries)
     {
+        var stringBuilder = new StringBuilder();
         foreach (var result in executionSummaries)
         {
-            AppendHeader(result.Type.Name);
-            AppendResults(result.CompiledResults);
+            AppendHeader(result.Type.Name, stringBuilder);
+            AppendResults(result.CompiledResults, stringBuilder);
 
             var exceptions = result.CompiledResults.SelectMany(x => x.Exceptions).ToList();
-            AppendExceptions(exceptions);
+            AppendExceptions(exceptions, stringBuilder);
         }
 
         return stringBuilder.ToString();
     }
 
-    private void AppendHeader(string typeName)
+    private void AppendHeader(string typeName, StringBuilder stringBuilder)
     {
         stringBuilder.AppendLine();
         stringBuilder.AppendLine($"\r{typeName}\r");
         stringBuilder.AppendLine("-----------------------------------\r");
     }
 
-    private void AppendResults(IEnumerable<ICompiledResult> compiledResults)
+    private void AppendResults(IEnumerable<ICompiledResult> compiledResults, StringBuilder stringBuilder)
     {
         foreach (var group in compiledResults.GroupBy(x => x.GroupingId))
         {
@@ -63,7 +57,7 @@ public class MarkdownTableConverter : IMarkdownTableConverter
         }
     }
 
-    private void AppendExceptions(IReadOnlyCollection<Exception?> exceptions)
+    private void AppendExceptions(IReadOnlyCollection<Exception?> exceptions, StringBuilder stringBuilder)
     {
         if (exceptions.Count > 0)
         {

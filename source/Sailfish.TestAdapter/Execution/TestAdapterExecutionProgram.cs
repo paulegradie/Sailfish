@@ -1,15 +1,22 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.Caching;
 using System.Threading;
+using MediatR;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.Adapter;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.Logging;
+using Sailfish.Analysis;
+using Sailfish.Contracts.Public;
 using Sailfish.Exceptions;
 using Sailfish.Execution;
+using Sailfish.Presentation;
+using Sailfish.TestAdapter.Discovery;
 using Sailfish.TestAdapter.TestProperties;
+using Sailfish.TestAdapter.TestSettingsParser;
 
 
 namespace Sailfish.TestAdapter.Execution;
@@ -20,18 +27,27 @@ internal class TestAdapterExecutionProgram : ITestAdapterExecutionProgram
     private readonly IConsoleWriterFactory consoleWriterFactory;
     private readonly IExecutionSummaryCompiler executionSummaryCompiler;
     private readonly ISailfishExecutionEngine engine;
+    private readonly IMediator mediator;
+    private readonly ITestComputer testComputer;
+    private readonly ITestResultPresenter testResultPresenter;
     private const string MemoryCacheName = "GlobalStateMemoryCache";
 
     public TestAdapterExecutionProgram(
         ITestInstanceContainerCreator testInstanceContainerCreator,
         IConsoleWriterFactory consoleWriterFactory,
         IExecutionSummaryCompiler executionSummaryCompiler,
-        ISailfishExecutionEngine engine)
+        ISailfishExecutionEngine engine,
+        IMediator mediator,
+        ITestComputer testComputer,
+        ITestResultPresenter testResultPresenter)
     {
         this.testInstanceContainerCreator = testInstanceContainerCreator;
         this.consoleWriterFactory = consoleWriterFactory;
         this.executionSummaryCompiler = executionSummaryCompiler;
         this.engine = engine;
+        this.mediator = mediator;
+        this.testComputer = testComputer;
+        this.testResultPresenter = testResultPresenter;
     }
 
     public void Run(List<TestCase> testCases, IFrameworkHandle? frameworkHandle, CancellationToken cancellationToken)
@@ -42,7 +58,7 @@ internal class TestAdapterExecutionProgram : ITestAdapterExecutionProgram
             return;
         }
 
-        var rawResults = new List<RawExecutionResult>();
+        var rawExecutionResults = new List<RawExecutionResult>();
         var testCaseGroups = testCases.GroupBy(testCase => testCase.GetPropertyHelper(SailfishTestTypeFullNameDefinition.SailfishTestTypeFullNameDefinitionProperty));
 
         foreach (var testCaseGroup in testCaseGroups)
@@ -101,16 +117,114 @@ internal class TestAdapterExecutionProgram : ITestAdapterExecutionProgram
                 groupResults.AddRange(results);
             }
 
-            rawResults.Add(new RawExecutionResult(testType, groupResults));
+            rawExecutionResults.Add(new RawExecutionResult(testType, groupResults));
         }
 
-        var compiledResults = executionSummaryCompiler.CompileToSummaries(rawResults, CancellationToken.None);
-        consoleWriterFactory.CreateConsoleWriter(frameworkHandle).Present(compiledResults);
+        var executionSummaries = executionSummaryCompiler.CompileToSummaries(rawExecutionResults, cancellationToken).ToList();
+        consoleWriterFactory.CreateConsoleWriter(frameworkHandle).Present(executionSummaries);
 
         if (frameworkHandle is not null)
         {
             // Let the test platform know that it should tear down the test host process
             frameworkHandle.EnableShutdownAfterTestRun = true;
+        }
+
+        if (!AnalysisEnabled(out var testSettings)) return; 
+        if (testSettings.TestSettings.Disabled) return;
+
+        var mappedTestSettings = MapToTestSettings(testSettings.TestSettings);
+        var runSettingsBuilder = RunSettingsBuilder.CreateBuilder();
+        if (testSettings?.TestSettings.ResultsDirectory is not null)
+        {
+            runSettingsBuilder.WithLocalOutputDirectory(testSettings.TestSettings.ResultsDirectory);
+        }
+
+        var settings = runSettingsBuilder
+            .CreateTrackingFiles()
+            .WithAnalysis()
+            .WithAnalysisTestSettings(mappedTestSettings)
+            .Build();
+
+        var trackingDir = GetRunSettingsTrackingDirectoryPath(settings);
+
+        var timeStamp = DateTime.Now;
+        testResultPresenter.PresentResults(executionSummaries, timeStamp, trackingDir, settings, cancellationToken).Wait(cancellationToken);
+
+        var testResultAnalyzer = new AdapterTestResultAnalyzer(
+            mediator,
+            consoleWriterFactory.CreateConsoleWriter(frameworkHandle),
+            testComputer,
+            new TestResultTableContentFormatter());
+        testResultAnalyzer.Analyze(timeStamp, settings, trackingDir, cancellationToken).Wait(cancellationToken);
+    }
+
+    private static string GetRunSettingsTrackingDirectoryPath(IRunSettings runSettings)
+    {
+        string trackingDirectoryPath;
+        if (string.IsNullOrEmpty(runSettings.LocalOutputDirectory) || string.IsNullOrWhiteSpace(runSettings.LocalOutputDirectory))
+        {
+            trackingDirectoryPath = DefaultFileSettings.DefaultTrackingDirectory;
+        }
+        else
+        {
+            trackingDirectoryPath = Path.Join(runSettings.LocalOutputDirectory, DefaultFileSettings.DefaultTrackingDirectory);
+        }
+
+        if (!Directory.Exists(trackingDirectoryPath))
+        {
+            Directory.CreateDirectory(trackingDirectoryPath);
+        }
+
+        return trackingDirectoryPath;
+    }
+
+    private TestSettings MapToTestSettings(SailfishTestSettings settings)
+    {
+        if (settings?.Resolution is not null)
+        {
+            // TODO: Modify this when we impl resolution settings throughout (or ditch the idea)
+            // settingsBuilder.WithResolution(settings.Resolution);
+        }
+
+        var testSettings = new TestSettings();
+        if (settings?.TestType is not null)
+        {
+            testSettings.SetTestType(settings.TestType);
+        }
+
+        if (settings?.UseInnerQuartile is not null)
+        {
+            testSettings.SetUseInnerQuartile(settings.UseInnerQuartile);
+        }
+
+        if (settings?.Alpha is not null)
+        {
+            testSettings.SetAlpha(settings.Alpha);
+        }
+
+        if (settings?.Round is not null)
+        {
+            testSettings.SetRound(settings.Round);
+        }
+
+        return testSettings;
+    }
+
+    private bool AnalysisEnabled(out SailfishSettings testSettings)
+    {
+        try
+        {
+            var settingsFile = DirectoryRecursion.RecurseUpwardsUntilFileIsFound(
+                ".sailfish.json",
+                Directory.GetCurrentDirectory(),
+                6);
+            testSettings = SailfishSettingsParser.Parse(settingsFile.FullName);
+            return true;
+        }
+        catch (Exception ex)
+        {
+            testSettings = new SailfishSettings();
+            return false;
         }
     }
 
@@ -214,6 +328,7 @@ internal class TestAdapterExecutionProgram : ITestAdapterExecutionProgram
         var medianTestRuntime = compiledResult.Single().CompiledResults.Single().DescriptiveStatisticsResult?.Median ??
                                 throw new SailfishException("Error computing compiled results");
 
+        
         var testResult = new TestResult(currentTestCase);
 
         if (result.Exception is not null)
@@ -233,7 +348,6 @@ internal class TestAdapterExecutionProgram : ITestAdapterExecutionProgram
 
         var outputs = consoleWriterFactory.CreateConsoleWriter(logger).Present(compiledResult);
 
-        testResult.Messages.Clear();
         testResult.Messages.Add(new TestResultMessage(TestResultMessage.StandardOutCategory, outputs));
 
         LogTestResults(result, logger);

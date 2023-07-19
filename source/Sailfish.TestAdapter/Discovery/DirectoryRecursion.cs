@@ -8,14 +8,14 @@ namespace Sailfish.TestAdapter.Discovery;
 
 internal static class DirectoryRecursion
 {
-    public static FileInfo RecurseUpwardsUntilFileIsFound(string suffixToMatch, string sourceFile, int maxParentDirLevel, IMessageLogger logger)
+    public static FileInfo RecurseUpwardsUntilFileIsFound(string suffixToMatch, string sourceFile, int maxParentDirLevel)
     {
-        var result = RecurseUpwardsUntilFileIsFoundInner(suffixToMatch, sourceFile, maxParentDirLevel, logger);
-        if (result is null) throw new Exception("Couldn't locate a csproj file in this project.");
+        var result = RecurseUpwardsUntilFileIsFoundInner(suffixToMatch, sourceFile, maxParentDirLevel);
+        if (result is null) throw new Exception($"Couldn't locate a ${suffixToMatch} file in this project.");
         return result;
     }
 
-    private static FileInfo? RecurseUpwardsUntilFileIsFoundInner(string suffixToMatch, string sourceFile, int maxParentDirLevel, IMessageLogger logger)
+    private static FileInfo? RecurseUpwardsUntilFileIsFoundInner(string suffixToMatch, string sourceFile, int maxParentDirLevel)
     {
         if (maxParentDirLevel == 0) return null; // try and stave off disaster
 
@@ -27,7 +27,7 @@ internal static class DirectoryRecursion
         if (csprojFile is null)
         {
             return ThereIsAParentDirectory(new DirectoryInfo(sourceFile), out var parentDir)
-                ? RecurseUpwardsUntilFileIsFoundInner(suffixToMatch, parentDir.FullName, maxParentDirLevel - 1, logger)
+                ? RecurseUpwardsUntilFileIsFoundInner(suffixToMatch, parentDir.FullName, maxParentDirLevel - 1)
                 : null;
         }
         return new FileInfo(csprojFile);
