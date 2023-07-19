@@ -1,8 +1,9 @@
 using System.Text.Json.Serialization;
-using System.IO;
-using System.Text.Json;
 using Sailfish.Analysis;
 using Sailfish.Execution;
+
+#pragma warning disable CS8618
+namespace Sailfish.TestAdapter.TestSettingsParser;
 
 public class SailfishTestSettings
 {
@@ -20,32 +21,8 @@ public class SailfishTestSettings
 
     [JsonPropertyName("Alpha")] public double Alpha { get; set; }
 
-    [JsonPropertyName("Round")] public int Round { get; }
+    [JsonPropertyName("Round")] public int Round { get; set; }
 
     [JsonPropertyName("UseInnerQuartile")] public bool UseInnerQuartile { get; set; }
     [JsonPropertyName("Disabled")] public bool Disabled { get; set; }
-}
-
-public class SailfishSettings
-{
-    [JsonPropertyName("_comment")] public string Comment { get; set; }
-
-    public SailfishTestSettings TestSettings { get; set; }
-}
-
-
-public class SailfishSettingsParser
-{
-    public static SailfishSettings Parse(string filePath)
-    {
-        var json = File.ReadAllText(filePath);
-
-        var options = new JsonSerializerOptions
-        {
-            // Allow comments (non-standard JSON behavior)
-            ReadCommentHandling = JsonCommentHandling.Skip,
-        };
-
-        return JsonSerializer.Deserialize<SailfishSettings>(json, options) ?? new SailfishSettings();
-    }
 }

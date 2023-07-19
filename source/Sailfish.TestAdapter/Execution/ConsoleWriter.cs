@@ -19,6 +19,8 @@ internal class ConsoleWriter : IConsoleWriter
     private readonly IMarkdownTableConverter markdownTableConverter;
     private IMessageLogger? messageLogger;
 
+    private object objectLock = new();
+
     private readonly Logger consoleLogger = new LoggerConfiguration()
         .WriteTo.Console()
         .CreateLogger();
@@ -44,21 +46,17 @@ internal class ConsoleWriter : IConsoleWriter
                     messageLogger?.SendMessage(TestMessageLevel.Error, exception.Message);
                     consoleLogger.Error("{Error}", exception.Message);
 
-                    if (exception.StackTrace != null)
-                    {
-                        messageLogger?.SendMessage(TestMessageLevel.Error, exception.StackTrace);
-                        consoleLogger.Error("{StackTrace}", exception.Message);
+                    if (exception.StackTrace == null) continue;
+                    messageLogger?.SendMessage(TestMessageLevel.Error, exception.StackTrace);
+                    consoleLogger.Error("{StackTrace}", exception.Message);
 
-                        if (exception.InnerException is null) continue;
-                        messageLogger?.SendMessage(TestMessageLevel.Error, exception.InnerException.Message);
-                        consoleLogger.Error("{InnerError}", exception.InnerException.Message);
+                    if (exception.InnerException is null) continue;
+                    messageLogger?.SendMessage(TestMessageLevel.Error, exception.InnerException.Message);
+                    consoleLogger.Error("{InnerError}", exception.InnerException.Message);
 
-                        if (exception.InnerException.StackTrace != null)
-                        {
-                            messageLogger?.SendMessage(TestMessageLevel.Error, exception.InnerException.StackTrace);
-                            consoleLogger.Error("{InnerStackTrace}", exception.InnerException.StackTrace);
-                        }
-                    }
+                    if (exception.InnerException.StackTrace == null) continue;
+                    messageLogger?.SendMessage(TestMessageLevel.Error, exception.InnerException.StackTrace);
+                    consoleLogger.Error("{InnerStackTrace}", exception.InnerException.StackTrace);
                 }
             }
         }
@@ -68,7 +66,10 @@ internal class ConsoleWriter : IConsoleWriter
                 x.CompiledResults.SelectMany(y =>
                     y.DescriptiveStatisticsResult?.RawExecutionResults ?? Array.Empty<double>()))
             .ToArray();
-        var markdownStringTable = markdownTableConverter.ConvertToMarkdownTableString(summaryResults) + "Raw results: \n" + string.Join(", ", rawData.OrderBy(x => x));
+
+        var markdownStringTable = markdownTableConverter.ConvertToMarkdownTableString(summaryResults)
+                                  + "Raw results: \n"
+                                  + string.Join(", ", rawData.OrderBy(x => x));
 
         messageLogger?.SendMessage(TestMessageLevel.Informational, markdownStringTable);
         consoleLogger.Information("{MarkdownTable}", markdownStringTable);

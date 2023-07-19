@@ -16,6 +16,7 @@ using Sailfish.Execution;
 using Sailfish.Presentation;
 using Sailfish.TestAdapter.Discovery;
 using Sailfish.TestAdapter.TestProperties;
+using Sailfish.TestAdapter.TestSettingsParser;
 
 
 namespace Sailfish.TestAdapter.Execution;
@@ -327,6 +328,7 @@ internal class TestAdapterExecutionProgram : ITestAdapterExecutionProgram
         var medianTestRuntime = compiledResult.Single().CompiledResults.Single().DescriptiveStatisticsResult?.Median ??
                                 throw new SailfishException("Error computing compiled results");
 
+        
         var testResult = new TestResult(currentTestCase);
 
         if (result.Exception is not null)
@@ -346,7 +348,6 @@ internal class TestAdapterExecutionProgram : ITestAdapterExecutionProgram
 
         var outputs = consoleWriterFactory.CreateConsoleWriter(logger).Present(compiledResult);
 
-        testResult.Messages.Clear();
         testResult.Messages.Add(new TestResultMessage(TestResultMessage.StandardOutCategory, outputs));
 
         LogTestResults(result, logger);
