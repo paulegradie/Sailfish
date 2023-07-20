@@ -2,7 +2,7 @@
   "_comment": "Sailfish adapter statistical test settings",
   "TestSettings": {
     "_comment": "Specify a test result directory",
-    "ResultsDirectory": "UrMUM",
+    "ResultsDirectory": "SailfishTestOutput",
 
     "_comment": "Specify a statistical test - default is: KolmogorovSmirnovTest",
     "_comment_options": "public enum TestType",
