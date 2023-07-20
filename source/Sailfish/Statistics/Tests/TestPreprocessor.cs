@@ -22,13 +22,12 @@ public class TestPreprocessor : ITestPreprocessor
     public double[] PreprocessWithDownSample(
         double[] rawData,
         bool useInnerQuartile,
-        bool downSample,
-        [Range(3, int.MaxValue)] int maxArraySize,
+        [Range(3, int.MaxValue)] int maxArraySize = 10,
         [Range(3, int.MaxValue)] int minArraySize = 3,
         int? seed = null)
     {
         var preDownSampled = Preprocess(rawData, useInnerQuartile);
-        return downSample ? DownSampleWithRandomUniform(preDownSampled, maxArraySize, minArraySize, seed) : preDownSampled;
+        return DownSampleWithRandomUniform(preDownSampled, maxArraySize, minArraySize, seed);
     }
 
 
