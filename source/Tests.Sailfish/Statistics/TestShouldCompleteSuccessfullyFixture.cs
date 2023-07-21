@@ -10,7 +10,7 @@ using Xunit;
 
 namespace Test.Statistics;
 
-public class ShouldNotThrowTests : IAsyncLifetime
+public class TestShouldCompleteSuccessfullyFixture : IAsyncLifetime
 {
     private double[] before = null!;
     private double[] after = null!;

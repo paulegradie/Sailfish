@@ -26,25 +26,14 @@ public class TwoSampleWilcoxonSignedRankTestSailfish : ITwoSampleWilcoxonSignedR
 
         var downSampleSize = Math.Min(before.Length, after.Length);
         var minSampleSize = Math.Min(downSampleSize, 3);
-        var iterations = before.Length + after.Length > 20 ? 60 : 1;
 
-        var tests = new ConcurrentBag<TwoSampleWilcoxonSignedRankTest>();
-        Parallel.ForEach(
-            Enumerable.Range(0, iterations),
-            new ParallelOptions()
-            {
-                MaxDegreeOfParallelism = 5
-            }, (_) =>
-            {
-                var sample1 = preprocessor.PreprocessWithDownSample(before, settings.UseInnerQuartile, downSampleSize, minSampleSize);
-                var sample2 = preprocessor.PreprocessWithDownSample(after, settings.UseInnerQuartile, downSampleSize, minSampleSize);
+        var sample1 = preprocessor.PreprocessWithDownSample(before, settings.UseInnerQuartile, downSampleSize, minSampleSize);
+        var sample2 = preprocessor.PreprocessWithDownSample(after, settings.UseInnerQuartile, downSampleSize, minSampleSize);
 
-                var test = new TwoSampleWilcoxonSignedRankTest(
-                    sample1,
-                    sample2,
-                    TwoSampleHypothesis.ValuesAreDifferent);
-                tests.Add(test);
-            });
+        var test = new TwoSampleWilcoxonSignedRankTest(
+            sample1,
+            sample2,
+            TwoSampleHypothesis.ValuesAreDifferent);
 
         var meanBefore = Math.Round(before.Mean(), sigDig);
         var meanAfter = Math.Round(after.Mean(), sigDig);
@@ -52,15 +41,10 @@ public class TwoSampleWilcoxonSignedRankTestSailfish : ITwoSampleWilcoxonSignedR
         var medianBefore = Math.Round(before.Median(), sigDig);
         var medianAfter = Math.Round(after.Median(), sigDig);
 
-        var testStatistic = Math.Round(tests.Select(x => x.Statistic).Mean(), sigDig);
-        var significantPValues = tests
-            .Select(x => x.PValue)
-            .Where(p => p < TestConstants.PValueSigDig)
-            .ToList();
-        
-        var isSignificant = significantPValues.Count / (double)tests.Count > 0.5;
+        var testStatistic = Math.Round(test.Statistic, sigDig);
+        var pval = test.PValue;
+        var isSignificant = pval <= settings.Alpha;
 
-        var pVal = Math.Round(significantPValues.Mean(), TestConstants.PValueSigDig);
         var changeDirection = medianAfter > medianBefore ? SailfishChangeDirection.Regressed : SailfishChangeDirection.Improved;
         var description = isSignificant ? changeDirection : SailfishChangeDirection.NoChange;
 
@@ -72,7 +56,7 @@ public class TwoSampleWilcoxonSignedRankTestSailfish : ITwoSampleWilcoxonSignedR
             medianBefore,
             medianAfter,
             testStatistic,
-            pVal,
+            pval,
             description,
             before.Length,
             after.Length,

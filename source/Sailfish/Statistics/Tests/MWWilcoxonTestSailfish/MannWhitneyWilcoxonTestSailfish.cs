@@ -30,10 +30,12 @@ public class MannWhitneyWilcoxonTestSailfish : IMannWhitneyWilcoxonTestSailfish
     {
         var sigDig = settings.Round;
 
-        const int maxArraySize = 12;
+        const int maxArraySize = 10;
 
-        var iterations = before.Length + after.Length > 20 ? 60 : 1;
+        var iterations = before.Length + after.Length > 20 ? 50 : 1;
         var tests = new ConcurrentBag<MannWhitneyWilcoxonTest>();
+
+        // bootstrap analysis
         Parallel.ForEach(
             Enumerable.Range(0, iterations),
             new ParallelOptions()
@@ -48,7 +50,6 @@ public class MannWhitneyWilcoxonTestSailfish : IMannWhitneyWilcoxonTestSailfish
                 tests.Add(test);
             });
 
-
         var meanBefore = Math.Round(before.Mean(), sigDig);
         var meanAfter = Math.Round(after.Mean(), sigDig);
 
@@ -59,14 +60,19 @@ public class MannWhitneyWilcoxonTestSailfish : IMannWhitneyWilcoxonTestSailfish
 
         var significantPValues = tests
             .Select(x => x.PValue)
-            .Where(p => p < TestConstants.PValueSigDig)
+            .Where(p => p < settings.Alpha)
             .ToList();
 
         var isSignificant = significantPValues.Count / (double)tests.Count > 0.5;
-        var pVal = Math.Round(significantPValues.Mean(), TestConstants.PValueSigDig);
+        var pVal = Math.Round(isSignificant
+            ? significantPValues.Mean()
+            : tests
+                .Select(x => x.PValue)
+                .Where(p => p > settings.Alpha).Mean(), TestConstants.PValueSigDig);
 
-        var changeDirection = meanAfter > meanBefore ? SailfishChangeDirection.Regressed : SailfishChangeDirection.Improved;
-        var description = isSignificant ? changeDirection : SailfishChangeDirection.NoChange;
+        var description = isSignificant
+            ? (meanAfter > meanBefore ? SailfishChangeDirection.Regressed : SailfishChangeDirection.Improved)
+            : SailfishChangeDirection.NoChange;
 
         var additionalResults = new Dictionary<string, object>
         {
