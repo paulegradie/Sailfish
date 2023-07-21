@@ -9,7 +9,6 @@ public interface ITestPreprocessor
     double[] PreprocessWithDownSample(
         double[] rawData,
         bool useInnerQuartile,
-        bool downSample,
         [Range(3, int.MaxValue)] int maxArraySize,
         [Range(3, int.MaxValue)] int minArraySize = 3,
         int? seed = null);

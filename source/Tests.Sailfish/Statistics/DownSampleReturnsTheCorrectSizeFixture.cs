@@ -22,37 +22,37 @@ public class DownSampleFixture : IAsyncLifetime
     [Fact]
     public void DownSampleReturnsCorrectSize()
     {
-        preprocessor.PreprocessWithDownSample(data, false, true, 1).Length.ShouldBe(3);
+        preprocessor.PreprocessWithDownSample(data, false,  1).Length.ShouldBe(3);
     }
 
     [Fact]
     public void DownSampleReturnsCorrectSizeB()
     {
-        preprocessor.PreprocessWithDownSample(data, false, true, 3).Length.ShouldBe(3);
+        preprocessor.PreprocessWithDownSample(data, false,  3).Length.ShouldBe(3);
     }
 
     [Fact]
     public void DownSampleReturnsCorrectSizeC()
     {
-        preprocessor.PreprocessWithDownSample(data, false, true, 10).Length.ShouldBe(10);
+        preprocessor.PreprocessWithDownSample(data, false,  10).Length.ShouldBe(10);
     }
 
     [Fact]
     public void DownSampleReturnsCorrectSizeD()
     {
-        preprocessor.PreprocessWithDownSample(data, false, true, 50).Length.ShouldBe(data.Length);
+        preprocessor.PreprocessWithDownSample(data, false,  50).Length.ShouldBe(data.Length);
     }
 
     [Fact]
     public void DownSampleReturnsCorrectSizeE()
     {
-        preprocessor.PreprocessWithDownSample(data, false, true, 1, 5).Length.ShouldBe(5);
+        preprocessor.PreprocessWithDownSample(data, false, 1, 5).Length.ShouldBe(5);
     }
 
     [Fact]
     public void DownSampleReturnsCorrectSizeF()
     {
-        preprocessor.PreprocessWithDownSample(data, false, true, 10).Length.ShouldBe(10);
+        preprocessor.PreprocessWithDownSample(data, false,  10).Length.ShouldBe(10);
     }
 
 
