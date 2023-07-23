@@ -1,5 +1,7 @@
-﻿using System.Collections.Generic;
+﻿using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using MathNet.Numerics.Statistics;
 using Sailfish.Contracts.Public;
 using Sailfish.MathOps;
@@ -45,36 +47,43 @@ public class TestComputer : ITestComputer
                 .ToList();
         }
 
-        var results = new List<TestCaseResults>();
-        foreach (var testCaseId in orderedTestCaseIds.GroupBy(x => x.DisplayName).Select(x => x.First()))
-        {
-            var afterCompiled = Aggregate(
-                testCaseId,
-                settings,
-                after
-                    .Data
-                    .Where(x => new TestCaseId(x.DisplayName).Equals(testCaseId))
-                    .ToList());
+        var results = new ConcurrentBag<TestCaseResults>();
+        var groupedTestCaseIds = orderedTestCaseIds.GroupBy(x => x.DisplayName).Select(x => x.First());
+        Parallel.ForEach(
+            groupedTestCaseIds,
+            new ParallelOptions()
+            {
+                MaxDegreeOfParallelism = settings.MaxDegreeOfParallelism
+            },
+            (testCaseId) =>
+            {
+                var afterCompiled = Aggregate(
+                    testCaseId,
+                    settings,
+                    after
+                        .Data
+                        .Where(x => new TestCaseId(x.DisplayName).Equals(testCaseId))
+                        .ToList());
 
-            var beforeCompiled = Aggregate(
-                testCaseId,
-                settings,
-                before
-                    .Data
-                    .Where(x => new TestCaseId(x.DisplayName).Equals(testCaseId))
-                    .ToList());
+                var beforeCompiled = Aggregate(
+                    testCaseId,
+                    settings,
+                    before
+                        .Data
+                        .Where(x => new TestCaseId(x.DisplayName).Equals(testCaseId))
+                        .ToList());
 
-            if (beforeCompiled is null || afterCompiled is null) continue; // this could be the first time we've ever run this test
+                if (beforeCompiled is null || afterCompiled is null) return;
+                var result = statisticalTestExecutor.ExecuteStatisticalTest(
+                    beforeCompiled.RawExecutionResults,
+                    afterCompiled.RawExecutionResults,
+                    settings);
 
-            var result = statisticalTestExecutor.ExecuteStatisticalTest(
-                beforeCompiled.RawExecutionResults,
-                afterCompiled.RawExecutionResults,
-                settings);
+                results.Add(new TestCaseResults(testCaseId, result));
+            });
 
-            results.Add(new TestCaseResults(testCaseId, result));
-        }
 
-        return results;
+        return results.OrderBy(x => x).ToList();
     }
 
     private static DescriptiveStatisticsResult? Aggregate(TestCaseId testCaseId, TestSettings settings, IReadOnlyCollection<DescriptiveStatisticsResult> data)
