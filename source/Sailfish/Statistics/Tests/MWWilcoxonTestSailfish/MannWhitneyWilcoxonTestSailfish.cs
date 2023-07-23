@@ -32,7 +32,7 @@ public class MannWhitneyWilcoxonTestSailfish : IMannWhitneyWilcoxonTestSailfish
 
         const int maxArraySize = 10;
 
-        var iterations = before.Length + after.Length > 20 ? 50 : 1;
+        var iterations = before.Length + after.Length > 20 ? 25 : 1;
         var tests = new ConcurrentBag<MannWhitneyWilcoxonTest>();
 
         // bootstrap analysis
