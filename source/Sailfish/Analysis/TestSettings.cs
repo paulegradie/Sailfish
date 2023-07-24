@@ -11,13 +11,14 @@ public class TestSettings
     /// <param name="testType"></param>
     /// <param name="useInnerQuartile"></param>
     /// <param name="maxDegreeOfParallelism"></param>
-    public TestSettings(double alpha = 0.001, int round = 3, bool useInnerQuartile = false, TestType testType = TestType.WilcoxonRankSumTest, int maxDegreeOfParallelism = 4)
+    public TestSettings(double alpha = 0.001, int round = 3, bool useInnerQuartile = false, TestType testType = TestType.WilcoxonRankSumTest, int maxDegreeOfParallelism = 4, bool disableOrdering = false)
     {
         Alpha = alpha;
         Round = round;
         UseInnerQuartile = useInnerQuartile;
         TestType = testType;
         MaxDegreeOfParallelism = maxDegreeOfParallelism;
+        DisableOrdering = disableOrdering;
     }
 
     public double Alpha { get; private set; }
@@ -25,6 +26,7 @@ public class TestSettings
     public bool UseInnerQuartile { get; private set; }
     public TestType TestType { get; private set; }
     public int MaxDegreeOfParallelism { get; private set; }
+    public bool DisableOrdering { get; private set; }
 
     public void SetAlpha(double alpha)
     {
@@ -49,5 +51,10 @@ public class TestSettings
     public void SetMaxDegreeOfParallelism(int maxDegreeOfParallelism)
     {
         MaxDegreeOfParallelism = maxDegreeOfParallelism;
+    }
+
+    public void SetDisableOrdering(bool disable)
+    {
+        DisableOrdering = disable;
     }
 }
