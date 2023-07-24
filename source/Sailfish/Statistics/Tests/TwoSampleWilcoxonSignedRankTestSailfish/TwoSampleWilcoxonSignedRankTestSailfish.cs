@@ -1,11 +1,7 @@
 ﻿using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using Accord.Statistics;
 using Accord.Statistics.Testing;
-using MathNet.Numerics.Statistics;
 using Sailfish.Analysis;
 using Sailfish.Contracts;
 
