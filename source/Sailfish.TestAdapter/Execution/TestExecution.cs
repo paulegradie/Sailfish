@@ -6,6 +6,7 @@ using System.Threading;
 using Autofac;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.Adapter;
+using Microsoft.VisualStudio.TestPlatform.ObjectModel.Logging;
 using Sailfish.Registration;
 using Sailfish.TestAdapter.TestProperties;
 
@@ -28,7 +29,14 @@ internal static class TestExecution
             .Wait(cancellationToken);
 
         using var container = builder.Build();
-        container.Resolve<ITestAdapterExecutionProgram>().Run(testCases, frameworkHandle, cancellationToken);
+        try
+        {
+            container.Resolve<ITestAdapterExecutionProgram>().Run(testCases, frameworkHandle, cancellationToken);
+        }
+        catch (Exception ex)
+        {
+            frameworkHandle?.SendMessage(TestMessageLevel.Error, ex.Message);
+        }
     }
 
     private static Type RetrieveReferenceTypeForTestProject(IReadOnlyCollection<TestCase> testCases)
