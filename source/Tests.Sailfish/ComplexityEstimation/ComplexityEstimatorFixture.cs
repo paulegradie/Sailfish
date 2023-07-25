@@ -9,82 +9,68 @@ namespace Test.ComplexityEstimation;
 
 public class ComplexityEstimatorFixture
 {
-    readonly ComplexityEstimator estimator = new();
+    private readonly ComplexityEstimator estimator = new();
 
     [Fact]
     public async Task EstimatorFindsCorrectComplexity_Linear()
     {
-        estimator
-            .EstimateComplexity(GetMeasurements<Linear>())
-            .ComplexityFunction.Name
-            .ShouldBe(nameof(Linear));
+        Assert<Linear>();
+    }
+
+    [Fact]
+    public async Task EstimatorFindsCorrectComplexity_NLogN()
+    {
+        Assert<NLogN>();
     }
 
     [Fact]
     public async Task EstimatorFindsCorrectComplexity_Quadratic()
     {
-        estimator
-            .EstimateComplexity(GetMeasurements<Quadratic>())
-            .ComplexityFunction.Name
-            .ShouldBe(nameof(Quadratic));
+        Assert<Quadratic>();
     }
 
     [Fact]
     public async Task EstimatorFindsCorrectComplexity_Cubic()
     {
-        estimator
-            .EstimateComplexity(GetMeasurements<Cubic>())
-            .ComplexityFunction.Name
-            .ShouldBe(nameof(Cubic));
+        Assert<Cubic>();
     }
 
     [Fact]
     public async Task EstimatorFindsCorrectComplexity_LogLinear()
     {
-        estimator
-            .EstimateComplexity(GetMeasurements<LogLinear>())
-            .ComplexityFunction.Name
-            .ShouldBe(nameof(LogLinear));
+        Assert<LogLinear>();
     }
 
     [Fact]
     public async Task EstimatorFindsCorrectComplexity_Exponential()
     {
-        estimator
-            .EstimateComplexity(GetMeasurements<Exponential>())
-            .ComplexityFunction.Name
-            .ShouldBe(nameof(Exponential));
+        Assert<Exponential>();
     }
 
     [Fact]
-    public async Task EstimatorFindsCorrectComplexity_Factorial()
+    public void EstimatorFindsCorrectComplexity_Factorial()
     {
-        estimator
-            .EstimateComplexity(GetMeasurements<Factorial>())
-            .ComplexityFunction.Name
-            .ShouldBe(nameof(Factorial));
+        Assert<Factorial>();
     }
 
     [Fact]
-    public async Task EstimatorFindsCorrectComplexity_SqrtN()
+    public void EstimatorFindsCorrectComplexity_SqrtN()
     {
-        estimator
-            .EstimateComplexity(GetMeasurements<SqrtN>())
-            .ComplexityFunction.Name
-            .ShouldBe(nameof(SqrtN));
+        Assert<SqrtN>();
     }
 
     [Fact]
-    public async Task EstimatorFindsCorrectComplexity_LogLogN()
+    public void EstimatorFindsCorrectComplexity_LogLogN()
     {
-        estimator
-            .EstimateComplexity(GetMeasurements<LogLogN>())
-            .ComplexityFunction.Name
-            .ShouldBe(nameof(LogLogN));
+        Assert<LogLogN>();
     }
 
+    private void Assert<TComplexityFunction>() where TComplexityFunction : ComplexityFunction, new()
+    {
+        estimator.EstimateComplexity(GetMeasurements<TComplexityFunction>()).ComplexityFunction.Name.ShouldBe(typeof(TComplexityFunction).Name);
+    }
 
-    ComplexityMeasurement[] GetMeasurements<TComplexityFunction>() where TComplexityFunction : ComplexityFunction, new()
+    static ComplexityMeasurement[] GetMeasurements<TComplexityFunction>() where TComplexityFunction : ComplexityFunction, new()
     {
         var instance = new TComplexityFunction();
         return Enumerable.Range(1, 100).Select(i => new ComplexityMeasurement(i, instance.Compute(i))).ToArray();

@@ -12,7 +12,6 @@ public class ComplexityEstimator
         var errors = complexityFunctions.Select(x => x.ComputeError(measurements)).ToList();
         var minError = errors.Min();
         var closestComplexity = complexityFunctions[errors.ToList().IndexOf(minError)];
-
         return new ComplexityResult(closestComplexity, minError, errors.Mean(), errors.Median());
     }
 }

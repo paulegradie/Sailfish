@@ -9,7 +9,7 @@ public static class ComplexityReferences
         return new IComplexityFunction[]
         {
             new Linear(),
-            new NLogNComplexityFunction(),
+            new NLogN(),
             new Quadratic(),
             new Cubic(),
             new LogLinear(),

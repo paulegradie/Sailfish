@@ -24,11 +24,11 @@ public abstract class ComplexityFunction : IComplexityFunction
         var xs = cleanReferenceData.Select(x => x.X);
         var theoreticalYs = CreateExampleData(xs).Normalize();
         var empericalYs = cleanReferenceData.Select(x => x.Y).ToArray().Normalize();
-        var squaredError = empericalYs
+
+        return empericalYs
             .Zip(theoreticalYs)
             .Where(pair => pair.First.IsFinite() && pair.Second.IsFinite())
             .Select(pair => Math.Pow(pair.First - pair.Second, 2))
             .Sum();
-        return squaredError;
     }
 }
