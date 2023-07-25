@@ -15,14 +15,14 @@ internal class ParameterCombinator : IParameterCombinator
             return new List<PropertySet>().AsEnumerable();
         }
 
-        var ints = orderedPropertyValues.Select(x => x.ToArray()).ToArray();
-        if (ints.ToArray().Length != propNames.Length)
+        var orderedPropertyObjects = orderedPropertyValues.Select(x => x.ToArray()).ToArray();
+        if (orderedPropertyObjects.ToArray().Length != propNames.Length)
         {
             throw new SailfishException(
-                $"The number of property {propNames.Length} names did not match the number of property value sets {ints.Length}");
+                $"The number of property {propNames.Length} names did not match the number of property value sets {orderedPropertyObjects.Length}");
         }
 
-        var combos = GetAllCombinations(ints).ToArray();
+        var combos = GetAllCombinations(orderedPropertyObjects).ToArray();
 
         var propertySets = new List<PropertySet>();
         foreach (var pairedCombo in combos)
@@ -39,18 +39,22 @@ internal class ParameterCombinator : IParameterCombinator
             propertySets.Add(new PropertySet(variableSets));
         }
 
-
         return propertySets;
     }
 
-    public static IEnumerable<object[]> GetAllCombinations(object[][] arrays)
+    public IEnumerable<PropertySet> GetAllPossibleCombos(IEnumerable<string> orderedPropertyNames, IEnumerable<IEnumerable<int>> orderedPropertyValues)
     {
-        var indices = new int[arrays.Length];
+        return GetAllPossibleCombos(orderedPropertyNames, (IEnumerable<IEnumerable<object>>)orderedPropertyValues);
+    }
+
+    private static IEnumerable<object[]> GetAllCombinations(IReadOnlyList<object[]> arrays)
+    {
+        var indices = new int[arrays.Count];
         var total = arrays.Aggregate(1, (current, t) => current * t.Length);
 
         for (var count = 0; count < total; count++)
         {
-            var combination = new object[arrays.Length];
+            var combination = new object[arrays.Count];
             for (var i = 0; i < indices.Length; i++)
             {
                 combination[i] = arrays[i].GetValue(indices[i])!;

@@ -5,11 +5,13 @@ using System.Linq;
 using System.Reflection;
 using System.Runtime.Caching;
 using System.Threading;
+using Autofac.Builder;
 using MediatR;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.Adapter;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.Logging;
 using Sailfish.Analysis;
+using Sailfish.Attributes;
 using Sailfish.Contracts.Public;
 using Sailfish.Exceptions;
 using Sailfish.Execution;
@@ -17,6 +19,7 @@ using Sailfish.Presentation;
 using Sailfish.TestAdapter.Discovery;
 using Sailfish.TestAdapter.TestProperties;
 using Sailfish.TestAdapter.TestSettingsParser;
+using Sailfish.Utils;
 
 
 namespace Sailfish.TestAdapter.Execution;
@@ -129,7 +132,7 @@ internal class TestAdapterExecutionProgram : ITestAdapterExecutionProgram
             frameworkHandle.EnableShutdownAfterTestRun = true;
         }
 
-        if (!AnalysisEnabled(out var testSettings)) return; 
+        if (!AnalysisEnabled(out var testSettings)) return;
         if (testSettings.TestSettings.Disabled) return;
 
         var mappedTestSettings = MapToTestSettings(testSettings.TestSettings);
@@ -150,6 +153,52 @@ internal class TestAdapterExecutionProgram : ITestAdapterExecutionProgram
         var timeStamp = DateTime.Now;
         testResultPresenter.PresentResults(executionSummaries, timeStamp, trackingDir, settings, cancellationToken).Wait(cancellationToken);
 
+        // complexity analysis
+        // get results and find tests with the complexity attribute
+        // get all variable combos (again?) and then for each complexity property find each variable set where the the off-taget variavels match teh first.
+
+        foreach (var executionSummary in executionSummaries)
+        {
+            var testClass = executionSummary.Type;
+
+            var complexityProperties = testClass
+                .GetProperties()
+                .Where(x => x.GetCustomAttributes<SailfishVariableAttribute>().Single().IsComplexityVariable())
+                .ToList();
+
+            var propertySetGenerator = new PropertySetGenerator(new ParameterCombinator(), new IterationVariableRetriever());
+            var propertySets = propertySetGenerator.GenerateSailfishVariableSets(testClass, out var variableProperties).ToArray();
+            // property sets should be an array the same length as the test cases from thi executionSummary.CompiledResults
+
+
+            // like (N: 1, X: 2, Z: 8)
+            var referencePropertySet = propertySets.First().FormTestCaseVariableSection();
+            // so find all testCase result where N: 1, 2, 3 but X always 2, and Z always 8
+            
+            
+            
+            
+            
+            
+
+            propertySets.First().DisplayNameHelper.CreateTestCaseId(testClass,)
+
+
+            foreach (var complexityProperty in complexityProperties)
+            {
+                foreach (var currentComplexityPropertyVal in complexityProperty.GetCustomAttributes<SailfishVariableAttribute>().Single().GetVariables().Cast<int>().ToList())
+                {
+                    var referenceOffTargetVars = executionSummary
+                        .CompiledResults
+                        .First(x => (int)(x.TestCaseId?.TestCaseVariables.Variables.First().Value!) == currentComplexityPropertyVal);
+
+                    referenceOffTargetVars.TestCaseId.TestCaseVariables
+                }
+            }
+        }
+
+
+        // before and after analysis
         var testResultAnalyzer = new AdapterTestResultAnalyzer(
             mediator,
             consoleWriterFactory.CreateConsoleWriter(frameworkHandle),
@@ -328,7 +377,7 @@ internal class TestAdapterExecutionProgram : ITestAdapterExecutionProgram
         var medianTestRuntime = compiledResult.Single().CompiledResults.Single().DescriptiveStatisticsResult?.Median ??
                                 throw new SailfishException("Error computing compiled results");
 
-        
+
         var testResult = new TestResult(currentTestCase);
 
         if (result.Exception is not null)
@@ -349,6 +398,12 @@ internal class TestAdapterExecutionProgram : ITestAdapterExecutionProgram
         var outputs = consoleWriterFactory.CreateConsoleWriter(logger).Present(compiledResult);
 
         testResult.Messages.Add(new TestResultMessage(TestResultMessage.StandardOutCategory, outputs));
+
+        if (result.Exception is not null)
+        {
+            testResult.Messages.Add(new TestResultMessage(TestResultMessage.StandardErrorCategory, result.Exception?.Message));
+        }
+
 
         LogTestResults(result, logger);
 

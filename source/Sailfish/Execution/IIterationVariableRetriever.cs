@@ -5,5 +5,5 @@ namespace Sailfish.Execution;
 
 internal interface IIterationVariableRetriever
 {
-    Dictionary<string, object[]> RetrieveIterationVariables(Type type);
+    Dictionary<string, VariableAttributeMeta> RetrieveIterationVariables(Type type);
 }
