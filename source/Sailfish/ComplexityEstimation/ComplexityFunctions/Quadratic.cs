@@ -7,7 +7,7 @@ public class Quadratic : ComplexityFunction
         return n * n;
     }
 
-    public override string Name { get; set; } = "Quadratic";
+    public override string Name { get; set; } = nameof(Quadratic);
     public override string OName { get; set; } = "O(n^2)";
     public override string Quality { get; set; } = "Bad";
 }

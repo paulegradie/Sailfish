@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using MathNet.Numerics;
 
 namespace Sailfish.ComplexityEstimation;
 
@@ -12,18 +13,22 @@ public abstract class ComplexityFunction : IComplexityFunction
 
     public abstract double Compute(int n);
 
-    private double[] CreateExampleData(IEnumerable<int> referenceXs)
+    protected double[] CreateExampleData(IEnumerable<int> referenceXs)
     {
         return referenceXs.Select(Compute).ToArray();
     }
 
-    public double ComputeError(ComplexityMeasurement[] referenceData)
+    public virtual double ComputeError(ComplexityMeasurement[] referenceData)
     {
-        var xs = referenceData.Select(x => x.X);
+        var cleanReferenceData = referenceData.Where(x => x.Y.IsFinite()).ToArray();
+        var xs = cleanReferenceData.Select(x => x.X);
         var theoreticalYs = CreateExampleData(xs).Normalize();
-        var empericalYs = referenceData.Select(x => x.Y).ToArray().Normalize();
-
-        var squaredError = empericalYs.Zip(theoreticalYs).Select(pair => Math.Pow(pair.First - pair.Second, 2)).Sum();
+        var empericalYs = cleanReferenceData.Select(x => x.Y).ToArray().Normalize();
+        var squaredError = empericalYs
+            .Zip(theoreticalYs)
+            .Where(pair => pair.First.IsFinite() && pair.Second.IsFinite())
+            .Select(pair => Math.Pow(pair.First - pair.Second, 2))
+            .Sum();
         return squaredError;
     }
 }

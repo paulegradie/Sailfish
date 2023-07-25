@@ -7,7 +7,7 @@ public class Cubic : ComplexityFunction
         return n * n * n;
     }
 
-    public override string Name { get; set; } = "Cublic";
+    public override string Name { get; set; } = nameof(Cubic);
     public override string OName { get; set; } = "O(n^3)";
     public override string Quality { get; set; } = "Very Bad";
 }

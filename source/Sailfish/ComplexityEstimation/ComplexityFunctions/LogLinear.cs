@@ -9,7 +9,7 @@ public class LogLinear : ComplexityFunction
         return n * Math.Log(n, 2);
     }
 
-    public override string Name { get; set; } = "LogLinear";
+    public override string Name { get; set; } = nameof(LogLinear);
     public override string OName { get; set; } = "O(nlog2(n)";
     public override string Quality { get; set; } = "Okay";
 }

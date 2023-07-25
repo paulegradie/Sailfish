@@ -7,6 +7,5 @@ public interface IComplexityFunction
     string OName { get; set; }
     string Quality { get; set; }
 
-
     double ComputeError(ComplexityMeasurement[] referenceData);
 }
