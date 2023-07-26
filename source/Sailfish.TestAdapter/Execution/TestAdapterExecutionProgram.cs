@@ -1,11 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.Caching;
 using System.Threading;
-using Autofac.Builder;
 using MediatR;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.Adapter;
@@ -13,13 +13,13 @@ using Microsoft.VisualStudio.TestPlatform.ObjectModel.Logging;
 using Sailfish.Analysis;
 using Sailfish.Attributes;
 using Sailfish.Contracts.Public;
+using Sailfish.Contracts.Public.CsvMaps;
 using Sailfish.Exceptions;
 using Sailfish.Execution;
 using Sailfish.Presentation;
 using Sailfish.TestAdapter.Discovery;
 using Sailfish.TestAdapter.TestProperties;
 using Sailfish.TestAdapter.TestSettingsParser;
-using Sailfish.Utils;
 
 
 namespace Sailfish.TestAdapter.Execution;
@@ -33,7 +33,15 @@ internal class TestAdapterExecutionProgram : ITestAdapterExecutionProgram
     private readonly IMediator mediator;
     private readonly ITestComputer testComputer;
     private readonly ITestResultPresenter testResultPresenter;
+    private readonly ITrackingFileDirectoryReader trackingFileDirectoryReader;
+    private readonly IFileIo fileIo;
+    private readonly ITestResultTableContentFormatter testResultTableContentFormatter;
     private const string MemoryCacheName = "GlobalStateMemoryCache";
+
+    private TestSettings? testSettings = null;
+    private List<DescriptiveStatisticsResult>? preloadedLastRunIfAvailable = null;
+    private IRunSettings? runSettings = null;
+    private string? trackingDir = null;
 
     public TestAdapterExecutionProgram(
         ITestInstanceContainerCreator testInstanceContainerCreator,
@@ -42,7 +50,10 @@ internal class TestAdapterExecutionProgram : ITestAdapterExecutionProgram
         ISailfishExecutionEngine engine,
         IMediator mediator,
         ITestComputer testComputer,
-        ITestResultPresenter testResultPresenter)
+        ITestResultPresenter testResultPresenter,
+        ITrackingFileDirectoryReader trackingFileDirectoryReader,
+        IFileIo fileIo,
+        ITestResultTableContentFormatter testResultTableContentFormatter)
     {
         this.testInstanceContainerCreator = testInstanceContainerCreator;
         this.consoleWriterFactory = consoleWriterFactory;
@@ -51,6 +62,9 @@ internal class TestAdapterExecutionProgram : ITestAdapterExecutionProgram
         this.mediator = mediator;
         this.testComputer = testComputer;
         this.testResultPresenter = testResultPresenter;
+        this.trackingFileDirectoryReader = trackingFileDirectoryReader;
+        this.fileIo = fileIo;
+        this.testResultTableContentFormatter = testResultTableContentFormatter;
     }
 
     public void Run(List<TestCase> testCases, IFrameworkHandle? frameworkHandle, CancellationToken cancellationToken)
@@ -61,8 +75,44 @@ internal class TestAdapterExecutionProgram : ITestAdapterExecutionProgram
             return;
         }
 
+        var statisticalTestingEnabled = AnalysisEnabled(out var parsedSettings);
+        if (statisticalTestingEnabled)
+        {
+            var runSettingsBuilder = RunSettingsBuilder.CreateBuilder();
+            if (parsedSettings.TestSettings.ResultsDirectory is not null)
+            {
+                runSettingsBuilder.WithLocalOutputDirectory(parsedSettings.TestSettings.ResultsDirectory);
+            }
+
+            runSettings = runSettingsBuilder
+                .CreateTrackingFiles()
+                .WithAnalysis()
+                .WithAnalysisTestSettings(testSettings!)
+                .Build();
+            trackingDir = GetRunSettingsTrackingDirectoryPath(runSettings);
+            testSettings = MapToTestSettings(parsedSettings.TestSettings);
+
+            var trackingFiles = trackingFileDirectoryReader.FindTrackingFilesInDirectoryOrderedByLastModified(trackingDir, ascending: false);
+            var latestRun = trackingFiles.Count switch
+            {
+                0 => null,
+                1 => trackingFiles.Single(),
+                _ => trackingFiles.First()
+            };
+
+            if (latestRun is not null)
+            {
+                preloadedLastRunIfAvailable = fileIo
+                    .ReadCsvFile<DescriptiveStatisticsResultCsvMap, DescriptiveStatisticsResult>(latestRun, cancellationToken)
+                    .GetAwaiter()
+                    .GetResult();
+            }
+        }
+
         var rawExecutionResults = new List<RawExecutionResult>();
-        var testCaseGroups = testCases.GroupBy(testCase => testCase.GetPropertyHelper(SailfishTestTypeFullNameDefinition.SailfishTestTypeFullNameDefinitionProperty));
+        var testCaseGroups = testCases
+            .GroupBy(testCase => 
+                testCase.GetPropertyHelper(SailfishTestTypeFullNameDefinition.SailfishTestTypeFullNameDefinitionProperty));
 
         foreach (var testCaseGroup in testCaseGroups)
         {
@@ -132,70 +182,50 @@ internal class TestAdapterExecutionProgram : ITestAdapterExecutionProgram
             frameworkHandle.EnableShutdownAfterTestRun = true;
         }
 
-        if (!AnalysisEnabled(out var testSettings)) return;
-        if (testSettings.TestSettings.Disabled) return;
-
-        var mappedTestSettings = MapToTestSettings(testSettings.TestSettings);
-        var runSettingsBuilder = RunSettingsBuilder.CreateBuilder();
-        if (testSettings?.TestSettings.ResultsDirectory is not null)
-        {
-            runSettingsBuilder.WithLocalOutputDirectory(testSettings.TestSettings.ResultsDirectory);
-        }
-
-        var settings = runSettingsBuilder
-            .CreateTrackingFiles()
-            .WithAnalysis()
-            .WithAnalysisTestSettings(mappedTestSettings)
-            .Build();
-
-        var trackingDir = GetRunSettingsTrackingDirectoryPath(settings);
+        if (!statisticalTestingEnabled) return;
+        if (parsedSettings.TestSettings.Disabled) return;
 
         var timeStamp = DateTime.Now;
-        testResultPresenter.PresentResults(executionSummaries, timeStamp, trackingDir, settings, cancellationToken).Wait(cancellationToken);
+        testResultPresenter.PresentResults(executionSummaries, timeStamp, trackingDir!, runSettings!, cancellationToken).Wait(cancellationToken);
 
         // complexity analysis
         // get results and find tests with the complexity attribute
-        // get all variable combos (again?) and then for each complexity property find each variable set where the the off-taget variavels match teh first.
+        // get all variable combos (again?) and then for each complexity property find each variable set where the the off-target variavels match teh first.
 
-        foreach (var executionSummary in executionSummaries)
-        {
-            var testClass = executionSummary.Type;
-
-            var complexityProperties = testClass
-                .GetProperties()
-                .Where(x => x.GetCustomAttributes<SailfishVariableAttribute>().Single().IsComplexityVariable())
-                .ToList();
-
-            var propertySetGenerator = new PropertySetGenerator(new ParameterCombinator(), new IterationVariableRetriever());
-            var propertySets = propertySetGenerator.GenerateSailfishVariableSets(testClass, out var variableProperties).ToArray();
-            // property sets should be an array the same length as the test cases from thi executionSummary.CompiledResults
-
-
-            // like (N: 1, X: 2, Z: 8)
-            var referencePropertySet = propertySets.First().FormTestCaseVariableSection();
-            // so find all testCase result where N: 1, 2, 3 but X always 2, and Z always 8
-            
-            
-            
-            
-            
-            
-
-            propertySets.First().DisplayNameHelper.CreateTestCaseId(testClass,)
-
-
-            foreach (var complexityProperty in complexityProperties)
-            {
-                foreach (var currentComplexityPropertyVal in complexityProperty.GetCustomAttributes<SailfishVariableAttribute>().Single().GetVariables().Cast<int>().ToList())
-                {
-                    var referenceOffTargetVars = executionSummary
-                        .CompiledResults
-                        .First(x => (int)(x.TestCaseId?.TestCaseVariables.Variables.First().Value!) == currentComplexityPropertyVal);
-
-                    referenceOffTargetVars.TestCaseId.TestCaseVariables
-                }
-            }
-        }
+        // foreach (var executionSummary in executionSummaries)
+        // {
+        //     var testClass = executionSummary.Type;
+        //
+        //     var complexityProperties = testClass
+        //         .GetProperties()
+        //         .Where(x => x.GetCustomAttributes<SailfishVariableAttribute>().Single().IsComplexityVariable())
+        //         .ToList();
+        //
+        //     var propertySetGenerator = new PropertySetGenerator(new ParameterCombinator(), new IterationVariableRetriever());
+        //     var propertySets = propertySetGenerator.GenerateSailfishVariableSets(testClass, out var variableProperties).ToArray();
+        //     // property sets should be an array the same length as the test cases from thi executionSummary.CompiledResults
+        //
+        //
+        //     // like (N: 1, X: 2, Z: 8)
+        //     var referencePropertySet = propertySets.First().FormTestCaseVariableSection();
+        //     // so find all testCase result where N: 1, 2, 3 but X always 2, and Z always 8
+        //
+        //
+        //     propertySets.First().DisplayNameHelper.CreateTestCaseId(testClass,)
+        //
+        //
+        //     foreach (var complexityProperty in complexityProperties)
+        //     {
+        //         foreach (var currentComplexityPropertyVal in complexityProperty.GetCustomAttributes<SailfishVariableAttribute>().Single().GetVariables().Cast<int>().ToList())
+        //         {
+        //             var referenceOffTargetVars = executionSummary
+        //                 .CompiledResults
+        //                 .First(x => (int)(x.TestCaseId?.TestCaseVariables.Variables.First().Value!) == currentComplexityPropertyVal);
+        //
+        //             referenceOffTargetVars.TestCaseId.TestCaseVariables
+        //         }
+        //     }
+        // }
 
 
         // before and after analysis
@@ -204,7 +234,7 @@ internal class TestAdapterExecutionProgram : ITestAdapterExecutionProgram
             consoleWriterFactory.CreateConsoleWriter(frameworkHandle),
             testComputer,
             new TestResultTableContentFormatter());
-        testResultAnalyzer.Analyze(timeStamp, settings, trackingDir, cancellationToken).Wait(cancellationToken);
+        testResultAnalyzer.Analyze(timeStamp, runSettings!, trackingDir!, cancellationToken).Wait(cancellationToken);
     }
 
     private static string GetRunSettingsTrackingDirectoryPath(IRunSettings runSettings)
@@ -235,31 +265,31 @@ internal class TestAdapterExecutionProgram : ITestAdapterExecutionProgram
             // settingsBuilder.WithResolution(settings.Resolution);
         }
 
-        var testSettings = new TestSettings();
+        var mappedSettings = new TestSettings();
         if (settings?.TestType is not null)
         {
-            testSettings.SetTestType(settings.TestType);
+            mappedSettings.SetTestType(settings.TestType);
         }
 
         if (settings?.UseInnerQuartile is not null)
         {
-            testSettings.SetUseInnerQuartile(settings.UseInnerQuartile);
+            mappedSettings.SetUseInnerQuartile(settings.UseInnerQuartile);
         }
 
         if (settings?.Alpha is not null)
         {
-            testSettings.SetAlpha(settings.Alpha);
+            mappedSettings.SetAlpha(settings.Alpha);
         }
 
         if (settings?.Round is not null)
         {
-            testSettings.SetRound(settings.Round);
+            mappedSettings.SetRound(settings.Round);
         }
 
-        return testSettings;
+        return mappedSettings;
     }
 
-    private bool AnalysisEnabled(out SailfishSettings testSettings)
+    private static bool AnalysisEnabled(out SailfishSettings parsedSettings)
     {
         try
         {
@@ -267,12 +297,12 @@ internal class TestAdapterExecutionProgram : ITestAdapterExecutionProgram
                 ".sailfish.json",
                 Directory.GetCurrentDirectory(),
                 6);
-            testSettings = SailfishSettingsParser.Parse(settingsFile.FullName);
+            parsedSettings = SailfishSettingsParser.Parse(settingsFile.FullName);
             return true;
         }
-        catch (Exception ex)
+        catch
         {
-            testSettings = new SailfishSettings();
+            parsedSettings = new SailfishSettings();
             return false;
         }
     }
@@ -289,7 +319,8 @@ internal class TestAdapterExecutionProgram : ITestAdapterExecutionProgram
         foreach (var perf in result.PerformanceTimerResults?.MethodIterationPerformances!)
         {
             var timeResult = perf.GetDurationFromTicks().MilliSeconds;
-            logger?.SendMessage(TestMessageLevel.Informational, $"Time: {timeResult.Duration.ToString()} {timeResult.TimeScale.ToString().ToLowerInvariant()}");
+            logger?.SendMessage(TestMessageLevel.Informational,
+                $"Time: {timeResult.Duration.ToString(CultureInfo.InvariantCulture)} {timeResult.TimeScale.ToString().ToLowerInvariant()}");
         }
     }
 
@@ -370,13 +401,18 @@ internal class TestAdapterExecutionProgram : ITestAdapterExecutionProgram
         };
     }
 
-    private void HandleSuccessfulTestCase(TestExecutionResult result, TestCase currentTestCase, RawExecutionResult rawResult, ITestExecutionRecorder? logger,
+    private void HandleSuccessfulTestCase(
+        TestExecutionResult result,
+        TestCase currentTestCase,
+        RawExecutionResult rawResult,
+        ITestExecutionRecorder? logger,
         CancellationToken cancellationToken)
     {
-        var compiledResult = executionSummaryCompiler.CompileToSummaries(new List<RawExecutionResult>() { rawResult }, cancellationToken).ToList();
-        var medianTestRuntime = compiledResult.Single().CompiledResults.Single().DescriptiveStatisticsResult?.Median ??
+        var executionSummary = executionSummaryCompiler
+            .CompileToSummaries(new List<RawExecutionResult>() { rawResult }, cancellationToken)
+            .Single();
+        var medianTestRuntime = executionSummary.CompiledResults.Single().DescriptiveStatisticsResult?.Median ??
                                 throw new SailfishException("Error computing compiled results");
-
 
         var testResult = new TestResult(currentTestCase);
 
@@ -395,15 +431,33 @@ internal class TestAdapterExecutionProgram : ITestAdapterExecutionProgram
 
         testResult.ErrorMessage = result.Exception?.Message;
 
-        var outputs = consoleWriterFactory.CreateConsoleWriter(logger).Present(compiledResult);
+        var formattedExecutionSummary = consoleWriterFactory.CreateConsoleWriter(logger).Present(new[] { executionSummary });
 
-        testResult.Messages.Add(new TestResultMessage(TestResultMessage.StandardOutCategory, outputs));
+        if (preloadedLastRunIfAvailable is not null && testSettings is not null)
+        {
+            var beforeIds = new[] { result.TestInstanceContainer?.TestCaseId.DisplayName ?? string.Empty };
+            var afterIds = new[] { result.TestInstanceContainer?.TestCaseId.DisplayName ?? string.Empty };
+
+            var beforeTestData = new TestData(
+                beforeIds,
+                preloadedLastRunIfAvailable.Where(x => x.DisplayName == result.TestInstanceContainer?.TestCaseId.DisplayName));
+
+            var afterTestData = new TestData(afterIds,
+                executionSummary.CompiledResults
+                    .Select(x => x.DescriptiveStatisticsResult!)
+                    .Where(x => x.DisplayName == result.TestInstanceContainer?.TestCaseId.DisplayName));
+
+            var testResults = testComputer.ComputeTest(beforeTestData, afterTestData, testSettings);
+            var testResultFormats = testResultTableContentFormatter.CreateTableFormats(testResults, new TestIds(beforeIds, afterIds), cancellationToken);
+            formattedExecutionSummary += "\n\n----------\n\nStatistical Test Results\n\n" + testResultFormats.MarkdownFormat;
+        }
+
+        testResult.Messages.Add(new TestResultMessage(TestResultMessage.StandardOutCategory, formattedExecutionSummary));
 
         if (result.Exception is not null)
         {
             testResult.Messages.Add(new TestResultMessage(TestResultMessage.StandardErrorCategory, result.Exception?.Message));
         }
-
 
         LogTestResults(result, logger);
 

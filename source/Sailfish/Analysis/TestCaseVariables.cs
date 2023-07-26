@@ -66,7 +66,8 @@ public class TestCaseVariables
         {
             return rawElements
                 .Select(ParseVariable)
-                .OrderBy(x => x.Name)
+                .OrderByDescending(x => x.Name)
+                .ThenBy(x => x.Value)
                 .ToList();
         }
 

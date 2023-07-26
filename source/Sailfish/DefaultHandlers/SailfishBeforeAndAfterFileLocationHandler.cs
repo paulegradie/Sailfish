@@ -12,15 +12,10 @@ namespace Sailfish.DefaultHandlers;
 
 internal class SailfishBeforeAndAfterFileLocationHandler : IRequestHandler<BeforeAndAfterFileLocationCommand, BeforeAndAfterFileLocationResponse>
 {
-    private readonly ITrackingFileFinder trackingFileFinder;
     private readonly ITrackingFileDirectoryReader trackingFileDirectoryReader;
 
-    public SailfishBeforeAndAfterFileLocationHandler(
-        ITrackingFileFinder trackingFileFinder,
-        ITrackingFileDirectoryReader trackingFileDirectoryReader
-    )
+    public SailfishBeforeAndAfterFileLocationHandler(ITrackingFileDirectoryReader trackingFileDirectoryReader)
     {
-        this.trackingFileFinder = trackingFileFinder;
         this.trackingFileDirectoryReader = trackingFileDirectoryReader;
     }
 
