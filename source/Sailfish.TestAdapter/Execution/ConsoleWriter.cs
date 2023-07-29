@@ -38,7 +38,7 @@ internal class ConsoleWriter : IConsoleWriter
         var summaryResults = results.ToList();
         foreach (var result in summaryResults)
         {
-            foreach (var compiledResult in result.CompiledResults)
+            foreach (var compiledResult in result.CompiledTestCaseResults)
             {
                 if (!compiledResult.Exceptions.Any()) continue;
                 foreach (var exception in compiledResult.Exceptions)
@@ -63,7 +63,7 @@ internal class ConsoleWriter : IConsoleWriter
 
         var rawData = summaryResults
             .SelectMany(x =>
-                x.CompiledResults.SelectMany(y =>
+                x.CompiledTestCaseResults.SelectMany(y =>
                     y.DescriptiveStatisticsResult?.RawExecutionResults ?? Array.Empty<double>()))
             .ToArray();
 

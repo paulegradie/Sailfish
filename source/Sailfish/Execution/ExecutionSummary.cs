@@ -9,19 +9,19 @@ public interface IExecutionSummary
 {
     public Type Type { get; set; }
     public IExecutionSettings Settings { get; }
-    public List<ICompiledResult> CompiledResults { get; set; }
+    public List<ICompiledTestCaseResult> CompiledTestCaseResults { get; set; }
 }
 
 internal class ExecutionSummary : IExecutionSummary
 {
-    public ExecutionSummary(Type type, List<ICompiledResult> compiledResults)
+    public ExecutionSummary(Type type, List<ICompiledTestCaseResult> compiledResults)
     {
         Type = type;
-        CompiledResults = compiledResults;
+        CompiledTestCaseResults = compiledResults;
         Settings = type.RetrieveExecutionTestSettings();
     }
 
     public Type Type { get; set; }
     public IExecutionSettings Settings { get; }
-    public List<ICompiledResult> CompiledResults { get; set; }
+    public List<ICompiledTestCaseResult> CompiledTestCaseResults { get; set; }
 }

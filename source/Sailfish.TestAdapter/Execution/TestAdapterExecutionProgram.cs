@@ -11,6 +11,7 @@ using Microsoft.VisualStudio.TestPlatform.ObjectModel;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.Adapter;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.Logging;
 using Sailfish.Analysis;
+using Sailfish.Analysis.Complexity;
 using Sailfish.Attributes;
 using Sailfish.Contracts.Public;
 using Sailfish.Contracts.Public.CsvMaps;
@@ -26,6 +27,7 @@ namespace Sailfish.TestAdapter.Execution;
 
 internal class TestAdapterExecutionProgram : ITestAdapterExecutionProgram
 {
+    private readonly IComplexityComputer complexityComputer;
     private readonly ITestInstanceContainerCreator testInstanceContainerCreator;
     private readonly IConsoleWriterFactory consoleWriterFactory;
     private readonly IExecutionSummaryCompiler executionSummaryCompiler;
@@ -44,6 +46,7 @@ internal class TestAdapterExecutionProgram : ITestAdapterExecutionProgram
     private string? trackingDir = null;
 
     public TestAdapterExecutionProgram(
+        IComplexityComputer complexityComputer,
         ITestInstanceContainerCreator testInstanceContainerCreator,
         IConsoleWriterFactory consoleWriterFactory,
         IExecutionSummaryCompiler executionSummaryCompiler,
@@ -55,6 +58,7 @@ internal class TestAdapterExecutionProgram : ITestAdapterExecutionProgram
         IFileIo fileIo,
         ITestResultTableContentFormatter testResultTableContentFormatter)
     {
+        this.complexityComputer = complexityComputer;
         this.testInstanceContainerCreator = testInstanceContainerCreator;
         this.consoleWriterFactory = consoleWriterFactory;
         this.executionSummaryCompiler = executionSummaryCompiler;
@@ -109,9 +113,9 @@ internal class TestAdapterExecutionProgram : ITestAdapterExecutionProgram
             }
         }
 
-        var rawExecutionResults = new List<RawExecutionResult>();
+        var rawExecutionResults = new List<(string, RawExecutionResult)>();
         var testCaseGroups = testCases
-            .GroupBy(testCase => 
+            .GroupBy(testCase =>
                 testCase.GetPropertyHelper(SailfishTestTypeFullNameDefinition.SailfishTestTypeFullNameDefinitionProperty));
 
         foreach (var testCaseGroup in testCaseGroups)
@@ -170,10 +174,10 @@ internal class TestAdapterExecutionProgram : ITestAdapterExecutionProgram
                 groupResults.AddRange(results);
             }
 
-            rawExecutionResults.Add(new RawExecutionResult(testType, groupResults));
+            rawExecutionResults.Add((testCaseGroup.Key, new RawExecutionResult(testType, groupResults)));
         }
 
-        var executionSummaries = executionSummaryCompiler.CompileToSummaries(rawExecutionResults, cancellationToken).ToList();
+        var executionSummaries = executionSummaryCompiler.CompileToSummaries(rawExecutionResults.Select(x => x.Item2), cancellationToken).ToList();
         consoleWriterFactory.CreateConsoleWriter(frameworkHandle).Present(executionSummaries);
 
         if (frameworkHandle is not null)
@@ -188,45 +192,7 @@ internal class TestAdapterExecutionProgram : ITestAdapterExecutionProgram
         var timeStamp = DateTime.Now;
         testResultPresenter.PresentResults(executionSummaries, timeStamp, trackingDir!, runSettings!, cancellationToken).Wait(cancellationToken);
 
-        // complexity analysis
-        // get results and find tests with the complexity attribute
-        // get all variable combos (again?) and then for each complexity property find each variable set where the the off-target variavels match teh first.
-
-        // foreach (var executionSummary in executionSummaries)
-        // {
-        //     var testClass = executionSummary.Type;
-        //
-        //     var complexityProperties = testClass
-        //         .GetProperties()
-        //         .Where(x => x.GetCustomAttributes<SailfishVariableAttribute>().Single().IsComplexityVariable())
-        //         .ToList();
-        //
-        //     var propertySetGenerator = new PropertySetGenerator(new ParameterCombinator(), new IterationVariableRetriever());
-        //     var propertySets = propertySetGenerator.GenerateSailfishVariableSets(testClass, out var variableProperties).ToArray();
-        //     // property sets should be an array the same length as the test cases from thi executionSummary.CompiledResults
-        //
-        //
-        //     // like (N: 1, X: 2, Z: 8)
-        //     var referencePropertySet = propertySets.First().FormTestCaseVariableSection();
-        //     // so find all testCase result where N: 1, 2, 3 but X always 2, and Z always 8
-        //
-        //
-        //     propertySets.First().DisplayNameHelper.CreateTestCaseId(testClass,)
-        //
-        //
-        //     foreach (var complexityProperty in complexityProperties)
-        //     {
-        //         foreach (var currentComplexityPropertyVal in complexityProperty.GetCustomAttributes<SailfishVariableAttribute>().Single().GetVariables().Cast<int>().ToList())
-        //         {
-        //             var referenceOffTargetVars = executionSummary
-        //                 .CompiledResults
-        //                 .First(x => (int)(x.TestCaseId?.TestCaseVariables.Variables.First().Value!) == currentComplexityPropertyVal);
-        //
-        //             referenceOffTargetVars.TestCaseId.TestCaseVariables
-        //         }
-        //     }
-        // }
-
+        var complexityResult = complexityComputer.AnalyzeComplexity(executionSummaries);
 
         // before and after analysis
         var testResultAnalyzer = new AdapterTestResultAnalyzer(
@@ -411,7 +377,7 @@ internal class TestAdapterExecutionProgram : ITestAdapterExecutionProgram
         var executionSummary = executionSummaryCompiler
             .CompileToSummaries(new List<RawExecutionResult>() { rawResult }, cancellationToken)
             .Single();
-        var medianTestRuntime = executionSummary.CompiledResults.Single().DescriptiveStatisticsResult?.Median ??
+        var medianTestRuntime = executionSummary.CompiledTestCaseResults.Single().DescriptiveStatisticsResult?.Median ??
                                 throw new SailfishException("Error computing compiled results");
 
         var testResult = new TestResult(currentTestCase);
@@ -443,7 +409,7 @@ internal class TestAdapterExecutionProgram : ITestAdapterExecutionProgram
                 preloadedLastRunIfAvailable.Where(x => x.DisplayName == result.TestInstanceContainer?.TestCaseId.DisplayName));
 
             var afterTestData = new TestData(afterIds,
-                executionSummary.CompiledResults
+                executionSummary.CompiledTestCaseResults
                     .Select(x => x.DescriptiveStatisticsResult!)
                     .Where(x => x.DisplayName == result.TestInstanceContainer?.TestCaseId.DisplayName));
 

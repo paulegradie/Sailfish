@@ -22,9 +22,9 @@ public class MarkdownTableConverter : IMarkdownTableConverter
         foreach (var result in executionSummaries)
         {
             AppendHeader(result.Type.Name, stringBuilder);
-            AppendResults(result.CompiledResults, stringBuilder);
+            AppendResults(result.CompiledTestCaseResults, stringBuilder);
 
-            var exceptions = result.CompiledResults.SelectMany(x => x.Exceptions).ToList();
+            var exceptions = result.CompiledTestCaseResults.SelectMany(x => x.Exceptions).ToList();
             AppendExceptions(exceptions, stringBuilder);
         }
 
@@ -38,7 +38,7 @@ public class MarkdownTableConverter : IMarkdownTableConverter
         stringBuilder.AppendLine("-----------------------------------\r");
     }
 
-    private void AppendResults(IEnumerable<ICompiledResult> compiledResults, StringBuilder stringBuilder)
+    private void AppendResults(IEnumerable<ICompiledTestCaseResult> compiledResults, StringBuilder stringBuilder)
     {
         foreach (var group in compiledResults.GroupBy(x => x.GroupingId))
         {

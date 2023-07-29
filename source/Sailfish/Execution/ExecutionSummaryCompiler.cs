@@ -24,7 +24,7 @@ internal class ExecutionSummaryCompiler : IExecutionSummaryCompiler
     private IExecutionSummary IterateExecutionResults(RawExecutionResult rawExecutionResult, CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
-        var compiledResults = new List<ICompiledResult>();
+        var compiledResults = new List<ICompiledTestCaseResult>();
 
         if (rawExecutionResult.ExecutionResults != null)
         {
@@ -36,12 +36,12 @@ internal class ExecutionSummaryCompiler : IExecutionSummaryCompiler
             return new ExecutionSummary(rawExecutionResult.TestType, compiledResults);
         }
 
-        if (!rawExecutionResult.Exceptions.Any()) return new ExecutionSummary(rawExecutionResult.TestType, new List<ICompiledResult>() { });
-        var compiledResult = new CompiledResult(rawExecutionResult.Exceptions);
-        return new ExecutionSummary(rawExecutionResult.TestType, new List<ICompiledResult>() { compiledResult });
+        if (!rawExecutionResult.Exceptions.Any()) return new ExecutionSummary(rawExecutionResult.TestType, new List<ICompiledTestCaseResult>() { });
+        var compiledResult = new CompiledTestCaseResult(rawExecutionResult.Exceptions);
+        return new ExecutionSummary(rawExecutionResult.TestType, new List<ICompiledTestCaseResult>() { compiledResult });
     }
 
-    private void CompileTestResult(TestExecutionResult testExecutionResult, ICollection<ICompiledResult> compiledResults)
+    private void CompileTestResult(TestExecutionResult testExecutionResult, ICollection<ICompiledTestCaseResult> compiledResults)
     {
         if (testExecutionResult.IsSuccess)
         {
@@ -53,7 +53,7 @@ internal class ExecutionSummaryCompiler : IExecutionSummaryCompiler
             }
 
             var descriptiveStatistics = ComputeStatistics(testExecutionResult);
-            var compiledResult = new CompiledResult(
+            var compiledResult = new CompiledTestCaseResult(
                 testExecutionResult.TestInstanceContainer?.TestCaseId!,
                 testExecutionResult.TestInstanceContainer?.GroupingId!,
                 descriptiveStatistics);
@@ -68,7 +68,7 @@ internal class ExecutionSummaryCompiler : IExecutionSummaryCompiler
         else
         {
             if (testExecutionResult.Exception is null) return;
-            var compiledResult = new CompiledResult(testExecutionResult.Exception);
+            var compiledResult = new CompiledTestCaseResult(testExecutionResult.Exception);
             compiledResults.Add(compiledResult);
             // if we have a failure, but no exception -- we have no information to report
         }

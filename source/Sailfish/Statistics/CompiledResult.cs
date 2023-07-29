@@ -5,7 +5,7 @@ using Sailfish.Contracts.Public;
 
 namespace Sailfish.Statistics;
 
-public interface ICompiledResult
+public interface ICompiledTestCaseResult
 {
     public string? GroupingId { get; set; }
     public DescriptiveStatisticsResult? DescriptiveStatisticsResult { get; set; }
@@ -13,20 +13,20 @@ public interface ICompiledResult
     public TestCaseId? TestCaseId { get; set; }
 }
 
-internal class CompiledResult : ICompiledResult
+internal class CompiledTestCaseResult : ICompiledTestCaseResult
 {
-    public CompiledResult(TestCaseId testCaseId, string groupingId, DescriptiveStatisticsResult descriptiveStatisticsResult)
+    public CompiledTestCaseResult(TestCaseId testCaseId, string groupingId, DescriptiveStatisticsResult descriptiveStatisticsResult)
     {
         TestCaseId = testCaseId;
         GroupingId = groupingId;
         DescriptiveStatisticsResult = descriptiveStatisticsResult;
     }
 
-    public CompiledResult(Exception exception) : this(new List<Exception>() { exception })
+    public CompiledTestCaseResult(Exception exception) : this(new List<Exception>() { exception })
     {
     }
 
-    public CompiledResult(IEnumerable<Exception> exceptions)
+    public CompiledTestCaseResult(IEnumerable<Exception> exceptions)
     {
         Exceptions.AddRange(exceptions);
     }

@@ -50,7 +50,7 @@ internal class PerformanceResultPresenter : IPerformanceResultPresenter
     private static IEnumerable<DescriptiveStatisticsResult> ExtractDescriptiveStatistics(IEnumerable<IExecutionSummary> results)
     {
         return results.SelectMany(container => container
-            .CompiledResults
+            .CompiledTestCaseResults
             .Select(x => x.DescriptiveStatisticsResult)
             .Where(x => x is not null)
             .Cast<DescriptiveStatisticsResult>());

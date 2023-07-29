@@ -3,7 +3,12 @@ using MathNet.Numerics.Statistics;
 
 namespace Sailfish.ComplexityEstimation;
 
-public class ComplexityEstimator
+public interface IComplexityEstimator
+{
+    ComplexityResult EstimateComplexity(ComplexityMeasurement[] measurements);
+}
+
+public class ComplexityEstimator : IComplexityEstimator
 {
     public ComplexityResult EstimateComplexity(ComplexityMeasurement[] measurements)
     {
