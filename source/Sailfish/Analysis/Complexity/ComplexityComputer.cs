@@ -2,8 +2,10 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using Accord.Statistics.Kernels;
 using Sailfish.Attributes;
 using Sailfish.ComplexityEstimation;
+using Sailfish.Exceptions;
 using Sailfish.Execution;
 using Sailfish.Statistics;
 
@@ -25,6 +27,11 @@ public class ComplexityComputer : IComplexityComputer
         var finalResult = new Dictionary<Type, Dictionary<string, Dictionary<string, ComplexityResult>>>();
         foreach (var testClassSummary in executionSummaries)
         {
+            var sailfishComplexityVariables = testClassSummary.Type
+                .GetProperties()
+                .Where(x => x.GetCustomAttributes<SailfishVariableAttribute>().Any(z => z.IsComplexityVariable()))
+                .ToList();
+
             // to filter out those we want to assess
             var complexityPropertyNames = testClassSummary
                 .Type
@@ -50,18 +57,38 @@ public class ComplexityComputer : IComplexityComputer
 
                 for (var i = 0; i < sailfishVariablesCountTuples.Count; i++)
                 {
-                    var currentVar = sailfishVariablesCountTuples[i];
-                    if (!complexityPropertyNames.Contains(currentVar.Name)) continue;
-                    var vars = sailfishVariablesCountTuples
-                        .Skip(i + 1)
-                        .Select(x => x.Item2)
-                        .ToList();
-                    var step = vars.Aggregate(1, (a, b) => a * b);
-                    var indices = Enumerable.Range(0, currentVar.Item2).Select(j => j * step).ToList();
+                    var currentSailfishVariables = sailfishComplexityVariables
+                        .Single(x => x.Name == sailfishVariablesCountTuples[i].Name)
+                        .GetCustomAttribute<SailfishVariableAttribute>()?
+                        .GetVariables()
+                        .Cast<int>()
+                        .ToList() ?? throw new SailfishException(
+                        "Error encountered when executing complexity analysis: SailfishVariable analyzed did not have SailfishVariableAttribute as expected");
 
+
+                    int step;
+                    (string Name, int) currentVar;
+                    List<int> vars;
+                    if (i < sailfishVariablesCountTuples.Count - 1)
+                    {
+                        currentVar = sailfishVariablesCountTuples[i];
+                        if (!complexityPropertyNames.Contains(currentVar.Name)) continue;
+                        step = sailfishVariablesCountTuples
+                            .Skip(i + 1)
+                            .Select(x => x.Item2)
+                            .Aggregate(1, (a, b) => a * b);
+                    }
+                    else
+                    {
+                        currentVar = sailfishVariablesCountTuples.Last();
+                        if (!complexityPropertyNames.Contains(currentVar.Name)) continue;
+                        step = 1;
+                    }
+
+                    var indices = Enumerable.Range(0, currentVar.Item2).Select(j => j * step).ToList();
                     var testResult = indices.Select(index => testClassSummary.CompiledTestCaseResults[index]).ToList();
 
-                    empericalResults.Add(currentVar.Name, (vars.ToList(), testResult));
+                    empericalResults.Add(currentVar.Name, (currentSailfishVariables, testResult));
                 }
 
                 var complexityResultMap = new Dictionary<string, ComplexityResult>();
