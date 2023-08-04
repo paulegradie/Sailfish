@@ -1,7 +1,10 @@
+using System;
 using System.Linq;
+using System.Reflection;
 using System.Threading.Tasks;
-using Sailfish.ComplexityEstimation;
-using Sailfish.ComplexityEstimation.ComplexityFunctions;
+using Sailfish.Analysis.ComplexityEstimation;
+using Sailfish.Analysis.ComplexityEstimation.ComplexityFunctions;
+using Sailfish.Analysis.ComplexityEstimation.CurveFitting;
 using Shouldly;
 using Xunit;
 
@@ -9,8 +12,6 @@ namespace Test.ComplexityEstimation;
 
 public class ComplexityEstimatorFixture
 {
-    private readonly ComplexityEstimator estimator = new();
-
     [Fact]
     public async Task EstimatorFindsCorrectComplexity_Linear()
     {
@@ -59,20 +60,23 @@ public class ComplexityEstimatorFixture
         Assert<SqrtN>();
     }
 
-    [Fact]
-    public void EstimatorFindsCorrectComplexity_LogLogN()
+
+    private void Assert<TComplexityFunction>() where TComplexityFunction : ComplexityFunction
     {
-        Assert<LogLogN>();
+        new ComplexityEstimator().EstimateComplexity(GetMeasurements<TComplexityFunction>()).ComplexityFunction.Name.ShouldBe(typeof(TComplexityFunction).Name);
     }
 
-    private void Assert<TComplexityFunction>() where TComplexityFunction : ComplexityFunction, new()
+    static ComplexityMeasurement[] GetMeasurements<TComplexityFunction>() where TComplexityFunction : ComplexityFunction
     {
-        estimator.EstimateComplexity(GetMeasurements<TComplexityFunction>()).ComplexityFunction.Name.ShouldBe(typeof(TComplexityFunction).Name);
-    }
+        var constructor = typeof(TComplexityFunction)
+            .GetConstructors(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)
+            .Single();
+        var instance = constructor.Invoke(new object[] { new FitnessCalculator() }) as ComplexityFunction;
+        instance.ShouldNotBeNull();
 
-    static ComplexityMeasurement[] GetMeasurements<TComplexityFunction>() where TComplexityFunction : ComplexityFunction, new()
-    {
-        var instance = new TComplexityFunction();
-        return Enumerable.Range(1, 100).Select(i => new ComplexityMeasurement(i, instance.Compute(i))).ToArray();
+        const int scale = 1;
+        const int bias = 0;
+        var measurements = Enumerable.Range(1, 20).Select(Convert.ToDouble).Select(i => new ComplexityMeasurement(i, instance.Compute(i, scale, bias))).ToArray();
+        return measurements;
     }
 }

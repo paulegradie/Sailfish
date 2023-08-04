@@ -11,8 +11,7 @@ using Microsoft.VisualStudio.TestPlatform.ObjectModel;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.Adapter;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.Logging;
 using Sailfish.Analysis;
-using Sailfish.Analysis.Complexity;
-using Sailfish.Attributes;
+using Sailfish.Analysis.ComplexityEstimation;
 using Sailfish.Contracts.Public;
 using Sailfish.Contracts.Public.CsvMaps;
 using Sailfish.Exceptions;
@@ -27,6 +26,7 @@ namespace Sailfish.TestAdapter.Execution;
 
 internal class TestAdapterExecutionProgram : ITestAdapterExecutionProgram
 {
+    private readonly IMarkdownTableConverter markdownTableConverter;
     private readonly IComplexityComputer complexityComputer;
     private readonly ITestInstanceContainerCreator testInstanceContainerCreator;
     private readonly IConsoleWriterFactory consoleWriterFactory;
@@ -40,12 +40,13 @@ internal class TestAdapterExecutionProgram : ITestAdapterExecutionProgram
     private readonly ITestResultTableContentFormatter testResultTableContentFormatter;
     private const string MemoryCacheName = "GlobalStateMemoryCache";
 
-    private TestSettings? testSettings = null;
-    private List<DescriptiveStatisticsResult>? preloadedLastRunIfAvailable = null;
-    private IRunSettings? runSettings = null;
-    private string? trackingDir = null;
+    private TestSettings? testSettings;
+    private List<DescriptiveStatisticsResult>? preloadedLastRunIfAvailable;
+    private IRunSettings? runSettings;
+    private string? trackingDir;
 
     public TestAdapterExecutionProgram(
+        IMarkdownTableConverter markdownTableConverter,
         IComplexityComputer complexityComputer,
         ITestInstanceContainerCreator testInstanceContainerCreator,
         IConsoleWriterFactory consoleWriterFactory,
@@ -58,6 +59,7 @@ internal class TestAdapterExecutionProgram : ITestAdapterExecutionProgram
         IFileIo fileIo,
         ITestResultTableContentFormatter testResultTableContentFormatter)
     {
+        this.markdownTableConverter = markdownTableConverter;
         this.complexityComputer = complexityComputer;
         this.testInstanceContainerCreator = testInstanceContainerCreator;
         this.consoleWriterFactory = consoleWriterFactory;
@@ -96,7 +98,9 @@ internal class TestAdapterExecutionProgram : ITestAdapterExecutionProgram
             trackingDir = GetRunSettingsTrackingDirectoryPath(runSettings);
             testSettings = MapToTestSettings(parsedSettings.TestSettings);
 
-            var trackingFiles = trackingFileDirectoryReader.FindTrackingFilesInDirectoryOrderedByLastModified(trackingDir, ascending: false);
+            var trackingFiles =
+                trackingFileDirectoryReader.FindTrackingFilesInDirectoryOrderedByLastModified(trackingDir,
+                    ascending: false);
             var latestRun = trackingFiles.Count switch
             {
                 0 => null,
@@ -107,7 +111,8 @@ internal class TestAdapterExecutionProgram : ITestAdapterExecutionProgram
             if (latestRun is not null)
             {
                 preloadedLastRunIfAvailable = fileIo
-                    .ReadCsvFile<DescriptiveStatisticsResultCsvMap, DescriptiveStatisticsResult>(latestRun, cancellationToken)
+                    .ReadCsvFile<DescriptiveStatisticsResultCsvMap, DescriptiveStatisticsResult>(latestRun,
+                        cancellationToken)
                     .GetAwaiter()
                     .GetResult();
             }
@@ -116,24 +121,30 @@ internal class TestAdapterExecutionProgram : ITestAdapterExecutionProgram
         var rawExecutionResults = new List<(string, RawExecutionResult)>();
         var testCaseGroups = testCases
             .GroupBy(testCase =>
-                testCase.GetPropertyHelper(SailfishTestTypeFullNameDefinition.SailfishTestTypeFullNameDefinitionProperty));
+                testCase.GetPropertyHelper(
+                    SailfishTestTypeFullNameDefinition.SailfishTestTypeFullNameDefinitionProperty));
 
         foreach (var testCaseGroup in testCaseGroups)
         {
             var groupResults = new List<TestExecutionResult>();
 
             var firstTestCase = testCaseGroup.First();
-            var testTypeFullName = firstTestCase.GetPropertyHelper(SailfishTestTypeFullNameDefinition.SailfishTestTypeFullNameDefinitionProperty);
+            var testTypeFullName =
+                firstTestCase.GetPropertyHelper(SailfishTestTypeFullNameDefinition
+                    .SailfishTestTypeFullNameDefinitionProperty);
             var assembly = LoadAssemblyFromDll(firstTestCase.Source);
             var testType = assembly.GetType(testTypeFullName, true, true);
             if (testType is null)
             {
-                frameworkHandle?.SendMessage(TestMessageLevel.Error, $"Unable to find the following testType: {testTypeFullName}");
+                frameworkHandle?.SendMessage(TestMessageLevel.Error,
+                    $"Unable to find the following testType: {testTypeFullName}");
                 continue;
             }
 
             var availableVariableSections =
-                testCases.Select(x => x.GetPropertyHelper(SailfishFormedVariableSectionDefinition.SailfishFormedVariableSectionDefinitionProperty)).Distinct();
+                testCases.Select(x =>
+                    x.GetPropertyHelper(SailfishFormedVariableSectionDefinition
+                        .SailfishFormedVariableSectionDefinitionProperty)).Distinct();
 
             bool PropertyFilter(PropertySet currentPropertySet)
             {
@@ -152,14 +163,21 @@ internal class TestAdapterExecutionProgram : ITestAdapterExecutionProgram
             }
 
             // list of methods with their many variable combos. Each element is a container, which represents a SailfishMethod
-            var providerForCurrentTestCases = testInstanceContainerCreator.CreateTestContainerInstanceProviders(testType, PropertyFilter, MethodFilter);
+            var providerForCurrentTestCases =
+                testInstanceContainerCreator
+                    .CreateTestContainerInstanceProviders(
+                        testType,
+                        PropertyFilter,
+                        MethodFilter);
 
             var totalTestProviderCount = providerForCurrentTestCases.Count - 1;
             var memoryCache = new MemoryCache(MemoryCacheName);
             for (var i = 0; i < providerForCurrentTestCases.Count; i++)
             {
                 var testProvider = providerForCurrentTestCases[i];
-                var providerPropertiesCacheKey = testProvider.Test.FullName ?? throw new SailfishException($"Failed to read the FullName of {testProvider.Test.Name}");
+                var providerPropertiesCacheKey = testProvider.Test.FullName ??
+                                                 throw new SailfishException(
+                                                     $"Failed to read the FullName of {testProvider.Test.Name}");
                 var results = engine.ActivateContainer(
                         i,
                         totalTestProviderCount,
@@ -177,8 +195,11 @@ internal class TestAdapterExecutionProgram : ITestAdapterExecutionProgram
             rawExecutionResults.Add((testCaseGroup.Key, new RawExecutionResult(testType, groupResults)));
         }
 
-        var executionSummaries = executionSummaryCompiler.CompileToSummaries(rawExecutionResults.Select(x => x.Item2), cancellationToken).ToList();
-        consoleWriterFactory.CreateConsoleWriter(frameworkHandle).Present(executionSummaries);
+        var executionSummaries = executionSummaryCompiler
+            .CompileToSummaries(rawExecutionResults.Select(x => x.Item2), cancellationToken)
+            .ToList();
+        var consoleWriter = consoleWriterFactory.CreateConsoleWriter(frameworkHandle);
+        consoleWriter.Present(executionSummaries);
 
         if (frameworkHandle is not null)
         {
@@ -190,10 +211,17 @@ internal class TestAdapterExecutionProgram : ITestAdapterExecutionProgram
         if (parsedSettings.TestSettings.Disabled) return;
 
         var timeStamp = DateTime.Now;
-        testResultPresenter.PresentResults(executionSummaries, timeStamp, trackingDir!, runSettings!, cancellationToken).Wait(cancellationToken);
+        testResultPresenter
+            .PresentResults(executionSummaries, timeStamp, trackingDir!, runSettings!, cancellationToken)
+            .Wait(cancellationToken);
 
-        var complexityResult = complexityComputer.AnalyzeComplexity(executionSummaries);
+        ComputeComplexityAnalysis(executionSummaries, consoleWriter);
+        ComputeBeforeAndAfterAnalysis(frameworkHandle, cancellationToken, timeStamp);
+    }
 
+    private void ComputeBeforeAndAfterAnalysis(IFrameworkHandle? frameworkHandle, CancellationToken cancellationToken,
+        DateTime timeStamp)
+    {
         // before and after analysis
         var testResultAnalyzer = new AdapterTestResultAnalyzer(
             mediator,
@@ -203,16 +231,32 @@ internal class TestAdapterExecutionProgram : ITestAdapterExecutionProgram
         testResultAnalyzer.Analyze(timeStamp, runSettings!, trackingDir!, cancellationToken).Wait(cancellationToken);
     }
 
+    private void ComputeComplexityAnalysis(List<IExecutionSummary> executionSummaries, ConsoleWriter consoleWriter)
+    {
+        try
+        {
+            var complexityResults = complexityComputer.AnalyzeComplexity(executionSummaries);
+            var complexityMarkdown = markdownTableConverter.ConvertComplexityResultToMarkdown(complexityResults);
+            consoleWriter.WriteString(complexityMarkdown);
+        }
+        catch (Exception ex)
+        {
+            consoleWriter.WriteString(ex.Message);
+        }
+    }
+
     private static string GetRunSettingsTrackingDirectoryPath(IRunSettings runSettings)
     {
         string trackingDirectoryPath;
-        if (string.IsNullOrEmpty(runSettings.LocalOutputDirectory) || string.IsNullOrWhiteSpace(runSettings.LocalOutputDirectory))
+        if (string.IsNullOrEmpty(runSettings.LocalOutputDirectory) ||
+            string.IsNullOrWhiteSpace(runSettings.LocalOutputDirectory))
         {
             trackingDirectoryPath = DefaultFileSettings.DefaultTrackingDirectory;
         }
         else
         {
-            trackingDirectoryPath = Path.Join(runSettings.LocalOutputDirectory, DefaultFileSettings.DefaultTrackingDirectory);
+            trackingDirectoryPath =
+                Path.Join(runSettings.LocalOutputDirectory, DefaultFileSettings.DefaultTrackingDirectory);
         }
 
         if (!Directory.Exists(trackingDirectoryPath))
@@ -290,7 +334,8 @@ internal class TestAdapterExecutionProgram : ITestAdapterExecutionProgram
         }
     }
 
-    private static Action<TestInstanceContainer?> ExceptionCallback(IGrouping<string, TestCase> testCaseGroup, ITestExecutionRecorder? logger)
+    private static Action<TestInstanceContainer?> ExceptionCallback(IGrouping<string, TestCase> testCaseGroup,
+        ITestExecutionRecorder? logger)
     {
         return (container) =>
         {
@@ -309,7 +354,8 @@ internal class TestAdapterExecutionProgram : ITestAdapterExecutionProgram
         };
     }
 
-    private static Action<TestInstanceContainer> PreTestResultCallback(IGrouping<string, TestCase> testCaseGroup, ITestExecutionRecorder? logger)
+    private static Action<TestInstanceContainer> PreTestResultCallback(IGrouping<string, TestCase> testCaseGroup,
+        ITestExecutionRecorder? logger)
     {
         return container =>
         {
@@ -318,9 +364,11 @@ internal class TestAdapterExecutionProgram : ITestAdapterExecutionProgram
         };
     }
 
-    private static TestCase GetTestCaseFromTestCaseGroupMatchingCurrentContainer(TestInstanceContainer container, IEnumerable<TestCase> testCaseGroup)
+    private static TestCase GetTestCaseFromTestCaseGroupMatchingCurrentContainer(TestInstanceContainer container,
+        IEnumerable<TestCase> testCaseGroup)
     {
-        return testCaseGroup.Single(x => string.Equals(x.DisplayName, container.TestCaseId.DisplayName, StringComparison.InvariantCultureIgnoreCase));
+        return testCaseGroup.Single(x => string.Equals(x.DisplayName, container.TestCaseId.DisplayName,
+            StringComparison.InvariantCultureIgnoreCase));
     }
 
     private Action<TestExecutionResult, TestInstanceContainer> PostTestResultCallback(
@@ -360,7 +408,8 @@ internal class TestAdapterExecutionProgram : ITestAdapterExecutionProgram
                     result,
                     currentTestCase,
                     new RawExecutionResult(result.TestInstanceContainer.Type,
-                        result.Exception ?? new Exception($"The exception details were null for {result.TestInstanceContainer.Type.Name}")),
+                        result.Exception ??
+                        new Exception($"The exception details were null for {result.TestInstanceContainer.Type.Name}")),
                     logger,
                     cancellationToken);
             }
@@ -397,7 +446,8 @@ internal class TestAdapterExecutionProgram : ITestAdapterExecutionProgram
 
         testResult.ErrorMessage = result.Exception?.Message;
 
-        var formattedExecutionSummary = consoleWriterFactory.CreateConsoleWriter(logger).Present(new[] { executionSummary });
+        var formattedExecutionSummary =
+            consoleWriterFactory.CreateConsoleWriter(logger).Present(new[] { executionSummary });
 
         if (preloadedLastRunIfAvailable is not null && testSettings is not null)
         {
@@ -406,7 +456,8 @@ internal class TestAdapterExecutionProgram : ITestAdapterExecutionProgram
 
             var beforeTestData = new TestData(
                 beforeIds,
-                preloadedLastRunIfAvailable.Where(x => x.DisplayName == result.TestInstanceContainer?.TestCaseId.DisplayName));
+                preloadedLastRunIfAvailable.Where(x =>
+                    x.DisplayName == result.TestInstanceContainer?.TestCaseId.DisplayName));
 
             var afterTestData = new TestData(afterIds,
                 executionSummary.CompiledTestCaseResults
@@ -414,15 +465,19 @@ internal class TestAdapterExecutionProgram : ITestAdapterExecutionProgram
                     .Where(x => x.DisplayName == result.TestInstanceContainer?.TestCaseId.DisplayName));
 
             var testResults = testComputer.ComputeTest(beforeTestData, afterTestData, testSettings);
-            var testResultFormats = testResultTableContentFormatter.CreateTableFormats(testResults, new TestIds(beforeIds, afterIds), cancellationToken);
-            formattedExecutionSummary += "\n\n----------\n\nStatistical Test Results\n\n" + testResultFormats.MarkdownFormat;
+            var testResultFormats = testResultTableContentFormatter.CreateTableFormats(testResults,
+                new TestIds(beforeIds, afterIds), cancellationToken);
+            formattedExecutionSummary +=
+                "\n\n----------\n\nStatistical Test Results\n\n" + testResultFormats.MarkdownFormat;
         }
 
-        testResult.Messages.Add(new TestResultMessage(TestResultMessage.StandardOutCategory, formattedExecutionSummary));
+        testResult.Messages.Add(new TestResultMessage(TestResultMessage.StandardOutCategory,
+            formattedExecutionSummary));
 
         if (result.Exception is not null)
         {
-            testResult.Messages.Add(new TestResultMessage(TestResultMessage.StandardErrorCategory, result.Exception?.Message));
+            testResult.Messages.Add(new TestResultMessage(TestResultMessage.StandardErrorCategory,
+                result.Exception?.Message));
         }
 
         LogTestResults(result, logger);

@@ -1,10 +1,10 @@
 using System.Linq;
 
-namespace Sailfish.ComplexityEstimation;
+namespace Sailfish.Analysis.ComplexityEstimation;
 
 public static class Normalizer
 {
-    public static double[] Normalize(this double[] data)
+    public static double[] MinMaxNormalize(this double[] data)
     {
         var min = data.Min();
         var max = data.Max();

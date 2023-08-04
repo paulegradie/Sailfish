@@ -1,11 +1,17 @@
-namespace Sailfish.ComplexityEstimation.ComplexityFunctions;
+using Sailfish.Analysis.ComplexityEstimation.CurveFitting;
+
+namespace Sailfish.Analysis.ComplexityEstimation.ComplexityFunctions;
 
 public class Factorial : ComplexityFunction
 {
-    public override double Compute(int n)
+    public Factorial(IFitnessCalculator fitnessCalculator) : base(fitnessCalculator)
+    {
+    }
+
+    public override double Compute(double n, double scale, double bias)
     {
         if (n <= 1)
-            return 1;
+            return scale * 1 + bias;
 
         double result = 1;
         for (var i = 2; i <= n; i++)
@@ -13,7 +19,7 @@ public class Factorial : ComplexityFunction
             result *= i;
         }
 
-        return result;
+        return scale * result + bias;
     }
 
     public override string Name { get; set; } = nameof(Factorial);

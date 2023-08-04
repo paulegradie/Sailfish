@@ -2,14 +2,12 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using Accord.Statistics.Kernels;
 using Sailfish.Attributes;
-using Sailfish.ComplexityEstimation;
 using Sailfish.Exceptions;
 using Sailfish.Execution;
 using Sailfish.Statistics;
 
-namespace Sailfish.Analysis.Complexity;
+namespace Sailfish.Analysis.ComplexityEstimation;
 
 public class ComplexityComputer : IComplexityComputer
 {
@@ -20,16 +18,14 @@ public class ComplexityComputer : IComplexityComputer
         this.complexityEstimator = complexityEstimator;
     }
 
-    // map of type to methods
-    // map of methods to ComplexityResult by property
-    public Dictionary<Type, Dictionary<string, Dictionary<string, ComplexityResult>>> AnalyzeComplexity(List<IExecutionSummary> executionSummaries)
+    public IEnumerable<ITestClassComplexityResult> AnalyzeComplexity(List<IExecutionSummary> executionSummaries)
     {
         var finalResult = new Dictionary<Type, Dictionary<string, Dictionary<string, ComplexityResult>>>();
         foreach (var testClassSummary in executionSummaries)
         {
             var sailfishComplexityVariables = testClassSummary.Type
                 .GetProperties()
-                .Where(x => x.GetCustomAttributes<SailfishVariableAttribute>().Any(z => z.IsComplexityVariable()))
+                .Where(x => x.GetCustomAttributes<SailfishVariableAttribute>().Any(a => a.IsComplexityVariable()))
                 .ToList();
 
             // to filter out those we want to assess
@@ -43,20 +39,23 @@ public class ComplexityComputer : IComplexityComputer
             var sailfishVariablesCountTuples = testClassSummary.Type
                 .GetProperties()
                 .Where(x => x.GetCustomAttributes<SailfishVariableAttribute>().Any())
-                .Select(y => (y.Name, y.GetCustomAttributes<SailfishVariableAttribute>().Single().GetVariables().Count()))
+                .Select(y => (y.Name,
+                    y.GetCustomAttributes<SailfishVariableAttribute>().Single().GetVariables().Count()))
                 .ToList();
 
             //                                method name    complexity property  result
             var resultsByMethod = new Dictionary<string, Dictionary<string, ComplexityResult>>();
-
-
-            var empericalResults = new Dictionary<string, (List<int>, List<ICompiledTestCaseResult>)>();
-            foreach (var groupedByTestCaseName in testClassSummary.CompiledTestCaseResults.GroupBy(x => x.TestCaseId!.TestCaseName.Name))
+            var observations = new Dictionary<string, (List<int>, List<ICompiledTestCaseResult>)>();
+            foreach (var groupedByTestCaseName in testClassSummary.CompiledTestCaseResults.GroupBy(x =>
+                         x.TestCaseId!.TestCaseName.Name))
             {
                 var testCaseMethodName = groupedByTestCaseName.Key;
 
                 for (var i = 0; i < sailfishVariablesCountTuples.Count; i++)
                 {
+                    var currentVar = sailfishVariablesCountTuples[i];
+                    if (!complexityPropertyNames.Contains(currentVar.Name)) continue;
+
                     var currentSailfishVariables = sailfishComplexityVariables
                         .Single(x => x.Name == sailfishVariablesCountTuples[i].Name)
                         .GetCustomAttribute<SailfishVariableAttribute>()?
@@ -65,44 +64,35 @@ public class ComplexityComputer : IComplexityComputer
                         .ToList() ?? throw new SailfishException(
                         "Error encountered when executing complexity analysis: SailfishVariable analyzed did not have SailfishVariableAttribute as expected");
 
-
-                    int step;
-                    (string Name, int) currentVar;
-                    List<int> vars;
-                    if (i < sailfishVariablesCountTuples.Count - 1)
-                    {
-                        currentVar = sailfishVariablesCountTuples[i];
-                        if (!complexityPropertyNames.Contains(currentVar.Name)) continue;
-                        step = sailfishVariablesCountTuples
+                    var step = i < sailfishVariablesCountTuples.Count - 1
+                        ? sailfishVariablesCountTuples
                             .Skip(i + 1)
                             .Select(x => x.Item2)
-                            .Aggregate(1, (a, b) => a * b);
-                    }
-                    else
-                    {
-                        currentVar = sailfishVariablesCountTuples.Last();
-                        if (!complexityPropertyNames.Contains(currentVar.Name)) continue;
-                        step = 1;
-                    }
+                            .Aggregate(1, (a, b) => a * b)
+                        : 1;
 
                     var indices = Enumerable.Range(0, currentVar.Item2).Select(j => j * step).ToList();
                     var testResult = indices.Select(index => testClassSummary.CompiledTestCaseResults[index]).ToList();
 
-                    empericalResults.Add(currentVar.Name, (currentSailfishVariables, testResult));
+                    observations.Add(
+                        string.Join("-", testCaseMethodName, currentVar.Name),
+                        (currentSailfishVariables, testResult));
                 }
 
                 var complexityResultMap = new Dictionary<string, ComplexityResult>();
                 foreach (var complexityProperty in complexityPropertyNames)
                 {
-                    var complexityMeasurements = empericalResults[complexityProperty]
+                    var observationKey = string.Join("-", testCaseMethodName, complexityProperty);
+                    var complexityMeasurements = observations[observationKey]
                         .Item1
-                        .Zip(empericalResults[complexityProperty].Item2)
-                        .Select((data) => new ComplexityMeasurement(data.First, data.Second.DescriptiveStatisticsResult!.Mean))
+                        .Zip(observations[observationKey].Item2)
+                        .Select((data) =>
+                            new ComplexityMeasurement(data.First, data.Second.DescriptiveStatisticsResult!.Mean))
                         .ToArray();
 
                     var complexityResult = complexityEstimator.EstimateComplexity(complexityMeasurements);
 
-                    complexityResultMap.Add(complexityProperty, complexityResult);
+                    complexityResultMap.Add(observationKey, complexityResult);
                 }
 
                 resultsByMethod.Add(testCaseMethodName, complexityResultMap);
@@ -111,6 +101,6 @@ public class ComplexityComputer : IComplexityComputer
             finalResult.Add(testClassSummary.Type, resultsByMethod);
         }
 
-        return finalResult;
+        return TestClassComplexityResult.ParseResults(finalResult);
     }
 }

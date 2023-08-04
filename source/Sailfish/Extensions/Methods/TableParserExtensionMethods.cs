@@ -10,9 +10,23 @@ namespace Sailfish.Extensions.Methods;
 
 internal static class TableParserExtensionMethods
 {
-    public static string ToStringTable<T>(this IEnumerable<T> values, IEnumerable<string> headerSuffixes, params Expression<Func<T, object>>[] valueSelectors)
+    public static string ToStringTable<T>(
+        this IEnumerable<T> values,
+        params Expression<Func<T, object>>[] valueSelectors)
     {
-        var headers = valueSelectors.Select(func => GetProperty<T>(func)!.Name).ToArray();
+        var headers = valueSelectors.Select(func => GetProperty(func)!.Name).ToArray();
+        var selectors = valueSelectors.Select(exp => exp.Compile()).ToArray();
+        return ToStringTable(
+            values.ToArray(),
+            headers.ToArray(),
+            Enumerable.Range(0, headers.Length)
+                .Select(_ => string.Empty).ToArray(), selectors);
+    }
+
+    public static string ToStringTable<T>(this IEnumerable<T> values, IEnumerable<string> headerSuffixes,
+        params Expression<Func<T, object>>[] valueSelectors)
+    {
+        var headers = valueSelectors.Select(func => GetProperty(func)!.Name).ToArray();
         var selectors = valueSelectors.Select(exp => exp.Compile()).ToArray();
         return ToStringTable(values.ToArray(), headers.ToArray(), headerSuffixes.ToArray(), selectors);
     }
@@ -27,7 +41,8 @@ internal static class TableParserExtensionMethods
 
         var arrValues = new string[values.Count + 1, valueSelectors.Length];
 
-        if (headerSuffixes.Count > 0 && headerSuffixes.Count != columnHeaders.Count) throw new Exception("Header suffix array length must match num columns");
+        if (headerSuffixes.Count > 0 && headerSuffixes.Count != columnHeaders.Count)
+            throw new Exception("Header suffix array length must match num columns");
 
         // Fill headers
         for (var colIndex = 0; colIndex < arrValues.GetLength(1); colIndex++)
@@ -48,7 +63,8 @@ internal static class TableParserExtensionMethods
                 }
                 else
                 {
-                    arrValues[rowIndex, colIndex] = value != null ? $"{value.ToString()} {headerSuffixes[colIndex]}" : "null";
+                    arrValues[rowIndex, colIndex] =
+                        value != null ? $"{value.ToString()} {headerSuffixes[colIndex]}" : "null";
                 }
             }
         }

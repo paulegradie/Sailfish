@@ -1,0 +1,3 @@
+namespace Sailfish.Analysis.ComplexityEstimation;
+
+public record ComplexityResult(IComplexityFunction ComplexityFunction, double GoodnessOfFit, IComplexityFunction NextClosestComplexity, double NextClosestGoodnessOfFit);

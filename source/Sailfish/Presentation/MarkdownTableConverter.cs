@@ -1,7 +1,9 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
+using Sailfish.Analysis.ComplexityEstimation;
 using Sailfish.Execution;
 using Sailfish.Extensions.Methods;
 using Sailfish.Statistics;
@@ -10,7 +12,8 @@ namespace Sailfish.Presentation;
 
 public class MarkdownTableConverter : IMarkdownTableConverter
 {
-    public string ConvertToMarkdownTableString(IEnumerable<IExecutionSummary> executionSummaries, Func<IExecutionSummary, bool> summaryFilter)
+    public string ConvertToMarkdownTableString(IEnumerable<IExecutionSummary> executionSummaries,
+        Func<IExecutionSummary, bool> summaryFilter)
     {
         var filteredSummaries = executionSummaries.Where(summaryFilter);
         return ConvertToMarkdownTableString(filteredSummaries);
@@ -57,7 +60,7 @@ public class MarkdownTableConverter : IMarkdownTableConverter
         }
     }
 
-    private void AppendExceptions(IReadOnlyCollection<Exception?> exceptions, StringBuilder stringBuilder)
+    private static void AppendExceptions(IReadOnlyCollection<Exception?> exceptions, StringBuilder stringBuilder)
     {
         if (exceptions.Count > 0)
         {
@@ -72,5 +75,32 @@ public class MarkdownTableConverter : IMarkdownTableConverter
                 stringBuilder.AppendLine($"StackTrace:\r{exception.StackTrace}\r");
             }
         }
+    }
+
+
+    public string ConvertComplexityResultToMarkdown(IEnumerable<ITestClassComplexityResult> testClassComplexityResultsEnumerable)
+    {
+        var testClassComplexityResults = testClassComplexityResultsEnumerable.ToList();
+        var tableBuilder = new StringBuilder();
+        foreach (var testClassComplexityResult in testClassComplexityResults)
+        {
+            tableBuilder.AppendLine($"{nameof(testClassComplexityResult.TestClassName)}: {testClassComplexityResult.TestClassName}");
+
+            foreach (var testMethodComplexityResult in testClassComplexityResult.TestMethodComplexityResults)
+            {
+                var tableSection = testMethodComplexityResult.TestPropertyComplexityResults.ToStringTable(
+                    // new[] { "", "", "" },
+                    c => c.PropertyName,
+                    c => c.ComplexityResult.ComplexityFunction,
+                    c => c.ComplexityResult.GoodnessOfFit,
+                    c => c.ComplexityResult.NextClosestComplexity,
+                    c => c.ComplexityResult.NextClosestGoodnessOfFit
+                );
+                tableBuilder.AppendLine(tableSection);
+            }
+        }
+
+
+        return tableBuilder.ToString();
     }
 }
