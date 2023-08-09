@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 using Sailfish.Analysis;
+using Sailfish.Analysis.Saildiff;
 using Sailfish.Execution;
 using Sailfish.Extensions.Types;
 

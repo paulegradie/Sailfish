@@ -25,7 +25,7 @@ public class TestCaseVariables
         Variables = variables.OrderBy(x => x.Name);
     }
 
-    public IEnumerable<TestCaseVariable> Variables { get; set; } = null!;
+    public IEnumerable<TestCaseVariable> Variables { get; }
 
     public TestCaseVariable? GetVariableIndex(int index)
     {
@@ -39,9 +39,14 @@ public class TestCaseVariables
         }
     }
 
+    public TestCaseVariable GetVariableByName(string name)
+    {
+        return Variables.Single(x => x.Name.Equals(name));
+    }
+
     public string FormVariableSection()
     {
-        var parts = Variables.Select(variable => $"{variable.Name}: {variable.Value.ToString()}").ToList();
+        var parts = Variables.Select(variable => $"{variable.Name.Trim()}: {variable.Value.ToString()?.Trim() ?? string.Empty}");
         return OpenBracket + string.Join(", ", parts).Trim() + CloseBracket;
     }
 

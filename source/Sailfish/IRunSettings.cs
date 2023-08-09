@@ -1,7 +1,6 @@
 using System;
 using System.Collections.Generic;
-
-using Sailfish.Analysis;
+using Sailfish.Analysis.Saildiff;
 using Sailfish.Extensions.Types;
 
 namespace Sailfish;
@@ -10,8 +9,9 @@ public interface IRunSettings
 {
     IEnumerable<string> TestNames { get; }
     string? LocalOutputDirectory { get; }
+    bool RunSailDiff { get; }
+    bool RunScalefish { get; }
     bool CreateTrackingFiles { get; }
-    bool Analyze { get; }
     bool Notify { get; set; }
     TestSettings Settings { get; }
     IEnumerable<Type> TestLocationAnchors { get; }

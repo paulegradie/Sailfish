@@ -1,9 +1,8 @@
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Text;
-using Sailfish.Analysis.ComplexityEstimation;
+using Sailfish.Analysis.Scalefish;
 using Sailfish.Execution;
 using Sailfish.Extensions.Methods;
 using Sailfish.Statistics;
@@ -78,28 +77,30 @@ public class MarkdownTableConverter : IMarkdownTableConverter
     }
 
 
-    public string ConvertComplexityResultToMarkdown(IEnumerable<ITestClassComplexityResult> testClassComplexityResultsEnumerable)
+    public string ConvertScaleFishResultToMarkdown(IEnumerable<ITestClassComplexityResult> testClassComplexityResultsEnumerable)
     {
         var testClassComplexityResults = testClassComplexityResultsEnumerable.ToList();
         var tableBuilder = new StringBuilder();
         foreach (var testClassComplexityResult in testClassComplexityResults)
         {
             tableBuilder.AppendLine($"{nameof(testClassComplexityResult.TestClassName)}: {testClassComplexityResult.TestClassName}");
-
-            foreach (var testMethodComplexityResult in testClassComplexityResult.TestMethodComplexityResults)
-            {
-                var tableSection = testMethodComplexityResult.TestPropertyComplexityResults.ToStringTable(
-                    // new[] { "", "", "" },
+            var tableSection = testClassComplexityResult
+                .TestMethodComplexityResults
+                .SelectMany(x => x.TestPropertyComplexityResults)
+                .ToStringTable(
+                    new List<string>() { "", "", "(best)", "", "", "(next best)", "", "" },
+                    new List<string>() { "TestCase", "Property", "BestFit", "BigO", "GoodnessOfFit", "NextBest", "NextBigO", "NextBestGoodnessOfFit" },
+                    c => c.MethodName,
                     c => c.PropertyName,
-                    c => c.ComplexityResult.ComplexityFunction,
+                    c => c.ComplexityResult.ComplexityFunction.Name,
+                    c => c.ComplexityResult.ComplexityFunction.OName,
                     c => c.ComplexityResult.GoodnessOfFit,
-                    c => c.ComplexityResult.NextClosestComplexity,
+                    c => c.ComplexityResult.NextClosestComplexity.Name,
+                    c => c.ComplexityResult.NextClosestComplexity.OName,
                     c => c.ComplexityResult.NextClosestGoodnessOfFit
                 );
-                tableBuilder.AppendLine(tableSection);
-            }
+            tableBuilder.AppendLine(tableSection);
         }
-
 
         return tableBuilder.ToString();
     }

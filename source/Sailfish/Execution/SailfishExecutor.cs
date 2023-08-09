@@ -4,6 +4,8 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Sailfish.Analysis.Saildiff;
+using Sailfish.Analysis.Scalefish;
 using Sailfish.Presentation;
 using Serilog;
 
@@ -14,18 +16,22 @@ internal class SailfishExecutor
     private readonly ITestCollector testCollector;
     private readonly ITestFilter testFilter;
     private readonly IExecutionSummaryCompiler executionSummaryCompiler;
-    private readonly ITestResultPresenter testResultPresenter;
-    private readonly ITestResultAnalyzer testResultAnalyzer;
+    private readonly IExecutionSummaryWriter executionSummaryWriter;
+    private readonly IComplexityComputer complexityComputer;
     private readonly IRunSettings runSettings;
     private readonly ISailFishTestExecutor sailFishTestExecutor;
+    private readonly ISailDiff sailDiff;
+    private readonly IScaleFish scaleFish;
 
     public SailfishExecutor(
         ISailFishTestExecutor sailFishTestExecutor,
         ITestCollector testCollector,
         ITestFilter testFilter,
         IExecutionSummaryCompiler executionSummaryCompiler,
-        ITestResultPresenter testResultPresenter,
-        ITestResultAnalyzer testResultAnalyzer,
+        IExecutionSummaryWriter executionSummaryWriter,
+        ISailDiff sailDiff,
+        IScaleFish scaleFish,
+        IComplexityComputer complexityComputer,
         IRunSettings runSettings
     )
     {
@@ -33,8 +39,10 @@ internal class SailfishExecutor
         this.testCollector = testCollector;
         this.testFilter = testFilter;
         this.executionSummaryCompiler = executionSummaryCompiler;
-        this.testResultPresenter = testResultPresenter;
-        this.testResultAnalyzer = testResultAnalyzer;
+        this.executionSummaryWriter = executionSummaryWriter;
+        this.sailDiff = sailDiff;
+        this.scaleFish = scaleFish;
+        this.complexityComputer = complexityComputer;
         this.runSettings = runSettings;
     }
 
@@ -45,24 +53,39 @@ internal class SailfishExecutor
         {
             var timeStamp = runSettings.TimeStamp ?? DateTime.Now.ToLocalTime();
 
-            var rawExecutionResults = await sailFishTestExecutor.Execute(testInitializationResult.Tests, cancellationToken);
-            var executionSummaries = executionSummaryCompiler.CompileToSummaries(rawExecutionResults, cancellationToken).ToList();
+            var rawExecutionResults =
+                await sailFishTestExecutor.Execute(testInitializationResult.Tests, cancellationToken);
+            var executionSummaries = executionSummaryCompiler.CompileToSummaries(rawExecutionResults, cancellationToken)
+                .ToList();
 
-            var trackingDir = GetRunSettingsTrackingDirectoryPath(runSettings);
-            await testResultPresenter.PresentResults(executionSummaries, timeStamp, trackingDir, runSettings, cancellationToken);
-            if (runSettings.Analyze)
+            var executionSummaryTrackingDirectory = GetRunSettingsTrackingDirectoryPath(runSettings, DefaultFileSettings.DefaultExecutionSummaryTrackingDirectory);
+            await executionSummaryWriter.Write(
+                executionSummaries,
+                timeStamp,
+                executionSummaryTrackingDirectory,
+                runSettings,
+                cancellationToken);
+
+            if (runSettings.RunSailDiff)
             {
-                await testResultAnalyzer.Analyze(timeStamp, runSettings, trackingDir, cancellationToken);
+                await sailDiff.Analyze(timeStamp, runSettings, executionSummaryTrackingDirectory, cancellationToken);
             }
 
-            var exceptions = executionSummaries.SelectMany(e => e.CompiledTestCaseResults.SelectMany(c => c.Exceptions));
+            if (runSettings.RunScalefish)
+            {
+                await scaleFish.Analyze(timeStamp, runSettings, executionSummaryTrackingDirectory, cancellationToken);
+            }
+
+            var exceptions =
+                executionSummaries.SelectMany(e => e.CompiledTestCaseResults.SelectMany(c => c.Exceptions));
 
             return rawExecutionResults.Select(x => x.IsSuccess).All(x => x)
                 ? SailfishRunResult.CreateValidResult(executionSummaries)
                 : SailfishRunResult.CreateInvalidResult(exceptions);
         }
 
-        Log.Logger.Error("{NumErrors} errors encountered while discovering tests", testInitializationResult.Errors.Count);
+        Log.Logger.Error("{NumErrors} errors encountered while discovering tests",
+            testInitializationResult.Errors.Count);
         foreach (var (reason, names) in testInitializationResult.Errors)
         {
             Log.Logger.Error("{Reason}", reason);
@@ -72,16 +95,18 @@ internal class SailfishExecutor
         return SailfishRunResult.CreateInvalidResult(Enumerable.Empty<Exception>());
     }
 
-    private static string GetRunSettingsTrackingDirectoryPath(IRunSettings runSettings)
+    private static string GetRunSettingsTrackingDirectoryPath(IRunSettings runSettings, string defaultDirectory)
     {
         string trackingDirectoryPath;
-        if (string.IsNullOrEmpty(runSettings.LocalOutputDirectory) || string.IsNullOrWhiteSpace(runSettings.LocalOutputDirectory))
+        if (string.IsNullOrEmpty(runSettings.LocalOutputDirectory) ||
+            string.IsNullOrWhiteSpace(runSettings.LocalOutputDirectory))
         {
-            trackingDirectoryPath = DefaultFileSettings.DefaultTrackingDirectory;
+            trackingDirectoryPath = defaultDirectory;
         }
         else
         {
-            trackingDirectoryPath = Path.Join(runSettings.LocalOutputDirectory, DefaultFileSettings.DefaultTrackingDirectory);
+            trackingDirectoryPath =
+                Path.Join(runSettings.LocalOutputDirectory, defaultDirectory);
         }
 
         if (!Directory.Exists(trackingDirectoryPath))

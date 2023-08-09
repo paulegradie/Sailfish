@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using Accord.Statistics.Distributions.Univariate;
-using Sailfish.Analysis;
+using Sailfish.Analysis.Saildiff;
 using Sailfish.Contracts;
 using Sailfish.Statistics.Tests;
 using Sailfish.Statistics.Tests.MWWilcoxonTestSailfish;

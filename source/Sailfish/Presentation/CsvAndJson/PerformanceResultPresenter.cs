@@ -20,10 +20,10 @@ internal class PerformanceResultPresenter : IPerformanceResultPresenter
         await fileIo.WriteDataAsJsonToFile(summaryToDescriptive, filePath, cancellationToken, options);
     }
 
-    public async Task<string> ConvertToJson(IEnumerable<IExecutionSummary> results, CancellationToken cancellationToken, JsonSerializerOptions? options = null)
+    public async Task<string> ConvertToJson(IEnumerable<IExecutionSummary> executionSummaries, CancellationToken cancellationToken, JsonSerializerOptions? options = null)
     {
         await Task.CompletedTask;
-        var summaryToDescriptive = ExtractDescriptiveStatistics(results);
+        var summaryToDescriptive = ExtractDescriptiveStatistics(executionSummaries);
         return fileIo.WriteAsJsonToString(summaryToDescriptive, options);
     }
 
@@ -40,11 +40,7 @@ internal class PerformanceResultPresenter : IPerformanceResultPresenter
     {
         var summaryToDescriptive = ExtractDescriptiveStatistics(results.Where(summaryFilter)).ToList();
         if (summaryToDescriptive.Count == 0) return;
-        await fileIo
-            .WriteDataAsCsvToFile<DescriptiveStatisticsResultCsvMap, IEnumerable<DescriptiveStatisticsResult>>(
-                summaryToDescriptive,
-                filePath,
-                cancellationToken);
+        await fileIo.WriteDataAsCsvToFile<DescriptiveStatisticsResultCsvMap, IEnumerable<DescriptiveStatisticsResult>>(summaryToDescriptive, filePath, cancellationToken);
     }
 
     private static IEnumerable<DescriptiveStatisticsResult> ExtractDescriptiveStatistics(IEnumerable<IExecutionSummary> results)

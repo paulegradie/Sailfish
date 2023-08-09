@@ -8,16 +8,15 @@ public class TestCaseIdComparer : IComparer<TestCaseId>
 {
     public int Compare(TestCaseId? x, TestCaseId? y)
     {
-        // First, compare based on the TestCaseName
-        var nameComparison = string.Compare(x.TestCaseName.Name, y.TestCaseName.Name, StringComparison.InvariantCultureIgnoreCase);
-        if (nameComparison != 0)
-            return nameComparison;
+        if (x is null || y is null) throw new Exception("TestCaseIds shouldn't be null");
 
-        // If the names are equal, compare based on the TestCaseVariables
-        return CompareTestCaseVariables(x.TestCaseVariables, y.TestCaseVariables);
+        var nameComparison = string.Compare(x.TestCaseName.Name, y.TestCaseName.Name, StringComparison.InvariantCultureIgnoreCase);
+        return nameComparison != 0
+            ? nameComparison
+            : CompareTestCaseVariables(x.TestCaseVariables, y.TestCaseVariables);
     }
 
-    private int CompareTestCaseVariables(TestCaseVariables xVars, TestCaseVariables yVars)
+    private static int CompareTestCaseVariables(TestCaseVariables xVars, TestCaseVariables yVars)
     {
         var xList = xVars.Variables.ToList();
         var yList = yVars.Variables.ToList();

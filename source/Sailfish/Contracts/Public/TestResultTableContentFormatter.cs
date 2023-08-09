@@ -32,10 +32,10 @@ public class TestResultTableContentFormatter : ITestResultTableContentFormatter
         var selectors = new Expression<Func<TestCaseResults, object>>[]
         {
             m => m.TestCaseId.DisplayName,
-            m => m.TestResults.MeanOfBefore,
-            m => m.TestResults.MeanOfAfter,
-            m => m.TestResults.MedianOfBefore,
-            m => m.TestResults.MedianOfAfter,
+            m => m.TestResults.MeanBefore,
+            m => m.TestResults.MeanAfter,
+            m => m.TestResults.MedianBefore,
+            m => m.TestResults.MedianAfter,
             m => m.TestResults.PValue,
             m => m.TestResults.TestStatistic,
             m => m.TestResults.ChangeDescription

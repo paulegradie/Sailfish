@@ -13,7 +13,6 @@ namespace Sailfish.Analysis;
 /// </summary>
 public class TestCaseName
 {
-
     private const char OpenBracket = '(';
     private const char Dot = '.';
 

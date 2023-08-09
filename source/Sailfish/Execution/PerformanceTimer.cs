@@ -57,15 +57,9 @@ public sealed class PerformanceTimer
 
         var elapsedTicks = executionIterationStop.Ticks - executionIterationStart.Ticks;
 
-        IterationPerformance iterationPerformance;
-        if (elapsedTicks - overhead < 0)
-        {
-            iterationPerformance = new IterationPerformance(executionIterationStart, executionIterationStop, executionTimer.ElapsedTicks);
-        }
-        else
-        {
-            iterationPerformance = new IterationPerformance(executionIterationStart, executionIterationStop, executionTimer.ElapsedTicks - overhead);
-        }
+        var iterationPerformance = elapsedTicks - overhead < 0
+            ? new IterationPerformance(executionIterationStart, executionIterationStop, executionTimer.ElapsedTicks)
+            : new IterationPerformance(executionIterationStart, executionIterationStop, executionTimer.ElapsedTicks - overhead);
 
         ExecutionIterationPerformances.Add(iterationPerformance);
 

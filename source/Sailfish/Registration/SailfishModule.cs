@@ -1,6 +1,8 @@
 ﻿using Autofac;
 using Microsoft.Extensions.Configuration;
 using Sailfish.Analysis;
+using Sailfish.Analysis.Saildiff;
+using Sailfish.Analysis.Scalefish;
 using Sailfish.Contracts.Public;
 using Sailfish.Execution;
 using Sailfish.Presentation;
@@ -42,7 +44,7 @@ public class SailfishModule : Module
         builder.RegisterType<TestCaseIterator>().As<ITestCaseIterator>();
         builder.RegisterType<StatisticsCompiler>().As<IStatisticsCompiler>();
         builder.RegisterType<ExecutionSummaryCompiler>().As<IExecutionSummaryCompiler>();
-        builder.RegisterType<TestResultPresenter>().As<ITestResultPresenter>();
+        builder.RegisterType<ExecutionSummaryWriter>().As<IExecutionSummaryWriter>();
         builder.RegisterType<FileIo>().As<IFileIo>();
         builder.RegisterType<MarkdownWriter>().As<IMarkdownWriter>();
         builder.RegisterType<ConsoleWriter>().As<IConsoleWriter>();
@@ -52,8 +54,10 @@ public class SailfishModule : Module
         builder.RegisterType<TestResultTableContentFormatter>().As<ITestResultTableContentFormatter>();
         builder.RegisterType<SailfishExecutionEngine>().As<ISailfishExecutionEngine>();
         builder.RegisterType<MarkdownTableConverter>().As<IMarkdownTableConverter>().InstancePerDependency();
+        builder.RegisterType<TrackingFileParser>().As<ITrackingFileParser>();
+        builder.RegisterType<SailDiff>().As<ISailDiff>();
+        builder.RegisterType<ScaleFish>().As<IScaleFish>();
 
-        builder.RegisterType<TestResultAnalyzer>().As<ITestResultAnalyzer>();
         builder.RegisterType<TTestSailfish>().As<ITTestSailfish>();
         builder.RegisterType<MannWhitneyWilcoxonTestSailfish>().As<IMannWhitneyWilcoxonTestSailfish>();
         builder.RegisterType<TwoSampleWilcoxonSignedRankTestSailfish>().As<ITwoSampleWilcoxonSignedRankTestSailfish>();

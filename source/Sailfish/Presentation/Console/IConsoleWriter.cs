@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
 using Sailfish.Analysis;
+using Sailfish.Analysis.Saildiff;
 using Sailfish.Execution;
 using Sailfish.Extensions.Types;
 

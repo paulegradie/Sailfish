@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-
-using Sailfish.Analysis;
+using Sailfish.Analysis.Saildiff;
 using Sailfish.Extensions.Types;
 
 namespace Sailfish;
@@ -11,7 +10,8 @@ internal class RunSettings : IRunSettings
     public IEnumerable<string> TestNames { get; }
     public string? LocalOutputDirectory { get; }
     public bool CreateTrackingFiles { get; }
-    public bool Analyze { get; }
+    public bool RunSailDiff { get; }
+    public bool RunScalefish { get; set; }
     public bool Notify { get; set; }
     public TestSettings Settings { get; }
     public IEnumerable<Type> TestLocationAnchors { get; }
@@ -27,6 +27,7 @@ internal class RunSettings : IRunSettings
         string localOutputDirectory,
         bool createTrackingFiles,
         bool analyze,
+        bool analyzeComplexity,
         bool notify,
         TestSettings settings,
         OrderedDictionary tags,
@@ -39,7 +40,8 @@ internal class RunSettings : IRunSettings
         TestNames = testNames;
         LocalOutputDirectory = localOutputDirectory;
         CreateTrackingFiles = createTrackingFiles;
-        Analyze = analyze;
+        RunSailDiff = analyze;
+        RunScalefish = analyzeComplexity;
         Settings = settings;
         Tags = tags;
         Args = args;
@@ -56,6 +58,7 @@ internal class RunSettings : IRunSettings
         string localOutputDirectory,
         bool createTrackingFiles,
         bool analyze,
+        bool analyzeComplexity,
         bool notify,
         TestSettings settings,
         OrderedDictionary tags,
@@ -69,7 +72,8 @@ internal class RunSettings : IRunSettings
         TestNames = testNames;
         LocalOutputDirectory = localOutputDirectory;
         CreateTrackingFiles = createTrackingFiles;
-        Analyze = analyze;
+        RunSailDiff = analyze;
+        RunScalefish = analyzeComplexity;
         Settings = settings;
         Tags = tags;
         Args = args;

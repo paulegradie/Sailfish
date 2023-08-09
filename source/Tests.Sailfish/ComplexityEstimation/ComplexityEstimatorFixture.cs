@@ -1,10 +1,9 @@
 using System;
 using System.Linq;
 using System.Reflection;
-using System.Threading.Tasks;
-using Sailfish.Analysis.ComplexityEstimation;
-using Sailfish.Analysis.ComplexityEstimation.ComplexityFunctions;
-using Sailfish.Analysis.ComplexityEstimation.CurveFitting;
+using Sailfish.Analysis.Scalefish;
+using Sailfish.Analysis.Scalefish.ComplexityFunctions;
+using Sailfish.Analysis.Scalefish.CurveFitting;
 using Shouldly;
 using Xunit;
 
@@ -13,37 +12,37 @@ namespace Test.ComplexityEstimation;
 public class ComplexityEstimatorFixture
 {
     [Fact]
-    public async Task EstimatorFindsCorrectComplexity_Linear()
+    public void EstimatorFindsCorrectComplexity_Linear()
     {
         Assert<Linear>();
     }
 
     [Fact]
-    public async Task EstimatorFindsCorrectComplexity_NLogN()
+    public void EstimatorFindsCorrectComplexity_NLogN()
     {
         Assert<NLogN>();
     }
 
     [Fact]
-    public async Task EstimatorFindsCorrectComplexity_Quadratic()
+    public void EstimatorFindsCorrectComplexity_Quadratic()
     {
         Assert<Quadratic>();
     }
 
     [Fact]
-    public async Task EstimatorFindsCorrectComplexity_Cubic()
+    public void EstimatorFindsCorrectComplexity_Cubic()
     {
         Assert<Cubic>();
     }
 
     [Fact]
-    public async Task EstimatorFindsCorrectComplexity_LogLinear()
+    public void EstimatorFindsCorrectComplexity_LogLinear()
     {
         Assert<LogLinear>();
     }
 
     [Fact]
-    public async Task EstimatorFindsCorrectComplexity_Exponential()
+    public void EstimatorFindsCorrectComplexity_Exponential()
     {
         Assert<Exponential>();
     }

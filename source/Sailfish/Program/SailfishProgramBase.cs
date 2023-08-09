@@ -68,7 +68,7 @@ public abstract class SailfishProgramBase
 
         if (TrackingDirectory is null)
         {
-            TrackingDirectory = Path.Combine(Directory.GetCurrentDirectory(), OutputDirectory, DefaultFileSettings.DefaultTrackingDirectory);
+            TrackingDirectory = Path.Combine(Directory.GetCurrentDirectory(), OutputDirectory, DefaultFileSettings.DefaultExecutionSummaryTrackingDirectory);
             Directories.EnsureDirectoryExists(TrackingDirectory);
         }
 

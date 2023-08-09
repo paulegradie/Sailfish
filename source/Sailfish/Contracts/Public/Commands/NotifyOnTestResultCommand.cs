@@ -2,6 +2,7 @@
 
 using MediatR;
 using Sailfish.Analysis;
+using Sailfish.Analysis.Saildiff;
 using Sailfish.Extensions.Types;
 
 namespace Sailfish.Contracts.Public.Commands;

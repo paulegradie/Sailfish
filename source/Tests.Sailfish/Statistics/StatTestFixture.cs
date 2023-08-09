@@ -1,4 +1,4 @@
-﻿using Sailfish.Analysis;
+﻿using Sailfish.Analysis.Saildiff;
 using Sailfish.Statistics.Tests;
 using Sailfish.Statistics.Tests.MWWilcoxonTestSailfish;
 using Sailfish.Statistics.Tests.TTestSailfish;

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using Sailfish.Analysis;
+using Sailfish.Analysis.Saildiff;
 using Sailfish.Contracts.Public;
 using Sailfish.Extensions.Methods;
 using Sailfish.Statistics.Tests;
@@ -23,10 +24,10 @@ public class TableParserExtensionMethodsFixture
         var selectors = new Expression<Func<TestCaseResults, object>>[]
         {
             m => m.TestCaseId.DisplayName,
-            m => m.TestResults.MeanOfBefore,
-            m => m.TestResults.MeanOfAfter,
-            m => m.TestResults.MedianOfBefore,
-            m => m.TestResults.MedianOfAfter,
+            m => m.TestResults.MeanBefore,
+            m => m.TestResults.MeanAfter,
+            m => m.TestResults.MedianBefore,
+            m => m.TestResults.MedianAfter,
             m => m.TestResults.PValue,
             m => m.TestResults.TestStatistic,
             m => m.TestResults.ChangeDescription
@@ -61,9 +62,9 @@ public class TableParserExtensionMethodsFixture
 
         var expected = new[]
         {
-            "| DisplayName                       | MeanOfBefore | MeanOfAfter | MedianOfBefore | MedianOfAfter | PValue        | TestStatistic | ChangeDescription |",
-            "| ---                               | ---          | ---         | ---            | ---           | ---           | ---           | ---               |",
-            "| MyClass.MySampleTest(X: 4, N: 2)  | 5 ms         | 5 ms        | 5 ms           | 4 ms          | 0.8896057503  | 47            | No Change         |"
+            "| DisplayName                       | MeanBefore | MeanAfter | MedianBefore | MedianAfter | PValue        | TestStatistic | ChangeDescription |",
+            "| ---                               | ---        | ---       | ---          | ---         | ---           | ---           | ---               |",
+            "| MyClass.MySampleTest(N: 2, X: 4)  | 5 ms       | 5 ms      | 5 ms         | 4 ms        | 0.8896057503  | 47            | No Change         |"
         };
         res.ShouldBeEquivalentTo(expected);
     }
