@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using Accord.Statistics.Testing;
 using MathNet.Numerics.Statistics;
-using Sailfish.Analysis;
+using Sailfish.Analysis.Saildiff;
 using Sailfish.Contracts;
 
 namespace Sailfish.Statistics.Tests.KolmogorovSmirnovTestSailfish;

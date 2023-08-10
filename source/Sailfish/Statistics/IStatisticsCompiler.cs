@@ -6,5 +6,5 @@ namespace Sailfish.Statistics;
 
 internal interface IStatisticsCompiler
 {
-    DescriptiveStatisticsResult Compile(TestCaseId testCaseId, PerformanceTimer populatedTimer);
+    DescriptiveStatisticsResult Compile(TestCaseId testCaseId, PerformanceTimer populatedTimer, IExecutionSettings executionSettings);
 }

@@ -1,6 +1,4 @@
-﻿using System;
-using System.Linq;
-using Autofac;
+﻿using Autofac;
 using MediatR;
 using Sailfish.Execution;
 
@@ -23,12 +21,5 @@ public static class AssemblyRegistrationExtensionMethods
             });
 
         builder.RegisterAssemblyTypes(typeof(SailfishExecutor).Assembly).Where(x => x != typeof(ISailfishDependency)).AsImplementedInterfaces(); // via assembly scan
-    }
-
-    public static void RegisterPerformanceTypes(this ContainerBuilder builder, params Type[] sourceTypes)
-    {
-        var testCollector = new TestCollector();
-        var allPerfTypes = testCollector.CollectTestTypes(sourceTypes);
-        builder.RegisterTypes(allPerfTypes.ToArray());
     }
 }

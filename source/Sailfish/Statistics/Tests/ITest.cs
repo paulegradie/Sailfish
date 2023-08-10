@@ -1,4 +1,4 @@
-using Sailfish.Analysis;
+using Sailfish.Analysis.Saildiff;
 
 namespace Sailfish.Statistics.Tests;
 

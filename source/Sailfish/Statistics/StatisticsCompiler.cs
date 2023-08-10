@@ -6,9 +6,9 @@ using Sailfish.Extensions.Methods;
 namespace Sailfish.Statistics;
 
 internal class StatisticsCompiler : IStatisticsCompiler
-{
-    public DescriptiveStatisticsResult Compile(TestCaseId testCaseId, PerformanceTimer populatedTimer)
+{ 
+    public DescriptiveStatisticsResult Compile(TestCaseId testCaseId, PerformanceTimer populatedTimer, IExecutionSettings executionSettings)
     {
-        return populatedTimer.ToDescriptiveStatistics(testCaseId);
+        return populatedTimer.ToDescriptiveStatistics(testCaseId, executionSettings);
     }
 }

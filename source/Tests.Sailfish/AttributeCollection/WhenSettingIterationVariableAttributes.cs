@@ -15,7 +15,7 @@ public class WhenSettingSailfishAttributes
 
         var atty = new SailfishVariableAttribute(parameters);
 
-        atty.N.ShouldBe(parameters);
+        atty.GetVariables().ShouldBe(parameters);
     }
 
     [Fact]
@@ -30,7 +30,7 @@ public class WhenSettingSailfishAttributes
         propName.ShouldBe(nameof(testClass.Count));
 
         var variableSet = variables[propName];
-        variableSet.ShouldBe(new object[] { 1, 2, 3 });
+        variableSet.OrderedVariables.ShouldBe(new object[] { 1, 2, 3 });
     }
 }
 

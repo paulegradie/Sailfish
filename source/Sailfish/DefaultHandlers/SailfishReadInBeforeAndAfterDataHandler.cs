@@ -1,58 +1,37 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using MediatR;
+using Sailfish.Analysis;
 using Sailfish.Contracts.Public;
 using Sailfish.Contracts.Public.Commands;
-using Sailfish.Contracts.Public.CsvMaps;
 using Serilog;
 
 namespace Sailfish.DefaultHandlers;
 
 internal class SailfishReadInBeforeAndAfterDataHandler : IRequestHandler<ReadInBeforeAndAfterDataCommand, ReadInBeforeAndAfterDataResponse>
 {
-    private readonly IFileIo fileIo;
+    private readonly ITrackingFileParser trackingFileParser;
     private readonly ILogger logger;
 
-    public SailfishReadInBeforeAndAfterDataHandler(IFileIo fileIo, ILogger logger)
+    public SailfishReadInBeforeAndAfterDataHandler(ITrackingFileParser trackingFileParser, ILogger logger)
     {
-        this.fileIo = fileIo;
+        this.trackingFileParser = trackingFileParser;
         this.logger = logger;
     }
 
     public async Task<ReadInBeforeAndAfterDataResponse> Handle(ReadInBeforeAndAfterDataCommand request, CancellationToken cancellationToken)
     {
         var beforeData = new List<DescriptiveStatisticsResult>();
-        if (!await TryAddDataFile(request.BeforeFilePaths, beforeData, cancellationToken).ConfigureAwait(false)) return new ReadInBeforeAndAfterDataResponse(null, null);
+        if (!await trackingFileParser.TryParse(request.BeforeFilePaths, beforeData, cancellationToken).ConfigureAwait(false))
+            return new ReadInBeforeAndAfterDataResponse(null, null);
 
         var afterData = new List<DescriptiveStatisticsResult>();
-        if (!await TryAddDataFile(request.AfterFilePaths, afterData, cancellationToken).ConfigureAwait(false)) return new ReadInBeforeAndAfterDataResponse(null, null);
+        if (!await trackingFileParser.TryParse(request.AfterFilePaths, afterData, cancellationToken).ConfigureAwait(false)) return new ReadInBeforeAndAfterDataResponse(null, null);
 
         if (!beforeData.Any() || !afterData.Any()) return new ReadInBeforeAndAfterDataResponse(null, null);
 
         return new ReadInBeforeAndAfterDataResponse(new TestData(request.BeforeFilePaths, beforeData), new TestData(request.AfterFilePaths, afterData));
-    }
-
-    private async Task<bool> TryAddDataFile(IEnumerable<string> fileKeys, List<DescriptiveStatisticsResult> data, CancellationToken cancellationToken)
-    {
-        var temp = new List<DescriptiveStatisticsResult>();
-        try
-        {
-            foreach (var key in fileKeys)
-            {
-                var datum = await fileIo.ReadCsvFile<DescriptiveStatisticsResultCsvMap, DescriptiveStatisticsResult>(key, cancellationToken).ConfigureAwait(false);
-                temp.AddRange(datum);
-            }
-
-            data.AddRange(temp); // only add if all succeed
-            return true;
-        }
-        catch (Exception ex)
-        {
-            logger.Fatal("Unable to read tracking files for after: {Message}", ex.Message);
-            return false;
-        }
     }
 }

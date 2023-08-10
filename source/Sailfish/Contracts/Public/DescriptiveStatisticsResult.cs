@@ -21,7 +21,10 @@ public class DescriptiveStatisticsResult
 
     public double[] RawExecutionResults { get; init; } = null!; // milliseconds
 
-    public static DescriptiveStatisticsResult ConvertFromPerfTimer(TestCaseId testCaseId, PerformanceTimer performanceTimer)
+    public int NumIterations { get; set; }
+    public int NumWarmupIterations { get; set; }
+
+    public static DescriptiveStatisticsResult ConvertFromPerfTimer(TestCaseId testCaseId, PerformanceTimer performanceTimer, IExecutionSettings executionSettings)
     {
         var executionIterations = performanceTimer.ExecutionIterationPerformances
             .Select(x => x.GetDurationFromTicks())
@@ -43,7 +46,14 @@ public class DescriptiveStatisticsResult
             StdDev = stdDev,
             Variance = variance,
             Median = median,
-            RawExecutionResults = executionIterations
+            RawExecutionResults = executionIterations,
+            NumIterations = executionSettings.NumIterations,
+            NumWarmupIterations = executionSettings.NumWarmupIterations
         };
+    }
+
+    public void SetNumIterations(int n)
+    {
+        NumIterations = n;
     }
 }

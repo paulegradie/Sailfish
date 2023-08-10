@@ -39,6 +39,7 @@
         <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="6.0.0" />
         <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="7.0.0" />
         <PackageReference Include="McMaster.Extensions.CommandLineUtils" Version="4.0.2" />
+        <PackageReference Include="Perfolizer" Version="0.3.5" />
         <PackageReference Include="System.Collections.Specialized" Version="4.3.0" />
         <PackageReference Include="System.Linq.Async" Version="6.0.1" />
         <PackageReference Include="System.Runtime.Caching" Version="7.0.0" />

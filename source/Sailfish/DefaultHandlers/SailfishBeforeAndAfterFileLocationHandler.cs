@@ -4,7 +4,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using MediatR;
-using Sailfish.Analysis;
+using Sailfish.Analysis.Saildiff;
 using Sailfish.Contracts.Public.Commands;
 using Sailfish.Exceptions;
 
@@ -12,23 +12,22 @@ namespace Sailfish.DefaultHandlers;
 
 internal class SailfishBeforeAndAfterFileLocationHandler : IRequestHandler<BeforeAndAfterFileLocationCommand, BeforeAndAfterFileLocationResponse>
 {
-    private readonly ITrackingFileFinder trackingFileFinder;
     private readonly ITrackingFileDirectoryReader trackingFileDirectoryReader;
 
-    public SailfishBeforeAndAfterFileLocationHandler(
-        ITrackingFileFinder trackingFileFinder,
-        ITrackingFileDirectoryReader trackingFileDirectoryReader
-    )
+    public SailfishBeforeAndAfterFileLocationHandler(ITrackingFileDirectoryReader trackingFileDirectoryReader)
     {
-        this.trackingFileFinder = trackingFileFinder;
         this.trackingFileDirectoryReader = trackingFileDirectoryReader;
     }
 
-    public async Task<BeforeAndAfterFileLocationResponse> Handle(BeforeAndAfterFileLocationCommand request, CancellationToken cancellationToken)
+    public async Task<BeforeAndAfterFileLocationResponse> Handle(BeforeAndAfterFileLocationCommand request,
+        CancellationToken cancellationToken)
     {
         await Task.Yield();
         var trackingFiles = trackingFileDirectoryReader.FindTrackingFilesInDirectoryOrderedByLastModified(request.TrackingDirectory, ascending: false);
-        if (trackingFiles.Count == 0) return new BeforeAndAfterFileLocationResponse(new List<string>(), new List<string>());
+        if (trackingFiles.Count == 0)
+        {
+            return new BeforeAndAfterFileLocationResponse(new List<string>(), new List<string>());
+        }
 
         if (request.ProvidedBeforeTrackingFiles.Any())
         {
@@ -36,7 +35,8 @@ internal class SailfishBeforeAndAfterFileLocationHandler : IRequestHandler<Befor
             if (!filesFound.Select(x => x.Item2).All(x => x))
             {
                 var missingFiles = string.Join("\n - ", filesFound.Where(x => x.Item2 == false).Select(x => x.file));
-                throw new SailfishException($"Not all {nameof(BeforeAndAfterFileLocationCommand.ProvidedBeforeTrackingFiles)} were found. Missing: {missingFiles}");
+                throw new SailfishException(
+                    $"Not all {nameof(BeforeAndAfterFileLocationCommand.ProvidedBeforeTrackingFiles)} were found. Missing: {missingFiles}");
             }
 
             return new BeforeAndAfterFileLocationResponse(filesFound.Select(x => x.file), new List<string> { trackingFiles.First() });
@@ -45,6 +45,7 @@ internal class SailfishBeforeAndAfterFileLocationHandler : IRequestHandler<Befor
 
         return trackingFiles.Count < 2
             ? new BeforeAndAfterFileLocationResponse(new List<string>(), new List<string>())
-            : new BeforeAndAfterFileLocationResponse(new List<string> { trackingFiles[1] }, new List<string> { trackingFiles[0] });
+            : new BeforeAndAfterFileLocationResponse(new List<string> { trackingFiles[1] },
+                new List<string> { trackingFiles[0] });
     }
 }

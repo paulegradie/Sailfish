@@ -17,7 +17,7 @@ internal static class TestExecution
     public static void ExecuteTests(List<TestCase> testCases, IFrameworkHandle? frameworkHandle, CancellationToken cancellationToken)
     {
         var builder = new ContainerBuilder();
-        builder.CreateTestAdapterRegistrationContainerBuilder();
+        builder.CreateTestAdapterRegistrationContainerBuilder(frameworkHandle);
 
         var refTestType = RetrieveReferenceTypeForTestProject(testCases);
 
@@ -31,7 +31,7 @@ internal static class TestExecution
         using var container = builder.Build();
         try
         {
-            container.Resolve<ITestAdapterExecutionProgram>().Run(testCases, frameworkHandle, cancellationToken);
+            container.Resolve<ITestAdapterExecutionProgram>().Run(testCases, cancellationToken);
         }
         catch (Exception ex)
         {

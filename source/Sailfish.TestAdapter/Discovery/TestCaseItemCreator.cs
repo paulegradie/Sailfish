@@ -15,9 +15,8 @@ internal static class TestCaseItemCreator
 
     public static IEnumerable<TestCase> AssembleTestCases(Type testType, ClassMetaData classMetaData, string sourceDll, IMessageLogger logger)
     {
-        var testCaseSets = new List<TestCase>();
+        var propertySets = PropertySetGenerator.GenerateSailfishVariableSets(testType, out _).ToArray();
 
-        var propertySets = PropertySetGenerator.GeneratePropertySets(testType).ToArray();
         foreach (var methodMetaData in classMetaData.Methods)
         {
             var numToMake = Math.Max(propertySets.Length, 1);
@@ -35,11 +34,9 @@ internal static class TestCaseItemCreator
                 testCase.CodeFilePath = classMetaData.FilePath;
                 testCase.ExecutorUri = TestExecutor.ExecutorUri;
                 testCase.LineNumber = methodMetaData.LineNumber;
-                testCaseSets.Add(testCase);
+                yield return testCase;
             }
         }
-
-        return testCaseSets;
     }
 
     private static TestCase CreateTestCase(

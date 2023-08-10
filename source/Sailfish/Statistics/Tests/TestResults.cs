@@ -5,10 +5,10 @@ namespace Sailfish.Statistics.Tests;
 public class TestResults
 {
     public TestResults(
-        double meanOfBefore,
-        double meanOfAfter,
-        double medianOfBefore,
-        double medianOfAfter,
+        double meanBefore,
+        double meanAfter,
+        double medianBefore,
+        double medianAfter,
         double testStatistic,
         double pValue,
         string changeDescription,
@@ -18,10 +18,10 @@ public class TestResults
         double[] rawDataAfter,
         Dictionary<string, object> additionalResults)
     {
-        MeanOfBefore = meanOfBefore;
-        MeanOfAfter = meanOfAfter;
-        MedianOfBefore = medianOfBefore;
-        MedianOfAfter = medianOfAfter;
+        MeanBefore = meanBefore;
+        MeanAfter = meanAfter;
+        MedianBefore = medianBefore;
+        MedianAfter = medianAfter;
         TestStatistic = testStatistic;
         PValue = pValue;
         ChangeDescription = changeDescription;
@@ -32,10 +32,10 @@ public class TestResults
         AdditionalResults = additionalResults;
     }
 
-    public double MeanOfBefore { get; set; }
-    public double MeanOfAfter { get; set; }
-    public double MedianOfBefore { get; }
-    public double MedianOfAfter { get; }
+    public double MeanBefore { get; set; }
+    public double MeanAfter { get; set; }
+    public double MedianBefore { get; }
+    public double MedianAfter { get; }
     public double TestStatistic { get; set; }
     public double PValue { get; set; }
     public string ChangeDescription { get; set; }

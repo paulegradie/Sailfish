@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-
-using Sailfish.Analysis;
+using Sailfish.Analysis.Saildiff;
 using Sailfish.Extensions.Types;
 using Sailfish.Presentation;
 
@@ -23,6 +22,7 @@ public class RunSettingsBuilder
     private TestSettings? tSettings;
     private DateTime? timeStamp;
     private bool debg = false;
+    private bool complexityAnalysis = false;
 
     public static RunSettingsBuilder CreateBuilder()
     {
@@ -50,6 +50,12 @@ public class RunSettingsBuilder
     public RunSettingsBuilder WithAnalysis()
     {
         this.analyze = true;
+        return this;
+    }
+
+    public RunSettingsBuilder WithComplexityAnalysis()
+    {
+        this.complexityAnalysis = true;
         return this;
     }
 
@@ -145,6 +151,7 @@ public class RunSettingsBuilder
             localOutputDir ?? DefaultFileSettings.DefaultOutputDirectory,
             createTrackingFiles,
             analyze,
+            complexityAnalysis,
             executeNotificationHandler,
             tSettings ?? new TestSettings(),
             tags,

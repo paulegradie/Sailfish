@@ -25,24 +25,24 @@ internal class TestInstanceContainerCreator : ITestInstanceContainerCreator
         Func<PropertySet, bool>? propertyTensorFilter = null,
         Func<MethodInfo, bool>? instanceContainerFilter = null)
     {
-        var propertyTensor = propertySetGenerator.GeneratePropertySets(testType);
+        var sailfishVariableSets = propertySetGenerator.GenerateSailfishVariableSets(testType, out var variableProperties);
+        
         if (propertyTensorFilter is not null)
         {
-            propertyTensor = propertyTensor.Where(propertyTensorFilter);
+            sailfishVariableSets = sailfishVariableSets.Where(propertyTensorFilter);
         }
 
-        var instanceContainers = testType.GetMethodsWithAttribute<SailfishMethodAttribute>();
+        var sailfishMethods = testType.GetMethodsWithAttribute<SailfishMethodAttribute>();
         if (instanceContainerFilter is not null)
         {
-            instanceContainers = instanceContainers.Where(instanceContainerFilter);
+            sailfishMethods = sailfishMethods.Where(instanceContainerFilter);
         }
 
-        return instanceContainers
-            .OrderBy(x => x.Name)
+        return sailfishMethods
             .Select(instanceContainer => new TestInstanceContainerProvider(
                 typeActivator,
                 testType,
-                propertyTensor,
+                sailfishVariableSets,
                 instanceContainer))
             .ToList();
     }

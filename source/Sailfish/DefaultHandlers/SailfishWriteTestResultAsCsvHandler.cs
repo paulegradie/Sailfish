@@ -24,7 +24,7 @@ internal class SailfishWriteTestResultAsCsvHandler : INotificationHandler<WriteT
     {
         var fileName = DefaultFileSettings
             .AppendTagsToFilename(
-                DefaultFileSettings.DefaultTTestCsvFileName(notification.TimeStamp, notification.TestSettings.TestType),
+                DefaultFileSettings.DefaultSaildiffCsvFileName(notification.TimeStamp, notification.TestSettings.TestType),
                 notification.Tags);
         var outputPath = Path.Join(notification.OutputDirectory, fileName);
         if (notification.CsvFormat.Any())

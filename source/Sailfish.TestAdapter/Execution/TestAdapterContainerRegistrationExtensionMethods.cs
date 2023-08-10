@@ -1,6 +1,6 @@
 ﻿using Autofac;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.Adapter;
-using Sailfish.Analysis;
+using Sailfish.Analysis.Saildiff;
 using Sailfish.Execution;
 using Sailfish.Presentation;
 using Sailfish.Registration;
@@ -14,7 +14,7 @@ namespace Sailfish.TestAdapter.Execution;
 
 internal static class TestAdapterContainerRegistrationExtensionMethods
 {
-    public static void CreateTestAdapterRegistrationContainerBuilder(this ContainerBuilder builder)
+    public static void CreateTestAdapterRegistrationContainerBuilder(this ContainerBuilder builder, IFrameworkHandle? frameworkHandle)
     {
         builder.RegisterSailfishTypes();
 
@@ -30,7 +30,6 @@ internal static class TestAdapterContainerRegistrationExtensionMethods
         builder.RegisterType<TestAdapterExecutionProgram>().As<ITestAdapterExecutionProgram>();
         builder.RegisterType<TypeActivator>().As<ITypeActivator>();
         builder.Register(ctx => new SailfishExecutionEngine(ctx.Resolve<ITestCaseIterator>())).As<ISailfishExecutionEngine>();
-        builder.RegisterType<ConsoleWriterFactory>().As<IConsoleWriterFactory>();
         builder.RegisterType<TTestSailfish>().As<ITTestSailfish>();
         builder.RegisterType<MannWhitneyWilcoxonTestSailfish>().As<IMannWhitneyWilcoxonTestSailfish>();
         builder.RegisterType<TwoSampleWilcoxonSignedRankTestSailfish>().As<ITwoSampleWilcoxonSignedRankTestSailfish>();
@@ -41,29 +40,18 @@ internal static class TestAdapterContainerRegistrationExtensionMethods
         builder.RegisterType<TwoSampleWilcoxonSignedRankTestSailfish>().As<ITwoSampleWilcoxonSignedRankTestSailfish>();
         builder.RegisterType<TestPreprocessor>().As<ITestPreprocessor>();
         builder.RegisterType<StatisticalTestExecutor>().As<IStatisticalTestExecutor>();
-        builder.RegisterType<TestResultAnalyzer>().As<ITestResultAnalyzer>();
         builder.RegisterType<TestComputer>().As<ITestComputer>();
-    }
-}
 
-// This is a thing I need to do temporarily until I can upgrade to autofac 6.5.
-// 4.x does not support registering functions, so we can't pass the messageHandle to a callback resolver
-internal interface IConsoleWriterFactory
-{
-    ConsoleWriter CreateConsoleWriter(ITestExecutionRecorder? handle);
-}
 
-internal class ConsoleWriterFactory : IConsoleWriterFactory
-{
-    private readonly IMarkdownTableConverter markdownTableConverter;
+        // These need to be overriding registrations for the test adapter
+        if (frameworkHandle is not null)
+        {
+            builder.RegisterInstance(frameworkHandle).As<IFrameworkHandle>();
+        }
 
-    public ConsoleWriterFactory(IMarkdownTableConverter markdownTableConverter)
-    {
-        this.markdownTableConverter = markdownTableConverter;
-    }
-
-    public ConsoleWriter CreateConsoleWriter(ITestExecutionRecorder? handle)
-    {
-        return new ConsoleWriter(markdownTableConverter, handle);
+        builder.RegisterType<AdapterSailDiff>().As<IAdapterSailDiff>();
+        builder.RegisterType<AdapterScaleFish>().As<IAdapterScaleFish>();
+        builder.RegisterType<AdapterConsoleWriter>().As<IAdapterConsoleWriter>();
+        builder.RegisterType<TestAdapterExecutionEngine>().As<ITestAdapterExecutionEngine>();
     }
 }

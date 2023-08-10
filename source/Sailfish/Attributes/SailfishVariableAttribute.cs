@@ -31,10 +31,17 @@ public class SailfishVariableAttribute : Attribute
         N.AddRange(n);
     }
 
+    public SailfishVariableAttribute(bool complexity, [MinLength(1)] params object[] n) : this(n)
+    {
+        EstimateComplexity = complexity;
+    }
+
     /// <summary>
     /// Gets the list of values used as variables within the test.
     /// </summary>
-    public List<object> N { get; } = new();
+    private List<object> N { get; } = new();
+
+    private bool EstimateComplexity { get; set; }
 
     /// <summary>
     /// Retrieves the variables as an enumerable.
@@ -43,5 +50,14 @@ public class SailfishVariableAttribute : Attribute
     public IEnumerable<object> GetVariables()
     {
         return N.ToArray();
+    }
+
+    /// <summary>
+    /// Retrieves bool indicating if this attribute should be used for complexity estimation
+    /// </summary>
+    /// <returns>bool</returns>
+    public bool IsComplexityVariable()
+    {
+        return EstimateComplexity;
     }
 }

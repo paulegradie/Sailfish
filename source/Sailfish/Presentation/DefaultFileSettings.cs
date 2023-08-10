@@ -1,10 +1,9 @@
 using System;
 using System.Collections.Generic;
-
 using System.IO;
 using System.Linq;
 using System.Text;
-using Sailfish.Analysis;
+using Sailfish.Analysis.Saildiff;
 using Sailfish.Exceptions;
 using Sailfish.Extensions.Types;
 
@@ -14,26 +13,29 @@ public static class DefaultFileSettings
 {
     public const string CsvSuffix = ".csv";
     public const string MarkdownSuffix = ".md";
-    public const string SortableFormat = "yyyy-dd-M--HH-mm-ss";
+    public static readonly string SortableFormat = "yyyyMMdd_HHmmss";
     public const string TrackingSuffix = $"{CsvSuffix}.tracking";
     public const string TagsPrefix = "tags-";
     public const string KeyValueDelimiter = "=";
     public const string MapDelimiter = "__";
-    public const string DefaultTrackingDirectory = "sailfish_tracking_output";
+    public const string DefaultExecutionSummaryTrackingDirectory = "sailfish_tracking_output";
     public const string DefaultOutputDirectory = "sailfish_default_output";
+    public const string DefaultScalefishResultDirectory = "scalefish_results_output";
 
-    public static readonly Func<DateTime, string> DefaultPerformanceFileNameStem =
-        (DateTime timestamp) =>
-            $"PerformanceResults_{timestamp.ToString(SortableFormat)}"; // sortable file name with date
+    public static readonly Func<DateTime, string> DefaultPerformanceResultsFileNameStem = // for WriteToMarkdown & co.
+        timestamp => $"PerformanceResults_{timestamp.ToString(SortableFormat)}"; // sortable file name with date
 
-    public static readonly Func<DateTime, TestType, string> DefaultTTestMarkdownFileName =
-        (DateTime timeStamp, TestType testType) => $"test_{testType.ToString()}_{timeStamp.ToString(SortableFormat)}{MarkdownSuffix}";
+    public static readonly Func<DateTime, TestType, string> DefaultSaildiffMarkdownFileName =
+        (timeStamp, testType) => $"Saildiff_{testType.ToString()}_{timeStamp.ToString(SortableFormat)}{MarkdownSuffix}";
 
-    public static readonly Func<DateTime, TestType, string> DefaultTTestCsvFileName =
-        (DateTime timeStamp, TestType testType) => $"test_{testType.ToString()}_{timeStamp.ToString(SortableFormat)}{CsvSuffix}";
+    public static readonly Func<DateTime, TestType, string> DefaultSaildiffCsvFileName =
+        (timeStamp, testType) => $"Saildiff_{testType.ToString()}_{timeStamp.ToString(SortableFormat)}{CsvSuffix}";
 
-    public static readonly Func<DateTime, string> DefaultTrackingFileName = (timeStamp) =>
-        $"PerformanceTracking_{timeStamp.ToLocalTime().ToString(SortableFormat)}{TrackingSuffix}";
+    public static readonly Func<DateTime, string> DefaultTrackingFileName =
+        (timeStamp) => $"PerformanceTracking_{timeStamp.ToLocalTime().ToString(SortableFormat)}{TrackingSuffix}";
+
+    public static readonly Func<DateTime, string> DefaultScalefishFileName = 
+        (timeStamp) => $"Scalefish_{timeStamp.ToLocalTime().ToString(SortableFormat)}{MarkdownSuffix}";
 
     public static string JoinTags(OrderedDictionary tags)
     {
@@ -69,14 +71,11 @@ public static class DefaultFileSettings
 
     public static Dictionary<string, string> ExtractDataFromFileNameWithTagSection(string filename)
     {
-        var parts =
-            filename.Split(TagsPrefix);
+        var parts = filename.Split(TagsPrefix);
         if (parts.Length == 1) return new Dictionary<string, string>();
-        var dataSection = parts.TakeLast(1)
-            .SingleOrDefault()?.Replace(TrackingSuffix, string.Empty);
+        var dataSection = parts.TakeLast(1).SingleOrDefault()?.Replace(TrackingSuffix, string.Empty);
         if (dataSection is null) throw new SailfishException("Invalid File Name Structure");
         var keyValues = dataSection.Split(MapDelimiter);
-        return keyValues.Select(keyValue => keyValue.Split(KeyValueDelimiter))
-            .ToDictionary(keyVal => keyVal[0], keyVal => keyVal[1]);
+        return keyValues.Select(keyValue => keyValue.Split(KeyValueDelimiter)).ToDictionary(keyVal => keyVal[0], keyVal => keyVal[1]);
     }
 }

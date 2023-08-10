@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using Sailfish.Analysis.Scalefish;
 using Sailfish.Execution;
 using Sailfish.Extensions.Methods;
 using Sailfish.Statistics;
@@ -10,7 +11,8 @@ namespace Sailfish.Presentation;
 
 public class MarkdownTableConverter : IMarkdownTableConverter
 {
-    public string ConvertToMarkdownTableString(IEnumerable<IExecutionSummary> executionSummaries, Func<IExecutionSummary, bool> summaryFilter)
+    public string ConvertToMarkdownTableString(IEnumerable<IExecutionSummary> executionSummaries,
+        Func<IExecutionSummary, bool> summaryFilter)
     {
         var filteredSummaries = executionSummaries.Where(summaryFilter);
         return ConvertToMarkdownTableString(filteredSummaries);
@@ -22,9 +24,9 @@ public class MarkdownTableConverter : IMarkdownTableConverter
         foreach (var result in executionSummaries)
         {
             AppendHeader(result.Type.Name, stringBuilder);
-            AppendResults(result.CompiledResults, stringBuilder);
+            AppendResults(result.CompiledTestCaseResults, stringBuilder);
 
-            var exceptions = result.CompiledResults.SelectMany(x => x.Exceptions).ToList();
+            var exceptions = result.CompiledTestCaseResults.SelectMany(x => x.Exceptions).ToList();
             AppendExceptions(exceptions, stringBuilder);
         }
 
@@ -38,7 +40,7 @@ public class MarkdownTableConverter : IMarkdownTableConverter
         stringBuilder.AppendLine("-----------------------------------\r");
     }
 
-    private void AppendResults(IEnumerable<ICompiledResult> compiledResults, StringBuilder stringBuilder)
+    private void AppendResults(IEnumerable<ICompiledTestCaseResult> compiledResults, StringBuilder stringBuilder)
     {
         foreach (var group in compiledResults.GroupBy(x => x.GroupingId))
         {
@@ -57,7 +59,7 @@ public class MarkdownTableConverter : IMarkdownTableConverter
         }
     }
 
-    private void AppendExceptions(IReadOnlyCollection<Exception?> exceptions, StringBuilder stringBuilder)
+    private static void AppendExceptions(IReadOnlyCollection<Exception?> exceptions, StringBuilder stringBuilder)
     {
         if (exceptions.Count > 0)
         {
@@ -72,5 +74,34 @@ public class MarkdownTableConverter : IMarkdownTableConverter
                 stringBuilder.AppendLine($"StackTrace:\r{exception.StackTrace}\r");
             }
         }
+    }
+
+
+    public string ConvertScaleFishResultToMarkdown(IEnumerable<ITestClassComplexityResult> testClassComplexityResultsEnumerable)
+    {
+        var testClassComplexityResults = testClassComplexityResultsEnumerable.ToList();
+        var tableBuilder = new StringBuilder();
+        foreach (var testClassComplexityResult in testClassComplexityResults)
+        {
+            tableBuilder.AppendLine($"{nameof(testClassComplexityResult.TestClassName)}: {testClassComplexityResult.TestClassName}");
+            var tableSection = testClassComplexityResult
+                .TestMethodComplexityResults
+                .SelectMany(x => x.TestPropertyComplexityResults)
+                .ToStringTable(
+                    new List<string>() { "", "", "(best)", "", "", "(next best)", "", "" },
+                    new List<string>() { "TestCase", "Property", "BestFit", "BigO", "GoodnessOfFit", "NextBest", "NextBigO", "NextBestGoodnessOfFit" },
+                    c => c.MethodName,
+                    c => c.PropertyName,
+                    c => c.ComplexityResult.ComplexityFunction.Name,
+                    c => c.ComplexityResult.ComplexityFunction.OName,
+                    c => c.ComplexityResult.GoodnessOfFit,
+                    c => c.ComplexityResult.NextClosestComplexity.Name,
+                    c => c.ComplexityResult.NextClosestComplexity.OName,
+                    c => c.ComplexityResult.NextClosestGoodnessOfFit
+                );
+            tableBuilder.AppendLine(tableSection);
+        }
+
+        return tableBuilder.ToString();
     }
 }

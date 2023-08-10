@@ -10,11 +10,37 @@ namespace Sailfish.Extensions.Methods;
 
 internal static class TableParserExtensionMethods
 {
-    public static string ToStringTable<T>(this IEnumerable<T> values, IEnumerable<string> headerSuffixes, params Expression<Func<T, object>>[] valueSelectors)
+    public static string ToStringTable<T>(
+        this IEnumerable<T> values,
+        params Expression<Func<T, object>>[] valueSelectors)
     {
-        var headers = valueSelectors.Select(func => GetProperty<T>(func)!.Name).ToArray();
+        var headers = valueSelectors.Select(func => GetProperty(func)!.Name).ToArray();
+        var selectors = valueSelectors.Select(exp => exp.Compile()).ToArray();
+        return ToStringTable(
+            values.ToArray(),
+            headers.ToArray(),
+            Enumerable.Range(0, headers.Length)
+                .Select(_ => string.Empty).ToArray(), selectors);
+    }
+
+    public static string ToStringTable<T>(
+        this IEnumerable<T> values,
+        IEnumerable<string> headerSuffixes,
+        params Expression<Func<T, object>>[] valueSelectors)
+    {
+        var headers = valueSelectors.Select(func => GetProperty(func)!.Name).ToArray();
         var selectors = valueSelectors.Select(exp => exp.Compile()).ToArray();
         return ToStringTable(values.ToArray(), headers.ToArray(), headerSuffixes.ToArray(), selectors);
+    }
+
+    public static string ToStringTable<T>(
+        this IEnumerable<T> values,
+        IEnumerable<string> headerSuffixes,
+        IEnumerable<string> columnHeaders,
+        params Expression<Func<T, object>>[] valueSelectors)
+    {
+        var selectors = valueSelectors.Select(exp => exp.Compile()).ToArray();
+        return ToStringTable(values.ToArray(), columnHeaders.ToArray(), headerSuffixes.ToArray(), selectors);
     }
 
     private static string ToStringTable<T>(
@@ -27,7 +53,8 @@ internal static class TableParserExtensionMethods
 
         var arrValues = new string[values.Count + 1, valueSelectors.Length];
 
-        if (headerSuffixes.Count > 0 && headerSuffixes.Count != columnHeaders.Count) throw new Exception("Header suffix array length must match num columns");
+        if (headerSuffixes.Count > 0 && headerSuffixes.Count != columnHeaders.Count)
+            throw new Exception("Header suffix array length must match num columns");
 
         // Fill headers
         for (var colIndex = 0; colIndex < arrValues.GetLength(1); colIndex++)
@@ -113,17 +140,17 @@ internal static class TableParserExtensionMethods
     // I'm not sure this is the best approach. Seems like we could search from custom attributes instead.
     private static PropertyInfo? GetProperty<T>(Expression<Func<T, object>> selector)
     {
-        if (selector.Body is UnaryExpression)
+        if (selector.Body is UnaryExpression expression)
         {
-            if ((selector.Body as UnaryExpression)!.Operand is MemberExpression)
+            if (expression.Operand is MemberExpression operand)
             {
-                return (((selector.Body as UnaryExpression)!.Operand as MemberExpression)!.Member as PropertyInfo)!;
+                return (operand.Member as PropertyInfo)!;
             }
         }
 
         if (selector.Body is MemberExpression memberExpression)
         {
-            return (memberExpression?.Member as PropertyInfo)!;
+            return (memberExpression.Member as PropertyInfo)!;
         }
 
         return null;

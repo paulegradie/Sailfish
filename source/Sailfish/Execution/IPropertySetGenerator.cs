@@ -5,5 +5,5 @@ namespace Sailfish.Execution;
 
 internal interface IPropertySetGenerator
 {
-    IEnumerable<PropertySet> GeneratePropertySets(Type test);
+    IEnumerable<PropertySet> GenerateSailfishVariableSets(Type test, out Dictionary<string, VariableAttributeMeta> variableProperties);
 }
