@@ -30,6 +30,8 @@ public class ScaleFish : IScaleFish
         string trackingDir,
         CancellationToken cancellationToken)
     {
+        if (!runSettings.RunScalefish) return;
+
         var response = await mediator.Send(new SailfishGetLatestExecutionSummariesCommand(trackingDir, runSettings.Tags, runSettings.Args), cancellationToken);
         var executionSummaries = response.LatestExecutionSummaries;
         if (!executionSummaries.Any()) return;

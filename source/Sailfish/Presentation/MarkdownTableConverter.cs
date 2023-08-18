@@ -89,7 +89,7 @@ public class MarkdownTableConverter : IMarkdownTableConverter
                 .SelectMany(x => x.TestPropertyComplexityResults)
                 .ToStringTable(
                     new List<string>() { "", "", "(best)", "", "", "(next best)", "", "" },
-                    new List<string>() { "TestCase", "Property", "BestFit", "BigO", "GoodnessOfFit", "NextBest", "NextBigO", "NextBestGoodnessOfFit" },
+                    new List<string>() { "TestCase", "Variable", "BestFit", "BigO", "GoodnessOfFit", "NextBest", "NextBigO", "NextBestGoodnessOfFit" },
                     c => c.MethodName,
                     c => c.PropertyName,
                     c => c.ComplexityResult.ComplexityFunction.Name,

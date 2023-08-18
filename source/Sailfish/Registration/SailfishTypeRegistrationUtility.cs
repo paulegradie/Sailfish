@@ -42,13 +42,11 @@ internal static class SailfishTypeRegistrationUtility
         RegisterAllTestTypes(containerBuilder, testAssembliesTypes);
     }
 
-
     private static void RegisterAllTestTypes(ContainerBuilder containerBuilder, IEnumerable<Type> testAssembliesTypes)
     {
         var testTypes = testAssembliesTypes.Distinct().Where(type => type.HasAttribute<SailfishAttribute>());
         containerBuilder.RegisterTypes(testTypes.ToArray()).FindConstructorsWith(new RelaxedConstructorFinder());
     }
-
 
     private static void RegisterISailfishDependencyTypes(ContainerBuilder containerBuilder, IEnumerable<Type> types)
     {

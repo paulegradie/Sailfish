@@ -28,6 +28,7 @@ public class ComplexityComputer : IComplexityComputer
                 .GetProperties()
                 .Where(x => x.GetCustomAttributes<SailfishVariableAttribute>().Any(a => a.IsComplexityVariable()))
                 .ToList();
+            if (sailfishComplexityVariables.Count == 0) continue;
 
             // to filter out those we want to assess
             var complexityPropertyNames = testClassSummary
