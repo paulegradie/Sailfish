@@ -33,7 +33,7 @@ public class ComplexityComputer : IComplexityComputer
             var complexityPropertyNames = testClassSummary
                 .Type
                 .GetProperties()
-                .Where(x => x.GetCustomAttributes<SailfishVariableAttribute>().Single().IsComplexityVariable())
+                .Where(x => x.GetCustomAttributes<SailfishVariableAttribute>().Any(attr => attr.IsComplexityVariable()))
                 .Select(x => x.Name)
                 .ToList();
 
