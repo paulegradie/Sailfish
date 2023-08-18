@@ -1,7 +1,9 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.Logging;
 using Sailfish.Attributes;
@@ -49,7 +51,7 @@ internal static class TestDiscovery
             }
             catch
             {
-                logger.SendMessage(TestMessageLevel.Warning, $"Skipping {sourceDllPath} ");
+                // logger.SendMessage(TestMessageLevel.Warning, $"Skipping {sourceDllPath} ");
                 continue;
             }
 
@@ -64,6 +66,7 @@ internal static class TestDiscovery
 
             var sourceCache = DiscoveryAnalysisMethods.CompilePreRenderedSourceMap(
                     projectSourceCodeFilePaths,
+                    perfTestTypes,
                     nameof(SailfishAttribute).Replace(nameof(Attribute), ""),
                     nameof(SailfishMethodAttribute).Replace(nameof(Attribute), ""))
                 .OrderBy(meta => meta.ClassName);

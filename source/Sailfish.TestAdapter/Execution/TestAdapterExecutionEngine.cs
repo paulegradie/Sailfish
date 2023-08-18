@@ -298,7 +298,7 @@ internal class TestAdapterExecutionEngine : ITestAdapterExecutionEngine
             consoleWriter.RecordStart(currentTestCase);
         };
     }
-    
+
     private static TestCase GetTestCaseFromTestCaseGroupMatchingCurrentContainer(TestInstanceContainer container, IEnumerable<TestCase> testCaseGroup)
     {
         return testCaseGroup.Single(x => container.TestCaseId.DisplayName.EndsWith(x.DisplayName));

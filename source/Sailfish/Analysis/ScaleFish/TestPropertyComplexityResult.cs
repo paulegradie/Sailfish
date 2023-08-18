@@ -14,7 +14,9 @@ public interface ITestPropertyComplexityResult
 public class TestPropertyComplexityResult : ITestPropertyComplexityResult
 {
     [JsonConstructor]
+#pragma warning disable CS8618
     public TestPropertyComplexityResult()
+#pragma warning restore CS8618
     {
     }
 

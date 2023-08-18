@@ -47,7 +47,7 @@ public abstract class ComplexityFunction : IComplexityFunction
             var error = fitnessCalculator.CalculateError(cleanModeled, cleanObserved);
             return error;
         }
-        catch (Exception ex)
+        catch
         {
             ;
         }

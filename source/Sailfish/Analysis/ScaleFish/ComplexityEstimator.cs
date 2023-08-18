@@ -19,7 +19,7 @@ public class ComplexityEstimator : IComplexityEstimator
                 var fitness = complexityFunction.AnalyzeFitness(measurements);
                 fitnessResults.Add((complexityFunction, fitness));
             }
-            catch (Exception ex)
+            catch
             {
                 // ignore this complexity - too difficult to converge - find the next best curve to explain the data
             }

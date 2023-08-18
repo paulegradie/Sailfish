@@ -37,13 +37,12 @@ public class TestResultTableContentFormatter : ITestResultTableContentFormatter
             m => m.TestResults.MedianBefore,
             m => m.TestResults.MedianAfter,
             m => m.TestResults.PValue,
-            m => m.TestResults.TestStatistic,
             m => m.TestResults.ChangeDescription
         };
 
         var headerSuffixes = new[]
         {
-            "", "ms", "ms", "ms", "ms", "", "", ""
+            "", "ms", "ms", "ms", "ms", "", ""
         };
 
         return testCaseResults.ToStringTable(headerSuffixes, selectors);

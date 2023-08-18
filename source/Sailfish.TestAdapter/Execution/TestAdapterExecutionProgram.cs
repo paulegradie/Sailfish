@@ -9,7 +9,6 @@ using Sailfish.Analysis.Saildiff;
 using Sailfish.Analysis.Scalefish;
 using Sailfish.Contracts.Public;
 using Sailfish.Contracts.Public.CsvMaps;
-using Sailfish.Execution;
 using Sailfish.Extensions.Types;
 using Sailfish.Presentation;
 using Sailfish.TestAdapter.Discovery;
@@ -20,14 +19,9 @@ namespace Sailfish.TestAdapter.Execution;
 internal class TestAdapterExecutionProgram : ITestAdapterExecutionProgram
 {
     private readonly ITestAdapterExecutionEngine testAdapterExecutionEngine;
-    private readonly ITestInstanceContainerCreator testInstanceContainerCreator;
-    private readonly IExecutionSummaryCompiler executionSummaryCompiler;
-    private readonly ISailfishExecutionEngine engine;
-    private readonly ITestComputer testComputer;
     private readonly IExecutionSummaryWriter executionSummaryWriter;
     private readonly ITrackingFileDirectoryReader trackingFileDirectoryReader;
     private readonly IFileIo fileIo;
-    private readonly ITestResultTableContentFormatter testResultTableContentFormatter;
     private readonly IAdapterConsoleWriter consoleWriter;
     private readonly ISailDiff sailDiff;
     private readonly IScaleFish scaleFish;
@@ -35,27 +29,17 @@ internal class TestAdapterExecutionProgram : ITestAdapterExecutionProgram
 
     public TestAdapterExecutionProgram(
         ITestAdapterExecutionEngine testAdapterExecutionEngine,
-        ITestInstanceContainerCreator testInstanceContainerCreator,
-        IExecutionSummaryCompiler executionSummaryCompiler,
-        ISailfishExecutionEngine engine,
-        ITestComputer testComputer,
         IExecutionSummaryWriter executionSummaryWriter,
         ITrackingFileDirectoryReader trackingFileDirectoryReader,
         IFileIo fileIo,
-        ITestResultTableContentFormatter testResultTableContentFormatter,
         IAdapterConsoleWriter consoleWriter,
         IAdapterSailDiff sailDiff,
         IAdapterScaleFish scaleFish)
     {
         this.testAdapterExecutionEngine = testAdapterExecutionEngine;
-        this.testInstanceContainerCreator = testInstanceContainerCreator;
-        this.executionSummaryCompiler = executionSummaryCompiler;
-        this.engine = engine;
-        this.testComputer = testComputer;
         this.executionSummaryWriter = executionSummaryWriter;
         this.trackingFileDirectoryReader = trackingFileDirectoryReader;
         this.fileIo = fileIo;
-        this.testResultTableContentFormatter = testResultTableContentFormatter;
         this.consoleWriter = consoleWriter;
         this.sailDiff = sailDiff;
         this.scaleFish = scaleFish;

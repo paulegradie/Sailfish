@@ -29,6 +29,7 @@ public class WhenAssemblingTestCases
         const string sourceDll = "C:/this/is/some/dll.dll";
         var sourceCache = DiscoveryAnalysisMethods.CompilePreRenderedSourceMap(
                 new[] { testResourceRelativePath },
+                new[] { typeof(SimplePerfTest) },
                 nameof(SailfishAttribute).Replace("Attribute", ""),
                 nameof(SailfishMethodAttribute).Replace("Attribute", ""))
             .ToList();
