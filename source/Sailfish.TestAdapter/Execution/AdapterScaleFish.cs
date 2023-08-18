@@ -26,6 +26,8 @@ internal class AdapterScaleFish : IAdapterScaleFish
 
     public async Task Analyze(DateTime timeStamp, IRunSettings runSettings, string trackingDir, CancellationToken cancellationToken)
     {
+        if (!runSettings.RunScalefish) return;
+
         var response = await mediator.Send(new SailfishGetLatestExecutionSummariesCommand(trackingDir, runSettings.Tags, runSettings.Args), cancellationToken);
         var executionSummaries = response.LatestExecutionSummaries;
         if (!executionSummaries.Any()) return;

@@ -45,6 +45,7 @@ public class SailDiff : ISailDiff
         CancellationToken cancellationToken
     )
     {
+        if (!runSettings.RunSailDiff) return;
         var beforeAndAfterFileLocations = await mediator.Send(
                 new BeforeAndAfterFileLocationCommand(
                     trackingDir,

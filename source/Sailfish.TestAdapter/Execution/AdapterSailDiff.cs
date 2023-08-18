@@ -33,29 +33,30 @@ internal class AdapterSailDiff : IAdapterSailDiff
         this.testResultTableContentFormatter = testResultTableContentFormatter;
     }
 
-    public Task Analyze(DateTime timeStamp, IRunSettings runSettings, string trackingDir, CancellationToken cancellationToken)
+    public async Task Analyze(DateTime timeStamp, IRunSettings runSettings, string trackingDir, CancellationToken cancellationToken)
     {
-        var beforeAndAfterFileLocations = mediator.Send(
+        if (!runSettings.RunSailDiff) return;
+
+        var beforeAndAfterFileLocations = await mediator.Send(
             new BeforeAndAfterFileLocationCommand(
                 trackingDir,
                 runSettings.Tags,
                 runSettings.ProvidedBeforeTrackingFiles,
                 runSettings.Args),
-            cancellationToken).GetAwaiter().GetResult();
+            cancellationToken).ConfigureAwait(false);
 
-        var beforeAndAfterData = mediator.Send(
-                new ReadInBeforeAndAfterDataCommand(
-                    beforeAndAfterFileLocations.BeforeFilePaths,
-                    beforeAndAfterFileLocations.AfterFilePaths,
-                    runSettings.Tags,
-                    runSettings.Args),
-                cancellationToken)
-            .GetAwaiter().GetResult();
+        var beforeAndAfterData = await mediator.Send(
+            new ReadInBeforeAndAfterDataCommand(
+                beforeAndAfterFileLocations.BeforeFilePaths,
+                beforeAndAfterFileLocations.AfterFilePaths,
+                runSettings.Tags,
+                runSettings.Args),
+            cancellationToken).ConfigureAwait(false);
 
         if (beforeAndAfterData.BeforeData is null || beforeAndAfterData.AfterData is null)
         {
             consoleWriter.WriteString("Failed to retrieve tracking data... aborting the test operation");
-            return Task.CompletedTask;
+            return;
         }
 
         var testResults = testComputer.ComputeTest(
@@ -66,7 +67,7 @@ internal class AdapterSailDiff : IAdapterSailDiff
         if (!testResults.Any())
         {
             consoleWriter.WriteString("No prior test results found for the current set");
-            return Task.CompletedTask;
+            return;
         }
 
         var testIds = new TestIds(beforeAndAfterData.BeforeData.TestIds, beforeAndAfterData.AfterData.TestIds);
@@ -74,7 +75,7 @@ internal class AdapterSailDiff : IAdapterSailDiff
 
         consoleWriter.WriteStatTestResultsToConsole(testResultFormats.MarkdownFormat, testIds, runSettings.Settings);
 
-        mediator.Publish(
+        await mediator.Publish(
                 new WriteTestResultsAsMarkdownCommand(
                     testResultFormats.MarkdownFormat,
                     runSettings.LocalOutputDirectory ?? DefaultFileSettings.DefaultOutputDirectory,
@@ -83,8 +84,7 @@ internal class AdapterSailDiff : IAdapterSailDiff
                     runSettings.Tags,
                     runSettings.Args),
                 cancellationToken)
-            .ConfigureAwait(false).GetAwaiter().GetResult();
-        return Task.CompletedTask;
+            .ConfigureAwait(false);
     }
 
 

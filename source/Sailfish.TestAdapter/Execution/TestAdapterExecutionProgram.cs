@@ -26,7 +26,6 @@ internal class TestAdapterExecutionProgram : ITestAdapterExecutionProgram
     private readonly ISailDiff sailDiff;
     private readonly IScaleFish scaleFish;
 
-
     public TestAdapterExecutionProgram(
         ITestAdapterExecutionEngine testAdapterExecutionEngine,
         IExecutionSummaryWriter executionSummaryWriter,
