@@ -88,6 +88,7 @@ internal class TestAdapterExecutionProgram : ITestAdapterExecutionProgram
             runSettings = runSettingsBuilder
                 .CreateTrackingFiles()
                 .WithAnalysis()
+                .WithComplexityAnalysis()
                 .WithAnalysisTestSettings(testSettings)
                 .Build();
             trackingDir = GetRunSettingsTrackingDirectoryPath(runSettings);
