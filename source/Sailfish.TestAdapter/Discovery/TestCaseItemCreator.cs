@@ -54,8 +54,6 @@ internal static class TestCaseItemCreator
             DisplayName = testCaseId.DisplayName
         };
 
-        testCase.SetPropertyValue(SailfishDisplayNameDefinition.SailfishDisplayNameDefinitionProperty, testCaseId.DisplayName);
-
         if (testType.FullName is null)
         {
             var msg = $"Error: testType fullname not defined - fullname: {testType.FullName}";
