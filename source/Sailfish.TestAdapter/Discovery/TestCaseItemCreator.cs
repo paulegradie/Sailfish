@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Cryptography;
+using System.Text;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.Logging;
 using Sailfish.Execution;
@@ -51,6 +53,7 @@ internal static class TestCaseItemCreator
         var fullyQualifiedName = $"{testType.Namespace}.{testType.Name}.{methodName}{testCaseId.TestCaseVariables.FormVariableSection()}";
         var testCase = new TestCase(fullyQualifiedName, TestExecutor.ExecutorUri, sourceDll)
         {
+            Id = GuidFromString(TestExecutor.ExecutorUri + $"{testType.Namespace}.{testType.Name}.{methodName}"),
             DisplayName = testCaseId.DisplayName
         };
 
@@ -67,5 +70,16 @@ internal static class TestCaseItemCreator
         testCase.SetPropertyValue(SailfishMethodNameDefinition.SailfishMethodNameDefinitionProperty, methodName);
 
         return testCase;
+    }
+
+
+    private static readonly HashAlgorithm Hasher = SHA1.Create();
+
+    static Guid GuidFromString(string data)
+    {
+        var hash = Hasher.ComputeHash(Encoding.Unicode.GetBytes(data));
+        var b = new byte[16];
+        Array.Copy(hash, b, 16);
+        return new Guid(b);
     }
 }
