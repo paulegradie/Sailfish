@@ -50,7 +50,7 @@ internal static class TestCaseItemCreator
         IEnumerable<object> propertyValues)
     {
         var testCaseId = DisplayNameHelper.CreateTestCaseId(testType, methodName, propertyNames.ToArray(), propertyValues.ToArray());
-        var fullyQualifiedName = $"{testType.Namespace}.{testType.Name}.{methodName}{testCaseId.TestCaseVariables.FormVariableSection()}";
+        var fullyQualifiedName = $"{testType.Namespace}.{testType.Name}.{methodName}";
         var testCase = new TestCase(fullyQualifiedName, TestExecutor.ExecutorUri, sourceDll)
         {
             Id = GuidFromString(TestExecutor.ExecutorUri + $"{testType.Namespace}.{testType.Name}.{methodName}"),

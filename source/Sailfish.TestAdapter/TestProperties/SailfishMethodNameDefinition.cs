@@ -4,13 +4,14 @@ namespace Sailfish.TestAdapter.TestProperties;
 
 public static class SailfishMethodNameDefinition
 {
-    public const string MethodName = "MethodName";
-
     internal static readonly TestProperty SailfishMethodNameDefinitionProperty = TestProperty.Register(
-        $"Sailfish.{MethodName}Definition",
-        $"{MethodName}Definition",
-        typeof(string),
-        TestPropertyAttributes.Immutable,
-        typeof(TestCase)
+        id: "TestCase.ManagedType",
+        label: "ManagedType",
+        category: string.Empty,
+        description: string.Empty,
+        valueType: typeof(string),
+        validateValueCallback: o => !string.IsNullOrWhiteSpace(o as string),
+        attributes: TestPropertyAttributes.Immutable,
+        owner: typeof(TestCase)
     );
 }
