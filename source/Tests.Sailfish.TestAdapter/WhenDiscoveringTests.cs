@@ -26,6 +26,6 @@ public class WhenDiscoveringTests
         var source = DllFinder.FindThisProjectsDllRecursively();
         var testCases = TestDiscovery.DiscoverTests(new[] { source }, new LoggerHelper()).ToList();
         var aTestCase = testCases.First();
-        aTestCase.DisplayName.ShouldBe("ExampleComponentTest.Interpolate(N: 1)");
+        aTestCase.DisplayName.ShouldBe("Interpolate(N: 1)");
     }
 }

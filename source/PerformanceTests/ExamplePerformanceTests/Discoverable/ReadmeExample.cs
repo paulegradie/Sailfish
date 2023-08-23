@@ -9,7 +9,6 @@ namespace PerformanceTests.ExamplePerformanceTests.Discoverable
     {
         [SailfishVariable(1, 10)] public int N { get; set; }
 
-
         [SailfishMethod]
         public async Task TestMethod(CancellationToken cancellationToken) // token is injected when requested
         {

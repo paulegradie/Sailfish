@@ -17,13 +17,13 @@ namespace Sailfish.TestAdapter.Execution;
 internal class AdapterSailDiff : IAdapterSailDiff
 {
     private readonly IMediator mediator;
-    private readonly IConsoleWriter consoleWriter;
+    private readonly IAdapterConsoleWriter consoleWriter;
     private readonly ITestComputer testComputer;
     private readonly ITestResultTableContentFormatter testResultTableContentFormatter;
 
     public AdapterSailDiff(
         IMediator mediator,
-        IConsoleWriter consoleWriter,
+        IAdapterConsoleWriter consoleWriter,
         ITestComputer testComputer,
         ITestResultTableContentFormatter testResultTableContentFormatter)
     {

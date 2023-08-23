@@ -46,7 +46,7 @@ internal static class TestExecution
 
         var testTypeFullName = testCases
             .First()
-            .GetPropertyHelper(SailfishTestTypeFullNameDefinition.SailfishTestTypeFullNameDefinitionProperty);
+            .GetPropertyHelper(SailfishManagedProperty.SailfishTypeProperty);
 
         var refTestType = assembly.GetType(testTypeFullName, true, true);
         if (refTestType is null) throw new Exception("First test type was null when starting test execution");

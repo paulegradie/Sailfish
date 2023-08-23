@@ -47,14 +47,14 @@ internal class TestAdapterExecutionEngine : ITestAdapterExecutionEngine
         CancellationToken cancellationToken)
     {
         var rawExecutionResults = new List<(string, RawExecutionResult)>();
-        var testCaseGroups = testCases.GroupBy(testCase => testCase.GetPropertyHelper(SailfishTestTypeFullNameDefinition.SailfishTestTypeFullNameDefinitionProperty));
+        var testCaseGroups = testCases.GroupBy(testCase => testCase.GetPropertyHelper(SailfishManagedProperty.SailfishTypeProperty));
 
         foreach (var testCaseGroup in testCaseGroups)
         {
             var groupResults = new List<TestExecutionResult>();
 
             var firstTestCase = testCaseGroup.First();
-            var testTypeFullName = firstTestCase.GetPropertyHelper(SailfishTestTypeFullNameDefinition.SailfishTestTypeFullNameDefinitionProperty);
+            var testTypeFullName = firstTestCase.GetPropertyHelper(SailfishManagedProperty.SailfishTypeProperty);
             var assembly = LoadAssemblyFromDll(firstTestCase.Source);
             var testType = assembly.GetType(testTypeFullName, true, true);
             if (testType is null)
@@ -64,7 +64,7 @@ internal class TestAdapterExecutionEngine : ITestAdapterExecutionEngine
             }
 
             var availableVariableSections = testCases
-                .Select(x => x.GetPropertyHelper(SailfishFormedVariableSectionDefinition.SailfishFormedVariableSectionDefinitionProperty))
+                .Select(x => x.GetPropertyHelper(SailfishManagedProperty.SailfishFormedVariableSectionDefinitionProperty))
                 .Distinct();
 
             bool PropertyFilter(PropertySet currentPropertySet)
@@ -74,7 +74,7 @@ internal class TestAdapterExecutionEngine : ITestAdapterExecutionEngine
             }
 
             var availableMethods = testCases
-                .Select(x => x.GetPropertyHelper(SailfishMethodNameDefinition.SailfishMethodNameDefinitionProperty))
+                .Select(x => x.GetPropertyHelper(SailfishManagedProperty.SailfishMethodFilterProperty))
                 .Distinct();
 
             bool MethodFilter(MethodInfo currentMethodInfo)
@@ -298,9 +298,9 @@ internal class TestAdapterExecutionEngine : ITestAdapterExecutionEngine
             consoleWriter.RecordStart(currentTestCase);
         };
     }
-
+    
     private static TestCase GetTestCaseFromTestCaseGroupMatchingCurrentContainer(TestInstanceContainer container, IEnumerable<TestCase> testCaseGroup)
     {
-        return testCaseGroup.Single(x => string.Equals(x.DisplayName, container.TestCaseId.DisplayName, StringComparison.InvariantCultureIgnoreCase));
+        return testCaseGroup.Single(x => container.TestCaseId.DisplayName.EndsWith(x.DisplayName));
     }
 }
