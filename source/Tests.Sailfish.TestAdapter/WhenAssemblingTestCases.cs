@@ -1,7 +1,5 @@
 ﻿using System.IO;
 using System.Linq;
-using System.Security.Cryptography;
-using Microsoft.VisualStudio.TestPlatform.ObjectModel.Logging;
 using NSubstitute;
 using Sailfish.Attributes;
 using Sailfish.TestAdapter.Discovery;
@@ -37,7 +35,7 @@ public class WhenAssemblingTestCases
         var classMetaData = sourceCache.Single();
         var hasher = Substitute.For<IHashAlgorithm>();
         var result = TestCaseItemCreator
-            .AssembleTestCases(typeof(SimplePerfTest), classMetaData, sourceDll, hasher, Substitute.For<IMessageLogger>())
+            .AssembleTestCases(classMetaData, sourceDll, hasher)
             .ToList();
 
         result.Count.ShouldBe(6);

@@ -9,11 +9,9 @@ public sealed class PerformanceTimer
     public readonly List<IterationPerformance> ExecutionIterationPerformances = new();
     private readonly Stopwatch executionTimer;
     private readonly Stopwatch globalTimer;
-
     public readonly List<IterationPerformance> MethodIterationPerformances = new(); // all iterations of the method
     private readonly Stopwatch methodIterationTimer;
     private DateTimeOffset executionIterationStart;
-
     private readonly OverheadEstimator overheadEstimator;
 
     // transient fields
@@ -27,10 +25,7 @@ public sealed class PerformanceTimer
         overheadEstimator = new OverheadEstimator();
     }
 
-    private DateTimeOffset globalStart;
     public DateTimeOffset GlobalStart { get; private set; }
-
-
     public DateTimeOffset GlobalStop { get; private set; }
     public TimeSpan GlobalDuration { get; private set; }
     public bool IsValid { get; private set; } = true;
@@ -62,7 +57,6 @@ public sealed class PerformanceTimer
             : new IterationPerformance(executionIterationStart, executionIterationStop, executionTimer.ElapsedTicks - overhead);
 
         ExecutionIterationPerformances.Add(iterationPerformance);
-
         executionTimer.Reset();
     }
 

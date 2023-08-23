@@ -77,7 +77,7 @@ internal class AdapterConsoleWriter : IAdapterConsoleWriter
             .ToArray();
 
         var markdownStringTable = markdownTableConverter.ConvertToMarkdownTableString(summaryResults)
-                                  + "Raw results: \n"
+                                  + "Ordered Raw results: \n"
                                   + string.Join(", ", rawData.OrderBy(x => x));
 
         messageLogger?.SendMessage(TestMessageLevel.Informational, markdownStringTable);

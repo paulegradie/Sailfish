@@ -40,7 +40,7 @@ public class MarkdownTableConverter : IMarkdownTableConverter
         stringBuilder.AppendLine("-----------------------------------\r");
     }
 
-    private void AppendResults(IEnumerable<ICompiledTestCaseResult> compiledResults, StringBuilder stringBuilder)
+    private static void AppendResults(IEnumerable<ICompiledTestCaseResult> compiledResults, StringBuilder stringBuilder)
     {
         foreach (var group in compiledResults.GroupBy(x => x.GroupingId))
         {

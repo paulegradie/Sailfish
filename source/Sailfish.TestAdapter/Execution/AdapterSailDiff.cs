@@ -10,7 +10,6 @@ using Sailfish.Contracts.Public;
 using Sailfish.Contracts.Public.Commands;
 using Sailfish.Execution;
 using Sailfish.Presentation;
-using Sailfish.Presentation.Console;
 
 namespace Sailfish.TestAdapter.Execution;
 

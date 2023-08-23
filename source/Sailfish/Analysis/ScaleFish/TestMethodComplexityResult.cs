@@ -13,7 +13,9 @@ public interface ITestMethodComplexityResult
 internal class TestMethodComplexityResult : ITestMethodComplexityResult
 {
     [JsonConstructor]
+#pragma warning disable CS8618
     public TestMethodComplexityResult()
+#pragma warning restore CS8618
     {
     }
 

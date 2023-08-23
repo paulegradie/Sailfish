@@ -11,7 +11,9 @@ public class TestCaseVariables
     private const char Colon = ':';
 
     [JsonConstructor]
+#pragma warning disable CS8618
     public TestCaseVariables()
+#pragma warning restore CS8618
     {
     }
 
