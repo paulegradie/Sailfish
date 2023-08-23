@@ -15,6 +15,6 @@ public class LogLinear : ComplexityFunction
     }
 
     public override string Name { get; set; } = nameof(LogLinear);
-    public override string OName { get; set; } = "O(nlog_2(n)";
+    public override string OName { get; set; } = "O(nlog_2(n))";
     public override string Quality { get; set; } = "Okay";
 }

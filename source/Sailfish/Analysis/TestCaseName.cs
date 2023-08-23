@@ -17,7 +17,9 @@ public class TestCaseName
     private const char Dot = '.';
 
     [JsonConstructor]
+#pragma warning disable CS8618
     public TestCaseName()
+#pragma warning restore CS8618
     {
     }
 
@@ -33,8 +35,8 @@ public class TestCaseName
         Parts = parts;
     }
 
-    public string Name { get; } = null!;
-    public IReadOnlyList<string> Parts { get; } = null!;
+    public string Name { get; }
+    public IReadOnlyList<string> Parts { get; }
 
     private static IReadOnlyList<string> GetNameParts(string displayName)
     {

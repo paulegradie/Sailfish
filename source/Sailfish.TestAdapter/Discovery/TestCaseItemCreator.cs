@@ -1,8 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Security.Cryptography;
-using System.Text;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.Logging;
 using Sailfish.Execution;
@@ -15,7 +13,7 @@ internal static class TestCaseItemCreator
 {
     private static PropertySetGenerator PropertySetGenerator => new(new ParameterCombinator(), new IterationVariableRetriever());
 
-    public static IEnumerable<TestCase> AssembleTestCases(Type testType, ClassMetaData classMetaData, string sourceDll, IMessageLogger logger)
+    public static IEnumerable<TestCase> AssembleTestCases(Type testType, ClassMetaData classMetaData, string sourceDll, IHashAlgorithm hashAlgorithm, IMessageLogger logger)
     {
         var propertySets = PropertySetGenerator.GenerateSailfishVariableSets(testType, out _).ToArray();
 
@@ -30,12 +28,12 @@ internal static class TestCaseItemCreator
                     testType,
                     sourceDll,
                     logger,
+                    classMetaData.FilePath,
                     methodMetaData.MethodName,
+                    methodMetaData.LineNumber,
                     propertyNames,
-                    propertyValues);
-                testCase.CodeFilePath = classMetaData.FilePath;
-                testCase.ExecutorUri = TestExecutor.ExecutorUri;
-                testCase.LineNumber = methodMetaData.LineNumber;
+                    propertyValues,
+                    hashAlgorithm);
                 yield return testCase;
             }
         }
@@ -45,16 +43,22 @@ internal static class TestCaseItemCreator
         Type testType,
         string sourceDll,
         IMessageLogger logger,
+        string filePath,
         string methodName,
+        int lineNumber,
         IEnumerable<string> propertyNames,
-        IEnumerable<object> propertyValues)
+        IEnumerable<object> propertyValues,
+        IHashAlgorithm hasher)
     {
         var testCaseId = DisplayNameHelper.CreateTestCaseId(testType, methodName, propertyNames.ToArray(), propertyValues.ToArray());
-        var fullyQualifiedName = $"{testType.Namespace}.{testType.Name}.{methodName}";
+        var fullyQualifiedName = $"{testType.Namespace}.{testType.Name}.{methodName}{testCaseId.TestCaseVariables.FormVariableSection()}";
         var testCase = new TestCase(fullyQualifiedName, TestExecutor.ExecutorUri, sourceDll)
         {
-            Id = GuidFromString(TestExecutor.ExecutorUri + $"{testType.Namespace}.{testType.Name}.{methodName}"),
-            DisplayName = testCaseId.DisplayName
+            Id = hasher.GuidFromString(TestExecutor.ExecutorUri + $"{testType.Namespace}.{testType.Name}.{methodName}"),
+            DisplayName = testCaseId.DisplayName.Split(".").Last(),
+            LineNumber = lineNumber,
+            ExecutorUri = TestExecutor.ExecutorUri,
+            CodeFilePath = filePath
         };
 
         if (testType.FullName is null)
@@ -64,22 +68,12 @@ internal static class TestCaseItemCreator
             throw new Exception(msg);
         }
 
-        testCase.SetPropertyValue(SailfishTestTypeFullNameDefinition.SailfishTestTypeFullNameDefinitionProperty, testType.FullName);
-        testCase.SetPropertyValue(SailfishDisplayNameDefinition.SailfishDisplayNameDefinitionProperty, testCaseId.DisplayName);
-        testCase.SetPropertyValue(SailfishFormedVariableSectionDefinition.SailfishFormedVariableSectionDefinitionProperty, testCaseId.TestCaseVariables.FormVariableSection());
-        testCase.SetPropertyValue(SailfishMethodNameDefinition.SailfishMethodNameDefinitionProperty, methodName);
+        // custom properties
+        testCase.SetPropertyValue(SailfishManagedProperty.SailfishTypeProperty, testType.FullName);
+        testCase.SetPropertyValue(SailfishManagedProperty.SailfishMethodFilterProperty, $"{methodName}");
+        testCase.SetPropertyValue(SailfishManagedProperty.SailfishDisplayNameDefinitionProperty, testCaseId.DisplayName);
+        testCase.SetPropertyValue(SailfishManagedProperty.SailfishFormedVariableSectionDefinitionProperty, testCaseId.TestCaseVariables.FormVariableSection());
 
         return testCase;
-    }
-
-
-    private static readonly HashAlgorithm Hasher = SHA1.Create();
-
-    static Guid GuidFromString(string data)
-    {
-        var hash = Hasher.ComputeHash(Encoding.Unicode.GetBytes(data));
-        var b = new byte[16];
-        Array.Copy(hash, b, 16);
-        return new Guid(b);
     }
 }

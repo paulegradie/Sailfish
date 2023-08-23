@@ -18,6 +18,7 @@ internal static class TestDiscovery
     /// <returns></returns>
     public static IEnumerable<TestCase> DiscoverTests(IEnumerable<string> sourceDllPaths, IMessageLogger logger)
     {
+        var hasher = new HashWrapper();
         var testCases = new List<TestCase>();
         FileInfo? previousSearchDir = null;
         FileInfo? project = null;
@@ -75,7 +76,7 @@ internal static class TestDiscovery
                     .IndexOf(classMetaData.ClassName);
                 var perfTestType = perfTestTypes[index];
 
-                var classTestCases = TestCaseItemCreator.AssembleTestCases(perfTestType, classMetaData, sourceDllPath, logger);
+                var classTestCases = TestCaseItemCreator.AssembleTestCases(perfTestType, classMetaData, sourceDllPath, hasher, logger);
                 testCases.AddRange(classTestCases);
             }
         }
