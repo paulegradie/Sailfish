@@ -49,7 +49,6 @@ internal static class TestDiscovery
             }
             catch
             {
-                // logger.SendMessage(TestMessageLevel.Warning, $"Skipping {sourceDllPath} ");
                 continue;
             }
 
