@@ -13,10 +13,10 @@ public class MinimalTest
     {
         Thread.Sleep(10);
     }
-    
+
     [SailfishMethod]
     public void Minimal()
     {
-        Thread.Sleep(100);
+        Thread.Sleep(50);
     }
 }

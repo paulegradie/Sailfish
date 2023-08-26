@@ -17,6 +17,7 @@ public abstract class ComplexityFunction : IComplexityFunction
     public abstract string Name { get; set; }
     public abstract string OName { get; set; }
     public abstract string Quality { get; set; }
+    public FittedCurve FunctionParameters { get; set; }
 
     public abstract double Compute(double n, double scale, double bias);
 
@@ -30,8 +31,8 @@ public abstract class ComplexityFunction : IComplexityFunction
         // 3. Compute RSquared between standard fitted curve and emperical data
         // 4. Choose result with smalled RSquared
 
-        var fitness = fitnessCalculator.CalculateScaleAndBias(cleanReferenceData, Compute);
-        var fittedYs = CreateFittedCurveData(xs, fitness); //.Normalize();
+        FunctionParameters  = fitnessCalculator.CalculateScaleAndBias(cleanReferenceData, Compute);
+        var fittedYs = CreateFittedCurveData(xs, FunctionParameters); //.Normalize();
         var observations = cleanReferenceData.Select(x => x.Y).ToArray(); //.Normalize();
 
         var results = observations

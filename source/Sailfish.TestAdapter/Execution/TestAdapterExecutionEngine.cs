@@ -203,8 +203,8 @@ internal class TestAdapterExecutionEngine : ITestAdapterExecutionEngine
 
         if (preloadedLastRunIfAvailable.Count > 0 && testSettings is not null)
         {
-            var testResultFormats = sailDiff.ComputeTestCaseDiff(result, executionSummary, testSettings, preloadedLastRunIfAvailable, cancellationToken);
-            formattedExecutionSummary += "\n\n----------\n\nStatistical Test Results\n\n" + testResultFormats.MarkdownFormat;
+            var testCaseResults = sailDiff.ComputeTestCaseDiff(result, executionSummary, testSettings, preloadedLastRunIfAvailable, cancellationToken);
+            formattedExecutionSummary += "\n" + testCaseResults;
         }
 
         testResult.Messages.Add(new TestResultMessage(TestResultMessage.StandardOutCategory, formattedExecutionSummary));

@@ -31,6 +31,12 @@ public class SailfishVariableAttribute : Attribute
         N.AddRange(n);
     }
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="SailfishVariableAttribute"/> class with the specified values and the option to best fit the test method to a complexity curve.
+    /// </summary>
+    /// <param name="complexity">Boolean to enable complexity extimate feature</param>
+    /// <param name="n">A params array of values to be used as variables within the test.</param>
+    /// <exception cref="SailfishException">Thrown when no values are provided.</exception>
     public SailfishVariableAttribute(bool complexity, [MinLength(1)] params object[] n) : this(n)
     {
         EstimateComplexity = complexity;

@@ -18,7 +18,6 @@ public class TestResultTableContentFormatter : ITestResultTableContentFormatter
     {
         var markdownFormat = FormatAsMarkdown(testCaseResults);
         var csvFormat = FormatAsCsv(testCaseResults);
-
         return new TestResultFormats(markdownFormat, csvFormat, testIds);
     }
 

@@ -18,7 +18,6 @@ internal class TestInstanceContainer
         MethodInfo method,
         TestCaseId testCaseId,
         IExecutionSettings executionSettings,
-        OverheadEstimator overheadEstimator,
         CoreInvoker coreInvoker
     )
     {
@@ -27,7 +26,6 @@ internal class TestInstanceContainer
         ExecutionMethod = method;
         TestCaseId = testCaseId;
         ExecutionSettings = executionSettings;
-        OverheadEstimator = overheadEstimator;
         CoreInvoker = coreInvoker;
         GroupingId = $"{instance.GetType().Name}.{method.Name}";
     }
@@ -42,10 +40,7 @@ internal class TestInstanceContainer
 
     public IExecutionSettings ExecutionSettings { get; }
 
-    public CoreInvoker Invocation { get; private init; } = null!;
-
-    public OverheadEstimator OverheadEstimator { get; private init; }
-    public CoreInvoker CoreInvoker { get; }
+    public CoreInvoker CoreInvoker { get; private init; }
 
     public static TestInstanceContainer CreateTestInstance(object instance, MethodInfo method, string[] propertyNames, object[] variables)
     {
@@ -61,7 +56,11 @@ internal class TestInstanceContainer
             method,
             testCaseId,
             executionSettings,
-            new OverheadEstimator(),
             new CoreInvoker(instance, method, new PerformanceTimer()));
+    }
+
+    public void ApplyOverheadEstimates(int overheadEstimate)
+    {
+        CoreInvoker.AssignOverheadEstimate(overheadEstimate);
     }
 }

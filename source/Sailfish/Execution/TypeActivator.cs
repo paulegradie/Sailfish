@@ -34,20 +34,13 @@ public class TypeActivator : ITypeActivator
 
         var constructors = test.GetConstructors(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
 
-        object? obj;
-        if (constructors.Length == 0)
+        var obj = constructors.Length switch
         {
-            obj = Activator.CreateInstance(test);
-        }
-        else if (constructors.Length == 1)
-        {
-            obj = constructors.Single().Invoke(ctorArgs.ToArray());
-        }
-        else
-        {
-            throw new SailfishException("Sailfish tests are allowed only a single constructor");
-        }
-        
+            0 => Activator.CreateInstance(test),
+            1 => constructors.Single().Invoke(ctorArgs.ToArray()),
+            _ => throw new SailfishException("Sailfish tests are allowed only a single constructor")
+        };
+
         if (obj is null) throw new SailfishException($"Couldn't create instance of {test.Name}");
 
         return obj;

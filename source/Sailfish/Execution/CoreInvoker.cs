@@ -37,10 +37,11 @@ internal class CoreInvoker
         iterationTeardown = instance.FindMethodsDecoratedWithAttribute<SailfishIterationTeardownAttribute>();
     }
 
+    public int OverheadEstimate { get; set; } = 0;
     private string MainMethodName => mainMethod.Name;
 
     /// <summary>
-    /// If the setup method doesn't have any method names, then its applied to all methods. 
+    /// If the setup method doesn't have any method names, then its applied to all methods.
     /// if it has names, its only applied to those names given
     /// </summary>
     /// <param name="lifecycleMethods"></param>
@@ -120,6 +121,16 @@ internal class CoreInvoker
             performanceTimer.SetAsInvalid();
         }
 
+        if (OverheadEstimate > 0)
+        {
+            performanceTimer.ApplyOverheadEstimate(OverheadEstimate);
+        }
+
         return performanceTimer;
+    }
+
+    public void AssignOverheadEstimate(int overheadEstimate)
+    {
+        OverheadEstimate = overheadEstimate;
     }
 }

@@ -94,7 +94,7 @@ internal class SailfishExecutionEngine : ISailfishExecutionEngine
                 {
                     try
                     {
-                        await testMethodContainer.Invocation.GlobalSetup(cancellationToken);
+                        await testMethodContainer.CoreInvoker.GlobalSetup(cancellationToken);
                         memoryCache.Add(new CacheItem(providerPropertiesCacheKey, testMethodContainer.Instance.RetrievePropertiesAndFields()), new CacheItemPolicy());
                     }
                     catch (Exception ex)
@@ -105,7 +105,7 @@ internal class SailfishExecutionEngine : ISailfishExecutionEngine
 
                 try
                 {
-                    await testMethodContainer.Invocation.MethodSetup(cancellationToken);
+                    await testMethodContainer.CoreInvoker.MethodSetup(cancellationToken);
                 }
                 catch (Exception ex)
                 {
@@ -120,7 +120,7 @@ internal class SailfishExecutionEngine : ISailfishExecutionEngine
 
                 try
                 {
-                    await testMethodContainer.Invocation.MethodTearDown(cancellationToken);
+                    await testMethodContainer.CoreInvoker.MethodTearDown(cancellationToken);
                 }
                 catch (Exception ex)
                 {
@@ -131,7 +131,7 @@ internal class SailfishExecutionEngine : ISailfishExecutionEngine
                 {
                     try
                     {
-                        await testMethodContainer.Invocation.GlobalTeardown(cancellationToken);
+                        await testMethodContainer.CoreInvoker.GlobalTeardown(cancellationToken);
                         memoryCache.Remove(providerPropertiesCacheKey);
                     }
                     catch (Exception ex)

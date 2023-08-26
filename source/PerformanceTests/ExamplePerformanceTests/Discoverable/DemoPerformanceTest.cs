@@ -5,16 +5,15 @@ using Sailfish.Attributes;
 namespace PerformanceTests.ExamplePerformanceTests.Discoverable;
 
 [WriteToMarkdown]
-[Sailfish(Disabled = false)]
+[Sailfish(NumIterations = 5, Disabled = false)]
 public class DemoPerformanceTest
 {
-    [SailfishVariable(1, 4, 6)] public int MyInts { get; set; }
-    [SailfishVariable(1, 4, 6)] public int MyIntsTwo { get; set; }
+    [SailfishVariable(true, 10, 12, 100, 500, 1000)] public int MyInts { get; set; }
 
     [SailfishMethod]
     public async Task DoThing(CancellationToken cancellationToken)
     {
         await Task.CompletedTask;
-        await Task.Delay(100, cancellationToken);
+        await Task.Delay(MyInts, cancellationToken);
     }
 }

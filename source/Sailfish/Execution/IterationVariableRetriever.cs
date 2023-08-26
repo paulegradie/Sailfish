@@ -13,13 +13,6 @@ internal class IterationVariableRetriever : IIterationVariableRetriever
     {
         var iterationVariables = type.GetPropertiesWithAttribute<SailfishVariableAttribute>().ToList();
 
-        // NO reason we can't support arbitrary actually - because we can always hold all other varaibles constant when analyzing one dimension (which we'll have to do)
-
-        // if (ThereAreMoreThanTwoComplexityVariables(iterationVariables, out var numFound))
-        // {
-        //     throw new SailfishException($"Up to 2 complexity variables are supported. Found: {numFound}");
-        // }
-
         return iterationVariables
             .ToDictionary(
                 prop => prop.Name,
@@ -37,14 +30,5 @@ internal class IterationVariableRetriever : IIterationVariableRetriever
                             .GetCustomAttributes()
                             .OfType<SailfishVariableAttribute>()
                             .Single().IsComplexityVariable()));
-    }
-
-    private static bool ThereAreMoreThanTwoComplexityVariables(IEnumerable<PropertyInfo> iterationVariables, out int numFound)
-    {
-        numFound = iterationVariables
-            .SelectMany(x => x.GetCustomAttributes<SailfishVariableAttribute>())
-            .Select(x => x.IsComplexityVariable())
-            .Count();
-        return numFound > 2;
     }
 }

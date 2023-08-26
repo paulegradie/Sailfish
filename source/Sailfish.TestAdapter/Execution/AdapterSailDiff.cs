@@ -86,8 +86,7 @@ internal class AdapterSailDiff : IAdapterSailDiff
             .ConfigureAwait(false);
     }
 
-
-    public TestResultFormats ComputeTestCaseDiff(
+    public string ComputeTestCaseDiff(
         TestExecutionResult testExecutionResult,
         IExecutionSummary executionSummary,
         TestSettings testSettings,
@@ -107,7 +106,9 @@ internal class AdapterSailDiff : IAdapterSailDiff
             .Where(x => x.DisplayName == testExecutionResult.TestInstanceContainer?.TestCaseId.DisplayName));
 
         var testResults = testComputer.ComputeTest(beforeTestData, afterTestData, testSettings);
-        var testResultFormats = testResultTableContentFormatter.CreateTableFormats(testResults, new TestIds(beforeIds, afterIds), cancellationToken);
-        return testResultFormats;
+
+        return testResults.Count > 0
+            ? consoleWriter.WriteTestResultsToIdeConsole(testResults.Single(), new TestIds(beforeIds, afterIds), testSettings)
+            : "No prior runs found for statistical testing";
     }
 }

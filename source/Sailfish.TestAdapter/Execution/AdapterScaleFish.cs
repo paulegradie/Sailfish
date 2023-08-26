@@ -34,7 +34,8 @@ internal class AdapterScaleFish : IAdapterScaleFish
 
         try
         {
-            var complexityResults = complexityComputer.AnalyzeComplexity(executionSummaries);
+            var complexityResults = complexityComputer.AnalyzeComplexity(executionSummaries).ToList();
+            if (!complexityResults.Any()) return;
             var complexityMarkdown = markdownTableConverter.ConvertScaleFishResultToMarkdown(complexityResults);
             consoleWriter.WriteString(complexityMarkdown);
 
@@ -46,6 +47,15 @@ internal class AdapterScaleFish : IAdapterScaleFish
                         runSettings.Args),
                     cancellationToken)
                 .ConfigureAwait(false);
+
+            await mediator.Publish(new WriteCurrentScalefishResultModelsCommand(
+                    complexityResults,
+                    runSettings.LocalOutputDirectory ?? DefaultFileSettings.DefaultOutputDirectory,
+                    timeStamp,
+                    runSettings.Tags,
+                    runSettings.Args),
+                cancellationToken
+            ).ConfigureAwait(false);
         }
         catch (Exception ex)
         {

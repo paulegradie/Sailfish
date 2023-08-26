@@ -12,7 +12,6 @@ public sealed class PerformanceTimer
     public readonly List<IterationPerformance> MethodIterationPerformances = new(); // all iterations of the method
     private readonly Stopwatch methodIterationTimer;
     private DateTimeOffset executionIterationStart;
-    private readonly OverheadEstimator overheadEstimator;
 
     // transient fields
     private DateTimeOffset methodIterationStart;
@@ -22,7 +21,6 @@ public sealed class PerformanceTimer
         globalTimer = new Stopwatch();
         methodIterationTimer = new Stopwatch();
         executionTimer = new Stopwatch();
-        overheadEstimator = new OverheadEstimator();
     }
 
     public DateTimeOffset GlobalStart { get; private set; }
@@ -33,6 +31,14 @@ public sealed class PerformanceTimer
     public void SetAsInvalid()
     {
         IsValid = false;
+    }
+
+    public void ApplyOverheadEstimate(int overheadEstimate)
+    {
+        foreach (var executionIterationPerformance in ExecutionIterationPerformances)
+        {
+            executionIterationPerformance.ApplyOverheadEstimate(overheadEstimate);
+        }
     }
 
     public void StartSailfishMethodExecutionTimer()
@@ -46,17 +52,8 @@ public sealed class PerformanceTimer
     {
         if (!executionTimer.IsRunning) return;
         executionTimer.Stop();
-
         var executionIterationStop = DateTimeOffset.Now;
-        var overhead = overheadEstimator.Estimate();
-
-        var elapsedTicks = executionIterationStop.Ticks - executionIterationStart.Ticks;
-
-        var iterationPerformance = elapsedTicks - overhead < 0
-            ? new IterationPerformance(executionIterationStart, executionIterationStop, executionTimer.ElapsedTicks)
-            : new IterationPerformance(executionIterationStart, executionIterationStop, executionTimer.ElapsedTicks - overhead);
-
-        ExecutionIterationPerformances.Add(iterationPerformance);
+        ExecutionIterationPerformances.Add(new IterationPerformance(executionIterationStart, executionIterationStop, executionTimer.ElapsedTicks));
         executionTimer.Reset();
     }
 
