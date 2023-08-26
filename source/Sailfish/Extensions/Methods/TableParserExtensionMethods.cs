@@ -17,8 +17,9 @@ internal static class TableParserExtensionMethods
     {
         var headers = valueSelectors.Select(func => GetProperty(func).Name).ToArray();
         var selectors = valueSelectors.Select(exp => exp.Compile()).ToArray();
-        return ToStringTable(
+        return ToStringTableInner(
             values.ToArray(),
+            string.Empty,
             headers.ToArray(),
             Enumerable.Range(0, headers.Length).Select(_ => string.Empty).ToArray(),
             selectors);
@@ -31,7 +32,7 @@ internal static class TableParserExtensionMethods
     {
         var headers = valueSelectors.Select(func => GetProperty(func).Name).ToArray();
         var selectors = valueSelectors.Select(exp => exp.Compile()).ToArray();
-        return ToStringTable(values.ToArray(), headers.ToArray(), columnSuffixes.ToArray(), selectors);
+        return ToStringTableInner(values.ToArray(), string.Empty, headers.ToArray(), columnSuffixes.ToArray(), selectors);
     }
 
     public static string ToStringTable<T>(
@@ -41,11 +42,23 @@ internal static class TableParserExtensionMethods
         params Expression<Func<T, object>>[] valueSelectors)
     {
         var selectors = valueSelectors.Select(exp => exp.Compile()).ToArray();
-        return ToStringTable(values.ToArray(), columnHeaders.ToArray(), columnSuffixes.ToArray(), selectors);
+        return ToStringTableInner(values.ToArray(), string.Empty, columnHeaders.ToArray(), columnSuffixes.ToArray(), selectors);
     }
 
-    private static string ToStringTable<T>(
+    public static string ToStringTable<T>(
+        this IEnumerable<T> values,
+        string title,
+        IEnumerable<string> columnSuffixes,
+        IEnumerable<string> columnHeaders,
+        params Expression<Func<T, object>>[] valueSelectors)
+    {
+        var selectors = valueSelectors.Select(exp => exp.Compile()).ToArray();
+        return ToStringTableInner(values.ToArray(), title, columnHeaders.ToArray(), columnSuffixes.ToArray(), selectors);
+    }
+
+    private static string ToStringTableInner<T>(
         this IReadOnlyList<T> values,
+        string title,
         IReadOnlyList<string> columnHeaders,
         IReadOnlyList<string> columnSuffixes,
         params Func<T, object>[] valueSelectors)
@@ -85,6 +98,11 @@ internal static class TableParserExtensionMethods
 
         var maxColumnsWidth = GetMaxColumnsWidth(arrValues);
         var sb = new StringBuilder();
+        if (!string.IsNullOrEmpty(title))
+        {
+            sb.AppendLine(title);
+        }
+
         for (var rowIndex = 0; rowIndex < arrValues.GetLength(0); rowIndex++)
         {
             for (var colIndex = 0; colIndex < arrValues.GetLength(1); colIndex++)

@@ -19,7 +19,7 @@ public class FitnessCalculator : IFitnessCalculator
             yValues,
             aFunc,
             1,
-            1,
+            0.001,
             maxIterations: 10_000,
             tolerance: 1E-04D);
 

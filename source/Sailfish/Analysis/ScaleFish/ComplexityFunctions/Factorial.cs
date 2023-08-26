@@ -1,13 +1,7 @@
-using Sailfish.Analysis.Scalefish.CurveFitting;
-
 namespace Sailfish.Analysis.Scalefish.ComplexityFunctions;
 
 public class Factorial : ComplexityFunction
 {
-    public Factorial(IFitnessCalculator fitnessCalculator) : base(fitnessCalculator)
-    {
-    }
-
     public override double Compute(double n, double scale, double bias)
     {
         if (n <= 1)

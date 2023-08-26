@@ -8,7 +8,7 @@ using Sailfish.Presentation;
 
 namespace Sailfish.DefaultHandlers;
 
-internal class SailfishWriteCurrentScalefishResultModelsCommand : INotificationHandler<WriteCurrentScalefishResultModelsCommand>
+internal class SailfishWriteCurrentScalefishResultModelsCommandHandler : INotificationHandler<WriteCurrentScalefishResultModelsCommand>
 {
     public async Task Handle(WriteCurrentScalefishResultModelsCommand notification, CancellationToken cancellationToken)
     {
@@ -21,7 +21,11 @@ internal class SailfishWriteCurrentScalefishResultModelsCommand : INotificationH
         var fileName = DefaultFileSettings.AppendTagsToFilename(notification.DefaultFileName, notification.Tags);
         var filepath = Path.Join(output, fileName);
 
-        var serializedResults = JsonSerializer.Serialize(notification.TestClassComplexityResults);
+        var options = new JsonSerializerOptions
+        {
+            WriteIndented = true // For pretty-printing the JSON
+        };
+        var serializedResults = JsonSerializer.Serialize(notification.TestClassComplexityResults, options);
 
         await using var streamWriter = new StreamWriter(filepath);
         await streamWriter.WriteAsync(serializedResults).ConfigureAwait(false);

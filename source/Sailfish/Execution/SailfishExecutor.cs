@@ -53,8 +53,7 @@ internal class SailfishExecutor
         {
             var timeStamp = runSettings.TimeStamp ?? DateTime.Now.ToLocalTime();
 
-            var rawExecutionResults =
-                await sailFishTestExecutor.Execute(testInitializationResult.Tests, cancellationToken);
+            var rawExecutionResults = await sailFishTestExecutor.Execute(testInitializationResult.Tests, cancellationToken);
             var executionSummaries = executionSummaryCompiler.CompileToSummaries(rawExecutionResults, cancellationToken)
                 .ToList();
 

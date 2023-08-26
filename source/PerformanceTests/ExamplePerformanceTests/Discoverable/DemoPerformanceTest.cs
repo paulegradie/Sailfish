@@ -8,7 +8,8 @@ namespace PerformanceTests.ExamplePerformanceTests.Discoverable;
 [Sailfish(NumIterations = 5, Disabled = false)]
 public class DemoPerformanceTest
 {
-    [SailfishVariable(true, 10, 12, 100, 500, 1000)] public int MyInts { get; set; }
+    [SailfishVariable(true, 10, 15, 50, 100)] 
+    public int MyInts { get; set; }
 
     [SailfishMethod]
     public async Task DoThing(CancellationToken cancellationToken)

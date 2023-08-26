@@ -10,7 +10,7 @@ public class ComplexityEstimator : IComplexityEstimator
     {
         var complexityFunctions = ComplexityReferences.GetComplexityFunctions();
 
-        var fitnessResults = new List<(IComplexityFunction, FitnessResult)>();
+        var fitnessResults = new List<(ComplexityFunction, FitnessResult)>();
         foreach (var complexityFunction in complexityFunctions)
         {
             try

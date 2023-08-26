@@ -1,15 +1,9 @@
 using System;
-using Sailfish.Analysis.Scalefish.CurveFitting;
 
 namespace Sailfish.Analysis.Scalefish.ComplexityFunctions;
 
 public class Exponential : ComplexityFunction
 {
-    public Exponential(IFitnessCalculator fitnessCalculator) : base(fitnessCalculator)
-    {
-    }
-
-
     public override double Compute(double n, double scale, double bias)
     {
         return scale * Math.Pow(2, n) + bias;

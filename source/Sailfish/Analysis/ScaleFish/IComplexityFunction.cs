@@ -11,4 +11,6 @@ public interface IComplexityFunction
     public FittedCurve FunctionParameters { get; set; }
 
     FitnessResult AnalyzeFitness(IEnumerable<ComplexityMeasurement> referenceData);
+
+    public double Predict(int n);
 }
