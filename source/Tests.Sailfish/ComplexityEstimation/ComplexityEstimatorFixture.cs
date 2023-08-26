@@ -70,12 +70,12 @@ public class ComplexityEstimatorFixture
         var constructor = typeof(TComplexityFunction)
             .GetConstructors(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)
             .Single();
-        var instance = constructor.Invoke(new object[] { new FitnessCalculator() }) as ComplexityFunction;
+        var instance = constructor.Invoke(new object[] {  }) as ComplexityFunction;
         instance.ShouldNotBeNull();
 
-        const int scale = 1;
-        const int bias = 0;
-        var measurements = Enumerable.Range(1, 20).Select(Convert.ToDouble).Select(i => new ComplexityMeasurement(i, instance.Compute(i, scale, bias))).ToArray();
+        const double scale = 1;
+        const double bias = 0;
+        var measurements = Enumerable.Range(1, 500).Select(Convert.ToDouble).Select(i => new ComplexityMeasurement(i, instance.Compute(i, scale, bias))).ToArray();
         return measurements;
     }
 }

@@ -4,6 +4,7 @@ using System.Threading.Tasks;
 
 namespace PerformanceTests.ExamplePerformanceTests.Discoverable
 {
+    [WriteToMarkdown]
     [Sailfish(Disabled = false)]
     public class ReadmeExample
     {

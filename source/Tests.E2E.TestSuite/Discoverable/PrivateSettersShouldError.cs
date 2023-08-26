@@ -3,7 +3,7 @@ using Shouldly;
 
 namespace Tests.E2ETestSuite.Discoverable;
 
-[Sailfish]
+[Sailfish(3, 1, Disabled = Constants.Disabled)]
 public class PrivateSettersShouldError
 {
     public int PrivateSetter { get; private set; }

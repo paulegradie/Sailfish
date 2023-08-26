@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Linq.Expressions;
 using System.Threading;
 using Sailfish.Analysis;
@@ -28,6 +29,10 @@ public class TestResultTableContentFormatter : ITestResultTableContentFormatter
 
     private static string FormatAsMarkdown(IEnumerable<TestCaseResults> testCaseResults)
     {
+        var enumeratedResults = testCaseResults.ToList();
+        var nBefore = enumeratedResults.Select(x => x.TestResults.SampleSizeBefore).Distinct().Single();
+        var nAfter = enumeratedResults.Select(x => x.TestResults.SampleSizeAfter).Distinct().Single();
+
         var selectors = new Expression<Func<TestCaseResults, object>>[]
         {
             m => m.TestCaseId.DisplayName,
@@ -39,11 +44,19 @@ public class TestResultTableContentFormatter : ITestResultTableContentFormatter
             m => m.TestResults.ChangeDescription
         };
 
-        var headerSuffixes = new[]
+
+        var headers = new[]
+        {
+            "Display Name", $"MeanBefore (N={nBefore})", $"MeanAfter (N={nAfter})", "MedianBefore", "MedianAfter", "PValue", "Change Description"
+        };
+        var columnValueSuffixes = new[]
         {
             "", "ms", "ms", "ms", "ms", "", ""
         };
 
-        return testCaseResults.ToStringTable(headerSuffixes, selectors);
+        return enumeratedResults.ToStringTable(
+            columnValueSuffixes,
+            headers,
+            selectors);
     }
 }

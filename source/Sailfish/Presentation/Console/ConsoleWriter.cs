@@ -44,11 +44,6 @@ internal class ConsoleWriter : IConsoleWriter
         throw new NotImplementedException();
     }
 
-    public void RegisterHandle(object handle)
-    {
-        throw new NotImplementedException();
-    }
-
     private static void BuildHeader(StringBuilder stringBuilder, IEnumerable<string> beforeIds, IEnumerable<string> afterIds, TestSettings testSettings)
     {
         stringBuilder.AppendLine();

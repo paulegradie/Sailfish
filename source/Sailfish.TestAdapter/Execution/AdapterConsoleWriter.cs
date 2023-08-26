@@ -110,6 +110,7 @@ internal class AdapterConsoleWriter : IAdapterConsoleWriter
         stringBuilder.AppendLine("Mean:   " + Math.Round(results.Mean, 4) + " ms");
         stringBuilder.AppendLine("Median: " + Math.Round(results.Median, 4) + " ms");
         stringBuilder.AppendLine("StdDev: " + Math.Round(results.StdDev, 4) + " ms");
+        stringBuilder.AppendLine("Num Samples: " + results.NumIterations);
         stringBuilder.AppendLine();
         stringBuilder.AppendLine("-- Raw Results --");
         stringBuilder.AppendLine("Min: " + Math.Round(results.RawExecutionResults.Min(), 4) + " ms");

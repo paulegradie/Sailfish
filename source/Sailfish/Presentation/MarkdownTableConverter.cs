@@ -23,8 +23,7 @@ public class MarkdownTableConverter : IMarkdownTableConverter
         var stringBuilder = new StringBuilder();
         foreach (var result in executionSummaries)
         {
-            AppendHeader(result.Type.Name, stringBuilder);
-            AppendResults(result.CompiledTestCaseResults, stringBuilder);
+            AppendResults(result.Type.Name, result.CompiledTestCaseResults, stringBuilder);
 
             var exceptions = result.CompiledTestCaseResults.SelectMany(x => x.Exceptions).ToList();
             AppendExceptions(exceptions, stringBuilder);
@@ -33,24 +32,20 @@ public class MarkdownTableConverter : IMarkdownTableConverter
         return stringBuilder.ToString();
     }
 
-    private static void AppendHeader(string typeName, StringBuilder stringBuilder)
-    {
-        stringBuilder.AppendLine();
-        stringBuilder.AppendLine($"\r{typeName}\r");
-        stringBuilder.AppendLine("-----------------------------------\r");
-    }
-
-    private static void AppendResults(IEnumerable<ICompiledTestCaseResult> compiledResults, StringBuilder stringBuilder)
+    private static void AppendResults(string typeName, IEnumerable<ICompiledTestCaseResult> compiledResults, StringBuilder stringBuilder)
     {
         foreach (var group in compiledResults.GroupBy(x => x.GroupingId))
         {
             if (group.Key is null) continue;
             stringBuilder.AppendLine();
+            var n = group.Select(x => x.DescriptiveStatisticsResult?.NumIterations).Distinct().Single();
             var table = group.ToStringTable(
+                typeName,
                 new List<string>() { "", "ms", "ms", "ms", "" },
+                new List<string> { "Display Name", "Mean", "Median", $"StdDev (N={n})", "Variance" },
                 u => u.TestCaseId!.DisplayName!,
-                u => u.DescriptiveStatisticsResult!.Median,
                 u => u.DescriptiveStatisticsResult!.Mean,
+                u => u.DescriptiveStatisticsResult!.Median,
                 u => u.DescriptiveStatisticsResult!.StdDev,
                 u => u.DescriptiveStatisticsResult!.Variance
             );

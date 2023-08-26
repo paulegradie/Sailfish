@@ -100,7 +100,7 @@ internal static class TableParserExtensionMethods
         var sb = new StringBuilder();
         if (!string.IsNullOrEmpty(title))
         {
-            sb.AppendLine(title);
+            sb.AppendLine(title + "\n");
         }
 
         for (var rowIndex = 0; rowIndex < arrValues.GetLength(0); rowIndex++)

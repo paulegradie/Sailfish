@@ -4,7 +4,7 @@ using Tests.E2ETestSuite.Utils;
 
 namespace Tests.E2ETestSuite.Discoverable;
 
-[Sailfish(NumIterations = 1, NumWarmupIterations = 1, Disabled = false)]
+[Sailfish(NumIterations = 1, NumWarmupIterations = 1, Disabled = Constants.Disabled)]
 public class PerfTestWithISailfishFixture : ISailfishFixture<SailfishDependencies>
 {
     private readonly SailfishDependencies sailfishDependencies;
