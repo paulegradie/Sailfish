@@ -43,6 +43,11 @@ public class TestCaseName
         return displayName.Split(OpenBracket).First().Split(Dot).ToArray();
     }
 
+    public string GetMethodPart()
+    {
+        return Name.Split(Dot).Last();
+    }
+
     /// <summary>
     /// Method to parse and return an index of the '.' delimited test name.
     /// /// e.g. some.test, index 0 = 
