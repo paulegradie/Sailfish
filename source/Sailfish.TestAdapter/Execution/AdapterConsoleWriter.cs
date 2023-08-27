@@ -7,10 +7,13 @@ using Microsoft.VisualStudio.TestPlatform.ObjectModel.Adapter;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.Logging;
 using Sailfish.Analysis;
 using Sailfish.Analysis.Saildiff;
+using Sailfish.Contracts.Public;
 using Sailfish.Execution;
+using Sailfish.Extensions.Methods;
 using Sailfish.Extensions.Types;
 using Sailfish.Presentation;
 using Sailfish.Presentation.Console;
+using Sailfish.Statistics;
 using Serilog;
 using Serilog.Core;
 
@@ -23,6 +26,7 @@ internal interface IAdapterConsoleWriter : IConsoleWriter
     void RecordStart(TestCase testCase);
     void RecordResult(TestResult testResult);
     void RecordEnd(TestCase testCase, TestOutcome testOutcome);
+    string WriteTestResultsToIdeConsole(TestCaseResults testCaseResults, TestIds testIds, TestSettings testSettings);
 }
 
 internal class AdapterConsoleWriter : IAdapterConsoleWriter
@@ -70,6 +74,24 @@ internal class AdapterConsoleWriter : IAdapterConsoleWriter
             }
         }
 
+        string ideOutputContent;
+        if (summaryResults.Count > 1 || summaryResults.Single().CompiledTestCaseResults.Count > 1)
+        {
+            ideOutputContent = CreateFullTable(summaryResults);
+        }
+        else
+        {
+            ideOutputContent = CreateIdeTestOutputWindowContent(summaryResults.Single().CompiledTestCaseResults.Single());
+        }
+
+        messageLogger?.SendMessage(TestMessageLevel.Informational, ideOutputContent);
+        consoleLogger.Information("{MarkdownTable}", ideOutputContent);
+
+        return ideOutputContent;
+    }
+
+    private string CreateFullTable(List<IExecutionSummary> summaryResults)
+    {
         var rawData = summaryResults
             .SelectMany(x =>
                 x.CompiledTestCaseResults.SelectMany(y =>
@@ -78,12 +100,32 @@ internal class AdapterConsoleWriter : IAdapterConsoleWriter
 
         var markdownStringTable = markdownTableConverter.ConvertToMarkdownTableString(summaryResults)
                                   + "Raw results: \n"
-                                  + string.Join(", ", rawData.OrderBy(x => x));
-
-        messageLogger?.SendMessage(TestMessageLevel.Informational, markdownStringTable);
-        consoleLogger.Information("{MarkdownTable}", markdownStringTable);
-
+                                  + string.Join(", ", rawData);
         return markdownStringTable;
+    }
+
+    private static string CreateIdeTestOutputWindowContent(ICompiledTestCaseResult testCaseResult)
+    {
+        if (testCaseResult.DescriptiveStatisticsResult == null || testCaseResult.DescriptiveStatisticsResult.NumIterations == 0) return string.Empty;
+        var testCaseName = testCaseResult.TestCaseId;
+        var results = testCaseResult.DescriptiveStatisticsResult!;
+        var stringBuilder = new StringBuilder();
+        stringBuilder.AppendLine(testCaseName?.TestCaseName.Name);
+        stringBuilder.AppendLine();
+        stringBuilder.AppendLine($"-- Moments (N={results.NumIterations}) --");
+        stringBuilder.AppendLine("Mean:   " + Math.Round(results.Mean, 4) + " ms");
+        stringBuilder.AppendLine("Median: " + Math.Round(results.Median, 4) + " ms");
+        stringBuilder.AppendLine("StdDev: " + Math.Round(results.StdDev, 4) + " ms");
+        stringBuilder.AppendLine();
+        stringBuilder.AppendLine("-- Raw Results --");
+        stringBuilder.AppendLine("Min: " + Math.Round(results.RawExecutionResults.Min(), 4) + " ms");
+        stringBuilder.AppendLine("Max: " + Math.Round(results.RawExecutionResults.Max(), 4) + " ms");
+        stringBuilder.AppendLine();
+        stringBuilder.AppendLine("-- Adjusted Raw Results --");
+        stringBuilder.AppendLine(string.Join(", ", results.RawExecutionResults.Select(x => Math.Round(x, 4))));
+
+
+        return stringBuilder.ToString();
     }
 
     public void WriteStatTestResultsToConsole(string markdownBody, TestIds testIds, TestSettings testSettings)
@@ -94,6 +136,49 @@ internal class AdapterConsoleWriter : IAdapterConsoleWriter
         var result = stringBuilder.ToString();
         consoleLogger.Information(result);
         messageLogger?.SendMessage(TestMessageLevel.Informational, result);
+    }
+
+    public string WriteTestResultsToIdeConsole(TestCaseResults testCaseResults, TestIds testIds, TestSettings testSettings)
+    {
+        var stringBuilder = new StringBuilder();
+        stringBuilder.AppendLine("-- Statistical Test --");
+        stringBuilder.AppendLine("Test Used:       " + testSettings.TestType);
+        stringBuilder.AppendLine("PVal Threshold:  " + testSettings.Alpha);
+        stringBuilder.AppendLine("PValue:          " + testCaseResults.TestResults.PValue);
+        var significant = testCaseResults.TestResults.PValue < testSettings.Alpha;
+        var changeLine = "Change:          "
+                         + testCaseResults.TestResults.ChangeDescription
+                         + (significant
+                             ? $"  (reason: {testCaseResults.TestResults.PValue} < {testSettings.Alpha} )"
+                             : $"  (reason: {testCaseResults.TestResults.PValue} > {testSettings.Alpha})");
+        stringBuilder.AppendLine(changeLine);
+        stringBuilder.AppendLine();
+
+        var tableValues = new List<Table>()
+        {
+            new() { Name = "Mean", Before = Math.Round(testCaseResults.TestResults.MeanBefore, 4), After = Math.Round(testCaseResults.TestResults.MeanAfter, 4) },
+            new() { Name = "Median", Before = Math.Round(testCaseResults.TestResults.MedianBefore, 4), After = Math.Round(testCaseResults.TestResults.MedianAfter, 4) }
+        };
+        var sampleSize = new List<Table>()
+        {
+            new() { Name = "Sample Size", Before = testCaseResults.TestResults.SampleSizeBefore, After = testCaseResults.TestResults.SampleSizeAfter }
+        };
+
+        stringBuilder.AppendLine(tableValues.ToStringTable(
+            t => t.Name,
+            t => t.Before,
+            t => t.After));
+
+        stringBuilder.AppendLine(sampleSize.ToStringTable(t => t.Name, t => t.Before, t => t.After));
+
+        return stringBuilder.ToString();
+    }
+
+    private class Table
+    {
+        public string Name { get; set; }
+        public double Before { get; set; }
+        public double After { get; set; }
     }
 
     public void WriteString(string content)
@@ -130,6 +215,6 @@ internal class AdapterConsoleWriter : IAdapterConsoleWriter
         stringBuilder.AppendLine($"Before: {string.Join(", ", beforeIds)}");
         stringBuilder.AppendLine($"After: {string.Join(", ", afterIds)}");
         stringBuilder.AppendLine("-----------------------------------\r");
-        stringBuilder.AppendLine($"Note: The change in execution time is significant if the PValue is less than {testSettings.Alpha}");
+        stringBuilder.AppendLine($"Note: Changes are significant if the PValue is less than {testSettings.Alpha}");
     }
 }

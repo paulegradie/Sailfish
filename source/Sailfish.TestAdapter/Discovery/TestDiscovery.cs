@@ -49,7 +49,6 @@ internal static class TestDiscovery
             }
             catch
             {
-                logger.SendMessage(TestMessageLevel.Warning, $"Skipping {sourceDllPath} ");
                 continue;
             }
 
@@ -62,21 +61,16 @@ internal static class TestDiscovery
                 DirectoryRecursion.FileSearchFilters.FilePathDoesNotContainBinOrObjDirs);
             if (projectSourceCodeFilePaths.Count == 0) continue;
 
-            var sourceCache = DiscoveryAnalysisMethods.CompilePreRenderedSourceMap(
+            var classMetaDatas = DiscoveryAnalysisMethods.CompilePreRenderedSourceMap(
                     projectSourceCodeFilePaths,
+                    perfTestTypes,
                     nameof(SailfishAttribute).Replace(nameof(Attribute), ""),
                     nameof(SailfishMethodAttribute).Replace(nameof(Attribute), ""))
                 .OrderBy(meta => meta.ClassName);
 
-            foreach (var classMetaData in sourceCache)
+            foreach (var classMetaData in classMetaDatas)
             {
-                var index = perfTestTypes
-                    .Select(t => t.Name)
-                    .ToList()
-                    .IndexOf(classMetaData.ClassName);
-                var perfTestType = perfTestTypes[index];
-
-                var classTestCases = TestCaseItemCreator.AssembleTestCases(perfTestType, classMetaData, sourceDllPath, hasher, logger);
+                var classTestCases = TestCaseItemCreator.AssembleTestCases(classMetaData, sourceDllPath, hasher);
                 testCases.AddRange(classTestCases);
             }
         }

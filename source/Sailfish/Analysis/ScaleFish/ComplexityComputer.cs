@@ -76,13 +76,13 @@ public class ComplexityComputer : IComplexityComputer
                     var indices = Enumerable.Range(0, currentVar.Item2).Select(j => j * step).ToList();
                     var testResult = indices.Select(index => testCaseGroup.ToList()[index]).ToList();
 
-                    observations.Add(string.Join("-", testCaseMethodName, currentVar.Name), (currentSailfishVariables, testResult));
+                    observations.Add(string.Join(".", testCaseMethodName, currentVar.Name), (currentSailfishVariables, testResult));
                 }
 
                 var complexityResultMap = new Dictionary<string, ComplexityResult>();
                 foreach (var complexityProperty in complexityPropertyNames)
                 {
-                    var observationKey = string.Join("-", testCaseMethodName, complexityProperty);
+                    var observationKey = string.Join(".", testCaseMethodName, complexityProperty);
                     var complexityMeasurements = observations[observationKey]
                         .Item1
                         .Zip(observations[observationKey].Item2)

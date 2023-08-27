@@ -17,8 +17,11 @@
     "Alpha": 0.05,
     "Round": 2,
     "UseInnerQuartile": true,
-    
+
     "_comment": "Disable analysis logic",
-    "Disabled": false
+    "Disabled": false,
+
+    "_comment": "Disable overhead estimation when iterating test cases (better speed, worse accuracy",
+    "DisableOverheadEstimation": false
   }
 }

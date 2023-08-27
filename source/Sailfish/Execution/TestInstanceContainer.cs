@@ -17,7 +17,8 @@ internal class TestInstanceContainer
         object instance,
         MethodInfo method,
         TestCaseId testCaseId,
-        IExecutionSettings executionSettings
+        IExecutionSettings executionSettings,
+        CoreInvoker coreInvoker
     )
     {
         Type = type;
@@ -25,13 +26,12 @@ internal class TestInstanceContainer
         ExecutionMethod = method;
         TestCaseId = testCaseId;
         ExecutionSettings = executionSettings;
+        CoreInvoker = coreInvoker;
         GroupingId = $"{instance.GetType().Name}.{method.Name}";
     }
 
     public Type Type { get; }
-
     public object Instance { get; set; }
-
     public MethodInfo ExecutionMethod { get; }
     public string GroupingId { get; set; }
     public TestCaseId TestCaseId { get; } // This is a uniq id since we take a Distinct on all Iteration Variable attribute param -- class.method(varA: 1, varB: 3) is the form
@@ -40,9 +40,7 @@ internal class TestInstanceContainer
 
     public IExecutionSettings ExecutionSettings { get; }
 
-    public CoreInvoker Invocation { get; private init; } = null!;
-
-    public OverheadEstimator OverheadEstimator { get; private init; }
+    public CoreInvoker CoreInvoker { get; private init; }
 
     public static TestInstanceContainer CreateTestInstance(object instance, MethodInfo method, string[] propertyNames, object[] variables)
     {
@@ -52,10 +50,17 @@ internal class TestInstanceContainer
 
         var executionSettings = instance.GetType().RetrieveExecutionTestSettings();
 
-        return new TestInstanceContainer(instance.GetType(), instance, method, testCaseId, executionSettings)
-        {
-            Invocation = new CoreInvoker(instance, method, new PerformanceTimer()),
-            OverheadEstimator = new OverheadEstimator()
-        };
+        return new TestInstanceContainer(
+            instance.GetType(),
+            instance,
+            method,
+            testCaseId,
+            executionSettings,
+            new CoreInvoker(instance, method, new PerformanceTimer()));
+    }
+
+    public void ApplyOverheadEstimates(int overheadEstimate)
+    {
+        CoreInvoker.AssignOverheadEstimate(overheadEstimate);
     }
 }

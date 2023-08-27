@@ -9,7 +9,7 @@ namespace Tests.E2ETestSuite.Discoverable;
 
 [WriteToMarkdown]
 [WriteToCsv]
-[Sailfish(1, 0, Disabled = false)]
+[Sailfish(1, 0, Disabled = Constants.Disabled)]
 public class ExamplePerformanceTestFull : TestBase
 {
     private readonly ILogger logger;

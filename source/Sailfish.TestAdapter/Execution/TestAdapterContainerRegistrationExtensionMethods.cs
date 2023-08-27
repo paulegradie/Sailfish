@@ -3,7 +3,6 @@ using Microsoft.VisualStudio.TestPlatform.ObjectModel.Adapter;
 using Sailfish.Analysis.Saildiff;
 using Sailfish.Execution;
 using Sailfish.Presentation;
-using Sailfish.Registration;
 using Sailfish.Statistics;
 using Sailfish.Statistics.Tests;
 using Sailfish.Statistics.Tests.MWWilcoxonTestSailfish;
@@ -14,10 +13,8 @@ namespace Sailfish.TestAdapter.Execution;
 
 internal static class TestAdapterContainerRegistrationExtensionMethods
 {
-    public static void CreateTestAdapterRegistrationContainerBuilder(this ContainerBuilder builder, IFrameworkHandle? frameworkHandle)
+    public static void RegisterAdapterTypes(this ContainerBuilder builder, IFrameworkHandle? frameworkHandle)
     {
-        builder.RegisterSailfishTypes();
-
         // TODO: Deprecated these - we now need to register everything from sailfish - but we have some overrides, like IConsoleWRiterFactory
         builder.RegisterType<IterationVariableRetriever>().As<IIterationVariableRetriever>();
         builder.RegisterType<ParameterCombinator>().As<IParameterCombinator>();
@@ -29,7 +26,7 @@ internal static class TestAdapterContainerRegistrationExtensionMethods
         builder.RegisterType<TestCaseIterator>().As<ITestCaseIterator>();
         builder.RegisterType<TestAdapterExecutionProgram>().As<ITestAdapterExecutionProgram>();
         builder.RegisterType<TypeActivator>().As<ITypeActivator>();
-        builder.Register(ctx => new SailfishExecutionEngine(ctx.Resolve<ITestCaseIterator>())).As<ISailfishExecutionEngine>();
+        builder.Register(ctx => new SailfishExecutionEngine(ctx.Resolve<ITestCaseIterator>(), ctx.Resolve<IRunSettings>())).As<ISailfishExecutionEngine>();
         builder.RegisterType<TTestSailfish>().As<ITTestSailfish>();
         builder.RegisterType<MannWhitneyWilcoxonTestSailfish>().As<IMannWhitneyWilcoxonTestSailfish>();
         builder.RegisterType<TwoSampleWilcoxonSignedRankTestSailfish>().As<ITwoSampleWilcoxonSignedRankTestSailfish>();

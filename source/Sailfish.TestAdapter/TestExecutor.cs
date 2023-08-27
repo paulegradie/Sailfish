@@ -1,14 +1,18 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Threading;
 using Accord.Diagnostics;
+using Autofac;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.Adapter;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.Logging;
 using Sailfish.Exceptions;
+using Sailfish.Registration;
 using Sailfish.TestAdapter.Discovery;
 using Sailfish.TestAdapter.Execution;
+using Sailfish.TestAdapter.TestProperties;
 
 namespace Sailfish.TestAdapter;
 
@@ -48,7 +52,21 @@ public class TestExecutor : ITestExecutor
     {
         try
         {
-            TestExecution.ExecuteTests(testCases, frameworkHandle, cancellationTokenSource.Token);
+            var builder = new ContainerBuilder();
+            builder.RegisterSailfishTypes();
+            builder.RegisterRunSettings();
+            builder.RegisterAdapterTypes(frameworkHandle);
+
+            var refTestType = RetrieveReferenceTypeForTestProject(testCases);
+            SailfishTypeRegistrationUtility.InvokeRegistrationProviderCallbackMain(
+                    builder,
+                    new[] { refTestType },
+                    new[] { refTestType },
+                    cancellationTokenSource.Token)
+                .Wait(cancellationTokenSource.Token);
+
+            using var container = builder.Build();
+            TestExecution.ExecuteTests(testCases, container, frameworkHandle, cancellationTokenSource.Token);
         }
         catch (Exception ex)
         {
@@ -56,10 +74,12 @@ public class TestExecutor : ITestExecutor
             frameworkHandle.SendMessage(TestMessageLevel.Informational, $"Encountered exception while executing tests: {ex.Message}");
             foreach (var testCase in testCases)
             {
-                var result = new TestResult(testCase);
-                result.Outcome = TestOutcome.None;
-                result.ErrorMessage = ex.Message;
-                result.ErrorStackTrace = ex.StackTrace;
+                var result = new TestResult(testCase)
+                {
+                    Outcome = TestOutcome.Skipped,
+                    ErrorMessage = ex.Message,
+                    ErrorStackTrace = ex.StackTrace
+                };
                 result.Messages.Add(new TestResultMessage(TestResultMessage.StandardErrorCategory, ex.Message));
                 frameworkHandle.RecordResult(result);
                 frameworkHandle.RecordEnd(testCase, TestOutcome.None);
@@ -74,5 +94,19 @@ public class TestExecutor : ITestExecutor
             cancellationTokenSource.Cancel();
             Cancelled = true;
         }
+    }
+
+    public static Type RetrieveReferenceTypeForTestProject(IReadOnlyCollection<TestCase> testCases)
+    {
+        var assembly = Assembly.LoadFile(testCases.First().Source);
+        AppDomain.CurrentDomain.Load(assembly.GetName()); // is this necessary?
+
+        var testTypeFullName = testCases
+            .First()
+            .GetPropertyHelper(SailfishManagedProperty.SailfishTypeProperty);
+
+        var refTestType = assembly.GetType(testTypeFullName, true, true);
+        if (refTestType is null) throw new Exception("First test type was null when starting test execution");
+        return refTestType;
     }
 }

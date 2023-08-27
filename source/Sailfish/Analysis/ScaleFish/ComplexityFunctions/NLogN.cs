@@ -1,14 +1,9 @@
 using System;
-using Sailfish.Analysis.Scalefish.CurveFitting;
 
 namespace Sailfish.Analysis.Scalefish.ComplexityFunctions;
 
 public class NLogN : ComplexityFunction
 {
-    public NLogN(IFitnessCalculator fitnessCalculator) : base(fitnessCalculator)
-    {
-    }
-
     public override double Compute(double n, double scale, double bias)
     {
         return scale * (n * Math.Log(n)) + bias;

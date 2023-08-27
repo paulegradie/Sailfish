@@ -2,7 +2,7 @@
 
 namespace Tests.E2ETestSuite.Discoverable;
 
-[Sailfish(NumIterations = 1, NumWarmupIterations = 0, Disabled = false)]
+[Sailfish(NumIterations = 3, NumWarmupIterations = 0, Disabled = Constants.Disabled)]
 public class SimplePerfTest
 {
     [SailfishGlobalSetup]
@@ -11,10 +11,12 @@ public class SimplePerfTest
         await Task.CompletedTask;
     }
 
+    [SailfishVariable(1, 2, 3)] public int TestProp { get; set; }
+
     [SailfishMethod]
     public async Task TestA(CancellationToken cancellationToken)
     {
-        await Task.Delay(40, cancellationToken);
+        await Task.Delay(40 + TestProp, cancellationToken);
     }
 
     [SailfishMethod]

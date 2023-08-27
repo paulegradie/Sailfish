@@ -64,6 +64,14 @@ public static class ReflectionExtensionMethods
         else method.Invoke(instance, null);
     }
 
+
+    private static async Task InvokeAsWithCancellation(this MethodInfo method, object instance, CancellationToken cancellationToken)
+    {
+        var parameters = new object[] { cancellationToken };
+        if (method.IsAsyncMethod()) await (Task)method.Invoke(instance, parameters)!;
+        else method.Invoke(instance, parameters);
+    }
+
     private static async Task InvokeAsWithTimer(this MethodInfo method, object instance, PerformanceTimer performanceTimer)
     {
         if (method.IsAsyncMethod())
@@ -78,14 +86,6 @@ public static class ReflectionExtensionMethods
             method.Invoke(instance, null);
             performanceTimer.StopSailfishMethodExecutionTimer();
         }
-    }
-
-
-    private static async Task InvokeAsWithCancellation(this MethodInfo method, object instance, CancellationToken cancellationToken)
-    {
-        var parameters = new object[] { cancellationToken };
-        if (method.IsAsyncMethod()) await (Task)method.Invoke(instance, parameters)!;
-        else method.Invoke(instance, parameters);
     }
 
     private static async Task InvokeAsWithCancellationWithTimer(this MethodInfo method, object instance, PerformanceTimer performanceTimer, CancellationToken cancellationToken)
@@ -150,7 +150,6 @@ public static class ReflectionExtensionMethods
             switch (parameters.Count)
             {
                 case 0:
-                    
                     await methodInfo.InvokeAsWithTimer(instance, performanceTimer);
                     break;
                 case 1:

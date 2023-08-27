@@ -12,7 +12,7 @@ internal class TestExecutionResult
 
         TestInstanceContainer = container;
         ExecutionSettings = container.ExecutionSettings;
-        PerformanceTimerResults = container.Invocation.GetPerformanceResults();
+        PerformanceTimerResults = container.CoreInvoker.GetPerformanceResults();
     }
 
     public TestExecutionResult(TestInstanceContainer container, Exception exception)
@@ -23,7 +23,7 @@ internal class TestExecutionResult
 
         TestInstanceContainer = container;
         ExecutionSettings = container.ExecutionSettings;
-        PerformanceTimerResults = container.Invocation.GetPerformanceResults(false);
+        PerformanceTimerResults = container.CoreInvoker.GetPerformanceResults(false);
     }
 
     public TestExecutionResult(TestInstanceContainerProvider testProvider, Exception exception)

@@ -2,7 +2,7 @@ using Sailfish.Attributes;
 
 namespace Tests.E2ETestSuite.Discoverable;
 
-[Sailfish(Disabled = false)]
+[Sailfish(Disabled = Constants.Disabled)]
 public class DemoPerformanceTest
 {
     [SailfishVariable(1, 4, 6)] public int MyInts { get; set; }

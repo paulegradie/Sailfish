@@ -9,10 +9,10 @@ namespace PerformanceTests.ExamplePerformanceTests.Discoverable;
 [Sailfish(NumIterations = 7, Disabled = false)]
 public class ScaleFishDemo
 {
-    [SailfishVariable(true, 1, 5, 10, 15)]
+    [SailfishVariable(true, 1, 5, 10, 11, 12, 13, 15, 20, 25, 30)]
     public int N { get; set; }
 
-    [SailfishVariable(1, 2)] public int OtherN { get; set; }
+    [SailfishVariable(50, 100)] public int OtherN { get; set; }
 
     [SailfishMethod]
     public async Task Quadratic(CancellationToken cancellationToken)

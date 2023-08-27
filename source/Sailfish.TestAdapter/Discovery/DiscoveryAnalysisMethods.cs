@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -29,79 +30,83 @@ public static class DiscoveryAnalysisMethods
     /// <exception cref="Exception"></exception>
     public static IEnumerable<ClassMetaData> CompilePreRenderedSourceMap(
         IEnumerable<string> sourceFiles,
+        Type[] performanceTestTypes,
         string classAttributePrefix = "Sailfish",
         string methodAttributePrefix = "SailfishMethod")
     {
-        var classMetas = new List<ClassMetaData>();
-        var lockObject = new object();
-        var result = Parallel.ForEach(sourceFiles, filePath =>
-        {
-            string fileContents;
-            try
+        var classMetas = new ConcurrentBag<ClassMetaData>();
+        var result = Parallel.ForEach(
+            sourceFiles,
+            new ParallelOptions { MaxDegreeOfParallelism = 4 },
+            filePath =>
             {
-                using var fileStream = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
-                using var streamReader = new StreamReader(fileStream);
-                fileContents = streamReader.ReadToEnd();
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine(ex.Message);
-                return;
-            }
+                string fileContents;
+                try
+                {
+                    using var fileStream = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite);
+                    using var streamReader = new StreamReader(fileStream);
+                    fileContents = streamReader.ReadToEnd();
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine(ex.Message);
+                    return;
+                }
 
-            // ReSharper disable once HeapView.ClosureAllocation
-            SyntaxTree syntaxTree;
-            try
-            {
-                syntaxTree = CSharpSyntaxTree.ParseText(fileContents);
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine(ex.Message);
-                return;
-            }
+                // ReSharper disable once HeapView.ClosureAllocation
+                SyntaxTree syntaxTree;
+                try
+                {
+                    syntaxTree = CSharpSyntaxTree.ParseText(fileContents);
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine(ex.Message);
+                    return;
+                }
 
-            var root = syntaxTree.GetCompilationUnitRoot();
+                var root = syntaxTree.GetCompilationUnitRoot();
 
-            var classDeclarations = root
-                .DescendantNodes()
-                .OfType<ClassDeclarationSyntax>()
-                .Where(cls => cls
-                    .AttributeLists
-                    .SelectMany(attrList => attrList.Attributes)
-                    .Any(attr =>
-                        attr.Name.ToString() == classAttributePrefix || attr.Name.ToString() == $"{classAttributePrefix}Attribute"));
-
-            // ReSharper disable once HeapView.ObjectAllocation.Possible
-            foreach (var classDeclaration in classDeclarations)
-            {
-                var methodDeclarations = classDeclaration
+                var classDeclarations = root
                     .DescendantNodes()
-                    .OfType<MethodDeclarationSyntax>()
-                    .Where(method => method.AttributeLists
+                    .OfType<ClassDeclarationSyntax>()
+                    .Where(cls => cls
+                        .AttributeLists
                         .SelectMany(attrList => attrList.Attributes)
                         .Any(attr =>
-                            attr.Name.ToString() == methodAttributePrefix
-                            || attr.Name.ToString() == $"{methodAttributePrefix}Attribute"));
+                            attr.Name.ToString() == classAttributePrefix || attr.Name.ToString() == $"{classAttributePrefix}Attribute"));
 
-                var className = classDeclaration.Identifier.ValueText;
-                var classMetaData = new ClassMetaData(
-                    className: className,
-                    filePath: filePath,
-                    methods: (
-                        from methodDeclaration in methodDeclarations
-                        let lineSpan = syntaxTree.GetLineSpan(methodDeclaration.Span)
-                        let lineNumber = lineSpan.StartLinePosition.Line + 1
-                        select new MethodMetaData(methodName: methodDeclaration.Identifier.ValueText, lineNumber: lineNumber))
-                    .ToArray(),
-                    syntaxTree: syntaxTree);
-
-                lock (lockObject)
+                // ReSharper disable once HeapView.ObjectAllocation.Possible
+                foreach (var classDeclaration in classDeclarations)
                 {
+                    var methodDeclarations = classDeclaration
+                        .DescendantNodes()
+                        .OfType<MethodDeclarationSyntax>()
+                        .Where(method => method.AttributeLists
+                            .SelectMany(attrList => attrList.Attributes)
+                            .Any(attr =>
+                                attr.Name.ToString() == methodAttributePrefix
+                                || attr.Name.ToString() == $"{methodAttributePrefix}Attribute"));
+
+                    var className = classDeclaration.Identifier.ValueText;
+                    var performanceTestType = performanceTestTypes.SingleOrDefault(x => x.Name == className);
+                    if (performanceTestType is null) continue;
+
+                    var classMetaData = new ClassMetaData(
+                        className: className,
+                        performanceTestType: performanceTestType,
+                        filePath: filePath,
+                        methods: (
+                            from methodDeclaration in methodDeclarations
+                            let lineSpan = syntaxTree.GetLineSpan(methodDeclaration.Span)
+                            let lineNumber = lineSpan.StartLinePosition.Line + 1
+                            select new MethodMetaData(methodName: methodDeclaration.Identifier.ValueText, lineNumber: lineNumber))
+                        .ToArray(),
+                        syntaxTree: syntaxTree);
+
                     classMetas.Add(classMetaData);
                 }
-            }
-        });
+            });
         if (!result.IsCompleted) throw new Exception("Exception encountered while reading and parsing source files");
         return classMetas;
     }

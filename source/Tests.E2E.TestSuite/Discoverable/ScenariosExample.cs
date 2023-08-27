@@ -2,7 +2,7 @@
 
 namespace Tests.E2ETestSuite.Discoverable;
 
-[Sailfish(Disabled = false)]
+[Sailfish(Disabled = Constants.Disabled)]
 public class ScenariosExample
 {
     private Dictionary<string, string> scenarioMap = null!;

@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Linq;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel;
-using Microsoft.VisualStudio.TestPlatform.ObjectModel.Logging;
 using Sailfish.Execution;
 using Sailfish.TestAdapter.TestProperties;
 using Sailfish.Utils;
@@ -13,10 +12,9 @@ internal static class TestCaseItemCreator
 {
     private static PropertySetGenerator PropertySetGenerator => new(new ParameterCombinator(), new IterationVariableRetriever());
 
-    public static IEnumerable<TestCase> AssembleTestCases(Type testType, ClassMetaData classMetaData, string sourceDll, IHashAlgorithm hashAlgorithm, IMessageLogger logger)
+    public static IEnumerable<TestCase> AssembleTestCases(ClassMetaData classMetaData, string sourceDll, IHashAlgorithm hashAlgorithm)
     {
-        var propertySets = PropertySetGenerator.GenerateSailfishVariableSets(testType, out _).ToArray();
-
+        var propertySets = PropertySetGenerator.GenerateSailfishVariableSets(classMetaData.PerformanceTestType, out _).ToArray();
         foreach (var methodMetaData in classMetaData.Methods)
         {
             var numToMake = Math.Max(propertySets.Length, 1);
@@ -24,17 +22,15 @@ internal static class TestCaseItemCreator
             {
                 var propertyNames = propertySets.Length > 0 ? propertySets[i].GetPropertyNames() : Array.Empty<string>();
                 var propertyValues = propertySets.Length > 0 ? propertySets[i].GetPropertyValues() : Array.Empty<string>();
-                var testCase = CreateTestCase(
-                    testType,
+                yield return CreateTestCase(
+                    classMetaData.PerformanceTestType,
                     sourceDll,
-                    logger,
                     classMetaData.FilePath,
                     methodMetaData.MethodName,
                     methodMetaData.LineNumber,
                     propertyNames,
                     propertyValues,
                     hashAlgorithm);
-                yield return testCase;
             }
         }
     }
@@ -42,7 +38,6 @@ internal static class TestCaseItemCreator
     private static TestCase CreateTestCase(
         Type testType,
         string sourceDll,
-        IMessageLogger logger,
         string filePath,
         string methodName,
         int lineNumber,
@@ -64,7 +59,6 @@ internal static class TestCaseItemCreator
         if (testType.FullName is null)
         {
             var msg = $"Error: testType fullname not defined - fullname: {testType.FullName}";
-            logger.SendMessage(TestMessageLevel.Error, msg);
             throw new Exception(msg);
         }
 

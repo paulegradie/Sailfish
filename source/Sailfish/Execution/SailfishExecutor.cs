@@ -53,8 +53,7 @@ internal class SailfishExecutor
         {
             var timeStamp = runSettings.TimeStamp ?? DateTime.Now.ToLocalTime();
 
-            var rawExecutionResults =
-                await sailFishTestExecutor.Execute(testInitializationResult.Tests, cancellationToken);
+            var rawExecutionResults = await sailFishTestExecutor.Execute(testInitializationResult.Tests, cancellationToken);
             var executionSummaries = executionSummaryCompiler.CompileToSummaries(rawExecutionResults, cancellationToken)
                 .ToList();
 
@@ -86,13 +85,19 @@ internal class SailfishExecutor
 
         Log.Logger.Error("{NumErrors} errors encountered while discovering tests",
             testInitializationResult.Errors.Count);
+
+        var testDiscoveryExceptions = new List<Exception>();
         foreach (var (reason, names) in testInitializationResult.Errors)
         {
             Log.Logger.Error("{Reason}", reason);
-            foreach (var testName in names) Log.Logger.Error("--- {TestName}", testName);
+            foreach (var testName in names)
+            {
+                Log.Logger.Error("--- {TestName}", testName);
+                testDiscoveryExceptions.Add(new Exception($"Test: {testName} - Error: {reason}"));
+            }
         }
 
-        return SailfishRunResult.CreateInvalidResult(Enumerable.Empty<Exception>());
+        return SailfishRunResult.CreateInvalidResult(testDiscoveryExceptions);
     }
 
     private static string GetRunSettingsTrackingDirectoryPath(IRunSettings runSettings, string defaultDirectory)

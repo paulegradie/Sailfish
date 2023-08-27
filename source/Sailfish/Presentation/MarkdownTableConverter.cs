@@ -23,8 +23,7 @@ public class MarkdownTableConverter : IMarkdownTableConverter
         var stringBuilder = new StringBuilder();
         foreach (var result in executionSummaries)
         {
-            AppendHeader(result.Type.Name, stringBuilder);
-            AppendResults(result.CompiledTestCaseResults, stringBuilder);
+            AppendResults(result.Type.Name, result.CompiledTestCaseResults, stringBuilder);
 
             var exceptions = result.CompiledTestCaseResults.SelectMany(x => x.Exceptions).ToList();
             AppendExceptions(exceptions, stringBuilder);
@@ -33,24 +32,25 @@ public class MarkdownTableConverter : IMarkdownTableConverter
         return stringBuilder.ToString();
     }
 
-    private void AppendHeader(string typeName, StringBuilder stringBuilder)
-    {
-        stringBuilder.AppendLine();
-        stringBuilder.AppendLine($"\r{typeName}\r");
-        stringBuilder.AppendLine("-----------------------------------\r");
-    }
-
-    private void AppendResults(IEnumerable<ICompiledTestCaseResult> compiledResults, StringBuilder stringBuilder)
+    private static void AppendResults(string typeName, IEnumerable<ICompiledTestCaseResult> compiledResults, StringBuilder stringBuilder)
     {
         foreach (var group in compiledResults.GroupBy(x => x.GroupingId))
         {
             if (group.Key is null) continue;
             stringBuilder.AppendLine();
+            var n = group.Select(x => x.DescriptiveStatisticsResult?.NumIterations).Distinct().Single();
+            if (n is null || n == 0)
+            {
+                continue;
+            }
+
             var table = group.ToStringTable(
+                typeName,
                 new List<string>() { "", "ms", "ms", "ms", "" },
+                new List<string> { "Display Name", "Mean", "Median", $"StdDev (N={n})", "Variance" },
                 u => u.TestCaseId!.DisplayName!,
-                u => u.DescriptiveStatisticsResult!.Median,
                 u => u.DescriptiveStatisticsResult!.Mean,
+                u => u.DescriptiveStatisticsResult!.Median,
                 u => u.DescriptiveStatisticsResult!.StdDev,
                 u => u.DescriptiveStatisticsResult!.Variance
             );
@@ -76,30 +76,33 @@ public class MarkdownTableConverter : IMarkdownTableConverter
         }
     }
 
-
     public string ConvertScaleFishResultToMarkdown(IEnumerable<ITestClassComplexityResult> testClassComplexityResultsEnumerable)
     {
         var testClassComplexityResults = testClassComplexityResultsEnumerable.ToList();
         var tableBuilder = new StringBuilder();
         foreach (var testClassComplexityResult in testClassComplexityResults)
         {
-            tableBuilder.AppendLine($"{nameof(testClassComplexityResult.TestClassName)}: {testClassComplexityResult.TestClassName}");
-            var tableSection = testClassComplexityResult
+            tableBuilder.AppendLine($"Test Class: {testClassComplexityResult.TestClassName}");
+            tableBuilder.AppendLine();
+            var methodGroups = testClassComplexityResult
                 .TestMethodComplexityResults
-                .SelectMany(x => x.TestPropertyComplexityResults)
-                .ToStringTable(
-                    new List<string>() { "", "", "(best)", "", "", "(next best)", "", "" },
-                    new List<string>() { "TestCase", "Variable", "BestFit", "BigO", "GoodnessOfFit", "NextBest", "NextBigO", "NextBestGoodnessOfFit" },
-                    c => c.MethodName,
-                    c => c.PropertyName,
-                    c => c.ComplexityResult.ComplexityFunction.Name,
-                    c => c.ComplexityResult.ComplexityFunction.OName,
-                    c => c.ComplexityResult.GoodnessOfFit,
-                    c => c.ComplexityResult.NextClosestComplexity.Name,
-                    c => c.ComplexityResult.NextClosestComplexity.OName,
-                    c => c.ComplexityResult.NextClosestGoodnessOfFit
-                );
-            tableBuilder.AppendLine(tableSection);
+                .GroupBy(x => x.TestMethodName);
+            foreach (var methodGroup in methodGroups)
+            {
+                tableBuilder.AppendLine(methodGroup
+                    .SelectMany(x => x.TestPropertyComplexityResults)
+                    .ToStringTable(
+                        new List<string>() { "", "(best)", "", "", "(next best)", "", "" },
+                        new List<string>() { "Variable", "BestFit", "BigO", "GoodnessOfFit", "NextBest", "NextBigO", "NextBestGoodnessOfFit" },
+                        c => c.PropertyName,
+                        c => c.ComplexityResult.ComplexityFunction.Name,
+                        c => c.ComplexityResult.ComplexityFunction.OName,
+                        c => c.ComplexityResult.GoodnessOfFit,
+                        c => c.ComplexityResult.NextClosestComplexityFunction.Name,
+                        c => c.ComplexityResult.NextClosestComplexityFunction.OName,
+                        c => c.ComplexityResult.NextClosestGoodnessOfFit
+                    ));
+            }
         }
 
         return tableBuilder.ToString();

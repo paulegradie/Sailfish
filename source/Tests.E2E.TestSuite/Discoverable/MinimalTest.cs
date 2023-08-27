@@ -4,7 +4,7 @@ namespace Tests.E2ETestSuite.Discoverable;
 
 [WriteToCsv]
 [WriteToMarkdown]
-[Sailfish(Disabled = false)]
+[Sailfish(Disabled = Constants.Disabled)]
 public class MinimalTest
 {
     [SailfishMethod]

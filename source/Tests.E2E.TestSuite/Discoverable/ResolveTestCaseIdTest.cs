@@ -5,7 +5,7 @@ using Tests.E2ETestSuite.Utils;
 
 namespace Tests.E2ETestSuite.Discoverable;
 
-[Sailfish]
+[Sailfish(3, 0, Disabled = Constants.Disabled)]
 public class ResolveTestCaseIdTest
 {
     private readonly TestCaseId testCaseId;

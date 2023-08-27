@@ -17,14 +17,18 @@
 
     <!--    local dev only    -->
     <ItemGroup>
+        <ProjectReference Include="..\Sailfish.Analyzers\Sailfish.Analyzers.csproj" />
+    </ItemGroup>
+
+    <!-- Exclude the Analyzer ItemGroup if building with Visual Studio -->
+    <ItemGroup Condition="'$(VisualStudioVersion)' != ''">
         <ProjectReference Include="..\Sailfish.TestAdapter\Sailfish.TestAdapter.csproj" />
     </ItemGroup>
+    
     <ItemGroup>
-      <None Include=".sailfish.json">
-        <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-      </None>
+        <None Include=".sailfish.json">
+            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </None>
     </ItemGroup>
-<!--    <ItemGroup>-->
-<!--        <Analyzer Include="..\Sailfish.TestAdapter\bin\Debug\net6.0\Sailfish.Analyzers.dll" />-->
-<!--    </ItemGroup>-->
+
 </Project>

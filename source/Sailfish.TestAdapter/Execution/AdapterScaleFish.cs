@@ -26,13 +26,16 @@ internal class AdapterScaleFish : IAdapterScaleFish
 
     public async Task Analyze(DateTime timeStamp, IRunSettings runSettings, string trackingDir, CancellationToken cancellationToken)
     {
+        if (!runSettings.RunScalefish) return;
+
         var response = await mediator.Send(new SailfishGetLatestExecutionSummariesCommand(trackingDir, runSettings.Tags, runSettings.Args), cancellationToken);
         var executionSummaries = response.LatestExecutionSummaries;
         if (!executionSummaries.Any()) return;
 
         try
         {
-            var complexityResults = complexityComputer.AnalyzeComplexity(executionSummaries);
+            var complexityResults = complexityComputer.AnalyzeComplexity(executionSummaries).ToList();
+            if (!complexityResults.Any()) return;
             var complexityMarkdown = markdownTableConverter.ConvertScaleFishResultToMarkdown(complexityResults);
             consoleWriter.WriteString(complexityMarkdown);
 
@@ -44,6 +47,15 @@ internal class AdapterScaleFish : IAdapterScaleFish
                         runSettings.Args),
                     cancellationToken)
                 .ConfigureAwait(false);
+
+            await mediator.Publish(new WriteCurrentScalefishResultModelsCommand(
+                    complexityResults,
+                    runSettings.LocalOutputDirectory ?? DefaultFileSettings.DefaultOutputDirectory,
+                    timeStamp,
+                    runSettings.Tags,
+                    runSettings.Args),
+                cancellationToken
+            ).ConfigureAwait(false);
         }
         catch (Exception ex)
         {

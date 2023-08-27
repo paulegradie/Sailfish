@@ -3,7 +3,7 @@ using Shouldly;
 
 namespace Tests.E2ETestSuite.Discoverable;
 
-[Sailfish(1, 0)]
+[Sailfish(1, 0, Disabled = Constants.Disabled)]
 public class VariablesIterateTest
 {
     [SailfishVariable(1, 2)] public int N { get; set; }

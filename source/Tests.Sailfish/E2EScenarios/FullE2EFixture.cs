@@ -15,6 +15,8 @@ public class FullE2EFixture
         var runSettings = RunSettingsBuilder.CreateBuilder()
             .RegistrationProvidersFromAssembliesFromAnchorTypes(typeof(E2ETestRegistrationProvider))
             .TestsFromAssembliesFromAnchorTypes(typeof(E2ETestRegistrationProvider))
+            .DisableOverheadEstimation()
+            .WithAnalysisDisabledGlobally()
             .Build();
 
         var result = await SailfishRunner.Run(runSettings);
@@ -26,11 +28,13 @@ public class FullE2EFixture
 
     // will need to update this if more tests are added to the the project
     [Fact]
-    public async Task AFullTestRunOfTheDemoShouldFind11Tests()
+    public async Task AFullTestRunOfTheDemoShouldFind13Tests()
     {
         var runSettings = RunSettingsBuilder.CreateBuilder()
             .RegistrationProvidersFromAssembliesFromAnchorTypes(typeof(E2ETestRegistrationProvider))
             .TestsFromAssembliesFromAnchorTypes(typeof(E2ETestRegistrationProvider))
+            .DisableOverheadEstimation()
+            .WithAnalysisDisabledGlobally()
             .Build();
 
         var result = await SailfishRunner.Run(runSettings);

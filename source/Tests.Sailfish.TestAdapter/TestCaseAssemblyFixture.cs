@@ -1,7 +1,5 @@
 ﻿using System.IO;
 using System.Linq;
-using System.Security.Cryptography;
-using Microsoft.VisualStudio.TestPlatform.ObjectModel.Logging;
 using NSubstitute;
 using Sailfish.Attributes;
 using Sailfish.TestAdapter.Discovery;
@@ -11,7 +9,7 @@ using Xunit;
 
 namespace Tests.Sailfish.TestAdapter;
 
-public class WhenAssemblingTestCases
+public class TestCaseAssemblyFixture
 {
     private static string FindSpecificUniqueFile(string fileName)
     {
@@ -29,6 +27,7 @@ public class WhenAssemblingTestCases
         const string sourceDll = "C:/this/is/some/dll.dll";
         var sourceCache = DiscoveryAnalysisMethods.CompilePreRenderedSourceMap(
                 new[] { testResourceRelativePath },
+                new[] { typeof(SimplePerfTest) },
                 nameof(SailfishAttribute).Replace("Attribute", ""),
                 nameof(SailfishMethodAttribute).Replace("Attribute", ""))
             .ToList();
@@ -36,7 +35,7 @@ public class WhenAssemblingTestCases
         var classMetaData = sourceCache.Single();
         var hasher = Substitute.For<IHashAlgorithm>();
         var result = TestCaseItemCreator
-            .AssembleTestCases(typeof(SimplePerfTest), classMetaData, sourceDll, hasher, Substitute.For<IMessageLogger>())
+            .AssembleTestCases(classMetaData, sourceDll, hasher)
             .ToList();
 
         result.Count.ShouldBe(6);

@@ -16,10 +16,12 @@ internal class RunSettings : IRunSettings
     public TestSettings Settings { get; }
     public IEnumerable<Type> TestLocationAnchors { get; }
     public IEnumerable<Type> RegistrationProviderAnchors { get; }
-    public OrderedDictionary Tags { get; set; }
-    public OrderedDictionary Args { get; }
+    public OrderedDictionary Tags { get; set; } = new();
+    public OrderedDictionary Args { get; } = new();
     public IEnumerable<string> ProvidedBeforeTrackingFiles { get; }
     public DateTime? TimeStamp { get; }
+    public bool DisableOverheadEstimation { get; }
+    public bool DisableAnalysisGlobally { get; set; }
     public bool Debug { get; set; }
 
     public RunSettings(
@@ -51,6 +53,8 @@ internal class RunSettings : IRunSettings
         Notify = notify;
         TestLocationAnchors = testLocationAnchors;
         RegistrationProviderAnchors = registrationProviderAnchors;
+        DisableOverheadEstimation = false;
+        DisableAnalysisGlobally = false;
     }
 
     public RunSettings(
@@ -67,6 +71,8 @@ internal class RunSettings : IRunSettings
         DateTime? timeStamp,
         IEnumerable<Type> testLocationAnchors,
         IEnumerable<Type> registrationProviderAnchors,
+        bool disableOverheadEstimation,
+        bool disableAnalysisGlobally = false,
         bool debug = false)
     {
         TestNames = testNames;
@@ -83,17 +89,20 @@ internal class RunSettings : IRunSettings
         Notify = notify;
         TestLocationAnchors = testLocationAnchors;
         RegistrationProviderAnchors = registrationProviderAnchors;
+        DisableOverheadEstimation = disableOverheadEstimation;
+        DisableAnalysisGlobally = disableAnalysisGlobally;
     }
 
+    // default available to end users
     public RunSettings()
     {
         TestNames = Array.Empty<string>();
         LocalOutputDirectory = null;
-        Settings = new TestSettings(0.001, 3);
+        Settings = new TestSettings();
         TestLocationAnchors = new[] { GetType() };
         RegistrationProviderAnchors = new[] { GetType() };
-        Tags = new OrderedDictionary();
-        Args = new OrderedDictionary();
         ProvidedBeforeTrackingFiles = Array.Empty<string>();
+        RunScalefish = true;
+        RunSailDiff = true;
     }
 }

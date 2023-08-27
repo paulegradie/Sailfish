@@ -13,6 +13,7 @@ public static class DefaultFileSettings
 {
     public const string CsvSuffix = ".csv";
     public const string MarkdownSuffix = ".md";
+    public const string JsonSuffix = ".json";
     public static readonly string SortableFormat = "yyyyMMdd_HHmmss";
     public const string TrackingSuffix = $"{CsvSuffix}.tracking";
     public const string TagsPrefix = "tags-";
@@ -34,8 +35,11 @@ public static class DefaultFileSettings
     public static readonly Func<DateTime, string> DefaultTrackingFileName =
         (timeStamp) => $"PerformanceTracking_{timeStamp.ToLocalTime().ToString(SortableFormat)}{TrackingSuffix}";
 
-    public static readonly Func<DateTime, string> DefaultScalefishFileName = 
+    public static readonly Func<DateTime, string> DefaultScalefishFileName =
         (timeStamp) => $"Scalefish_{timeStamp.ToLocalTime().ToString(SortableFormat)}{MarkdownSuffix}";
+
+    public static readonly Func<DateTime, string> DefaultScalefishModelFileName =
+        (timeStamp) => $"ScalefishModels_{timeStamp.ToLocalTime().ToString(SortableFormat)}{JsonSuffix}";
 
     public static string JoinTags(OrderedDictionary tags)
     {

@@ -1,23 +1,26 @@
-using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Text.Json.Serialization;
 using MathNet.Numerics;
 using Sailfish.Analysis.Scalefish.CurveFitting;
+using Sailfish.Exceptions;
 
 namespace Sailfish.Analysis.Scalefish;
 
 public abstract class ComplexityFunction : IComplexityFunction
 {
-    private readonly IFitnessCalculator fitnessCalculator;
-
-    protected ComplexityFunction(IFitnessCalculator fitnessCalculator)
+    protected ComplexityFunction()
     {
-        this.fitnessCalculator = fitnessCalculator;
+        FitnessCalculator = new FitnessCalculator();
     }
 
     public abstract string Name { get; set; }
     public abstract string OName { get; set; }
     public abstract string Quality { get; set; }
+
+    public FittedCurve? FunctionParameters { get; set; }
+
+    [JsonIgnore] public IFitnessCalculator FitnessCalculator { get; set; } // leave this public for testing. Gross, but willing to accept
 
     public abstract double Compute(double n, double scale, double bias);
 
@@ -31,8 +34,8 @@ public abstract class ComplexityFunction : IComplexityFunction
         // 3. Compute RSquared between standard fitted curve and emperical data
         // 4. Choose result with smalled RSquared
 
-        var fitness = fitnessCalculator.CalculateScaleAndBias(cleanReferenceData, Compute);
-        var fittedYs = CreateFittedCurveData(xs, fitness); //.Normalize();
+        FunctionParameters = FitnessCalculator.CalculateScaleAndBias(cleanReferenceData, Compute);
+        var fittedYs = CreateFittedCurveData(xs, FunctionParameters); //.Normalize();
         var observations = cleanReferenceData.Select(x => x.Y).ToArray(); //.Normalize();
 
         var results = observations
@@ -44,15 +47,21 @@ public abstract class ComplexityFunction : IComplexityFunction
         var cleanObserved = results.Select(x => x.Second).ToArray();
         try
         {
-            var error = fitnessCalculator.CalculateError(cleanModeled, cleanObserved);
+            var error = FitnessCalculator.CalculateError(cleanModeled, cleanObserved);
             return error;
         }
-        catch (Exception ex)
+        catch
         {
             ;
         }
 
         return new FitnessResult(0, 9999999999);
+    }
+
+    public double Predict(int n)
+    {
+        if (FunctionParameters is null) throw new SailfishModelException("This model has not yet been fit!");
+        return Compute(n, FunctionParameters.Scale, FunctionParameters.Bias);
     }
 
     private IEnumerable<double> CreateFittedCurveData(IEnumerable<double> referenceXs, FittedCurve curveParams)

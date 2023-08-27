@@ -22,7 +22,6 @@ public class TestDiscoverer : ITestDiscoverer
     public void DiscoverTests(IEnumerable<string> sources, IDiscoveryContext discoveryContext, IMessageLogger logger, ITestCaseDiscoverySink discoverySink)
     {
         sources = sources.ToList();
-        logger.SendMessage(TestMessageLevel.Informational, $"Sources found in discoverer:\n{string.Join("\n-- ", sources)}");
         var filteredSource = sources.Where(x => !exclusions.Contains(x)).ToArray();
 
         if (filteredSource.Length == 0)
@@ -47,7 +46,6 @@ public class TestDiscoverer : ITestDiscoverer
 
         foreach (var testCase in testCases)
         {
-            logger.SendMessage(TestMessageLevel.Informational, $"Sending TestCase: {testCase.DisplayName}");
             discoverySink.SendTestCase(testCase);
         }
     }
