@@ -278,7 +278,7 @@ internal class TestAdapterExecutionEngine : ITestAdapterExecutionEngine
         {
             if (container is null || testCaseGroup is null) return;
 
-            var currentTestCase = testCaseGroup.Single(x => x.DisplayName == container.TestCaseId.DisplayName);
+            var currentTestCase = testCaseGroup.Single(x => x.DisplayName == container.TestCaseId.GetMethodWithVariables());
             var testResult = new TestResult(currentTestCase)
             {
                 ErrorMessage = $"Test Disabled",

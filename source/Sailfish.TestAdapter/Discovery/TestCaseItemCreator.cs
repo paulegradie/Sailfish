@@ -50,7 +50,7 @@ internal static class TestCaseItemCreator
         var testCase = new TestCase(fullyQualifiedName, TestExecutor.ExecutorUri, sourceDll)
         {
             Id = hasher.GuidFromString(TestExecutor.ExecutorUri + $"{testType.Namespace}.{testType.Name}.{methodName}"),
-            DisplayName = testCaseId.DisplayName.Split(".").Last(),
+            DisplayName = testCaseId.GetMethodWithVariables(),
             LineNumber = lineNumber,
             ExecutorUri = TestExecutor.ExecutorUri,
             CodeFilePath = filePath

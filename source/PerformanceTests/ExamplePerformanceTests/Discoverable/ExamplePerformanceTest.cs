@@ -14,65 +14,28 @@ namespace PerformanceTests.ExamplePerformanceTests.Discoverable;
 [Sailfish]
 public class ExamplePerformanceTest : TestBase
 {
-    private readonly ILogger logger;
-
-    public ExamplePerformanceTest(WebApplicationFactory<DemoApp> factory, ILogger logger) : base(factory)
+    public ExamplePerformanceTest(
+        WebApplicationFactory<DemoApp> factory,
+        ILogger logger) : base(factory)
     {
-        this.logger = logger;
     }
 
-    public int Type { get; private set; }
+    [SailfishVariable(true, 20, 50, 100, 200, 300)]
+    public int WaitPeriod { get; set; }
 
-    [SailfishVariable(true, 200, 300)] public int WaitPeriod { get; set; }
-    [SailfishVariable(1, 2)] public int NTries { get; set; } // try to avoid multiple variables if you can manage
-    [SailfishVariable(1, 2)] public int NTriess { get; set; } // try to avoid multiple variables if you can manage
-
-    [SailfishGlobalSetup]
-    public void GlobalSetup()
-    {
-        // logger.Information("This is the Global Setup");
-    }
-
-    [SailfishMethodSetup]
-    public void ExecutionMethodSetup()
-    {
-        // logger.Information("This is the Execution Method Setup");
-    }
-
-    [SailfishIterationSetup]
-    public void IterationSetup()
-    {
-        // logger.Warning("This is the Iteration Setup - use sparingly");
-    }
+    [SailfishVariable(1, 2)] 
+    public int NTries { get; set; }
 
     [SailfishMethod]
-    public async Task WaitPeriodPerfTest(CancellationToken cancellationToken)
+    public async Task WaitPeriodPerfTest(CancellationToken ct)
     {
-        await Task.Delay(WaitPeriod, cancellationToken);
-        await Client.GetStringAsync("/", cancellationToken);
+        await Task.Delay(WaitPeriod, ct);
+        await Client.GetStringAsync("/", ct);
     }
 
     [SailfishMethod]
     public async Task Other(CancellationToken cancellationToken)
     {
         await Task.Delay(WaitPeriod, cancellationToken);
-    }
-
-    [SailfishIterationTeardown]
-    public void IterationTeardown()
-    {
-        // logger.Warning("This is the Iteration Teardown - use sparingly");
-    }
-
-    [SailfishMethodTeardown]
-    public void ExecutionMethodTeardown()
-    {
-        // logger.Verbose("This is the Execution Method Teardown");
-    }
-
-    [SailfishGlobalTeardown]
-    public override async Task GlobalTeardown(CancellationToken cancellationToken)
-    {
-        await Task.Yield();
     }
 }

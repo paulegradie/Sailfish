@@ -30,6 +30,11 @@ public class TestCaseId
 
     [JsonIgnore] public string DisplayName => FormDisplayName();
 
+    public string GetMethodWithVariables()
+    {
+        return TestCaseName.GetMethodPart() + TestCaseVariables.FormVariableSection();
+    }
+
     private string FormDisplayName()
     {
         return TestCaseName.Name + TestCaseVariables.FormVariableSection();
