@@ -18,8 +18,8 @@ public class FitnessCalculator : IFitnessCalculator
             xValues,
             yValues,
             aFunc,
-            1,
-            0.001,
+            1.0,
+            0.00001,
             maxIterations: 10_000,
             tolerance: 1E-04D);
 

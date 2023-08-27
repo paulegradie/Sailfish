@@ -74,10 +74,15 @@ internal class AdapterConsoleWriter : IAdapterConsoleWriter
             }
         }
 
-
-        var ideOutputContent = summaryResults.Single().CompiledTestCaseResults.Count > 1
-            ? CreateFullTable(summaryResults)
-            : CreateIdeTestOutputWindowContent(summaryResults.Single().CompiledTestCaseResults.Single());
+        string ideOutputContent;
+        if (summaryResults.Count > 1 || summaryResults.Single().CompiledTestCaseResults.Count > 1)
+        {
+            ideOutputContent = CreateFullTable(summaryResults);
+        }
+        else
+        {
+            ideOutputContent = CreateIdeTestOutputWindowContent(summaryResults.Single().CompiledTestCaseResults.Single());
+        }
 
         messageLogger?.SendMessage(TestMessageLevel.Informational, ideOutputContent);
         consoleLogger.Information("{MarkdownTable}", ideOutputContent);
@@ -101,16 +106,16 @@ internal class AdapterConsoleWriter : IAdapterConsoleWriter
 
     private static string CreateIdeTestOutputWindowContent(ICompiledTestCaseResult testCaseResult)
     {
+        if (testCaseResult.DescriptiveStatisticsResult == null || testCaseResult.DescriptiveStatisticsResult.NumIterations == 0) return string.Empty;
         var testCaseName = testCaseResult.TestCaseId;
         var results = testCaseResult.DescriptiveStatisticsResult!;
         var stringBuilder = new StringBuilder();
         stringBuilder.AppendLine(testCaseName?.TestCaseName.Name);
         stringBuilder.AppendLine();
-        stringBuilder.AppendLine("-- Moments --");
+        stringBuilder.AppendLine($"-- Moments (N={results.NumIterations}) --");
         stringBuilder.AppendLine("Mean:   " + Math.Round(results.Mean, 4) + " ms");
         stringBuilder.AppendLine("Median: " + Math.Round(results.Median, 4) + " ms");
         stringBuilder.AppendLine("StdDev: " + Math.Round(results.StdDev, 4) + " ms");
-        stringBuilder.AppendLine("Num Samples: " + results.NumIterations);
         stringBuilder.AppendLine();
         stringBuilder.AppendLine("-- Raw Results --");
         stringBuilder.AppendLine("Min: " + Math.Round(results.RawExecutionResults.Min(), 4) + " ms");
@@ -118,6 +123,8 @@ internal class AdapterConsoleWriter : IAdapterConsoleWriter
         stringBuilder.AppendLine();
         stringBuilder.AppendLine("-- Adjusted Raw Results --");
         stringBuilder.AppendLine(string.Join(", ", results.RawExecutionResults.Select(x => Math.Round(x, 4))));
+
+
         return stringBuilder.ToString();
     }
 

@@ -25,4 +25,12 @@ public class SailfishTestSettings
 
     [JsonPropertyName("UseInnerQuartile")] public bool UseInnerQuartile { get; set; }
     [JsonPropertyName("Disabled")] public bool Disabled { get; set; }
+
+    [JsonPropertyName("DisableOverheadEstimation")]
+    public bool DisableOverheadEstimation { get; set; }
+    
+    [JsonPropertyName("DisableEverything")]
+    public bool DisableEverything { get; set; }
+    
+    
 }

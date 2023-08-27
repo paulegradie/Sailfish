@@ -11,5 +11,22 @@ namespace Sailfish.Attributes;
 [AttributeUsage(AttributeTargets.Method, Inherited = false)]
 public sealed class SailfishMethodAttribute : Attribute
 {
-    // TODO: Enable / disable by method
+    /// <summary>
+    /// Gets or sets a value indicating whether the Sailfish test is disabled.
+    /// </summary>
+    /// <value><c>true</c> if the test is disabled; otherwise, <c>false</c>.</value>
+    public bool Disabled { get; }
+
+    internal SailfishMethodAttribute()
+    {
+    }
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="SailfishMethodAttribute"/> class.
+    /// </summary>
+    /// <param name="disabled">Whether or not to ignore the given test method</param>
+    public SailfishMethodAttribute(bool disabled = false)
+    {
+        Disabled = disabled;
+    }
 }

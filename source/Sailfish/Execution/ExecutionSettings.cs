@@ -8,6 +8,7 @@ public interface IExecutionSettings
 
     public int NumWarmupIterations { get; set; }
     public int NumIterations { get; set; }
+    public bool DisableOverheadEstimation { get; set; }
 }
 
 internal class ExecutionSettings : IExecutionSettings
@@ -18,4 +19,5 @@ internal class ExecutionSettings : IExecutionSettings
 
     public int NumWarmupIterations { get; set; }
     public int NumIterations { get; set; }
+    public bool DisableOverheadEstimation { get; set; }
 }

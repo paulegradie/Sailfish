@@ -3,7 +3,6 @@ using System.Linq;
 using System.Reflection;
 using Sailfish.Analysis.Scalefish;
 using Sailfish.Analysis.Scalefish.ComplexityFunctions;
-using Sailfish.Analysis.Scalefish.CurveFitting;
 using Shouldly;
 using Xunit;
 
@@ -75,7 +74,11 @@ public class ComplexityEstimatorFixture
 
         const double scale = 1;
         const double bias = 0;
-        var measurements = Enumerable.Range(1, 500).Select(Convert.ToDouble).Select(i => new ComplexityMeasurement(i, instance.Compute(i, scale, bias))).ToArray();
+        var measurements = Enumerable.Range(2, 11)
+            .Select(Convert.ToDouble)
+            .Select(x => x * 3)
+            .Select(i => new ComplexityMeasurement(i, instance.Compute(i, scale, bias)))
+            .ToArray();
         return measurements;
     }
 }

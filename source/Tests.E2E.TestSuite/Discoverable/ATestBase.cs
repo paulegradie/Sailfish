@@ -2,7 +2,6 @@
 
 namespace Tests.E2ETestSuite.Discoverable;
 
-[Sailfish(2, 0, Disabled = Constants.Disabled)]
 public class ATestBase
 {
     [SailfishGlobalSetup]

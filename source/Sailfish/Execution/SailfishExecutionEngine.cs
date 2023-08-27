@@ -14,10 +14,12 @@ namespace Sailfish.Execution;
 internal class SailfishExecutionEngine : ISailfishExecutionEngine
 {
     private readonly ITestCaseIterator testCaseIterator;
+    private readonly IRunSettings runSettings;
 
-    public SailfishExecutionEngine(ITestCaseIterator testCaseIterator)
+    public SailfishExecutionEngine(ITestCaseIterator testCaseIterator, IRunSettings runSettings)
     {
         this.testCaseIterator = testCaseIterator;
+        this.runSettings = runSettings;
     }
 
     /// <summary>
@@ -45,6 +47,7 @@ internal class SailfishExecutionEngine : ISailfishExecutionEngine
         Action<TestInstanceContainer>? preCallback = null,
         Action<TestExecutionResult, TestInstanceContainer>? callback = null,
         Action<TestInstanceContainer?>? exceptionCallback = null,
+        Action<TestInstanceContainer?>? testDisabledCallback = null,
         CancellationToken cancellationToken = default)
     {
         if (testProviderIndex > totalTestProviderCount)
@@ -75,7 +78,6 @@ internal class SailfishExecutionEngine : ISailfishExecutionEngine
 
         var results = new List<TestExecutionResult>();
 
-        bool continueIterating;
         do
         {
             var testMethodContainer = instanceContainerEnumerator.Current;
@@ -112,7 +114,21 @@ internal class SailfishExecutionEngine : ISailfishExecutionEngine
                     return CatchAndReturn(testProvider, ex);
                 }
 
-                var executionResult = await IterateOverVariableCombos(testMethodContainer, cancellationToken);
+
+                TestExecutionResult executionResult;
+                try
+                {
+                    executionResult = await IterateOverVariableCombos(testMethodContainer, cancellationToken);
+                }
+                catch (TestDisabledException)
+                {
+                    testDisabledCallback?.Invoke(testMethodContainer);
+                    currentPropertyTensorIndex += 1;
+                    await TryMoveNextOrThrow(exceptionCallback, instanceContainerEnumerator);
+                    continue;
+                }
+
+
                 if (!executionResult.IsSuccess)
                 {
                     return new() { executionResult };
@@ -155,31 +171,37 @@ internal class SailfishExecutionEngine : ISailfishExecutionEngine
                 var errorResult = new TestExecutionResult(testMethodContainer, ex);
                 results.Add(errorResult);
             }
-
-            try
-            {
-                continueIterating = instanceContainerEnumerator.MoveNext();
-            }
-            catch
-            {
-                if (exceptionCallback is not null)
-                {
-                    exceptionCallback.Invoke(instanceContainerEnumerator.Current);
-                    await DisposeOfTestInstance(instanceContainerEnumerator.Current);
-                    continueIterating = true;
-                }
-
-                else
-                {
-                    await DisposeOfTestInstance(instanceContainerEnumerator.Current);
-                    throw;
-                }
-            }
-        } while (continueIterating);
+        } while (await TryMoveNextOrThrow(exceptionCallback, instanceContainerEnumerator));
 
         instanceContainerEnumerator.Dispose();
 
         return results;
+    }
+
+    private static async Task<bool> TryMoveNextOrThrow(Action<TestInstanceContainer?>? exceptionCallback, IEnumerator<TestInstanceContainer> instanceContainerEnumerator)
+    {
+        bool continueIterating;
+        try
+        {
+            continueIterating = instanceContainerEnumerator.MoveNext();
+        }
+        catch (Exception ex)
+        {
+            if (exceptionCallback is not null)
+            {
+                exceptionCallback.Invoke(instanceContainerEnumerator.Current);
+                await DisposeOfTestInstance(instanceContainerEnumerator.Current);
+                continueIterating = true;
+            }
+
+            else
+            {
+                await DisposeOfTestInstance(instanceContainerEnumerator.Current);
+                throw new SailfishIterationException(ex.Message);
+            }
+        }
+
+        return continueIterating;
     }
 
     private static List<TestExecutionResult> CatchAndReturn(TestInstanceContainerProvider testProvider, Exception ex)
@@ -192,11 +214,11 @@ internal class SailfishExecutionEngine : ISailfishExecutionEngine
     {
         try
         {
-            var testExecutionResult = await testCaseIterator.Iterate(testInstanceContainer, cancellationToken);
-            return testExecutionResult;
+            return await testCaseIterator.Iterate(testInstanceContainer, runSettings.DisableOverheadEstimation, cancellationToken);
         }
         catch (Exception exception)
         {
+            if (exception is TestDisabledException) throw;
             return new TestExecutionResult(testInstanceContainer, exception.InnerException ?? exception);
         }
     }

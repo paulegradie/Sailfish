@@ -9,7 +9,7 @@ using Xunit;
 
 namespace Tests.Sailfish.TestAdapter;
 
-public class WhenAssemblingTestCases
+public class TestCaseAssemblyFixture
 {
     private static string FindSpecificUniqueFile(string fileName)
     {

@@ -23,7 +23,7 @@ public class ExamplePerformanceTest : TestBase
 
     public int Type { get; private set; }
 
-    [SailfishVariable(200, 300)] public int WaitPeriod { get; set; }
+    [SailfishVariable(true, 200, 300)] public int WaitPeriod { get; set; }
     [SailfishVariable(1, 2)] public int NTries { get; set; } // try to avoid multiple variables if you can manage
     [SailfishVariable(1, 2)] public int NTriess { get; set; } // try to avoid multiple variables if you can manage
 

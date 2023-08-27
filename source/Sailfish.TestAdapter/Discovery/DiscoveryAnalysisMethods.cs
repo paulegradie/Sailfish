@@ -30,7 +30,7 @@ public static class DiscoveryAnalysisMethods
     /// <exception cref="Exception"></exception>
     public static IEnumerable<ClassMetaData> CompilePreRenderedSourceMap(
         IEnumerable<string> sourceFiles,
-        IEnumerable<Type> performanceTestTypes,
+        Type[] performanceTestTypes,
         string classAttributePrefix = "Sailfish",
         string methodAttributePrefix = "SailfishMethod")
     {
@@ -89,7 +89,9 @@ public static class DiscoveryAnalysisMethods
                                 || attr.Name.ToString() == $"{methodAttributePrefix}Attribute"));
 
                     var className = classDeclaration.Identifier.ValueText;
-                    var performanceTestType = performanceTestTypes.Single(x => x.Name == className);
+                    var performanceTestType = performanceTestTypes.SingleOrDefault(x => x.Name == className);
+                    if (performanceTestType is null) continue;
+
                     var classMetaData = new ClassMetaData(
                         className: className,
                         performanceTestType: performanceTestType,

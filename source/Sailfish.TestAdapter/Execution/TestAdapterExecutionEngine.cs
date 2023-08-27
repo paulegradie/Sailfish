@@ -106,6 +106,7 @@ internal class TestAdapterExecutionEngine : ITestAdapterExecutionEngine
                         PreTestResultCallback(testCaseGroup),
                         PostTestResultCallback(testCaseGroup, preloadedLastRunIfAvailable, testSettings, cancellationToken),
                         ExceptionCallback(testCaseGroup),
+                        TestDisabledCallback(testCaseGroup),
                         cancellationToken)
                     .GetAwaiter().GetResult();
                 groupResults.AddRange(results);
@@ -271,6 +272,30 @@ internal class TestAdapterExecutionEngine : ITestAdapterExecutionEngine
         }
     }
 
+    private Action<TestInstanceContainer?> TestDisabledCallback(IGrouping<string, TestCase>? testCaseGroup)
+    {
+        return container =>
+        {
+            if (container is null || testCaseGroup is null) return;
+
+            var currentTestCase = testCaseGroup.Single(x => x.DisplayName == container.TestCaseId.DisplayName);
+            var testResult = new TestResult(currentTestCase)
+            {
+                ErrorMessage = $"Test Disabled",
+                ErrorStackTrace = null,
+                Outcome = TestOutcome.Skipped,
+                DisplayName = currentTestCase.DisplayName,
+                ComputerName = null,
+                Duration = TimeSpan.Zero,
+                StartTime = default,
+                EndTime = default
+            };
+
+            consoleWriter.RecordEnd(currentTestCase, testResult.Outcome);
+            consoleWriter.RecordResult(testResult);
+        };
+    }
+
     private Action<TestInstanceContainer?> ExceptionCallback(IGrouping<string, TestCase> testCaseGroup)
     {
         return (container) =>
@@ -292,11 +317,7 @@ internal class TestAdapterExecutionEngine : ITestAdapterExecutionEngine
 
     private Action<TestInstanceContainer> PreTestResultCallback(IGrouping<string, TestCase> testCaseGroup)
     {
-        return container =>
-        {
-            var currentTestCase = GetTestCaseFromTestCaseGroupMatchingCurrentContainer(container, testCaseGroup);
-            consoleWriter.RecordStart(currentTestCase);
-        };
+        return container => consoleWriter.RecordStart(GetTestCaseFromTestCaseGroupMatchingCurrentContainer(container, testCaseGroup));
     }
 
     private static TestCase GetTestCaseFromTestCaseGroupMatchingCurrentContainer(TestInstanceContainer container, IEnumerable<TestCase> testCaseGroup)

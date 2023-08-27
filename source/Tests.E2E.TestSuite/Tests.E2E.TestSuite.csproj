@@ -9,6 +9,7 @@
 
     <ItemGroup>
         <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" Version="6.0.13" />
+        <PackageReference Include="Sailfish.Analyzers" Version="0.1.216" />
         <PackageReference Include="Shouldly" Version="4.1.0" />
     </ItemGroup>
     <ItemGroup>

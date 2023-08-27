@@ -39,6 +39,11 @@ public class MarkdownTableConverter : IMarkdownTableConverter
             if (group.Key is null) continue;
             stringBuilder.AppendLine();
             var n = group.Select(x => x.DescriptiveStatisticsResult?.NumIterations).Distinct().Single();
+            if (n is null || n == 0)
+            {
+                continue;
+            }
+
             var table = group.ToStringTable(
                 typeName,
                 new List<string>() { "", "ms", "ms", "ms", "" },

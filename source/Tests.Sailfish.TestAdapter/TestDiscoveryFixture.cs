@@ -6,7 +6,7 @@ using Xunit;
 
 namespace Tests.Sailfish.TestAdapter;
 
-public class WhenDiscoveringTests
+public class TestDiscoveryFixture
 {
     [Fact]
     public void AllTestsAreDiscovered()

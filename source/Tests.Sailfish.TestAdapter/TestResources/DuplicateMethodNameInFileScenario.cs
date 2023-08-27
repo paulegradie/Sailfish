@@ -3,7 +3,7 @@ using Sailfish.Attributes;
 
 namespace Tests.Sailfish.TestAdapter.TestResources;
 
-[Sailfish(Disabled = true)]
+[Sailfish(Disabled = false)]
 public class ExampleComponentTest
 {
     public const string A = "Wow";
