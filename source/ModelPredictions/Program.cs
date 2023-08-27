@@ -10,7 +10,7 @@ Console.WriteLine($"With respect to {pm.PropertyName.Split(".").Last()}\n");
 
 Console.WriteLine("Model Details:\n");
 var function = pm.ComplexityResult.ComplexityFunction;
-Console.WriteLine($"Type:    {function.Name} - thats {function.OName}...");
+Console.WriteLine($"Type:    {function.Name} - that's {function.OName}...");
 Console.WriteLine($"Quality: {function.Quality}\n");
 
 var nValues = new List<int>() { 1, 10, 100, 1000, 50_000 };
