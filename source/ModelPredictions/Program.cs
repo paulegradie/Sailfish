@@ -23,8 +23,8 @@ foreach (var val in nValues)
     Console.WriteLine($"f({val}) = " + Math.Round(result, 3) + " ms");
 }
 
-var scale =  Math.Round(pm.ComplexityResult.ComplexityFunction.FunctionParameters.Scale, 5);
-var bias = Math.Round(pm.ComplexityResult.ComplexityFunction.FunctionParameters.Bias, 8);
+var scale =  Math.Round(pm.ComplexityResult.ComplexityFunction.FunctionParameters?.Scale ?? 0, 5);
+var bias = Math.Round(pm.ComplexityResult.ComplexityFunction.FunctionParameters?.Bias ?? 0, 8);
 Console.WriteLine($"\nFitted Model: f(x) = {scale}x + {bias}");
 
 (TestClassComplexityResult, TestMethodComplexityResult, TestPropertyComplexityResult) GetBestFitModelForFirstMethod()

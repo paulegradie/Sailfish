@@ -1,9 +1,12 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.Linq;
+using System.Reflection;
 using System.Runtime.Caching;
 using System.Threading;
 using System.Threading.Tasks;
+using Sailfish.Attributes;
 using Sailfish.Exceptions;
 using Sailfish.Program;
 using Sailfish.Utils;
@@ -78,6 +81,13 @@ internal class SailfishExecutionEngine : ISailfishExecutionEngine
 
         var results = new List<TestExecutionResult>();
 
+        if (testProvider.Test.GetCustomAttributes<SailfishAttribute>().Single().Disabled)
+        {
+            testDisabledCallback?.Invoke(null);
+            instanceContainerEnumerator.Dispose();
+            return results;
+        }
+
         do
         {
             var testMethodContainer = instanceContainerEnumerator.Current;
@@ -114,13 +124,7 @@ internal class SailfishExecutionEngine : ISailfishExecutionEngine
                     return CatchAndReturn(testProvider, ex);
                 }
 
-
-                TestExecutionResult executionResult;
-                try
-                {
-                    executionResult = await IterateOverVariableCombos(testMethodContainer, cancellationToken);
-                }
-                catch (TestDisabledException)
+                if (testMethodContainer.Disabled)
                 {
                     testDisabledCallback?.Invoke(testMethodContainer);
                     currentPropertyTensorIndex += 1;
@@ -128,6 +132,7 @@ internal class SailfishExecutionEngine : ISailfishExecutionEngine
                     continue;
                 }
 
+                var executionResult = await IterateOverVariableCombos(testMethodContainer, cancellationToken);
 
                 if (!executionResult.IsSuccess)
                 {
@@ -177,6 +182,13 @@ internal class SailfishExecutionEngine : ISailfishExecutionEngine
 
         return results;
     }
+
+    // private static void AssertTestIsNotDisabled(TestInstanceContainer testInstanceContainer)
+    // {
+    //     var methodIsDisabled = testInstanceContainer.ExecutionMethod.GetCustomAttributes<SailfishMethodAttribute>().Single().Disabled;
+    //     var typeIsDisabled = testInstanceContainer.Type.GetCustomAttributes<SailfishAttribute>().Single().Disabled;
+    //     if (methodIsDisabled || typeIsDisabled) throw new TestDisabledException();
+    // }
 
     private static async Task<bool> TryMoveNextOrThrow(Action<TestInstanceContainer?>? exceptionCallback, IEnumerator<TestInstanceContainer> instanceContainerEnumerator)
     {

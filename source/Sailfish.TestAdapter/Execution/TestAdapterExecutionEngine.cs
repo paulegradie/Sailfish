@@ -274,25 +274,39 @@ internal class TestAdapterExecutionEngine : ITestAdapterExecutionEngine
 
     private Action<TestInstanceContainer?> TestDisabledCallback(IGrouping<string, TestCase>? testCaseGroup)
     {
-        return container =>
+        void CreateDisabledResult(TestCase testCase)
         {
-            if (container is null || testCaseGroup is null) return;
-
-            var currentTestCase = testCaseGroup.Single(x => x.DisplayName == container.TestCaseId.GetMethodWithVariables());
-            var testResult = new TestResult(currentTestCase)
+            var testResult = new TestResult(testCase)
             {
                 ErrorMessage = $"Test Disabled",
                 ErrorStackTrace = null,
                 Outcome = TestOutcome.Skipped,
-                DisplayName = currentTestCase.DisplayName,
+                DisplayName = testCase.DisplayName,
                 ComputerName = null,
                 Duration = TimeSpan.Zero,
                 StartTime = default,
                 EndTime = default
             };
 
-            consoleWriter.RecordEnd(currentTestCase, testResult.Outcome);
+            consoleWriter.RecordEnd(testCase, testResult.Outcome);
             consoleWriter.RecordResult(testResult);
+        }
+
+        return container =>
+        {
+            if (testCaseGroup is null) return; // no idea why this would happen, but exceptions are not the way
+            if (container is null) // then we've disabled the class - return all the results for the group
+            {
+                foreach (var testCase in testCaseGroup)
+                {
+                    CreateDisabledResult(testCase);
+                }
+            }
+            else // we've only disabled this method, send a single result
+            {
+                var currentTestCase = testCaseGroup.Single(x => x.DisplayName == container.TestCaseId.GetMethodWithVariables());
+                CreateDisabledResult(currentTestCase);
+            }
         };
     }
 

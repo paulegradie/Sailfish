@@ -18,7 +18,8 @@ internal class TestInstanceContainer
         MethodInfo method,
         TestCaseId testCaseId,
         IExecutionSettings executionSettings,
-        CoreInvoker coreInvoker
+        CoreInvoker coreInvoker,
+        bool disabled
     )
     {
         Type = type;
@@ -27,6 +28,7 @@ internal class TestInstanceContainer
         TestCaseId = testCaseId;
         ExecutionSettings = executionSettings;
         CoreInvoker = coreInvoker;
+        Disabled = disabled;
         GroupingId = $"{instance.GetType().Name}.{method.Name}";
     }
 
@@ -41,8 +43,9 @@ internal class TestInstanceContainer
     public IExecutionSettings ExecutionSettings { get; }
 
     public CoreInvoker CoreInvoker { get; private init; }
+    public bool Disabled { get; }
 
-    public static TestInstanceContainer CreateTestInstance(object instance, MethodInfo method, string[] propertyNames, object[] variables)
+    public static TestInstanceContainer CreateTestInstance(object instance, MethodInfo method, string[] propertyNames, object[] variables, bool disabled)
     {
         if (propertyNames.Length != variables.Length) throw new Exception("Property names and variables do not match");
 
@@ -56,7 +59,8 @@ internal class TestInstanceContainer
             method,
             testCaseId,
             executionSettings,
-            new CoreInvoker(instance, method, new PerformanceTimer()));
+            new CoreInvoker(instance, method, new PerformanceTimer()),
+            disabled);
     }
 
     public void ApplyOverheadEstimates(int overheadEstimate)
