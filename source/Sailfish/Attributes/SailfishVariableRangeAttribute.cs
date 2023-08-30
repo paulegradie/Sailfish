@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.Linq;
 using Sailfish.Exceptions;
 
 namespace Sailfish.Attributes;
@@ -14,30 +15,29 @@ namespace Sailfish.Attributes;
 /// This attribute should be applied to public properties. It has no effect when applied to fields.
 /// </remarks>
 [AttributeUsage(AttributeTargets.Property, AllowMultiple = false)]
-public class SailfishVariableAttribute : Attribute, ISailfishVariableAttribute
+public class SailfishVariableRangeAttribute : Attribute, ISailfishVariableAttribute
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="SailfishVariableAttribute"/> class with the specified values.
     /// </summary>
-    /// <param name="n">A params array of values to be used as variables within the test.</param>
+    /// <param name="start">Int value to start the range</param>
+    /// <param name="count">Number of values to create</param>
+    /// <param name="step">Step between values</param>
     /// <exception cref="SailfishException">Thrown when no values are provided.</exception>
-    public SailfishVariableAttribute([MinLength(1)] params object[] n)
+    public SailfishVariableRangeAttribute(int start, int count, int step = 1)
     {
-        if (n.Length == 0)
-        {
-            throw new SailfishException($"No values were provided to the {nameof(SailfishVariableAttribute)} attribute.");
-        }
-
-        N.AddRange(n);
+        N = Range(start, count, step).Cast<object>();
     }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="SailfishVariableAttribute"/> class with the specified values and the option to best fit the test method to a complexity curve.
     /// </summary>
     /// <param name="complexity">Boolean to enable complexity extimate feature</param>
-    /// <param name="n">A params array of values to be used as variables within the test.</param>
+    /// <param name="start">Int value to start the range</param>
+    /// <param name="count">Number of values to create</param>
+    /// <param name="step">Step between values</param>
     /// <exception cref="SailfishException">Thrown when no values are provided.</exception>
-    public SailfishVariableAttribute(bool complexity, [MinLength(1)] params object[] n) : this(n)
+    public SailfishVariableRangeAttribute(bool complexity, int start, int count, int step = 1) : this(start, count, step)
     {
         EstimateComplexity = complexity;
     }
@@ -45,7 +45,7 @@ public class SailfishVariableAttribute : Attribute, ISailfishVariableAttribute
     /// <summary>
     /// Gets the list of values used as variables within the test.
     /// </summary>
-    private List<object> N { get; } = new();
+    private IEnumerable<object> N { get; }
 
     private bool EstimateComplexity { get; set; }
 
@@ -65,5 +65,21 @@ public class SailfishVariableAttribute : Attribute, ISailfishVariableAttribute
     public bool IsComplexityVariable()
     {
         return EstimateComplexity;
+    }
+
+    private static IEnumerable<int> Range(int start, [Range(0, int.MaxValue)] int count, [Range(0, int.MaxValue)] int step)
+    {
+        if (count <= 0 || step <= 0)
+        {
+            throw new ArgumentException("Count and step must be positive.");
+        }
+
+        var current = start;
+
+        for (var i = 0; i < count; i++)
+        {
+            yield return current;
+            current += step;
+        }
     }
 }

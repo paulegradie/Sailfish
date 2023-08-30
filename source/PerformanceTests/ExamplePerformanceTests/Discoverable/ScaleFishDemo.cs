@@ -9,26 +9,26 @@ namespace PerformanceTests.ExamplePerformanceTests.Discoverable;
 [Sailfish(NumIterations = 7, Disabled = false)]
 public class ScaleFishDemo
 {
-    [SailfishVariable(true, 1, 5, 10, 11, 12, 13, 15, 20, 25, 30)]
+    [SailfishVariableRange(true, 1, 6, 30)]
     public int N { get; set; }
 
     [SailfishVariable(50, 100)] public int OtherN { get; set; }
 
-    [SailfishMethod]
+    [SailfishMethod(disabled: true)]
     public async Task Quadratic(CancellationToken cancellationToken)
     {
         await Task.CompletedTask;
         await Task.Delay(Convert.ToInt32(N * N) + OtherN, cancellationToken);
     }
 
-    [SailfishMethod]
+    [SailfishMethod(disabled: true)]
     public async Task Cubic(CancellationToken cancellationToken)
     {
         await Task.CompletedTask;
         await Task.Delay(Convert.ToInt32(N * N * N) + OtherN, cancellationToken);
     }
 
-    [SailfishMethod]
+    [SailfishMethod(disabled: false, disableOverheadEstimation: true)]
     public async Task NLogN(CancellationToken cancellationToken)
     {
         await Task.CompletedTask;

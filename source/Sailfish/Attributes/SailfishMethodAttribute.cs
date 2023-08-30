@@ -12,10 +12,17 @@ namespace Sailfish.Attributes;
 public sealed class SailfishMethodAttribute : Attribute
 {
     /// <summary>
-    /// Gets or sets a value indicating whether the Sailfish test is disabled.
+    /// Indicates whether the Sailfish method is disabled.
     /// </summary>
     /// <value><c>true</c> if the test is disabled; otherwise, <c>false</c>.</value>
     public bool Disabled { get; }
+
+    /// <summary>
+    /// Gets or sets a va
+    /// </summary>
+    public bool DisableComplexity { get; }
+
+    public bool DisableOverheadEstimation { get; }
 
     internal SailfishMethodAttribute()
     {
@@ -25,8 +32,11 @@ public sealed class SailfishMethodAttribute : Attribute
     /// Initializes a new instance of the <see cref="SailfishMethodAttribute"/> class.
     /// </summary>
     /// <param name="disabled">Whether or not to ignore the given test method</param>
-    public SailfishMethodAttribute(bool disabled = false)
+    /// <param name="disableComplexity">Whether or not to disable complexity analysis for this method</param>
+    public SailfishMethodAttribute(bool disabled = false, bool disableComplexity = false, bool disableOverheadEstimation = false)
     {
         Disabled = disabled;
+        DisableComplexity = disableComplexity;
+        DisableOverheadEstimation = disableOverheadEstimation;
     }
 }
