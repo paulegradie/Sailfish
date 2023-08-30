@@ -46,15 +46,15 @@ public class TestDiscoverer : ITestDiscoverer
             throw new SailfishException(ex);
         }
 
-        var sorted = SortTestCases(testCases);
-        
+        var sorted = SortTestCases(testCases, logger);
+
         foreach (var testCase in sorted)
         {
             discoverySink.SendTestCase(testCase);
         }
     }
-    
-        private static List<TestCase> SortTestCases(IEnumerable<TestCase> unsorted)
+
+    private static List<TestCase> SortTestCases(IEnumerable<TestCase> unsorted, IMessageLogger logger)
     {
         var classTestCases = unsorted
             .Select(
@@ -131,9 +131,12 @@ public class TestDiscoverer : ITestDiscoverer
                     orderedCases.AddRange(classTestCases.Select(x => x.TestCase));
                     break;
             }
+            logger.SendMessage(TestMessageLevel.Informational,"W DID IT!");
         }
         catch (Exception ex)
         {
+            logger.SendMessage(TestMessageLevel.Error, ex.Message);
+            logger.SendMessage(TestMessageLevel.Error, string.Join("\n", ex.StackTrace));
         }
 
         return orderedCases;

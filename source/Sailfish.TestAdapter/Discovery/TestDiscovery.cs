@@ -82,6 +82,4 @@ internal static class TestDiscovery
 
         return testCases;
     }
-
-    
 }
