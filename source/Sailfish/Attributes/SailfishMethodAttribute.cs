@@ -18,15 +18,14 @@ public sealed class SailfishMethodAttribute : Attribute
     public bool Disabled { get; set; }
 
     /// <summary>
-    /// Gets or sets a va
+    /// Gets/Sets whether to disable complexity analysis for this method logic
     /// </summary>
     public bool DisableComplexity { get; set; }
 
+    /// <summary>
+    /// Gets/Sets whether to disable overhead estimation for the method
+    /// </summary>
     public bool DisableOverheadEstimation { get; set; }
-
-    // internal SailfishMethodAttribute()
-    // {
-    // }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="SailfishMethodAttribute"/> class.

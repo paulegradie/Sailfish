@@ -11,7 +11,7 @@ namespace PerformanceTests.ExamplePerformanceTests.Discoverable;
 
 [WriteToMarkdown]
 [WriteToCsv]
-[Sailfish]
+[Sailfish(DisableOverheadEstimation = true)]
 public class ExamplePerformanceTest : TestBase
 {
     public ExamplePerformanceTest(
@@ -26,14 +26,14 @@ public class ExamplePerformanceTest : TestBase
     [SailfishVariable(1, 2)] 
     public int NTries { get; set; }
 
-    [SailfishMethod(DisableOverheadEstimation = true)]
+    [SailfishMethod]
     public async Task WaitPeriodPerfTest(CancellationToken ct)
     {
         await Task.Delay(WaitPeriod, ct);
         await Client.GetStringAsync("/", ct);
     }
 
-    [SailfishMethod(DisableOverheadEstimation = true)]
+    [SailfishMethod]
     public async Task Other(CancellationToken cancellationToken)
     {
         await Task.Delay(WaitPeriod, cancellationToken);

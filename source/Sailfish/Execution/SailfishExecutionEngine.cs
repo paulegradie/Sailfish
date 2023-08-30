@@ -220,14 +220,23 @@ internal class SailfishExecutionEngine : ISailfishExecutionEngine
     {
         try
         {
-            var overEstimationDisabled = testInstanceContainer.ExecutionMethod.GetCustomAttribute<SailfishMethodAttribute>()?.DisableOverheadEstimation ?? false;
-            return await testCaseIterator.Iterate(testInstanceContainer, runSettings.DisableOverheadEstimation || overEstimationDisabled, cancellationToken);
+            return await testCaseIterator.Iterate(testInstanceContainer,
+                runSettings.DisableOverheadEstimation
+                || ShouldDisableOverheadEstimationFromTypeOrMethod(testInstanceContainer),
+                cancellationToken);
         }
         catch (Exception exception)
         {
             if (exception is TestDisabledException) throw;
             return new TestExecutionResult(testInstanceContainer, exception.InnerException ?? exception);
         }
+    }
+
+    private static bool ShouldDisableOverheadEstimationFromTypeOrMethod(TestInstanceContainer testInstanceContainer)
+    {
+        var methodDisabled = testInstanceContainer.ExecutionMethod.GetCustomAttribute<SailfishMethodAttribute>()?.DisableOverheadEstimation ?? false;
+        var classDisabled = testInstanceContainer.Type.GetCustomAttribute<SailfishAttribute>()?.DisableOverheadEstimation ?? false;
+        return methodDisabled || classDisabled;
     }
 
     private static bool ShouldCallGlobalTeardown(int methodIndex, int totalMethodCount, int currentVariableSetIndex, int totalNumVariableSets)
