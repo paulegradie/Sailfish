@@ -10,7 +10,7 @@ public class RangeAttributeExample
     [SailfishVariableRange(true, 0, 30, 2)]
     public int N { get; set; }
 
-    [SailfishMethod(false, true )]
+    [SailfishMethod(Disabled = false, DisableOverheadEstimation = true )]
     public void MainTestMethod()
     {
         Console.WriteLine(N);

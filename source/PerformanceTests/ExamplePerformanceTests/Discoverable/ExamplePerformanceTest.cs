@@ -26,14 +26,14 @@ public class ExamplePerformanceTest : TestBase
     [SailfishVariable(1, 2)] 
     public int NTries { get; set; }
 
-    [SailfishMethod]
+    [SailfishMethod(DisableOverheadEstimation = true)]
     public async Task WaitPeriodPerfTest(CancellationToken ct)
     {
         await Task.Delay(WaitPeriod, ct);
         await Client.GetStringAsync("/", ct);
     }
 
-    [SailfishMethod]
+    [SailfishMethod(DisableOverheadEstimation = true)]
     public async Task Other(CancellationToken cancellationToken)
     {
         await Task.Delay(WaitPeriod, cancellationToken);

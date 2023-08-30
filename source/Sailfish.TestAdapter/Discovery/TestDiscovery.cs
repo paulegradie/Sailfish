@@ -76,66 +76,12 @@ internal static class TestDiscovery
                     .ToList();
 
                 if (classTestCases.Count == 0) continue;
-                var numVariables = classTestCases.First().Variables.Length;
-
-                var orderedCases = SortTestCases(numVariables, classTestCases);
-                testCases.AddRange(orderedCases);
+                testCases.AddRange(classTestCases);
             }
         }
 
         return testCases;
     }
 
-    private static List<TestCase> SortTestCases(int numVariables, List<OrderableTestCases> classTestCases)
-    {
-        var orderedCases = new List<TestCase>();
-        classTestCases = classTestCases.OrderBy(x => x.TestCase.GetPropertyValue(SailfishManagedProperty.SailfishMethodFilterProperty)).ToList();
-        try
-        {
-            switch (numVariables)
-            {
-                case 1:
-                    var c1 = classTestCases.OrderBy(x => x.TestCase.GetPropertyValue(SailfishManagedProperty.SailfishMethodFilterProperty))
-                        .ThenBy(x => x.Variables[0] as int? ?? x.Variables[0]).Select(x => x.TestCase);
-                    orderedCases.AddRange(c1);
-                    break;
-                case 2:
-                    var c2 = classTestCases.OrderBy(x => x.TestCase.GetPropertyValue(SailfishManagedProperty.SailfishMethodFilterProperty)).ThenBy(x => x.Variables[0])
-                        .ThenBy(x => x.Variables[1]).Select(x => x.TestCase);
-                    orderedCases.AddRange(c2);
-                    break;
-                case 3:
-                    var c3 = classTestCases.OrderBy(x => x.TestCase.GetPropertyValue(SailfishManagedProperty.SailfishMethodFilterProperty)).ThenBy(x => x.Variables[0])
-                        .ThenBy(x => x.Variables[1]).ThenBy(x => x.Variables[2]).Select(x => x.TestCase);
-                    orderedCases.AddRange(c3);
-                    break;
-                case 4:
-                    var c4 = classTestCases.OrderBy(x => x.TestCase.GetPropertyValue(SailfishManagedProperty.SailfishMethodFilterProperty)).ThenBy(x => x.Variables[0])
-                        .ThenBy(x => x.Variables[1]).ThenBy(x => x.Variables[2]).ThenBy(x => x.Variables[3])
-                        .Select(x => x.TestCase);
-                    orderedCases.AddRange(c4);
-                    break;
-                case 5:
-                    var c5 = classTestCases.OrderBy(x => x.TestCase.GetPropertyValue(SailfishManagedProperty.SailfishMethodFilterProperty)).ThenBy(x => x.Variables[0])
-                        .ThenBy(x => x.Variables[1]).ThenBy(x => x.Variables[2]).ThenBy(x => x.Variables[3])
-                        .ThenBy(x => x.Variables[4]).Select(x => x.TestCase);
-                    orderedCases.AddRange(c5);
-                    break;
-                case 6:
-                    var c6 = classTestCases.OrderBy(x => x.TestCase.GetPropertyValue(SailfishManagedProperty.SailfishMethodFilterProperty)).ThenBy(x => x.Variables[0])
-                        .ThenBy(x => x.Variables[1]).ThenBy(x => x.Variables[2]).ThenBy(x => x.Variables[3])
-                        .ThenBy(x => x.Variables[4]).ThenBy(x => x.Variables[5]).Select(x => x.TestCase);
-                    orderedCases.AddRange(c6);
-                    break;
-                default:
-                    orderedCases.AddRange(classTestCases.Select(x => x.TestCase));
-                    break;
-            }
-        }
-        catch (Exception ex)
-        {
-        }
-
-        return orderedCases;
-    }
+    
 }

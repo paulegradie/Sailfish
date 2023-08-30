@@ -14,21 +14,21 @@ public class ScaleFishDemo
 
     [SailfishVariable(50, 100)] public int OtherN { get; set; }
 
-    [SailfishMethod(disabled: true)]
+    [SailfishMethod(Disabled = true)]
     public async Task Quadratic(CancellationToken cancellationToken)
     {
         await Task.CompletedTask;
         await Task.Delay(Convert.ToInt32(N * N) + OtherN, cancellationToken);
     }
 
-    [SailfishMethod(disabled: true)]
+    [SailfishMethod(Disabled = true)]
     public async Task Cubic(CancellationToken cancellationToken)
     {
         await Task.CompletedTask;
         await Task.Delay(Convert.ToInt32(N * N * N) + OtherN, cancellationToken);
     }
 
-    [SailfishMethod(disabled: false, disableOverheadEstimation: true)]
+    [SailfishMethod(Disabled = false, DisableOverheadEstimation = true)]
     public async Task NLogN(CancellationToken cancellationToken)
     {
         await Task.CompletedTask;
