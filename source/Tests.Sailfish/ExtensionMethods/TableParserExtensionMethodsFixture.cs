@@ -62,9 +62,9 @@ public class TableParserExtensionMethodsFixture
 
         var expected = new[]
         {
-            "| DisplayName                       | MeanBefore | MeanAfter | MedianBefore | MedianAfter | PValue        | TestStatistic | ChangeDescription |",
-            "| ---                               | ---        | ---       | ---          | ---         | ---           | ---           | ---               |",
-            "| MyClass.MySampleTest(N: 2, X: 4)  | 5 ms       | 5 ms      | 5 ms         | 4 ms        | 0.8896057503  | 47            | No Change         |"
+            "| DisplayName                      | MeanBefore | MeanAfter | MedianBefore | MedianAfter |       PValue | TestStatistic | ChangeDescription |",
+            "| ---                              | ---        | ---       | ---          | ---         | ---          | ---           | ---               |",
+            "| MyClass.MySampleTest(N: 2, X: 4) |       5 ms |      5 ms |         5 ms |        4 ms | 0.8896057503 |            47 |         No Change |"
         };
         res.ShouldBeEquivalentTo(expected);
     }
