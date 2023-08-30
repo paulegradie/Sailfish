@@ -12,7 +12,7 @@ internal static class TestCaseItemCreator
 {
     private static PropertySetGenerator PropertySetGenerator => new(new ParameterCombinator(), new IterationVariableRetriever());
 
-    public static IEnumerable<TestCase> AssembleTestCases(ClassMetaData classMetaData, string sourceDll, IHashAlgorithm hashAlgorithm)
+    public static IEnumerable<OrderableTestCases> AssembleTestCases(ClassMetaData classMetaData, string sourceDll, IHashAlgorithm hashAlgorithm)
     {
         var propertySets = PropertySetGenerator.GenerateSailfishVariableSets(classMetaData.PerformanceTestType, out _).ToArray();
         foreach (var methodMetaData in classMetaData.Methods)
@@ -21,16 +21,17 @@ internal static class TestCaseItemCreator
             for (var i = 0; i < numToMake; i++)
             {
                 var propertyNames = propertySets.Length > 0 ? propertySets[i].GetPropertyNames() : Array.Empty<string>();
-                var propertyValues = propertySets.Length > 0 ? propertySets[i].GetPropertyValues() : Array.Empty<string>();
-                yield return CreateTestCase(
-                    classMetaData.PerformanceTestType,
-                    sourceDll,
-                    classMetaData.FilePath,
-                    methodMetaData.MethodName,
-                    methodMetaData.LineNumber,
-                    propertyNames,
-                    propertyValues,
-                    hashAlgorithm);
+                var propertyValues = propertySets.Length > 0 ? propertySets[i].GetPropertyValues().ToArray() : Array.Empty<string>();
+                yield return new OrderableTestCases(CreateTestCase(
+                        classMetaData.PerformanceTestType,
+                        sourceDll,
+                        classMetaData.FilePath,
+                        methodMetaData.MethodName,
+                        methodMetaData.LineNumber,
+                        propertyNames,
+                        propertyValues,
+                        hashAlgorithm),
+                    propertyValues.ToArray());
             }
         }
     }
@@ -70,4 +71,16 @@ internal static class TestCaseItemCreator
 
         return testCase;
     }
+}
+
+internal class OrderableTestCases
+{
+    public OrderableTestCases(TestCase testCase, object[] variables)
+    {
+        TestCase = testCase;
+        Variables = variables;
+    }
+
+    public TestCase TestCase { get; set; }
+    public object[] Variables { get; set; }
 }

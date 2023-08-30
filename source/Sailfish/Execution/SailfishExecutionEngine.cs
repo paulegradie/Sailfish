@@ -39,6 +39,7 @@ internal class SailfishExecutionEngine : ISailfishExecutionEngine
     /// <param name="preCallback"></param>
     /// <param name="callback"></param>
     /// <param name="exceptionCallback"></param>
+    /// <param name="testDisabledCallback"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
     public async Task<List<TestExecutionResult>> ActivateContainer(
@@ -183,13 +184,6 @@ internal class SailfishExecutionEngine : ISailfishExecutionEngine
         return results;
     }
 
-    // private static void AssertTestIsNotDisabled(TestInstanceContainer testInstanceContainer)
-    // {
-    //     var methodIsDisabled = testInstanceContainer.ExecutionMethod.GetCustomAttributes<SailfishMethodAttribute>().Single().Disabled;
-    //     var typeIsDisabled = testInstanceContainer.Type.GetCustomAttributes<SailfishAttribute>().Single().Disabled;
-    //     if (methodIsDisabled || typeIsDisabled) throw new TestDisabledException();
-    // }
-
     private static async Task<bool> TryMoveNextOrThrow(Action<TestInstanceContainer?>? exceptionCallback, IEnumerator<TestInstanceContainer> instanceContainerEnumerator)
     {
         bool continueIterating;
@@ -226,7 +220,8 @@ internal class SailfishExecutionEngine : ISailfishExecutionEngine
     {
         try
         {
-            return await testCaseIterator.Iterate(testInstanceContainer, runSettings.DisableOverheadEstimation, cancellationToken);
+            var overEstimationDisabled = testInstanceContainer.ExecutionMethod.GetCustomAttribute<SailfishMethodAttribute>()?.DisableOverheadEstimation ?? false;
+            return await testCaseIterator.Iterate(testInstanceContainer, runSettings.DisableOverheadEstimation || overEstimationDisabled, cancellationToken);
         }
         catch (Exception exception)
         {

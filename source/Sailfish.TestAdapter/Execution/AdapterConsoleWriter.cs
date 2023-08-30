@@ -104,24 +104,47 @@ internal class AdapterConsoleWriter : IAdapterConsoleWriter
         return markdownStringTable;
     }
 
+    class Row
+    {
+        public Row(double item, string name)
+        {
+            Name = name;
+            Item = item;
+        }
+
+        public string Name { get; set; }
+        public double Item { get; set; }
+    }
+
     private static string CreateIdeTestOutputWindowContent(ICompiledTestCaseResult testCaseResult)
     {
         if (testCaseResult.DescriptiveStatisticsResult == null || testCaseResult.DescriptiveStatisticsResult.NumIterations == 0) return string.Empty;
         var testCaseName = testCaseResult.TestCaseId;
         var results = testCaseResult.DescriptiveStatisticsResult!;
+
+        var momentTable = new List<Row>()
+        {
+            new Row(Math.Round(results.Mean, 4), "Mean"),
+            new Row(Math.Round(results.Median, 4), "Median"),
+            new Row(Math.Round(results.StdDev, 4), "StdDev"),
+            new(Math.Round(results.RawExecutionResults.Min(), 4), "Min"),
+            new(Math.Round(results.RawExecutionResults.Max(), 4), "Max")
+        };
+
         var stringBuilder = new StringBuilder();
         stringBuilder.AppendLine(testCaseName?.TestCaseName.Name);
         stringBuilder.AppendLine();
-        stringBuilder.AppendLine($"-- Moments (N={results.NumIterations}) --");
-        stringBuilder.AppendLine("Mean:   " + Math.Round(results.Mean, 4) + " ms");
-        stringBuilder.AppendLine("Median: " + Math.Round(results.Median, 4) + " ms");
-        stringBuilder.AppendLine("StdDev: " + Math.Round(results.StdDev, 4) + " ms");
-        stringBuilder.AppendLine();
-        stringBuilder.AppendLine("-- Raw Results --");
-        stringBuilder.AppendLine("Min: " + Math.Round(results.RawExecutionResults.Min(), 4) + " ms");
-        stringBuilder.AppendLine("Max: " + Math.Round(results.RawExecutionResults.Max(), 4) + " ms");
-        stringBuilder.AppendLine();
-        stringBuilder.AppendLine("-- Adjusted Raw Results --");
+        const string textLineStats = "Descriptive Statistics";
+        stringBuilder.AppendLine(textLineStats);
+        stringBuilder.AppendLine(string.Join("", Enumerable.Range(0, textLineStats.Length).Select(x => "-")));
+        stringBuilder.AppendLine(momentTable.ToStringTable(
+            new[] { "", "" },
+            new[] { "Stat", " Time (ms)" },
+            x => x.Name, x => x.Item));
+
+        const string textLineDist = "Adjusted Distribution (ms)";
+        stringBuilder.AppendLine(textLineDist);
+        stringBuilder.AppendLine(string.Join("", Enumerable.Range(0, textLineDist.Length).Select(x => "-")));
         stringBuilder.AppendLine(string.Join(", ", results.RawExecutionResults.Select(x => Math.Round(x, 4))));
 
 
@@ -141,7 +164,10 @@ internal class AdapterConsoleWriter : IAdapterConsoleWriter
     public string WriteTestResultsToIdeConsole(TestCaseResults testCaseResults, TestIds testIds, TestSettings testSettings)
     {
         var stringBuilder = new StringBuilder();
-        stringBuilder.AppendLine("-- Statistical Test --");
+        const string testLine = "Statistical Test";
+        stringBuilder.AppendLine(testLine);
+        stringBuilder.AppendLine(string.Join("", Enumerable.Range(0, testLine.Length).Select(x => "-")));
+
         stringBuilder.AppendLine("Test Used:       " + testSettings.TestType);
         stringBuilder.AppendLine("PVal Threshold:  " + testSettings.Alpha);
         stringBuilder.AppendLine("PValue:          " + testCaseResults.TestResults.PValue);
@@ -157,19 +183,16 @@ internal class AdapterConsoleWriter : IAdapterConsoleWriter
         var tableValues = new List<Table>()
         {
             new() { Name = "Mean", Before = Math.Round(testCaseResults.TestResults.MeanBefore, 4), After = Math.Round(testCaseResults.TestResults.MeanAfter, 4) },
-            new() { Name = "Median", Before = Math.Round(testCaseResults.TestResults.MedianBefore, 4), After = Math.Round(testCaseResults.TestResults.MedianAfter, 4) }
-        };
-        var sampleSize = new List<Table>()
-        {
+            new() { Name = "Median", Before = Math.Round(testCaseResults.TestResults.MedianBefore, 4), After = Math.Round(testCaseResults.TestResults.MedianAfter, 4) },
             new() { Name = "Sample Size", Before = testCaseResults.TestResults.SampleSizeBefore, After = testCaseResults.TestResults.SampleSizeAfter }
         };
 
         stringBuilder.AppendLine(tableValues.ToStringTable(
+            new[] { "", "", "" },
+            new[] { "", "Before (ms)", "After (ms)" },
             t => t.Name,
             t => t.Before,
             t => t.After));
-
-        stringBuilder.AppendLine(sampleSize.ToStringTable(t => t.Name, t => t.Before, t => t.After));
 
         return stringBuilder.ToString();
     }
