@@ -61,4 +61,9 @@ public sealed class SailfishAttribute : Attribute
     /// </summary>
     /// <value><c>true</c> if the test is disabled; otherwise, <c>false</c>.</value>
     public bool Disabled { get; set; }
+    
+    /// <summary>
+    /// Gets/Sets whether to disable overhead estimation for the entire class
+    /// </summary>
+    public bool DisableOverheadEstimation { get; set; }
 }

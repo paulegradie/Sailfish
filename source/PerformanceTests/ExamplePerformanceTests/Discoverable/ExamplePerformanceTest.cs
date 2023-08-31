@@ -11,7 +11,7 @@ namespace PerformanceTests.ExamplePerformanceTests.Discoverable;
 
 [WriteToMarkdown]
 [WriteToCsv]
-[Sailfish]
+[Sailfish(DisableOverheadEstimation = true)]
 public class ExamplePerformanceTest : TestBase
 {
     public ExamplePerformanceTest(

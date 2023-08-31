@@ -17,8 +17,10 @@ public class TypeActivator : ITypeActivator
         this.lifetimeScope = lifetimeScope;
     }
 
-    public object CreateDehydratedTestInstance(Type test, TestCaseId testCaseId)
+    public object CreateDehydratedTestInstance(Type test, TestCaseId testCaseId, bool disabled)
     {
+        if (disabled) return Activator.CreateInstance(test)!; 
+
         var ctorArgTypes = test.GetCtorParamTypes();
         if (ctorArgTypes.Length != ctorArgTypes.Distinct().Count())
         {
@@ -33,7 +35,7 @@ public class TypeActivator : ITypeActivator
         }
 
         var constructors = test.GetConstructors(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
-
+        
         var obj = constructors.Length switch
         {
             0 => Activator.CreateInstance(test),

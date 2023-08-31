@@ -5,6 +5,7 @@ using System.Linq;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.Logging;
 using Sailfish.Attributes;
+using Sailfish.TestAdapter.TestProperties;
 
 namespace Sailfish.TestAdapter.Discovery;
 
@@ -70,7 +71,11 @@ internal static class TestDiscovery
 
             foreach (var classMetaData in classMetaDatas)
             {
-                var classTestCases = TestCaseItemCreator.AssembleTestCases(classMetaData, sourceDllPath, hasher);
+                var classTestCases = TestCaseItemCreator
+                    .AssembleTestCases(classMetaData, sourceDllPath, hasher)
+                    .ToList();
+
+                if (classTestCases.Count == 0) continue;
                 testCases.AddRange(classTestCases);
             }
         }

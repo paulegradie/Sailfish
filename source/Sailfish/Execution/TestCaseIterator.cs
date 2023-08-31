@@ -1,10 +1,8 @@
 ﻿using System;
-using System.Linq;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using Sailfish.Attributes;
-using Sailfish.Exceptions;
 
 namespace Sailfish.Execution;
 
@@ -12,8 +10,6 @@ internal class TestCaseIterator : ITestCaseIterator
 {
     public async Task<TestExecutionResult> Iterate(TestInstanceContainer testInstanceContainer, bool disableOverheadEstimation, CancellationToken cancellationToken)
     {
-        AssertTestIsNotDisabled(testInstanceContainer);
-
         var overheadEstimator = new OverheadEstimator();
         var warmupResult = await WarmupIterations(testInstanceContainer, cancellationToken);
         if (!warmupResult.IsSuccess)
@@ -62,13 +58,6 @@ internal class TestCaseIterator : ITestCaseIterator
         }
 
         return new TestExecutionResult(testInstanceContainer);
-    }
-
-    private static void AssertTestIsNotDisabled(TestInstanceContainer testInstanceContainer)
-    {
-        var methodIsDisabled = testInstanceContainer.ExecutionMethod.GetCustomAttributes<SailfishMethodAttribute>().Single().Disabled;
-        var typeIsDisabled = testInstanceContainer.Type.GetCustomAttributes<SailfishAttribute>().Single().Disabled;
-        if (methodIsDisabled || typeIsDisabled) throw new TestDisabledException();
     }
 
     private static async Task<TestExecutionResult> WarmupIterations(TestInstanceContainer testInstanceContainer, CancellationToken cancellationToken)

@@ -1,9 +1,12 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.Linq;
+using System.Reflection;
 using System.Runtime.Caching;
 using System.Threading;
 using System.Threading.Tasks;
+using Sailfish.Attributes;
 using Sailfish.Exceptions;
 using Sailfish.Program;
 using Sailfish.Utils;
@@ -36,6 +39,7 @@ internal class SailfishExecutionEngine : ISailfishExecutionEngine
     /// <param name="preCallback"></param>
     /// <param name="callback"></param>
     /// <param name="exceptionCallback"></param>
+    /// <param name="testDisabledCallback"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
     public async Task<List<TestExecutionResult>> ActivateContainer(
@@ -78,6 +82,13 @@ internal class SailfishExecutionEngine : ISailfishExecutionEngine
 
         var results = new List<TestExecutionResult>();
 
+        if (testProvider.Test.GetCustomAttributes<SailfishAttribute>().Single().Disabled)
+        {
+            testDisabledCallback?.Invoke(null);
+            instanceContainerEnumerator.Dispose();
+            return results;
+        }
+
         do
         {
             var testMethodContainer = instanceContainerEnumerator.Current;
@@ -114,13 +125,7 @@ internal class SailfishExecutionEngine : ISailfishExecutionEngine
                     return CatchAndReturn(testProvider, ex);
                 }
 
-
-                TestExecutionResult executionResult;
-                try
-                {
-                    executionResult = await IterateOverVariableCombos(testMethodContainer, cancellationToken);
-                }
-                catch (TestDisabledException)
+                if (testMethodContainer.Disabled)
                 {
                     testDisabledCallback?.Invoke(testMethodContainer);
                     currentPropertyTensorIndex += 1;
@@ -128,6 +133,7 @@ internal class SailfishExecutionEngine : ISailfishExecutionEngine
                     continue;
                 }
 
+                var executionResult = await IterateOverVariableCombos(testMethodContainer, cancellationToken);
 
                 if (!executionResult.IsSuccess)
                 {
@@ -214,13 +220,23 @@ internal class SailfishExecutionEngine : ISailfishExecutionEngine
     {
         try
         {
-            return await testCaseIterator.Iterate(testInstanceContainer, runSettings.DisableOverheadEstimation, cancellationToken);
+            return await testCaseIterator.Iterate(testInstanceContainer,
+                runSettings.DisableOverheadEstimation
+                || ShouldDisableOverheadEstimationFromTypeOrMethod(testInstanceContainer),
+                cancellationToken);
         }
         catch (Exception exception)
         {
             if (exception is TestDisabledException) throw;
             return new TestExecutionResult(testInstanceContainer, exception.InnerException ?? exception);
         }
+    }
+
+    private static bool ShouldDisableOverheadEstimationFromTypeOrMethod(TestInstanceContainer testInstanceContainer)
+    {
+        var methodDisabled = testInstanceContainer.ExecutionMethod.GetCustomAttribute<SailfishMethodAttribute>()?.DisableOverheadEstimation ?? false;
+        var classDisabled = testInstanceContainer.Type.GetCustomAttribute<SailfishAttribute>()?.DisableOverheadEstimation ?? false;
+        return methodDisabled || classDisabled;
     }
 
     private static bool ShouldCallGlobalTeardown(int methodIndex, int totalMethodCount, int currentVariableSetIndex, int totalNumVariableSets)

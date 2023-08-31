@@ -21,7 +21,7 @@ internal static class TestCaseItemCreator
             for (var i = 0; i < numToMake; i++)
             {
                 var propertyNames = propertySets.Length > 0 ? propertySets[i].GetPropertyNames() : Array.Empty<string>();
-                var propertyValues = propertySets.Length > 0 ? propertySets[i].GetPropertyValues() : Array.Empty<string>();
+                var propertyValues = propertySets.Length > 0 ? propertySets[i].GetPropertyValues().ToArray() : Array.Empty<string>();
                 yield return CreateTestCase(
                     classMetaData.PerformanceTestType,
                     sourceDll,

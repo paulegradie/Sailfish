@@ -26,7 +26,7 @@ public class ComplexityComputer : IComplexityComputer
             var sailfishComplexityVariables = testClassSummary
                 .Type
                 .GetProperties()
-                .Where(x => x.GetCustomAttributes<SailfishVariableAttribute>().Any(a => a.IsComplexityVariable()))
+                .Where(x => x.IsSailfishComplexityVariable())
                 .ToList();
             if (sailfishComplexityVariables.Count == 0) continue;
 
@@ -34,14 +34,14 @@ public class ComplexityComputer : IComplexityComputer
             var complexityPropertyNames = testClassSummary
                 .Type
                 .GetProperties()
-                .Where(x => x.GetCustomAttributes<SailfishVariableAttribute>().Any(attr => attr.IsComplexityVariable()))
+                .Where(x => x.IsSailfishComplexityVariable())
                 .Select(x => x.Name)
                 .ToList();
 
             var sailfishVariablesCountTuples = testClassSummary.Type
                 .GetProperties()
-                .Where(x => x.GetCustomAttributes<SailfishVariableAttribute>().Any())
-                .Select(y => (y.Name, y.GetCustomAttributes<SailfishVariableAttribute>().Single().GetVariables().Count()))
+                .Where(x => x.PropertyHasSailfishAttribute())
+                .Select(y => (y.Name, y.GetSailfishVariableAttributeOrThrow().GetVariables().Count()))
                 .ToList();
 
             //                                method name    complexity property  result
@@ -58,13 +58,18 @@ public class ComplexityComputer : IComplexityComputer
                     var currentVar = sailfishVariablesCountTuples[i];
                     if (!complexityPropertyNames.Contains(currentVar.Name)) continue;
 
-                    var currentSailfishVariables = sailfishComplexityVariables
-                        .Single(x => x.Name == sailfishVariablesCountTuples[i].Name)
-                        .GetCustomAttribute<SailfishVariableAttribute>()?
-                        .GetVariables()
+                    var currentSailfishProperty = sailfishComplexityVariables.Single(x => x.Name == sailfishVariablesCountTuples[i].Name);
+                    var sailfishAttribute = currentSailfishProperty.GetSailfishVariableAttributeOrThrow();
+
+                    var rawCurrentSailfishVariables = sailfishAttribute.GetVariables().ToList();
+                    if (rawCurrentSailfishVariables.Any(x => x is not int))
+                    {
+                        throw new SailfishException("Complexity analysis is only compatible with integer ISailfishVariables");
+                    }
+
+                    var currentSailfishVariables = rawCurrentSailfishVariables
                         .Cast<int>()
-                        .ToList() ?? throw new SailfishException(
-                        "Error encountered when executing complexity analysis: SailfishVariable analyzed did not have SailfishVariableAttribute as expected");
+                        .ToList();
 
                     var step = i < sailfishVariablesCountTuples.Count - 1
                         ? sailfishVariablesCountTuples

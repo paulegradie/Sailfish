@@ -64,97 +64,106 @@ internal static class TableParserExtensionMethods
         params Func<T, object>[] valueSelectors)
     {
         Debug.Assert(columnHeaders.Count == valueSelectors.Length);
+        AssertColumnHeadersMatchColumnsOrThrow(columnHeaders, columnSuffixes);
+        return WriteTable(title, values, columnHeaders, columnSuffixes, valueSelectors);
+    }
 
-        var arrValues = new string[values.Count + 1, valueSelectors.Length];
-
+    private static void AssertColumnHeadersMatchColumnsOrThrow(IReadOnlyCollection<string> columnHeaders, IReadOnlyCollection<string> columnSuffixes)
+    {
         if (columnSuffixes.Count > 0 && columnSuffixes.Count != columnHeaders.Count)
         {
             throw new Exception("Header suffix array length must match num columns");
         }
+    }
 
-        // Fill headers
-        for (var colIndex = 0; colIndex < arrValues.GetLength(1); colIndex++)
-        {
-            arrValues[0, colIndex] = columnHeaders[colIndex];
-        }
+    private static string WriteTable<T>(
+        string title,
+        IReadOnlyList<T> values,
+        IReadOnlyList<string> columnHeaders,
+        IReadOnlyList<string> columnSuffixes,
+        IReadOnlyList<Func<T, object>> valueSelectors)
+    {
+        var internalMatrix = PopulateMatrix(values, columnHeaders, columnSuffixes, valueSelectors, valueSelectors.Count, values.Count);
+        var maxColumnsWidth = ComputeColumnWidths<T>(internalMatrix.GetLength(1), internalMatrix.GetLength(0), internalMatrix);
 
-        // Fill table rows
-        for (var rowIndex = 1; rowIndex < arrValues.GetLength(0); rowIndex++)
-        {
-            for (var colIndex = 0; colIndex < arrValues.GetLength(1); colIndex++)
-            {
-                var value = valueSelectors[colIndex].Invoke(values[rowIndex - 1]);
-
-                if (columnSuffixes.Count == 0)
-                {
-                    arrValues[rowIndex, colIndex] = (value != null ? value.ToString() : "null")!;
-                }
-                else
-                {
-                    arrValues[rowIndex, colIndex] = value != null ? $"{value.ToString()} {columnSuffixes[colIndex]}" : "null";
-                }
-            }
-        }
-
-        var maxColumnsWidth = GetMaxColumnsWidth(arrValues);
         var sb = new StringBuilder();
         if (!string.IsNullOrEmpty(title))
         {
             sb.AppendLine(title + "\n");
         }
 
-        for (var rowIndex = 0; rowIndex < arrValues.GetLength(0); rowIndex++)
+        for (var rowIndex = 0; rowIndex < internalMatrix.GetLength(0); rowIndex++)
         {
-            for (var colIndex = 0; colIndex < arrValues.GetLength(1); colIndex++)
-            {
-                // Print cell
-                var cell = arrValues[rowIndex, colIndex];
-                cell = cell.PadRight(maxColumnsWidth[colIndex]);
-                sb.Append(" | ");
-                sb.Append(cell);
-            }
-
-            // Print end of line
-            sb.Append(" | ");
-            sb.AppendLine();
-
-            // Print splitter
-            if (rowIndex != 0) continue;
-
-            for (var colIndex = 0; colIndex < arrValues.GetLength(1); colIndex++)
-            {
-                // Print cell
-                var cell = "---";
-                cell = cell.PadRight(maxColumnsWidth[colIndex]);
-                sb.Append(" | ");
-                sb.Append(cell);
-            }
-
-            sb.Append(" |");
-            sb.AppendLine();
+            PrintRow(internalMatrix, maxColumnsWidth, rowIndex, sb);
         }
 
         return sb.ToString();
     }
 
-    private static int[] GetMaxColumnsWidth(string[,] arrValues)
+    private static int[] ComputeColumnWidths<T>(int numCols, int numRows, string[,] internalMatrix)
     {
-        var maxColumnsWidth = new int[arrValues.GetLength(1)];
-        for (var colIndex = 0; colIndex < arrValues.GetLength(1); colIndex++)
+        var maxColumnsWidth = new int[numCols];
+        foreach (var colIndex in Enumerable.Range(0, numCols))
         {
-            for (var rowIndex = 0; rowIndex < arrValues.GetLength(0); rowIndex++)
-            {
-                var newLength = arrValues[rowIndex, colIndex].Length;
-                var oldLength = maxColumnsWidth[colIndex];
-
-                if (newLength > oldLength)
-                {
-                    maxColumnsWidth[colIndex] = newLength;
-                }
-            }
+            var things = Enumerable.Range(0, numRows).Select(rowIndex => internalMatrix[rowIndex, colIndex].ToString().Length);
+            maxColumnsWidth[colIndex] = things.Max();
         }
 
         return maxColumnsWidth;
+    }
+
+    private static string[,] PopulateMatrix<T>(IReadOnlyList<T> values, IReadOnlyList<string> columnHeaders, IReadOnlyList<string> columnSuffixes,
+        IReadOnlyList<Func<T, object>> valueSelectors, int numCols, int numRows)
+    {
+        var headerHasAnyValues = columnHeaders.Any(x => !string.IsNullOrEmpty(x));
+        var internalMatrix = new string[(headerHasAnyValues ? numRows + 2 : numRows), numCols];
+        if (headerHasAnyValues)
+        {
+            // Fill Headers
+            for (var colIndex = 0; colIndex < numCols; colIndex++)
+            {
+                internalMatrix[0, colIndex] = columnHeaders[colIndex];
+            }
+
+            for (var colIndex = 0; colIndex < numCols; colIndex++)
+            {
+                internalMatrix[1, colIndex] = "---";
+            }
+        }
+
+        var adjustedNumRows = (headerHasAnyValues ? numRows + 2 : numRows);
+        for (var rowIndex = headerHasAnyValues ? 2 : 0; rowIndex < adjustedNumRows; rowIndex++)
+        {
+            for (var colIndex = 0; colIndex < numCols; colIndex++)
+            {
+                var value = valueSelectors[colIndex].Invoke(values[headerHasAnyValues ? rowIndex - 2 : rowIndex]);
+                var cell = columnSuffixes.Count == 0
+                    ? (value != null ? value.ToString() : "null").Trim()
+                    : (value != null ? $"{value.ToString().Trim()} {columnSuffixes[colIndex]}" : "null").Trim();
+
+                internalMatrix[rowIndex, colIndex] = cell.Trim();
+            }
+        }
+
+        return internalMatrix;
+    }
+
+    private static void PrintRow(string[,] internalMatrix, IReadOnlyList<int> maxColumnsWidth, int rowIndex, StringBuilder sb)
+    {
+        sb.Append("| ");
+        var numCols = internalMatrix.GetLength(1);
+        for (var colIndex = 0; colIndex < numCols; colIndex++)
+        {
+            var cell = internalMatrix[rowIndex, colIndex].Trim();
+            cell = colIndex == 0 || cell.Equals("---") ? cell.PadRight(maxColumnsWidth[colIndex]) : cell.PadLeft(maxColumnsWidth[colIndex]);
+            sb.Append(cell);
+            if (colIndex <= numCols)
+            {
+                sb.Append(" | ");
+            }
+        }
+
+        sb.AppendLine();
     }
 
     private static PropertyInfo GetProperty<T>(Expression<Func<T, object>> selector)

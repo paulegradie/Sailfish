@@ -7,6 +7,7 @@ using System.Runtime.Caching;
 using System.Threading;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.Logging;
+using Sailfish.Analysis;
 using Sailfish.Analysis.Saildiff;
 using Sailfish.Contracts.Public;
 using Sailfish.Exceptions;
@@ -49,13 +50,16 @@ internal class TestAdapterExecutionEngine : ITestAdapterExecutionEngine
         var rawExecutionResults = new List<(string, RawExecutionResult)>();
         var testCaseGroups = testCases.GroupBy(testCase => testCase.GetPropertyHelper(SailfishManagedProperty.SailfishTypeProperty));
 
-        foreach (var testCaseGroup in testCaseGroups)
+        foreach (var unsortedTestCaseGroup in testCaseGroups)
         {
             var groupResults = new List<TestExecutionResult>();
 
-            var firstTestCase = testCaseGroup.First();
-            var testTypeFullName = firstTestCase.GetPropertyHelper(SailfishManagedProperty.SailfishTypeProperty);
-            var assembly = LoadAssemblyFromDll(firstTestCase.Source);
+            var groupKey = unsortedTestCaseGroup.Key;
+            var testCaseGroup = unsortedTestCaseGroup;
+
+            var aTestCase = testCaseGroup.First();
+            var testTypeFullName = aTestCase.GetPropertyHelper(SailfishManagedProperty.SailfishTypeProperty);
+            var assembly = LoadAssemblyFromDll(aTestCase.Source);
             var testType = assembly.GetType(testTypeFullName, true, true);
             if (testType is null)
             {
@@ -112,7 +116,7 @@ internal class TestAdapterExecutionEngine : ITestAdapterExecutionEngine
                 groupResults.AddRange(results);
             }
 
-            rawExecutionResults.Add((testCaseGroup.Key, new RawExecutionResult(testType, groupResults)));
+            rawExecutionResults.Add((groupKey, new RawExecutionResult(testType, groupResults)));
         }
 
         var executionSummaries = executionSummaryCompiler
@@ -122,9 +126,8 @@ internal class TestAdapterExecutionEngine : ITestAdapterExecutionEngine
         return executionSummaries;
     }
 
-
     private Action<TestExecutionResult, TestInstanceContainer> PostTestResultCallback(
-        IGrouping<string, TestCase> testCaseGroups,
+        IEnumerable<TestCase> testCaseGroups,
         List<DescriptiveStatisticsResult> preloadedLastRunIfAvailable,
         TestSettings? testSettings,
         CancellationToken cancellationToken)
@@ -272,31 +275,45 @@ internal class TestAdapterExecutionEngine : ITestAdapterExecutionEngine
         }
     }
 
-    private Action<TestInstanceContainer?> TestDisabledCallback(IGrouping<string, TestCase>? testCaseGroup)
+    private Action<TestInstanceContainer?> TestDisabledCallback(IEnumerable<TestCase>? testCaseGroup)
     {
-        return container =>
+        void CreateDisabledResult(TestCase testCase)
         {
-            if (container is null || testCaseGroup is null) return;
-
-            var currentTestCase = testCaseGroup.Single(x => x.DisplayName == container.TestCaseId.GetMethodWithVariables());
-            var testResult = new TestResult(currentTestCase)
+            var testResult = new TestResult(testCase)
             {
                 ErrorMessage = $"Test Disabled",
                 ErrorStackTrace = null,
                 Outcome = TestOutcome.Skipped,
-                DisplayName = currentTestCase.DisplayName,
+                DisplayName = testCase.DisplayName,
                 ComputerName = null,
                 Duration = TimeSpan.Zero,
                 StartTime = default,
                 EndTime = default
             };
 
-            consoleWriter.RecordEnd(currentTestCase, testResult.Outcome);
+            consoleWriter.RecordEnd(testCase, testResult.Outcome);
             consoleWriter.RecordResult(testResult);
+        }
+
+        return container =>
+        {
+            if (testCaseGroup is null) return; // no idea why this would happen, but exceptions are not the way
+            if (container is null) // then we've disabled the class - return all the results for the group
+            {
+                foreach (var testCase in testCaseGroup)
+                {
+                    CreateDisabledResult(testCase);
+                }
+            }
+            else // we've only disabled this method, send a single result
+            {
+                var currentTestCase = testCaseGroup.Single(x => x.DisplayName == container.TestCaseId.GetMethodWithVariables());
+                CreateDisabledResult(currentTestCase);
+            }
         };
     }
 
-    private Action<TestInstanceContainer?> ExceptionCallback(IGrouping<string, TestCase> testCaseGroup)
+    private Action<TestInstanceContainer?> ExceptionCallback(IEnumerable<TestCase> testCaseGroup)
     {
         return (container) =>
         {
@@ -315,7 +332,7 @@ internal class TestAdapterExecutionEngine : ITestAdapterExecutionEngine
         };
     }
 
-    private Action<TestInstanceContainer> PreTestResultCallback(IGrouping<string, TestCase> testCaseGroup)
+    private Action<TestInstanceContainer> PreTestResultCallback(IEnumerable<TestCase> testCaseGroup)
     {
         return container => consoleWriter.RecordStart(GetTestCaseFromTestCaseGroupMatchingCurrentContainer(container, testCaseGroup));
     }
