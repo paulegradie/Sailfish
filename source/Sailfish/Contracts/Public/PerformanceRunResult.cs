@@ -66,7 +66,7 @@ public class PerformanceRunResult
         IExecutionSettings executionSettings,
         double[] executionIterations)
     {
-        var detector = new OutlierDetector();
+        var detector = new SailfishOutlierDetector();
 
         var (cleanData, lowerOutliers, upperOutliers, totalNumOutliers) = detector.DetectOutliers(executionIterations);
         var (mean, stdDev) = cleanData.MeanStandardDeviation();

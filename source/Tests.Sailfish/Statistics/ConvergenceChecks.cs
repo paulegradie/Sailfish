@@ -19,7 +19,7 @@ public class ConvergenceChecks
     [Fact]
     public void TwoSampleWilcoxonSignedRankTestSailfish_NoChange()
     {
-        var test = new TwoSampleWilcoxonSignedRankTestSailfish(new TestPreprocessor(new OutlierDetector()));
+        var test = new TwoSampleWilcoxonSignedRankTestSailfish(new TestPreprocessor(new SailfishOutlierDetector()));
 
         var results = new List<TestResultWithOutlierAnalysis>();
         for (var i = 0; i < 1000; i++)
@@ -37,7 +37,7 @@ public class ConvergenceChecks
     [Fact]
     public void TwoSampleWilcoxonSignedRankTestSailfish_Regresssed()
     {
-        var test = new TwoSampleWilcoxonSignedRankTestSailfish(new TestPreprocessor(new OutlierDetector()));
+        var test = new TwoSampleWilcoxonSignedRankTestSailfish(new TestPreprocessor(new SailfishOutlierDetector()));
 
         var results = new List<TestResultWithOutlierAnalysis>();
 
@@ -60,7 +60,7 @@ public class ConvergenceChecks
 
         var results = new List<TestResultWithOutlierAnalysis>();
 
-        var test = new MannWhitneyWilcoxonTestSailfish(new TestPreprocessor(new OutlierDetector()));
+        var test = new MannWhitneyWilcoxonTestSailfish(new TestPreprocessor(new SailfishOutlierDetector()));
         for (var i = 0; i < 20; i++)
         {
             results.Add(test.ExecuteTest(bf, af, new TestSettings(0.0001, 4, false, TestType.WilcoxonRankSumTest)));
@@ -78,7 +78,7 @@ public class ConvergenceChecks
 
         var results = new List<TestResultWithOutlierAnalysis>();
 
-        var test = new MannWhitneyWilcoxonTestSailfish(new TestPreprocessor(new OutlierDetector()));
+        var test = new MannWhitneyWilcoxonTestSailfish(new TestPreprocessor(new SailfishOutlierDetector()));
         for (var i = 0; i < 20; i++)
         {
             results.Add(test.ExecuteTest(bf, af, new TestSettings(0.0001, 4, false, TestType.WilcoxonRankSumTest)));
@@ -96,7 +96,7 @@ public class ConvergenceChecks
 
         var results = new List<TestResultWithOutlierAnalysis>();
 
-        var test = new MannWhitneyWilcoxonTestSailfish(new TestPreprocessor(new OutlierDetector()));
+        var test = new MannWhitneyWilcoxonTestSailfish(new TestPreprocessor(new SailfishOutlierDetector()));
         for (var i = 0; i < 20; i++)
         {
             results.Add(test.ExecuteTest(bf, af, new TestSettings(0.0001, 4, false, TestType.WilcoxonRankSumTest)));

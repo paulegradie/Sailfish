@@ -39,7 +39,7 @@ public class TableParserExtensionMethodsFixture
             "", "ms", "ms", "ms", "ms", "", "", ""
         };
 
-        var preprocessor = new TestPreprocessor(new OutlierDetector());
+        var preprocessor = new TestPreprocessor(new SailfishOutlierDetector());
 
         var result = new StatisticalTestExecutor(
             new MannWhitneyWilcoxonTestSailfish(preprocessor),

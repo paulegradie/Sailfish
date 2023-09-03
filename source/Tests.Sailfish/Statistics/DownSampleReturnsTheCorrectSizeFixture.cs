@@ -9,7 +9,7 @@ namespace Test.Statistics;
 public class DownSampleFixture : IAsyncLifetime
 {
     private double[] data = null!;
-    private readonly TestPreprocessor preprocessor = new(new OutlierDetector());
+    private readonly TestPreprocessor preprocessor = new(new SailfishOutlierDetector());
 
     public Task InitializeAsync()
     {

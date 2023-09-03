@@ -14,6 +14,7 @@ using Sailfish.TestAdapter.Execution;
 using Shouldly;
 using Tests.Sailfish.TestAdapter.Utils;
 using Xunit;
+using IRunSettings = Sailfish.IRunSettings;
 
 namespace Tests.Sailfish.TestAdapter;
 
@@ -27,8 +28,7 @@ public class TestExecutionFixture
     {
         frameworkHandle = Substitute.For<IFrameworkHandle>();
         builder = new ContainerBuilder();
-        builder.RegisterSailfishTypes();
-        builder.RegisterAdapterTypes(frameworkHandle);
+        builder.RegisterSailfishTypes(Substitute.For<IRunSettings>(), new TestAdapterModule(frameworkHandle));
         builder.RegisterInstance(RunSettingsBuilder.CreateBuilder().DisableOverheadEstimation().Build());
         var projectDll = DllFinder.FindThisProjectsDllRecursively();
         testCases = TestDiscovery.DiscoverTests(new[] { projectDll }, Substitute.For<IMessageLogger>()).ToList();

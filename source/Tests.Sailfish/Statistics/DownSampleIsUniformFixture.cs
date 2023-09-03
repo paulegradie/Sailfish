@@ -7,7 +7,7 @@ namespace Test.Statistics;
 
 public class DownSampleIsUniformFixture
 {
-    private readonly TestPreprocessor preprocessor = new(new OutlierDetector());
+    private readonly TestPreprocessor preprocessor = new(new SailfishOutlierDetector());
     private const int seed = 42;
 
     [Fact]

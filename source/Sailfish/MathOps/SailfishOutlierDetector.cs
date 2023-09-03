@@ -15,7 +15,7 @@ public interface ISailfishOutlierDetector
     public OutlierAnalysis DetectOutliers(IReadOnlyList<double> data);
 }
 
-public class OutlierDetector : ISailfishOutlierDetector
+public class SailfishOutlierDetector : ISailfishOutlierDetector
 {
     public OutlierAnalysis DetectOutliers(IReadOnlyList<double> data)
     {

@@ -7,12 +7,14 @@ using Sailfish.Analysis.ScaleFish;
 using Sailfish.Contracts.Public;
 using Sailfish.Contracts.Serialization.V1;
 using Sailfish.Execution;
+using Sailfish.MathOps;
 using Sailfish.Presentation;
 using Sailfish.Presentation.Console;
 using Sailfish.Presentation.CsvAndJson;
 using Sailfish.Presentation.Markdown;
 using Sailfish.Statistics;
 using Sailfish.Statistics.Tests;
+using Sailfish.Statistics.Tests.KolmogorovSmirnovTestSailfish;
 using Sailfish.Statistics.Tests.MWWilcoxonTestSailfish;
 using Sailfish.Statistics.Tests.TTestSailfish;
 using Sailfish.Statistics.Tests.TwoSampleWilcoxonSignedRankTestSailfish;
@@ -72,13 +74,17 @@ public class SailfishModule : Module
         builder.RegisterType<TrackingFileSerialization>().As<ITrackingFileSerialization>();
         builder.RegisterType<TypeActivator>().As<ITypeActivator>();
         builder.RegisterType<TestComputer>().As<ITestComputer>();
-        builder.RegisterType<TTestSailfish>().As<ITTestSailfish>();
-        builder.RegisterType<MannWhitneyWilcoxonTestSailfish>().As<IMannWhitneyWilcoxonTestSailfish>();
-        builder.RegisterType<TwoSampleWilcoxonSignedRankTestSailfish>().As<ITwoSampleWilcoxonSignedRankTestSailfish>();
         builder.RegisterType<TestPreprocessor>().As<ITestPreprocessor>();
         builder.RegisterType<StatisticalTestExecutor>().As<IStatisticalTestExecutor>();
         builder.RegisterType<PerformanceRunResultAggregator>().As<IPerformanceRunResultAggregator>();
-
+        builder.RegisterType<ComplexityComputer>().As<IComplexityComputer>();
+        builder.RegisterType<ComplexityEstimator>().As<IComplexityEstimator>();
+        builder.RegisterType<SailfishOutlierDetector>().As<ISailfishOutlierDetector>();
+        
+        builder.RegisterType<TTestSailfish>().As<ITTestSailfish>();
+        builder.RegisterType<MannWhitneyWilcoxonTestSailfish>().As<IMannWhitneyWilcoxonTestSailfish>();
+        builder.RegisterType<TwoSampleWilcoxonSignedRankTestSailfish>().As<ITwoSampleWilcoxonSignedRankTestSailfish>();
+        builder.RegisterType<KolmogorovSmirnovTestSailfish>().As<IKolmogorovSmirnovTestSailfish>();
         builder
             .RegisterType<Mediator>()
             .As<IMediator>()
