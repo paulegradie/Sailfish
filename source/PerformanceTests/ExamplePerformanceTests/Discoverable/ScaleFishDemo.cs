@@ -9,7 +9,7 @@ namespace PerformanceTests.ExamplePerformanceTests.Discoverable;
 [Sailfish(NumIterations = 7, Disabled = false)]
 public class ScaleFishDemo
 {
-    [SailfishVariableRange(true, 1, 6, 30)]
+    [SailfishRangeVariable(true, 1, 6, 30)]
     public int N { get; set; }
 
     [SailfishVariable(50, 100)] public int OtherN { get; set; }

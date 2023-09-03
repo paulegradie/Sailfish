@@ -8,18 +8,18 @@ namespace Sailfish.Statistics;
 public interface ICompiledTestCaseResult
 {
     public string? GroupingId { get; set; }
-    public DescriptiveStatisticsResult? DescriptiveStatisticsResult { get; set; }
+    public PerformanceRunResult? PerformanceRunResult { get; set; }
     public List<Exception> Exceptions { get; set; }
     public TestCaseId? TestCaseId { get; set; }
 }
 
 internal class CompiledTestCaseResult : ICompiledTestCaseResult
 {
-    public CompiledTestCaseResult(TestCaseId testCaseId, string groupingId, DescriptiveStatisticsResult descriptiveStatisticsResult)
+    public CompiledTestCaseResult(TestCaseId testCaseId, string groupingId, PerformanceRunResult performanceRunResult)
     {
         TestCaseId = testCaseId;
         GroupingId = groupingId;
-        DescriptiveStatisticsResult = descriptiveStatisticsResult;
+        PerformanceRunResult = performanceRunResult;
     }
 
     public CompiledTestCaseResult(Exception exception) : this(new List<Exception>() { exception })
@@ -32,7 +32,7 @@ internal class CompiledTestCaseResult : ICompiledTestCaseResult
     }
 
     public string? GroupingId { get; set; }
-    public DescriptiveStatisticsResult? DescriptiveStatisticsResult { get; set; }
+    public PerformanceRunResult? PerformanceRunResult { get; set; }
     public List<Exception> Exceptions { get; set; } = new();
     public TestCaseId? TestCaseId { get; set; }
 }

@@ -181,32 +181,29 @@ public static class ReflectionExtensionMethods
 
     internal static int GetNumIterations(this Type type)
     {
-        var numIterations = type
+        return type
             .GetCustomAttributes(true)
             .OfType<SailfishAttribute>()
             .Single()
             .NumIterations;
-        return numIterations;
     }
 
     internal static int GetWarmupIterations(this Type type)
     {
-        var numWarmupIterations = type
+        return type
             .GetCustomAttributes(true)
             .OfType<SailfishAttribute>()
             .Single()
             .NumWarmupIterations;
-        return numWarmupIterations;
     }
 
     internal static bool SailfishTypeIsDisabled(this Type type)
     {
-        var disabled = type
+        return type
             .GetCustomAttributes(true)
             .OfType<SailfishAttribute>()
             .Single()
             .Disabled;
-        return disabled;
     }
 
     public static List<MethodInfo> FindMethodsDecoratedWithAttribute<TAttribute>(this object obj) where TAttribute : Attribute

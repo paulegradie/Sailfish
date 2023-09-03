@@ -7,7 +7,7 @@ using Sailfish.Execution;
 
 namespace Sailfish.Presentation.CsvAndJson;
 
-internal interface IPerformanceResultPresenter
+internal interface IPerformanceRunResultFileWriter
 {
     Task WriteToFileAsCsv(IEnumerable<IExecutionSummary> results, string filePath, Func<IExecutionSummary, bool> summaryFilter, CancellationToken cancellationToken);
     Task<string> ConvertToCsvStringContent(IEnumerable<IExecutionSummary> results, CancellationToken cancellationToken);

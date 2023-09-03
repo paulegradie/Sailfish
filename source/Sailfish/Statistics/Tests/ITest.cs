@@ -1,8 +1,8 @@
-using Sailfish.Analysis.Saildiff;
+using Sailfish.Analysis.SailDiff;
 
 namespace Sailfish.Statistics.Tests;
 
 public interface ITest
 {
-    TestResults ExecuteTest(double[] before, double[] after, TestSettings settings);
+    TestResultWithOutlierAnalysis ExecuteTest(double[] before, double[] after, TestSettings settings);
 }

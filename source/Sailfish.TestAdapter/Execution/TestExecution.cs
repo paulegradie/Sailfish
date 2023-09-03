@@ -14,7 +14,7 @@ internal static class TestExecution
     {
         try
         {
-            container.Resolve<ITestAdapterExecutionProgram>().Run(testCases, cancellationToken);
+            container.Resolve<ITestAdapterExecutionProgram>().Run(testCases, cancellationToken).GetAwaiter().GetResult();
         }
         catch (Exception ex)
         {

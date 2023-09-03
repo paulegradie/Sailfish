@@ -1,13 +1,12 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
 using Sailfish.Attributes;
 using Sailfish.Exceptions;
 using Sailfish.Execution;
 using Sailfish.Statistics;
 
-namespace Sailfish.Analysis.Scalefish;
+namespace Sailfish.Analysis.ScaleFish;
 
 public class ComplexityComputer : IComplexityComputer
 {
@@ -92,7 +91,7 @@ public class ComplexityComputer : IComplexityComputer
                         .Item1
                         .Zip(observations[observationKey].Item2)
                         .Select((data) =>
-                            new ComplexityMeasurement(data.First, data.Second.DescriptiveStatisticsResult!.Mean))
+                            new ComplexityMeasurement(data.First, data.Second.PerformanceRunResult!.Mean))
                         .ToArray();
 
                     var complexityResult = complexityEstimator.EstimateComplexity(complexityMeasurements);

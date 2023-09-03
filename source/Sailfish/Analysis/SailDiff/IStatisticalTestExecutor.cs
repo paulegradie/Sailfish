@@ -1,8 +1,8 @@
 ﻿using Sailfish.Statistics.Tests;
 
-namespace Sailfish.Analysis.Saildiff;
+namespace Sailfish.Analysis.SailDiff;
 
 public interface IStatisticalTestExecutor
 {
-    TestResults ExecuteStatisticalTest(double[] beforeData, double[] afterData, TestSettings settings);
+    TestResultWithOutlierAnalysis ExecuteStatisticalTest(double[] beforeData, double[] afterData, TestSettings settings);
 }

@@ -1,11 +1,10 @@
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using MediatR;
 using Sailfish.Analysis;
-using Sailfish.Analysis.Saildiff;
+using Sailfish.Analysis.SailDiff;
 using Sailfish.Contracts.Public;
 using Sailfish.Contracts.Public.Commands;
 using Sailfish.Execution;
@@ -90,7 +89,7 @@ internal class AdapterSailDiff : IAdapterSailDiff
         TestExecutionResult testExecutionResult,
         IExecutionSummary executionSummary,
         TestSettings testSettings,
-        IEnumerable<DescriptiveStatisticsResult> preloadedLastRunIfAvailable,
+        PerformanceRunResult preloadedLastRun,
         CancellationToken cancellationToken)
     {
         var beforeIds = new[] { testExecutionResult.TestInstanceContainer?.TestCaseId.DisplayName ?? string.Empty };
@@ -98,11 +97,10 @@ internal class AdapterSailDiff : IAdapterSailDiff
 
         var beforeTestData = new TestData(
             beforeIds,
-            preloadedLastRunIfAvailable.Where(x =>
-                x.DisplayName == testExecutionResult.TestInstanceContainer?.TestCaseId.DisplayName));
+            new[] { preloadedLastRun });
 
         var afterTestData = new TestData(afterIds, executionSummary.CompiledTestCaseResults
-            .Select(x => x.DescriptiveStatisticsResult!)
+            .Select(x => x.PerformanceRunResult!)
             .Where(x => x.DisplayName == testExecutionResult.TestInstanceContainer?.TestCaseId.DisplayName));
 
         var testResults = testComputer.ComputeTest(beforeTestData, afterTestData, testSettings);

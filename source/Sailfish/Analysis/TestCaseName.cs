@@ -18,9 +18,11 @@ public class TestCaseName
 
     [JsonConstructor]
 #pragma warning disable CS8618
-    public TestCaseName()
+    public TestCaseName(string name, IReadOnlyList<string> parts)
 #pragma warning restore CS8618
     {
+        Name = name;
+        Parts = parts;
     }
 
     public TestCaseName(string displayName)
@@ -35,7 +37,7 @@ public class TestCaseName
         Parts = parts;
     }
 
-    public string Name { get; }
+    public string Name { get;  }
     public IReadOnlyList<string> Parts { get; }
 
     private static IReadOnlyList<string> GetNameParts(string displayName)

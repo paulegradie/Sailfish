@@ -1,6 +1,6 @@
 using System.IO;
 using Autofac;
-using Sailfish.Analysis.Saildiff;
+using Sailfish.Analysis.SailDiff;
 using Sailfish.Exceptions;
 using Sailfish.TestAdapter.Discovery;
 using Sailfish.TestAdapter.TestSettingsParser;
@@ -61,9 +61,9 @@ public static class AdapterRunSettingsLoaderExtensionMethods
             mappedSettings.SetTestType(settings.TestType);
         }
 
-        if (settings?.UseInnerQuartile is not null)
+        if (settings?.UseOutlierDetection is not null)
         {
-            mappedSettings.SetUseInnerQuartile(settings.UseInnerQuartile);
+            mappedSettings.SetUseOutlierDetection(settings.UseOutlierDetection);
         }
 
         if (settings?.Alpha is not null)

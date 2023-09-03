@@ -1,9 +1,10 @@
 ﻿using Autofac;
 using Microsoft.Extensions.Configuration;
 using Sailfish.Analysis;
-using Sailfish.Analysis.Saildiff;
-using Sailfish.Analysis.Scalefish;
+using Sailfish.Analysis.SailDiff;
+using Sailfish.Analysis.ScaleFish;
 using Sailfish.Contracts.Public;
+using Sailfish.Contracts.Serialization.V1;
 using Sailfish.Execution;
 using Sailfish.Presentation;
 using Sailfish.Presentation.Console;
@@ -48,7 +49,7 @@ public class SailfishModule : Module
         builder.RegisterType<FileIo>().As<IFileIo>();
         builder.RegisterType<MarkdownWriter>().As<IMarkdownWriter>();
         builder.RegisterType<ConsoleWriter>().As<IConsoleWriter>();
-        builder.RegisterType<PerformanceResultPresenter>().As<IPerformanceResultPresenter>();
+        builder.RegisterType<PerformanceRunResultFileWriter>().As<IPerformanceRunResultFileWriter>();
         builder.RegisterType<TrackingFileFinder>().As<ITrackingFileFinder>();
         builder.RegisterType<IterationVariableRetriever>().As<IIterationVariableRetriever>();
         builder.RegisterType<TestResultTableContentFormatter>().As<ITestResultTableContentFormatter>();
@@ -57,11 +58,14 @@ public class SailfishModule : Module
         builder.RegisterType<TrackingFileParser>().As<ITrackingFileParser>();
         builder.RegisterType<SailDiff>().As<ISailDiff>();
         builder.RegisterType<ScaleFish>().As<IScaleFish>();
-
+        builder.RegisterType<TrackingFileSerialization>().As<ITrackingFileSerialization>();
+        
         builder.RegisterType<TTestSailfish>().As<ITTestSailfish>();
         builder.RegisterType<MannWhitneyWilcoxonTestSailfish>().As<IMannWhitneyWilcoxonTestSailfish>();
         builder.RegisterType<TwoSampleWilcoxonSignedRankTestSailfish>().As<ITwoSampleWilcoxonSignedRankTestSailfish>();
         builder.RegisterType<TestPreprocessor>().As<ITestPreprocessor>();
         builder.RegisterType<StatisticalTestExecutor>().As<IStatisticalTestExecutor>();
+        builder.RegisterType<PerformanceRunResultAggregator>().As<IPerformanceRunResultAggregator>();
+
     }
 }

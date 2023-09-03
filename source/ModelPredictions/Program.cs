@@ -1,4 +1,4 @@
-﻿using Sailfish.Analysis.Scalefish;
+﻿using Sailfish.Analysis.ScaleFish;
 
 Console.Clear();
 Console.WriteLine("\nThis demo shows you how to load a model file and then use it to make predictions on scale.");

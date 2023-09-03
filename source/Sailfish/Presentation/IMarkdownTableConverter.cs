@@ -1,6 +1,6 @@
 using System;
 using System.Collections.Generic;
-using Sailfish.Analysis.Scalefish;
+using Sailfish.Analysis.ScaleFish;
 using Sailfish.Execution;
 
 namespace Sailfish.Presentation;

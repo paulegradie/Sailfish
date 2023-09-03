@@ -10,7 +10,7 @@ using Sailfish.Presentation;
 using Sailfish.Presentation.Console;
 using Serilog;
 
-namespace Sailfish.Analysis.Saildiff;
+namespace Sailfish.Analysis.SailDiff;
 
 public interface ISailDiff : IAnalyzeFromFile
 {

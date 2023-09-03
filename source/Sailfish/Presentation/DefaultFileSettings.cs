@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
-using Sailfish.Analysis.Saildiff;
+using Sailfish.Analysis.SailDiff;
 using Sailfish.Exceptions;
 using Sailfish.Extensions.Types;
 
@@ -15,13 +15,12 @@ public static class DefaultFileSettings
     public const string MarkdownSuffix = ".md";
     public const string JsonSuffix = ".json";
     public static readonly string SortableFormat = "yyyyMMdd_HHmmss";
-    public const string TrackingSuffix = $"{CsvSuffix}.tracking";
+    public const string TrackingSuffix = $"{JsonSuffix}.tracking";
     public const string TagsPrefix = "tags-";
     public const string KeyValueDelimiter = "=";
     public const string MapDelimiter = "__";
     public const string DefaultExecutionSummaryTrackingDirectory = "sailfish_tracking_output";
     public const string DefaultOutputDirectory = "sailfish_default_output";
-    public const string DefaultScalefishResultDirectory = "scalefish_results_output";
 
     public static readonly Func<DateTime, string> DefaultPerformanceResultsFileNameStem = // for WriteToMarkdown & co.
         timestamp => $"PerformanceResults_{timestamp.ToString(SortableFormat)}"; // sortable file name with date

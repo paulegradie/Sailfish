@@ -1,8 +1,8 @@
 using System;
 using System.Linq;
 using System.Reflection;
-using Sailfish.Analysis.Scalefish;
-using Sailfish.Analysis.Scalefish.ComplexityFunctions;
+using Sailfish.Analysis.ScaleFish;
+using Sailfish.Analysis.ScaleFish.ComplexityFunctions;
 using Shouldly;
 using Xunit;
 

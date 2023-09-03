@@ -37,7 +37,14 @@ public class TestCaseId
 
     private string FormDisplayName()
     {
-        return TestCaseName.Name + TestCaseVariables.FormVariableSection();
+        // Need to check for null since deserialization with throw prematurely
+        // ReSharper disable once ConditionIsAlwaysTrueOrFalseAccordingToNullableAPIContract
+        if (TestCaseName?.Name is not null && TestCaseVariables is not null)
+        {
+            return TestCaseName.Name + TestCaseVariables.FormVariableSection();
+        }
+
+        return string.Empty;
     }
 
     public override bool Equals(object? other)

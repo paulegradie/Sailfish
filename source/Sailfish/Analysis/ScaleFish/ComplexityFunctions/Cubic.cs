@@ -1,6 +1,6 @@
 using System;
 
-namespace Sailfish.Analysis.Scalefish.ComplexityFunctions;
+namespace Sailfish.Analysis.ScaleFish.ComplexityFunctions;
 
 public class Cubic : ComplexityFunction
 {

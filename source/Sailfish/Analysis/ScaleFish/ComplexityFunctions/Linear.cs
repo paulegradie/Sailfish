@@ -1,4 +1,4 @@
-namespace Sailfish.Analysis.Scalefish.ComplexityFunctions;
+namespace Sailfish.Analysis.ScaleFish.ComplexityFunctions;
 
 public class Linear : ComplexityFunction
 {

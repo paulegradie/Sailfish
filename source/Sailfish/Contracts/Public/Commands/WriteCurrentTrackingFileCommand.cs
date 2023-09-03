@@ -1,6 +1,7 @@
 ﻿using System;
-
+using System.Collections.Generic;
 using MediatR;
+using Sailfish.Execution;
 using Sailfish.Extensions.Types;
 using Sailfish.Presentation;
 
@@ -9,23 +10,20 @@ namespace Sailfish.Contracts.Public.Commands;
 public class WriteCurrentTrackingFileCommand : INotification
 {
     public WriteCurrentTrackingFileCommand(
-        ITrackingDataFormats trackingDataFormats,
-        string trackingFileTrackingFileContent,
+        IEnumerable<IExecutionSummary> executionSummaries,
         string localOutputDirectory,
         DateTime timeStamp,
         OrderedDictionary tags,
         OrderedDictionary args)
     {
-        TrackingDataFormats = trackingDataFormats;
-        TrackingFileContent = trackingFileTrackingFileContent;
+        ExecutionSummaries = executionSummaries;
         LocalOutputDirectory = localOutputDirectory;
         Tags = tags;
         Args = args;
         DefaultFileName = DefaultFileSettings.DefaultTrackingFileName(timeStamp);
     }
 
-    public ITrackingDataFormats TrackingDataFormats { get; }
-    public string TrackingFileContent { get; }
+    public IEnumerable<IExecutionSummary> ExecutionSummaries { get; }
     public string LocalOutputDirectory { get; }
     public OrderedDictionary Tags { get; }
     public OrderedDictionary Args { get; }

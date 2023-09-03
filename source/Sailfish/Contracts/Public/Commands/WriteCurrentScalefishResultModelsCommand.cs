@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using MediatR;
-using Sailfish.Analysis.Scalefish;
+using Sailfish.Analysis.ScaleFish;
 using Sailfish.Extensions.Types;
 using Sailfish.Presentation;
 

@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using Sailfish.Contracts.Public;
 
-namespace Sailfish.Analysis.Saildiff;
+namespace Sailfish.Analysis.SailDiff;
 
 public interface ITestComputer
 {

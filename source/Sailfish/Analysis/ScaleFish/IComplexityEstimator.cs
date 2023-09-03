@@ -1,4 +1,4 @@
-namespace Sailfish.Analysis.Scalefish;
+namespace Sailfish.Analysis.ScaleFish;
 
 public interface IComplexityEstimator
 {

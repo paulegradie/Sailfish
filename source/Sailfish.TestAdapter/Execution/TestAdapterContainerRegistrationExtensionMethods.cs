@@ -1,6 +1,7 @@
 ﻿using Autofac;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.Adapter;
-using Sailfish.Analysis.Saildiff;
+using Sailfish.Analysis.SailDiff;
+using Sailfish.Contracts.Serialization.V1;
 using Sailfish.Execution;
 using Sailfish.Presentation;
 using Sailfish.Statistics;
@@ -32,14 +33,18 @@ internal static class TestAdapterContainerRegistrationExtensionMethods
         builder.RegisterType<TwoSampleWilcoxonSignedRankTestSailfish>().As<ITwoSampleWilcoxonSignedRankTestSailfish>();
         builder.RegisterType<TestPreprocessor>().As<ITestPreprocessor>();
 
+        
         builder.RegisterType<TTestSailfish>().As<ITTestSailfish>();
         builder.RegisterType<MannWhitneyWilcoxonTestSailfish>().As<IMannWhitneyWilcoxonTestSailfish>();
         builder.RegisterType<TwoSampleWilcoxonSignedRankTestSailfish>().As<ITwoSampleWilcoxonSignedRankTestSailfish>();
         builder.RegisterType<TestPreprocessor>().As<ITestPreprocessor>();
         builder.RegisterType<StatisticalTestExecutor>().As<IStatisticalTestExecutor>();
         builder.RegisterType<TestComputer>().As<ITestComputer>();
+        builder.RegisterType<PerformanceRunResultAggregator>().As<IPerformanceRunResultAggregator>();
+        builder.RegisterType<TrackingFileSerialization>().As<ITrackingFileSerialization>();
+        builder.RegisterType<AdapterActivatorCallbacks>().As<IActivatorCallbacks>();
 
-
+        
         // These need to be overriding registrations for the test adapter
         if (frameworkHandle is not null)
         {

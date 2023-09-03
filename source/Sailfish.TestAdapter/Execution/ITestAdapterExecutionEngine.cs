@@ -1,17 +1,17 @@
 using System.Collections.Generic;
 using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel;
-using Sailfish.Analysis.Saildiff;
-using Sailfish.Contracts.Public;
+using Sailfish.Analysis.SailDiff;
 using Sailfish.Execution;
 
 namespace Sailfish.TestAdapter.Execution;
 
 internal interface ITestAdapterExecutionEngine
 {
-    List<IExecutionSummary> Execute(
+    Task<List<IExecutionSummary>> Execute(
         List<TestCase> testCases,
-        List<DescriptiveStatisticsResult> preloadedLastRunIfAvailable, 
+        List<List<IExecutionSummary>> preloadedLastRunIfAvailable, 
         TestSettings? testSettings,
         CancellationToken cancellationToken);
 }

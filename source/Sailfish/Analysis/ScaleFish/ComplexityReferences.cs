@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
-using Sailfish.Analysis.Scalefish.ComplexityFunctions;
+using Sailfish.Analysis.ScaleFish.ComplexityFunctions;
 
-namespace Sailfish.Analysis.Scalefish;
+namespace Sailfish.Analysis.ScaleFish;
 
 public static class ComplexityReferences
 {

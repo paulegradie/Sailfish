@@ -7,7 +7,7 @@ namespace PerformanceTests.ExamplePerformanceTests.Discoverable;
 [Sailfish(3, 0, Disabled = false)]
 public class RangeAttributeExample
 {
-    [SailfishVariableRange(true, 0, 30, 2)]
+    [SailfishRangeVariable(true, 0, 30, 2)]
     public int N { get; set; }
 
     [SailfishMethod(Disabled = false, DisableOverheadEstimation = true )]

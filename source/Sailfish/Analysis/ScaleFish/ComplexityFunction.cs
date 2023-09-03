@@ -2,10 +2,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json.Serialization;
 using MathNet.Numerics;
-using Sailfish.Analysis.Scalefish.CurveFitting;
+using Sailfish.Analysis.ScaleFish.CurveFitting;
 using Sailfish.Exceptions;
 
-namespace Sailfish.Analysis.Scalefish;
+namespace Sailfish.Analysis.ScaleFish;
 
 public abstract class ComplexityFunction : IComplexityFunction
 {
@@ -20,6 +20,7 @@ public abstract class ComplexityFunction : IComplexityFunction
 
     public FittedCurve? FunctionParameters { get; set; }
 
+    // ReSharper disable once MemberCanBePrivate.Global
     [JsonIgnore] public IFitnessCalculator FitnessCalculator { get; set; } // leave this public for testing. Gross, but willing to accept
 
     public abstract double Compute(double n, double scale, double bias);

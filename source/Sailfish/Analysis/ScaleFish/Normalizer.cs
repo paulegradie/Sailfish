@@ -1,6 +1,6 @@
 using System.Linq;
 
-namespace Sailfish.Analysis.Scalefish;
+namespace Sailfish.Analysis.ScaleFish;
 
 public static class Normalizer
 {

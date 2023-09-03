@@ -3,7 +3,7 @@ using System.IO;
 using System.Runtime.Serialization;
 using System.Text.Json;
 
-namespace Sailfish.Analysis.Scalefish;
+namespace Sailfish.Analysis.ScaleFish;
 
 public static class ModelLoader
 {

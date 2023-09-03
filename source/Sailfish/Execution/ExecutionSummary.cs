@@ -9,12 +9,12 @@ public interface IExecutionSummary
 {
     public Type Type { get; set; }
     public IExecutionSettings Settings { get; }
-    public List<ICompiledTestCaseResult> CompiledTestCaseResults { get; set; }
+    public IEnumerable<ICompiledTestCaseResult> CompiledTestCaseResults { get; set; }
 }
 
-internal class ExecutionSummary : IExecutionSummary
+public class ExecutionSummary : IExecutionSummary
 {
-    public ExecutionSummary(Type type, List<ICompiledTestCaseResult> compiledResults)
+    public ExecutionSummary(Type type, IEnumerable<ICompiledTestCaseResult> compiledResults)
     {
         Type = type;
         CompiledTestCaseResults = compiledResults;
@@ -23,5 +23,5 @@ internal class ExecutionSummary : IExecutionSummary
 
     public Type Type { get; set; }
     public IExecutionSettings Settings { get; }
-    public List<ICompiledTestCaseResult> CompiledTestCaseResults { get; set; }
+    public IEnumerable<ICompiledTestCaseResult> CompiledTestCaseResults { get; set; }
 }

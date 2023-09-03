@@ -1,9 +1,21 @@
+using System;
 using System.Collections.Generic;
 
 namespace Sailfish.Statistics.Tests;
 
 public class TestResults
 {
+#pragma warning disable CS8618
+    public TestResults(Exception ex)
+#pragma warning restore CS8618
+    {
+        Failed = true;
+        Exception = ex;
+    }
+
+    public bool Failed { get; set; }
+    public Exception Exception { get; set; }
+
     public TestResults(
         double meanBefore,
         double meanAfter,
@@ -30,6 +42,7 @@ public class TestResults
         RawDataBefore = rawDataBefore;
         RawDataAfter = rawDataAfter;
         AdditionalResults = additionalResults;
+        Exception = null!;
     }
 
     public double MeanBefore { get; set; }

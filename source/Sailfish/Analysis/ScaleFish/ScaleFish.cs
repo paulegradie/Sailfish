@@ -7,7 +7,7 @@ using Sailfish.Contracts.Public.Commands;
 using Sailfish.Presentation;
 using Sailfish.Presentation.Console;
 
-namespace Sailfish.Analysis.Scalefish;
+namespace Sailfish.Analysis.ScaleFish;
 
 public class ScaleFish : IScaleFish
 {
@@ -32,7 +32,7 @@ public class ScaleFish : IScaleFish
     {
         if (!runSettings.RunScalefish) return;
 
-        var response = await mediator.Send(new SailfishGetLatestExecutionSummariesCommand(trackingDir, runSettings.Tags, runSettings.Args), cancellationToken);
+        var response = await mediator.Send(new SailfishGetLatestExecutionSummaryCommand(trackingDir, runSettings.Tags, runSettings.Args), cancellationToken);
         var executionSummaries = response.LatestExecutionSummaries;
         if (!executionSummaries.Any()) return;
 

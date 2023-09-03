@@ -3,9 +3,10 @@ using System.Collections.Generic;
 using System.Runtime.Serialization;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using Sailfish.Analysis.Scalefish.ComplexityFunctions;
+using Sailfish.Analysis.ScaleFish.ComplexityFunctions;
+using Sailfish.Exceptions;
 
-namespace Sailfish.Analysis.Scalefish;
+namespace Sailfish.Analysis.ScaleFish;
 
 public class ComplexityFunctionConverter : JsonConverter<List<TestClassComplexityResult>>
 {
@@ -17,17 +18,18 @@ public class ComplexityFunctionConverter : JsonConverter<List<TestClassComplexit
         var results = new List<TestClassComplexityResult>();
         foreach (var testClassElement in root.EnumerateArray())
         {
-            var testClassName = testClassElement.GetProperty("TestClassName").GetString();
+            var testClassName = testClassElement.GetProperty("TestClassName").GetString() ?? throw new SailfishException("Failed to find property: 'TestClassName'");
             var testMethodComplexityResults = new List<TestMethodComplexityResult>();
 
             foreach (var testMethodElement in testClassElement.GetProperty("TestMethodComplexityResults").EnumerateArray())
             {
-                var testMethodName = testMethodElement.GetProperty("TestMethodName").GetString();
+                var testMethodName = testMethodElement.GetProperty("TestMethodName").GetString() ?? throw new SailfishException("Failed to find property 'TestMethodName'");
+
                 var testPropertyComplexityResults = new List<TestPropertyComplexityResult>();
 
                 foreach (var testPropertyElement in testMethodElement.GetProperty("TestPropertyComplexityResults").EnumerateArray())
                 {
-                    var propertyName = testPropertyElement.GetProperty("PropertyName").GetString();
+                    var propertyName = testPropertyElement.GetProperty("PropertyName").GetString() ?? throw new SailfishException("Failed to find property 'Property Name'");
                     var complexityResultJsonElement = testPropertyElement.GetProperty("ComplexityResult");
 
                     var complexityFunctionProperty = complexityResultJsonElement.GetProperty("ComplexityFunction");
@@ -60,9 +62,9 @@ public class ComplexityFunctionConverter : JsonConverter<List<TestClassComplexit
         return results;
     }
 
-    private static ComplexityFunction? DeserializeComplexityFunction(string complexityFunctionTypeName, JsonElement complexityFunctionProperty)
+    private static ComplexityFunction DeserializeComplexityFunction(string complexityFunctionTypeName, JsonElement complexityFunctionProperty)
     {
-        return complexityFunctionTypeName switch
+        ComplexityFunction? deserialized = complexityFunctionTypeName switch
         {
             (nameof(Cubic)) => complexityFunctionProperty.Deserialize<Cubic>(),
             (nameof(Exponential)) => complexityFunctionProperty.Deserialize<Exponential>(),
@@ -72,8 +74,11 @@ public class ComplexityFunctionConverter : JsonConverter<List<TestClassComplexit
             (nameof(NLogN)) => complexityFunctionProperty.Deserialize<NLogN>(),
             (nameof(Quadratic)) => complexityFunctionProperty.Deserialize<Quadratic>(),
             (nameof(SqrtN)) => complexityFunctionProperty.Deserialize<SqrtN>(),
-            _ => throw new Exception("Failed to identify type")
+            _ => throw new SailfishException($"Failed to identify complexity function type: {complexityFunctionTypeName}")
         };
+
+        if (deserialized is null) throw new SerializationException($"Failed to deserialize {complexityFunctionTypeName}");
+        return deserialized;
     }
 
     public override void Write(Utf8JsonWriter writer, List<TestClassComplexityResult> value, JsonSerializerOptions options)

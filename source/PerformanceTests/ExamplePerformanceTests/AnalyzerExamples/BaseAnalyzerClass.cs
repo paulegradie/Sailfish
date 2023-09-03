@@ -2,6 +2,8 @@ using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Sailfish.Attributes;
+#pragma warning disable CS8618
+#pragma warning disable CS0414
 
 namespace PerformanceTests.ExamplePerformanceTests.AnalyzerExamples;
 

@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using Sailfish.Execution;
 
-namespace Sailfish.Analysis.Scalefish;
+namespace Sailfish.Analysis.ScaleFish;
 
 public interface IComplexityComputer
 {

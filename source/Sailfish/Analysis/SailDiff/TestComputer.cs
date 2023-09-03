@@ -2,21 +2,22 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using MathNet.Numerics.Statistics;
 using Sailfish.Contracts.Public;
-using Sailfish.MathOps;
+using Sailfish.Extensions.Methods;
 using Serilog;
 
-namespace Sailfish.Analysis.Saildiff;
+namespace Sailfish.Analysis.SailDiff;
 
 public class TestComputer : ITestComputer
 {
     private readonly IStatisticalTestExecutor statisticalTestExecutor;
+    private readonly IPerformanceRunResultAggregator aggregator;
     private readonly ILogger logger;
 
-    public TestComputer(IStatisticalTestExecutor statisticalTestExecutor, ILogger logger)
+    public TestComputer(IStatisticalTestExecutor statisticalTestExecutor, IPerformanceRunResultAggregator aggregator, ILogger logger)
     {
         this.statisticalTestExecutor = statisticalTestExecutor;
+        this.aggregator = aggregator;
         this.logger = logger;
     }
 
@@ -36,28 +37,26 @@ public class TestComputer : ITestComputer
             },
             (testCaseId) =>
             {
-                var afterCompiled = Aggregate(
+                var afterCompiled = aggregator.Aggregate(
                     testCaseId,
-                    settings,
                     after
                         .Data
                         .Where(x => new TestCaseId(x.DisplayName).Equals(testCaseId))
                         .ToList());
 
-                var beforeCompiled = Aggregate(
+                var beforeCompiled = aggregator.Aggregate(
                     testCaseId,
-                    settings,
                     before
                         .Data
                         .Where(x => new TestCaseId(x.DisplayName).Equals(testCaseId))
                         .ToList());
 
                 if (beforeCompiled is null || afterCompiled is null) return;
-                var result = statisticalTestExecutor.ExecuteStatisticalTest(
-                    beforeCompiled.RawExecutionResults,
-                    afterCompiled.RawExecutionResults,
-                    settings);
 
+                var result = statisticalTestExecutor.ExecuteStatisticalTest(
+                    beforeCompiled.AggregatedRawExecutionResults,
+                    afterCompiled.AggregatedRawExecutionResults,
+                    settings);
                 results.Add(new TestCaseResults(testCaseId, result));
             });
 
@@ -68,38 +67,13 @@ public class TestComputer : ITestComputer
 
         try
         {
-            return results.OrderBy(x => x.TestCaseId, new TestCaseIdComparer()).ToList();
+            return results.OrderByTestCaseId();
         }
         catch
         {
             return results
                 .OrderByDescending(x => x.TestCaseId.DisplayName)
                 .ToList();
-        }
-    }
-
-    private static DescriptiveStatisticsResult? Aggregate(TestCaseId testCaseId, TestSettings settings, IReadOnlyCollection<DescriptiveStatisticsResult> data)
-    {
-        switch (data.Count)
-        {
-            case 0:
-                return null;
-            case 1:
-                return data.Single();
-            default:
-                var allRawData = data.SelectMany(x => x.RawExecutionResults).ToArray();
-                return new DescriptiveStatisticsResult
-                {
-                    RawExecutionResults = allRawData,
-                    DisplayName = testCaseId.DisplayName,
-                    GlobalDuration = data.Select(x => x.GlobalDuration).Mean(),
-                    GlobalStart = data.OrderBy(x => x.GlobalStart).First().GlobalStart,
-                    GlobalEnd = data.OrderBy(x => x.GlobalEnd).First().GlobalEnd,
-                    Mean = settings.UseInnerQuartile ? ComputeQuartiles.GetInnerQuartileValues(allRawData).Mean() : allRawData.Mean(),
-                    Median = settings.UseInnerQuartile ? ComputeQuartiles.GetInnerQuartileValues(allRawData).Median() : allRawData.Median(),
-                    Variance = settings.UseInnerQuartile ? ComputeQuartiles.GetInnerQuartileValues(allRawData).Variance() : allRawData.Variance(),
-                    StdDev = settings.UseInnerQuartile ? ComputeQuartiles.GetInnerQuartileValues(allRawData).StandardDeviation() : allRawData.StandardDeviation(),
-                };
         }
     }
 }

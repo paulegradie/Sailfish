@@ -1,52 +1,63 @@
-using System;
 using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Runtime.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
-using Sailfish.Contracts.Public;
-using Sailfish.Contracts.Public.CsvMaps;
+using Sailfish.Contracts.Serialization.V1;
+using Sailfish.Execution;
 using Serilog;
 
 namespace Sailfish.Analysis;
 
 internal class TrackingFileParser : ITrackingFileParser
 {
-    private readonly IFileIo fileIo;
+    private readonly ITrackingFileSerialization trackingFileSerialization;
     private readonly ILogger logger;
 
-    public TrackingFileParser(IFileIo fileIo, ILogger logger)
+    public TrackingFileParser(ITrackingFileSerialization trackingFileSerialization, ILogger logger)
     {
-        this.fileIo = fileIo;
+        this.trackingFileSerialization = trackingFileSerialization;
         this.logger = logger;
     }
 
-    public async Task<bool> TryParse(string fileKey, List<DescriptiveStatisticsResult> data, CancellationToken cancellationToken)
+    public async Task<bool> TryParse(string trackingFile, List<List<IExecutionSummary>> data, CancellationToken cancellationToken)
     {
-        return await TryParse(new List<string>() { fileKey }, data, cancellationToken).ConfigureAwait(false);
+        return await TryParse(new List<string>() { trackingFile }, data, cancellationToken).ConfigureAwait(false);
     }
 
-
-    public async Task<bool> TryParse(IEnumerable<string> fileKeys, List<DescriptiveStatisticsResult> data, CancellationToken cancellationToken)
+    /// <summary>
+    /// Returns a list of deserialized IExecutionSummaries, where each element represents a tracking file. Useful for searching prior executions for prior results. 
+    /// </summary>
+    /// <param name="trackingFiles"></param>
+    /// <param name="data"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    /// <exception cref="SerializationException"></exception>
+    public async Task<bool> TryParse(IEnumerable<string> trackingFiles, List<List<IExecutionSummary>> data, CancellationToken cancellationToken)
     {
-        var temp = new List<DescriptiveStatisticsResult>();
+        var trackingFormatData = new List<List<IExecutionSummary>>();
         try
         {
-            foreach (var key in fileKeys)
+            foreach (var trackingFile in trackingFiles)
             {
-                var datum = await fileIo.ReadCsvFile<DescriptiveStatisticsResultCsvMap, DescriptiveStatisticsResult>(key, cancellationToken).ConfigureAwait(false);
-                foreach (var d in datum)
+                var serialized = await File.ReadAllTextAsync(trackingFile, cancellationToken);
+                var deserializedFile = trackingFileSerialization.Deserialize(serialized)?.ToList();
+                if (deserializedFile is null) throw new SerializationException();
+                if (deserializedFile.Any())
                 {
-                    d.SetNumIterations(d.RawExecutionResults.Length);
+                    trackingFormatData.Add(deserializedFile.ToSummaryFormat().ToList()); // only add if all files present succeed
                 }
-
-                temp.AddRange(datum);
             }
 
-            data.AddRange(temp); // only add if all succeed
+            data.AddRange(trackingFormatData);
             return true;
         }
-        catch (Exception ex)
+        catch (SerializationException ex)
         {
-            logger.Fatal("Unable to read tracking files for after: {Message}", ex.Message);
+            logger.Fatal(
+                $"Failed to deserialize data into {nameof(PerformanceRunResultTrackingFormatV1)}. Please remove any non-V1(or corrupt) tracking data from your tracking directory.\n\n" +
+                ex.Message);
             return false;
         }
     }

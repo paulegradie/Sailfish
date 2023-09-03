@@ -14,9 +14,9 @@
     "Resolution": "ms",
 
     "_comment": "Statistical test settings",
-    "Alpha": 0.05,
-    "Round": 2,
-    "UseInnerQuartile": true,
+    "Alpha": 0.005,
+    "Round": 5,
+    "UseOutlierDetection": true,
 
     "_comment": "Disable analysis logic",
     "Disabled": false,

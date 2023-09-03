@@ -5,7 +5,6 @@ using System.Linq;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.Logging;
 using Sailfish.Attributes;
-using Sailfish.TestAdapter.TestProperties;
 
 namespace Sailfish.TestAdapter.Discovery;
 

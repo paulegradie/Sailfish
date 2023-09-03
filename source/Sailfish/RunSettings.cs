@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using Sailfish.Analysis.Saildiff;
+using Sailfish.Analysis.SailDiff;
 using Sailfish.Extensions.Types;
 
 namespace Sailfish;

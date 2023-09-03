@@ -3,8 +3,8 @@ using Sailfish.Execution;
 
 namespace Sailfish.Contracts.Public.Commands;
 
-public class SailfishGetLatestExecutionSummariesResponse
+public class SailfishGetLatestExecutionSummaryResponse
 {
-    public SailfishGetLatestExecutionSummariesResponse(List<IExecutionSummary> latestExecutionSummaries) => LatestExecutionSummaries = latestExecutionSummaries;
+    public SailfishGetLatestExecutionSummaryResponse(List<IExecutionSummary> latestExecutionSummaries) => LatestExecutionSummaries = latestExecutionSummaries;
     public List<IExecutionSummary> LatestExecutionSummaries { get; set; }
 }

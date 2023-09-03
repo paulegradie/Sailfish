@@ -63,7 +63,7 @@ public sealed class SailfishAttribute : Attribute
     public bool Disabled { get; set; }
     
     /// <summary>
-    /// Gets/Sets whether to disable overhead estimation for the entire class
+    /// Gets/Sets whether to disable overhead estimation for the entire class.
     /// </summary>
     public bool DisableOverheadEstimation { get; set; }
 }

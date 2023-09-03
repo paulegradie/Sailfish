@@ -1,6 +1,6 @@
 using System;
 
-namespace Sailfish.Analysis.Scalefish.CurveFitting;
+namespace Sailfish.Analysis.ScaleFish.CurveFitting;
 
 public interface IFitnessCalculator
 {

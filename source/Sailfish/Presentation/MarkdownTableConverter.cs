@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using Sailfish.Analysis.Scalefish;
+using Sailfish.Analysis.ScaleFish;
 using Sailfish.Execution;
 using Sailfish.Extensions.Methods;
 using Sailfish.Statistics;
@@ -38,7 +38,7 @@ public class MarkdownTableConverter : IMarkdownTableConverter
         {
             if (group.Key is null) continue;
             stringBuilder.AppendLine();
-            var n = group.Select(x => x.DescriptiveStatisticsResult?.NumIterations).Distinct().Single();
+            var n = group.Select(x => x.PerformanceRunResult?.NumIterations).Distinct().Single();
             if (n is null || n == 0)
             {
                 continue;
@@ -49,10 +49,10 @@ public class MarkdownTableConverter : IMarkdownTableConverter
                 new List<string>() { "", "ms", "ms", "ms", "" },
                 new List<string> { "Display Name", "Mean", "Median", $"StdDev (N={n})", "Variance" },
                 u => u.TestCaseId!.DisplayName!,
-                u => u.DescriptiveStatisticsResult!.Mean,
-                u => u.DescriptiveStatisticsResult!.Median,
-                u => u.DescriptiveStatisticsResult!.StdDev,
-                u => u.DescriptiveStatisticsResult!.Variance
+                u => u.PerformanceRunResult!.Mean,
+                u => u.PerformanceRunResult!.Median,
+                u => u.PerformanceRunResult!.StdDev,
+                u => u.PerformanceRunResult!.Variance
             );
 
             stringBuilder.AppendLine(table);

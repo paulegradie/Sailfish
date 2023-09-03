@@ -24,6 +24,12 @@ public sealed class SailfishMethodAttribute : Attribute
 
     /// <summary>
     /// Gets/Sets whether to disable overhead estimation for the method
+    /// Description:
+    ///   - Disables the attempt to calibrate distributions for endemic noise
+    ///   - When disabled, test iterations are much quicker
+    /// Note:
+    ///   - This sometimes causes negative deltas for small measurements
+    ///   - Sailfish is not particularly well suited for micro-measurements 
     /// </summary>
     public bool DisableOverheadEstimation { get; set; }
 

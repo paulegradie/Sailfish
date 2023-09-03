@@ -5,7 +5,5 @@ namespace Sailfish.Presentation;
 
 public interface ITrackingDataFormats
 {
-    public string Json { get; set; }
-    public string Csv { get; set; }
-    public List<IExecutionSummary> RawData { get; set; }
+    public IEnumerable<IExecutionSummary> ExecutionSummaries { get; set; }
 }

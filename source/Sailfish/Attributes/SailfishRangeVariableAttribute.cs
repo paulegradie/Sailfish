@@ -15,7 +15,7 @@ namespace Sailfish.Attributes;
 /// This attribute should be applied to public properties. It has no effect when applied to fields.
 /// </remarks>
 [AttributeUsage(AttributeTargets.Property, AllowMultiple = false)]
-public class SailfishVariableRangeAttribute : Attribute, ISailfishVariableAttribute
+public class SailfishRangeVariableAttribute : Attribute, ISailfishVariableAttribute
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="SailfishVariableAttribute"/> class with the specified values.
@@ -24,7 +24,7 @@ public class SailfishVariableRangeAttribute : Attribute, ISailfishVariableAttrib
     /// <param name="count">Number of values to create</param>
     /// <param name="step">Step between values</param>
     /// <exception cref="SailfishException">Thrown when no values are provided.</exception>
-    public SailfishVariableRangeAttribute(int start, int count, int step = 1)
+    public SailfishRangeVariableAttribute(int start, int count, int step = 1)
     {
         N = Range(start, count, step).Cast<object>();
     }
@@ -37,7 +37,7 @@ public class SailfishVariableRangeAttribute : Attribute, ISailfishVariableAttrib
     /// <param name="count">Number of values to create</param>
     /// <param name="step">Step between values</param>
     /// <exception cref="SailfishException">Thrown when no values are provided.</exception>
-    public SailfishVariableRangeAttribute(bool complexity, int start, int count, int step = 1) : this(start, count, step)
+    public SailfishRangeVariableAttribute(bool complexity, int start, int count, int step = 1) : this(start, count, step)
     {
         EstimateComplexity = complexity;
     }
@@ -67,15 +67,14 @@ public class SailfishVariableRangeAttribute : Attribute, ISailfishVariableAttrib
         return EstimateComplexity;
     }
 
-    private static IEnumerable<int> Range(int start, [Range(0, int.MaxValue)] int count, [Range(0, int.MaxValue)] int step)
+    private static IEnumerable<int> Range(int start, [Range(1, int.MaxValue)] int count, [Range(1, int.MaxValue)] int step)
     {
-        if (count <= 0 || step <= 0)
+        if (count < 1 || step < 1)
         {
             throw new ArgumentException("Count and step must be positive.");
         }
 
         var current = start;
-
         for (var i = 0; i < count; i++)
         {
             yield return current;

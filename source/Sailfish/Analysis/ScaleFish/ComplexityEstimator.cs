@@ -1,9 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using Sailfish.Analysis.Scalefish.CurveFitting;
+using Sailfish.Analysis.ScaleFish.CurveFitting;
 
-namespace Sailfish.Analysis.Scalefish;
+namespace Sailfish.Analysis.ScaleFish;
 
 public class ComplexityEstimator : IComplexityEstimator
 {

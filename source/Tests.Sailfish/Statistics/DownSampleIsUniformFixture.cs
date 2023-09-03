@@ -1,4 +1,5 @@
-﻿using Sailfish.Statistics.Tests;
+﻿using Sailfish.MathOps;
+using Sailfish.Statistics.Tests;
 using Shouldly;
 using Xunit;
 
@@ -6,7 +7,7 @@ namespace Test.Statistics;
 
 public class DownSampleIsUniformFixture
 {
-    private readonly TestPreprocessor preprocessor = new();
+    private readonly TestPreprocessor preprocessor = new(new OutlierDetector());
     private const int seed = 42;
 
     [Fact]
@@ -16,7 +17,7 @@ public class DownSampleIsUniformFixture
         var output = preprocessor.PreprocessWithDownSample(input, false, maxArraySize: 10, seed: seed);
 
         var expected = new double[] { 14, 3, 11, 4, 6, 15, 16, 5, 7, 8 };
-        output.ShouldBe(expected);
+        output.RawData.ShouldBe(expected);
     }
 
     [Fact]
@@ -26,7 +27,7 @@ public class DownSampleIsUniformFixture
         var output = preprocessor.PreprocessWithDownSample(input, false, maxArraySize: 10, seed: seed);
 
         var expected = new double[] { 206, 532, 277, 52, 78, 342, 623, 534, 47, 732 };
-        output.ShouldBe(expected);
+        output.RawData.ShouldBe(expected);
     }
 
     [Fact]
@@ -36,8 +37,8 @@ public class DownSampleIsUniformFixture
 
         var output = preprocessor.PreprocessWithDownSample(input, false, maxArraySize: 10, seed: seed);
 
-        output.Length.ShouldBe(3);
-        input.ShouldBe(output);
+        output.RawData.Length.ShouldBe(3);
+        input.ShouldBe(output.RawData);
     }
 
     [Fact]
@@ -45,10 +46,10 @@ public class DownSampleIsUniformFixture
     {
         var input = new double[] { 1, 2, 3, 4, 5 };
 
-        var output = preprocessor.PreprocessWithDownSample(input, false, maxArraySize: 2, 5, seed: seed);
+        var output = preprocessor.PreprocessWithDownSample(input, false, 5, maxArraySize: 2, seed: seed);
 
-        output.Length.ShouldBe(5);
-        input.ShouldBe(output);
+        output.RawData.Length.ShouldBe(5);
+        input.ShouldBe(output.RawData);
     }
 
     [Fact]
@@ -57,7 +58,7 @@ public class DownSampleIsUniformFixture
         var input = new double[] { 1, 2, 3, 4, 5 };
 
         var output = preprocessor.PreprocessWithDownSample(input, false, 3, 3, seed: seed);
-        output.Length.ShouldBe(3);
+        output.RawData.Length.ShouldBe(3);
     }
 
     [Fact]
@@ -66,6 +67,6 @@ public class DownSampleIsUniformFixture
         var input = new double[] { 1, 2, 3, 4, 5 };
 
         var output = preprocessor.PreprocessWithDownSample(input, false, maxArraySize: 10, seed: seed);
-        input.ShouldBe(output);
+        input.ShouldBe(output.RawData);
     }
 }
