@@ -1,6 +1,6 @@
 namespace Sailfish.Analysis.ScaleFish.ComplexityFunctions;
 
-public class Factorial : ComplexityFunction
+public class Factorial : ScaleFishModelFunction
 {
     public override double Compute(double n, double scale, double bias)
     {

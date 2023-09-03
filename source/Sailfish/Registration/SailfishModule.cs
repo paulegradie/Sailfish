@@ -33,11 +33,24 @@ public class SailfishModule : Module
 
     protected override void Load(ContainerBuilder builder)
     {
+        base.Load(builder);
         var configuration = new ConfigurationBuilder().AddJsonFile("sailfish.logging.json", true).Build();
 
-        base.Load(builder);
+        builder
+            .RegisterType<Mediator>()
+            .As<IMediator>()
+            .InstancePerLifetimeScope();
+        builder.Register<ServiceFactory>(
+            context =>
+            {
+                var c = context.Resolve<IComponentContext>();
+                return t => c.Resolve(t);
+            });
+        builder.RegisterAssemblyTypes(typeof(SailfishExecutor).Assembly)
+            .Where(x => x != typeof(ISailfishDependency))
+            .AsImplementedInterfaces(); // via assembly scan
 
-        builder.RegisterInstance(runSettings).SingleInstance();
+        builder.RegisterInstance(runSettings).As<IRunSettings>();
 
         builder.Register<ILogger>(
             (c, p) =>
@@ -80,20 +93,9 @@ public class SailfishModule : Module
         builder.RegisterType<ComplexityComputer>().As<IComplexityComputer>();
         builder.RegisterType<ComplexityEstimator>().As<IComplexityEstimator>();
         builder.RegisterType<SailfishOutlierDetector>().As<ISailfishOutlierDetector>();
-        
         builder.RegisterType<TTestSailfish>().As<ITTestSailfish>();
         builder.RegisterType<MannWhitneyWilcoxonTestSailfish>().As<IMannWhitneyWilcoxonTestSailfish>();
         builder.RegisterType<TwoSampleWilcoxonSignedRankTestSailfish>().As<ITwoSampleWilcoxonSignedRankTestSailfish>();
         builder.RegisterType<KolmogorovSmirnovTestSailfish>().As<IKolmogorovSmirnovTestSailfish>();
-        builder
-            .RegisterType<Mediator>()
-            .As<IMediator>()
-            .InstancePerLifetimeScope();
-        builder.Register<ServiceFactory>(
-            context =>
-            {
-                var c = context.Resolve<IComponentContext>();
-                return t => c.Resolve(t);
-            });
     }
 }

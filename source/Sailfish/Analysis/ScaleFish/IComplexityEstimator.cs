@@ -2,5 +2,5 @@ namespace Sailfish.Analysis.ScaleFish;
 
 public interface IComplexityEstimator
 {
-    ComplexityResult EstimateComplexity(ComplexityMeasurement[] measurements);
+    ScalefishModel EstimateComplexity(ComplexityMeasurement[] measurements);
 }

@@ -30,7 +30,7 @@ internal class SailfishWriteTestResultAsCsvHandler : INotificationHandler<WriteT
         if (notification.CsvFormat.Any())
         {
             await fileIo
-                .WriteDataAsCsvToFile<DescriptiveStatisticsResultCsvMap, IEnumerable<TestCaseResults>>(
+                .WriteDataAsCsvToFile<SailDiffWriteAsCsvMap, IEnumerable<TestCaseResults>>(
                     notification.CsvFormat,
                     outputPath,
                     cancellationToken).ConfigureAwait(false);

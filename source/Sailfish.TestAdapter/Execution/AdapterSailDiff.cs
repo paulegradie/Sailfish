@@ -83,6 +83,15 @@ internal class AdapterSailDiff : IAdapterSailDiff
                     runSettings.Args),
                 cancellationToken)
             .ConfigureAwait(false);
+
+        await mediator.Publish(
+            new WriteTestResultsAsCsvCommand(testResultFormats.CsvFormat,
+                runSettings.LocalOutputDirectory ?? DefaultFileSettings.DefaultOutputDirectory,
+                runSettings.Settings,
+                timeStamp,
+                runSettings.Tags,
+                runSettings.Args
+            ), cancellationToken);
     }
 
     public string ComputeTestCaseDiff(

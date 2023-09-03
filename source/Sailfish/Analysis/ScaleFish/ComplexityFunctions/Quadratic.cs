@@ -2,7 +2,7 @@ using System;
 
 namespace Sailfish.Analysis.ScaleFish.ComplexityFunctions;
 
-public class Quadratic : ComplexityFunction
+public class Quadratic : ScaleFishModelFunction
 {
     public override double Compute(double n, double scale, double bias)
     {

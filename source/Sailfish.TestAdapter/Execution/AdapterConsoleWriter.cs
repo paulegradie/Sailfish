@@ -114,7 +114,7 @@ internal class AdapterConsoleWriter : IAdapterConsoleWriter
             return exceptionBuilder.ToString();
         }
 
-        if (testCaseResult.PerformanceRunResult == null || testCaseResult.PerformanceRunResult.NumIterations == 0) return string.Empty;
+        if (testCaseResult.PerformanceRunResult == null || testCaseResult.PerformanceRunResult.NumSamples == 0) return string.Empty;
         var testCaseName = testCaseResult.TestCaseId;
         var results = testCaseResult.PerformanceRunResult!;
 

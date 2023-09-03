@@ -5,11 +5,11 @@ using Sailfish.Attributes;
 
 namespace PerformanceTests.ExamplePerformanceTests.InheritenceExamples;
 
-[Sailfish(NumIterations = 1, NumWarmupIterations = 1, Disabled = false)]
+[Sailfish(NumIterations = 3, NumWarmupIterations = 1, Disabled = false)]
 public class ChildTestClass : AttributesInheritedBase
 {
     [SailfishMethod]
-    public async Task TestMethodForInheritenceTests(CancellationToken cancellationToken)
+    public async Task TestMethodForInheritanceTests(CancellationToken cancellationToken)
     {
         await Task.Delay(10, cancellationToken);
     }

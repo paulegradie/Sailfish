@@ -3,14 +3,13 @@ using Sailfish.Analysis.ScaleFish.CurveFitting;
 
 namespace Sailfish.Analysis.ScaleFish;
 
-public interface IComplexityFunction
+public interface IScaleFishModelFunction
 {
     string Name { get; set; }
     string OName { get; set; }
     string Quality { get; set; }
     public FittedCurve? FunctionParameters { get; set; }
 
-    FitnessResult AnalyzeFitness(IEnumerable<ComplexityMeasurement> referenceData);
-
+    FitnessResult AnalyzeFitness(IEnumerable<ComplexityMeasurement> validationData);
     public double Predict(int n);
 }

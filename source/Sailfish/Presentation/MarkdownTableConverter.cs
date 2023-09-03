@@ -38,7 +38,7 @@ public class MarkdownTableConverter : IMarkdownTableConverter
         {
             if (group.Key is null) continue;
             stringBuilder.AppendLine();
-            var n = group.Select(x => x.PerformanceRunResult?.NumIterations).Distinct().Single();
+            var n = group.Select(x => x.PerformanceRunResult?.NumSamples).Distinct().Single();
             if (n is null || n == 0)
             {
                 continue;
@@ -76,7 +76,7 @@ public class MarkdownTableConverter : IMarkdownTableConverter
         }
     }
 
-    public string ConvertScaleFishResultToMarkdown(IEnumerable<ITestClassComplexityResult> testClassComplexityResultsEnumerable)
+    public string ConvertScaleFishResultToMarkdown(IEnumerable<IScalefishClassModels> testClassComplexityResultsEnumerable)
     {
         var testClassComplexityResults = testClassComplexityResultsEnumerable.ToList();
         var tableBuilder = new StringBuilder();
@@ -85,22 +85,22 @@ public class MarkdownTableConverter : IMarkdownTableConverter
             tableBuilder.AppendLine($"Test Class: {testClassComplexityResult.TestClassName}");
             tableBuilder.AppendLine();
             var methodGroups = testClassComplexityResult
-                .TestMethodComplexityResults
+                .ScaleFishMethodModels
                 .GroupBy(x => x.TestMethodName);
             foreach (var methodGroup in methodGroups)
             {
                 tableBuilder.AppendLine(methodGroup
-                    .SelectMany(x => x.TestPropertyComplexityResults)
+                    .SelectMany(x => x.ScaleFishPropertyModels)
                     .ToStringTable(
                         new List<string>() { "", "(best)", "", "", "(next best)", "", "" },
                         new List<string>() { "Variable", "BestFit", "BigO", "GoodnessOfFit", "NextBest", "NextBigO", "NextBestGoodnessOfFit" },
                         c => c.PropertyName,
-                        c => c.ComplexityResult.ComplexityFunction.Name,
-                        c => c.ComplexityResult.ComplexityFunction.OName,
-                        c => c.ComplexityResult.GoodnessOfFit,
-                        c => c.ComplexityResult.NextClosestComplexityFunction.Name,
-                        c => c.ComplexityResult.NextClosestComplexityFunction.OName,
-                        c => c.ComplexityResult.NextClosestGoodnessOfFit
+                        c => c.ScalefishModel.ScaleFishModelFunction.Name,
+                        c => c.ScalefishModel.ScaleFishModelFunction.OName,
+                        c => c.ScalefishModel.GoodnessOfFit,
+                        c => c.ScalefishModel.NextClosestScaleFishModelFunction.Name,
+                        c => c.ScalefishModel.NextClosestScaleFishModelFunction.OName,
+                        c => c.ScalefishModel.NextClosestGoodnessOfFit
                     ));
             }
         }

@@ -1,7 +1,7 @@
 using System;
 using CsvHelper.Configuration;
 
-namespace Sailfish.Contracts.Public.CsvMaps;
+namespace Sailfish.Contracts.Public.CsvMaps.Archive;
 
 [Obsolete("Please Use TestResultCsvMap instead")]
 public sealed class TestResultCsvMapV1 : ClassMap<TestCaseResultsV1>

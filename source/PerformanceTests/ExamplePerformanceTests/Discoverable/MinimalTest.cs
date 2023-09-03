@@ -14,7 +14,7 @@ public class MinimalTest
         Thread.Sleep(10);
     }
 
-    [SailfishMethod]
+    [SailfishMethod(DisableOverheadEstimation = true)]
     public void Minimal()
     {
         Thread.Sleep(50);

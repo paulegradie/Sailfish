@@ -17,9 +17,9 @@ public class ComplexityComputer : IComplexityComputer
         this.complexityEstimator = complexityEstimator;
     }
 
-    public IEnumerable<ITestClassComplexityResult> AnalyzeComplexity(List<IExecutionSummary> executionSummaries)
+    public IEnumerable<IScalefishClassModels> AnalyzeComplexity(List<IExecutionSummary> executionSummaries)
     {
-        var finalResult = new Dictionary<Type, Dictionary<string, Dictionary<string, ComplexityResult>>>();
+        var finalResult = new Dictionary<Type, Dictionary<string, Dictionary<string, ScalefishModel>>>();
         foreach (var testClassSummary in executionSummaries)
         {
             var sailfishComplexityVariables = testClassSummary
@@ -44,7 +44,7 @@ public class ComplexityComputer : IComplexityComputer
                 .ToList();
 
             //                                method name    complexity property  result
-            var resultsByMethod = new Dictionary<string, Dictionary<string, ComplexityResult>>();
+            var resultsByMethod = new Dictionary<string, Dictionary<string, ScalefishModel>>();
             var observations = new Dictionary<string, (List<int>, List<ICompiledTestCaseResult>)>();
 
             var testCaseGroups = testClassSummary.CompiledTestCaseResults.GroupBy(x => x.TestCaseId!.TestCaseName.Name);
@@ -83,7 +83,7 @@ public class ComplexityComputer : IComplexityComputer
                     observations.Add(string.Join(".", testCaseMethodName, currentVar.Name), (currentSailfishVariables, testResult));
                 }
 
-                var complexityResultMap = new Dictionary<string, ComplexityResult>();
+                var complexityResultMap = new Dictionary<string, ScalefishModel>();
                 foreach (var complexityProperty in complexityPropertyNames)
                 {
                     var observationKey = string.Join(".", testCaseMethodName, complexityProperty);
@@ -105,6 +105,6 @@ public class ComplexityComputer : IComplexityComputer
             finalResult.Add(testClassSummary.Type, resultsByMethod);
         }
 
-        return TestClassComplexityResult.ParseResults(finalResult);
+        return ScalefishClassModel.ParseResults(finalResult);
     }
 }

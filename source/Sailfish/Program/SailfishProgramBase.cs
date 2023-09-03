@@ -19,7 +19,7 @@ public abstract class SailfishProgramBase
 {
     protected static SailfishRunResult RunResult { get; set; } = null!;
 
-    protected static async Task SailfishMain<TProgram>(string[] userRequestedTestNames) where TProgram : class
+    protected static async Task SailfishMain<TProgram>(params string[] userRequestedTestNames) where TProgram : class
     {
         var completionCode = await CommandLineApplication.ExecuteAsync<TProgram>(userRequestedTestNames);
         if (completionCode != 0)
@@ -100,7 +100,8 @@ public abstract class SailfishProgramBase
             settings = settings.DisableOverheadEstimation();
         }
 
-        settings = settings.ExecuteNotificationHandler()
+        settings = settings
+            .ExecuteNotificationHandler()
             .WithTags(parsedTags)
             .WithArgs(parsedArgs)
             .WithProvidedBeforeTrackingFiles(BeforeTargets ?? Array.Empty<string>())

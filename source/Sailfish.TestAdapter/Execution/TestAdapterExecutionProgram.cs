@@ -5,8 +5,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using MediatR;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel;
-using Sailfish.Analysis.SailDiff;
-using Sailfish.Analysis.ScaleFish;
 using Sailfish.Contracts.Private;
 using Sailfish.Execution;
 using Sailfish.Extensions.Types;
@@ -21,8 +19,8 @@ internal class TestAdapterExecutionProgram : ITestAdapterExecutionProgram
     private readonly IExecutionSummaryWriter executionSummaryWriter;
     private readonly IMediator mediator;
     private readonly IAdapterConsoleWriter consoleWriter;
-    private readonly ISailDiff sailDiff;
-    private readonly IScaleFish scaleFish;
+    private readonly IAdapterSailDiff sailDiff;
+    private readonly IAdapterScaleFish scaleFish;
 
     public TestAdapterExecutionProgram(
         IRunSettings runSettings,

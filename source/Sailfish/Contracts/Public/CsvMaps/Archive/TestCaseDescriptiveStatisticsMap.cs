@@ -1,6 +1,6 @@
 ﻿using CsvHelper.Configuration;
 
-namespace Sailfish.Contracts.Public.CsvMaps;
+namespace Sailfish.Contracts.Public.CsvMaps.Archive;
 
 public sealed class DescriptiveStatisticsResultCsvMap : ClassMap<PerformanceRunResult>
 {

@@ -5,10 +5,10 @@ namespace Sailfish.Analysis.ScaleFish;
 
 public static class ComplexityReferences
 {
-    public static IEnumerable<ComplexityFunction> GetComplexityFunctions()
+    public static IEnumerable<ScaleFishModelFunction> GetComplexityFunctions()
     {
         // if you add to this list, be sure to add also to the ComplexityFunctionConverter
-        return new ComplexityFunction[]
+        return new ScaleFishModelFunction[]
         {
             new Linear(),
             new NLogN(),

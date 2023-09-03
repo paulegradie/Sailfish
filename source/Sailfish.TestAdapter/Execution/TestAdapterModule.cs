@@ -1,14 +1,7 @@
 ﻿using Autofac;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.Adapter;
 using Sailfish.Analysis.SailDiff;
-using Sailfish.Contracts.Serialization.V1;
-using Sailfish.Execution;
-using Sailfish.Presentation;
-using Sailfish.Statistics;
-using Sailfish.Statistics.Tests;
-using Sailfish.Statistics.Tests.MWWilcoxonTestSailfish;
-using Sailfish.Statistics.Tests.TTestSailfish;
-using Sailfish.Statistics.Tests.TwoSampleWilcoxonSignedRankTestSailfish;
+using Sailfish.Analysis.ScaleFish;
 
 namespace Sailfish.TestAdapter.Execution;
 
@@ -29,10 +22,12 @@ internal class TestAdapterModule : Module
         }
 
         builder.RegisterType<TestAdapterExecutionProgram>().As<ITestAdapterExecutionProgram>();
-        builder.RegisterType<AdapterActivatorCallbacks>().As<IActivatorCallbacks>();
-        builder.RegisterType<AdapterSailDiff>().As<IAdapterSailDiff>();
-        builder.RegisterType<AdapterScaleFish>().As<IAdapterScaleFish>();
-        builder.RegisterType<AdapterConsoleWriter>().As<IAdapterConsoleWriter>();
         builder.RegisterType<TestAdapterExecutionEngine>().As<ITestAdapterExecutionEngine>();
+        builder.RegisterType<AdapterActivatorCallbacks>().As<IActivatorCallbacks>();
+        builder.RegisterType<AdapterConsoleWriter>().As<IAdapterConsoleWriter>();
+        builder.RegisterType<AdapterSailDiff>().As<ISailDiff>();
+        builder.RegisterType<AdapterSailDiff>().As<IAdapterSailDiff>();
+        builder.RegisterType<AdapterScaleFish>().As<IScaleFish>();
+        builder.RegisterType<AdapterScaleFish>().As<IAdapterScaleFish>();
     }
 }

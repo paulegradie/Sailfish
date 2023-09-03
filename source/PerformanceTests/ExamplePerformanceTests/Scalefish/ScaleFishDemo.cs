@@ -3,7 +3,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Sailfish.Attributes;
 
-namespace PerformanceTests.ExamplePerformanceTests.Discoverable;
+namespace PerformanceTests.ExamplePerformanceTests.Scalefish;
 
 [WriteToMarkdown]
 [Sailfish(NumIterations = 7, Disabled = false)]

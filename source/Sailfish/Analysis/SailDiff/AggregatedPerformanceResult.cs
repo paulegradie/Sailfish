@@ -32,7 +32,7 @@ public class AggregatedPerformanceResult
         return new AggregatedPerformanceResult(
             aggregatedRawExecutionResults: allRawData,
             displayName: testCaseId.DisplayName,
-            numIterations: data.First().NumIterations,
-            numWarmupIterations: data.First().NumWarmupIterations);
+            numIterations: data.First().NumSamples,
+            numWarmupIterations: data.First().NumWarmups);
     }
 }

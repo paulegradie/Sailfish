@@ -1,6 +1,6 @@
 namespace Sailfish.Analysis.ScaleFish.ComplexityFunctions;
 
-public class Linear : ComplexityFunction
+public class Linear : ScaleFishModelFunction
 {
     public override string Quality { get; set; } = "Good";
     public override string Name { get; set; } = nameof(Linear);

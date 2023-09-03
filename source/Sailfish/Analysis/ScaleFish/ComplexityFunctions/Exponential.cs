@@ -2,7 +2,7 @@ using System;
 
 namespace Sailfish.Analysis.ScaleFish.ComplexityFunctions;
 
-public class Exponential : ComplexityFunction
+public class Exponential : ScaleFishModelFunction
 {
     public override double Compute(double n, double scale, double bias)
     {

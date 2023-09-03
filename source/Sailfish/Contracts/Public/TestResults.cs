@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace Sailfish.Statistics.Tests;
+namespace Sailfish.Contracts.Public;
 
 public class TestResults
 {

@@ -2,7 +2,7 @@ using System;
 
 namespace Sailfish.Analysis.ScaleFish.ComplexityFunctions;
 
-public class NLogN : ComplexityFunction
+public class NLogN : ScaleFishModelFunction
 {
     public override double Compute(double n, double scale, double bias)
     {

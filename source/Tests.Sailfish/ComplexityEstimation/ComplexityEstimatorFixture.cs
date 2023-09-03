@@ -59,17 +59,17 @@ public class ComplexityEstimatorFixture
     }
 
 
-    private void Assert<TComplexityFunction>() where TComplexityFunction : ComplexityFunction
+    private void Assert<TComplexityFunction>() where TComplexityFunction : ScaleFishModelFunction
     {
-        new ComplexityEstimator().EstimateComplexity(GetMeasurements<TComplexityFunction>()).ComplexityFunction.Name.ShouldBe(typeof(TComplexityFunction).Name);
+        new ComplexityEstimator().EstimateComplexity(GetMeasurements<TComplexityFunction>()).ScaleFishModelFunction.Name.ShouldBe(typeof(TComplexityFunction).Name);
     }
 
-    static ComplexityMeasurement[] GetMeasurements<TComplexityFunction>() where TComplexityFunction : ComplexityFunction
+    static ComplexityMeasurement[] GetMeasurements<TComplexityFunction>() where TComplexityFunction : ScaleFishModelFunction
     {
         var constructor = typeof(TComplexityFunction)
             .GetConstructors(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)
             .Single();
-        var instance = constructor.Invoke(new object[] {  }) as ComplexityFunction;
+        var instance = constructor.Invoke(new object[] {  }) as ScaleFishModelFunction;
         instance.ShouldNotBeNull();
 
         const double scale = 1;

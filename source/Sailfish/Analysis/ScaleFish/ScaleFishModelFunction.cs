@@ -7,9 +7,9 @@ using Sailfish.Exceptions;
 
 namespace Sailfish.Analysis.ScaleFish;
 
-public abstract class ComplexityFunction : IComplexityFunction
+public abstract class ScaleFishModelFunction : IScaleFishModelFunction
 {
-    protected ComplexityFunction()
+    protected ScaleFishModelFunction()
     {
         FitnessCalculator = new FitnessCalculator();
     }
@@ -25,9 +25,9 @@ public abstract class ComplexityFunction : IComplexityFunction
 
     public abstract double Compute(double n, double scale, double bias);
 
-    public FitnessResult AnalyzeFitness(IEnumerable<ComplexityMeasurement> referenceData)
+    public FitnessResult AnalyzeFitness(IEnumerable<ComplexityMeasurement> validationData)
     {
-        var cleanReferenceData = referenceData.Where(x => x.Y.IsFinite()).ToArray();
+        var cleanReferenceData = validationData.Where(x => x.Y.IsFinite()).ToArray();
         var xs = cleanReferenceData.Select(x => x.X);
 
         // 1. fit observations to each of the complexity functions with scale and bias to 'determine' the scale and bias

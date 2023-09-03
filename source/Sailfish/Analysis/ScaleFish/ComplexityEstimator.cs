@@ -7,11 +7,11 @@ namespace Sailfish.Analysis.ScaleFish;
 
 public class ComplexityEstimator : IComplexityEstimator
 {
-    public ComplexityResult EstimateComplexity(ComplexityMeasurement[] measurements)
+    public ScalefishModel EstimateComplexity(ComplexityMeasurement[] measurements)
     {
         var complexityFunctions = ComplexityReferences.GetComplexityFunctions();
 
-        var fitnessResults = new List<(ComplexityFunction, FitnessResult)>();
+        var fitnessResults = new List<(ScaleFishModelFunction, FitnessResult)>();
         foreach (var complexityFunction in complexityFunctions)
         {
             try
@@ -40,7 +40,7 @@ public class ComplexityEstimator : IComplexityEstimator
         var closestComplexity = orderedFitnessResults[0];
         var nextClosestComplexity = orderedFitnessResults[1];
 
-        return new ComplexityResult(
+        return new ScalefishModel(
             closestComplexity.Item1,
             closestComplexity.Item2.RSquared,
             nextClosestComplexity.Item1,

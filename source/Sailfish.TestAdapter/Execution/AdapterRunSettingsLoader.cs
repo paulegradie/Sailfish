@@ -22,17 +22,17 @@ public static class AdapterRunSettingsLoader
         var runSettingsBuilder = RunSettingsBuilder.CreateBuilder();
         if (!string.IsNullOrEmpty(parsedSettings.TestSettings.ResultsDirectory))
         {
-            runSettingsBuilder.WithLocalOutputDirectory(parsedSettings.TestSettings.ResultsDirectory);
+            runSettingsBuilder = runSettingsBuilder.WithLocalOutputDirectory(parsedSettings.TestSettings.ResultsDirectory);
         }
 
         if (parsedSettings.TestSettings.Disabled)
         {
-            runSettingsBuilder.WithAnalysisDisabledGlobally();
+            runSettingsBuilder = runSettingsBuilder.WithAnalysisDisabledGlobally();
         }
 
         if (parsedSettings.TestSettings.DisableOverheadEstimation)
         {
-            runSettingsBuilder.DisableOverheadEstimation();
+            runSettingsBuilder = runSettingsBuilder.DisableOverheadEstimation();
         }
 
         var testSettings = MapToTestSettings(parsedSettings.TestSettings);

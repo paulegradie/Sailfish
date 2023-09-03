@@ -9,6 +9,7 @@ using Sailfish.Analysis.SailDiff;
 using Sailfish.Exceptions;
 using Sailfish.Execution;
 using Sailfish.Extensions.Types;
+using Sailfish.TestAdapter.TestProperties;
 
 namespace Sailfish.TestAdapter.Execution;
 
@@ -219,7 +220,7 @@ internal class AdapterActivatorCallbacks : IActivatorCallbacks
             }
             else // we've only disabled this method, send a single result
             {
-                var currentTestCase = testCaseGroup.Single(x => x.DisplayName == container.TestCaseId.GetMethodWithVariables());
+                var currentTestCase = GetTestCaseFromTestCaseGroupMatchingCurrentContainer(container, testCaseGroup);
                 CreateDisabledResult(currentTestCase);
             }
         };
@@ -251,7 +252,8 @@ internal class AdapterActivatorCallbacks : IActivatorCallbacks
 
     private static TestCase GetTestCaseFromTestCaseGroupMatchingCurrentContainer(TestInstanceContainer container, IEnumerable<TestCase> testCaseGroup)
     {
-        return testCaseGroup.Single(x => container.TestCaseId.DisplayName.EndsWith(x.DisplayName));
+        return testCaseGroup.Single(testCase =>
+            container.TestCaseId.DisplayName.EndsWith(testCase.GetPropertyHelper(SailfishManagedProperty.SailfishDisplayNameDefinitionProperty)));
     }
 
     private void LogTestResults(TestExecutionResult result)

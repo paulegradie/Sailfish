@@ -5,5 +5,5 @@ namespace Sailfish.Analysis.ScaleFish;
 
 public interface IComplexityComputer
 {
-    IEnumerable<ITestClassComplexityResult> AnalyzeComplexity(List<IExecutionSummary> executionSummaries);
+    IEnumerable<IScalefishClassModels> AnalyzeComplexity(List<IExecutionSummary> executionSummaries);
 }

@@ -5,12 +5,12 @@ using Microsoft.AspNetCore.Mvc.Testing;
 
 namespace PerformanceTests.DemoUtils;
 
-// Example of what they can implement
+// Example of what can be implemented
 public class SailfishDependencies : IDisposable
 {
     public IContainer Container { get; set; }
 
-    // single parameterless ctor is all this is allowed
+    // single parameterless ctor is all that is allowed
     public SailfishDependencies()
     {
         var builder = new ContainerBuilder();
