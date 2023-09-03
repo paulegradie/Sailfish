@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-
 using System.IO;
 using System.Linq;
 using System.Threading;
@@ -94,18 +93,23 @@ public abstract class SailfishProgramBase
             .WithTestNames(TestNames)
             .WithLocalOutputDirectory(OutputDirectory)
             .CreateTrackingFiles()
-            .WithAnalysis()
-            .ExecuteNotificationHandler()
+            .WithAnalysis();
+
+        if (DisableOverheadEstimation)
+        {
+            settings = settings.DisableOverheadEstimation();
+        }
+
+        settings = settings.ExecuteNotificationHandler()
             .WithTags(parsedTags)
             .WithArgs(parsedArgs)
             .WithProvidedBeforeTrackingFiles(BeforeTargets ?? Array.Empty<string>())
             .WithTimeStamp(DateTime.Now)
             .InDebugMode(Debug)
             .RegistrationProvidersFromAssembliesFromAnchorTypes(registrationProviderTypes.ToArray())
-            .TestsFromAssembliesFromAnchorTypes(sourceTypes.ToArray())
-            .Build();
+            .TestsFromAssembliesFromAnchorTypes(sourceTypes.ToArray());
 
-        return settings;
+        return settings.Build();
     }
 
     [Option("-a|--analyze", CommandOptionType.NoValue,
@@ -117,6 +121,9 @@ public abstract class SailfishProgramBase
         Description =
             "A file name use to filter a specific tracking file for comparison when executing. Can use multiple times to specify multiple files of the same structure. This arg is passed to the BeforeAndAfterFileLocationCommand")]
     public string[]? BeforeTargets { get; set; }
+
+    [Option("-d|--debug", CommandOptionType.NoValue, Description = "Use this option to enable debug mode. This will provide more verbose errors in your outputs")]
+    public bool Debug { get; set; } = false;
 
     [Option("-g|--tag", CommandOptionType.MultipleValue,
         Description =
@@ -160,6 +167,6 @@ public abstract class SailfishProgramBase
             "Use this option to enable sending of the notification command. There are no default handlers, but users can implement their own to process test results and send messages to webhooks in response")]
     public bool Notify { get; set; } = true;
 
-    [Option("-d|--debug", CommandOptionType.NoValue, Description = "Use this option to enable debug mode. This will provide more verbose errors in your outputs")]
-    public bool Debug { get; set; } = false;
+    [Option("-l|--disable-overhead-estimation", CommandOptionType.SingleValue, Description = "Disable overhead estimation to speed up test run")]
+    public bool DisableOverheadEstimation { get; set; }
 }

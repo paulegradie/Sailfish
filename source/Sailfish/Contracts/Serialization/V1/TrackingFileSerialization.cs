@@ -18,7 +18,6 @@ public class TrackingFileSerialization : ITrackingFileSerialization
     {
         options = new JsonSerializerOptions()
         {
-            // Converters = { new ExecutionSummaryTrackingFormatV1Converter(), new TestCaseIdConverter() },
             WriteIndented = true, // Add this line to enable indented JSON
         };
     }

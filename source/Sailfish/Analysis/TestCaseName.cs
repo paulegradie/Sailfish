@@ -52,7 +52,7 @@ public class TestCaseName
 
     /// <summary>
     /// Method to parse and return an index of the '.' delimited test name.
-    /// /// e.g. some.test, index 0 =
+    /// /// e.g. some.test where index 0 = some
     /// </summary>
     /// <param name="index"></param>
     /// <returns></returns>
