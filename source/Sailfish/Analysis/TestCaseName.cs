@@ -9,7 +9,7 @@ namespace Sailfish.Analysis;
 /// Name will be like
 /// some.test(maybe:20,other:30)
 /// some.other.test(maybe:10,other:30)
-/// 
+///
 /// </summary>
 public class TestCaseName
 {
@@ -37,7 +37,7 @@ public class TestCaseName
         Parts = parts;
     }
 
-    public string Name { get;  }
+    public string Name { get; }
     public IReadOnlyList<string> Parts { get; }
 
     private static IReadOnlyList<string> GetNameParts(string displayName)
@@ -52,7 +52,7 @@ public class TestCaseName
 
     /// <summary>
     /// Method to parse and return an index of the '.' delimited test name.
-    /// /// e.g. some.test, index 0 = 
+    /// /// e.g. some.test, index 0 =
     /// </summary>
     /// <param name="index"></param>
     /// <returns></returns>

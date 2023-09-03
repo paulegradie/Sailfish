@@ -22,8 +22,7 @@ internal static class SailfishExecutionCaller
         CancellationToken? cancellationToken = null)
     {
         var builder = new ContainerBuilder();
-        builder.RegisterSailfishTypes();
-        builder.RegisterInstance(runSettings).SingleInstance();
+        builder.RegisterSailfishTypes(runSettings);
         registerAdditionalTypes?.Invoke(builder);
 
         await SailfishTypeRegistrationUtility.InvokeRegistrationProviderCallbackMain(

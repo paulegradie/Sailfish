@@ -52,10 +52,9 @@ public class TestExecutor : ITestExecutor
     {
         try
         {
+            var runSettings = AdapterRunSettingsLoader.LoadAdapterRunSettings();
             var builder = new ContainerBuilder();
-            builder.RegisterSailfishTypes();
-            builder.RegisterRunSettings();
-            builder.RegisterAdapterTypes(frameworkHandle);
+            builder.RegisterSailfishTypes(runSettings, new TestAdapterModule(frameworkHandle));
 
             var refTestType = RetrieveReferenceTypeForTestProject(testCases);
             SailfishTypeRegistrationUtility.InvokeRegistrationProviderCallbackMain(

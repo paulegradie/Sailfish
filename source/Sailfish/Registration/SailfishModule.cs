@@ -1,4 +1,5 @@
 ﻿using Autofac;
+using MediatR;
 using Microsoft.Extensions.Configuration;
 using Sailfish.Analysis;
 using Sailfish.Analysis.SailDiff;
@@ -21,11 +22,21 @@ namespace Sailfish.Registration;
 
 public class SailfishModule : Module
 {
+    private readonly IRunSettings runSettings;
+
+    public SailfishModule(IRunSettings runSettings)
+    {
+        this.runSettings = runSettings;
+    }
+
     protected override void Load(ContainerBuilder builder)
     {
         var configuration = new ConfigurationBuilder().AddJsonFile("sailfish.logging.json", true).Build();
 
         base.Load(builder);
+
+        builder.RegisterInstance(runSettings).SingleInstance();
+
         builder.Register<ILogger>(
             (c, p) =>
                 new LoggerConfiguration()
@@ -59,7 +70,8 @@ public class SailfishModule : Module
         builder.RegisterType<SailDiff>().As<ISailDiff>();
         builder.RegisterType<ScaleFish>().As<IScaleFish>();
         builder.RegisterType<TrackingFileSerialization>().As<ITrackingFileSerialization>();
-        
+        builder.RegisterType<TypeActivator>().As<ITypeActivator>();
+        builder.RegisterType<TestComputer>().As<ITestComputer>();
         builder.RegisterType<TTestSailfish>().As<ITTestSailfish>();
         builder.RegisterType<MannWhitneyWilcoxonTestSailfish>().As<IMannWhitneyWilcoxonTestSailfish>();
         builder.RegisterType<TwoSampleWilcoxonSignedRankTestSailfish>().As<ITwoSampleWilcoxonSignedRankTestSailfish>();
@@ -67,5 +79,15 @@ public class SailfishModule : Module
         builder.RegisterType<StatisticalTestExecutor>().As<IStatisticalTestExecutor>();
         builder.RegisterType<PerformanceRunResultAggregator>().As<IPerformanceRunResultAggregator>();
 
+        builder
+            .RegisterType<Mediator>()
+            .As<IMediator>()
+            .InstancePerLifetimeScope();
+        builder.Register<ServiceFactory>(
+            context =>
+            {
+                var c = context.Resolve<IComponentContext>();
+                return t => c.Resolve(t);
+            });
     }
 }

@@ -1,5 +1,4 @@
 using System.IO;
-using Autofac;
 using Sailfish.Analysis.SailDiff;
 using Sailfish.Exceptions;
 using Sailfish.TestAdapter.Discovery;
@@ -7,12 +6,11 @@ using Sailfish.TestAdapter.TestSettingsParser;
 
 namespace Sailfish.TestAdapter.Execution;
 
-public static class AdapterRunSettingsLoaderExtensionMethods
+public static class AdapterRunSettingsLoader
 {
-    public static void RegisterRunSettings(this ContainerBuilder builder)
+    public static IRunSettings LoadAdapterRunSettings()
     {
-        var sailfishSettings = RetrieveRunSettings();
-        builder.RegisterInstance(sailfishSettings);
+        return RetrieveRunSettings();
     }
 
     private static IRunSettings RetrieveRunSettings()
@@ -20,7 +18,7 @@ public static class AdapterRunSettingsLoaderExtensionMethods
         var parsedSettings = ParseSettings();
 
         if (parsedSettings.TestSettings.DisableEverything) throw new SailfishException("Everything is disabled!");
-        
+
         var runSettingsBuilder = RunSettingsBuilder.CreateBuilder();
         if (!string.IsNullOrEmpty(parsedSettings.TestSettings.ResultsDirectory))
         {
