@@ -3,13 +3,13 @@ using System.Threading;
 using System.Threading.Tasks;
 using Sailfish.Attributes;
 
-namespace PerformanceTests.ExamplePerformanceTests.Scalefish;
+namespace PerformanceTests.ExamplePerformanceTests.Discoverable;
 
 [WriteToMarkdown]
 [Sailfish(NumIterations = 7, Disabled = false)]
-public class ScaleFishDemo
+public class ScaleFishExample
 {
-    [SailfishRangeVariable(true, 1, 6, 30)]
+    [SailfishRangeVariable(true, 1, 5, 30)]
     public int N { get; set; }
 
     [SailfishVariable(50, 100)] public int OtherN { get; set; }

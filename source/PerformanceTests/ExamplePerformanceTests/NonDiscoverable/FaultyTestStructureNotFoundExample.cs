@@ -4,7 +4,7 @@ using Sailfish.Attributes;
 namespace PerformanceTests.ExamplePerformanceTests.NonDiscoverable;
 
 [Sailfish(Disabled = true)]
-public class FaultyTestStructure
+public class FaultyTestStructureNotFoundExample
 {
     [SailfishVariable(1, 2, 3)]
     public int Variable { get; set; }

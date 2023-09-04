@@ -6,7 +6,7 @@ namespace PerformanceTests.ExamplePerformanceTests.Discoverable;
 [WriteToCsv]
 [WriteToMarkdown]
 [Sailfish(Disabled = false)]
-public class MinimalTest
+public class MinimalTestExample
 {
     [SailfishIterationSetup]
     public void Setup()

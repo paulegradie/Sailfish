@@ -7,7 +7,7 @@ using Sailfish.Registration;
 namespace PerformanceTests.ExamplePerformanceTests.Discoverable;
 
 [Sailfish(NumIterations = 3, NumWarmupIterations = 2, Disabled = false)]
-public class PerfTestWithISailfishFixture : ISailfishFixture<SailfishDependencies>
+public class ISailfishFixtureExample : ISailfishFixture<SailfishDependencies>
 {
     private readonly SailfishDependencies sailfishDependencies;
 
@@ -27,7 +27,7 @@ public class PerfTestWithISailfishFixture : ISailfishFixture<SailfishDependencie
         await Task.Delay(100, cancellationToken);
     }
 
-    public PerfTestWithISailfishFixture(SailfishDependencies sailfishDependencies)
+    public ISailfishFixtureExample(SailfishDependencies sailfishDependencies)
     {
         this.sailfishDependencies = sailfishDependencies;
     }

@@ -36,7 +36,7 @@ public class AllTheFeatures
         Thread.Sleep(10);
     }
 
-    [SailfishMethod(DisableComplexity = true)]
+    [SailfishMethod(DisableComplexity = false)]
     public async Task SlowerMethod(CancellationToken ct)
     {
         await Task.Delay(Delay - Multiplier * Multiplier, ct);

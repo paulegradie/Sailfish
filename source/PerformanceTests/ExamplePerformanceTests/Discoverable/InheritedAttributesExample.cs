@@ -3,7 +3,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Sailfish.Attributes;
 
-namespace PerformanceTests.ExamplePerformanceTests.InheritenceExamples;
+namespace PerformanceTests.ExamplePerformanceTests.Discoverable;
 
 [Sailfish(NumIterations = 3, NumWarmupIterations = 1, Disabled = false)]
 public class ChildTestClass : AttributesInheritedBase

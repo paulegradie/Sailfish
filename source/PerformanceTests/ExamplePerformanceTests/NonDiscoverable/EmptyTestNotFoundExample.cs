@@ -3,6 +3,6 @@
 namespace PerformanceTests.ExamplePerformanceTests.NonDiscoverable;
 
 [Sailfish(Disabled = true)]
-public class EmptyTest
+public class EmptyTestNotFoundExample
 {
 }
