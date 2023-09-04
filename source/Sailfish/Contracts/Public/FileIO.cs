@@ -8,6 +8,8 @@ using System.Threading;
 using System.Threading.Tasks;
 using CsvHelper;
 using CsvHelper.Configuration;
+using Sailfish.Analysis.ScaleFish;
+using Sailfish.Contracts.Serialization.V1;
 
 namespace Sailfish.Contracts.Public;
 
@@ -15,9 +17,17 @@ public class FileIo : IFileIo
 {
     public FileIo()
     {
-        var defaultOptions = new JsonSerializerOptions();
-        defaultOptions.Converters.Add(new JsonNanConverter());
-        DefaultSerializerOptions = defaultOptions;
+        DefaultSerializerOptions = new JsonSerializerOptions()
+        {
+            WriteIndented = true, // Add this line to enable indented JSON
+            Converters =
+            {
+                new JsonNanConverter(),
+                new ComplexityFunctionConverter(),
+                new ExecutionSummaryTrackingFormatV1Converter(),
+                new TypePropertyConvert()
+            }
+        };
     }
 
     public JsonSerializerOptions DefaultSerializerOptions { get; }

@@ -19,7 +19,13 @@ public class JsonNanConverter : JsonConverter<double>
             return double.NaN;
         }
 
-        throw new JsonException($"Unable to parse value (using custom parser): {stringValue}");
+        return stringValue switch
+        {
+            "NaN" => double.NaN,
+            "Inf" => double.PositiveInfinity,
+            "-Inf" => double.NegativeInfinity,
+            _ => throw new JsonException($"Unable to parse value (using custom parser): {stringValue}")
+        };
     }
 
     public override void Write(Utf8JsonWriter writer, double value, JsonSerializerOptions options)
@@ -27,6 +33,10 @@ public class JsonNanConverter : JsonConverter<double>
         if (double.IsNaN(value))
         {
             writer.WriteStringValue("NaN");
+        }
+        else if (double.IsInfinity(value))
+        {
+            writer.WriteStringValue(value.ToString());
         }
         else
         {

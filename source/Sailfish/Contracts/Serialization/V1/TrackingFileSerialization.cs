@@ -1,6 +1,8 @@
 using System.Collections.Generic;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Sailfish.Analysis.ScaleFish;
+using Sailfish.Contracts.Public;
 
 namespace Sailfish.Contracts.Serialization.V1;
 
@@ -19,6 +21,13 @@ public class TrackingFileSerialization : ITrackingFileSerialization
         options = new JsonSerializerOptions()
         {
             WriteIndented = true, // Add this line to enable indented JSON
+            Converters =
+            {
+                new JsonNanConverter(),
+                new ComplexityFunctionConverter(),
+                new ExecutionSummaryTrackingFormatV1Converter(),
+                new TypePropertyConvert()
+            }
         };
     }
 
