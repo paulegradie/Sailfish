@@ -38,14 +38,14 @@ public static class AdapterRunSettingsLoader
         var testSettings = MapToTestSettings(parsedSettings.TestSettings);
         var runSettings = runSettingsBuilder
             .CreateTrackingFiles()
-            .WithAnalysis()
-            .WithComplexityAnalysis()
-            .WithAnalysisTestSettings(testSettings)
+            .WithSailDiff()
+            .WithScalefish()
+            .WithSailDiffSettings(testSettings)
             .Build();
         return runSettings;
     }
 
-    private static TestSettings MapToTestSettings(SailfishTestSettings settings)
+    private static SailDiffSettings MapToTestSettings(SailfishTestSettings settings)
     {
         if (settings?.Resolution is not null)
         {
@@ -53,7 +53,7 @@ public static class AdapterRunSettingsLoader
             // settingsBuilder.WithResolution(settings.Resolution);
         }
 
-        var mappedSettings = new TestSettings();
+        var mappedSettings = new SailDiffSettings();
         if (settings?.TestType is not null)
         {
             mappedSettings.SetTestType(settings.TestType);

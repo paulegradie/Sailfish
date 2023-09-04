@@ -21,7 +21,7 @@ public class TestComputer : ITestComputer
         this.logger = logger;
     }
 
-    public List<TestCaseResults> ComputeTest(TestData before, TestData after, TestSettings settings)
+    public List<TestCaseResults> ComputeTest(TestData before, TestData after, SailDiffSettings settings)
     {
         var testCaseIdGroups = after
             .Data

@@ -20,28 +20,28 @@ public class TestShouldCompleteSuccessfullyFixture : IAsyncLifetime
     public void TwoSample()
     {
         var test = new TwoSampleWilcoxonSignedRankTestSailfish(new TestPreprocessor(new SailfishOutlierDetector()));
-        Should.NotThrow(() => test.ExecuteTest(before, after, new TestSettings(0.0001, 4, false, TestType.TwoSampleWilcoxonSignedRankTest)));
+        Should.NotThrow(() => test.ExecuteTest(before, after, new SailDiffSettings(0.0001, 4, false, TestType.TwoSampleWilcoxonSignedRankTest)));
     }
 
     [Fact]
     public void RankSum()
     {
         var test = new MannWhitneyWilcoxonTestSailfish(new TestPreprocessor(new SailfishOutlierDetector()));
-        Should.NotThrow(() => test.ExecuteTest(before, after, new TestSettings(0.0001, 4, false, TestType.WilcoxonRankSumTest)));
+        Should.NotThrow(() => test.ExecuteTest(before, after, new SailDiffSettings(0.0001, 4, false, TestType.WilcoxonRankSumTest)));
     }
 
     [Fact]
     public void TTEst()
     {
         var test = new TTestSailfish(new TestPreprocessor(new SailfishOutlierDetector()));
-        Should.NotThrow(() => test.ExecuteTest(before, after, new TestSettings(0.0001, 4, false, TestType.TTest)));
+        Should.NotThrow(() => test.ExecuteTest(before, after, new SailDiffSettings(0.0001, 4, false, TestType.TTest)));
     }
 
     [Fact]
     public void KolmogorovSmirnov()
     {
         var test = new KolmogorovSmirnovTestSailfish(new TestPreprocessor(new SailfishOutlierDetector()));
-        Should.NotThrow(() => test.ExecuteTest(before, after, new TestSettings(0.0001, 4, false, TestType.KolmogorovSmirnovTest)));
+        Should.NotThrow(() => test.ExecuteTest(before, after, new SailDiffSettings(0.0001, 4, false, TestType.KolmogorovSmirnovTest)));
     }
 
     /// <summary>

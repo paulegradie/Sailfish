@@ -12,14 +12,14 @@ public class WriteTestResultsAsCsvCommand : INotification
     public readonly DateTime TimeStamp;
     public IEnumerable<TestCaseResults> CsvFormat { get; }
     public string OutputDirectory { get; }
-    public TestSettings TestSettings { get; }
+    public SailDiffSettings SailDiffSettings { get; }
     public OrderedDictionary Tags { get; }
     public OrderedDictionary Args { get; }
 
     public WriteTestResultsAsCsvCommand(
         IEnumerable<TestCaseResults> csvFormat,
         string outputDirectory,
-        TestSettings testSettings,
+        SailDiffSettings sailDiffSettings,
         DateTime timeStamp,
         OrderedDictionary tags,
         OrderedDictionary args)
@@ -27,7 +27,7 @@ public class WriteTestResultsAsCsvCommand : INotification
         TimeStamp = timeStamp;
         CsvFormat = csvFormat;
         OutputDirectory = outputDirectory;
-        TestSettings = testSettings;
+        SailDiffSettings = sailDiffSettings;
         Tags = tags;
         Args = args;
     }

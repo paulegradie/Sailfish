@@ -10,7 +10,7 @@ internal interface IAdapterSailDiff : ISailDiff
     string ComputeTestCaseDiff(
         TestExecutionResult testExecutionResult,
         IExecutionSummary executionSummary,
-        TestSettings testSettings,
+        SailDiffSettings sailDiffSettings,
         PerformanceRunResult preloadedLastRun,
         CancellationToken cancellationToken);
 }

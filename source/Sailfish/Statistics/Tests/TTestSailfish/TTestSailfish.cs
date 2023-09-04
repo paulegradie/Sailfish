@@ -22,7 +22,7 @@ internal class TTestSailfish : ITTestSailfish
         public const string DegreesOfFreedom = "DegreesOfFreedom";
     }
 
-    public TestResultWithOutlierAnalysis ExecuteTest(double[] before, double[] after, TestSettings settings)
+    public TestResultWithOutlierAnalysis ExecuteTest(double[] before, double[] after, SailDiffSettings settings)
     {
         var sigDig = settings.Round;
 

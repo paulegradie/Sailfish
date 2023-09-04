@@ -93,7 +93,7 @@ public abstract class SailfishProgramBase
             .WithTestNames(TestNames)
             .WithLocalOutputDirectory(OutputDirectory)
             .CreateTrackingFiles()
-            .WithAnalysis();
+            .WithSailDiff();
 
         if (DisableOverheadEstimation)
         {

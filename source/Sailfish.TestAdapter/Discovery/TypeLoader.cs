@@ -23,7 +23,7 @@ internal static class TypeLoader
             .Where(x => x.HasAttribute<SailfishAttribute>())
             .ToArray();
 
-        logger?.SendMessage(TestMessageLevel.Informational, $"Found {perfTestTypes.Length} test types in {assembly.GetName()}");
+#if debug
         foreach (var testType in perfTestTypes)
         {
             if (logger is null)
@@ -35,7 +35,7 @@ internal static class TypeLoader
                 logger?.SendMessage(TestMessageLevel.Informational, $" - Perf tests: {testType.Name}");
             }
         }
-
+#endif
         return perfTestTypes;
     }
 

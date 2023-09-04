@@ -9,6 +9,6 @@ namespace Sailfish.Presentation.Console;
 public interface IConsoleWriter
 {
     string Present(IEnumerable<IExecutionSummary> result, OrderedDictionary tags);
-    void WriteStatTestResultsToConsole(string markdownBody, TestIds testIds, TestSettings testSettings);
+    void WriteStatTestResultsToConsole(string markdownBody, TestIds testIds, SailDiffSettings sailDiffSettings);
     void WriteString(string content);
 }

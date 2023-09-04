@@ -5,5 +5,5 @@ namespace Sailfish.Analysis.SailDiff;
 
 public interface ITestComputer
 {
-    List<TestCaseResults> ComputeTest(TestData beforeTestData, TestData afterTestData, TestSettings settings);
+    List<TestCaseResults> ComputeTest(TestData beforeTestData, TestData afterTestData, SailDiffSettings settings);
 }

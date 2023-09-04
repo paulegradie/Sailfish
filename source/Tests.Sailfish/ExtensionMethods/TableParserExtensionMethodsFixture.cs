@@ -49,7 +49,7 @@ public class TableParserExtensionMethodsFixture
         ).ExecuteStatisticalTest(
             new double[] { 2, 2, 4, 4, 5, 5, 6, 7, 6 },
             new double[] { 9, 8, 7, 6, 4, 4, 1, 2, 3, 2 },
-            new TestSettings(0.01, 0, false, TestType.TTest));
+            new SailDiffSettings(0.01, 0, false, TestType.TTest));
 
         var testCaseId = new TestCaseId("MyClass.MySampleTest(N: 2, X: 4)");
         var testCaseResults = new List<TestCaseResults>() { new(testCaseId, result) };

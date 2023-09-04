@@ -13,7 +13,7 @@ internal class RunSettings : IRunSettings
     public bool RunSailDiff { get; }
     public bool RunScalefish { get; set; }
     public bool Notify { get; set; }
-    public TestSettings Settings { get; }
+    public SailDiffSettings Settings { get; }
     public IEnumerable<Type> TestLocationAnchors { get; }
     public IEnumerable<Type> RegistrationProviderAnchors { get; }
     public OrderedDictionary Tags { get; set; } = new();
@@ -28,10 +28,10 @@ internal class RunSettings : IRunSettings
         IEnumerable<string> testNames,
         string localOutputDirectory,
         bool createTrackingFiles,
-        bool analyze,
-        bool analyzeComplexity,
+        bool useSailDiff,
+        bool useScaleFish,
         bool notify,
-        TestSettings settings,
+        SailDiffSettings settings,
         OrderedDictionary tags,
         OrderedDictionary args,
         IEnumerable<string> providedBeforeTrackingFiles,
@@ -42,8 +42,8 @@ internal class RunSettings : IRunSettings
         TestNames = testNames;
         LocalOutputDirectory = localOutputDirectory;
         CreateTrackingFiles = createTrackingFiles;
-        RunSailDiff = analyze;
-        RunScalefish = analyzeComplexity;
+        RunSailDiff = useSailDiff;
+        RunScalefish = useScaleFish;
         Settings = settings;
         Tags = tags;
         Args = args;
@@ -61,10 +61,10 @@ internal class RunSettings : IRunSettings
         IEnumerable<string> testNames,
         string localOutputDirectory,
         bool createTrackingFiles,
-        bool analyze,
-        bool analyzeComplexity,
+        bool useSailDiff,
+        bool useScaleFish,
         bool notify,
-        TestSettings settings,
+        SailDiffSettings settings,
         OrderedDictionary tags,
         OrderedDictionary args,
         IEnumerable<string> providedBeforeTrackingFiles,
@@ -78,8 +78,8 @@ internal class RunSettings : IRunSettings
         TestNames = testNames;
         LocalOutputDirectory = localOutputDirectory;
         CreateTrackingFiles = createTrackingFiles;
-        RunSailDiff = analyze;
-        RunScalefish = analyzeComplexity;
+        RunSailDiff = useSailDiff;
+        RunScalefish = useScaleFish;
         Settings = settings;
         Tags = tags;
         Args = args;
@@ -98,7 +98,7 @@ internal class RunSettings : IRunSettings
     {
         TestNames = Array.Empty<string>();
         LocalOutputDirectory = null;
-        Settings = new TestSettings();
+        Settings = new SailDiffSettings();
         TestLocationAnchors = new[] { GetType() };
         RegistrationProviderAnchors = new[] { GetType() };
         ProvidedBeforeTrackingFiles = Array.Empty<string>();

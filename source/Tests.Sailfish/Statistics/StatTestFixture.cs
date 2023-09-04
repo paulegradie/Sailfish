@@ -19,7 +19,7 @@ public class StatisticalTestFixture
         var before = new[] { 0.0, 0, 0, 0, 0 };
         var after = new[] { 0.0, 0, 0, 0, 0 };
 
-        Should.NotThrow(() => test.ExecuteTest(before, after, new TestSettings(0.001, 2)));
+        Should.NotThrow(() => test.ExecuteTest(before, after, new SailDiffSettings(0.001, 2)));
     }
 
     [Fact]
@@ -30,7 +30,7 @@ public class StatisticalTestFixture
         var before = new[] { 0.0, 0, 0, 0, 0 };
         var after = new[] { 0.0, 0, 0, 0, 0 };
 
-        Should.NotThrow(() => test.ExecuteTest(before, after, new TestSettings(0.001, 2)));
+        Should.NotThrow(() => test.ExecuteTest(before, after, new SailDiffSettings(0.001, 2)));
     }
 
     [Fact]
@@ -41,6 +41,6 @@ public class StatisticalTestFixture
         var before = new[] { 0.0, 0, 0, 0, 0 };
         var after = new[] { 0.0, 0, 0, 0, 0 };
 
-        Should.NotThrow(() => test.ExecuteTest(before, after, new TestSettings(0.001, 2)));
+        Should.NotThrow(() => test.ExecuteTest(before, after, new SailDiffSettings(0.001, 2)));
     }
 }

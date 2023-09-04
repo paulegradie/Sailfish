@@ -94,7 +94,7 @@ internal class SailfishExecutionEngine : ISailfishExecutionEngine
             var testMethodContainer = instanceContainerEnumerator.Current;
             try
             {
-                if (memoryCache.Contains(providerPropertiesCacheKey))
+                if (!testMethodContainer.Disabled && memoryCache.Contains(providerPropertiesCacheKey))
                 {
                     var savedState = (PropertiesAndFields)memoryCache.Get(providerPropertiesCacheKey);
                     savedState.ApplyPropertiesAndFieldsTo(testMethodContainer.Instance);
@@ -108,7 +108,10 @@ internal class SailfishExecutionEngine : ISailfishExecutionEngine
                     try
                     {
                         await testMethodContainer.CoreInvoker.GlobalSetup(cancellationToken);
-                        memoryCache.Add(new CacheItem(providerPropertiesCacheKey, testMethodContainer.Instance.RetrievePropertiesAndFields()), new CacheItemPolicy());
+                        if (!testMethodContainer.Disabled)
+                        {
+                            memoryCache.Add(new CacheItem(providerPropertiesCacheKey, testMethodContainer.Instance.RetrievePropertiesAndFields()), new CacheItemPolicy());
+                        }
                     }
                     catch (Exception ex)
                     {
@@ -154,7 +157,10 @@ internal class SailfishExecutionEngine : ISailfishExecutionEngine
                     try
                     {
                         await testMethodContainer.CoreInvoker.GlobalTeardown(cancellationToken);
-                        memoryCache.Remove(providerPropertiesCacheKey);
+                        if (!testMethodContainer.Disabled)
+                        {
+                            memoryCache.Remove(providerPropertiesCacheKey);
+                        }
                     }
                     catch (Exception ex)
                     {

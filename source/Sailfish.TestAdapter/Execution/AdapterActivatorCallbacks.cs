@@ -18,7 +18,7 @@ internal interface IActivatorCallbacks
     Action<TestExecutionResult, TestInstanceContainer> PostTestResultCallback(
         IEnumerable<TestCase> testCaseGroups,
         List<List<IExecutionSummary>> preloadedLastRunIfAvailable,
-        TestSettings? testSettings,
+        SailDiffSettings? testSettings,
         CancellationToken cancellationToken);
 
     Action<TestInstanceContainer?> TestDisabledCallback(IEnumerable<TestCase>? testCaseGroup);
@@ -42,7 +42,7 @@ internal class AdapterActivatorCallbacks : IActivatorCallbacks
     public Action<TestExecutionResult, TestInstanceContainer> PostTestResultCallback(
         IEnumerable<TestCase> testCaseGroups,
         List<List<IExecutionSummary>> preloadedLastRunIfAvailable,
-        TestSettings? testSettings,
+        SailDiffSettings? testSettings,
         CancellationToken cancellationToken)
     {
         return (result, container) =>
@@ -90,7 +90,7 @@ internal class AdapterActivatorCallbacks : IActivatorCallbacks
         TestCase currentTestCase,
         RawExecutionResult rawResult,
         IReadOnlyCollection<IReadOnlyCollection<IExecutionSummary>> preloadedLastRunIfAvailable,
-        TestSettings? testSettings,
+        SailDiffSettings? testSettings,
         CancellationToken cancellationToken)
     {
         var executionSummary = executionSummaryCompiler

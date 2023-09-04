@@ -30,7 +30,7 @@ public class StatisticalTestExecutor : IStatisticalTestExecutor
     public TestResultWithOutlierAnalysis ExecuteStatisticalTest(
         double[] beforeData,
         double[] afterData,
-        TestSettings settings)
+        SailDiffSettings settings)
     {
         var testMap = new Dictionary<TestType, ITest>()
         {

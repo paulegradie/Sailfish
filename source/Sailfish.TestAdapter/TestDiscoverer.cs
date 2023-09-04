@@ -44,23 +44,9 @@ public class TestDiscoverer : ITestDiscoverer
             throw new SailfishException(ex);
         }
 
-        // var sorted = SortTestCases(testCases, logger);
-
         foreach (var testCase in testCases)
         {
             discoverySink.SendTestCase(testCase);
         }
-    }
-
-    private class OrderClass
-    {
-        public OrderClass(TestCase testCase, object[] variables)
-        {
-            TestCase = testCase;
-            Variables = variables;
-        }
-
-        public TestCase TestCase { get; set; }
-        public object[] Variables { get; set; }
     }
 }

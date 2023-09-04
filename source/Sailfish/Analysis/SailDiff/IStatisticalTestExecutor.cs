@@ -4,5 +4,5 @@ namespace Sailfish.Analysis.SailDiff;
 
 public interface IStatisticalTestExecutor
 {
-    TestResultWithOutlierAnalysis ExecuteStatisticalTest(double[] beforeData, double[] afterData, TestSettings settings);
+    TestResultWithOutlierAnalysis ExecuteStatisticalTest(double[] beforeData, double[] afterData, SailDiffSettings settings);
 }

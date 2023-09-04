@@ -79,4 +79,19 @@ public static class ModelLoader
             .GetModelsForProperty(property)?
             .ScalefishModel;
     }
+
+    public static ScalefishModel? GetScalefishModel(
+        this IEnumerable<ScalefishClassModel> classModels,
+        Type testClass,
+        MemberInfo method,
+        MemberInfo property)
+    {
+        return classModels
+            .GetModelsForTestClass(testClass.Name)?
+            .ScaleFishMethodModels
+            .GetModelsForMethod(method.Name)?
+            .ScaleFishPropertyModels
+            .GetModelsForProperty(property.Name)?
+            .ScalefishModel;
+    }
 }

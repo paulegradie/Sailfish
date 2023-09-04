@@ -27,7 +27,7 @@ public class MannWhitneyWilcoxonTestSailfish : IMannWhitneyWilcoxonTestSailfish
         public const string Statistic2 = "Statistic2";
     }
 
-    public TestResultWithOutlierAnalysis ExecuteTest(double[] before, double[] after, TestSettings settings)
+    public TestResultWithOutlierAnalysis ExecuteTest(double[] before, double[] after, SailDiffSettings settings)
     {
         var sigDig = settings.Round;
         const int maxArraySize = 10;

@@ -3,9 +3,9 @@ using PerformanceTests;
 using Sailfish;
 
 var settings = RunSettingsBuilder.CreateBuilder()
-    .TestsFromAssembliesFromAnchorType(typeof(PerformanceTestProjectDiscoveryAnchor))
-    .RegistrationProvidersFromAssembliesFromAnchorType(typeof(AppRegistrationProvider))
-    .WithAnalysis()
+    .TestsFromAssembliesFromAnchorTypes(typeof(PerformanceTestProjectDiscoveryAnchor))
+    .RegistrationProvidersFromAssembliesFromAnchorTypes(typeof(AppRegistrationProvider))
+    .WithSailDiff()
     .WithLocalOutputDirectory("my_custom_directory")
     .Build();
 var result = await SailfishRunner.Run(settings);

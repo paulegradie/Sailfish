@@ -19,7 +19,7 @@ internal class SailfishWriteTestResultsAsMarkdownHandler : INotificationHandler<
 
     public async Task Handle(WriteTestResultsAsMarkdownCommand notification, CancellationToken cancellationToken)
     {
-        var filename = DefaultFileSettings.AppendTagsToFilename(DefaultFileSettings.DefaultSaildiffMarkdownFileName(notification.TimeStamp, notification.TestSettings.TestType), notification.Tags);
+        var filename = DefaultFileSettings.AppendTagsToFilename(DefaultFileSettings.DefaultSaildiffMarkdownFileName(notification.TimeStamp, notification.SailDiffSettings.TestType), notification.Tags);
         var outputPath = Path.Join(notification.OutputDirectory, filename);
         if (!string.IsNullOrEmpty(notification.MarkdownTable))
         {

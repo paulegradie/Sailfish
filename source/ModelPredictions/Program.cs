@@ -1,14 +1,32 @@
 ﻿using PerformanceTests.ExamplePerformanceTests.Discoverable;
 using Sailfish.Analysis.ScaleFish;
+using Sailfish;
+using Sailfish.Analysis.SailDiff;
+
 
 Console.Clear();
-Console.WriteLine("\nThis demo shows you how to load a model file and then use it to make predictions on scale.");
-Console.WriteLine("\nThis is V1, so over the next number of iterations, we'll add more tooling around processing these models to make it easier to make predictions.");
+Console.WriteLine("\nThis demo shows you how run Scalefish, load a model file, and then use it to make predictions at scale");
 
-const string rootDir = @"C:\Users\paule\code\Sailfish\source\PerformanceTests\bin\Debug\net6.0\SailfishIDETestOutput";
-var loaded = LoadAModelFile(rootDir);
+const string outputDir = "demo_results";
+
+// run scalefish
+var res = await SailfishRunner.Run(RunSettingsBuilder.CreateBuilder()
+    .WithTestNames(nameof(AllTheFeatures))
+    .TestsFromAssembliesFromAnchorTypes(typeof(AllTheFeatures))
+    .RegistrationProvidersFromAssembliesFromAnchorTypes(typeof(AllTheFeatures))
+    .WithSailDiff(new SailDiffSettings(testType: TestType.TTest))
+    .WithScalefish()
+    .WithLocalOutputDirectory(outputDir)
+    .Build());
+if (!res.IsValid) throw new Exception("Sailfish run failed. No Scalefish models produced");
+
+// load models
+var loaded = LoadAModelFile(Path.Join(Directory.GetCurrentDirectory(), outputDir));
 var model = loaded.GetScalefishModel(nameof(AllTheFeatures), nameof(AllTheFeatures.FasterMethod), nameof(AllTheFeatures.Delay));
+if (model is null) throw new Exception("Could not load model");
 
+
+// make predictions
 Console.WriteLine("Model predictions:\n");
 var nValues = new List<int>() { 1, 10, 100, 1000, 50_000 };
 foreach (var val in nValues)
@@ -25,6 +43,5 @@ IEnumerable<ScalefishClassModel> LoadAModelFile(string rootDir)
 {
     var file = Directory.GetFiles(rootDir, "ScalefishModels*").LastOrDefault();
     if (file is null) throw new Exception("Run a Sailfish test with a variable with multiple values and enable complexity for that variable to produce a Scalefish model file");
-
     return ModelLoader.LoadModelFile(file);
 }

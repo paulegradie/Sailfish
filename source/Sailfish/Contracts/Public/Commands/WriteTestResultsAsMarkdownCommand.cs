@@ -11,14 +11,14 @@ public class WriteTestResultsAsMarkdownCommand : INotification
     public WriteTestResultsAsMarkdownCommand(
         string markdownTable,
         string outputDirectory,
-        TestSettings testSettings,
+        SailDiffSettings sailDiffSettings,
         DateTime timeStamp,
         OrderedDictionary tags,
         OrderedDictionary args)
     {
         MarkdownTable = markdownTable;
         OutputDirectory = outputDirectory;
-        TestSettings = testSettings;
+        SailDiffSettings = sailDiffSettings;
         TimeStamp = timeStamp;
         Tags = tags;
         Args = args;
@@ -29,5 +29,5 @@ public class WriteTestResultsAsMarkdownCommand : INotification
     public DateTime TimeStamp { get; }
     public OrderedDictionary Tags { get; }
     public OrderedDictionary Args { get; }
-    public TestSettings TestSettings { get; }
+    public SailDiffSettings SailDiffSettings { get; }
 }

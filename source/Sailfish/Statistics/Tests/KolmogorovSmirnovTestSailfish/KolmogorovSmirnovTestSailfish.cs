@@ -27,7 +27,7 @@ public class KolmogorovSmirnovTestSailfish : IKolmogorovSmirnovTestSailfish
     }
 
 
-    public TestResultWithOutlierAnalysis ExecuteTest(double[] before, double[] after, TestSettings settings)
+    public TestResultWithOutlierAnalysis ExecuteTest(double[] before, double[] after, SailDiffSettings settings)
     {
         var sigDig = settings.Round;
 

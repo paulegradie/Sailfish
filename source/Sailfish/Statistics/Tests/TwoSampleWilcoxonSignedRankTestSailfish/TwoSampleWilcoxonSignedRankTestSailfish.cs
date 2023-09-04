@@ -17,7 +17,7 @@ public class TwoSampleWilcoxonSignedRankTestSailfish : ITwoSampleWilcoxonSignedR
         this.preprocessor = preprocessor;
     }
 
-    public TestResultWithOutlierAnalysis ExecuteTest(double[] before, double[] after, TestSettings settings)
+    public TestResultWithOutlierAnalysis ExecuteTest(double[] before, double[] after, SailDiffSettings settings)
     {
         var sigDig = settings.Round;
 

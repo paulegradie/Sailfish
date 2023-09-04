@@ -40,7 +40,7 @@ internal class TestAdapterExecutionEngine : ITestAdapterExecutionEngine
     public async Task<List<IExecutionSummary>> Execute(
         List<TestCase> testCases,
         List<List<IExecutionSummary>> preloadedLastRunIfAvailable,
-        TestSettings? testSettings,
+        SailDiffSettings? testSettings,
         CancellationToken cancellationToken)
     {
         var rawExecutionResults = new List<(string, RawExecutionResult)>();

@@ -1,6 +1,6 @@
 ﻿namespace Sailfish.Analysis.SailDiff;
 
-public class TestSettings
+public class SailDiffSettings
 {
     /// <summary>
     /// Settings to use with the regression tester.
@@ -12,7 +12,7 @@ public class TestSettings
     /// <param name="useOutlierDetection"></param>
     /// <param name="maxDegreeOfParallelism"></param>
     /// <param name="disableOrdering"></param>
-    public TestSettings(double alpha = 0.001, int round = 3, bool useOutlierDetection = false, TestType testType = TestType.WilcoxonRankSumTest, int maxDegreeOfParallelism = 4, bool disableOrdering = false)
+    public SailDiffSettings(double alpha = 0.001, int round = 3, bool useOutlierDetection = false, TestType testType = TestType.WilcoxonRankSumTest, int maxDegreeOfParallelism = 4, bool disableOrdering = false)
     {
         Alpha = alpha;
         Round = round;
