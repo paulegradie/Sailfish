@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -46,7 +47,14 @@ internal class TrackingFileParser : ITrackingFileParser
                 if (deserializedFile is null) throw new SerializationException();
                 if (deserializedFile.Any())
                 {
-                    trackingFormatData.Add(deserializedFile.ToSummaryFormat().ToList()); // only add if all files present succeed
+                    try
+                    {
+                        trackingFormatData.Add(deserializedFile.ToSummaryFormat().ToList()); // only add if all files present succeed
+                    }
+                    catch (ArgumentException)
+                    {
+                        // failed to deserialize the file, but continue trying files
+                    }
                 }
             }
 

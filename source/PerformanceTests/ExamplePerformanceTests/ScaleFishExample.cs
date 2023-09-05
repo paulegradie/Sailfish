@@ -6,32 +6,31 @@ using Sailfish.Attributes;
 namespace PerformanceTests.ExamplePerformanceTests;
 
 [WriteToMarkdown]
-[Sailfish(NumIterations = 7, Disabled = false)]
+[Sailfish(NumIterations = 2, Disabled = false)]
 public class ScaleFishExample
 {
-    [SailfishRangeVariable(true, 1, 5, 30)]
+    [SailfishRangeVariable(true, 5, 4, 6)]
     public int N { get; set; }
 
-    [SailfishVariable(50, 100)] public int OtherN { get; set; }
 
     [SailfishMethod(Disabled = true)]
     public async Task Quadratic(CancellationToken cancellationToken)
     {
         await Task.CompletedTask;
-        await Task.Delay(Convert.ToInt32(N * N) + OtherN, cancellationToken);
+        await Task.Delay(Convert.ToInt32(N * N), cancellationToken);
     }
 
     [SailfishMethod(Disabled = true)]
     public async Task Cubic(CancellationToken cancellationToken)
     {
         await Task.CompletedTask;
-        await Task.Delay(Convert.ToInt32(N * N * N) + OtherN, cancellationToken);
+        await Task.Delay(Convert.ToInt32(N * N * N), cancellationToken);
     }
 
     [SailfishMethod(Disabled = false, DisableOverheadEstimation = true)]
     public async Task NLogN(CancellationToken cancellationToken)
     {
         await Task.CompletedTask;
-        await Task.Delay(Convert.ToInt32(N * Math.Log(N)) + OtherN, cancellationToken);
+        await Task.Delay(Convert.ToInt32(N * Math.Log(N)), cancellationToken);
     }
 }

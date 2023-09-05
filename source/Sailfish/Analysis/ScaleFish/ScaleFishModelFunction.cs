@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
@@ -74,7 +75,8 @@ public abstract class ScaleFishModelFunction : IScaleFishModelFunction
 
     public override string ToString()
     {
-        return FunctionDef.Replace("{0}", FunctionParameters?.Scale.ToString(CultureInfo.InvariantCulture))
-            .Replace("{1}", FunctionParameters?.Bias.ToString(CultureInfo.InvariantCulture));
+        return FunctionDef
+            .Replace("{0}", Math.Round(FunctionParameters?.Scale ?? 0, 4).ToString(CultureInfo.InvariantCulture))
+            .Replace("{1}", Math.Round(FunctionParameters?.Bias ?? 0, 4).ToString(CultureInfo.InvariantCulture));
     }
 }

@@ -78,8 +78,7 @@ internal class SailFishTestExecutor : ISailFishTestExecutor
         CancellationToken cancellationToken = default)
     {
         var testInstanceContainerProviders = testInstanceContainerCreator.CreateTestContainerInstanceProviders(test);
-        var results = await Execute(testInstanceContainerProviders, cancellationToken);
-        return results;
+        return await Execute(testInstanceContainerProviders, cancellationToken);
     }
 
     private async Task<List<TestExecutionResult>> Execute(

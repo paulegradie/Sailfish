@@ -52,8 +52,15 @@ internal class TestAdapterExecutionProgram : ITestAdapterExecutionProgram
         var preloadedLastRunsIfAvailable = new TrackingFileDataList();
         if (!runSettings.DisableAnalysisGlobally && (runSettings.RunScalefish || runSettings.RunSailDiff))
         {
-            var response = await mediator.Send(new SailfishGetAllTrackingDataOrderedChronologicallyRequest(trackingDir, false), cancellationToken);
-            preloadedLastRunsIfAvailable.AddRange(response.TrackingData);
+            try
+            {
+                var response = await mediator.Send(new SailfishGetAllTrackingDataOrderedChronologicallyRequest(trackingDir, false), cancellationToken);
+                preloadedLastRunsIfAvailable.AddRange(response.TrackingData);
+            }
+            catch (Exception ex)
+            {
+                consoleWriter.WriteString(ex.Message);
+            }
         }
 
         var executionSummaries = await testAdapterExecutionEngine.Execute(testCases, preloadedLastRunsIfAvailable, runSettings.Settings, cancellationToken);
