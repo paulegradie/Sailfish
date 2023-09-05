@@ -1,6 +1,6 @@
-namespace Sailfish.Analysis.Scalefish.ComplexityFunctions;
+namespace Sailfish.Analysis.ScaleFish.ComplexityFunctions;
 
-public class Factorial : ComplexityFunction
+public class Factorial : ScaleFishModelFunction
 {
     public override double Compute(double n, double scale, double bias)
     {
@@ -17,6 +17,10 @@ public class Factorial : ComplexityFunction
     }
 
     public override string Name { get; set; } = nameof(Factorial);
+
     public override string OName { get; set; } = "O(n!)";
+
     public override string Quality { get; set; } = "Worst!";
+
+    public override string FunctionDef { get; set; } = "f(x) = {0}x! + {1}";
 }

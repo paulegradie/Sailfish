@@ -13,18 +13,18 @@ namespace Sailfish.Presentation;
 internal class ExecutionSummaryWriter : IExecutionSummaryWriter
 {
     private readonly IMediator mediator;
-    private readonly IPerformanceResultPresenter performanceResultPresenter;
+    private readonly IPerformanceRunResultFileWriter performanceRunResultFileWriter;
 
     public ExecutionSummaryWriter(
         IMediator mediator,
-        IPerformanceResultPresenter performanceResultPresenter)
+        IPerformanceRunResultFileWriter performanceRunResultFileWriter)
     {
         this.mediator = mediator;
-        this.performanceResultPresenter = performanceResultPresenter;
+        this.performanceRunResultFileWriter = performanceRunResultFileWriter;
     }
 
     public async Task Write(
-        List<IExecutionSummary> executionSummaries,
+        List<IClassExecutionSummary> executionSummaries,
         DateTime timeStamp,
         string trackingDir,
         IRunSettings runSettings,
@@ -62,14 +62,9 @@ internal class ExecutionSummaryWriter : IExecutionSummaryWriter
 
         if (runSettings.CreateTrackingFiles)
         {
-            var trackingDataAsCsv = await performanceResultPresenter.ConvertToCsvStringContent(executionSummaries, cancellationToken);
-            var trackingDataAsJson = await performanceResultPresenter.ConvertToJson(executionSummaries, cancellationToken);
-            var trackingDataFormats = new TrackingDataFormats(trackingDataAsJson, trackingDataAsCsv, executionSummaries);
-
             await mediator.Publish(
                     new WriteCurrentTrackingFileCommand(
-                        trackingDataFormats,
-                        trackingDataAsCsv,
+                        executionSummaries,
                         trackingDir,
                         timeStamp,
                         runSettings.Tags,

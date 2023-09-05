@@ -138,8 +138,10 @@ internal static class TableParserExtensionMethods
             {
                 var value = valueSelectors[colIndex].Invoke(values[headerHasAnyValues ? rowIndex - 2 : rowIndex]);
                 var cell = columnSuffixes.Count == 0
-                    ? (value != null ? value.ToString() : "null").Trim()
-                    : (value != null ? $"{value.ToString().Trim()} {columnSuffixes[colIndex]}" : "null").Trim();
+                    // ReSharper disable once ConditionIsAlwaysTrueOrFalseAccordingToNullableAPIContract
+                    ? (value is null ? "null" : value.ToString() ?? string.Empty).Trim()
+                    // ReSharper disable once ConditionIsAlwaysTrueOrFalseAccordingToNullableAPIContract
+                    : (value is null ? "null" : $"{value.ToString()?.Trim() ?? string.Empty} {columnSuffixes[colIndex]}").Trim();
 
                 internalMatrix[rowIndex, colIndex] = cell.Trim();
             }

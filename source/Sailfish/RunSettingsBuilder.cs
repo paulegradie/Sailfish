@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using Sailfish.Analysis.Saildiff;
+using Sailfish.Analysis.SailDiff;
 using Sailfish.Extensions.Types;
 using Sailfish.Presentation;
 
@@ -10,7 +10,7 @@ namespace Sailfish;
 public class RunSettingsBuilder
 {
     private bool createTrackingFiles = true;
-    private bool analyze = false;
+    private bool sailfDiff = false;
     private bool executeNotificationHandler = false;
     private readonly List<string> names = new();
     private readonly List<Type> testAssembliesAnchorTypes = new();
@@ -19,10 +19,10 @@ public class RunSettingsBuilder
     private OrderedDictionary tags = new();
     private OrderedDictionary args = new();
     private string? localOutputDir;
-    private TestSettings? tSettings;
+    private SailDiffSettings? sdSettings;
     private DateTime? timeStamp;
     private bool debg = false;
-    private bool complexityAnalysis = false;
+    private bool scaleFish = false;
     private bool disableOverheadEstimation;
     private bool disableAnalysisGlobally = false;
 
@@ -49,15 +49,22 @@ public class RunSettingsBuilder
         return this;
     }
 
-    public RunSettingsBuilder WithAnalysis()
+    public RunSettingsBuilder WithSailDiff()
     {
-        analyze = true;
+        sailfDiff = true;
         return this;
     }
 
-    public RunSettingsBuilder WithComplexityAnalysis()
+    public RunSettingsBuilder WithSailDiff(SailDiffSettings settings)
     {
-        complexityAnalysis = true;
+        sdSettings = settings;
+        sailfDiff = true;
+        return this;
+    }
+
+    public RunSettingsBuilder WithScalefish()
+    {
+        scaleFish = true;
         return this;
     }
 
@@ -67,27 +74,15 @@ public class RunSettingsBuilder
         return this;
     }
 
-    public RunSettingsBuilder WithAnalysisTestSettings(TestSettings testSettings)
+    public RunSettingsBuilder WithSailDiffSettings(SailDiffSettings sailDiffSettings)
     {
-        tSettings = testSettings;
-        return this;
-    }
-
-    public RunSettingsBuilder TestsFromAssembliesFromAnchorType(Type anchorType)
-    {
-        testAssembliesAnchorTypes.Add(anchorType);
+        sdSettings = sailDiffSettings;
         return this;
     }
 
     public RunSettingsBuilder TestsFromAssembliesFromAnchorTypes(params Type[] anchorTypes)
     {
         testAssembliesAnchorTypes.AddRange(anchorTypes);
-        return this;
-    }
-
-    public RunSettingsBuilder RegistrationProvidersFromAssembliesFromAnchorType(Type anchorType)
-    {
-        registrationProviderAnchorTypes.Add(anchorType);
         return this;
     }
 
@@ -157,17 +152,17 @@ public class RunSettingsBuilder
         disableAnalysisGlobally = true;
         return this;
     }
-    
+
     public IRunSettings Build()
     {
         return new RunSettings(
             names,
             localOutputDir ?? DefaultFileSettings.DefaultOutputDirectory,
             createTrackingFiles,
-            analyze,
-            complexityAnalysis,
+            sailfDiff,
+            scaleFish,
             executeNotificationHandler,
-            tSettings ?? new TestSettings(),
+            sdSettings ?? new SailDiffSettings(),
             tags,
             args,
             providedBeforeTrackingFiles,

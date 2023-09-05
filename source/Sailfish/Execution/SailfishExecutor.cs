@@ -4,8 +4,8 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Sailfish.Analysis.Saildiff;
-using Sailfish.Analysis.Scalefish;
+using Sailfish.Analysis.SailDiff;
+using Sailfish.Analysis.ScaleFish;
 using Sailfish.Presentation;
 using Serilog;
 

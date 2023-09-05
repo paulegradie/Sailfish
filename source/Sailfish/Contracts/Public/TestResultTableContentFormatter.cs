@@ -30,33 +30,39 @@ public class TestResultTableContentFormatter : ITestResultTableContentFormatter
     private static string FormatAsMarkdown(IEnumerable<TestCaseResults> testCaseResults)
     {
         var enumeratedResults = testCaseResults.ToList();
-        var nBefore = enumeratedResults.Select(x => x.TestResults.SampleSizeBefore).Distinct().Single();
-        var nAfter = enumeratedResults.Select(x => x.TestResults.SampleSizeAfter).Distinct().Single();
+        var nBefore = enumeratedResults.Select(x => x.TestResultsWithOutlierAnalysis.TestResults.SampleSizeBefore).Distinct().Single();
+        var nAfter = enumeratedResults.Select(x => x.TestResultsWithOutlierAnalysis.TestResults.SampleSizeAfter).Distinct().Single();
 
-        var selectors = new Expression<Func<TestCaseResults, object>>[]
+        var selectors = new List<Expression<Func<TestCaseResults, object>>>
         {
             m => m.TestCaseId.DisplayName,
-            m => m.TestResults.MeanBefore,
-            m => m.TestResults.MeanAfter,
-            m => m.TestResults.MedianBefore,
-            m => m.TestResults.MedianAfter,
-            m => m.TestResults.PValue,
-            m => m.TestResults.ChangeDescription
+            m => m.TestResultsWithOutlierAnalysis.TestResults.MeanBefore,
+            m => m.TestResultsWithOutlierAnalysis.TestResults.MeanAfter,
+            m => m.TestResultsWithOutlierAnalysis.TestResults.MedianBefore,
+            m => m.TestResultsWithOutlierAnalysis.TestResults.MedianAfter,
+            m => m.TestResultsWithOutlierAnalysis.TestResults.PValue,
+            m => m.TestResultsWithOutlierAnalysis.TestResults.ChangeDescription,
         };
 
-
-        var headers = new[]
+        var headers = new List<string>()
         {
             "Display Name", $"MeanBefore (N={nBefore})", $"MeanAfter (N={nAfter})", "MedianBefore", "MedianAfter", "PValue", "Change Description"
         };
-        var columnValueSuffixes = new[]
+        var columnValueSuffixes = new List<string>()
         {
             "", "ms", "ms", "ms", "ms", "", ""
         };
 
+        if (enumeratedResults.Any(x => !string.IsNullOrEmpty(x.TestResultsWithOutlierAnalysis.ExceptionMessage)))
+        {
+            selectors.Add(m => m.TestResultsWithOutlierAnalysis.ExceptionMessage);
+            headers.Add("Exception");
+            columnValueSuffixes.Add("");
+        }
+
         return enumeratedResults.ToStringTable(
             columnValueSuffixes,
             headers,
-            selectors);
+            selectors.ToArray());
     }
 }

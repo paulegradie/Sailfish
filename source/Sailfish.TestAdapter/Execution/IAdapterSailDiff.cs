@@ -1,6 +1,5 @@
-using System.Collections.Generic;
 using System.Threading;
-using Sailfish.Analysis.Saildiff;
+using Sailfish.Analysis.SailDiff;
 using Sailfish.Contracts.Public;
 using Sailfish.Execution;
 
@@ -10,8 +9,8 @@ internal interface IAdapterSailDiff : ISailDiff
 {
     string ComputeTestCaseDiff(
         TestExecutionResult testExecutionResult,
-        IExecutionSummary executionSummary,
-        TestSettings testSettings,
-        IEnumerable<DescriptiveStatisticsResult> preloadedLastRunIfAvailable,
+        IClassExecutionSummary classExecutionSummary,
+        SailDiffSettings sailDiffSettings,
+        PerformanceRunResult preloadedLastRun,
         CancellationToken cancellationToken);
 }

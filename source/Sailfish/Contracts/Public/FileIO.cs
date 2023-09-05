@@ -13,15 +13,6 @@ namespace Sailfish.Contracts.Public;
 
 public class FileIo : IFileIo
 {
-    public FileIo()
-    {
-        var defaultOptions = new JsonSerializerOptions();
-        defaultOptions.Converters.Add(new JsonNanConverter());
-        DefaultSerializerOptions = defaultOptions;
-    }
-
-    public JsonSerializerOptions DefaultSerializerOptions { get; }
-
     public async Task WriteDataAsJsonToFile<TData>(TData data, string outputPath, CancellationToken cancellationToken, JsonSerializerOptions? options = null)
         where TData : class, IEnumerable
     {
@@ -31,13 +22,12 @@ public class FileIo : IFileIo
 
     public string WriteAsJsonToString<TData>(TData data, JsonSerializerOptions? options = null) where TData : class, IEnumerable
     {
-        return JsonSerializer.Serialize(data, options ?? DefaultSerializerOptions);
+        return SailfishSerializer.Serialize(data);
     }
 
     public TData? ReadFromJson<TData>(string content, JsonSerializerOptions? options = null) where TData : class
     {
-        var data = JsonSerializer.Deserialize<TData>(content, options ?? DefaultSerializerOptions);
-        return data;
+        return SailfishSerializer.Deserialize<TData>(content);
     }
 
     public async Task WriteDataAsCsvToFile<TMap, TData>(TData data, string outputPath, CancellationToken cancellationToken) where TMap : ClassMap where TData : class, IEnumerable
@@ -57,15 +47,6 @@ public class FileIo : IFileIo
     }
 
     public async Task<string> WriteAsCsvToString<TMap, TData>(TData csvRows, CancellationToken cancellationToken) where TMap : ClassMap where TData : class, IEnumerable
-    {
-        await using var writer = new StringWriter();
-        await using var csv = new CsvWriter(writer, CultureInfo.InvariantCulture);
-        csv.Context.RegisterClassMap<TMap>();
-        await csv.WriteRecordsAsync(csvRows, cancellationToken);
-        return writer.ToString();
-    }
-
-    public async Task<string> WriteToString<TMap, TData>(TData csvRows, CancellationToken cancellationToken) where TMap : ClassMap where TData : class, IEnumerable
     {
         await using var writer = new StringWriter();
         await using var csv = new CsvWriter(writer, CultureInfo.InvariantCulture);
@@ -119,7 +100,6 @@ public class FileIo : IFileIo
         using var reader = new StringReader(csvContent);
         using var csv = new CsvReader(reader, CultureInfo.InvariantCulture);
         csv.Context.RegisterClassMap<TMap>();
-
         var records = csv.GetRecords<TData>().ToList();
         return records;
     }

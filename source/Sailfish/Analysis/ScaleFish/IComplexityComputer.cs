@@ -1,9 +1,9 @@
 using System.Collections.Generic;
 using Sailfish.Execution;
 
-namespace Sailfish.Analysis.Scalefish;
+namespace Sailfish.Analysis.ScaleFish;
 
 public interface IComplexityComputer
 {
-    IEnumerable<ITestClassComplexityResult> AnalyzeComplexity(List<IExecutionSummary> executionSummaries);
+    IEnumerable<IScalefishClassModels> AnalyzeComplexity(List<IClassExecutionSummary> executionSummaries);
 }

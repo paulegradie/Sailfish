@@ -6,7 +6,7 @@ using Sailfish.Statistics.Tests.MWWilcoxonTestSailfish;
 using Sailfish.Statistics.Tests.TTestSailfish;
 using Sailfish.Statistics.Tests.TwoSampleWilcoxonSignedRankTestSailfish;
 
-namespace Sailfish.Analysis.Saildiff;
+namespace Sailfish.Analysis.SailDiff;
 
 public class StatisticalTestExecutor : IStatisticalTestExecutor
 {
@@ -27,10 +27,10 @@ public class StatisticalTestExecutor : IStatisticalTestExecutor
         this.kolmogorovSmirnovTestSailfish = kolmogorovSmirnovTestSailfish;
     }
 
-    public TestResults ExecuteStatisticalTest(
+    public TestResultWithOutlierAnalysis ExecuteStatisticalTest(
         double[] beforeData,
         double[] afterData,
-        TestSettings settings)
+        SailDiffSettings settings)
     {
         var testMap = new Dictionary<TestType, ITest>()
         {

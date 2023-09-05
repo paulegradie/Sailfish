@@ -5,5 +5,5 @@ namespace Sailfish.Execution;
 
 internal interface IExecutionSummaryCompiler
 {
-    IEnumerable<IExecutionSummary> CompileToSummaries(IEnumerable<RawExecutionResult> results, CancellationToken cancellationToken);
+    IEnumerable<IClassExecutionSummary> CompileToSummaries(IEnumerable<RawExecutionResult> results, CancellationToken cancellationToken);
 }

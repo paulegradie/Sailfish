@@ -11,22 +11,22 @@ internal static class AttributeDiscoveryExtensionMethods
 {
     internal static bool PropertyDoesNotHaveAnySailfishVariableAttributes(this PropertyInfo propertyInfo)
     {
-        return !propertyInfo.GetCustomAttributes<SailfishVariableAttribute>().Any() && !propertyInfo.GetCustomAttributes<SailfishVariableRangeAttribute>().Any();
+        return !propertyInfo.GetCustomAttributes<SailfishVariableAttribute>().Any() && !propertyInfo.GetCustomAttributes<SailfishRangeVariableAttribute>().Any();
     }
 
     internal static List<PropertyInfo> CollectAllSailfishVariableAttributes(this Type type)
     {
-        return type.GetPropertiesWithAttribute<SailfishVariableAttribute>().Concat(type.GetPropertiesWithAttribute<SailfishVariableRangeAttribute>()).ToList();
+        return type.GetPropertiesWithAttribute<SailfishVariableAttribute>().Concat(type.GetPropertiesWithAttribute<SailfishRangeVariableAttribute>()).ToList();
     }
 
     internal static bool IsSailfishVariableAttribute(this Attribute attribute)
     {
-        return attribute.GetType() == typeof(SailfishVariableAttribute) || (attribute.GetType() == typeof(SailfishVariableRangeAttribute));
+        return attribute.GetType() == typeof(SailfishVariableAttribute) || (attribute.GetType() == typeof(SailfishRangeVariableAttribute));
     }
 
     internal static bool PropertyHasSailfishAttribute(this PropertyInfo propertyInfo)
     {
-        return propertyInfo.GetCustomAttributes<SailfishVariableAttribute>().Any() || propertyInfo.GetCustomAttributes<SailfishVariableRangeAttribute>().Any();
+        return propertyInfo.GetCustomAttributes<SailfishVariableAttribute>().Any() || propertyInfo.GetCustomAttributes<SailfishRangeVariableAttribute>().Any();
     }
 
     internal static ISailfishVariableAttribute GetSailfishVariableAttributeOrThrow(this PropertyInfo propertyInfo)
@@ -34,7 +34,7 @@ internal static class AttributeDiscoveryExtensionMethods
         var attribute = propertyInfo
             .GetCustomAttributes<SailfishVariableAttribute>()
             .Union<ISailfishVariableAttribute>(
-                propertyInfo.GetCustomAttributes<SailfishVariableRangeAttribute>())
+                propertyInfo.GetCustomAttributes<SailfishRangeVariableAttribute>())
             .SingleOrDefault();
         if (attribute is null) throw new SailfishException($"Multiple ISailfishVariable attributes found on {propertyInfo.Name}");
         return attribute;
@@ -43,6 +43,6 @@ internal static class AttributeDiscoveryExtensionMethods
     internal static bool IsSailfishComplexityVariable(this PropertyInfo propertyInfo)
     {
         return propertyInfo.GetCustomAttributes<SailfishVariableAttribute>().Any(a => a.IsComplexityVariable())
-               || propertyInfo.GetCustomAttributes<SailfishVariableRangeAttribute>().Any(a => a.IsComplexityVariable());
+               || propertyInfo.GetCustomAttributes<SailfishRangeVariableAttribute>().Any(a => a.IsComplexityVariable());
     }
 }

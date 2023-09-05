@@ -1,16 +1,20 @@
 ﻿using Autofac;
+using MediatR;
 using Microsoft.Extensions.Configuration;
 using Sailfish.Analysis;
-using Sailfish.Analysis.Saildiff;
-using Sailfish.Analysis.Scalefish;
+using Sailfish.Analysis.SailDiff;
+using Sailfish.Analysis.ScaleFish;
 using Sailfish.Contracts.Public;
+using Sailfish.Contracts.Serialization.V1;
 using Sailfish.Execution;
+using Sailfish.MathOps;
 using Sailfish.Presentation;
 using Sailfish.Presentation.Console;
 using Sailfish.Presentation.CsvAndJson;
 using Sailfish.Presentation.Markdown;
 using Sailfish.Statistics;
 using Sailfish.Statistics.Tests;
+using Sailfish.Statistics.Tests.KolmogorovSmirnovTestSailfish;
 using Sailfish.Statistics.Tests.MWWilcoxonTestSailfish;
 using Sailfish.Statistics.Tests.TTestSailfish;
 using Sailfish.Statistics.Tests.TwoSampleWilcoxonSignedRankTestSailfish;
@@ -20,11 +24,34 @@ namespace Sailfish.Registration;
 
 public class SailfishModule : Module
 {
+    private readonly IRunSettings runSettings;
+
+    public SailfishModule(IRunSettings runSettings)
+    {
+        this.runSettings = runSettings;
+    }
+
     protected override void Load(ContainerBuilder builder)
     {
+        base.Load(builder);
         var configuration = new ConfigurationBuilder().AddJsonFile("sailfish.logging.json", true).Build();
 
-        base.Load(builder);
+        builder
+            .RegisterType<Mediator>()
+            .As<IMediator>()
+            .InstancePerLifetimeScope();
+        builder.Register<ServiceFactory>(
+            context =>
+            {
+                var c = context.Resolve<IComponentContext>();
+                return t => c.Resolve(t);
+            });
+        builder.RegisterAssemblyTypes(typeof(SailfishExecutor).Assembly)
+            .Where(x => x != typeof(ISailfishDependency))
+            .AsImplementedInterfaces(); // via assembly scan
+
+        builder.RegisterInstance(runSettings).As<IRunSettings>();
+
         builder.Register<ILogger>(
             (c, p) =>
                 new LoggerConfiguration()
@@ -48,7 +75,7 @@ public class SailfishModule : Module
         builder.RegisterType<FileIo>().As<IFileIo>();
         builder.RegisterType<MarkdownWriter>().As<IMarkdownWriter>();
         builder.RegisterType<ConsoleWriter>().As<IConsoleWriter>();
-        builder.RegisterType<PerformanceResultPresenter>().As<IPerformanceResultPresenter>();
+        builder.RegisterType<PerformanceRunResultFileWriter>().As<IPerformanceRunResultFileWriter>();
         builder.RegisterType<TrackingFileFinder>().As<ITrackingFileFinder>();
         builder.RegisterType<IterationVariableRetriever>().As<IIterationVariableRetriever>();
         builder.RegisterType<TestResultTableContentFormatter>().As<ITestResultTableContentFormatter>();
@@ -57,11 +84,18 @@ public class SailfishModule : Module
         builder.RegisterType<TrackingFileParser>().As<ITrackingFileParser>();
         builder.RegisterType<SailDiff>().As<ISailDiff>();
         builder.RegisterType<ScaleFish>().As<IScaleFish>();
-
+        builder.RegisterType<TrackingFileSerialization>().As<ITrackingFileSerialization>();
+        builder.RegisterType<TypeActivator>().As<ITypeActivator>();
+        builder.RegisterType<TestComputer>().As<ITestComputer>();
+        builder.RegisterType<TestPreprocessor>().As<ITestPreprocessor>();
+        builder.RegisterType<StatisticalTestExecutor>().As<IStatisticalTestExecutor>();
+        builder.RegisterType<PerformanceRunResultAggregator>().As<IPerformanceRunResultAggregator>();
+        builder.RegisterType<ComplexityComputer>().As<IComplexityComputer>();
+        builder.RegisterType<ComplexityEstimator>().As<IComplexityEstimator>();
+        builder.RegisterType<SailfishOutlierDetector>().As<ISailfishOutlierDetector>();
         builder.RegisterType<TTestSailfish>().As<ITTestSailfish>();
         builder.RegisterType<MannWhitneyWilcoxonTestSailfish>().As<IMannWhitneyWilcoxonTestSailfish>();
         builder.RegisterType<TwoSampleWilcoxonSignedRankTestSailfish>().As<ITwoSampleWilcoxonSignedRankTestSailfish>();
-        builder.RegisterType<TestPreprocessor>().As<ITestPreprocessor>();
-        builder.RegisterType<StatisticalTestExecutor>().As<IStatisticalTestExecutor>();
+        builder.RegisterType<KolmogorovSmirnovTestSailfish>().As<IKolmogorovSmirnovTestSailfish>();
     }
 }

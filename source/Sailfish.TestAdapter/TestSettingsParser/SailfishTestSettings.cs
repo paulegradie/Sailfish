@@ -1,5 +1,5 @@
 using System.Text.Json.Serialization;
-using Sailfish.Analysis.Saildiff;
+using Sailfish.Analysis.SailDiff;
 using Sailfish.Execution;
 
 #pragma warning disable CS8618
@@ -23,7 +23,7 @@ public class SailfishTestSettings
 
     [JsonPropertyName("Round")] public int Round { get; set; }
 
-    [JsonPropertyName("UseInnerQuartile")] public bool UseInnerQuartile { get; set; }
+    [JsonPropertyName("UseOutlierDetection")] public bool UseOutlierDetection { get; set; }
     [JsonPropertyName("Disabled")] public bool Disabled { get; set; }
 
     [JsonPropertyName("DisableOverheadEstimation")]

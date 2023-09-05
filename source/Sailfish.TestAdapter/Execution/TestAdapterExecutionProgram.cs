@@ -1,13 +1,11 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
-using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
+using MediatR;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel;
-using Sailfish.Analysis.Saildiff;
-using Sailfish.Analysis.Scalefish;
-using Sailfish.Contracts.Public;
-using Sailfish.Contracts.Public.CsvMaps;
+using Sailfish.Contracts.Private;
 using Sailfish.Extensions.Types;
 using Sailfish.Presentation;
 
@@ -18,18 +16,16 @@ internal class TestAdapterExecutionProgram : ITestAdapterExecutionProgram
     private readonly IRunSettings runSettings;
     private readonly ITestAdapterExecutionEngine testAdapterExecutionEngine;
     private readonly IExecutionSummaryWriter executionSummaryWriter;
-    private readonly ITrackingFileDirectoryReader trackingFileDirectoryReader;
-    private readonly IFileIo fileIo;
+    private readonly IMediator mediator;
     private readonly IAdapterConsoleWriter consoleWriter;
-    private readonly ISailDiff sailDiff;
-    private readonly IScaleFish scaleFish;
+    private readonly IAdapterSailDiff sailDiff;
+    private readonly IAdapterScaleFish scaleFish;
 
     public TestAdapterExecutionProgram(
         IRunSettings runSettings,
         ITestAdapterExecutionEngine testAdapterExecutionEngine,
         IExecutionSummaryWriter executionSummaryWriter,
-        ITrackingFileDirectoryReader trackingFileDirectoryReader,
-        IFileIo fileIo,
+        IMediator mediator,
         IAdapterConsoleWriter consoleWriter,
         IAdapterSailDiff sailDiff,
         IAdapterScaleFish scaleFish)
@@ -37,14 +33,13 @@ internal class TestAdapterExecutionProgram : ITestAdapterExecutionProgram
         this.runSettings = runSettings;
         this.testAdapterExecutionEngine = testAdapterExecutionEngine;
         this.executionSummaryWriter = executionSummaryWriter;
-        this.trackingFileDirectoryReader = trackingFileDirectoryReader;
-        this.fileIo = fileIo;
+        this.mediator = mediator;
         this.consoleWriter = consoleWriter;
         this.sailDiff = sailDiff;
         this.scaleFish = scaleFish;
     }
 
-    public void Run(List<TestCase> testCases, CancellationToken cancellationToken)
+    public async Task Run(List<TestCase> testCases, CancellationToken cancellationToken)
     {
         if (testCases.Count == 0)
         {
@@ -54,43 +49,33 @@ internal class TestAdapterExecutionProgram : ITestAdapterExecutionProgram
 
         var timeStamp = DateTime.Now;
         var trackingDir = GetRunSettingsTrackingDirectoryPath(runSettings);
-        var preloadedLastRunIfAvailable = new List<DescriptiveStatisticsResult>();
+        var preloadedLastRunsIfAvailable = new TrackingFileDataList();
         if (!runSettings.DisableAnalysisGlobally && (runSettings.RunScalefish || runSettings.RunSailDiff))
         {
-            var trackingFiles = trackingFileDirectoryReader.FindTrackingFilesInDirectoryOrderedByLastModified(trackingDir, ascending: false);
-            var latestRun = trackingFiles.Count switch
+            try
             {
-                0 => null,
-                1 => trackingFiles.Single(),
-                _ => trackingFiles.First()
-            };
-
-            if (latestRun is not null)
+                var response = await mediator.Send(new SailfishGetAllTrackingDataOrderedChronologicallyRequest(trackingDir, false), cancellationToken);
+                preloadedLastRunsIfAvailable.AddRange(response.TrackingData);
+            }
+            catch (Exception ex)
             {
-                var data = fileIo
-                    .ReadCsvFile<DescriptiveStatisticsResultCsvMap, DescriptiveStatisticsResult>(
-                        latestRun,
-                        cancellationToken)
-                    .GetAwaiter()
-                    .GetResult();
-                preloadedLastRunIfAvailable.AddRange(data);
+                consoleWriter.WriteString(ex.Message);
             }
         }
 
-        var executionSummaries = testAdapterExecutionEngine.Execute(testCases, preloadedLastRunIfAvailable, runSettings.Settings, cancellationToken);
+        var executionSummaries = await testAdapterExecutionEngine.Execute(testCases, preloadedLastRunsIfAvailable, runSettings.Settings, cancellationToken);
         consoleWriter.Present(executionSummaries, new OrderedDictionary());
-        executionSummaryWriter
-            .Write(executionSummaries, timeStamp, trackingDir, runSettings, cancellationToken)
-            .Wait(cancellationToken);
+        await executionSummaryWriter.Write(executionSummaries, timeStamp, trackingDir, runSettings, cancellationToken);
 
         if (runSettings.DisableAnalysisGlobally) return;
         if (runSettings.RunSailDiff)
         {
-            sailDiff.Analyze(timeStamp, runSettings, trackingDir, cancellationToken).Wait(cancellationToken);
+            await sailDiff.Analyze(timeStamp, runSettings, trackingDir, cancellationToken);
         }
+
         if (runSettings.RunScalefish)
         {
-            scaleFish.Analyze(timeStamp, runSettings, trackingDir, cancellationToken).Wait(cancellationToken);
+            await scaleFish.Analyze(timeStamp, runSettings, trackingDir, cancellationToken);
         }
     }
 

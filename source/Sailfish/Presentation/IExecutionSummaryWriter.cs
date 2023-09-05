@@ -9,7 +9,7 @@ namespace Sailfish.Presentation;
 internal interface IExecutionSummaryWriter
 {
     Task Write(
-        List<IExecutionSummary> executionSummaries,
+        List<IClassExecutionSummary> executionSummaries,
         DateTime timeStamp,
         string trackingDir,
         IRunSettings runSettings,

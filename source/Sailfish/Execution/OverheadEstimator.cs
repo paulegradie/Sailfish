@@ -38,7 +38,7 @@ public class OverheadEstimator
             totalElapsedTicks.Add(stopwatch.ElapsedTicks);
         }
 
-        var averageElapsedTicks = totalElapsedTicks.Mean();
+        var averageElapsedTicks = totalElapsedTicks.Median();
         var overheadInAverageTicks = averageElapsedTicks - ExpectedWaitPeriodInTicks;
 
         // do a second estimation
@@ -54,7 +54,7 @@ public class OverheadEstimator
             followupEstimate.Add(stopwatch.ElapsedTicks);
         }
 
-        var meanFollowupTicks = followupEstimate.Mean();
+        var meanFollowupTicks = followupEstimate.Median();
 
         if (overheadInAverageTicks < 0) return;
         while (meanFollowupTicks - overheadInAverageTicks < ExpectedWaitPeriodInTicks)

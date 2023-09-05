@@ -1,5 +1,6 @@
 ﻿using System.Threading.Tasks;
-using Sailfish.Analysis.Saildiff;
+using Sailfish.Analysis.SailDiff;
+using Sailfish.MathOps;
 using Sailfish.Statistics.Tests;
 using Sailfish.Statistics.Tests.KolmogorovSmirnovTestSailfish;
 using Sailfish.Statistics.Tests.MWWilcoxonTestSailfish;
@@ -18,29 +19,29 @@ public class TestShouldCompleteSuccessfullyFixture : IAsyncLifetime
     [Fact]
     public void TwoSample()
     {
-        var test = new TwoSampleWilcoxonSignedRankTestSailfish(new TestPreprocessor());
-        Should.NotThrow(() => test.ExecuteTest(before, after, new TestSettings(0.0001, 4, false, TestType.TwoSampleWilcoxonSignedRankTest)));
+        var test = new TwoSampleWilcoxonSignedRankTestSailfish(new TestPreprocessor(new SailfishOutlierDetector()));
+        Should.NotThrow(() => test.ExecuteTest(before, after, new SailDiffSettings(0.0001, 4, false, TestType.TwoSampleWilcoxonSignedRankTest)));
     }
 
     [Fact]
     public void RankSum()
     {
-        var test = new MannWhitneyWilcoxonTestSailfish(new TestPreprocessor());
-        Should.NotThrow(() => test.ExecuteTest(before, after, new TestSettings(0.0001, 4, false, TestType.WilcoxonRankSumTest)));
+        var test = new MannWhitneyWilcoxonTestSailfish(new TestPreprocessor(new SailfishOutlierDetector()));
+        Should.NotThrow(() => test.ExecuteTest(before, after, new SailDiffSettings(0.0001, 4, false, TestType.WilcoxonRankSumTest)));
     }
 
     [Fact]
     public void TTEst()
     {
-        var test = new TTestSailfish(new TestPreprocessor());
-        Should.NotThrow(() => test.ExecuteTest(before, after, new TestSettings(0.0001, 4, false, TestType.TTest)));
+        var test = new TTestSailfish(new TestPreprocessor(new SailfishOutlierDetector()));
+        Should.NotThrow(() => test.ExecuteTest(before, after, new SailDiffSettings(0.0001, 4, false, TestType.TTest)));
     }
 
     [Fact]
     public void KolmogorovSmirnov()
     {
-        var test = new KolmogorovSmirnovTestSailfish(new TestPreprocessor());
-        Should.NotThrow(() => test.ExecuteTest(before, after, new TestSettings(0.0001, 4, false, TestType.KolmogorovSmirnovTest)));
+        var test = new KolmogorovSmirnovTestSailfish(new TestPreprocessor(new SailfishOutlierDetector()));
+        Should.NotThrow(() => test.ExecuteTest(before, after, new SailDiffSettings(0.0001, 4, false, TestType.KolmogorovSmirnovTest)));
     }
 
     /// <summary>

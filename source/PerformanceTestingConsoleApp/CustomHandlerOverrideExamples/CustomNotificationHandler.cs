@@ -28,7 +28,7 @@ public class CustomNotificationHandler : INotificationHandler<NotifyOnTestResult
             .MarkdownFormat
             .Split(Environment.NewLine);
 
-        Console.WriteLine($"Make believe this handler parses the {notification.TestSettings.TestType.ToString()} result and reports tests that have regressed.");
+        Console.WriteLine($"Make believe this handler parses the {notification.SailDiffSettings.TestType.ToString()} result and reports tests that have regressed.");
         var header = lines.Single(x => x.Contains(nameof(TestCaseResults.TestCaseId.DisplayName)));
         lines = lines
             .Where(x => x == SailfishChangeDirection.Regressed)

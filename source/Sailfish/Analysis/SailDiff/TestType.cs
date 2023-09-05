@@ -1,4 +1,4 @@
-namespace Sailfish.Analysis.Saildiff;
+namespace Sailfish.Analysis.SailDiff;
 
 public enum TestType
 {

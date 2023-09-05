@@ -13,18 +13,14 @@
     </ItemGroup>
     <ItemGroup>
         <ProjectReference Include="..\Demo.API\Demo.API.csproj" />
-    </ItemGroup>
-
-    <!--    local dev only    -->
-    <ItemGroup>
-        <ProjectReference Include="..\Sailfish.Analyzers\Sailfish.Analyzers.csproj" />
+        <ProjectReference Include="..\Sailfish.TestAdapter\Sailfish.TestAdapter.csproj" />
     </ItemGroup>
 
     <!-- Exclude the Analyzer ItemGroup if building with Visual Studio -->
-    <ItemGroup Condition="'$(VisualStudioVersion)' != ''">
-        <ProjectReference Include="..\Sailfish.TestAdapter\Sailfish.TestAdapter.csproj" />
+    <ItemGroup Condition="'$(VisualStudioVersion)' == ''">
+        <ProjectReference Include="..\Sailfish.Analyzers\Sailfish.Analyzers.csproj" />
     </ItemGroup>
-    
+
     <ItemGroup>
         <None Include=".sailfish.json">
             <CopyToOutputDirectory>Always</CopyToOutputDirectory>

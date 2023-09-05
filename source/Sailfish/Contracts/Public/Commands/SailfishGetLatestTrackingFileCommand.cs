@@ -3,9 +3,9 @@ using Sailfish.Extensions.Types;
 
 namespace Sailfish.Contracts.Public.Commands;
 
-internal class SailfishGetLatestExecutionSummariesCommand : IRequest<SailfishGetLatestExecutionSummariesResponse>
+internal class SailfishGetLatestExecutionSummaryCommand : IRequest<SailfishGetLatestExecutionSummaryResponse>
 {
-    public SailfishGetLatestExecutionSummariesCommand(
+    public SailfishGetLatestExecutionSummaryCommand(
         string trackingDirectory,
         OrderedDictionary tags,
         OrderedDictionary args)

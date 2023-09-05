@@ -1,4 +1,4 @@
-using Sailfish.Analysis.Scalefish;
+using Sailfish.Analysis.ScaleFish;
 
 namespace Sailfish.TestAdapter.Execution;
 

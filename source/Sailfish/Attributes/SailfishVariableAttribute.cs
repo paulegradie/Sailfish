@@ -28,6 +28,12 @@ public class SailfishVariableAttribute : Attribute, ISailfishVariableAttribute
             throw new SailfishException($"No values were provided to the {nameof(SailfishVariableAttribute)} attribute.");
         }
 
+        if (EstimateComplexity && n.Length < 3)
+        {
+            throw new SailfishException(
+                "Complexity estimation requires at least 3 variable values for n. Accuracy positively correlates with the number and breath of values for n.");
+        }
+
         N.AddRange(n);
     }
 
@@ -37,7 +43,7 @@ public class SailfishVariableAttribute : Attribute, ISailfishVariableAttribute
     /// <param name="complexity">Boolean to enable complexity extimate feature</param>
     /// <param name="n">A params array of values to be used as variables within the test.</param>
     /// <exception cref="SailfishException">Thrown when no values are provided.</exception>
-    public SailfishVariableAttribute(bool complexity, [MinLength(1)] params object[] n) : this(n)
+    public SailfishVariableAttribute(bool complexity, [MinLength(3)] params object[] n) : this(n)
     {
         EstimateComplexity = complexity;
     }

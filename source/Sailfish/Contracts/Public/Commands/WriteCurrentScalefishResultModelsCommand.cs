@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using MediatR;
-using Sailfish.Analysis.Scalefish;
+using Sailfish.Analysis.ScaleFish;
 using Sailfish.Extensions.Types;
 using Sailfish.Presentation;
 
@@ -10,7 +10,7 @@ namespace Sailfish.Contracts.Public.Commands;
 public class WriteCurrentScalefishResultModelsCommand : INotification
 {
     public WriteCurrentScalefishResultModelsCommand(
-        List<ITestClassComplexityResult> testClassComplexityResults,
+        List<IScalefishClassModels> testClassComplexityResults,
         string localOutputDirectory,
         DateTime timeStamp,
         OrderedDictionary tags,
@@ -24,7 +24,7 @@ public class WriteCurrentScalefishResultModelsCommand : INotification
         DefaultFileName = DefaultFileSettings.DefaultScalefishModelFileName(timeStamp);
     }
 
-    public List<ITestClassComplexityResult> TestClassComplexityResults { get; }
+    public List<IScalefishClassModels> TestClassComplexityResults { get; }
     public string LocalOutputDirectory { get; }
     public DateTime TimeStamp { get; }
     public OrderedDictionary Tags { get; }

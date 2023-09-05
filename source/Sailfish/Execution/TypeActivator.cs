@@ -19,9 +19,12 @@ public class TypeActivator : ITypeActivator
 
     public object CreateDehydratedTestInstance(Type test, TestCaseId testCaseId, bool disabled)
     {
-        if (disabled) return Activator.CreateInstance(test)!; 
-
         var ctorArgTypes = test.GetCtorParamTypes();
+        if (disabled)
+        {
+            return Activator.CreateInstance(test, ctorArgTypes.Select(_ => null! as object).ToArray())!;
+        }
+
         if (ctorArgTypes.Length != ctorArgTypes.Distinct().Count())
         {
             throw new SailfishException($"Multiple ctor arguments of the same type were found in {test.Name}");

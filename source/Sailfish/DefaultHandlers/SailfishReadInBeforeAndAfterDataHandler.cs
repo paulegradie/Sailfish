@@ -1,11 +1,11 @@
-﻿using System.Collections.Generic;
-using System.Linq;
+﻿using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using MediatR;
 using Sailfish.Analysis;
 using Sailfish.Contracts.Public;
 using Sailfish.Contracts.Public.Commands;
+using Sailfish.Extensions.Types;
 using Serilog;
 
 namespace Sailfish.DefaultHandlers;
@@ -23,15 +23,20 @@ internal class SailfishReadInBeforeAndAfterDataHandler : IRequestHandler<ReadInB
 
     public async Task<ReadInBeforeAndAfterDataResponse> Handle(ReadInBeforeAndAfterDataCommand request, CancellationToken cancellationToken)
     {
-        var beforeData = new List<DescriptiveStatisticsResult>();
+        var beforeData = new TrackingFileDataList();
         if (!await trackingFileParser.TryParse(request.BeforeFilePaths, beforeData, cancellationToken).ConfigureAwait(false))
             return new ReadInBeforeAndAfterDataResponse(null, null);
 
-        var afterData = new List<DescriptiveStatisticsResult>();
+        var afterData = new TrackingFileDataList();
         if (!await trackingFileParser.TryParse(request.AfterFilePaths, afterData, cancellationToken).ConfigureAwait(false)) return new ReadInBeforeAndAfterDataResponse(null, null);
 
         if (!beforeData.Any() || !afterData.Any()) return new ReadInBeforeAndAfterDataResponse(null, null);
 
-        return new ReadInBeforeAndAfterDataResponse(new TestData(request.BeforeFilePaths, beforeData), new TestData(request.AfterFilePaths, afterData));
+        var beforeMerged = beforeData.SelectMany(x => x.SelectMany(y => y.CompiledTestCaseResults.Select(z => z.PerformanceRunResult!)));
+        var afterMerged = afterData.SelectMany(x => x.SelectMany(y => y.CompiledTestCaseResults.Select(z => z.PerformanceRunResult!)));
+
+        return new ReadInBeforeAndAfterDataResponse(
+            new TestData(request.BeforeFilePaths, beforeMerged),
+            new TestData(request.AfterFilePaths, afterMerged));
     }
 }

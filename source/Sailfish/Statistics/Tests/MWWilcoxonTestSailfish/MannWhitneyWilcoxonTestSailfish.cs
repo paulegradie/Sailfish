@@ -6,8 +6,9 @@ using System.Threading.Tasks;
 using Accord.Statistics;
 using Accord.Statistics.Testing;
 using MathNet.Numerics.Statistics;
-using Sailfish.Analysis.Saildiff;
+using Sailfish.Analysis.SailDiff;
 using Sailfish.Contracts;
+using Sailfish.Contracts.Public;
 
 namespace Sailfish.Statistics.Tests.MWWilcoxonTestSailfish;
 
@@ -26,72 +27,77 @@ public class MannWhitneyWilcoxonTestSailfish : IMannWhitneyWilcoxonTestSailfish
         public const string Statistic2 = "Statistic2";
     }
 
-    public TestResults ExecuteTest(double[] before, double[] after, TestSettings settings)
+    public TestResultWithOutlierAnalysis ExecuteTest(double[] before, double[] after, SailDiffSettings settings)
     {
         var sigDig = settings.Round;
-
         const int maxArraySize = 10;
 
         var iterations = before.Length + after.Length > 20 ? 25 : 1;
         var tests = new ConcurrentBag<MannWhitneyWilcoxonTest>();
 
-        // bootstrap analysis
-        Parallel.ForEach(
-            Enumerable.Range(0, iterations),
-            new ParallelOptions()
-            {
-                MaxDegreeOfParallelism = 5
-            }, (_) =>
-            {
-                var sample1 = preprocessor.PreprocessWithDownSample(before, settings.UseInnerQuartile, maxArraySize: maxArraySize);
-                var sample2 = preprocessor.PreprocessWithDownSample(after, settings.UseInnerQuartile, maxArraySize: maxArraySize);
-
-                var test = new MannWhitneyWilcoxonTest(sample1, sample2, TwoSampleHypothesis.ValuesAreDifferent);
-                tests.Add(test);
-            });
-
-        var meanBefore = Math.Round(before.Mean(), sigDig);
-        var meanAfter = Math.Round(after.Mean(), sigDig);
-
-        var medianBefore = Math.Round(before.Median(), sigDig);
-        var medianAfter = Math.Round(after.Median(), sigDig);
-
-        var testStatistic = Math.Round(tests.Select(x => x.Statistic).Mean(), sigDig);
-
-        var significantPValues = tests
-            .Select(x => x.PValue)
-            .Where(p => p < settings.Alpha)
-            .ToList();
-
-        var isSignificant = significantPValues.Count / (double)tests.Count > 0.5;
-        var pVal = Math.Round(isSignificant
-            ? significantPValues.Mean()
-            : tests
-                .Select(x => x.PValue)
-                .Where(p => p > settings.Alpha).Mean(), TestConstants.PValueSigDig);
-
-        var description = isSignificant
-            ? (meanAfter > meanBefore ? SailfishChangeDirection.Regressed : SailfishChangeDirection.Improved)
-            : SailfishChangeDirection.NoChange;
-
-        var additionalResults = new Dictionary<string, object>
+        try
         {
-            { AdditionalResults.Statistic1, tests.Select(x => x.Statistic1).Mean() },
-            { AdditionalResults.Statistic2, tests.Select(x => x.Statistic2).Mean() }
-        };
+            // bootstrap analysis
+            Parallel.ForEach(
+                Enumerable.Range(0, iterations),
+                new ParallelOptions()
+                {
+                    MaxDegreeOfParallelism = 5
+                }, (_) =>
+                {
+                    var (p1, p2) = preprocessor.PreprocessJointlyWithDownSample(before, after, settings.UseOutlierDetection, maxArraySize: maxArraySize);
 
-        return new TestResults(
-            meanBefore,
-            meanAfter,
-            medianBefore,
-            medianAfter,
-            testStatistic,
-            pVal,
-            description,
-            before.Length,
-            after.Length,
-            before,
-            after,
-            additionalResults);
+                    var sample1 = p1.OutlierAnalysis?.DataWithOutliersRemoved ?? p1.RawData;
+                    var sample2 = p2.OutlierAnalysis?.DataWithOutliersRemoved ?? p2.RawData;
+
+                    var test = new MannWhitneyWilcoxonTest(sample1, sample2, TwoSampleHypothesis.ValuesAreDifferent);
+                    tests.Add(test);
+                });
+            var meanBefore = Math.Round(before.Mean(), sigDig);
+            var meanAfter = Math.Round(after.Mean(), sigDig);
+            var medianBefore = Math.Round(before.Median(), sigDig);
+            var medianAfter = Math.Round(after.Median(), sigDig);
+            var testStatistic = Math.Round(tests.Select(x => x.Statistic).Mean(), sigDig);
+            var significantPValues = tests
+                .Select(x => x.PValue)
+                .Where(p => p < settings.Alpha)
+                .ToList();
+            var isSignificant = significantPValues.Count / (double)tests.Count > 0.5;
+            var pVal = Math.Round(isSignificant
+                ? significantPValues.Mean()
+                : tests
+                    .Select(x => x.PValue)
+                    .Where(p => p > settings.Alpha).Mean(), TestConstants.PValueSigDig);
+            var description = isSignificant
+                ? (meanAfter > meanBefore ? SailfishChangeDirection.Regressed : SailfishChangeDirection.Improved)
+                : SailfishChangeDirection.NoChange;
+            var additionalResults = new Dictionary<string, object>
+            {
+                { AdditionalResults.Statistic1, tests.Select(x => x.Statistic1).Mean() },
+                { AdditionalResults.Statistic2, tests.Select(x => x.Statistic2).Mean() }
+            };
+
+            var testResults = new TestResults(
+                meanBefore,
+                meanAfter,
+                medianBefore,
+                medianAfter,
+                testStatistic,
+                pVal,
+                description,
+                before.Length,
+                after.Length,
+                before,
+                after,
+                additionalResults);
+
+            // run once more to collect 'representative sampling'
+            var (rep1, rep2) = preprocessor.PreprocessJointlyWithDownSample(before, after, settings.UseOutlierDetection, maxArraySize: maxArraySize);
+            return new TestResultWithOutlierAnalysis(testResults, rep1.OutlierAnalysis, rep2.OutlierAnalysis);
+        }
+        catch (Exception ex)
+        {
+            return new TestResultWithOutlierAnalysis(ex);
+        }
     }
 }

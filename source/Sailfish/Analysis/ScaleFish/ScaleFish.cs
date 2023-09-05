@@ -7,7 +7,7 @@ using Sailfish.Contracts.Public.Commands;
 using Sailfish.Presentation;
 using Sailfish.Presentation.Console;
 
-namespace Sailfish.Analysis.Scalefish;
+namespace Sailfish.Analysis.ScaleFish;
 
 public class ScaleFish : IScaleFish
 {
@@ -32,13 +32,13 @@ public class ScaleFish : IScaleFish
     {
         if (!runSettings.RunScalefish) return;
 
-        var response = await mediator.Send(new SailfishGetLatestExecutionSummariesCommand(trackingDir, runSettings.Tags, runSettings.Args), cancellationToken);
+        var response = await mediator.Send(new SailfishGetLatestExecutionSummaryCommand(trackingDir, runSettings.Tags, runSettings.Args), cancellationToken);
         var executionSummaries = response.LatestExecutionSummaries;
         if (!executionSummaries.Any()) return;
 
         try
         {
-            var complexityResults = complexityComputer.AnalyzeComplexity(executionSummaries);
+            var complexityResults = complexityComputer.AnalyzeComplexity(executionSummaries).ToList();
             var complexityMarkdown = markdownTableConverter.ConvertScaleFishResultToMarkdown(complexityResults);
             consoleWriter.WriteString(complexityMarkdown);
 
@@ -50,6 +50,15 @@ public class ScaleFish : IScaleFish
                         runSettings.Args),
                     cancellationToken)
                 .ConfigureAwait(false);
+
+            await mediator.Publish(new WriteCurrentScalefishResultModelsCommand(
+                    complexityResults,
+                    runSettings.LocalOutputDirectory ?? DefaultFileSettings.DefaultOutputDirectory,
+                    timeStamp,
+                    runSettings.Tags,
+                    runSettings.Args),
+                cancellationToken
+            ).ConfigureAwait(false);
         }
         catch (Exception ex)
         {

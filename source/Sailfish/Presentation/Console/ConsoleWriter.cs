@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Text;
 using Sailfish.Analysis;
-using Sailfish.Analysis.Saildiff;
+using Sailfish.Analysis.SailDiff;
 using Sailfish.Execution;
 using Sailfish.Extensions.Types;
 
@@ -17,7 +17,7 @@ internal class ConsoleWriter : IConsoleWriter
         this.markdownTableConverter = markdownTableConverter;
     }
 
-    public string Present(IEnumerable<IExecutionSummary> results, OrderedDictionary tags)
+    public string Present(IEnumerable<IClassExecutionSummary> results, OrderedDictionary tags)
     {
         var markdownStringTable = markdownTableConverter.ConvertToMarkdownTableString(results);
 
@@ -30,28 +30,28 @@ internal class ConsoleWriter : IConsoleWriter
         System.Console.WriteLine(markdownStringTable);
         return markdownStringTable;
     }
-    
-    public void WriteStatTestResultsToConsole(string markdownBody, TestIds testIds, TestSettings testSettings)
+
+    public void WriteStatTestResultsToConsole(string markdownBody, TestIds testIds, SailDiffSettings sailDiffSettings)
     {
         var stringBuilder = new StringBuilder();
-        BuildHeader(stringBuilder, testIds.BeforeTestIds, testIds.AfterTestIds, testSettings);
+        BuildHeader(stringBuilder, testIds.BeforeTestIds, testIds.AfterTestIds, sailDiffSettings);
         stringBuilder.AppendLine(markdownBody);
         System.Console.WriteLine(stringBuilder.ToString());
     }
 
     public void WriteString(string content)
     {
-        throw new NotImplementedException();
+        System.Console.Write(content);
     }
 
-    private static void BuildHeader(StringBuilder stringBuilder, IEnumerable<string> beforeIds, IEnumerable<string> afterIds, TestSettings testSettings)
+    private static void BuildHeader(StringBuilder stringBuilder, IEnumerable<string> beforeIds, IEnumerable<string> afterIds, SailDiffSettings sailDiffSettings)
     {
         stringBuilder.AppendLine();
         stringBuilder.AppendLine("-----------------------------------");
-        stringBuilder.AppendLine($"{testSettings.TestType} results comparing:");
+        stringBuilder.AppendLine($"{sailDiffSettings.TestType} results comparing:");
         stringBuilder.AppendLine($"Before: {string.Join(", ", beforeIds)}");
         stringBuilder.AppendLine($"After: {string.Join(", ", afterIds)}");
         stringBuilder.AppendLine("-----------------------------------\r");
-        stringBuilder.AppendLine($"Note: The change in execution time is significant if the PValue is less than {testSettings.Alpha}");
+        stringBuilder.AppendLine($"Note: The change in execution time is significant if the PValue is less than {sailDiffSettings.Alpha}");
     }
 }

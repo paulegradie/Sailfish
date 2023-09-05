@@ -1,15 +1,12 @@
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.Caching;
 using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel;
-using Microsoft.VisualStudio.TestPlatform.ObjectModel.Logging;
-using Sailfish.Analysis;
-using Sailfish.Analysis.Saildiff;
-using Sailfish.Contracts.Public;
+using Sailfish.Analysis.SailDiff;
 using Sailfish.Exceptions;
 using Sailfish.Execution;
 using Sailfish.Extensions.Types;
@@ -19,32 +16,32 @@ namespace Sailfish.TestAdapter.Execution;
 
 internal class TestAdapterExecutionEngine : ITestAdapterExecutionEngine
 {
-    private readonly IAdapterSailDiff sailDiff;
+    private const string MemoryCacheName = "GlobalStateMemoryCache";
+    private readonly IActivatorCallbacks activatorCallbacks;
     private readonly ITestInstanceContainerCreator testInstanceContainerCreator;
     private readonly IExecutionSummaryCompiler executionSummaryCompiler;
     private readonly ISailfishExecutionEngine engine;
     private readonly IAdapterConsoleWriter consoleWriter;
-    private const string MemoryCacheName = "GlobalStateMemoryCache";
 
     public TestAdapterExecutionEngine(
-        IAdapterSailDiff sailDiff,
+        IActivatorCallbacks activatorCallbacks,
         ITestInstanceContainerCreator testInstanceContainerCreator,
         IExecutionSummaryCompiler executionSummaryCompiler,
         ISailfishExecutionEngine engine,
         IAdapterConsoleWriter consoleWriter
     )
     {
-        this.sailDiff = sailDiff;
+        this.activatorCallbacks = activatorCallbacks;
         this.testInstanceContainerCreator = testInstanceContainerCreator;
         this.executionSummaryCompiler = executionSummaryCompiler;
         this.engine = engine;
         this.consoleWriter = consoleWriter;
     }
 
-    public List<IExecutionSummary> Execute(
+    public async Task<List<IClassExecutionSummary>> Execute(
         List<TestCase> testCases,
-        List<DescriptiveStatisticsResult> preloadedLastRunIfAvailable,
-        TestSettings? testSettings,
+        TrackingFileDataList preloadedLastRunIfAvailable,
+        SailDiffSettings? testSettings,
         CancellationToken cancellationToken)
     {
         var rawExecutionResults = new List<(string, RawExecutionResult)>();
@@ -52,212 +49,65 @@ internal class TestAdapterExecutionEngine : ITestAdapterExecutionEngine
 
         foreach (var unsortedTestCaseGroup in testCaseGroups)
         {
-            var groupResults = new List<TestExecutionResult>();
-
             var groupKey = unsortedTestCaseGroup.Key;
-            var testCaseGroup = unsortedTestCaseGroup;
-
-            var aTestCase = testCaseGroup.First();
-            var testTypeFullName = aTestCase.GetPropertyHelper(SailfishManagedProperty.SailfishTypeProperty);
-            var assembly = LoadAssemblyFromDll(aTestCase.Source);
-            var testType = assembly.GetType(testTypeFullName, true, true);
-            if (testType is null)
-            {
-                consoleWriter.WriteString($"Unable to find the following testType: {testTypeFullName}");
-                continue;
-            }
-
-            var availableVariableSections = testCases
-                .Select(x => x.GetPropertyHelper(SailfishManagedProperty.SailfishFormedVariableSectionDefinitionProperty))
-                .Distinct();
-
-            bool PropertyFilter(PropertySet currentPropertySet)
-            {
-                var currentVariableSection = currentPropertySet.FormTestCaseVariableSection();
-                return availableVariableSections.Contains(currentVariableSection);
-            }
-
-            var availableMethods = testCases
-                .Select(x => x.GetPropertyHelper(SailfishManagedProperty.SailfishMethodFilterProperty))
-                .Distinct();
-
-            bool MethodFilter(MethodInfo currentMethodInfo)
-            {
-                var currentMethod = currentMethodInfo.Name;
-                return availableMethods.Contains(currentMethod);
-            }
+            if (GetTypeTypeForGroup(unsortedTestCaseGroup, out var testType)) continue;
+            if (testType is null) continue;
 
             // list of methods with their many variable combos. Each element is a container, which represents a SailfishMethod
             var providerForCurrentTestCases =
                 testInstanceContainerCreator
                     .CreateTestContainerInstanceProviders(
                         testType,
-                        PropertyFilter,
-                        MethodFilter);
+                        CreatePropertyFilter(GetTestCaseProperties(SailfishManagedProperty.SailfishFormedVariableSectionDefinitionProperty, testCases)),
+                        CreateMethodFilter(GetTestCaseProperties(SailfishManagedProperty.SailfishMethodFilterProperty, testCases)));
 
             var totalTestProviderCount = providerForCurrentTestCases.Count - 1;
+
+            // new up / reset a memory cache to hold class property values when transferring them between instances
             var memoryCache = new MemoryCache(MemoryCacheName);
+
+            var groupResults = new List<TestExecutionResult>();
             for (var i = 0; i < providerForCurrentTestCases.Count; i++)
             {
                 var testProvider = providerForCurrentTestCases[i];
                 var providerPropertiesCacheKey = testProvider.Test.FullName ?? throw new SailfishException($"Failed to read the FullName of {testProvider.Test.Name}");
-                var results = engine.ActivateContainer(
-                        i,
-                        totalTestProviderCount,
-                        testProvider,
-                        memoryCache,
-                        providerPropertiesCacheKey,
-                        PreTestResultCallback(testCaseGroup),
-                        PostTestResultCallback(testCaseGroup, preloadedLastRunIfAvailable, testSettings, cancellationToken),
-                        ExceptionCallback(testCaseGroup),
-                        TestDisabledCallback(testCaseGroup),
-                        cancellationToken)
-                    .GetAwaiter().GetResult();
+                var results = await engine.ActivateContainer(
+                    i,
+                    totalTestProviderCount,
+                    testProvider,
+                    memoryCache,
+                    providerPropertiesCacheKey,
+                    activatorCallbacks.PreTestResultCallback(unsortedTestCaseGroup),
+                    activatorCallbacks.PostTestResultCallback(unsortedTestCaseGroup, preloadedLastRunIfAvailable, testSettings, cancellationToken),
+                    activatorCallbacks.ExceptionCallback(unsortedTestCaseGroup),
+                    activatorCallbacks.TestDisabledCallback(unsortedTestCaseGroup),
+                    cancellationToken);
                 groupResults.AddRange(results);
             }
 
             rawExecutionResults.Add((groupKey, new RawExecutionResult(testType, groupResults)));
         }
 
-        var executionSummaries = executionSummaryCompiler
+        return executionSummaryCompiler
             .CompileToSummaries(rawExecutionResults.Select(x => x.Item2), cancellationToken)
             .ToList();
-
-        return executionSummaries;
     }
 
-    private Action<TestExecutionResult, TestInstanceContainer> PostTestResultCallback(
-        IEnumerable<TestCase> testCaseGroups,
-        List<DescriptiveStatisticsResult> preloadedLastRunIfAvailable,
-        TestSettings? testSettings,
-        CancellationToken cancellationToken)
+    private static IEnumerable<string> GetTestCaseProperties(TestProperty testProperty, IEnumerable<TestCase> testCases)
     {
-        return (result, container) =>
-        {
-            if (result.PerformanceTimerResults is null)
-            {
-                var msg = $"PerformanceTimerResults was null for {container.Type.Name}";
-                consoleWriter.WriteString(msg, TestMessageLevel.Error);
-                throw new SailfishException(msg);
-            }
-
-            if (result.TestInstanceContainer is null)
-            {
-                var msg = $"TestInstanceContainer was null for {container.Type.Name}";
-                consoleWriter.WriteString(msg, TestMessageLevel.Error);
-                throw new SailfishException(msg);
-            }
-
-            var currentTestCase = GetTestCaseFromTestCaseGroupMatchingCurrentContainer(container, testCaseGroups);
-            if (result.IsSuccess)
-            {
-                HandleSuccessfulTestCase(
-                    result,
-                    currentTestCase,
-                    new RawExecutionResult(result.TestInstanceContainer.Type, new List<TestExecutionResult> { result }),
-                    preloadedLastRunIfAvailable,
-                    testSettings,
-                    cancellationToken);
-            }
-            else
-            {
-                HandleFailureTestCase(
-                    result,
-                    currentTestCase,
-                    new RawExecutionResult(result.TestInstanceContainer.Type,
-                        result.Exception ??
-                        new Exception($"The exception details were null for {result.TestInstanceContainer.Type.Name}")),
-                    cancellationToken);
-            }
-        };
+        return testCases.Select(x => x.GetPropertyHelper(testProperty)).Distinct();
     }
 
-    private void HandleSuccessfulTestCase(
-        TestExecutionResult result,
-        TestCase currentTestCase,
-        RawExecutionResult rawResult,
-        IReadOnlyCollection<DescriptiveStatisticsResult> preloadedLastRunIfAvailable,
-        TestSettings? testSettings,
-        CancellationToken cancellationToken)
+    private bool GetTypeTypeForGroup(IEnumerable<TestCase> unsortedTestCaseGroup, out Type? testType)
     {
-        var executionSummary = executionSummaryCompiler
-            .CompileToSummaries(new List<RawExecutionResult>() { rawResult }, cancellationToken)
-            .Single();
-        var medianTestRuntime = executionSummary.CompiledTestCaseResults.Single().DescriptiveStatisticsResult?.Median ??
-                                throw new SailfishException("Error computing compiled results");
-
-        var testResult = new TestResult(currentTestCase);
-
-        if (result.Exception is not null)
-        {
-            testResult.ErrorMessage = result.Exception.Message;
-            testResult.ErrorStackTrace = result.Exception.StackTrace;
-        }
-
-        testResult.Outcome = result.StatusCode == 0 ? TestOutcome.Passed : TestOutcome.Failed;
-        testResult.DisplayName = currentTestCase.DisplayName;
-
-        testResult.StartTime = result.PerformanceTimerResults?.GlobalStart ?? new DateTimeOffset();
-        testResult.EndTime = result.PerformanceTimerResults?.GlobalStop ?? new DateTimeOffset();
-        testResult.Duration = TimeSpan.FromMilliseconds(double.IsNaN(medianTestRuntime) ? 0 : medianTestRuntime);
-
-        testResult.ErrorMessage = result.Exception?.Message;
-
-        var formattedExecutionSummary = consoleWriter.Present(new[] { executionSummary }, new OrderedDictionary());
-
-        if (preloadedLastRunIfAvailable.Count > 0 && testSettings is not null)
-        {
-            var testCaseResults = sailDiff.ComputeTestCaseDiff(result, executionSummary, testSettings, preloadedLastRunIfAvailable, cancellationToken);
-            formattedExecutionSummary += "\n" + testCaseResults;
-        }
-
-        testResult.Messages.Add(new TestResultMessage(TestResultMessage.StandardOutCategory, formattedExecutionSummary));
-
-        if (result.Exception is not null)
-        {
-            testResult.Messages.Add(new TestResultMessage(TestResultMessage.StandardErrorCategory, result.Exception?.Message));
-        }
-
-        LogTestResults(result);
-
-        consoleWriter.RecordEnd(currentTestCase, testResult.Outcome);
-        consoleWriter.RecordResult(testResult);
+        var aTestCase = unsortedTestCaseGroup.First();
+        var testTypeFullName = aTestCase.GetPropertyHelper(SailfishManagedProperty.SailfishTypeProperty);
+        var assembly = LoadAssemblyFromDll(aTestCase.Source);
+        testType = assembly.GetType(testTypeFullName, true, true);
+        if (testType is not null) return false;
+        consoleWriter.WriteString($"Unable to find the following testType: {testTypeFullName}");
+        return true;
     }
-
-    private void HandleFailureTestCase(
-        TestExecutionResult result,
-        TestCase currentTestCase,
-        RawExecutionResult rawResult,
-        CancellationToken cancellationToken)
-    {
-        var testResult = new TestResult(currentTestCase);
-
-        if (result.Exception is not null)
-        {
-            testResult.ErrorMessage = result.Exception.Message;
-            testResult.ErrorStackTrace = result.Exception.StackTrace;
-        }
-
-        testResult.Outcome = result.StatusCode == 0 ? TestOutcome.Passed : TestOutcome.Failed;
-        testResult.DisplayName = currentTestCase.DisplayName;
-
-        testResult.StartTime = result.PerformanceTimerResults?.GlobalStart ?? new DateTimeOffset();
-        testResult.EndTime = result.PerformanceTimerResults?.GlobalStop ?? new DateTimeOffset();
-        testResult.Duration = TimeSpan.Zero;
-
-        testResult.Messages.Clear();
-        testResult.ErrorMessage = result.Exception?.Message;
-
-        foreach (var exception in rawResult.Exceptions)
-        {
-            consoleWriter.WriteString("----- Exception -----", TestMessageLevel.Error);
-            consoleWriter.WriteString(exception.Message, TestMessageLevel.Error);
-        }
-
-        consoleWriter.RecordEnd(currentTestCase, testResult.Outcome);
-        consoleWriter.RecordResult(testResult);
-    }
-
 
     private static Assembly LoadAssemblyFromDll(string dllPath)
     {
@@ -266,79 +116,13 @@ internal class TestAdapterExecutionEngine : ITestAdapterExecutionEngine
         return assembly;
     }
 
-    private void LogTestResults(TestExecutionResult result)
+    private static Func<MethodInfo, bool> CreateMethodFilter(IEnumerable<string> availableMethods)
     {
-        foreach (var perf in result.PerformanceTimerResults?.MethodIterationPerformances!)
-        {
-            var timeResult = perf.GetDurationFromTicks().MilliSeconds;
-            consoleWriter.WriteString($"Time: {timeResult.Duration.ToString(CultureInfo.InvariantCulture)} {timeResult.TimeScale.ToString().ToLowerInvariant()}");
-        }
+        return currentMethodInfo => availableMethods.Contains(currentMethodInfo.Name);
     }
 
-    private Action<TestInstanceContainer?> TestDisabledCallback(IEnumerable<TestCase>? testCaseGroup)
+    private static Func<PropertySet, bool> CreatePropertyFilter(IEnumerable<string> availableVariableSections)
     {
-        void CreateDisabledResult(TestCase testCase)
-        {
-            var testResult = new TestResult(testCase)
-            {
-                ErrorMessage = $"Test Disabled",
-                ErrorStackTrace = null,
-                Outcome = TestOutcome.Skipped,
-                DisplayName = testCase.DisplayName,
-                ComputerName = null,
-                Duration = TimeSpan.Zero,
-                StartTime = default,
-                EndTime = default
-            };
-
-            consoleWriter.RecordEnd(testCase, testResult.Outcome);
-            consoleWriter.RecordResult(testResult);
-        }
-
-        return container =>
-        {
-            if (testCaseGroup is null) return; // no idea why this would happen, but exceptions are not the way
-            if (container is null) // then we've disabled the class - return all the results for the group
-            {
-                foreach (var testCase in testCaseGroup)
-                {
-                    CreateDisabledResult(testCase);
-                }
-            }
-            else // we've only disabled this method, send a single result
-            {
-                var currentTestCase = testCaseGroup.Single(x => x.DisplayName == container.TestCaseId.GetMethodWithVariables());
-                CreateDisabledResult(currentTestCase);
-            }
-        };
-    }
-
-    private Action<TestInstanceContainer?> ExceptionCallback(IEnumerable<TestCase> testCaseGroup)
-    {
-        return (container) =>
-        {
-            if (container is null)
-            {
-                foreach (var testCase in testCaseGroup)
-                {
-                    consoleWriter.RecordEnd(testCase, TestOutcome.Failed);
-                }
-            }
-            else
-            {
-                var currentTestCase = GetTestCaseFromTestCaseGroupMatchingCurrentContainer(container, testCaseGroup);
-                consoleWriter.RecordEnd(currentTestCase, TestOutcome.Failed);
-            }
-        };
-    }
-
-    private Action<TestInstanceContainer> PreTestResultCallback(IEnumerable<TestCase> testCaseGroup)
-    {
-        return container => consoleWriter.RecordStart(GetTestCaseFromTestCaseGroupMatchingCurrentContainer(container, testCaseGroup));
-    }
-
-    private static TestCase GetTestCaseFromTestCaseGroupMatchingCurrentContainer(TestInstanceContainer container, IEnumerable<TestCase> testCaseGroup)
-    {
-        return testCaseGroup.Single(x => container.TestCaseId.DisplayName.EndsWith(x.DisplayName));
+        return currentPropertySet => availableVariableSections.Contains(currentPropertySet.FormTestCaseVariableSection());
     }
 }

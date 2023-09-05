@@ -3,7 +3,7 @@ using System.Linq;
 using Sailfish.Extensions.Types;
 using Sailfish.Presentation;
 
-namespace Sailfish.Analysis.Saildiff;
+namespace Sailfish.Analysis.SailDiff;
 
 internal class TrackingFileFinder : ITrackingFileFinder
 {

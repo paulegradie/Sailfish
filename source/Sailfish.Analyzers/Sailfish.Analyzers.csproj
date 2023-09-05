@@ -8,14 +8,17 @@
         <PackageId>Sailfish.Analyzers</PackageId>
         <Version>0.0.0</Version>
         <Authors>Paul E. Gradie</Authors>
-        <PackageLicenseUrl>https://spdx.org/licenses/MIT.html</PackageLicenseUrl>
         <Copyright>Copyright</Copyright>
         <PackageTags>analyzers</PackageTags>
         <NoPackageAnalysis>true</NoPackageAnalysis>
         <Description>
-            Sailfish is a simple in-process performace test framework for writing clean, manageable performance tests
-            against your component or API. The general intention is to provide a simple tool that teams can use to write straight forward
-            tests that assess the speed of your code, without weighing you down with all the extra ceremony.
+            Welcome to Sailfish!
+            There are three tools included in this package:
+            - Sailfish is a simple in-process performace test framework for writing clean, manageable performance tests.
+            - SailDiff is a statistical testing tool for comparing before change and after change datasets.
+            - ScaleFish is a machine learning tool for modeling general logical complexity and making predictions.
+            Use these in combination to write a basic performance regression detection system for your application's
+            delivery pipeline.
         </Description>
         <TargetFramework>net6.0</TargetFramework>
         <LangVersion>latest</LangVersion>
@@ -35,13 +38,14 @@
         <DebugType>pdbonly</DebugType>
         <Optimize>true</Optimize>
     </PropertyGroup>
-
+    
     <ItemGroup>
-        <None Update="tools\*.ps1" CopyToOutputDirectory="Always" Pack="true" PackagePath="" />
-        <None Include="$(OutputPath)\$(AssemblyName).dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="true" />
+        <None Update="tools\*.ps1" CopyToOutputDirectory="Always" Pack="true" PackagePath="tools" />
+        <None Include="$(OutputPath)\$(AssemblyName).dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.2.0" />
+        <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="4.7.0" PrivateAssets="all" />
+        <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.7.0" />
     </ItemGroup>
 </Project>

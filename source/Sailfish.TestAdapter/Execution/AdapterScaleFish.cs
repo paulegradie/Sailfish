@@ -3,7 +3,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using MediatR;
-using Sailfish.Analysis.Scalefish;
+using Sailfish.Analysis.ScaleFish;
 using Sailfish.Contracts.Public.Commands;
 using Sailfish.Presentation;
 
@@ -28,7 +28,7 @@ internal class AdapterScaleFish : IAdapterScaleFish
     {
         if (!runSettings.RunScalefish) return;
 
-        var response = await mediator.Send(new SailfishGetLatestExecutionSummariesCommand(trackingDir, runSettings.Tags, runSettings.Args), cancellationToken);
+        var response = await mediator.Send(new SailfishGetLatestExecutionSummaryCommand(trackingDir, runSettings.Tags, runSettings.Args), cancellationToken);
         var executionSummaries = response.LatestExecutionSummaries;
         if (!executionSummaries.Any()) return;
 

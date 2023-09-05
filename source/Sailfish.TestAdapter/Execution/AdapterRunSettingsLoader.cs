@@ -1,18 +1,16 @@
 using System.IO;
-using Autofac;
-using Sailfish.Analysis.Saildiff;
+using Sailfish.Analysis.SailDiff;
 using Sailfish.Exceptions;
 using Sailfish.TestAdapter.Discovery;
 using Sailfish.TestAdapter.TestSettingsParser;
 
 namespace Sailfish.TestAdapter.Execution;
 
-public static class AdapterRunSettingsLoaderExtensionMethods
+public static class AdapterRunSettingsLoader
 {
-    public static void RegisterRunSettings(this ContainerBuilder builder)
+    public static IRunSettings LoadAdapterRunSettings()
     {
-        var sailfishSettings = RetrieveRunSettings();
-        builder.RegisterInstance(sailfishSettings);
+        return RetrieveRunSettings();
     }
 
     private static IRunSettings RetrieveRunSettings()
@@ -20,34 +18,34 @@ public static class AdapterRunSettingsLoaderExtensionMethods
         var parsedSettings = ParseSettings();
 
         if (parsedSettings.TestSettings.DisableEverything) throw new SailfishException("Everything is disabled!");
-        
+
         var runSettingsBuilder = RunSettingsBuilder.CreateBuilder();
         if (!string.IsNullOrEmpty(parsedSettings.TestSettings.ResultsDirectory))
         {
-            runSettingsBuilder.WithLocalOutputDirectory(parsedSettings.TestSettings.ResultsDirectory);
+            runSettingsBuilder = runSettingsBuilder.WithLocalOutputDirectory(parsedSettings.TestSettings.ResultsDirectory);
         }
 
         if (parsedSettings.TestSettings.Disabled)
         {
-            runSettingsBuilder.WithAnalysisDisabledGlobally();
+            runSettingsBuilder = runSettingsBuilder.WithAnalysisDisabledGlobally();
         }
 
         if (parsedSettings.TestSettings.DisableOverheadEstimation)
         {
-            runSettingsBuilder.DisableOverheadEstimation();
+            runSettingsBuilder = runSettingsBuilder.DisableOverheadEstimation();
         }
 
         var testSettings = MapToTestSettings(parsedSettings.TestSettings);
         var runSettings = runSettingsBuilder
             .CreateTrackingFiles()
-            .WithAnalysis()
-            .WithComplexityAnalysis()
-            .WithAnalysisTestSettings(testSettings)
+            .WithSailDiff()
+            .WithScalefish()
+            .WithSailDiffSettings(testSettings)
             .Build();
         return runSettings;
     }
 
-    private static TestSettings MapToTestSettings(SailfishTestSettings settings)
+    private static SailDiffSettings MapToTestSettings(SailfishTestSettings settings)
     {
         if (settings?.Resolution is not null)
         {
@@ -55,15 +53,15 @@ public static class AdapterRunSettingsLoaderExtensionMethods
             // settingsBuilder.WithResolution(settings.Resolution);
         }
 
-        var mappedSettings = new TestSettings();
+        var mappedSettings = new SailDiffSettings();
         if (settings?.TestType is not null)
         {
             mappedSettings.SetTestType(settings.TestType);
         }
 
-        if (settings?.UseInnerQuartile is not null)
+        if (settings?.UseOutlierDetection is not null)
         {
-            mappedSettings.SetUseInnerQuartile(settings.UseInnerQuartile);
+            mappedSettings.SetUseOutlierDetection(settings.UseOutlierDetection);
         }
 
         if (settings?.Alpha is not null)

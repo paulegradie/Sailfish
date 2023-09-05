@@ -6,8 +6,8 @@ namespace Sailfish.Extensions.Methods;
 
 internal static class PerformanceTimerExtensionMethod
 {
-    public static DescriptiveStatisticsResult ToDescriptiveStatistics(this PerformanceTimer populatedPerformanceTimer, TestCaseId testCaseId, IExecutionSettings executionSettings)
+    public static PerformanceRunResult ToDescriptiveStatistics(this PerformanceTimer populatedPerformanceTimer, TestCaseId testCaseId, IExecutionSettings executionSettings)
     {
-        return DescriptiveStatisticsResult.ConvertFromPerfTimer(testCaseId, populatedPerformanceTimer, executionSettings);
+        return PerformanceRunResult.ConvertFromPerfTimer(testCaseId, populatedPerformanceTimer, executionSettings);
     }
 }

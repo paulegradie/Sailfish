@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace Sailfish.Analysis.Saildiff;
+namespace Sailfish.Analysis.SailDiff;
 
 internal class BeforeAndAfterTrackingFiles
 {

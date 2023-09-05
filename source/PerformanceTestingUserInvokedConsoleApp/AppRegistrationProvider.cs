@@ -12,7 +12,6 @@ public class AppRegistrationProvider : IProvideARegistrationCallback
     {
         builder.RegisterType<WebApplicationFactory<DemoApp>>();
         builder.RegisterInstance(Log.Logger).As<ILogger>();
-
         await Task.Yield();
     }
 }

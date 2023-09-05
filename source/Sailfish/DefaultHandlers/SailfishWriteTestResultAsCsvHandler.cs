@@ -24,13 +24,13 @@ internal class SailfishWriteTestResultAsCsvHandler : INotificationHandler<WriteT
     {
         var fileName = DefaultFileSettings
             .AppendTagsToFilename(
-                DefaultFileSettings.DefaultSaildiffCsvFileName(notification.TimeStamp, notification.TestSettings.TestType),
+                DefaultFileSettings.DefaultSaildiffCsvFileName(notification.TimeStamp, notification.SailDiffSettings.TestType),
                 notification.Tags);
         var outputPath = Path.Join(notification.OutputDirectory, fileName);
         if (notification.CsvFormat.Any())
         {
             await fileIo
-                .WriteDataAsCsvToFile<DescriptiveStatisticsResultCsvMap, IEnumerable<TestCaseResults>>(
+                .WriteDataAsCsvToFile<SailDiffWriteAsCsvMap, IEnumerable<TestCaseResults>>(
                     notification.CsvFormat,
                     outputPath,
                     cancellationToken).ConfigureAwait(false);

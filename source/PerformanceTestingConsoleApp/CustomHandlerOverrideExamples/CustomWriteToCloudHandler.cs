@@ -1,4 +1,4 @@
-﻿using System;
+﻿using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using MediatR;
@@ -17,8 +17,6 @@ public class CustomWriteToCloudHandler : INotificationHandler<WriteCurrentTracki
 
     public async Task Handle(WriteCurrentTrackingFileCommand request, CancellationToken cancellationToken)
     {
-        await cloudWriter.WriteToMyCloudStorageContainer(request.DefaultFileName, request.TrackingDataFormats.Csv);
-        Console.WriteLine("-------------- NOW AS JSON ---------------");
-        await cloudWriter.WriteToMyCloudStorageContainer(request.DefaultFileName, request.TrackingDataFormats.Json);
+        await cloudWriter.WriteToMyCloudStorageContainer(request.DefaultFileName, request.ExecutionSummaries.ToList());
     }
 }

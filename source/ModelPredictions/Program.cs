@@ -1,41 +1,60 @@
-﻿using Sailfish.Analysis.Scalefish;
+﻿using Sailfish;
+using Sailfish.Analysis.ScaleFish;
+using Sailfish.Analysis.SailDiff;
+using PerformanceTests.ExamplePerformanceTests;
+
 
 Console.Clear();
-Console.WriteLine("\nThis demo shows you how to load a model file and then use it to make predictions on scale.");
-Console.WriteLine("\nThis is V1, so over the next number of iterations, we'll add more tooling around processing these models to make it easier to make predictions.");
+Console.WriteLine("\nThis demo shows you how run Scalefish, load a model file, and then use it to make predictions at scale" +
+                  "\nPlease wait while we generate some example results...\n");
 
-var (cm, mm, pm) = 
-    GetBestFitModelForFirstMethod();
+const string outputDir = "demo_results";
 
-Console.WriteLine($"\nModel for : {cm.TestClassName}.{mm.TestMethodName}");
-Console.WriteLine($"With respect to {pm.PropertyName.Split(".").Last()}\n");
+// load models
+var loaded = await LoadAModelFile(Path.Join(Directory.GetCurrentDirectory(), outputDir));
+var model = loaded.GetScalefishModel(nameof(ScaleFishExample), nameof(ScaleFishExample.Quadratic), nameof(ScaleFishExample.N));
+if (model is null) throw new Exception("Could not load model - is your method disabled?");
+Console.Clear();
 
-Console.WriteLine("Model Details:\n");
-var function = pm.ComplexityResult.ComplexityFunction;
-Console.WriteLine($"Type:    {function.Name} - that's {function.OName}...");
-Console.WriteLine($"Quality: {function.Quality}\n");
-
+// make predictions
+Console.WriteLine($"\nFitted Model: {model.ScaleFishModelFunction}");
 Console.WriteLine("Model predictions:\n");
-var nValues = new List<int>() { 1, 10, 100, 1000, 50_000 };
+var nValues = new List<int>() { 10, 100, 1000, 50_000 };
 foreach (var val in nValues)
 {
-    var result = pm.ComplexityResult.ComplexityFunction.Predict(val);
+    var result = model.ScaleFishModelFunction.Predict(val);
     Console.WriteLine($"f({val}) = " + Math.Round(result, 3) + " ms");
 }
 
-var scale =  Math.Round(pm.ComplexityResult.ComplexityFunction.FunctionParameters?.Scale ?? 0, 5);
-var bias = Math.Round(pm.ComplexityResult.ComplexityFunction.FunctionParameters?.Bias ?? 0, 8);
-Console.WriteLine($"\nFitted Model: f(x) = {scale}x + {bias}");
-
-(TestClassComplexityResult, TestMethodComplexityResult, TestPropertyComplexityResult) GetBestFitModelForFirstMethod()
+// print some details
+async Task<IEnumerable<ScalefishClassModel>> LoadAModelFile(string rootDir)
 {
-    const string rootDir = @"C:\Users\paule\code\Sailfish\source\PerformanceTests\bin\Release\net6.0\SailfishTestOutput";
-    var file = Directory.GetFiles(rootDir, "ScalefishModels*").LastOrDefault();
-    if (file is null) throw new Exception("Run a Sailfish test with a variable with multiple values and enable complexity for that variable to produce a Scalefish model file");
+    try
+    {
+        var file = Directory.GetFiles(rootDir, "ScalefishModels*").LastOrDefault();
+        if (file is null) throw new Exception("Run a Sailfish test with a variable with multiple values and enable complexity for that variable to produce a Scalefish model file");
+        return ModelLoader.LoadModelFile(file);
+    }
+    catch
+    {
+        var runTask = SailfishRunner.Run(RunSettingsBuilder.CreateBuilder()
+            .WithTestNames(nameof(ScaleFishExample))
+            .TestsFromAssembliesFromAnchorTypes(typeof(ScaleFishExample))
+            .RegistrationProvidersFromAssembliesFromAnchorTypes(typeof(ScaleFishExample))
+            .WithSailDiff(new SailDiffSettings(testType: TestType.TTest))
+            .WithScalefish()
+            .WithLocalOutputDirectory(outputDir)
+            .Build());
 
-    var models = ModelLoader.LoadModelFile(file);
-    var classModel = models.First();
-    var methodModel = classModel.TestMethodComplexityResults.First();
-    var propertyModel = methodModel.TestPropertyComplexityResults.First();
-    return ((TestClassComplexityResult, TestMethodComplexityResult, TestPropertyComplexityResult))(classModel, methodModel, propertyModel);
+        Thread.Sleep(10000);
+        Console.WriteLine("\nHows your day going?");
+        Thread.Sleep(25000);
+        Console.WriteLine("\nThis won't take too much longer...");
+        Thread.Sleep(10000);
+        Console.WriteLine("\nOnce this finishes, the model will load and print out some predictions...");
+
+        var res = await runTask;
+        if (!res.IsValid) throw new Exception("Sailfish run failed. No Scalefish models produced");
+        return await LoadAModelFile(Directory.GetCurrentDirectory());
+    }
 }

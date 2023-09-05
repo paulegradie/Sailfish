@@ -9,7 +9,7 @@ namespace Sailfish.Analysis;
 /// Name will be like
 /// some.test(maybe:20,other:30)
 /// some.other.test(maybe:10,other:30)
-/// 
+///
 /// </summary>
 public class TestCaseName
 {
@@ -18,9 +18,11 @@ public class TestCaseName
 
     [JsonConstructor]
 #pragma warning disable CS8618
-    public TestCaseName()
+    public TestCaseName(string name, IReadOnlyList<string> parts)
 #pragma warning restore CS8618
     {
+        Name = name;
+        Parts = parts;
     }
 
     public TestCaseName(string displayName)
@@ -50,7 +52,7 @@ public class TestCaseName
 
     /// <summary>
     /// Method to parse and return an index of the '.' delimited test name.
-    /// /// e.g. some.test, index 0 = 
+    /// /// e.g. some.test where index 0 = some
     /// </summary>
     /// <param name="index"></param>
     /// <returns></returns>

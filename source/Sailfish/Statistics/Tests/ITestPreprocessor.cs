@@ -4,12 +4,20 @@ namespace Sailfish.Statistics.Tests;
 
 public interface ITestPreprocessor
 {
-    double[] Preprocess(double[] input, bool useInnerQuartile);
+    PreprocessedData Preprocess(double[] input, bool useOutlierDetection);
 
-    double[] PreprocessWithDownSample(
+    PreprocessedData PreprocessWithDownSample(
         double[] rawData,
-        bool useInnerQuartile,
-        [Range(3, int.MaxValue)] int maxArraySize,
+        bool useOutlierDetection,
         [Range(3, int.MaxValue)] int minArraySize = 3,
+        [Range(3, int.MaxValue)] int maxArraySize = 10,
+        int? seed = null);
+
+    (PreprocessedData, PreprocessedData) PreprocessJointlyWithDownSample(
+        double[] sample1,
+        double[] sample2,
+        bool useOutlierDetection,
+        [Range(3, int.MaxValue)] int minArraySize = 3,
+        [Range(3, int.MaxValue)] int maxArraySize = 10,
         int? seed = null);
 }

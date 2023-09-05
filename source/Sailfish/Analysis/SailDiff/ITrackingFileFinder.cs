@@ -2,7 +2,7 @@
 
 using Sailfish.Extensions.Types;
 
-namespace Sailfish.Analysis.Saildiff;
+namespace Sailfish.Analysis.SailDiff;
 
 internal interface ITrackingFileFinder
 {

@@ -2,7 +2,7 @@
   "_comment": "Sailfish adapter statistical test settings",
   "TestSettings": {
     "_comment": "Specify a test result directory",
-    "ResultsDirectory": "SailfishTestOutput",
+    "ResultsDirectory": "SailfishIDETestOutput",
 
     "_comment": "Specify a statistical test - default is: KolmogorovSmirnovTest",
     "_comment_options": "public enum TestType",
@@ -14,9 +14,9 @@
     "Resolution": "ms",
 
     "_comment": "Statistical test settings",
-    "Alpha": 0.05,
-    "Round": 2,
-    "UseInnerQuartile": true,
+    "Alpha": 0.005,
+    "Round": 5,
+    "UseOutlierDetection": true,
 
     "_comment": "Disable analysis logic",
     "Disabled": false,
