@@ -5,16 +5,16 @@ using Sailfish.Statistics;
 
 namespace Sailfish.Execution;
 
-public interface IExecutionSummary
+public interface IClassExecutionSummary
 {
     public Type Type { get; set; }
     public IExecutionSettings Settings { get; }
     public IEnumerable<ICompiledTestCaseResult> CompiledTestCaseResults { get; set; }
 }
 
-public class ExecutionSummary : IExecutionSummary
+public class ClassExecutionSummary : IClassExecutionSummary
 {
-    public ExecutionSummary(Type type, IEnumerable<ICompiledTestCaseResult> compiledResults)
+    public ClassExecutionSummary(Type type, IEnumerable<ICompiledTestCaseResult> compiledResults)
     {
         Type = type;
         CompiledTestCaseResults = compiledResults;

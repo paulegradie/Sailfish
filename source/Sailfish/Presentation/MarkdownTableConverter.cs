@@ -11,14 +11,14 @@ namespace Sailfish.Presentation;
 
 public class MarkdownTableConverter : IMarkdownTableConverter
 {
-    public string ConvertToMarkdownTableString(IEnumerable<IExecutionSummary> executionSummaries,
-        Func<IExecutionSummary, bool> summaryFilter)
+    public string ConvertToMarkdownTableString(IEnumerable<IClassExecutionSummary> executionSummaries,
+        Func<IClassExecutionSummary, bool> summaryFilter)
     {
         var filteredSummaries = executionSummaries.Where(summaryFilter);
         return ConvertToMarkdownTableString(filteredSummaries);
     }
 
-    public string ConvertToMarkdownTableString(IEnumerable<IExecutionSummary> executionSummaries)
+    public string ConvertToMarkdownTableString(IEnumerable<IClassExecutionSummary> executionSummaries)
     {
         var stringBuilder = new StringBuilder();
         foreach (var result in executionSummaries)

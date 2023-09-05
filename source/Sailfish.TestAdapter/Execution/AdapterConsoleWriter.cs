@@ -46,7 +46,7 @@ internal class AdapterConsoleWriter : IAdapterConsoleWriter
         this.messageLogger = messageLogger;
     }
 
-    public string Present(IEnumerable<IExecutionSummary> results, OrderedDictionary? tags = null)
+    public string Present(IEnumerable<IClassExecutionSummary> results, OrderedDictionary? tags = null)
     {
         var summaryResults = results.ToList();
         foreach (var result in summaryResults)
@@ -90,7 +90,7 @@ internal class AdapterConsoleWriter : IAdapterConsoleWriter
         return ideOutputContent;
     }
 
-    private string CreateFullTable(IReadOnlyCollection<IExecutionSummary> summaryResults)
+    private string CreateFullTable(IReadOnlyCollection<IClassExecutionSummary> summaryResults)
     {
         var rawData = summaryResults
             .SelectMany(x =>

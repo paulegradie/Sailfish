@@ -12,4 +12,6 @@ public class Exponential : ScaleFishModelFunction
     public override string Name { get; set; } = nameof(Exponential);
     public override string OName { get; set; } = "O(2^n)";
     public override string Quality { get; set; } = "Very Bad";
+    public override string FunctionDef { get; set; } = "f(x) = {0}2^x + {1}";
+
 }

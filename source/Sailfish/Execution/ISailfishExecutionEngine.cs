@@ -14,8 +14,8 @@ internal interface ISailfishExecutionEngine
         TestInstanceContainerProvider testProvider,
         MemoryCache memoryCache,
         string providerPropertiesCacheKey,
-        Action<TestInstanceContainer>? preCallback = null,
-        Action<TestExecutionResult, TestInstanceContainer>? callback = null,
+        Action<TestInstanceContainer>? preTestCallback = null,
+        Action<TestExecutionResult, TestInstanceContainer>? postTestCallback = null,
         Action<TestInstanceContainer?>? exceptionCallback = null,
         Action<TestInstanceContainer?>? testDisabledCallback = null,
         CancellationToken cancellationToken = default);

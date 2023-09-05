@@ -17,7 +17,7 @@ internal interface IActivatorCallbacks
 {
     Action<TestExecutionResult, TestInstanceContainer> PostTestResultCallback(
         IEnumerable<TestCase> testCaseGroups,
-        List<List<IExecutionSummary>> preloadedLastRunIfAvailable,
+        TrackingFileDataList preloadedLastRunIfAvailable,
         SailDiffSettings? testSettings,
         CancellationToken cancellationToken);
 
@@ -41,7 +41,7 @@ internal class AdapterActivatorCallbacks : IActivatorCallbacks
 
     public Action<TestExecutionResult, TestInstanceContainer> PostTestResultCallback(
         IEnumerable<TestCase> testCaseGroups,
-        List<List<IExecutionSummary>> preloadedLastRunIfAvailable,
+        TrackingFileDataList preloadedLastRunIfAvailable,
         SailDiffSettings? testSettings,
         CancellationToken cancellationToken)
     {
@@ -89,7 +89,7 @@ internal class AdapterActivatorCallbacks : IActivatorCallbacks
         TestExecutionResult result,
         TestCase currentTestCase,
         RawExecutionResult rawResult,
-        IReadOnlyCollection<IReadOnlyCollection<IExecutionSummary>> preloadedLastRunIfAvailable,
+        IReadOnlyCollection<IReadOnlyCollection<IClassExecutionSummary>> preloadedLastRunIfAvailable,
         SailDiffSettings? testSettings,
         CancellationToken cancellationToken)
     {

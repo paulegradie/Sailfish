@@ -1,8 +1,8 @@
-﻿using Sailfish.Attributes;
-using System.Threading;
+﻿using System.Threading;
 using System.Threading.Tasks;
+using Sailfish.Attributes;
 
-namespace PerformanceTests.ExamplePerformanceTests.Discoverable
+namespace PerformanceTests.ExamplePerformanceTests
 {
     [WriteToMarkdown]
     [Sailfish(Disabled = false)]

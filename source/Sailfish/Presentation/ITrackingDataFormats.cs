@@ -5,5 +5,5 @@ namespace Sailfish.Presentation;
 
 public interface ITrackingDataFormats
 {
-    public IEnumerable<IExecutionSummary> ExecutionSummaries { get; set; }
+    public IEnumerable<IClassExecutionSummary> ExecutionSummaries { get; set; }
 }

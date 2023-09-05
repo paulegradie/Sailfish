@@ -6,5 +6,5 @@ namespace PerformanceTestingConsoleApp.CustomHandlerOverrideExamples;
 
 public interface ICloudWriter
 {
-    Task WriteToMyCloudStorageContainer(string fileName, List<IExecutionSummary> content);
+    Task WriteToMyCloudStorageContainer(string fileName, List<IClassExecutionSummary> content);
 }

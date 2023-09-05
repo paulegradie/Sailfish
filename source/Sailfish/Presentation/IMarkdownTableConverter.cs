@@ -7,7 +7,7 @@ namespace Sailfish.Presentation;
 
 public interface IMarkdownTableConverter
 {
-    string ConvertToMarkdownTableString(IEnumerable<IExecutionSummary> executionSummaries);
-    string ConvertToMarkdownTableString(IEnumerable<IExecutionSummary> executionSummaries, Func<IExecutionSummary, bool> summaryFilter);
+    string ConvertToMarkdownTableString(IEnumerable<IClassExecutionSummary> executionSummaries);
+    string ConvertToMarkdownTableString(IEnumerable<IClassExecutionSummary> executionSummaries, Func<IClassExecutionSummary, bool> summaryFilter);
     string ConvertScaleFishResultToMarkdown(IEnumerable<IScalefishClassModels> testClassComplexityResults);
 }

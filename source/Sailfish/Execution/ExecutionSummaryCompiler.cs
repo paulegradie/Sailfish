@@ -16,12 +16,12 @@ internal class ExecutionSummaryCompiler : IExecutionSummaryCompiler
         this.statsCompiler = statsCompiler;
     }
 
-    public IEnumerable<IExecutionSummary> CompileToSummaries(IEnumerable<RawExecutionResult> rawExecutionResults, CancellationToken cancellationToken)
+    public IEnumerable<IClassExecutionSummary> CompileToSummaries(IEnumerable<RawExecutionResult> rawExecutionResults, CancellationToken cancellationToken)
     {
         return rawExecutionResults.Select(rawExecutionResult => IterateExecutionResults(rawExecutionResult, cancellationToken)).ToList();
     }
 
-    private IExecutionSummary IterateExecutionResults(RawExecutionResult rawExecutionResult, CancellationToken cancellationToken)
+    private IClassExecutionSummary IterateExecutionResults(RawExecutionResult rawExecutionResult, CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
         var compiledResults = new List<ICompiledTestCaseResult>();
@@ -33,12 +33,12 @@ internal class ExecutionSummaryCompiler : IExecutionSummaryCompiler
                 CompileTestResult(testExecutionResult, compiledResults);
             }
 
-            return new ExecutionSummary(rawExecutionResult.TestType, compiledResults);
+            return new ClassExecutionSummary(rawExecutionResult.TestType, compiledResults);
         }
 
-        if (!rawExecutionResult.Exceptions.Any()) return new ExecutionSummary(rawExecutionResult.TestType, new List<ICompiledTestCaseResult>() { });
+        if (!rawExecutionResult.Exceptions.Any()) return new ClassExecutionSummary(rawExecutionResult.TestType, new List<ICompiledTestCaseResult>() { });
         var compiledResult = new CompiledTestCaseResult(rawExecutionResult.Exceptions);
-        return new ExecutionSummary(rawExecutionResult.TestType, new List<ICompiledTestCaseResult>() { compiledResult });
+        return new ClassExecutionSummary(rawExecutionResult.TestType, new List<ICompiledTestCaseResult>() { compiledResult });
     }
 
     private void CompileTestResult(TestExecutionResult testExecutionResult, ICollection<ICompiledTestCaseResult> compiledResults)

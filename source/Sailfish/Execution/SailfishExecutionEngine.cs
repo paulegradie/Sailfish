@@ -36,8 +36,8 @@ internal class SailfishExecutionEngine : ISailfishExecutionEngine
     /// <param name="testProvider"></param>
     /// <param name="memoryCache"></param>
     /// <param name="providerPropertiesCacheKey"></param>
-    /// <param name="preCallback"></param>
-    /// <param name="callback"></param>
+    /// <param name="preTestCallback"></param>
+    /// <param name="postTestCallback"></param>
     /// <param name="exceptionCallback"></param>
     /// <param name="testDisabledCallback"></param>
     /// <param name="cancellationToken"></param>
@@ -48,8 +48,8 @@ internal class SailfishExecutionEngine : ISailfishExecutionEngine
         TestInstanceContainerProvider testProvider,
         MemoryCache memoryCache,
         string providerPropertiesCacheKey,
-        Action<TestInstanceContainer>? preCallback = null,
-        Action<TestExecutionResult, TestInstanceContainer>? callback = null,
+        Action<TestInstanceContainer>? preTestCallback = null,
+        Action<TestExecutionResult, TestInstanceContainer>? postTestCallback = null,
         Action<TestInstanceContainer?>? exceptionCallback = null,
         Action<TestInstanceContainer?>? testDisabledCallback = null,
         CancellationToken cancellationToken = default)
@@ -100,7 +100,7 @@ internal class SailfishExecutionEngine : ISailfishExecutionEngine
                     savedState.ApplyPropertiesAndFieldsTo(testMethodContainer.Instance);
                 }
 
-                preCallback?.Invoke(testMethodContainer);
+                preTestCallback?.Invoke(testMethodContainer);
                 TestCaseCountPrinter.PrintCaseUpdate(testMethodContainer.TestCaseId.DisplayName);
 
                 if (ShouldCallGlobalSetup(testProviderIndex, currentPropertyTensorIndex))
@@ -168,7 +168,7 @@ internal class SailfishExecutionEngine : ISailfishExecutionEngine
                     }
                 }
 
-                callback?.Invoke(executionResult, testMethodContainer);
+                postTestCallback?.Invoke(executionResult, testMethodContainer);
                 results.Add(executionResult);
 
                 if (ShouldDisposeOfInstance(currentPropertyTensorIndex, totalPropertyTensorElements))

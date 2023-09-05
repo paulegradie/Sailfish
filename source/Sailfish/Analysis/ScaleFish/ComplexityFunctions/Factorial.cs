@@ -17,6 +17,10 @@ public class Factorial : ScaleFishModelFunction
     }
 
     public override string Name { get; set; } = nameof(Factorial);
+
     public override string OName { get; set; } = "O(n!)";
+
     public override string Quality { get; set; } = "Worst!";
+
+    public override string FunctionDef { get; set; } = "f(x) = {0}x! + {1}";
 }

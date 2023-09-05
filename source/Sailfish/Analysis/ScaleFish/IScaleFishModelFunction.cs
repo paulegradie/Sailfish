@@ -8,6 +8,8 @@ public interface IScaleFishModelFunction
     string Name { get; set; }
     string OName { get; set; }
     string Quality { get; set; }
+    string FunctionDef { get; set; }
+
     public FittedCurve? FunctionParameters { get; set; }
 
     FitnessResult AnalyzeFitness(IEnumerable<ComplexityMeasurement> validationData);

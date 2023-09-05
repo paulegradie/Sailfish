@@ -96,7 +96,7 @@ internal class AdapterSailDiff : IAdapterSailDiff
 
     public string ComputeTestCaseDiff(
         TestExecutionResult testExecutionResult,
-        IExecutionSummary executionSummary,
+        IClassExecutionSummary classExecutionSummary,
         SailDiffSettings sailDiffSettings,
         PerformanceRunResult preloadedLastRun,
         CancellationToken cancellationToken)
@@ -108,7 +108,7 @@ internal class AdapterSailDiff : IAdapterSailDiff
             beforeIds,
             new[] { preloadedLastRun });
 
-        var afterTestData = new TestData(afterIds, executionSummary.CompiledTestCaseResults
+        var afterTestData = new TestData(afterIds, classExecutionSummary.CompiledTestCaseResults
             .Select(x => x.PerformanceRunResult!)
             .Where(x => x.DisplayName == testExecutionResult.TestInstanceContainer?.TestCaseId.DisplayName));
 

@@ -6,20 +6,20 @@
         <LangVersion>10</LangVersion>
     </PropertyGroup>
     <ItemGroup>
-        <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" Version="6.0.13"/>
-        <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.6.2"/>
-        <PackageReference Include="Sailfish.Analyzers" Version="0.1.219"/>
-        <PackageReference Include="Serilog" Version="2.12.0"/>
-        <PackageReference Include="Shouldly" Version="4.1.0"/>
+        <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" Version="6.0.13" />
+        <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.6.2" />
+        <PackageReference Include="Sailfish.Analyzers" Version="0.1.219" />
+        <PackageReference Include="Serilog" Version="2.12.0" />
+        <PackageReference Include="Shouldly" Version="4.1.0" />
     </ItemGroup>
     <ItemGroup>
-        <ProjectReference Include="..\Demo.API\Demo.API.csproj"/>
-        <ProjectReference Include="..\Sailfish.TestAdapter\Sailfish.TestAdapter.csproj"/>
+        <ProjectReference Include="..\Demo.API\Demo.API.csproj" />
+        <ProjectReference Include="..\Sailfish.TestAdapter\Sailfish.TestAdapter.csproj" />
     </ItemGroup>
 
     <!-- Exclude the Analyzer ItemGroup if building with Visual Studio -->
     <ItemGroup Condition="'$(VisualStudioVersion)' == ''">
-        <ProjectReference Include="..\Sailfish.Analyzers\Sailfish.Analyzers.csproj"/>
+        <ProjectReference Include="..\Sailfish.Analyzers\Sailfish.Analyzers.csproj" />
     </ItemGroup>
 
     <ItemGroup>

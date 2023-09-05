@@ -11,7 +11,7 @@ public static class TrackingFileConversionExtensionMethods
 {
     #region ToTrackingFormat
 
-    public static IEnumerable<ExecutionSummaryTrackingFormatV1> ToTrackingFormat(this IEnumerable<IExecutionSummary> executionSummaries)
+    public static IEnumerable<ExecutionSummaryTrackingFormatV1> ToTrackingFormat(this IEnumerable<IClassExecutionSummary> executionSummaries)
     {
         return executionSummaries.Select(x =>
             new ExecutionSummaryTrackingFormatV1(
@@ -68,10 +68,10 @@ public static class TrackingFileConversionExtensionMethods
 
     #region ToSummaryFormat
 
-    public static IEnumerable<IExecutionSummary> ToSummaryFormat(this IEnumerable<ExecutionSummaryTrackingFormatV1> trackingData)
+    public static IEnumerable<IClassExecutionSummary> ToSummaryFormat(this IEnumerable<ExecutionSummaryTrackingFormatV1> trackingData)
     {
         return trackingData
-            .Select(x => new ExecutionSummary(x.Type, x.CompiledTestCaseResults.ToSummaryFormat()));
+            .Select(x => new ClassExecutionSummary(x.Type, x.CompiledTestCaseResults.ToSummaryFormat()));
     }
 
     public static IEnumerable<ICompiledTestCaseResult> ToSummaryFormat(this IEnumerable<CompiledTestCaseResultTrackingFormatV1> trackingData)

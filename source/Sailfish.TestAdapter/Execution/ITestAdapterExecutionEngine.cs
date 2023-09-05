@@ -4,14 +4,15 @@ using System.Threading.Tasks;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel;
 using Sailfish.Analysis.SailDiff;
 using Sailfish.Execution;
+using Sailfish.Extensions.Types;
 
 namespace Sailfish.TestAdapter.Execution;
 
 internal interface ITestAdapterExecutionEngine
 {
-    Task<List<IExecutionSummary>> Execute(
+    Task<List<IClassExecutionSummary>> Execute(
         List<TestCase> testCases,
-        List<List<IExecutionSummary>> preloadedLastRunIfAvailable, 
+        TrackingFileDataList preloadedLastRunIfAvailable, 
         SailDiffSettings? testSettings,
         CancellationToken cancellationToken);
 }

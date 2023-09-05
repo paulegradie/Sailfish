@@ -1,4 +1,3 @@
-using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using MediatR;
@@ -7,7 +6,7 @@ using Sailfish.Analysis.SailDiff;
 using Sailfish.Contracts.Private;
 using Sailfish.Contracts.Serialization.V1;
 using Sailfish.Exceptions;
-using Sailfish.Execution;
+using Sailfish.Extensions.Types;
 
 namespace Sailfish.DefaultHandlers;
 
@@ -28,7 +27,7 @@ internal class SailfishGetAllTrackingFilesOrderedChronologicallyRequestHandler :
         CancellationToken cancellationToken)
     {
         var trackingFiles = trackingFileDirectoryReader.FindTrackingFilesInDirectoryOrderedByLastModified(request.TrackingDirectory, ascending: request.Ascending);
-        var data = new List<List<IExecutionSummary>>();
+        var data = new TrackingFileDataList();
 
         if (!await trackingFileParser.TryParse(trackingFiles, data, cancellationToken))
         {

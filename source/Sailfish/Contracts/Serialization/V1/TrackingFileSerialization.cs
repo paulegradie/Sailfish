@@ -1,7 +1,5 @@
 using System.Collections.Generic;
-using System.Text.Json;
 using System.Text.Json.Serialization;
-using Sailfish.Analysis.ScaleFish;
 using Sailfish.Contracts.Public;
 
 namespace Sailfish.Contracts.Serialization.V1;
@@ -14,31 +12,14 @@ public interface ITrackingFileSerialization
 
 public class TrackingFileSerialization : ITrackingFileSerialization
 {
-    private readonly JsonSerializerOptions options;
-
-    public TrackingFileSerialization()
-    {
-        options = new JsonSerializerOptions()
-        {
-            WriteIndented = true, // Add this line to enable indented JSON
-            Converters =
-            {
-                new JsonNanConverter(),
-                new ComplexityFunctionConverter(),
-                new ExecutionSummaryTrackingFormatV1Converter(),
-                new TypePropertyConvert()
-            }
-        };
-    }
-
     public string Serialize(IEnumerable<ExecutionSummaryTrackingFormatV1> executionSummaries)
     {
-        return JsonSerializer.Serialize(executionSummaries, options);
+        return SailfishSerializer.Serialize(executionSummaries);
     }
 
     public IEnumerable<ExecutionSummaryTrackingFormatV1>? Deserialize(string serialized)
     {
-        return JsonSerializer.Deserialize<IEnumerable<ExecutionSummaryTrackingFormatV1>>(serialized, options);
+        return SailfishSerializer.Deserialize<IEnumerable<ExecutionSummaryTrackingFormatV1>>(serialized);
     }
 }
 

@@ -1,7 +1,7 @@
 ﻿using System.Threading;
 using Sailfish.Attributes;
 
-namespace PerformanceTests.ExamplePerformanceTests.Discoverable;
+namespace PerformanceTests.ExamplePerformanceTests;
 
 [WriteToCsv]
 [WriteToMarkdown]

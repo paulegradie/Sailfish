@@ -17,7 +17,7 @@ internal class ConsoleWriter : IConsoleWriter
         this.markdownTableConverter = markdownTableConverter;
     }
 
-    public string Present(IEnumerable<IExecutionSummary> results, OrderedDictionary tags)
+    public string Present(IEnumerable<IClassExecutionSummary> results, OrderedDictionary tags)
     {
         var markdownStringTable = markdownTableConverter.ConvertToMarkdownTableString(results);
 

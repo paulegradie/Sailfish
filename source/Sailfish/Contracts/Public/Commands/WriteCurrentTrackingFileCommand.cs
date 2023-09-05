@@ -10,7 +10,7 @@ namespace Sailfish.Contracts.Public.Commands;
 public class WriteCurrentTrackingFileCommand : INotification
 {
     public WriteCurrentTrackingFileCommand(
-        IEnumerable<IExecutionSummary> executionSummaries,
+        IEnumerable<IClassExecutionSummary> executionSummaries,
         string localOutputDirectory,
         DateTime timeStamp,
         OrderedDictionary tags,
@@ -23,7 +23,7 @@ public class WriteCurrentTrackingFileCommand : INotification
         DefaultFileName = DefaultFileSettings.DefaultTrackingFileName(timeStamp);
     }
 
-    public IEnumerable<IExecutionSummary> ExecutionSummaries { get; }
+    public IEnumerable<IClassExecutionSummary> ExecutionSummaries { get; }
     public string LocalOutputDirectory { get; }
     public OrderedDictionary Tags { get; }
     public OrderedDictionary Args { get; }

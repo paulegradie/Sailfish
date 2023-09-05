@@ -17,7 +17,7 @@ public class ComplexityComputer : IComplexityComputer
         this.complexityEstimator = complexityEstimator;
     }
 
-    public IEnumerable<IScalefishClassModels> AnalyzeComplexity(List<IExecutionSummary> executionSummaries)
+    public IEnumerable<IScalefishClassModels> AnalyzeComplexity(List<IClassExecutionSummary> executionSummaries)
     {
         var finalResult = new Dictionary<Type, Dictionary<string, Dictionary<string, ScalefishModel>>>();
         foreach (var testClassSummary in executionSummaries)

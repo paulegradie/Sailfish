@@ -5,7 +5,7 @@ using System.Runtime.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
 using Sailfish.Contracts.Serialization.V1;
-using Sailfish.Execution;
+using Sailfish.Extensions.Types;
 using Serilog;
 
 namespace Sailfish.Analysis;
@@ -21,7 +21,7 @@ internal class TrackingFileParser : ITrackingFileParser
         this.logger = logger;
     }
 
-    public async Task<bool> TryParse(string trackingFile, List<List<IExecutionSummary>> data, CancellationToken cancellationToken)
+    public async Task<bool> TryParse(string trackingFile, TrackingFileDataList data, CancellationToken cancellationToken)
     {
         return await TryParse(new List<string>() { trackingFile }, data, cancellationToken).ConfigureAwait(false);
     }
@@ -34,9 +34,9 @@ internal class TrackingFileParser : ITrackingFileParser
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
     /// <exception cref="SerializationException"></exception>
-    public async Task<bool> TryParse(IEnumerable<string> trackingFiles, List<List<IExecutionSummary>> data, CancellationToken cancellationToken)
+    public async Task<bool> TryParse(IEnumerable<string> trackingFiles, TrackingFileDataList data, CancellationToken cancellationToken)
     {
-        var trackingFormatData = new List<List<IExecutionSummary>>();
+        var trackingFormatData = new TrackingFileDataList();
         try
         {
             foreach (var trackingFile in trackingFiles)

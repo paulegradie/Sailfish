@@ -6,11 +6,11 @@ using Sailfish.Attributes;
 using Sailfish.Registration;
 using Shouldly;
 
-namespace PerformanceTests.ExamplePerformanceTests.Discoverable;
+namespace PerformanceTests.ExamplePerformanceTests;
 
 [WriteToCsv]
 [WriteToMarkdown]
-[Sailfish(NumIterations = 4, NumWarmupIterations = 1, DisableOverheadEstimation = false, Disabled = false)]
+[Sailfish(NumIterations = 2, NumWarmupIterations = 1, DisableOverheadEstimation = false, Disabled = false)]
 public class AllTheFeatures
 {
     private readonly SomethingIRegistered dep;
@@ -24,7 +24,7 @@ public class AllTheFeatures
         this.client = client;
     }
 
-    [SailfishRangeVariable(complexity: true, 30, 3, 2)]
+    [SailfishRangeVariable(complexity: true, 10, 3, 2)]
     public int Delay { get; set; }
 
     [SailfishVariable(3, 5)] public int Multiplier { get; set; }
@@ -39,7 +39,9 @@ public class AllTheFeatures
     [SailfishMethod(DisableComplexity = false)]
     public async Task SlowerMethod(CancellationToken ct)
     {
-        await Task.Delay(Delay - Multiplier * Multiplier, ct);
+        var wait = Delay - Multiplier * Multiplier;
+        Console.WriteLine("Waiting: " + wait);
+        await Task.Delay(wait, ct);
         reg.Noop();
     }
 
@@ -98,12 +100,6 @@ public class SomethingYouRegistered : ISailfishDependency
 
 public class SomethingIRegistered : ISailfishDependency
 {
-    private readonly SomethingIRegistered somethingIRegistered;
-
-    public SomethingIRegistered()
-    {
-    }
-
     public void NowHoldOnJustASec()
     {
         2.ShouldBe(1);

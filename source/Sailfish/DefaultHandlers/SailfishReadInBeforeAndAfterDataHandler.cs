@@ -1,12 +1,11 @@
-﻿using System.Collections.Generic;
-using System.Linq;
+﻿using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using MediatR;
 using Sailfish.Analysis;
 using Sailfish.Contracts.Public;
 using Sailfish.Contracts.Public.Commands;
-using Sailfish.Execution;
+using Sailfish.Extensions.Types;
 using Serilog;
 
 namespace Sailfish.DefaultHandlers;
@@ -24,11 +23,11 @@ internal class SailfishReadInBeforeAndAfterDataHandler : IRequestHandler<ReadInB
 
     public async Task<ReadInBeforeAndAfterDataResponse> Handle(ReadInBeforeAndAfterDataCommand request, CancellationToken cancellationToken)
     {
-        var beforeData = new List<List<IExecutionSummary>>();
+        var beforeData = new TrackingFileDataList();
         if (!await trackingFileParser.TryParse(request.BeforeFilePaths, beforeData, cancellationToken).ConfigureAwait(false))
             return new ReadInBeforeAndAfterDataResponse(null, null);
 
-        var afterData = new List<List<IExecutionSummary>>();
+        var afterData = new TrackingFileDataList();
         if (!await trackingFileParser.TryParse(request.AfterFilePaths, afterData, cancellationToken).ConfigureAwait(false)) return new ReadInBeforeAndAfterDataResponse(null, null);
 
         if (!beforeData.Any() || !afterData.Any()) return new ReadInBeforeAndAfterDataResponse(null, null);

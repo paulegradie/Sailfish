@@ -2,7 +2,7 @@ using CsvHelper.Configuration;
 
 namespace Sailfish.Contracts.Public.CsvMaps;
 
-public class SailDiffWriteAsCsvMap : ClassMap<TestCaseResults>
+public sealed class SailDiffWriteAsCsvMap : ClassMap<TestCaseResults>
 {
     public SailDiffWriteAsCsvMap()
     {

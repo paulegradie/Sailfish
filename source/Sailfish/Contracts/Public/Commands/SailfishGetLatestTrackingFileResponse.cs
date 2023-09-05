@@ -5,6 +5,6 @@ namespace Sailfish.Contracts.Public.Commands;
 
 public class SailfishGetLatestExecutionSummaryResponse
 {
-    public SailfishGetLatestExecutionSummaryResponse(List<IExecutionSummary> latestExecutionSummaries) => LatestExecutionSummaries = latestExecutionSummaries;
-    public List<IExecutionSummary> LatestExecutionSummaries { get; set; }
+    public SailfishGetLatestExecutionSummaryResponse(List<IClassExecutionSummary> latestExecutionSummaries) => LatestExecutionSummaries = latestExecutionSummaries;
+    public List<IClassExecutionSummary> LatestExecutionSummaries { get; set; }
 }

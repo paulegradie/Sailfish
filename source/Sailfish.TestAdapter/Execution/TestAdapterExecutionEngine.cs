@@ -9,6 +9,7 @@ using Microsoft.VisualStudio.TestPlatform.ObjectModel;
 using Sailfish.Analysis.SailDiff;
 using Sailfish.Exceptions;
 using Sailfish.Execution;
+using Sailfish.Extensions.Types;
 using Sailfish.TestAdapter.TestProperties;
 
 namespace Sailfish.TestAdapter.Execution;
@@ -37,9 +38,9 @@ internal class TestAdapterExecutionEngine : ITestAdapterExecutionEngine
         this.consoleWriter = consoleWriter;
     }
 
-    public async Task<List<IExecutionSummary>> Execute(
+    public async Task<List<IClassExecutionSummary>> Execute(
         List<TestCase> testCases,
-        List<List<IExecutionSummary>> preloadedLastRunIfAvailable,
+        TrackingFileDataList preloadedLastRunIfAvailable,
         SailDiffSettings? testSettings,
         CancellationToken cancellationToken)
     {
@@ -48,10 +49,7 @@ internal class TestAdapterExecutionEngine : ITestAdapterExecutionEngine
 
         foreach (var unsortedTestCaseGroup in testCaseGroups)
         {
-            var groupResults = new List<TestExecutionResult>();
-
             var groupKey = unsortedTestCaseGroup.Key;
-
             if (GetTypeTypeForGroup(unsortedTestCaseGroup, out var testType)) continue;
             if (testType is null) continue;
 
@@ -64,7 +62,11 @@ internal class TestAdapterExecutionEngine : ITestAdapterExecutionEngine
                         CreateMethodFilter(GetTestCaseProperties(SailfishManagedProperty.SailfishMethodFilterProperty, testCases)));
 
             var totalTestProviderCount = providerForCurrentTestCases.Count - 1;
+
+            // new up / reset a memory cache to hold class property values when transferring them between instances
             var memoryCache = new MemoryCache(MemoryCacheName);
+
+            var groupResults = new List<TestExecutionResult>();
             for (var i = 0; i < providerForCurrentTestCases.Count; i++)
             {
                 var testProvider = providerForCurrentTestCases[i];
@@ -86,11 +88,9 @@ internal class TestAdapterExecutionEngine : ITestAdapterExecutionEngine
             rawExecutionResults.Add((groupKey, new RawExecutionResult(testType, groupResults)));
         }
 
-        var executionSummaries = executionSummaryCompiler
+        return executionSummaryCompiler
             .CompileToSummaries(rawExecutionResults.Select(x => x.Item2), cancellationToken)
             .ToList();
-
-        return executionSummaries;
     }
 
     private static IEnumerable<string> GetTestCaseProperties(TestProperty testProperty, IEnumerable<TestCase> testCases)
@@ -118,19 +118,11 @@ internal class TestAdapterExecutionEngine : ITestAdapterExecutionEngine
 
     private static Func<MethodInfo, bool> CreateMethodFilter(IEnumerable<string> availableMethods)
     {
-        return (MethodInfo currentMethodInfo) =>
-        {
-            var currentMethod = currentMethodInfo.Name;
-            return availableMethods.Contains(currentMethod);
-        };
+        return currentMethodInfo => availableMethods.Contains(currentMethodInfo.Name);
     }
 
     private static Func<PropertySet, bool> CreatePropertyFilter(IEnumerable<string> availableVariableSections)
     {
-        return (PropertySet currentPropertySet) =>
-        {
-            var currentVariableSection = currentPropertySet.FormTestCaseVariableSection();
-            return availableVariableSections.Contains(currentVariableSection);
-        };
+        return currentPropertySet => availableVariableSections.Contains(currentPropertySet.FormTestCaseVariableSection());
     }
 }

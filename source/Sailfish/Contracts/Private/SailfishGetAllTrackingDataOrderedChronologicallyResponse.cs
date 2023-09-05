@@ -1,13 +1,12 @@
-using System.Collections.Generic;
-using Sailfish.Execution;
+using Sailfish.Extensions.Types;
 
 namespace Sailfish.Contracts.Private;
 
 public class SailfishGetAllTrackingDataOrderedChronologicallyResponse
 {
-    public List<List<IExecutionSummary>> TrackingData { get; }
+    public TrackingFileDataList TrackingData { get; }
 
-    public SailfishGetAllTrackingDataOrderedChronologicallyResponse(List<List<IExecutionSummary>> trackingData)
+    public SailfishGetAllTrackingDataOrderedChronologicallyResponse(TrackingFileDataList trackingData)
     {
         TrackingData = trackingData;
     }

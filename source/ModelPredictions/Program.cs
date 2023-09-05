@@ -1,7 +1,7 @@
-﻿using PerformanceTests.ExamplePerformanceTests.Discoverable;
+﻿using Sailfish;
 using Sailfish.Analysis.ScaleFish;
-using Sailfish;
 using Sailfish.Analysis.SailDiff;
+using PerformanceTests.ExamplePerformanceTests;
 
 
 Console.Clear();
@@ -11,9 +11,9 @@ const string outputDir = "demo_results";
 
 // run scalefish
 var res = await SailfishRunner.Run(RunSettingsBuilder.CreateBuilder()
-    .WithTestNames(nameof(AllTheFeatures))
-    .TestsFromAssembliesFromAnchorTypes(typeof(AllTheFeatures))
-    .RegistrationProvidersFromAssembliesFromAnchorTypes(typeof(AllTheFeatures))
+    .WithTestNames(nameof(ScaleFishExample))
+    .TestsFromAssembliesFromAnchorTypes(typeof(ScaleFishExample))
+    .RegistrationProvidersFromAssembliesFromAnchorTypes(typeof(ScaleFishExample))
     .WithSailDiff(new SailDiffSettings(testType: TestType.TTest))
     .WithScalefish()
     .WithLocalOutputDirectory(outputDir)
@@ -22,8 +22,8 @@ if (!res.IsValid) throw new Exception("Sailfish run failed. No Scalefish models 
 
 // load models
 var loaded = LoadAModelFile(Path.Join(Directory.GetCurrentDirectory(), outputDir));
-var model = loaded.GetScalefishModel(nameof(AllTheFeatures), nameof(AllTheFeatures.FasterMethod), nameof(AllTheFeatures.Delay));
-if (model is null) throw new Exception("Could not load model");
+var model = loaded.GetScalefishModel(nameof(ScaleFishExample), nameof(ScaleFishExample.Quadratic), nameof(ScaleFishExample.N));
+if (model is null) throw new Exception("Could not load model - check model name parts");
 
 
 // make predictions
@@ -35,10 +35,8 @@ foreach (var val in nValues)
     Console.WriteLine($"f({val}) = " + Math.Round(result, 3) + " ms");
 }
 
-var scale = Math.Round(model.ScaleFishModelFunction.FunctionParameters?.Scale ?? 0, 5);
-var bias = Math.Round(model.ScaleFishModelFunction.FunctionParameters?.Bias ?? 0, 8);
-Console.WriteLine($"\nFitted Model: f(x) = {scale}x + {bias}");
-
+// print some details
+Console.WriteLine($"\nFitted Model: {model.ScaleFishModelFunction}");
 IEnumerable<ScalefishClassModel> LoadAModelFile(string rootDir)
 {
     var file = Directory.GetFiles(rootDir, "ScalefishModels*").LastOrDefault();

@@ -1,4 +1,5 @@
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Text.Json.Serialization;
 using MathNet.Numerics;
@@ -17,6 +18,7 @@ public abstract class ScaleFishModelFunction : IScaleFishModelFunction
     public abstract string Name { get; set; }
     public abstract string OName { get; set; }
     public abstract string Quality { get; set; }
+    public abstract string FunctionDef { get; set; }
 
     public FittedCurve? FunctionParameters { get; set; }
 
@@ -68,5 +70,11 @@ public abstract class ScaleFishModelFunction : IScaleFishModelFunction
     private IEnumerable<double> CreateFittedCurveData(IEnumerable<double> referenceXs, FittedCurve curveParams)
     {
         return referenceXs.Select(x => Compute(x, curveParams.Scale, curveParams.Bias)).ToArray();
+    }
+
+    public override string ToString()
+    {
+        return FunctionDef.Replace("{0}", FunctionParameters?.Scale.ToString(CultureInfo.InvariantCulture))
+            .Replace("{1}", FunctionParameters?.Bias.ToString(CultureInfo.InvariantCulture));
     }
 }

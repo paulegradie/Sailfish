@@ -24,7 +24,7 @@ internal class ExecutionSummaryWriter : IExecutionSummaryWriter
     }
 
     public async Task Write(
-        List<IExecutionSummary> executionSummaries,
+        List<IClassExecutionSummary> executionSummaries,
         DateTime timeStamp,
         string trackingDir,
         IRunSettings runSettings,

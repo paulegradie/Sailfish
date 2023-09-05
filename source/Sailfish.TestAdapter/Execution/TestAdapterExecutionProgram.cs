@@ -6,7 +6,6 @@ using System.Threading.Tasks;
 using MediatR;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel;
 using Sailfish.Contracts.Private;
-using Sailfish.Execution;
 using Sailfish.Extensions.Types;
 using Sailfish.Presentation;
 
@@ -50,7 +49,7 @@ internal class TestAdapterExecutionProgram : ITestAdapterExecutionProgram
 
         var timeStamp = DateTime.Now;
         var trackingDir = GetRunSettingsTrackingDirectoryPath(runSettings);
-        var preloadedLastRunsIfAvailable = new List<List<IExecutionSummary>>();
+        var preloadedLastRunsIfAvailable = new TrackingFileDataList();
         if (!runSettings.DisableAnalysisGlobally && (runSettings.RunScalefish || runSettings.RunSailDiff))
         {
             var response = await mediator.Send(new SailfishGetAllTrackingDataOrderedChronologicallyRequest(trackingDir, false), cancellationToken);

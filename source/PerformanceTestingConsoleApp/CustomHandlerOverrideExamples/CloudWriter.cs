@@ -7,7 +7,7 @@ namespace PerformanceTestingConsoleApp.CustomHandlerOverrideExamples;
 
 internal class CloudWriter : ICloudWriter
 {
-    public Task WriteToMyCloudStorageContainer(string fileName, List<IExecutionSummary> content)
+    public Task WriteToMyCloudStorageContainer(string fileName, List<IClassExecutionSummary> content)
     {
         Console.WriteLine("Lets make believe this is writing to a cloud storage container (s3 or blob storage)");
         Console.WriteLine($"Like its writing to {fileName}");
