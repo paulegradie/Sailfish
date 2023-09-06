@@ -12,7 +12,7 @@ using Sailfish.Registration;
 namespace PerformanceTests.ExamplePerformanceTests;
 
 [Sailfish(NumIterations = 3, NumWarmupIterations = 2, Disabled = false)]
-public class ISailfishFixtureExample : TestBase
+public class SailfishFixtureExample : TestBase
 {
     private readonly SailfishDependencies sailfishDependencies;
 
@@ -35,10 +35,11 @@ public class ISailfishFixtureExample : TestBase
     [SailfishMethod]
     public async Task TestB(CancellationToken cancellationToken)
     {
+        await Task.CompletedTask;
         exampleDep.WriteSomething("Hello");
     }
 
-    public ISailfishFixtureExample(SailfishDependencies sailfishDependencies, WebApplicationFactory<DemoApp> factory) : base(factory)
+    public SailfishFixtureExample(SailfishDependencies sailfishDependencies, WebApplicationFactory<DemoApp> factory) : base(factory)
     {
         this.sailfishDependencies = sailfishDependencies;
     }

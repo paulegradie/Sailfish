@@ -80,13 +80,14 @@ public class MyClient : ISailfishDependency
 
     public MyClient()
     {
-        const string apikey = "API-123445";
-        const string url = "http://localhost:1234";
+        // const string apikey = "API-123445";
+        // const string url = "http://localhost:1234";
         client = new HttpClient();
     }
 
     public async Task Get()
     {
+        client.CancelPendingRequests();
         await Task.Yield();
     }
 }

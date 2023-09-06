@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using MediatR;
@@ -66,6 +67,11 @@ internal class TestAdapterExecutionProgram : ITestAdapterExecutionProgram
         var executionSummaries = await testAdapterExecutionEngine.Execute(testCases, preloadedLastRunsIfAvailable, runSettings.Settings, cancellationToken);
         consoleWriter.Present(executionSummaries, new OrderedDictionary());
         await executionSummaryWriter.Write(executionSummaries, timeStamp, trackingDir, runSettings, cancellationToken);
+
+        if (executionSummaries.SelectMany(x => x.CompiledTestCaseResults).SelectMany(x => x.Exceptions).Any())
+        {
+            return;
+        }
 
         if (runSettings.DisableAnalysisGlobally) return;
         if (runSettings.RunSailDiff)
