@@ -2,7 +2,7 @@
 
 namespace Tests.E2ETestSuite.Discoverable;
 
-[Sailfish(NumSamples = 3, NumWarmupIterations = 0, Disabled = Constants.Disabled)]
+[Sailfish(SampleSize = 3, NumWarmupIterations = 0, Disabled = Constants.Disabled)]
 public class SimplePerfTest
 {
     [SailfishGlobalSetup]

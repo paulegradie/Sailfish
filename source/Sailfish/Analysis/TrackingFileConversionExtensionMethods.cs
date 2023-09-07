@@ -43,7 +43,7 @@ public static class TrackingFileConversionExtensionMethods
             r.GlobalStart,
             r.GlobalEnd,
             r.RawExecutionResults,
-            r.NumSamples,
+            r.SampleSize,
             r.NumWarmups,
             r.DataWithOutliersRemoved,
             r.LowerOutliers,
@@ -59,7 +59,7 @@ public static class TrackingFileConversionExtensionMethods
             executionSettings.AsConsole,
             executionSettings.AsMarkdown,
             executionSettings.NumWarmupIterations,
-            executionSettings.NumIterations,
+            executionSettings.SampleSize,
             executionSettings.DisableOverheadEstimation);
     }
 
@@ -85,7 +85,7 @@ public static class TrackingFileConversionExtensionMethods
         return new PerformanceRunResult(
             trackingData.DisplayName,
             trackingData.GlobalStart, trackingData.GlobalEnd, trackingData.GlobalDuration, trackingData.Mean, trackingData.StdDev,
-            trackingData.Variance, trackingData.Median, trackingData.RawExecutionResults, trackingData.NumIterations,
+            trackingData.Variance, trackingData.Median, trackingData.RawExecutionResults, trackingData.SampleSize,
             trackingData.NumWarmupIterations, trackingData.DataWithOutliersRemoved, trackingData.UpperOutliers, trackingData.LowerOutliers, trackingData.TotalNumOutliers);
     }
 

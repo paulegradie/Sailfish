@@ -38,7 +38,7 @@ public class MarkdownTableConverter : IMarkdownTableConverter
         {
             if (group.Key is null) continue;
             stringBuilder.AppendLine();
-            var n = group.Select(x => x.PerformanceRunResult?.NumSamples).Distinct().Single();
+            var n = group.Select(x => x.PerformanceRunResult?.SampleSize).Distinct().Single();
             if (n is null || n == 0)
             {
                 continue;

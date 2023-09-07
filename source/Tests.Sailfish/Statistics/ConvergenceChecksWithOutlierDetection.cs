@@ -105,8 +105,8 @@ public class ConvergenceChecksWithOutlierDetection
         converged.ShouldBeTrue();
     }
 
-    private double[] GenerateRandomNormalDistribution(int numSamples, double mean, double standardDeviation)
+    private double[] GenerateRandomNormalDistribution(int sampleSize, double mean, double standardDeviation)
     {
-        return TestDistributions.GenerateRandomNormalDistribution(numSamples, mean, standardDeviation, random);
+        return TestDistributions.GenerateRandomNormalDistribution(sampleSize, mean, standardDeviation, random);
     }
 }

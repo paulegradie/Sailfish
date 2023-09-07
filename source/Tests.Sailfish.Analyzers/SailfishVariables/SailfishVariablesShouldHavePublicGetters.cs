@@ -136,7 +136,7 @@ namespace Sailfish.AnalyzerTests
     [AttributeUsage(AttributeTargets.Class, Inherited = true, AllowMultiple = false)]
     public sealed class SailfishAttribute : Attribute
     {
-        private const int DefaultNumIterations = 3;
+        private const int DefaultSampleSize = 3;
         private const int DefaultNumWarmupIterations = 3;
 
         internal SailfishAttribute()
@@ -144,15 +144,15 @@ namespace Sailfish.AnalyzerTests
         }
 
         public SailfishAttribute(
-            [Range(2, int.MaxValue)] int numIterations = DefaultNumIterations,
+            [Range(2, int.MaxValue)] int sampleSize = DefaultSampleSize,
             [Range(0, int.MaxValue)] int numWarmupIterations = DefaultNumWarmupIterations)
         {
-            NumIterations = numIterations;
+            SampleSize = sampleSize;
             NumWarmupIterations = numWarmupIterations;
         }
 
         [Range(2, int.MaxValue)]
-        public int NumIterations { get; set; }
+        public int SampleSize { get; set; }
 
         [Range(0, int.MaxValue)]
         public int NumWarmupIterations { get; set; }

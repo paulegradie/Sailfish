@@ -10,7 +10,7 @@ namespace Sailfish.Contracts.Public;
 public class PerformanceRunResult
 {
     public PerformanceRunResult(string displayName, DateTimeOffset globalStart, DateTimeOffset globalEnd, double globalDuration, double mean, double stdDev, double variance,
-        double median, double[] rawExecutionResults, int numSamples, int numWarmups, double[] dataWithOutliersRemoved, double[] upperOutliers, double[] lowerOutliers,
+        double median, double[] rawExecutionResults, int sampleSize, int numWarmups, double[] dataWithOutliersRemoved, double[] upperOutliers, double[] lowerOutliers,
         int totalNumOutliers)
     {
         DisplayName = displayName;
@@ -22,7 +22,7 @@ public class PerformanceRunResult
         Variance = variance;
         Median = median;
         RawExecutionResults = rawExecutionResults;
-        NumSamples = numSamples;
+        SampleSize = sampleSize;
         NumWarmups = numWarmups;
         DataWithOutliersRemoved = dataWithOutliersRemoved;
         UpperOutliers = upperOutliers;
@@ -43,7 +43,7 @@ public class PerformanceRunResult
 
     public double[] RawExecutionResults { get; init; } // milliseconds
 
-    public int NumSamples { get; set; }
+    public int SampleSize { get; set; }
     public int NumWarmups { get; set; }
 
     public double[] DataWithOutliersRemoved { get; init; } // milliseconds
@@ -74,12 +74,12 @@ public class PerformanceRunResult
         var variance = cleanData.Variance();
         return new PerformanceRunResult(displayName: testCaseId.DisplayName, globalStart: performanceTimer.GlobalStart, globalEnd: performanceTimer.GlobalStop,
             globalDuration: performanceTimer.GlobalDuration.TotalSeconds, mean: mean, stdDev: stdDev, variance: variance, median: median, rawExecutionResults: executionIterations,
-            numSamples: executionSettings.NumIterations, numWarmups: executionSettings.NumWarmupIterations, dataWithOutliersRemoved: cleanData,
+            sampleSize: executionSettings.SampleSize, numWarmups: executionSettings.NumWarmupIterations, dataWithOutliersRemoved: cleanData,
             upperOutliers: upperOutliers.ToArray(), lowerOutliers: lowerOutliers.ToArray(), totalNumOutliers: totalNumOutliers);
     }
 
     public void SetNumIterations(int n)
     {
-        NumSamples = n;
+        SampleSize = n;
     }
 }

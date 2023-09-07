@@ -20,7 +20,7 @@ internal class TestCaseIterator : ITestCaseIterator
             await overheadEstimator.Estimate();
         }
 
-        for (var i = 0; i < testInstanceContainer.NumIterations; i++)
+        for (var i = 0; i < testInstanceContainer.SampleSize; i++)
         {
             cancellationToken.ThrowIfCancellationRequested();
 

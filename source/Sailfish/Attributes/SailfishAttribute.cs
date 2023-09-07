@@ -29,16 +29,16 @@ public sealed class SailfishAttribute : Attribute
     /// <summary>
     /// Initializes a new instance of the <see cref="SailfishAttribute"/> class with the specified number of iterations and warm-up iterations.
     /// </summary>
-    /// <param name="numSamples">The number of times each SailfishMethod will be iterated.</param>
-    /// <param name="numWarmupIterations">The number of times each SailfishMethod will be iterated without being timed before executing <paramref name="numSamples"/> with tracking.</param>
+    /// <param name="sampleSize">The number of times each SailfishMethod will be iterated.</param>
+    /// <param name="numWarmupIterations">The number of times each SailfishMethod will be iterated without being timed before executing <paramref name="sampleSize"/> with tracking.</param>
     /// <remarks>
     /// Each iteration includes the invocation of three methods: SailfishIterationSetup, SailfishMethod, and SailfishIterationTeardown, in that order.
     /// </remarks>
     public SailfishAttribute(
-        [Range(2, int.MaxValue)] int numSamples = DefaultNumIterations,
+        [Range(2, int.MaxValue)] int sampleSize = DefaultNumIterations,
         [Range(0, int.MaxValue)] int numWarmupIterations = DefaultNumWarmupIterations)
     {
-        NumSamples = numSamples;
+        SampleSize = sampleSize;
         NumWarmupIterations = numWarmupIterations;
     }
 
@@ -47,7 +47,7 @@ public sealed class SailfishAttribute : Attribute
     /// </summary>
     /// <value>The number of iterations.</value>
     [Range(2, int.MaxValue)]
-    public int NumSamples { get; set; }
+    public int SampleSize { get; set; }
 
     /// <summary>
     /// Gets or sets the number of warm-up iterations for each SailfishMethod.

@@ -38,7 +38,7 @@ internal class TestInstanceContainer
     public string GroupingId { get; set; }
     public TestCaseId TestCaseId { get; } // This is a uniq id since we take a Distinct on all Iteration Variable attribute param -- class.method(varA: 1, varB: 3) is the form
     public int NumWarmupIterations => ExecutionSettings.NumWarmupIterations;
-    public int NumIterations => ExecutionSettings.NumIterations;
+    public int SampleSize => ExecutionSettings.SampleSize;
 
     public IExecutionSettings ExecutionSettings { get; }
 

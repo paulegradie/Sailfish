@@ -179,13 +179,13 @@ public static class ReflectionExtensionMethods
         }
     }
 
-    internal static int GetNumIterations(this Type type)
+    internal static int GetSampleSize(this Type type)
     {
         return type
             .GetCustomAttributes(true)
             .OfType<SailfishAttribute>()
             .Single()
-            .NumSamples;
+            .SampleSize;
     }
 
     internal static int GetWarmupIterations(this Type type)

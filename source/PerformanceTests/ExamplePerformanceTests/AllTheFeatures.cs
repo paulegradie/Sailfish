@@ -10,7 +10,7 @@ namespace PerformanceTests.ExamplePerformanceTests;
 
 [WriteToCsv]
 [WriteToMarkdown]
-[Sailfish(NumSamples = 2, NumWarmupIterations = 1, DisableOverheadEstimation = false, Disabled = false)]
+[Sailfish(SampleSize = 2, NumWarmupIterations = 1, DisableOverheadEstimation = false, Disabled = false)]
 public class AllTheFeatures
 {
     private readonly SomethingIRegistered dep;

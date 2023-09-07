@@ -3,7 +3,7 @@ using Tests.E2ETestSuite.Utils;
 
 namespace Tests.E2ETestSuite.Discoverable;
 
-[Sailfish(NumSamples = 1, Disabled = Constants.Disabled)]
+[Sailfish(SampleSize = 1, Disabled = Constants.Disabled)]
 public class TestWithStringVariable
 {
     private IClient client = null!;

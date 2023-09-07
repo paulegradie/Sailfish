@@ -9,12 +9,12 @@ public class AggregatedPerformanceResult
     private AggregatedPerformanceResult(
         double[] aggregatedRawExecutionResults,
         string displayName,
-        int numIterations,
+        int sampleSize,
         int numWarmupIterations)
     {
         AggregatedRawExecutionResults = aggregatedRawExecutionResults;
         DisplayName = displayName;
-        NumIterations = numIterations;
+        SampleSize = sampleSize;
         NumWarmupIterations = numWarmupIterations;
     }
 
@@ -23,7 +23,7 @@ public class AggregatedPerformanceResult
 
     public double[] AggregatedRawExecutionResults { get; init; } // milliseconds
 
-    public int NumIterations { get; set; }
+    public int SampleSize { get; set; }
     public int NumWarmupIterations { get; set; }
 
     public static AggregatedPerformanceResult Aggregate(TestCaseId testCaseId, IReadOnlyCollection<PerformanceRunResult> data)
@@ -32,7 +32,7 @@ public class AggregatedPerformanceResult
         return new AggregatedPerformanceResult(
             aggregatedRawExecutionResults: allRawData,
             displayName: testCaseId.DisplayName,
-            numIterations: data.First().NumSamples,
+            sampleSize: data.First().SampleSize,
             numWarmupIterations: data.First().NumWarmups);
     }
 }

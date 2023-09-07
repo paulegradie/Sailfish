@@ -13,7 +13,7 @@ internal static class ExecutionExtensionMethods
         var asCsv = type.GetCustomAttribute<WriteToCsvAttribute>();
         var suppressConsole = type.GetCustomAttribute<SuppressConsoleAttribute>();
 
-        var numIterations = type.GetNumIterations();
+        var sampleSize = type.GetSampleSize();
         var numWarmupIterations = type.GetWarmupIterations();
 
         return new ExecutionSettings
@@ -21,7 +21,7 @@ internal static class ExecutionExtensionMethods
             AsCsv = asCsv is not null,
             AsConsole = suppressConsole is null,
             AsMarkdown = asMarkdown is not null,
-            NumIterations = numIterations,
+            SampleSize = sampleSize,
             NumWarmupIterations = numWarmupIterations
         };
     }
