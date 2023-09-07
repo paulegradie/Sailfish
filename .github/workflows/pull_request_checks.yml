@@ -1,5 +1,5 @@
 name: Run Tests on pull request
-on: [ pull_request ]
+on: [pull_request]
 
 jobs:
   build:
@@ -17,8 +17,10 @@ jobs:
       - name: Verify commit exists in origin/main
         run: echo "Going to use ${{ github.run_number }} for the package Id."
 
-      - name: Set version
-        run: echo "VERSION=1.0.${{ github.run_number }}" >> $GITHUB_ENV
+      - name: Set Version
+        env:
+          NUM: ${{ github.run_number }}
+        run: echo ::set-env name=VERSION::1.0.$(($NUM-223))
 
       - name: Test version (write)
         run: echo ${VERSION}
