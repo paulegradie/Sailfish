@@ -74,12 +74,6 @@ public class RunSettingsBuilder
         return this;
     }
 
-    public RunSettingsBuilder WithSailDiffSettings(SailDiffSettings sailDiffSettings)
-    {
-        sdSettings = sailDiffSettings;
-        return this;
-    }
-
     public RunSettingsBuilder TestsFromAssembliesFromAnchorTypes(params Type[] anchorTypes)
     {
         testAssembliesAnchorTypes.AddRange(anchorTypes);

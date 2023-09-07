@@ -38,9 +38,8 @@ public static class AdapterRunSettingsLoader
         var testSettings = MapToTestSettings(parsedSettings.TestSettings);
         var runSettings = runSettingsBuilder
             .CreateTrackingFiles()
-            .WithSailDiff()
+            .WithSailDiff(testSettings)
             .WithScalefish()
-            .WithSailDiffSettings(testSettings)
             .Build();
         return runSettings;
     }

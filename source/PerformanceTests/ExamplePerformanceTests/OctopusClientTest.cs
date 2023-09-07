@@ -7,44 +7,55 @@ using Octopus.Client;
 using Octopus.Client.Model;
 using Sailfish.Attributes;
 
-namespace PerformanceTests.ExamplePerformanceTests
+namespace PerformanceTests.ExamplePerformanceTests;
+
+/// <summary>
+/// If you'd like to run a test against server running in your ide - use this format
+/// </summary>
+[Sailfish(NumSamples = 3)]
+public class ExampleUsingAClient
 {
-    [Sailfish(NumSamples = 3)]
-    public class ExampleUsingOctopusClient
+    public IOctopusAsyncClient Client { get; set; } = null!;
+    public EnvironmentResource Environment { get; set; } = null!;
+
+    [SailfishGlobalSetup]
+    public async Task GlobalSetup(CancellationToken ct)
     {
-        public IOctopusAsyncClient Client { get; set; } = null!;
-
-        [SailfishGlobalSetup]
-        public async Task GlobalSetup()
+        // Ensure you've started your server on local host and set your api key before running
+        Client = await OctopusAsyncClient.Create(new OctopusServerEndpoint("http://localhost:8066", "API-ABC123"));
+        Environment = await Client.Repository.Environments.Create(new EnvironmentResource
         {
-            // Ensure you've started your server on local host and set your api key before running
-            Client = await OctopusAsyncClient.Create(new OctopusServerEndpoint("http://localhost:8066", "API-FIJUELJVTGK3TRGDJLJHRPVXC72LGTJ"));
-        }
-
-        [SailfishVariable(true, 10, 50, 100, 500)]
-        public int NumMachines { get; set; }
-
-        public List<MachineResource> Machines { get; set; } = new();
-
-        [SailfishIterationSetup]
-        public void IterationSetup()
-        {
-            Machines.Clear();
-            Machines = Enumerable.Range(1, NumMachines)
-                .Select(x => new MachineResource()
-                {
-                    Name = Guid.NewGuid().ToString()
-                })
-                .ToList();
-        }
-
-        [SailfishMethod]
-        public async Task MeasureResponseTime(CancellationToken ct)
-        {
-            await Task.WhenAll(Machines.Select(m => Client.Repository.Machines.Create(m, ct)));
-        }
-
-        [SailfishIterationTeardown]
-        public async Task DestroyMachinesEachIteration(CancellationToken ct) => await Task.WhenAll(Machines.Select(m => Client.Repository.Machines.Delete(m, ct)));
+            Name = Guid.NewGuid().ToString()
+        }, ct);
     }
+
+    [SailfishVariable(true, 10, 50, 100, 500)]
+    public int NumMachines { get; set; }
+
+    public List<MachineResource> Machines { get; set; } = new();
+
+    [SailfishIterationSetup]
+    public void IterationSetup()
+    {
+        Machines.Clear();
+        Machines = Enumerable.Range(1, NumMachines)
+            .Select(x => new MachineResource()
+            {
+                Name = Guid.NewGuid().ToString(),
+                Roles = new ReferenceCollection("MyRole"),
+                EnvironmentIds = new ReferenceCollection(Environment.Id),
+                Thumbprint = Guid.NewGuid().ToString(),
+                Uri = "https://hostname:10933/"
+            })
+            .ToList();
+    }
+
+    [SailfishMethod]
+    public async Task MeasureResponseTime(CancellationToken ct)
+    {
+        await Task.WhenAll(Machines.Select(m => Client.Repository.Machines.Create(m, ct)));
+    }
+
+    [SailfishIterationTeardown]
+    public async Task DestroyMachinesEachIteration(CancellationToken ct) => await Task.WhenAll(Machines.Select(m => Client.Repository.Machines.Delete(m, ct)));
 }
