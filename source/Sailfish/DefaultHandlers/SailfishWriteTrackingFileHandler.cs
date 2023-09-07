@@ -33,12 +33,12 @@ internal class SailfishWriteTrackingFileHandler : INotificationHandler<WriteCurr
         var filePath = Path.Join(output, fileName);
 
 
-        if (AnyExceptions(notification.ExecutionSummaries))
+        if (AnyExceptions(notification.ClassExecutionSummaries))
         {
             return;
         }
 
-        var trackingFormattedExecutionSummaries = notification.ExecutionSummaries.ToTrackingFormat();
+        var trackingFormattedExecutionSummaries = notification.ClassExecutionSummaries.ToTrackingFormat();
         var serialized = trackingFileSerialization.Serialize(trackingFormattedExecutionSummaries);
 
         await using var streamWriter = new StreamWriter(filePath);

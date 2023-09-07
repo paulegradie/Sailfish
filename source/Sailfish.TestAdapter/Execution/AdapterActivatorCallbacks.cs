@@ -29,13 +29,13 @@ internal interface IActivatorCallbacks
 internal class AdapterActivatorCallbacks : IActivatorCallbacks
 {
     private readonly IAdapterConsoleWriter consoleWriter;
-    private readonly IExecutionSummaryCompiler executionSummaryCompiler;
+    private readonly IClassExecutionSummaryCompiler classExecutionSummaryCompiler;
     private readonly IAdapterSailDiff sailDiff;
 
-    public AdapterActivatorCallbacks(IAdapterConsoleWriter consoleWriter, IExecutionSummaryCompiler executionSummaryCompiler, IAdapterSailDiff sailDiff)
+    public AdapterActivatorCallbacks(IAdapterConsoleWriter consoleWriter, IClassExecutionSummaryCompiler classExecutionSummaryCompiler, IAdapterSailDiff sailDiff)
     {
         this.consoleWriter = consoleWriter;
-        this.executionSummaryCompiler = executionSummaryCompiler;
+        this.classExecutionSummaryCompiler = classExecutionSummaryCompiler;
         this.sailDiff = sailDiff;
     }
 
@@ -93,10 +93,10 @@ internal class AdapterActivatorCallbacks : IActivatorCallbacks
         SailDiffSettings? testSettings,
         CancellationToken cancellationToken)
     {
-        var executionSummary = executionSummaryCompiler
+        var classExecutionSummary = classExecutionSummaryCompiler
             .CompileToSummaries(new List<RawExecutionResult>() { rawResult }, cancellationToken)
             .Single();
-        var medianTestRuntime = executionSummary.CompiledTestCaseResults.Single().PerformanceRunResult?.Median ??
+        var medianTestRuntime = classExecutionSummary.CompiledTestCaseResults.Single().PerformanceRunResult?.Median ??
                                 throw new SailfishException("Error computing compiled results");
 
         var testResult = new TestResult(currentTestCase);
@@ -116,7 +116,7 @@ internal class AdapterActivatorCallbacks : IActivatorCallbacks
 
         testResult.ErrorMessage = result.Exception?.Message;
 
-        var formattedExecutionSummary = consoleWriter.Present(new[] { executionSummary }, new OrderedDictionary());
+        var formattedExecutionSummary = consoleWriter.Present(new[] { classExecutionSummary }, new OrderedDictionary());
 
         if (preloadedLastRunIfAvailable.Count > 0 && testSettings is not null)
         {
@@ -132,7 +132,7 @@ internal class AdapterActivatorCallbacks : IActivatorCallbacks
                 // if we eventually find a previous run (we don't discriminate by age of run -- perhaps we should
                 var testCaseResults = sailDiff.ComputeTestCaseDiff(
                     result,
-                    executionSummary,
+                    classExecutionSummary,
                     testSettings,
                     preloadedSummaryMatchingCurrentSummary.PerformanceRunResult,
                     cancellationToken);

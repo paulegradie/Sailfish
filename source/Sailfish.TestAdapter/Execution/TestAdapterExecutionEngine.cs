@@ -19,21 +19,21 @@ internal class TestAdapterExecutionEngine : ITestAdapterExecutionEngine
     private const string MemoryCacheName = "GlobalStateMemoryCache";
     private readonly IActivatorCallbacks activatorCallbacks;
     private readonly ITestInstanceContainerCreator testInstanceContainerCreator;
-    private readonly IExecutionSummaryCompiler executionSummaryCompiler;
+    private readonly IClassExecutionSummaryCompiler classExecutionSummaryCompiler;
     private readonly ISailfishExecutionEngine engine;
     private readonly IAdapterConsoleWriter consoleWriter;
 
     public TestAdapterExecutionEngine(
         IActivatorCallbacks activatorCallbacks,
         ITestInstanceContainerCreator testInstanceContainerCreator,
-        IExecutionSummaryCompiler executionSummaryCompiler,
+        IClassExecutionSummaryCompiler classExecutionSummaryCompiler,
         ISailfishExecutionEngine engine,
         IAdapterConsoleWriter consoleWriter
     )
     {
         this.activatorCallbacks = activatorCallbacks;
         this.testInstanceContainerCreator = testInstanceContainerCreator;
-        this.executionSummaryCompiler = executionSummaryCompiler;
+        this.classExecutionSummaryCompiler = classExecutionSummaryCompiler;
         this.engine = engine;
         this.consoleWriter = consoleWriter;
     }
@@ -88,7 +88,7 @@ internal class TestAdapterExecutionEngine : ITestAdapterExecutionEngine
             rawExecutionResults.Add((groupKey, new RawExecutionResult(testType, groupResults)));
         }
 
-        return executionSummaryCompiler
+        return classExecutionSummaryCompiler
             .CompileToSummaries(rawExecutionResults.Select(x => x.Item2), cancellationToken)
             .ToList();
     }

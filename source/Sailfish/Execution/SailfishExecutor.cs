@@ -15,7 +15,7 @@ internal class SailfishExecutor
 {
     private readonly ITestCollector testCollector;
     private readonly ITestFilter testFilter;
-    private readonly IExecutionSummaryCompiler executionSummaryCompiler;
+    private readonly IClassExecutionSummaryCompiler classExecutionSummaryCompiler;
     private readonly IExecutionSummaryWriter executionSummaryWriter;
     private readonly IComplexityComputer complexityComputer;
     private readonly IRunSettings runSettings;
@@ -27,7 +27,7 @@ internal class SailfishExecutor
         ISailFishTestExecutor sailFishTestExecutor,
         ITestCollector testCollector,
         ITestFilter testFilter,
-        IExecutionSummaryCompiler executionSummaryCompiler,
+        IClassExecutionSummaryCompiler classExecutionSummaryCompiler,
         IExecutionSummaryWriter executionSummaryWriter,
         ISailDiff sailDiff,
         IScaleFish scaleFish,
@@ -38,7 +38,7 @@ internal class SailfishExecutor
         this.sailFishTestExecutor = sailFishTestExecutor;
         this.testCollector = testCollector;
         this.testFilter = testFilter;
-        this.executionSummaryCompiler = executionSummaryCompiler;
+        this.classExecutionSummaryCompiler = classExecutionSummaryCompiler;
         this.executionSummaryWriter = executionSummaryWriter;
         this.sailDiff = sailDiff;
         this.scaleFish = scaleFish;
@@ -54,12 +54,12 @@ internal class SailfishExecutor
             var timeStamp = runSettings.TimeStamp ?? DateTime.Now.ToLocalTime();
 
             var rawExecutionResults = await sailFishTestExecutor.Execute(testInitializationResult.Tests, cancellationToken);
-            var executionSummaries = executionSummaryCompiler.CompileToSummaries(rawExecutionResults, cancellationToken)
+            var classExecutionSummaries = classExecutionSummaryCompiler.CompileToSummaries(rawExecutionResults, cancellationToken)
                 .ToList();
 
             var executionSummaryTrackingDirectory = GetRunSettingsTrackingDirectoryPath(runSettings, DefaultFileSettings.DefaultExecutionSummaryTrackingDirectory);
             await executionSummaryWriter.Write(
-                executionSummaries,
+                classExecutionSummaries,
                 timeStamp,
                 executionSummaryTrackingDirectory,
                 runSettings,
@@ -76,10 +76,10 @@ internal class SailfishExecutor
             }
 
             var exceptions =
-                executionSummaries.SelectMany(e => e.CompiledTestCaseResults.SelectMany(c => c.Exceptions));
+                classExecutionSummaries.SelectMany(e => e.CompiledTestCaseResults.SelectMany(c => c.Exceptions));
 
             return rawExecutionResults.Select(x => x.IsSuccess).All(x => x)
-                ? SailfishRunResult.CreateValidResult(executionSummaries)
+                ? SailfishRunResult.CreateValidResult(classExecutionSummaries)
                 : SailfishRunResult.CreateInvalidResult(exceptions);
         }
 

@@ -70,7 +70,7 @@ public class SailfishModule : Module
         builder.RegisterType<TestInstanceContainerCreator>().As<ITestInstanceContainerCreator>();
         builder.RegisterType<TestCaseIterator>().As<ITestCaseIterator>();
         builder.RegisterType<StatisticsCompiler>().As<IStatisticsCompiler>();
-        builder.RegisterType<ExecutionSummaryCompiler>().As<IExecutionSummaryCompiler>();
+        builder.RegisterType<ClassExecutionSummaryCompiler>().As<IClassExecutionSummaryCompiler>();
         builder.RegisterType<ExecutionSummaryWriter>().As<IExecutionSummaryWriter>();
         builder.RegisterType<FileIo>().As<IFileIo>();
         builder.RegisterType<MarkdownWriter>().As<IMarkdownWriter>();

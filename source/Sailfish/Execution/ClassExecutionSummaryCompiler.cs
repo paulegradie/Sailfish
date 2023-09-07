@@ -7,11 +7,11 @@ using Sailfish.Statistics;
 
 namespace Sailfish.Execution;
 
-internal class ExecutionSummaryCompiler : IExecutionSummaryCompiler
+internal class ClassExecutionSummaryCompiler : IClassExecutionSummaryCompiler
 {
     private readonly IStatisticsCompiler statsCompiler;
 
-    public ExecutionSummaryCompiler(IStatisticsCompiler statsCompiler)
+    public ClassExecutionSummaryCompiler(IStatisticsCompiler statsCompiler)
     {
         this.statsCompiler = statsCompiler;
     }

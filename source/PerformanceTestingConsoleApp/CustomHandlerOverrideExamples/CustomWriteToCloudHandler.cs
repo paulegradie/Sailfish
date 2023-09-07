@@ -17,6 +17,6 @@ public class CustomWriteToCloudHandler : INotificationHandler<WriteCurrentTracki
 
     public async Task Handle(WriteCurrentTrackingFileCommand request, CancellationToken cancellationToken)
     {
-        await cloudWriter.WriteToMyCloudStorageContainer(request.DefaultFileName, request.ExecutionSummaries.ToList());
+        await cloudWriter.WriteToMyCloudStorageContainer(request.DefaultFileName, request.ClassExecutionSummaries.ToList());
     }
 }
