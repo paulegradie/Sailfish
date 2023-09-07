@@ -42,7 +42,7 @@ internal static class AttributeDiscoveryExtensionMethods
 
     internal static bool IsSailfishComplexityVariable(this PropertyInfo propertyInfo)
     {
-        return propertyInfo.GetCustomAttributes<SailfishVariableAttribute>().Any(a => a.IsComplexityVariable())
-               || propertyInfo.GetCustomAttributes<SailfishRangeVariableAttribute>().Any(a => a.IsComplexityVariable());
+        return propertyInfo.GetCustomAttributes<SailfishVariableAttribute>().Any(a => a.IsScaleFishVariable())
+               || propertyInfo.GetCustomAttributes<SailfishRangeVariableAttribute>().Any(a => a.IsScaleFishVariable());
     }
 }

@@ -10,7 +10,7 @@ namespace PerformanceTests.ExamplePerformanceTests;
 
 [WriteToCsv]
 [WriteToMarkdown]
-[Sailfish(NumIterations = 2, NumWarmupIterations = 1, DisableOverheadEstimation = false, Disabled = false)]
+[Sailfish(NumSamples = 2, NumWarmupIterations = 1, DisableOverheadEstimation = false, Disabled = false)]
 public class AllTheFeatures
 {
     private readonly SomethingIRegistered dep;
@@ -24,7 +24,7 @@ public class AllTheFeatures
         this.client = client;
     }
 
-    [SailfishRangeVariable(complexity: true, 10, 3, 2)]
+    [SailfishRangeVariable(scaleFish: true, 10, 3, 2)]
     public int Delay { get; set; }
 
     [SailfishVariable(3, 5)] public int Multiplier { get; set; }

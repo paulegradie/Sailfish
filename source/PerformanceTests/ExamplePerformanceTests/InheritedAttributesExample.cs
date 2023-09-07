@@ -5,7 +5,7 @@ using Sailfish.Attributes;
 
 namespace PerformanceTests.ExamplePerformanceTests;
 
-[Sailfish(NumIterations = 3, NumWarmupIterations = 1, Disabled = false)]
+[Sailfish(NumSamples = 3, NumWarmupIterations = 1, Disabled = false)]
 public class ChildTestClass : AttributesInheritedBase
 {
     [SailfishMethod]
