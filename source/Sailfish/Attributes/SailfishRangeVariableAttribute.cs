@@ -32,14 +32,14 @@ public class SailfishRangeVariableAttribute : Attribute, ISailfishVariableAttrib
     /// <summary>
     /// Initializes a new instance of the <see cref="SailfishVariableAttribute"/> class with the specified values and the option to best fit the test method to a complexity curve.
     /// </summary>
-    /// <param name="complexity">Boolean to enable complexity extimate feature</param>
+    /// <param name="scaleFish">Boolean to enable complexity extimate feature</param>
     /// <param name="start">Int value to start the range</param>
     /// <param name="count">Number of values to create</param>
     /// <param name="step">Step between values</param>
     /// <exception cref="SailfishException">Thrown when no values are provided.</exception>
-    public SailfishRangeVariableAttribute(bool complexity, int start, int count, int step = 1) : this(start, count, step)
+    public SailfishRangeVariableAttribute(bool scaleFish, int start, int count, int step = 1) : this(start, count, step)
     {
-        EstimateComplexity = complexity;
+        UseScaleFish = scaleFish;
     }
 
     /// <summary>
@@ -47,7 +47,7 @@ public class SailfishRangeVariableAttribute : Attribute, ISailfishVariableAttrib
     /// </summary>
     private IEnumerable<object> N { get; }
 
-    private bool EstimateComplexity { get; set; }
+    private bool UseScaleFish { get; set; }
 
     /// <summary>
     /// Retrieves the variables as an enumerable.
@@ -62,9 +62,9 @@ public class SailfishRangeVariableAttribute : Attribute, ISailfishVariableAttrib
     /// Retrieves bool indicating if this attribute should be used for complexity estimation
     /// </summary>
     /// <returns>bool</returns>
-    public bool IsComplexityVariable()
+    public bool IsScaleFishVariable()
     {
-        return EstimateComplexity;
+        return UseScaleFish;
     }
 
     private static IEnumerable<int> Range(int start, [Range(1, int.MaxValue)] int count, [Range(1, int.MaxValue)] int step)

@@ -2,7 +2,7 @@ using Sailfish.Attributes;
 
 namespace Tests.E2E.ExceptionHandling.Tests;
 
-[Sailfish(NumIterations = 1, NumWarmupIterations = 1, Disabled = false)]
+[Sailfish(NumSamples = 1, NumWarmupIterations = 1, Disabled = false)]
 public class GlobalTeardownExceptionIsHandled
 {
     [SailfishMethod]

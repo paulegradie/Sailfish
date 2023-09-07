@@ -11,56 +11,55 @@ using Sailfish.Registration;
 
 namespace PerformanceTests.ExamplePerformanceTests;
 
-[Sailfish(NumIterations = 3, NumWarmupIterations = 2, Disabled = false)]
+[WriteToCsv]
+[WriteToMarkdown]
+[Sailfish(NumSamples = 3, NumWarmupIterations = 2, DisableOverheadEstimation = false, Disabled = false)]
 public class SailfishFixtureExample : TestBase
 {
-    private readonly SailfishDependencies sailfishDependencies;
+    private readonly SailfishFixture sailfishFixture;
 
-    [SailfishVariable(1, 2, 3)] public int VariableA { get; set; }
+    [SailfishVariable(1, 10)] public int VariableA { get; set; }
+
+    [SailfishRangeVariable(true, 1, 4, 1)] public int Multiplier { get; set; }
+
 
     [SailfishMethod]
     public async Task Control(CancellationToken cancellationToken)
     {
-        await Task.Delay(100, cancellationToken);
+        await Task.Delay(VariableA * Multiplier, cancellationToken);
     }
 
-    public ExampleDep exampleDep = null!;
+    public ExampleDep ExampleDep = null!;
 
     [SailfishMethodSetup(nameof(TestB))]
     public void ResolveSetup()
     {
-        exampleDep = sailfishDependencies.ResolveType<ExampleDep>();
+        ExampleDep = sailfishFixture.ResolveType<ExampleDep>();
     }
 
     [SailfishMethod]
     public async Task TestB(CancellationToken cancellationToken)
     {
         await Task.CompletedTask;
-        exampleDep.WriteSomething("Hello");
+        ExampleDep.WriteSomething("Hello", VariableA * Multiplier);
     }
 
-    public SailfishFixtureExample(SailfishDependencies sailfishDependencies, WebApplicationFactory<DemoApp> factory) : base(factory)
+    public SailfishFixtureExample(SailfishFixture sailfishFixture, WebApplicationFactory<DemoApp> factory) : base(factory)
     {
-        this.sailfishDependencies = sailfishDependencies;
+        this.sailfishFixture = sailfishFixture;
     }
-}
-
-enum Cat
-{
-    A,
-    B
 }
 
 public class ExampleDep
 {
-    public void WriteSomething(string something)
+    public void WriteSomething(string something, int sleepPeriod)
     {
         Console.WriteLine(something);
-        Thread.Sleep(100);
+        Thread.Sleep(sleepPeriod);
     }
 }
 
-public class TestBase : ISailfishFixture<SailfishDependencies>
+public class TestBase : ISailfishFixture<SailfishFixture>
 {
     public TestBase(WebApplicationFactory<DemoApp> factory)
     {
@@ -79,12 +78,12 @@ public class TestBase : ISailfishFixture<SailfishDependencies>
 }
 
 // Example of what can be implemented
-public class SailfishDependencies : IDisposable
+public class SailfishFixture : IDisposable
 {
-    public IContainer Container { get; set; }
+    private IContainer Container { get; set; }
 
     // single parameterless ctor is all that is allowed
-    public SailfishDependencies()
+    public SailfishFixture()
     {
         var builder = new ContainerBuilder();
         RegisterThings(builder);
@@ -97,10 +96,7 @@ public class SailfishDependencies : IDisposable
         builder.RegisterType<WebApplicationFactory<DemoApp>>();
     }
 
-    public void Dispose()
-    {
-        Container.Dispose();
-    }
+    public void Dispose() => Container.Dispose();
 
     public object ResolveType(Type type)
     {

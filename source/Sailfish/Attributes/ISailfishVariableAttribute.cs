@@ -4,6 +4,6 @@ namespace Sailfish.Attributes;
 
 internal interface ISailfishVariableAttribute
 {
-    bool IsComplexityVariable();
+    bool IsScaleFishVariable();
     IEnumerable<object> GetVariables();
 }

@@ -185,7 +185,7 @@ public static class ReflectionExtensionMethods
             .GetCustomAttributes(true)
             .OfType<SailfishAttribute>()
             .Single()
-            .NumIterations;
+            .NumSamples;
     }
 
     internal static int GetWarmupIterations(this Type type)

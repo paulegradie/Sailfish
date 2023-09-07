@@ -9,7 +9,7 @@ using Sailfish.Attributes;
 
 namespace PerformanceTests.ExamplePerformanceTests
 {
-    [Sailfish(NumIterations = 3)]
+    [Sailfish(NumSamples = 3)]
     public class ExampleUsingOctopusClient
     {
         public IOctopusAsyncClient Client { get; set; } = null!;

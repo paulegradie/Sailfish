@@ -29,6 +29,6 @@ internal class IterationVariableRetriever : IIterationVariableRetriever
                             .Where(x => x.IsSailfishVariableAttribute())
                             .Cast<ISailfishVariableAttribute>()
                             .Single()
-                            .IsComplexityVariable()));
+                            .IsScaleFishVariable()));
     }
 }
