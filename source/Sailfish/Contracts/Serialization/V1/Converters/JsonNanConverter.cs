@@ -2,7 +2,7 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
-namespace Sailfish.Contracts.Public;
+namespace Sailfish.Contracts.Serialization.V1.Converters;
 
 public class JsonNanConverter : JsonConverter<double>
 {

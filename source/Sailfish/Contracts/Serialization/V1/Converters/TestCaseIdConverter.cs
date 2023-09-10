@@ -4,7 +4,7 @@ using System.Text.Json.Serialization;
 using Sailfish.Analysis;
 using Sailfish.Exceptions;
 
-namespace Sailfish.Contracts.Serialization.V1;
+namespace Sailfish.Contracts.Serialization.V1.Converters;
 
 public class TestCaseIdConverter : JsonConverter<TestCaseId?>
 {
@@ -13,7 +13,8 @@ public class TestCaseIdConverter : JsonConverter<TestCaseId?>
         using var doc = JsonDocument.ParseValue(ref reader);
         var testCaseId = doc.RootElement;
 
-        var testCaseName = testCaseId.GetProperty("TestCaseName").Deserialize<TestCaseName>() ?? throw new SailfishException("Failed to deserialize 'TestCaseName'");
+        var testCaseName = testCaseId.GetProperty("TestCaseName").Deserialize<TestCaseName>()
+                           ?? throw new SailfishException("Failed to deserialize 'TestCaseName'");
         var testCaseVariables = testCaseId.GetProperty("TestCaseVariables").Deserialize<TestCaseVariables>() ??
                                 throw new SailfishException("Failed to deserialize 'TestCaseVariables'");
         return new TestCaseId(testCaseName, testCaseVariables);
