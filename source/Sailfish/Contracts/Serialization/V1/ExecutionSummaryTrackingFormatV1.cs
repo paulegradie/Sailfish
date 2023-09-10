@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
+using Sailfish.Contracts.Serialization.V1.Converters;
 
 namespace Sailfish.Contracts.Serialization.V1;
 
@@ -25,7 +26,7 @@ public class ExecutionSummaryTrackingFormatV1
         CompiledTestCaseResults = compiledTestCaseResults;
     }
 
-    [JsonConverter(typeof(TypePropertyConvert))]
+    [JsonConverter(typeof(TypePropertyConverter))]
     public Type Type { get; set; }
     public ExecutionSettingsTrackingFormat Settings { get; }
     public IEnumerable<CompiledTestCaseResultTrackingFormatV1> CompiledTestCaseResults { get; set; }

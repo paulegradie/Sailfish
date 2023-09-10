@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
 using Sailfish.Analysis;
+using Sailfish.Contracts.Serialization.V1.Converters;
 
 #pragma warning disable CS8618
 

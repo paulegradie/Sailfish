@@ -16,10 +16,17 @@ public class TestCaseName
     private const char OpenBracket = '(';
     private const char Dot = '.';
 
+
     [JsonConstructor]
 #pragma warning disable CS8618
-    public TestCaseName(string name, IReadOnlyList<string> parts)
+    public TestCaseName()
 #pragma warning restore CS8618
+    {
+    }
+
+    public TestCaseName(string name, IReadOnlyList<string> parts)
+
+
     {
         Name = name;
         Parts = parts;
