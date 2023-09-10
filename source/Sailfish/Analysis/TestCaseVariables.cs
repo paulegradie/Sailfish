@@ -10,6 +10,13 @@ public class TestCaseVariables
     private const string CloseBracket = ")";
     private const char Colon = ':';
 
+#pragma warning disable CS8618
+    public TestCaseVariables()
+#pragma warning restore CS8618
+    {
+        
+    }
+    
     public TestCaseVariables(string displayName)
     {
         Variables = GetElements(displayName);
