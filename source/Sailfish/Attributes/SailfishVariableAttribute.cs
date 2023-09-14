@@ -13,8 +13,8 @@ namespace Sailfish.Attributes;
 /// <remarks>
 /// This attribute should be applied to public properties. It has no effect when applied to fields.
 /// </remarks>
-[AttributeUsage(AttributeTargets.Property, AllowMultiple = false)]
-public class SailfishVariableAttribute : Attribute, ISailfishVariableAttribute
+[AttributeUsage(AttributeTargets.Property, AllowMultiple = false, Inherited = false)]
+public sealed class SailfishVariableAttribute : Attribute, ISailfishVariableAttribute
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="SailfishVariableAttribute"/> class with the specified values.

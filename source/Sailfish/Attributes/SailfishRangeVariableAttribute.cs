@@ -15,7 +15,7 @@ namespace Sailfish.Attributes;
 /// This attribute should be applied to public properties. It has no effect when applied to fields.
 /// </remarks>
 [AttributeUsage(AttributeTargets.Property, AllowMultiple = false)]
-public class SailfishRangeVariableAttribute : Attribute, ISailfishVariableAttribute
+public sealed class SailfishRangeVariableAttribute : Attribute, ISailfishVariableAttribute
 {
     /// <summary>
     /// Initializes a new instance of the <see cref="SailfishVariableAttribute"/> class with the specified values.
