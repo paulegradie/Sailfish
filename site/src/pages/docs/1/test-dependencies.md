@@ -51,7 +51,8 @@ public class MyDependency
     public MyDependency() // must be parameterless
     {
         // do synchronous things as part of your setup
-        lazyClient = new Lazy<IClient>(async () => await ClientFactory.Create());
+        lazyClient = new Lazy<IClient>(
+            async () => await ClientFactory.Create());
     }
 
     private Lazy<IClient> lazyClient;

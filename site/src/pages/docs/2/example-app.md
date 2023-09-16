@@ -1,10 +1,8 @@
 ---
-title: Using Sailfish as a combined application
+title: Example app setup
 ---
 
-## Performance Test Solution
-
-### MyApp.CLI (a project)
+## MyApp.CLI (a project)
 
 **PerformanceTests.csproj**
 
@@ -40,11 +38,11 @@ public class RegistrationProvider : IProvideARegistrationCallback
 }
 ```
 
-### MyApp.PerformanceTests (a project)
+## MyApp.PerformanceTests (a project)
 
 **PerformanceTests.csproj**
 
-    <PackageReference Include="Sailfish.TestAdapter" Version="0.1.132" />
+    <PackageReference Include="Sailfish.TestAdapter" Version={Latest} />
 
 ```csharp
 // this will be picked up by Sailfish's dependency scanner

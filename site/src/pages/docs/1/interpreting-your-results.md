@@ -34,11 +34,24 @@ Adjusted Distribution (ms)
 
 These are the basic descriptive statistics describing your Sailfish test run. Persisted outputs (such as markdown or csv files) will be found the output directory in the calling assembly's **/bin** folder. Those results will
 
-
 # SailDiff
 
-⚠️Image + description coming soon
+Saildiff will attempt to compare previous results with current results. Saildiff will scan the tracking directory for prior test runs when tracking test results and use them to compute a statistical analysis to determine performance changes.
+
+| Display Name   | MeanBefore (N=7) | MeanAfter (N=7) | MedianBefore | MedianAfter | PValue  | Change Description |
+| -------------- | ---------------- | --------------- | ------------ | ----------- | ------- | ------------------ |
+| Example.Test() | 190.78 ms        | 191.35 ms       | 187.689 ms   | 186.9367 ms | 0.89023 | No Change          |
+
+The Mean and median are both presented alongside a PValue and Change description. The PValue is returned from the statistical test and compared to a user-set threshold to determine the change description.
 
 # ScaleFish
 
-⚠️Image + description coming soon
+Scalefish will attempt to fit any scalefish enabled variables to one of several classic algorithmic complexity functions (e.g. linear, nlogn, etc).
+
+**Test Class: SailfishFixtureExample**
+
+| Variable              | BestFit      | BigO       | GoodnessOfFit | NextBest           | NextBigO | NextBestGoodnessOfFit |
+| --------------------- | ------------ | ---------- | ------------- | ------------------ | -------- | --------------------- |
+| Example.Test.Variable | SqrtN (best) | O(sqrt(n)) | 0.81442892    | Linear (next best) | O(n)     | 0.7316056             |
+
+For each variable, all other variables will be held constant at their smallest scale. For each parameterized function, regression will be performed to fit the model to the data. For each resulting model, a goodness of fit is calculated and best two fitting models are returned. Using this result, you can guadge the general complexity of the logic inside the SailfishMethod.

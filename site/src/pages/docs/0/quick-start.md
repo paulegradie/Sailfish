@@ -2,11 +2,9 @@
 title: Quick Start Guide
 ---
 
-
 ## 1. Create a Test Project
 
 Create a class library project and install the [Sailfish Test Adapter](https://www.nuget.org/packages/Sailfish.TestAdapter);
-
 
 ## 2. Write a Sailfish Test
 
@@ -38,7 +36,9 @@ public class Example
 ```csharp
 public class RegistrationProvider : IProvideARegistrationCallback
 {
-    public async Task RegisterAsync(ContainerBuilder builder, CancellationToken ct)
+    public async Task RegisterAsync(
+        ContainerBuilder builder,
+        CancellationToken ct)
     {
        var typeInstance = await MyClientFactory.Create(ct);
        builder.Register(_ => typeInstance).As<IClient>();

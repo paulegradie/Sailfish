@@ -21,7 +21,7 @@ public class MinimalTest
 ## WriteToCsv
 
 ```csharp
-[WriteToMarkdown]
+[WriteToCsv]
 [Sailfish]
 public class MinimalTest
 {

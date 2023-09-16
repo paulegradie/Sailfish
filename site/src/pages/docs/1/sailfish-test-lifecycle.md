@@ -2,7 +2,7 @@
 title: The Sailfish Test Lifecycle
 ---
 
-Sailfish allows you to implement multiple `SailfishMethods` in a single class, as well as multiple of (6)lifecycle methods for expressive control over your tests.
+Sailfish allows you to implement multiple `SailfishMethods` in a single class, as well as multiples of (6) lifecycle methods for expressive control over your tests.
 
 Test cases are built for each variable combination (if any) for each test method. Each test case is iterated `(int)SampleSize` times.
 
@@ -82,21 +82,28 @@ public async Task GlobalTeardown(CancellationToken ct)
 }
 ```
 ---
+## Multiple Lifecycle methods
 
-# Property and Field Management
+Sailfish supports multiple of the same lifecycle method implemented in the same class. The order of execution within a given class is not guaranteed, however methods implemented in base classes will always be executed before child class methods.
+
+## Targeting Specific SailfishMethods
+
+You can optionally provide a params array of method names to the iteration or method setup / teardown lifecycle methods to taget specific SailfishMethods. If no names are provided, the lifecycle method is applied to all methods.
+
+## Property and Field Management
 
 When multiple test cases are created for a class, distinct instances of the class are created. Properties and Fields that are set in the global lifecycle methods must therefore be cloned to new instances that do not execute the global lifecycle method.
 
 The following modifiers are allowed when creating a property or field where the data is a set during lifecycle invocation:
 
-## Properties
+### Properties
 
 ```csharp
 public Type Public { get; set; }
 protected Type Protected { get; set; }
 ```
 
-## Fields
+### Fields
 
 ```csharp
 internal Type InternalField;
