@@ -44,7 +44,6 @@ export default function Document() {
       <Head>
         <script dangerouslySetInnerHTML={{ __html: themeScript }} />
         <link rel="stylesheet" href="//cdn.jsdelivr.net/gh/highlightjs/cdn-release@10.3.2/build/styles/default.min.css"></link>
-
       </Head>
       <body className="bg-white dark:bg-slate-900">
         <Main />

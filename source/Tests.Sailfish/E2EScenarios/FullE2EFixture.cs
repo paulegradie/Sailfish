@@ -13,8 +13,8 @@ public class FullE2EFixture
     public async Task AFullTestRunOfTheDemoDoesNotError()
     {
         var runSettings = RunSettingsBuilder.CreateBuilder()
-            .RegistrationProvidersFromAssembliesFromAnchorTypes(typeof(E2ETestRegistrationProvider))
-            .TestsFromAssembliesFromAnchorTypes(typeof(E2ETestRegistrationProvider))
+            .ProvidersFromAssembliesContaining(typeof(E2ETestRegistrationProvider))
+            .TestsFromAssembliesContaining(typeof(E2ETestRegistrationProvider))
             .DisableOverheadEstimation()
             .WithAnalysisDisabledGlobally()
             .Build();
@@ -31,8 +31,8 @@ public class FullE2EFixture
     public async Task AFullTestRunOfTheDemoShouldFind13Tests()
     {
         var runSettings = RunSettingsBuilder.CreateBuilder()
-            .RegistrationProvidersFromAssembliesFromAnchorTypes(typeof(E2ETestRegistrationProvider))
-            .TestsFromAssembliesFromAnchorTypes(typeof(E2ETestRegistrationProvider))
+            .ProvidersFromAssembliesContaining(typeof(E2ETestRegistrationProvider))
+            .TestsFromAssembliesContaining(typeof(E2ETestRegistrationProvider))
             .DisableOverheadEstimation()
             .WithAnalysisDisabledGlobally()
             .Build();

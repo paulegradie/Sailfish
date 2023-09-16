@@ -107,8 +107,8 @@ public abstract class SailfishProgramBase
             .WithProvidedBeforeTrackingFiles(BeforeTargets ?? Array.Empty<string>())
             .WithTimeStamp(DateTime.Now)
             .InDebugMode(Debug)
-            .RegistrationProvidersFromAssembliesFromAnchorTypes(registrationProviderTypes.ToArray())
-            .TestsFromAssembliesFromAnchorTypes(sourceTypes.ToArray());
+            .ProvidersFromAssembliesContaining(registrationProviderTypes.ToArray())
+            .TestsFromAssembliesContaining(sourceTypes.ToArray());
 
         return settings.Build();
     }

@@ -15,8 +15,8 @@ public class FullE2EExceptionCases
     {
         var runSettings = RunSettingsBuilder.CreateBuilder()
             .WithTestNames(nameof(GlobalSetupExceptionIsHandled))
-            .RegistrationProvidersFromAssembliesFromAnchorTypes(typeof(E2ETestExceptionHandlingProvider))
-            .TestsFromAssembliesFromAnchorTypes(typeof(E2ETestExceptionHandlingProvider))
+            .ProvidersFromAssembliesContaining(typeof(E2ETestExceptionHandlingProvider))
+            .TestsFromAssembliesContaining(typeof(E2ETestExceptionHandlingProvider))
             .Build();
 
         var result = await SailfishRunner.Run(runSettings);
@@ -32,8 +32,8 @@ public class FullE2EExceptionCases
     {
         var runSettings = RunSettingsBuilder.CreateBuilder()
             .WithTestNames(nameof(MethodSetupExceptionIsHandled))
-            .RegistrationProvidersFromAssembliesFromAnchorTypes(typeof(E2ETestExceptionHandlingProvider))
-            .TestsFromAssembliesFromAnchorTypes(typeof(E2ETestExceptionHandlingProvider))
+            .ProvidersFromAssembliesContaining(typeof(E2ETestExceptionHandlingProvider))
+            .TestsFromAssembliesContaining(typeof(E2ETestExceptionHandlingProvider))
             .Build();
 
         var result = await SailfishRunner.Run(runSettings);
@@ -49,8 +49,8 @@ public class FullE2EExceptionCases
     {
         var runSettings = RunSettingsBuilder.CreateBuilder()
             .WithTestNames(nameof(IterationSetupExceptionIsHandled))
-            .RegistrationProvidersFromAssembliesFromAnchorTypes(typeof(E2ETestExceptionHandlingProvider))
-            .TestsFromAssembliesFromAnchorTypes(typeof(E2ETestExceptionHandlingProvider))
+            .ProvidersFromAssembliesContaining(typeof(E2ETestExceptionHandlingProvider))
+            .TestsFromAssembliesContaining(typeof(E2ETestExceptionHandlingProvider))
             .Build();
 
         var result = await SailfishRunner.Run(runSettings);
@@ -66,8 +66,8 @@ public class FullE2EExceptionCases
     {
         var runSettings = RunSettingsBuilder.CreateBuilder()
             .WithTestNames(nameof(IterationTeardownExceptionIsHandled))
-            .RegistrationProvidersFromAssembliesFromAnchorTypes(typeof(E2ETestExceptionHandlingProvider))
-            .TestsFromAssembliesFromAnchorTypes(typeof(E2ETestExceptionHandlingProvider))
+            .ProvidersFromAssembliesContaining(typeof(E2ETestExceptionHandlingProvider))
+            .TestsFromAssembliesContaining(typeof(E2ETestExceptionHandlingProvider))
             .Build();
 
         var result = await SailfishRunner.Run(runSettings);
@@ -84,8 +84,8 @@ public class FullE2EExceptionCases
     {
         var runSettings = RunSettingsBuilder.CreateBuilder()
             .WithTestNames(nameof(MethodTeardownExceptionIsHandled))
-            .RegistrationProvidersFromAssembliesFromAnchorTypes(typeof(E2ETestExceptionHandlingProvider))
-            .TestsFromAssembliesFromAnchorTypes(typeof(E2ETestExceptionHandlingProvider))
+            .ProvidersFromAssembliesContaining(typeof(E2ETestExceptionHandlingProvider))
+            .TestsFromAssembliesContaining(typeof(E2ETestExceptionHandlingProvider))
             .Build();
 
         var result = await SailfishRunner.Run(runSettings);
@@ -101,8 +101,8 @@ public class FullE2EExceptionCases
     {
         var runSettings = RunSettingsBuilder.CreateBuilder()
             .WithTestNames(nameof(GlobalTeardownExceptionIsHandled))
-            .RegistrationProvidersFromAssembliesFromAnchorTypes(typeof(E2ETestExceptionHandlingProvider))
-            .TestsFromAssembliesFromAnchorTypes(typeof(E2ETestExceptionHandlingProvider))
+            .ProvidersFromAssembliesContaining(typeof(E2ETestExceptionHandlingProvider))
+            .TestsFromAssembliesContaining(typeof(E2ETestExceptionHandlingProvider))
             .Build();
 
         var result = await SailfishRunner.Run(runSettings);
@@ -118,8 +118,8 @@ public class FullE2EExceptionCases
     {
         var runSettings = RunSettingsBuilder.CreateBuilder()
             .WithTestNames(nameof(MethodTeardownExceptionComesFirst))
-            .RegistrationProvidersFromAssembliesFromAnchorTypes(typeof(E2ETestExceptionHandlingProvider))
-            .TestsFromAssembliesFromAnchorTypes(typeof(E2ETestExceptionHandlingProvider))
+            .ProvidersFromAssembliesContaining(typeof(E2ETestExceptionHandlingProvider))
+            .TestsFromAssembliesContaining(typeof(E2ETestExceptionHandlingProvider))
             .Build();
 
         var result = await SailfishRunner.Run(runSettings);
@@ -135,8 +135,8 @@ public class FullE2EExceptionCases
     {
         var runSettings = RunSettingsBuilder.CreateBuilder()
             .WithTestNames(nameof(IterationSetupExceptionComesFirst))
-            .RegistrationProvidersFromAssembliesFromAnchorTypes(typeof(E2ETestExceptionHandlingProvider))
-            .TestsFromAssembliesFromAnchorTypes(typeof(E2ETestExceptionHandlingProvider))
+            .ProvidersFromAssembliesContaining(typeof(E2ETestExceptionHandlingProvider))
+            .TestsFromAssembliesContaining(typeof(E2ETestExceptionHandlingProvider))
             .Build();
 
         var result = await SailfishRunner.Run(runSettings);
@@ -154,8 +154,8 @@ public class FullE2EExceptionCases
     {
         var runSettings = RunSettingsBuilder.CreateBuilder()
             .WithTestNames(nameof(OnlyTheSailfishMethodThrows))
-            .RegistrationProvidersFromAssembliesFromAnchorTypes(typeof(E2ETestExceptionHandlingProvider))
-            .TestsFromAssembliesFromAnchorTypes(typeof(E2ETestExceptionHandlingProvider))
+            .ProvidersFromAssembliesContaining(typeof(E2ETestExceptionHandlingProvider))
+            .TestsFromAssembliesContaining(typeof(E2ETestExceptionHandlingProvider))
             .Build();
 
         var result = await SailfishRunner.Run(runSettings);
@@ -171,8 +171,8 @@ public class FullE2EExceptionCases
     {
         var runSettings = RunSettingsBuilder.CreateBuilder()
             .WithTestNames(nameof(VoidMethodRequestsCancellationToken))
-            .RegistrationProvidersFromAssembliesFromAnchorTypes(typeof(E2ETestExceptionHandlingProvider))
-            .TestsFromAssembliesFromAnchorTypes(typeof(E2ETestExceptionHandlingProvider))
+            .ProvidersFromAssembliesContaining(typeof(E2ETestExceptionHandlingProvider))
+            .TestsFromAssembliesContaining(typeof(E2ETestExceptionHandlingProvider))
             .Build();
 
         var result = await SailfishRunner.Run(runSettings);
@@ -188,8 +188,8 @@ public class FullE2EExceptionCases
     {
         var runSettings = RunSettingsBuilder.CreateBuilder()
             .WithTestNames(nameof(MultipleInjectionsOnAsyncMethod))
-            .RegistrationProvidersFromAssembliesFromAnchorTypes(typeof(E2ETestExceptionHandlingProvider))
-            .TestsFromAssembliesFromAnchorTypes(typeof(E2ETestExceptionHandlingProvider))
+            .ProvidersFromAssembliesContaining(typeof(E2ETestExceptionHandlingProvider))
+            .TestsFromAssembliesContaining(typeof(E2ETestExceptionHandlingProvider))
             .Build();
 
         var result = await SailfishRunner.Run(runSettings);

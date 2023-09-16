@@ -2,28 +2,20 @@
 title: Getting Started
 ---
 
-Sailfish is designed to be a user friendly and familiar framework for writing performance style tests in C#.
+There are two ways to hold Sailfish:
 
-If you are familiar with BenchmarkDotNet, you will find Sailfish very familiar.
+- Test Project
+- Library (that may or may not depend on a test project)
 
-There are a couple different intended ways to use Sailfish:
+# Test Projet
 
-- Writing local performance tests
-- Writing performance tests for execution in a production performance regression monitoring system
+When you install the [Sailfish TestAdapter](https://www.nuget.org/packages/Sailfish.TestAdapter) nuget package, you can write and run Sailfish tests directly from the IDE as if it were a test project using xUnit or NUnit or the like. This is a great way to get started with Sailfish and get it integrated into your workflow.
 
-# Local Performance Tests
+# Library
 
-These are the sorts of you tests you might write to collect data before and after a set of changes for sumbmissions with a pull/merge request.
+If you don't need a test project, then your application can install the [Sailfish](https://www.nuget.org/packages/Sailfish) nuget package. The library exposes various tools as well as an entry point into the Sailfish execution program. This entry point requires an IRunSettings, which can be created using the [RunSettingsBuilder](https://github.com/paulegradie/Sailfish/blob/main/source/Sailfish/RunSettingsBuilder.cs).
 
-You can imagine a scenario where you write a few tests, execute them against your main/master branch, and then switch to your development branch and run them again.
-
-In this scenario, you will produce a before and after result that can be pasted into a pull/merge request description and shared with your team.
-
-# Production Performance Regression monitoring system
-
-In this scenario, you might have dynamic or statically provisioned infrastructure and code against which you'll run performance tests.
-
-Sailfish might be used to write test result tracking data to a cloud storage container, which would then be used for regular analysis to determine if regressions have occured in newer versions of your software.
+Your can optionally place your tests in a separate project, which installs the test adapter. When your application's main project depends on the test project, you get access to the sailfish library automatically.
 
 # What this documentation covers
 

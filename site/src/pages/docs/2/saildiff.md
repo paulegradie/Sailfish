@@ -1,29 +1,31 @@
 ---
-title: Customizing Sailfish Analysis
+title: SailDiff
 ---
+
+**SailDiff** is a tool for running automated statistical testing on sailfish tracking data.
+
+Add a .sailfish.json files to the test project to enable saildiff when running via the test adapter.
+
+When enabled, tracking data will be used for comparison to the current run and will produce a Saildiff outputs result file showing the before and after data, as well as a measure on whether or not the data is significantly different.
+
+
+## Customizing the SailDiff inputs
 
 By default, Sailfish will look for the most recent file in the default tracking directory when you execute a test run via a console app.
 
-> **Note**: Setting tracking directories via the test adapter is not yet supported. This is a feature that will be released in the future.
-
-If you'd like to customize the behavior of Sailfish's analysis logic, you can use various extensibility points. These points expose ways to modify various behaviors of the system, so here, we'll focus on those that relate to analysis features.
-
-## Customizing the analysis inputs
-
 The flow of the analysis is
 
-Program Execution > WriteDataHandler > `IRequestHandler<BeforeAndAfterFileLocationCommand, BeforeAndAfterFileLocationResponse>` > `IRequestHandler<ReadInBeforeAndAfterDataCommand, ReadInBeforeAndAfterDataResponse>` > Analyze
+1. Program Execution
+1. WriteDataHandler
+1. `IRequestHandler<BeforeAndAfterFileLocationCommand, BeforeAndAfterFileLocationResponse>`
+1. `IRequestHandler<ReadInBeforeAndAfterDataCommand, ReadInBeforeAndAfterDataResponse>`
+1. Saildiff / Scalefish
 
 This flow shows that there are two points at which you can minipulate the data inputs:
 
 - IRequestHandler<BeforeAndAfterFileLocationCommand, BeforeAndAfterFileLocationResponse>
 - IRequestHandler<ReadInBeforeAndAfterDataCommand, ReadInBeforeAndAfterDataResponse>
 
-## Default Handlers
-
-To help you understand how to implement your custom handlers, lets have a quick look at the default handlers.
-
-> Remember to take some time to familiarize yourself with the various `Commands` that are passed to these handlers
 
 ### Reading Tracking Data from a custom location
 
@@ -54,8 +56,6 @@ internal class SailfishBeforeAndAfterFileLocationHandler : IRequestHandler<Befor
 
 ### Reading Tracking Data that you wish to aggregate prior to testing
 
-`
-This handler is available for scenarios where simply pointing to the right file location is not sufficient, and instead need to manaully combine your data in a particular way. For example, you need to combine the last N files based on an external configuration for the 'before' data set, and one or more files worth of data for the 'after' data set. by hooking into this step, you can perform custom outlier removal, heuristic-based processing, or other pre-processing as you wish.
 
 ```csharp
 internal class SailfishReadInBeforeAndAfterDataHandler : IRequestHandler<ReadInBeforeAndAfterDataCommand, ReadInBeforeAndAfterDataResponse>
@@ -71,8 +71,4 @@ internal class SailfishReadInBeforeAndAfterDataHandler : IRequestHandler<ReadInB
 
 If you inspect the `TestData` source code, you will find that it takes an IEnumerable of test Ids, which are intended for you to keep track of which processed files were used in the statistical test.
 
-## Aggretating data for your analysis
-
-The default behavior of the Analyzer is to read a single before and after file, however Sailfish is actually capable of automatically aggregating as many result files as you'd like. The only requirement is that the data satisifies the correct struture when being returned from the handler.
-
-We'll explore more about extensibility points in the next section.
+SailDiff will automatically aggregate data when multiple files are provided.

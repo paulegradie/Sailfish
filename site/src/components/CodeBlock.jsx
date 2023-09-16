@@ -26,12 +26,12 @@ export default function CodeBlock({ language, code }) {
                 <pre
                     className={clsx(
                         className,
-                        'flex overflow-x-auto pb-6'
+                        'flex overflow-x-auto'
                     )}
                     style={style}
                 >
-                    <code className="px-4">
-                        {tokens.map((line, lineIndex) => (
+                    <code className="px-2 pb-0">
+                        {tokens.slice(0, tokens.length - 1).map((line, lineIndex) => (
                             <div key={lineIndex} {...getLineProps({ line })}>
                                 {line.map((token, tokenIndex) => (
                                     <span
