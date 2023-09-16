@@ -46,7 +46,9 @@ The Mean and median are both presented alongside a PValue and Change description
 
 # ScaleFish
 
-Scalefish will attempt to fit any scalefish enabled variables to one of several classic algorithmic complexity functions (e.g. linear, nlogn, etc).
+Scalefish will attempt to use machine learning to fit any scalefish enabled variables to one of several classic algorithmic complexity functions (e.g. linear, nlogn, etc).
+
+## Result
 
 **Test Class: SailfishFixtureExample**
 
@@ -55,3 +57,68 @@ Scalefish will attempt to fit any scalefish enabled variables to one of several 
 | Example.Test.Variable | SqrtN (best) | O(sqrt(n)) | 0.81442892    | Linear (next best) | O(n)     | 0.7316056             |
 
 For each variable, all other variables will be held constant at their smallest scale. For each parameterized function, regression will be performed to fit the model to the data. For each resulting model, a goodness of fit is calculated and best two fitting models are returned. Using this result, you can guadge the general complexity of the logic inside the SailfishMethod.
+
+## Models
+In addition, a model file is produced with content similar to:
+
+```json
+[
+  {
+    "TestClassName": "Example",
+    "ScaleFishMethodModels": [
+      {
+        "TestMethodName": "Test",
+        "ScaleFishPropertyModels": [
+          {
+            "PropertyName": "Example.Test.Variable",
+            "ScalefishModel": {
+              "ScaleFishModelFunction": {
+                "Name": "SqrtN",
+                "OName": "O(sqrt(n))",
+                "Quality": "Okay",
+                "FunctionDef": "f(x) = {0}sqrt(x) + {1}",
+                "FunctionParameters": {
+                  "Scale": 1.0749999999999997,
+                  "Bias": 1.0750000000000004e-5
+                }
+              },
+              "GoodnessOfFit": 0.8144289259547902,
+              "NextClosestScaleFishModelFunction": {
+                "Name": "Linear",
+                "OName": "O(n)",
+                "Quality": "Good",
+                "FunctionDef": "f(x) = {0}x + {1}",
+                "FunctionParameters": {
+                  "Scale": 1.0749999999999997,
+                  "Bias": 1.0750000000000004e-5
+                }
+              },
+              "NextClosestGoodnessOfFit": 0.7316056315214764
+            }
+          }
+        ]
+      }
+    ]
+  }
+]
+```
+
+## Making predictions
+
+Sailfish provides basic tools for loading models and making predictions.
+
+```csharp
+var file = "Path/To/Your/Model/File.json
+var model = ModelLoader
+  .LoadModelFile(file)
+  .GetScalefishModel(
+    nameof(Example),
+     nameof(ScaleFishExample.Test),
+      nameof(ScaleFishExample.Variable));
+
+var result = model.ScaleFishModelFunction.Predict(50_000);
+Console.WriteLine(result);
+
+```
+
+For a working example, [visit the demo](https://github.com/paulegradie/Sailfish/blob/main/source/ModelPredictions/Program.cs).

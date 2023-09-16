@@ -40,7 +40,7 @@ const navigation = [
         href: '/docs/1/test-dependencies'
       },
       { title: 'Output Attributes', href: '/docs/1/output-attributes' },
-      { title: 'Results', href: '/docs/1/interpreting-your-results' },
+      { title: 'Results', href: '/docs/1/results' },
     ],
   },
   {
