@@ -17,11 +17,12 @@ public class AMostBasicTest
 
     [SailfishMethod]
     public void Method() => Thread.Sleep(N);
-}`
+}
+`
 
 const tabs = [
     { name: 'BasicTest.cs', isActive: true },
-    { name: 'RegistrationProvider.cs', isActive: false },
+    // { name: 'RegistrationProvider.cs', isActive: false },
 ]
 
 function TrafficLightsIcon(props) {

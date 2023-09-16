@@ -4,7 +4,7 @@ title: Critical Information
 
 ## **Tests are always run in sequence**
 
-Sailfish does not parallelize test executions. The simple reason is that we are assessing how quickly your code executes and by parallelizing tests, the execution time would likely increase. To eliminate noise test neighbors on the machine executing the tests, only one test runs at a time.
+Sailfish does not parallelize test execution.
 
 ## **Tests run order is deterministic**
 
@@ -12,10 +12,8 @@ Sailfish does not currently randomize test order execution.
 
 ## **Tests are run in-process**
 
-Sailfish does not perform the optimizations necessary to achieve reliable sub-millisecond-resolution results. If you are interested in rigorous benchmarking, please consider using an alternative tool, such as BenchmarkDotNet. Sailfish was produced to remove much of the complexities and boilerplate required to write performance tests that don't need highly optimized execution.
+Sailfish applies outlier detection and overhead estimation to run results. It does not perform any optimizations that would result in the tests needing to be run out-of-process.
 
-The allows you to debug your tests directly in the IDE without the need to attach to an external process.
+## **Test cases are instantiated just-in-time**
 
-## **Test classes are instantiated just-in-time**
-
-Sailfish uses enumerators to ensure that all of your test classes are not instantiated all at the same time. This is very convenient in cases where you are doing a lot of setup work in your constructors - for example if you are creating in memory server instances you wish you run tests against.
+Each test case is instatiated separately and is yielded such that its dependencies are held in memory for the duration of the test - afterwhich they are disposed. The minimizes overhead produced from holding a long lived instances in memory.

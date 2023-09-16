@@ -12,6 +12,7 @@ const navigation = [
   {
     title: 'Introduction',
     links: [
+      { title: 'When To Use Sailfish', href: '/docs/0/when-to-use-sailfish' },
       { title: 'Getting started', href: '/docs/0/getting-started' },
       { title: 'Installation', href: '/docs/0/installation' },
       { title: 'Quick Start', href: '/docs/0/quick-start' },
@@ -20,92 +21,39 @@ const navigation = [
     ],
   },
   {
-    title: 'How to set up Sailfish for your project',
+    title: 'Sailfish Basics',
     links: [
       {
-        title: 'Summary',
-        href: '/docs/1/how-to-set-up-sailfish-for-your-project',
+        title: 'Required Attributes',
+        href: '/docs/1/required-attributes',
       },
       {
-        title: 'As a Console App',
-        href: '/docs/1/as-a-console-app',
+        title: 'Variables',
+        href: '/docs/1/sailfish-variables',
       },
       {
-        title: 'As a Test Project',
-        href: '/docs/1/as-a-test-project'
+        title: 'The Test Lifecycle',
+        href: '/docs/1/sailfish-test-lifecycle'
       },
       {
-        title: 'As a Combined Application',
-        href: '/docs/1/as-a-combined-application',
+        title: 'Test Dependencies',
+        href: '/docs/1/test-dependencies'
       },
+      { title: 'Output Attributes', href: '/docs/1/output-attributes' },
+      { title: 'Results', href: '/docs/1/interpreting-your-results' },
     ],
   },
   {
-    title: 'The Sailfish Test Lifecycle',
+    title: 'Advanced Sailfish',
     links: [
-      { title: 'The Sailfish Test Lifecycle', href: '/docs/2/the-sailfish-test-lifecycle' },
-      { title: 'The Sailfish Attribute', href: '/docs/2/the-sailfish-attribute' },
-      { title: 'Sailfish Lifecycle Method Attibutes', href: '/docs/2/sailfish-lifecycle-method-attributes' },
-      { title: 'Property and Field management', href: '/docs/2/property-and-field-management' },
+
+      { title: 'Extensibility', href: '/docs/2/extensibility' },
+      { title: 'SailDiff', href: '/docs/2/saildiff' },
+      { title: 'ScaleFish', href: '/docs/2/scalefish' },
+      { title: 'Which Test to Use', href: '/docs/2/which-test-to-use' },
+      { title: 'Example App', href: '/docs/2/example-app' },
     ],
-  },
-  {
-    title: 'Sailfish Variables',
-    links: [
-      { title: 'Sailfish Variables', href: '/docs/3/sailfish-variables' },
-    ],
-  },
-  {
-    title: 'Registering Dependencies for your tests',
-    links: [
-      { title: 'Registering Dependencies for your tests', href: '/docs/4/registering-dependencies-for-your-tests' },
-      { title: 'Using The IProvideARegistrationCallback', href: '/docs/4/using-the-IProvideARegistrationCallback' },
-      { title: 'Using ISailfishFixture', href: '/docs/4/using-the-ISailfishFixture' },
-      { title: 'Using ISailfishDependency', href: '/docs/4/using-the-ISailfishDependency' },
-    ],
-  },
-  {
-    title: 'Sailfish Result Analysis',
-    links: [
-      { title: 'Sailfish Result Analysis', href: '/docs/5/sailfish-result-analysis' },
-      { title: 'Customizing Sailfish Result Analysis', href: '/docs/5/customizing-sailfish-result-analysis' },
-    ],
-  },
-  {
-    title: 'Sailfish Extensibilty',
-    links: [
-      { title: 'Sailfish Extensibility', href: '/docs/6/sailfish-extensibility' },
-      { title: 'Extensibility Commands', href: '/docs/6/extensibility-commands' },
-      { title: 'Implementing your own command handlers', href: '/docs/6/implementing-your-own-command-handlers' },
-    ],
-  },
-  {
-    title: 'Statistical Analysis',
-    links: [
-      { title: 'Statistical Analysis', href: '/docs/7/statistical-analysis' },
-      { title: 'Default Analysis Behavior', href: '/docs/7/default-analysis-behavior' },
-      { title: 'Customizing Analysis Behavior', href: '/docs/7/customizing-analysis-behavior' },
-      { title: 'Selecting the Right Statistical Test', href: '/docs/7/selecting-the-right-statistical-test' },
-    ],
-  },
-  {
-    title: 'Output Attributes',
-    links: [
-      { title: 'Output Attributes', href: '/docs/8/output-attributes' },
-    ],
-  },
-  {
-    title: 'Interpreting Your Results',
-    links: [
-      { title: 'Interpreting Your Results', href: '/docs/9/interpreting-your-results' },
-    ],
-  },
-  {
-    title: 'Utilities',
-    links: [
-      { title: 'Utilities', href: '/docs/10/utilities' },
-    ],
-  },
+  }
 ]
 
 function GitHubIcon(props) {

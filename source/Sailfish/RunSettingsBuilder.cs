@@ -74,13 +74,13 @@ public class RunSettingsBuilder
         return this;
     }
 
-    public RunSettingsBuilder TestsFromAssembliesFromAnchorTypes(params Type[] anchorTypes)
+    public RunSettingsBuilder TestsFromAssembliesContaining(params Type[] anchorTypes)
     {
         testAssembliesAnchorTypes.AddRange(anchorTypes);
         return this;
     }
 
-    public RunSettingsBuilder RegistrationProvidersFromAssembliesFromAnchorTypes(params Type[] anchorTypes)
+    public RunSettingsBuilder ProvidersFromAssembliesContaining(params Type[] anchorTypes)
     {
         registrationProviderAnchorTypes.AddRange(anchorTypes);
         return this;

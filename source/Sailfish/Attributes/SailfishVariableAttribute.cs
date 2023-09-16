@@ -43,7 +43,7 @@ public sealed class SailfishVariableAttribute : Attribute, ISailfishVariableAttr
     /// <param name="scaleFish">Boolean to enable complexity extimate feature</param>
     /// <param name="n">A params array of values to be used as variables within the test.</param>
     /// <exception cref="SailfishException">Thrown when no values are provided.</exception>
-    public SailfishVariableAttribute(bool scaleFish, [MinLength(3)] params object[] n) : this(n)
+    public SailfishVariableAttribute(bool scaleFish, [MinLength(3)] params int[] n) : this(n)
     {
         UseScalefish = scaleFish;
     }
