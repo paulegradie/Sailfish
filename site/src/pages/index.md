@@ -2,8 +2,14 @@
 title: 'Hello!'
 ---
 
-Welcome, and thank you for taking the time to explore the Sailfish Documentation.
+# Welcome!
 
-This documentation provides all of the information you will need to make the most of Sailfish.
+Sailfish is a .NET library that you can use to write performance tests that are**:
 
-⚠️ __Much of these docs are complete, but some sections are still a work in progress. Please feel free to open issues with requests for clarification or additions.__
+- simple, consistent & familiar
+- run in process (for easy debugging and development)
+- sychronous or asynchronous
+- flexible
+- compatible with standard dependency injection
+
+This libary was built to support and inspire the incorporation of performance testing into test driven development as well as the creation of production ready performance monitoring systems.
