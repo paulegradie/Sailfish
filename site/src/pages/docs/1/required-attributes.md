@@ -1,8 +1,6 @@
 ---
 title: Required Attributes
 ---
-There are two required attributes to indicate a Sailfish Test:
-
 
 ## Sailfish Attribute
 
@@ -17,19 +15,19 @@ Apply the `[Sailfish]` attribute to the class.
 public class AMostBasicTest { ... }
 ```
 
-### SampleSize
+#### SampleSize
 
 Sets the number of times the SailfishMethod will be invoked. This number should be as high as you can tolerate. Larger sample size improves the quality of the result.
 
-### NumWarmupIterations
+#### NumWarmupIterations
 
 Sets the number of times the the SailfishMethod will be invoked before timing begins. This includes invocation of the SailfishIterationSetup and SailfishIterationTeardown lifecycle methods.
 
-### DisableOverheadEstimation
+#### DisableOverheadEstimation
 
 Sailfish performs overhead executions to estimate how much test result variance is due to the underlaying hardware. This will disable the feature, which will signifiantly increase test runtime. Estimation is performed before and after each test method is fully executed.
 
-### Disabled
+#### Disabled
 
 Tests are discoverable but ignored when set to true.
 ---
@@ -45,10 +43,11 @@ public async Task SailfishMethod(CancellationToken cancellationToken)
     // This is where you place code you wish to be timed
 }
 ```
+---
 
 ### Injecting Cancellation Tokens
 
-Any sailfish lifecycle method can request a `CancellationToken`, which will be injected by the framework.
+Any Sailfish lifecycle method can request a `CancellationToken`, which will be injected by the framework.
 
 ### Sync vs Async
 

@@ -2,7 +2,7 @@
 title: SailDiff
 ---
 
-**SailDiff** is a tool for running automated statistical testing on sailfish tracking data.
+**SailDiff** is a tool for running automated statistical testing on Sailfish tracking data.
 
 Add a .sailfish.json files to the test project to enable saildiff when running via the test adapter.
 

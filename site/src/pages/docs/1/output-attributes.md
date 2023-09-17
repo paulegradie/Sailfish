@@ -32,5 +32,5 @@ public class MinimalTest
 }
 ```
 
-**NOTE on Extensibility**:
+**Note on Extensibility**:
 Sailfish exposes the `WriteTestResultsAsMarkdownCommand` which will be passed when implementing `INotificationHandler<WriteToMarkDownCommand>`. This handler will allow you to customize what is done with the markdown form of your test results.

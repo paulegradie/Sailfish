@@ -7,7 +7,7 @@ There are two ways to hold Sailfish:
 - Test Project
 - Library (that may or may not depend on a test project)
 
-# Test Projet
+# Test Project
 
 When you install the [Sailfish TestAdapter](https://www.nuget.org/packages/Sailfish.TestAdapter) nuget package, you can write and run Sailfish tests directly from the IDE as if it were a test project using xUnit or NUnit. This is a great way to get started with Sailfish and get it integrated into your workflow.
 

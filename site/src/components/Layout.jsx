@@ -16,7 +16,7 @@ const navigation = [
       { title: 'Getting started', href: '/docs/0/getting-started' },
       { title: 'Installation', href: '/docs/0/installation' },
       { title: 'Quick Start', href: '/docs/0/quick-start' },
-      { title: 'Critical Information', href: '/docs/0/critical-information' },
+      { title: 'Essential Information', href: '/docs/0/essential-information' },
       { title: 'License', href: '/docs/0/license' },
     ],
   },
@@ -40,7 +40,7 @@ const navigation = [
         href: '/docs/1/test-dependencies'
       },
       { title: 'Output Attributes', href: '/docs/1/output-attributes' },
-      { title: 'Results', href: '/docs/1/results' },
+      { title: 'Features', href: '/docs/1/features' },
     ],
   },
   {

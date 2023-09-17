@@ -1,14 +1,12 @@
 ---
-title: Interpreting Your Results
+title: Features
 ---
 
-The tables that are produced by Sailfish are intended to be self-explanatory. They will contain your unique test case id (referred to in the tables as the 'display name'), various descriptive statistics about your test run, and if applicable, the statistical comparison test.
+# Sailfish
 
-You'll notice below that results are grouped first by test class, e.g. `ReadmeExample`, then by test method, then ordered by variable.
+## IDE
 
-# IDE
-
-When run in the IDE, sailfish produces the following result in the test output window:
+When run in the IDE, Sailfish produces the following result in the test output window:
 
 ```
 ReadmeExample.TestMethod
@@ -33,6 +31,15 @@ Adjusted Distribution (ms)
 ```
 
 These are the basic descriptive statistics describing your Sailfish test run. Persisted outputs (such as markdown or csv files) will be found the output directory in the calling assembly's **/bin** folder. Those results will
+
+## Markdown
+
+MinimalTestExample
+
+| Display Name   | Mean         | Median    | StdDev (N=3) | Variance   |
+| -------------- | ------------ | --------- | ------------ | ---------- |
+| Example.Test() | 60.849633 ms | 62.928 ms | 4.0073198 ms | 16.0586121 |
+
 
 # SailDiff
 
@@ -59,6 +66,7 @@ Scalefish will attempt to use machine learning to fit any scalefish enabled vari
 For each variable, all other variables will be held constant at their smallest scale. For each parameterized function, regression will be performed to fit the model to the data. For each resulting model, a goodness of fit is calculated and best two fitting models are returned. Using this result, you can guadge the general complexity of the logic inside the SailfishMethod.
 
 ## Models
+
 In addition, a model file is produced with content similar to:
 
 ```json
