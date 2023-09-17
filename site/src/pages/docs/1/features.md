@@ -4,6 +4,10 @@ title: Features
 
 # Sailfish
 
+Sailfish is the performance test runner. Tests are implemented using Sailfish attributes and timed execution results can be written to StdOut or various file formats.
+
+Different outputs are availabe depending on where you use Sailfish as test project or a class library.
+
 ## IDE
 
 When run in the IDE, Sailfish produces the following result in the test output window:
