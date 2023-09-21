@@ -49,7 +49,7 @@ internal static class TestCaseItemCreator
         var fullyQualifiedName = $"{testType.Namespace}.{testType.Name}.{methodName}{testCaseId.TestCaseVariables.FormVariableSection()}";
         var testCase = new TestCase(fullyQualifiedName, TestExecutor.ExecutorUri, sourceDll)
         {
-            Id = hasher.GuidFromString(TestExecutor.ExecutorUri + $"{testType.Namespace}.{testType.Name}.{methodName}{testCaseId.TestCaseVariables.FormVariableSection()}"),
+            Id = hasher.GuidFromString(TestExecutor.ExecutorUri + $"{testType.Namespace}.{testType.Name}.{methodName}"),
             DisplayName = testCaseId.GetMethodWithVariables(),
             LineNumber = lineNumber,
             ExecutorUri = TestExecutor.ExecutorUri,
