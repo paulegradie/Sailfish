@@ -25,8 +25,6 @@ public class TestCaseName
     }
 
     public TestCaseName(string name, IReadOnlyList<string> parts)
-
-
     {
         Name = name;
         Parts = parts;
@@ -44,8 +42,8 @@ public class TestCaseName
         Parts = parts;
     }
 
-    public string Name { get; }
-    public IReadOnlyList<string> Parts { get; }
+    public string Name { get; set; }
+    public IReadOnlyList<string> Parts { get; set; }
 
     private static IReadOnlyList<string> GetNameParts(string displayName)
     {

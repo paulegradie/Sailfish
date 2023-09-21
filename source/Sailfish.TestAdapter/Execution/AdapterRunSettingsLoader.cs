@@ -1,8 +1,8 @@
 using System.IO;
-using Sailfish.Analysis.SailDiff;
 using Sailfish.Exceptions;
 using Sailfish.TestAdapter.Discovery;
 using Sailfish.TestAdapter.TestSettingsParser;
+
 
 namespace Sailfish.TestAdapter.Execution;
 
@@ -17,25 +17,25 @@ public static class AdapterRunSettingsLoader
     {
         var parsedSettings = ParseSettings();
 
-        if (parsedSettings.TestSettings.DisableEverything) throw new SailfishException("Everything is disabled!");
+        if (parsedSettings.DisableEverything) throw new SailfishException("Everything is disabled!");
 
         var runSettingsBuilder = RunSettingsBuilder.CreateBuilder();
-        if (!string.IsNullOrEmpty(parsedSettings.TestSettings.ResultsDirectory))
+        if (!string.IsNullOrEmpty(parsedSettings.ResultsDirectory))
         {
-            runSettingsBuilder = runSettingsBuilder.WithLocalOutputDirectory(parsedSettings.TestSettings.ResultsDirectory);
+            runSettingsBuilder = runSettingsBuilder.WithLocalOutputDirectory(parsedSettings.ResultsDirectory);
         }
 
-        if (parsedSettings.TestSettings.Disabled)
+        if (parsedSettings.SailDiffSettings.Disabled)
         {
             runSettingsBuilder = runSettingsBuilder.WithAnalysisDisabledGlobally();
         }
 
-        if (parsedSettings.TestSettings.DisableOverheadEstimation)
+        if (parsedSettings.DisableOverheadEstimation)
         {
             runSettingsBuilder = runSettingsBuilder.DisableOverheadEstimation();
         }
 
-        var testSettings = MapToTestSettings(parsedSettings.TestSettings);
+        var testSettings = MapToTestSettings(parsedSettings);
         var runSettings = runSettingsBuilder
             .CreateTrackingFiles()
             .WithSailDiff(testSettings)
@@ -44,18 +44,12 @@ public static class AdapterRunSettingsLoader
         return runSettings;
     }
 
-    private static SailDiffSettings MapToTestSettings(SailfishTestSettings settings)
+    private static Analysis.SailDiff.SailDiffSettings MapToTestSettings(SailfishSettings settings)
     {
-        if (settings?.Resolution is not null)
+        var mappedSettings = new Analysis.SailDiff.SailDiffSettings();
+        if (settings?.SailDiffSettings.TestType is not null)
         {
-            // TODO: Modify this when we impl resolution settings throughout (or ditch the idea)
-            // settingsBuilder.WithResolution(settings.Resolution);
-        }
-
-        var mappedSettings = new SailDiffSettings();
-        if (settings?.TestType is not null)
-        {
-            mappedSettings.SetTestType(settings.TestType);
+            mappedSettings.SetTestType(settings.SailDiffSettings.TestType);
         }
 
         if (settings?.UseOutlierDetection is not null)
@@ -63,9 +57,9 @@ public static class AdapterRunSettingsLoader
             mappedSettings.SetUseOutlierDetection(settings.UseOutlierDetection);
         }
 
-        if (settings?.Alpha is not null)
+        if (settings?.SailDiffSettings.Alpha is not null)
         {
-            mappedSettings.SetAlpha(settings.Alpha);
+            mappedSettings.SetAlpha(settings.SailDiffSettings.Alpha);
         }
 
         if (settings?.Round is not null)

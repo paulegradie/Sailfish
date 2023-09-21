@@ -6,6 +6,7 @@ var settings = RunSettingsBuilder.CreateBuilder()
     .TestsFromAssembliesContaining(typeof(PerformanceTestProjectDiscoveryAnchor))
     .ProvidersFromAssembliesContaining(typeof(AppRegistrationProvider))
     .WithSailDiff()
+    .WithScalefish()
     .WithLocalOutputDirectory("my_custom_directory")
     .Build();
 var result = await SailfishRunner.Run(settings);

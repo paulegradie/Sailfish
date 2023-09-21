@@ -3,7 +3,7 @@ using Sailfish.Extensions.Types;
 
 namespace Sailfish.Contracts.Public.Commands;
 
-internal class SailfishGetLatestExecutionSummaryCommand : IRequest<SailfishGetLatestExecutionSummaryResponse>
+public class SailfishGetLatestExecutionSummaryCommand : IRequest<SailfishGetLatestExecutionSummaryResponse>
 {
     public SailfishGetLatestExecutionSummaryCommand(
         string trackingDirectory,

@@ -1,30 +1,25 @@
 {
-  "_comment": "Sailfish adapter statistical test settings",
-  "TestSettings": {
-    "_comment": "Specify a test result directory",
-    "ResultsDirectory": "SailfishTestOutput",
-
+  "SailDiffSettings": {
     "_comment": "Specify a statistical test - default is: KolmogorovSmirnovTest",
     "_comment_options": "public enum TestType",
-    "_comment_options_values": ["TwoSampleWilcoxonSignedRankTest", "WilcoxonRankSumTest", "TTest", "KolmogorovSmirnovTest"],
+    "_comment_options_values": [
+      "TwoSampleWilcoxonSignedRankTest",
+      "WilcoxonRankSumTest",
+      "TTest",
+      "KolmogorovSmirnovTest"
+    ],
     "TestType": "TTest",
-
-    "_comment": "Specify a resolution - default is millisecond (ms)",
-    "_comment_options": "Options are: ns,us,ms,s,m",
-    "Resolution": "ms",
-
     "_comment": "Statistical test settings",
-    "Alpha": 0.05,
-    "Round": 2,
-    "UseOutlierDetection": true,
-    
+    "Alpha": 0.005,
     "_comment": "Disable analysis logic",
-    "Disabled": true,
-    
-    "_comment": "Disable overhead estimation when iterating test cases (better speed, worse accuracy",
-    "DisableOverheadEstimation": true,
-    
-    "_comment": "Disable Everything - internal use only :D",
-    "DisableEverything": true
-  }
+    "Disabled": false
+  },
+  "ScaleFishSettings": {},
+  "Round": 5,
+  "UseOutlierDetection": true,
+  "_comment": "Specify a test result directory",
+  "ResultsDirectory": "SailfishIDETestOutput",
+  "_comment": "Disable overhead estimation when iterating test cases (better speed, worse accuracy",
+  "DisableOverheadEstimation": false,
+  "DisableEverything": false
 }

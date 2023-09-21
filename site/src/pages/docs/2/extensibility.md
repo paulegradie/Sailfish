@@ -1,6 +1,7 @@
 ---
 title: Extensibility Commands
 ---
+## Introduction
 
 Sailfish exposes several public MediatR commands. Implement MediatR handlers for these commands to furhter customize Sailfish behavior.
 
@@ -109,7 +110,95 @@ public class NotifyOnTestResultCommand : INotification
 ```
 
 ---
+## SailfishGetLatestExecutionSummaryCommand
 
+- Used to specify the latest execution summary for both Saildiff and ScaleFish
+
+```csharp
+public class SailfishGetLatestExecutionSummaryCommand : IRequest<SailfishGetLatestExecutionSummaryResponse>
+{
+    public SailfishGetLatestExecutionSummaryCommand(
+        string trackingDirectory,
+        OrderedDictionary tags,
+        OrderedDictionary args)
+    {
+        TrackingDirectory = trackingDirectory;
+        Tags = tags;
+        Args = args;
+    }
+
+    public string TrackingDirectory { get; }
+    public OrderedDictionary Tags { get; }
+    public OrderedDictionary Args { get; }
+}
+```
+---
+
+## WriteCurrentScalefishResultCommand
+
+- Used to specify where to write ScaleFish markdown results to
+
+```csharp
+public class WriteCurrentScalefishResultCommand : INotification
+{
+    public WriteCurrentScalefishResultCommand(
+        string scalefishResultMarkdown,
+        string localOutputDirectory,
+        DateTime timeStamp,
+        OrderedDictionary tags,
+        OrderedDictionary args)
+    {
+        ScalefishResultMarkdown = scalefishResultMarkdown;
+        LocalOutputDirectory = localOutputDirectory;
+        TimeStamp = timeStamp;
+        Tags = tags;
+        Args = args;
+        DefaultFileName = DefaultFileSettings.DefaultScalefishFileName(timeStamp);
+    }
+
+    public string ScalefishResultMarkdown { get; }
+    public string LocalOutputDirectory { get; }
+    public DateTime TimeStamp { get; }
+    public OrderedDictionary Tags { get; }
+    public OrderedDictionary Args { get; }
+    public string DefaultFileName { get; }
+}
+```
+
+---
+## WriteCurrentScalefishResultModelsCommand
+
+- Used to specify where and how to write ScaleFish model results. This is a `json` file.
+
+```csharp
+public class WriteCurrentScalefishResultModelsCommand : INotification
+{
+    public WriteCurrentScalefishResultModelsCommand(
+        List<IScalefishClassModels> testClassComplexityResults,
+        string localOutputDirectory,
+        DateTime timeStamp,
+        OrderedDictionary tags,
+        OrderedDictionary args)
+    {
+        TestClassComplexityResults = testClassComplexityResults;
+        LocalOutputDirectory = localOutputDirectory;
+        TimeStamp = timeStamp;
+        Tags = tags;
+        Args = args;
+        DefaultFileName = DefaultFileSettings.DefaultScalefishModelFileName(timeStamp);
+    }
+
+    public List<IScalefishClassModels> TestClassComplexityResults { get; }
+    public string LocalOutputDirectory { get; }
+    public DateTime TimeStamp { get; }
+    public OrderedDictionary Tags { get; }
+    public OrderedDictionary Args { get; }
+    public string DefaultFileName { get; }
+}
+```
+
+
+---
 ## WriteCurrentTrackingFileCommand
 
 - **Default handler implemented**
