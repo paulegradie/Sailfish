@@ -92,7 +92,7 @@ public class MarkdownTableConverter : IMarkdownTableConverter
                 tableBuilder.AppendLine(methodGroup
                     .SelectMany(x => x.ScaleFishPropertyModels)
                     .ToStringTable(
-                        new List<string>() { "", "(best)", "", "", "(next best)", "", "" },
+                        new List<string>() { "", "", "", "", "", "", "" },
                         new List<string>() { "Variable", "BestFit", "BigO", "GoodnessOfFit", "NextBest", "NextBigO", "NextBestGoodnessOfFit" },
                         c => c.PropertyName,
                         c => c.ScalefishModel.ScaleFishModelFunction.Name,

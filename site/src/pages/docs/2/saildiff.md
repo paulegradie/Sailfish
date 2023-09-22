@@ -2,12 +2,97 @@
 title: SailDiff
 ---
 
-**SailDiff** is a tool for running automated statistical testing on Sailfish tracking data.
+## Introduction
 
-Add a .sailfish.json files to the test project to enable saildiff when running via the test adapter.
+**SailDiff** is a tool for running automated **before & after** statistical testing on Sailfish tracking data.
 
-When enabled, tracking data will be used for comparison to the current run and will produce a Saildiff outputs result file showing the before and after data, as well as a measure on whether or not the data is significantly different.
+When enabled, tracking data will be used for comparison to the current run and will produce various measurements describing the difference between two runs for each available test case. Depending on how you run Sailfish, SailDiff will presents its results either via StdOut, a test output window, or via an output file.
 
+## Enabling / Configuring SailDiff
+
+### Test Project / IDE
+
+If using Sailfish as a test project, you can create a `.sailfish.json` file in the root of your test project (next to your `.csproj` file). This file can hold various configuration settings. If any compatible setting is omitted, a sensible default will be used.
+
+**Example `.sailfish.json`**
+
+```json
+{
+  "SailDiffSettings": {
+    "TestType": "TTest",
+    "Alpha": 0.005,
+    "Disabled": false
+  },
+  "ScaleFishSettings": {},
+  "Round": 5,
+  "UseOutlierDetection": true,
+  "ResultsDirectory": "SailfishIDETestOutput",
+  "DisableOverheadEstimation": false,
+  "DisableEverything": false
+}
+```
+
+**Global Settings**
+
+- **Round** - Number of digits to round presented results. **Default: 5**
+- **UseOutlierDetection** - Remove outliers (includes test analysis). **Default: true**
+- **ResultsDirectory** - Specify a test result directory. **Default: SailfishIDETestOutput**
+- **DisableOverheadEstimation** - Disable overhead estimation when iterating test cases (better speed, worse accuracy. **Default: false**
+- **DisableEverything** - Disable all analysis features. **Default: false**
+
+**SailDiffSettings**
+
+- **TestType** - Specify a statistical test. **Default: TTest**
+
+  Note: Specifies an enum type. One of:
+
+  - TwoSampleWilcoxonSignedRankTest
+  - WilcoxonRankSumTest
+  - TTest
+  - KolmogorovSmirnovTest
+
+- **Alpha** - Threshold for significance detection. (Aka 'PValue threshold'). **Default: 0.005**
+- **Disabled** - Disable SailDiff. **Default: false**
+
+**ScaleFishSettings**
+
+- None
+
+#### Example IDE Output
+
+```
+Statistical Test
+----------------
+Test Used:       TTest
+PVal Threshold:  0.005
+PValue:          0.0528963431
+Change:          No Change  (reason: 0.0528963431 > 0.005)
+
+|             | Before (ms) | After (ms) |
+| ---         | ---         | ---        |
+| Mean        |     61.7671 |    55.0063 |
+| Median      |     62.3821 |    56.1542 |
+| Sample Size |          30 |         30 |
+```
+
+### Library
+
+You may use the `RunSettingsBuilder` to configure SailDiff before running.
+
+```csharp
+var settings = new SailfDiffSettings(
+    alpha: 0.001,
+    round = 3,
+    useOutlierDetection = false,
+    testType = TestType.TTest,
+    maxDegreeOfParallelism = 4,
+    disableOrdering = false);
+
+var settings = RunSettingsBuilder
+    .CreateBuilder()
+    .WithSailDiff(settings)
+    .Build();
+```
 
 ## Customizing the SailDiff inputs
 
@@ -26,23 +111,30 @@ This flow shows that there are two points at which you can minipulate the data i
 - IRequestHandler<BeforeAndAfterFileLocationCommand, BeforeAndAfterFileLocationResponse>
 - IRequestHandler<ReadInBeforeAndAfterDataCommand, ReadInBeforeAndAfterDataResponse>
 
-
-### Reading Tracking Data from a custom location
+### Reading Tracking Data from a Custom Location
 
 ```csharp
-internal class SailfishBeforeAndAfterFileLocationHandler : IRequestHandler<BeforeAndAfterFileLocationCommand, BeforeAndAfterFileLocationResponse>
+internal class SailfishBeforeAndAfterFileLocationHandler
+    : IRequestHandler<BeforeAndAfterFileLocationCommand, BeforeAndAfterFileLocationResponse>
 {
     private readonly ITrackingFileFinder trackingFileFinder;
 
-    public SailfishBeforeAndAfterFileLocationHandler(ITrackingFileFinder trackingFileFinder)
+    public SailfishBeforeAndAfterFileLocationHandler(
+        ITrackingFileFinder trackingFileFinder)
     {
         this.trackingFileFinder = trackingFileFinder;
     }
 
-    public Task<BeforeAndAfterFileLocationResponse> Handle(BeforeAndAfterFileLocationCommand request, CancellationToken cancellationToken)
+    public Task<BeforeAndAfterFileLocationResponse> Handle(
+        BeforeAndAfterFileLocationCommand request,
+        CancellationToken cancellationToken)
     {
-        var trackingFiles = trackingFileFinder.GetBeforeAndAfterTrackingFiles(request.DefaultDirectory, request.BeforeTarget, request.Tags);
+        var trackingFiles = trackingFileFinder.GetBeforeAndAfterTrackingFiles(
+            request.DefaultDirectory,
+            request.BeforeTarget,
+            request.Tags);
         // Consider reading data from a:
+        // - database
         // - cloud storage container
         // - cloud log processing tool
         // - network drive
@@ -56,15 +148,19 @@ internal class SailfishBeforeAndAfterFileLocationHandler : IRequestHandler<Befor
 
 ### Reading Tracking Data that you wish to aggregate prior to testing
 
-
 ```csharp
-internal class SailfishReadInBeforeAndAfterDataHandler : IRequestHandler<ReadInBeforeAndAfterDataCommand, ReadInBeforeAndAfterDataResponse>
+internal class SailfishReadInBeforeAndAfterDataHandler
+: IRequestHandler<ReadInBeforeAndAfterDataCommand, ReadInBeforeAndAfterDataResponse>
 {
-    public async Task<ReadInBeforeAndAfterDataResponse> Handle(ReadInBeforeAndAfterDataCommand request, CancellationToken cancellationToken)
+    public async Task<ReadInBeforeAndAfterDataResponse> Handle(
+        ReadInBeforeAndAfterDataCommand request,
+        CancellationToken cancellationToken)
     {
-
-        // When you return the data, you are also required to provide an IEnumerable<string> that represents the files that were used.
-        return new ReadInBeforeAndAfterDataResponse(new TestData(dataSourcesBefore, beforeData), new TestData(dataSourcesAfter, afterData));
+        // When you return the data, you are also required to
+        // provide an IEnumerable<string> that represents the files that were used.
+        return new ReadInBeforeAndAfterDataResponse(
+            new TestData(dataSourcesBefore, beforeData),
+             new TestData(dataSourcesAfter, afterData));
     }
 }
 ```

@@ -45,16 +45,14 @@ internal class TrackingFileParser : ITrackingFileParser
                 var serialized = await File.ReadAllTextAsync(trackingFile, cancellationToken);
                 var deserializedFile = trackingFileSerialization.Deserialize(serialized)?.ToList();
                 if (deserializedFile is null) throw new SerializationException();
-                if (deserializedFile.Any())
+                if (!deserializedFile.Any()) continue;
+                try
                 {
-                    try
-                    {
-                        trackingFormatData.Add(deserializedFile.ToSummaryFormat().ToList()); // only add if all files present succeed
-                    }
-                    catch (ArgumentException)
-                    {
-                        // failed to deserialize the file, but continue trying files
-                    }
+                    trackingFormatData.Add(deserializedFile.ToSummaryFormat().ToList()); // only add if all files present succeed
+                }
+                catch (ArgumentException)
+                {
+                    // failed to deserialize the file, but continue trying files
                 }
             }
 

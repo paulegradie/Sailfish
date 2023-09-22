@@ -56,19 +56,19 @@ internal class AdapterConsoleWriter : IAdapterConsoleWriter
                 if (!compiledResult.Exceptions.Any()) continue;
                 foreach (var exception in compiledResult.Exceptions)
                 {
-                    messageLogger?.SendMessage(TestMessageLevel.Error, exception.Message);
+                    WriteMessage(exception.Message, TestMessageLevel.Error);
                     consoleLogger.Error("{Error}", exception.Message);
 
                     if (exception.StackTrace == null) continue;
-                    messageLogger?.SendMessage(TestMessageLevel.Error, exception.StackTrace);
+                    WriteMessage(exception.StackTrace, TestMessageLevel.Error);
                     consoleLogger.Error("{StackTrace}", exception.Message);
 
                     if (exception.InnerException is null) continue;
-                    messageLogger?.SendMessage(TestMessageLevel.Error, exception.InnerException.Message);
+                    WriteMessage(exception.InnerException.Message, TestMessageLevel.Error);
                     consoleLogger.Error("{InnerError}", exception.InnerException.Message);
 
                     if (exception.InnerException.StackTrace == null) continue;
-                    messageLogger?.SendMessage(TestMessageLevel.Error, exception.InnerException.StackTrace);
+                    WriteMessage(exception.InnerException.StackTrace, TestMessageLevel.Error);
                     consoleLogger.Error("{InnerStackTrace}", exception.InnerException.StackTrace);
                 }
             }
@@ -84,7 +84,7 @@ internal class AdapterConsoleWriter : IAdapterConsoleWriter
             ideOutputContent = CreateIdeTestOutputWindowContent(summaryResults.Single().CompiledTestCaseResults.Single());
         }
 
-        messageLogger?.SendMessage(TestMessageLevel.Informational, ideOutputContent);
+        WriteMessage(ideOutputContent, TestMessageLevel.Informational);
         consoleLogger.Information("{MarkdownTable}", ideOutputContent);
 
         return ideOutputContent;
@@ -98,10 +98,9 @@ internal class AdapterConsoleWriter : IAdapterConsoleWriter
                     y.PerformanceRunResult?.RawExecutionResults ?? Array.Empty<double>()))
             .ToArray();
 
-        var markdownStringTable = markdownTableConverter.ConvertToMarkdownTableString(summaryResults)
+        return markdownTableConverter.ConvertToMarkdownTableString(summaryResults)
                                   + "Raw results: \n"
                                   + string.Join(", ", rawData);
-        return markdownStringTable;
     }
 
     private static string CreateIdeTestOutputWindowContent(ICompiledTestCaseResult testCaseResult)
@@ -120,9 +119,9 @@ internal class AdapterConsoleWriter : IAdapterConsoleWriter
 
         var momentTable = new List<Row>()
         {
-            new Row(Math.Round(results.Mean, 4), "Mean"),
-            new Row(Math.Round(results.Median, 4), "Median"),
-            new Row(Math.Round(results.StdDev, 4), "StdDev"),
+            new(Math.Round(results.Mean, 4), "Mean"),
+            new(Math.Round(results.Median, 4), "Median"),
+            new(Math.Round(results.StdDev, 4), "StdDev"),
             new(Math.Round(results.RawExecutionResults.Min(), 4), "Min"),
             new(Math.Round(results.RawExecutionResults.Max(), 4), "Max")
         };
@@ -171,7 +170,7 @@ internal class AdapterConsoleWriter : IAdapterConsoleWriter
         stringBuilder.AppendLine(markdownBody);
         var result = stringBuilder.ToString();
         consoleLogger.Information(result);
-        messageLogger?.SendMessage(TestMessageLevel.Informational, result);
+        WriteMessage(result, TestMessageLevel.Informational);
     }
 
     public string WriteTestResultsToIdeConsole(TestCaseResults testCaseResults, TestIds testIds, SailDiffSettings sailDiffSettings)
@@ -230,6 +229,14 @@ internal class AdapterConsoleWriter : IAdapterConsoleWriter
         return stringBuilder.ToString();
     }
 
+    private void WriteMessage(string message, TestMessageLevel messageLevel)
+    {
+        if (!string.IsNullOrEmpty(message))
+        {
+            messageLogger?.SendMessage(messageLevel, message);
+        }
+    }
+
     public void WriteString(string content)
     {
         WriteString(content, TestMessageLevel.Informational);
@@ -238,7 +245,7 @@ internal class AdapterConsoleWriter : IAdapterConsoleWriter
     public void WriteString(string content, TestMessageLevel messageLevel)
     {
         consoleLogger.Information(content);
-        messageLogger?.SendMessage(messageLevel, content);
+        WriteMessage(content, messageLevel);
     }
 
     public void RecordStart(TestCase testCase)
