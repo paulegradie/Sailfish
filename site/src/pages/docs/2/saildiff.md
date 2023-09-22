@@ -75,6 +75,14 @@ Change:          No Change  (reason: 0.0528963431 > 0.005)
 | Sample Size |          30 |         30 |
 ```
 
+#### Markdown
+
+| Display Name   | MeanBefore (N=7) | MeanAfter (N=7) | MedianBefore | MedianAfter | PValue  | Change Description |
+| -------------- | ---------------- | --------------- | ------------ | ----------- | ------- | ------------------ |
+| Example.Test() | 190.78 ms        | 191.35 ms       | 187.689 ms   | 186.9367 ms | 0.89023 | No Change          |
+
+The Mean and median are both presented alongside a PValue and Change description. The PValue is returned from the statistical test and compared to a user-set threshold to determine the change description.
+
 ### Library
 
 You may use the `RunSettingsBuilder` to configure SailDiff before running.

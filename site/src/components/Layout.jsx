@@ -23,35 +23,27 @@ const navigation = [
   {
     title: 'Sailfish Basics',
     links: [
-      {
-        title: 'Required Attributes',
-        href: '/docs/1/required-attributes',
-      },
-      {
-        title: 'Variables',
-        href: '/docs/1/sailfish-variables',
-      },
-      {
-        title: 'The Test Lifecycle',
-        href: '/docs/1/sailfish-test-lifecycle'
-      },
-      {
-        title: 'Test Dependencies',
-        href: '/docs/1/test-dependencies'
-      },
+      { title: 'Required Attributes', href: '/docs/1/required-attributes' },
+      { title: 'Variables', href: '/docs/1/sailfish-variables' },
+      { title: 'The Test Lifecycle', href: '/docs/1/sailfish-test-lifecycle' },
+      { title: 'Test Dependencies', href: '/docs/1/test-dependencies' },
       { title: 'Output Attributes', href: '/docs/1/output-attributes' },
-      { title: 'Features', href: '/docs/1/features' },
     ],
+  },
+  {
+    title: "Features",
+    links: [
+      { title: 'Sailfish', href: '/docs/2/sailfish' },
+      { title: 'SailDiff', href: '/docs/2/saildiff' },
+      { title: 'ScaleFish', href: '/docs/2/scalefish' },
+    ]
   },
   {
     title: 'Advanced Sailfish',
     links: [
-
-      { title: 'Extensibility', href: '/docs/2/extensibility' },
-      { title: 'SailDiff', href: '/docs/2/saildiff' },
-      { title: 'ScaleFish', href: '/docs/2/scalefish' },
-      { title: 'Which Test to Use', href: '/docs/2/which-test-to-use' },
-      { title: 'Example App', href: '/docs/2/example-app' },
+      { title: 'Extensibility', href: '/docs/3/extensibility' },
+      { title: 'Which Test to Use', href: '/docs/3/which-test-to-use' },
+      { title: 'Example App', href: '/docs/3/example-app' },
     ],
   }
 ]

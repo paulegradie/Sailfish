@@ -38,10 +38,7 @@ Apply the [SailfishMethod] attribute to a method you wish to time.
 
 ```csharp
 [SailfishMethod]
-public async Task SailfishMethod(CancellationToken cancellationToken)
-{
-    // This is where you place code you wish to be timed
-}
+public async Task SailfishMethod(CancellationToken ct) => ...
 ```
 ---
 

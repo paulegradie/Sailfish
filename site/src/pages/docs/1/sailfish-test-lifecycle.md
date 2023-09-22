@@ -15,80 +15,73 @@ For each test case, the test lifecycle is as follows:
 1. SailfishMethod
 1. IterationTeardown (return to `SailfishIterationSetup` when SampleSize > 1)
 1. MethodTeardown (return to `SailfishMethodSetup` when Method count > 1)
+1. GlobalTeardown (once per class)
 
 ## Lifecycle Method Attributes
 
 Sailfish exposes six (6) lifecycle attributes that give you fine-grain control within your test class. Below are methods that demonstrate how to use each lifecycle method:
 
-### The setup phase
+### The Setup Phase
 
 ```csharp
 [SailfishGlobalSetup]
-public async Task GlobalSetup(CancellationToken ct)
-{
-  // This will be called once at the beginning
-  // of all test cases produced from the test class
-}
+public async Task GlobalSetup(CancellationToken ct) => ...
+// called once per test class at the beginning of execution
 ```
 
 ```csharp
 [SailfishMethodSetup]
-public async Task MethodSetup(CancellationToken ct)
-{
-    // This will be called once BEFORE
-    // each method inside the test class
-}
+public async Task MethodSetup(CancellationToken ct) => ...
+// called once before each test method per variable set
 ```
 
 ```csharp
 [SailfishIterationSetup]
-public async Task IterationSetup(CancellationToken ct)
-{
-    // This will be called once BEFORE each invocation of
-    // a test method. So, if you have define SampleSize = 3
-    // in your `Sailfish` class attribute, this will be
-    // invoked before each of the 3 test method invocations
-}
+public async Task IterationSetup(CancellationToken ct) => ...
+// called once before each test method invocation
 ```
-
+---
 ### The Teardown Phase
 
 ```csharp
 [SailfishIterationTeardown]
-public async Task IterationTeardown(CancellationToken ct)
-{
-    // This will be called once AFTER each invocation of
-    // a test method. So, if you have define SampleSize = 3
-    //  in your `Sailfish` class attribute, this will be
-    // invoked after each of the 3 test method invocations
-}
+public async Task IterationTeardown(CancellationToken ct) => ...
+// called once after each test method invocation
 ```
 
 ```csharp
 [SailfishMethodTeardown]
-public async Task ExecutionMethodTeardown(CancellationToken ct)
-{
-    // This will be called once AFTER each method
-    // inside the test class
-}
+public async Task MethodTeardown(CancellationToken ct) => ...
+// called once after each test method per variable set
 ```
 
 ```csharp
 [SailfishGlobalTeardown]
-public async Task GlobalTeardown(CancellationToken ct)
-{
-    // This will be called once at the end of all
-    // test cases produced from the test class
-}
+public async Task GlobalTeardown(CancellationToken ct) => ...
+// called once per test class - at the end of all execution
 ```
 ---
 ## Multiple Lifecycle methods
 
-Sailfish supports multiple of the same lifecycle method implemented in the same class. The order of execution within a given class is not guaranteed, however methods implemented in base classes will always be executed before child class methods.
+You may implement more than of any lifecycle method. The order of execution within a given class is not guaranteed, however methods implemented in base classes will always be executed before child class methods.
 
 ## Targeting Specific SailfishMethods
 
 You can optionally provide a params array of method names to the iteration or method setup / teardown lifecycle methods to taget specific SailfishMethods. If no names are provided, the lifecycle method is applied to all methods.
+
+```csharp
+[SailfishMethodSetup(nameof(TestMethod))]  <-- method name
+public async Task MethodSetup(CancellationToken ct) => ...
+
+[SailfishMethod]
+public void TestMethod() => ...
+
+```
+You may do this with:
+- **SailfishMethodSetup**
+- **SailfishMethodTeardown**
+- **SailfishIterationSetup**
+- **SailfishIterationTeardown**
 
 ## Property and Field Management
 
