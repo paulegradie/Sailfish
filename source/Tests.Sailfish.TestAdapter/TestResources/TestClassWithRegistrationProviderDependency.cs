@@ -2,7 +2,7 @@ using Sailfish.Attributes;
 
 namespace Tests.Sailfish.TestAdapter.TestResources;
 
-[Sailfish(Disabled = false)]
+[Sailfish(Disabled = false, DisableOverheadEstimation = true)]
 public class TestClassWithRegistrationProviderDependency
 {
     private readonly GenericDependency<AnyType> genericDependency;
