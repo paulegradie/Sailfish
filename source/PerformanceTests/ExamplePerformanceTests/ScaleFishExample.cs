@@ -9,6 +9,7 @@ namespace PerformanceTests.ExamplePerformanceTests;
 [Sailfish(SampleSize = 2, Disabled = false)]
 public class ScaleFishExample
 {
+    // [SailfishVariable(true, 1, 2, 3, 4)]
     [SailfishRangeVariable(true, start: 5, 4, 6)]
     public int N { get; set; }
 

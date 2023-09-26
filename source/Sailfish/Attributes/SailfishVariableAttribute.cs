@@ -1,6 +1,8 @@
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.Linq;
 using Sailfish.Exceptions;
 
 namespace Sailfish.Attributes;
@@ -40,10 +42,10 @@ public sealed class SailfishVariableAttribute : Attribute, ISailfishVariableAttr
     /// <summary>
     /// Initializes a new instance of the <see cref="SailfishVariableAttribute"/> class with the specified values and the option to best fit the test method to a complexity curve.
     /// </summary>
-    /// <param name="scaleFish">Boolean to enable complexity extimate feature</param>
+    /// <param name="scaleFish">Boolean to enable complexity estimate feature</param>
     /// <param name="n">A params array of values to be used as variables within the test.</param>
     /// <exception cref="SailfishException">Thrown when no values are provided.</exception>
-    public SailfishVariableAttribute(bool scaleFish, [MinLength(3)] params int[] n) : this(n)
+    public SailfishVariableAttribute(bool scaleFish, [MinLength(3)] params int[] n) : this(n.Cast<object>().ToArray())
     {
         UseScalefish = scaleFish;
     }
