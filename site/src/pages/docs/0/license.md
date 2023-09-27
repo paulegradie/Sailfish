@@ -2,7 +2,7 @@
 title: License
 ---
 
-Sailfish is [MIT licensed](./LICENSE).
+Sailfish is [MIT licensed](https://opensource.org/license/mit/).
 
 ## Acknowledgements
 

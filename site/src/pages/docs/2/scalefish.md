@@ -59,13 +59,14 @@ var settings = RunSettingsBuilder
     .WithScaleFish()
     .Build();
 ```
+
 ## Results
 
-**Test Class: SailfishFixtureExample**
+**Test Class: ScaleFishExample**
 
-| Variable              | BestFit      | BigO       | GoodnessOfFit | NextBest           | NextBigO | NextBestGoodnessOfFit |
-| --------------------- | ------------ | ---------- | ------------- | ------------------ | -------- | --------------------- |
-| Example.Test.Variable | SqrtN (best) | O(sqrt(n)) | 0.81442892    | Linear (next best) | O(n)     | 0.7316056             |
+| Variable                  | BestFit | BigO | GoodnessOfFit      | NextBest | NextBigO   | NextBestGoodnessOfFit |
+| ------------------------- | ------- | ---- | ------------------ | -------- | ---------- | --------------------- |
+| ScaleFishExample.Linear.N | Linear  | O(n) | 0.9994126639733568 | NLogN    | O(nLog(n)) | 0.9942376556590526    |
 
 For each variable, all other variables will be held constant at their smallest scale. For each parameterized function, regression will be performed to fit the model to the data. For each resulting model, a goodness of fit is calculated and best two fitting models are returned. Using this result, you can guadge the general complexity of the logic inside the SailfishMethod.
 
@@ -76,36 +77,36 @@ In addition, a model file is produced with content similar to:
 ```json
 [
   {
-    "TestClassName": "Example",
+    "TestClassName": "ScaleFishExample",
     "ScaleFishMethodModels": [
       {
-        "TestMethodName": "Test",
+        "TestMethodName": "Linear",
         "ScaleFishPropertyModels": [
           {
-            "PropertyName": "Example.Test.Variable",
+            "PropertyName": "ScaleFishExample.Linear.N",
             "ScalefishModel": {
               "ScaleFishModelFunction": {
-                "Name": "SqrtN",
-                "OName": "O(sqrt(n))",
-                "Quality": "Okay",
-                "FunctionDef": "f(x) = {0}sqrt(x) + {1}",
-                "FunctionParameters": {
-                  "Scale": 1.0749999999999997,
-                  "Bias": 1.0750000000000004e-5
-                }
-              },
-              "GoodnessOfFit": 0.8144289259547902,
-              "NextClosestScaleFishModelFunction": {
                 "Name": "Linear",
                 "OName": "O(n)",
                 "Quality": "Good",
-                "FunctionDef": "f(x) = {0}x + {1}",
+                "FunctionDef": "f(x) = {0}x \u002B {1}",
                 "FunctionParameters": {
-                  "Scale": 1.0749999999999997,
-                  "Bias": 1.0750000000000004e-5
+                  "Scale": 12.567931794629985,
+                  "Bias": 8.049917490507069
                 }
               },
-              "NextClosestGoodnessOfFit": 0.7316056315214764
+              "GoodnessOfFit": 0.9994126639733568,
+              "NextClosestScaleFishModelFunction": {
+                "Name": "NLogN",
+                "OName": "O(nLog(n))",
+                "Quality": "Good",
+                "FunctionDef": "f(x) = {0}xLog_e(x) \u002B {1}",
+                "FunctionParameters": {
+                  "Scale": 2.8717369653838825,
+                  "Bias": 76.81277766854257
+                }
+              },
+              "NextClosestGoodnessOfFit": 0.9942376556590526
             }
           }
         ]
@@ -120,17 +121,15 @@ In addition, a model file is produced with content similar to:
 Sailfish provides basic tools for loading models and making predictions.
 
 ```csharp
-var file = "Path/To/Your/Model/File.json
 var model = ModelLoader
-  .LoadModelFile(file)
+  .LoadModelFile("ScalefishModels_#####_####.json")
   .GetScalefishModel(
-    nameof(Example),
-     nameof(ScaleFishExample.Test),
-      nameof(ScaleFishExample.Variable));
+    nameof(ScaleFishExample),
+    nameof(ScaleFishExample.Linear),
+    nameof(ScaleFishExample.N));
 
 var result = model.ScaleFishModelFunction.Predict(50_000);
 Console.WriteLine(result);
-
 ```
 
 For a working example, [visit the demo](https://github.com/paulegradie/Sailfish/blob/main/source/ModelPredictions/Program.cs).

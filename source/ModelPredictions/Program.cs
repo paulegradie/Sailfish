@@ -11,9 +11,7 @@ Console.WriteLine("\nThis demo shows you how run Scalefish, load a model file, a
 const string outputDir = "demo_results";
 
 // load models
-var loaded = await LoadAModelFile(Path.Join(Directory.GetCurrentDirectory(), outputDir));
-var model = loaded.GetScalefishModel(nameof(ScaleFishExample), nameof(ScaleFishExample.Quadratic), nameof(ScaleFishExample.N));
-if (model is null) throw new Exception("Could not load model - is your method disabled?");
+var model = await LoadAModelFile(Path.Join(Directory.GetCurrentDirectory(), outputDir));
 Console.Clear();
 
 // make predictions
@@ -27,13 +25,16 @@ foreach (var val in nValues)
 }
 
 // print some details
-async Task<IEnumerable<ScalefishClassModel>> LoadAModelFile(string rootDir)
+async Task<ScalefishModel> LoadAModelFile(string rootDir)
 {
     try
     {
         var file = Directory.GetFiles(rootDir, "ScalefishModels*").LastOrDefault();
         if (file is null) throw new Exception("Run a Sailfish test with a variable with multiple values and enable complexity for that variable to produce a Scalefish model file");
-        return ModelLoader.LoadModelFile(file);
+        var loaded = ModelLoader.LoadModelFile(file);
+        var model = loaded.GetScalefishModel(nameof(ScaleFishExample), nameof(ScaleFishExample.Linear), nameof(ScaleFishExample.N));
+        if (model is null) throw new Exception("Could not load model - is your method disabled?");
+        return model;
     }
     catch
     {
@@ -46,15 +47,15 @@ async Task<IEnumerable<ScalefishClassModel>> LoadAModelFile(string rootDir)
             .WithLocalOutputDirectory(outputDir)
             .Build());
 
-        Thread.Sleep(10000);
+        Thread.Sleep(5000);
         Console.WriteLine("\nHows your day going?");
-        Thread.Sleep(25000);
-        Console.WriteLine("\nThis won't take too much longer...");
         Thread.Sleep(10000);
+        Console.WriteLine("\nThis won't take too much longer...");
+        Thread.Sleep(5000);
         Console.WriteLine("\nOnce this finishes, the model will load and print out some predictions...");
 
         var res = await runTask;
         if (!res.IsValid) throw new Exception("Sailfish run failed. No Scalefish models produced");
-        return await LoadAModelFile(Directory.GetCurrentDirectory());
+        return await LoadAModelFile(rootDir);
     }
 }
