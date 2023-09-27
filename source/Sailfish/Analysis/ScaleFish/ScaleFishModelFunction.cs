@@ -62,10 +62,10 @@ public abstract class ScaleFishModelFunction : IScaleFishModelFunction
         return new FitnessResult(0, 9999999999, 999999999, 999999999, 999999999, 999999999);
     }
 
-    public double Predict(int n)
+    public double Predict(int x)
     {
         if (FunctionParameters is null) throw new SailfishModelException("This model has not yet been fit!");
-        return Compute(n, FunctionParameters.Scale, FunctionParameters.Bias);
+        return Compute(FunctionParameters.Bias, FunctionParameters.Scale, x);
     }
 
     private IEnumerable<double> CreateFittedCurveData(IEnumerable<double> referenceXs, FittedCurve curveParams)

@@ -13,5 +13,5 @@ public interface IScaleFishModelFunction
     public FittedCurve? FunctionParameters { get; set; }
 
     FitnessResult AnalyzeFitness(IEnumerable<ComplexityMeasurement> validationData);
-    public double Predict(int n);
+    public double Predict(int x);
 }
