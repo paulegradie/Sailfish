@@ -21,7 +21,6 @@ public class ComplexityEstimator : IComplexityEstimator
             }
             catch
             {
-                ;
                 // ignore this complexity - too difficult to converge - find the next best curve to explain the data
             }
         }
