@@ -21,13 +21,14 @@ public class ComplexityEstimator : IComplexityEstimator
             }
             catch
             {
+                ;
                 // ignore this complexity - too difficult to converge - find the next best curve to explain the data
             }
         }
 
         var orderedFitnessResults = fitnessResults
             .Where(x => x.Item2.IsValid)
-            .OrderByDescending(x => x.Item2.Ssd)
+            .OrderBy(x => x.Item2.Ssd)
             .ToList();
 
         var closestComplexity = orderedFitnessResults[0];
