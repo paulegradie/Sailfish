@@ -2,13 +2,13 @@ namespace Sailfish.Analysis.ScaleFish.ComplexityFunctions;
 
 public class Factorial : ScaleFishModelFunction
 {
-    public override double Compute(double n, double scale, double bias)
+    public override double Compute(double bias, double scale, double x)
     {
-        if (n <= 1)
+        if (x <= 1)
             return scale * 1 + bias;
 
         double result = 1;
-        for (var i = 2; i <= n; i++)
+        for (var i = 2; i <= x; i++)
         {
             result *= i;
         }

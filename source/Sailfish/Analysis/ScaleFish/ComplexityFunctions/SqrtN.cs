@@ -4,9 +4,9 @@ namespace Sailfish.Analysis.ScaleFish.ComplexityFunctions;
 
 public class SqrtN : ScaleFishModelFunction
 {
-    public override double Compute(double n, double scale, double bias)
+    public override double Compute(double bias, double scale, double x)
     {
-        return scale * Math.Sqrt(n) + bias;
+        return scale * Math.Sqrt(x) + bias;
     }
 
     public override string Name { get; set; } = nameof(SqrtN);

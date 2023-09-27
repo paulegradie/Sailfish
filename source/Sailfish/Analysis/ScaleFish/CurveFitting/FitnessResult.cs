@@ -4,10 +4,35 @@ public class FitnessResult
 {
     public double RSquared { get; }
     public double RMSE { get; }
+    public double Mae { get; }
+    public double Sad { get; }
+    public double Ssd { get; }
+    public double Mse { get; }
 
-    public FitnessResult(double rSquared, double rmse)
+    public bool IsValid { get; set; }
+
+    public FitnessResult(
+        double rSquared,
+        double rmse,
+        double mae,
+        double sad,
+        double ssd,
+        double mse)
     {
         RSquared = rSquared;
         RMSE = rmse;
+        Mae = mae;
+        Sad = sad;
+        Ssd = ssd;
+        Mse = mse;
+
+        if (double.IsNaN(rSquared) || double.IsNaN(rmse) || double.IsNaN(mae) || double.IsNaN(sad) || double.IsNaN(ssd) || double.IsNaN(mse))
+        {
+            IsValid = false;
+        }
+        else
+        {
+            IsValid = true;
+        }
     }
 }

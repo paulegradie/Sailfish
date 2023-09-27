@@ -14,14 +14,14 @@ public class FitnessCalculator : IFitnessCalculator
         var xValues = observations.Select(x => x.X).ToArray();
         var yValues = observations.Select(x => x.Y).ToArray();
 
-        var (scale, bias) = Fit.Curve(
+        var (bias, scale) = Fit.Curve(
             xValues,
             yValues,
             aFunc,
+            yValues.Min(),
             1.0,
-            0.00001,
-            maxIterations: 10_000,
-            tolerance: 1E-04D);
+            maxIterations: 5000,
+            tolerance: 1E-08);
 
         return new FittedCurve(scale, bias);
     }
@@ -38,12 +38,24 @@ public class FitnessCalculator : IFitnessCalculator
             throw new ArgumentException("The length of the fittedValues array must match the length of the original data array.");
         }
 
-        // Calculate R-squared to evaluate goodness of fit
-        var rSquared = GoodnessOfFit.RSquared(modeledValues, observedValues);
+        var rSquared = RSquared(modeledValues, observedValues);
+        var rmse = RMSE(modeledValues, observedValues);
+        var meanAbsoluteError = Distance.MAE(modeledValues, observedValues);
+        var sumOfAbsoluteDistance = Distance.SAD(modeledValues, observedValues);
+        var sumOfSquaredDistance = Distance.SSD(modeledValues, observedValues);
+        var meanSquaredError = Distance.MSE(modeledValues, observedValues);
 
-        // Calculate root mean square error (RMSE) to evaluate goodness of fit
-        var rmse = Math.Sqrt(observedValues.Zip(modeledValues, (y, yFit) => Math.Pow(y - yFit, 2)).Sum() / n);
-
-        return new FitnessResult(rSquared, rmse);
+        return new FitnessResult(
+            rSquared,
+            rmse,
+            meanAbsoluteError,
+            sumOfAbsoluteDistance,
+            sumOfSquaredDistance,
+            meanSquaredError);
     }
+
+    private static double RSquared(double[] modeledValues, double[] observedValues) => GoodnessOfFit.RSquared(modeledValues, observedValues);
+
+    private static double RMSE(double[] modeledValues, double[] observedValues) =>
+        Math.Sqrt(observedValues.Zip(modeledValues, (y, yFit) => Math.Pow(y - yFit, 2)).Sum() / observedValues.Length);
 }

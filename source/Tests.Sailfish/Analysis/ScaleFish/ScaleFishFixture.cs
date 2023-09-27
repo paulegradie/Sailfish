@@ -6,9 +6,9 @@ using Sailfish.Analysis.ScaleFish.ComplexityFunctions;
 using Shouldly;
 using Xunit;
 
-namespace Test.ComplexityEstimation;
+namespace Test.Analysis.ScaleFish;
 
-public class ComplexityEstimatorFixture
+public class ScaleFishFixture
 {
     [Fact]
     public void EstimatorFindsCorrectComplexity_Linear()
@@ -64,7 +64,7 @@ public class ComplexityEstimatorFixture
         new ComplexityEstimator().EstimateComplexity(GetMeasurements<TComplexityFunction>()).ScaleFishModelFunction.Name.ShouldBe(typeof(TComplexityFunction).Name);
     }
 
-    static ComplexityMeasurement[] GetMeasurements<TComplexityFunction>() where TComplexityFunction : ScaleFishModelFunction
+    private static ComplexityMeasurement[] GetMeasurements<TComplexityFunction>() where TComplexityFunction : ScaleFishModelFunction
     {
         var constructor = typeof(TComplexityFunction)
             .GetConstructors(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)
@@ -77,7 +77,7 @@ public class ComplexityEstimatorFixture
         var measurements = Enumerable.Range(2, 11)
             .Select(Convert.ToDouble)
             .Select(x => x * 3)
-            .Select(i => new ComplexityMeasurement(i, instance.Compute(i, scale, bias)))
+            .Select(i => new ComplexityMeasurement(i, instance.Compute(bias, scale, i)))
             .ToArray();
         return measurements;
     }

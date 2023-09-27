@@ -4,9 +4,9 @@ namespace Sailfish.Analysis.ScaleFish.ComplexityFunctions;
 
 public class Cubic : ScaleFishModelFunction
 {
-    public override double Compute(double n, double scale, double bias)
+    public override double Compute(double bias, double scale, double x)
     {
-        return scale * Math.Pow(n, 3) + bias;
+        return (scale * Math.Pow(x, 3)) + bias;
     }
 
     public override string Name { get; set; } = nameof(Cubic);
