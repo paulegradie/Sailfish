@@ -2,9 +2,9 @@ namespace Sailfish.Analysis.ScaleFish.ComplexityFunctions;
 
 public class Linear : ScaleFishModelFunction
 {
-    public override double Compute(double n, double scale, double bias)
+    public override double Compute(double bias, double scale, double x)
     {
-        return scale * n + bias;
+        return scale * x + bias;
     }
 
     public override string Quality { get; set; } = "Good";

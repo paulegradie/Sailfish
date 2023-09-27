@@ -26,7 +26,7 @@ public abstract class ScaleFishModelFunction : IScaleFishModelFunction
     // ReSharper disable once MemberCanBePrivate.Global
     [JsonIgnore] public IFitnessCalculator FitnessCalculator { get; set; } // leave this public for testing. Gross, but willing to accept
 
-    public abstract double Compute(double n, double scale, double bias);
+    public abstract double Compute(double bias, double scale, double x);
 
     public FitnessResult AnalyzeFitness(IEnumerable<ComplexityMeasurement> validationData)
     {
@@ -59,7 +59,7 @@ public abstract class ScaleFishModelFunction : IScaleFishModelFunction
             ;
         }
 
-        return new FitnessResult(0, 9999999999);
+        return new FitnessResult(0, 9999999999, 999999999, 999999999, 999999999, 999999999);
     }
 
     public double Predict(int n)
@@ -70,7 +70,7 @@ public abstract class ScaleFishModelFunction : IScaleFishModelFunction
 
     private IEnumerable<double> CreateFittedCurveData(IEnumerable<double> referenceXs, FittedCurve curveParams)
     {
-        return referenceXs.Select(x => Compute(x, curveParams.Scale, curveParams.Bias)).ToArray();
+        return referenceXs.Select(x => Compute(curveParams.Bias, curveParams.Scale, x)).ToArray();
     }
 
     public override string ToString()

@@ -1,12 +1,10 @@
-using System;
-
 namespace Sailfish.Analysis.ScaleFish.ComplexityFunctions;
 
 public class Quadratic : ScaleFishModelFunction
 {
-    public override double Compute(double n, double scale, double bias)
+    public override double Compute(double bias, double scale, double x)
     {
-        return scale * Math.Pow(n, 2) + bias;
+        return scale * (x * x) + bias;
     }
 
     public override string Name { get; set; } = nameof(Quadratic);

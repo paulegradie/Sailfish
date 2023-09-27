@@ -26,16 +26,9 @@ public class ComplexityEstimator : IComplexityEstimator
         }
 
         var orderedFitnessResults = fitnessResults
-            .OrderByDescending(x => x.Item2.RSquared)
+            .Where(x => x.Item2.IsValid)
+            .OrderBy(x => x.Item2.Ssd)
             .ToList();
-
-        // sometimes RSquared is about 1 for multiple curves, so we fall back to the RMSE which will be different
-        const double tolerance = 1e-6;
-        if (Math.Abs(orderedFitnessResults[0].Item2.RSquared - orderedFitnessResults[1].Item2.RSquared) < tolerance)
-        {
-            // reorder the top 3 to ensure there is no general confusion
-            orderedFitnessResults = orderedFitnessResults.Take(3).OrderBy(x => x.Item2.RMSE).ToList();
-        }
 
         var closestComplexity = orderedFitnessResults[0];
         var nextClosestComplexity = orderedFitnessResults[1];

@@ -4,9 +4,9 @@ namespace Sailfish.Analysis.ScaleFish.ComplexityFunctions;
 
 public class LogLinear : ScaleFishModelFunction
 {
-    public override double Compute(double n, double scale, double bias)
+    public override double Compute(double bias, double scale, double x)
     {
-        return scale * (n * Math.Log(n, 2)) + bias;
+        return scale * (x * Math.Log(x, 2)) + bias;
     }
 
     public override string Name { get; set; } = nameof(LogLinear);
