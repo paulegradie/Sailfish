@@ -6,7 +6,7 @@ namespace Sailfish.TestAdapter.TestSettingsParser;
 #pragma warning disable CS8618
 public class SailfishSettings
 {
-    public SailDiffSettings SailDiffSettings { get; set; }
+    public SailDiffSettings SailDiffSettings { get; set; } = new();
 
     [JsonPropertyName("ResultsDirectory")] public string ResultsDirectory { get; set; }
 

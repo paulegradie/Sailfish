@@ -22,8 +22,8 @@ public class SailDiffSettings
         DisableOrdering = disableOrdering;
     }
 
-    public double Alpha { get; private set; }
-    public int Round { get; private set; }
+    public double Alpha { get; private set; } = 0.001;
+    public int Round { get; private set; } = 5;
     public bool UseOutlierDetection { get; private set; }
     public TestType TestType { get; private set; }
     public int MaxDegreeOfParallelism { get; private set; }
