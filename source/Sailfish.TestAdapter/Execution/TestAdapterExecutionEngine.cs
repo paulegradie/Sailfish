@@ -44,7 +44,7 @@ internal class TestAdapterExecutionEngine : ITestAdapterExecutionEngine
         SailDiffSettings? testSettings,
         CancellationToken cancellationToken)
     {
-        var rawExecutionResults = new List<(string, RawExecutionResult)>();
+        var rawExecutionResults = new List<(string, TestClassResultGroup)>();
         var testCaseGroups = testCases.GroupBy(testCase => testCase.GetPropertyHelper(SailfishManagedProperty.SailfishTypeProperty));
 
         foreach (var unsortedTestCaseGroup in testCaseGroups)
@@ -66,7 +66,7 @@ internal class TestAdapterExecutionEngine : ITestAdapterExecutionEngine
             // new up / reset a memory cache to hold class property values when transferring them between instances
             var memoryCache = new MemoryCache(MemoryCacheName);
 
-            var groupResults = new List<TestExecutionResult>();
+            var groupResults = new List<TestCaseExecutionResult>();
             for (var i = 0; i < providerForCurrentTestCases.Count; i++)
             {
                 var testProvider = providerForCurrentTestCases[i];
@@ -85,7 +85,7 @@ internal class TestAdapterExecutionEngine : ITestAdapterExecutionEngine
                 groupResults.AddRange(results);
             }
 
-            rawExecutionResults.Add((groupKey, new RawExecutionResult(testType, groupResults)));
+            rawExecutionResults.Add((groupKey, new TestClassResultGroup(testType, groupResults)));
         }
 
         return classExecutionSummaryCompiler

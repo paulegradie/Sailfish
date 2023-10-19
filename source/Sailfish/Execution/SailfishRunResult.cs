@@ -17,13 +17,8 @@ public class SailfishRunResult
     public IEnumerable<Exception>? Exceptions { get; }
     public IEnumerable<IClassExecutionSummary> ExecutionSummaries { get; set; }
 
-    public static SailfishRunResult CreateValidResult(IEnumerable<IClassExecutionSummary> executionSummaries)
+    public static SailfishRunResult CreateResult(IEnumerable<IClassExecutionSummary> executionSummaries, List<Exception> exceptions)
     {
-        return new SailfishRunResult(true, executionSummaries);
-    }
-
-    public static SailfishRunResult CreateInvalidResult(IEnumerable<Exception> exceptions)
-    {
-        return new SailfishRunResult(false, new List<ClassExecutionSummary>(), exceptions);
+        return new SailfishRunResult(!exceptions.Any(), executionSummaries, exceptions);
     }
 }

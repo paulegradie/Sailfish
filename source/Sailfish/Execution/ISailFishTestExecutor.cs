@@ -7,7 +7,7 @@ namespace Sailfish.Execution;
 
 internal interface ISailFishTestExecutor
 {
-    Task<List<RawExecutionResult>> Execute(
+    Task<List<TestClassResultGroup>> Execute(
         IEnumerable<Type> testTypes,
         CancellationToken cancellationToken = default);
 }

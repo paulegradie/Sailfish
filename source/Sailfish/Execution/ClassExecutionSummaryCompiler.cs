@@ -16,66 +16,54 @@ internal class ClassExecutionSummaryCompiler : IClassExecutionSummaryCompiler
         this.statsCompiler = statsCompiler;
     }
 
-    public IEnumerable<IClassExecutionSummary> CompileToSummaries(IEnumerable<RawExecutionResult> rawExecutionResults, CancellationToken cancellationToken)
+    public IEnumerable<IClassExecutionSummary> CompileToSummaries(IEnumerable<TestClassResultGroup> rawExecutionResults, CancellationToken cancellationToken)
     {
         return rawExecutionResults.Select(rawExecutionResult => IterateExecutionResults(rawExecutionResult, cancellationToken)).ToList();
     }
 
-    private IClassExecutionSummary IterateExecutionResults(RawExecutionResult rawExecutionResult, CancellationToken cancellationToken)
+    private IClassExecutionSummary IterateExecutionResults(TestClassResultGroup testClassResultGroup, CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
         var compiledResults = new List<ICompiledTestCaseResult>();
-
-        if (rawExecutionResult.ExecutionResults != null)
+        foreach (var testClassExecutionResult in testClassResultGroup.ExecutionResults)
         {
-            foreach (var testExecutionResult in rawExecutionResult.ExecutionResults)
-            {
-                CompileTestResult(testExecutionResult, compiledResults);
-            }
-
-            return new ClassExecutionSummary(rawExecutionResult.TestType, compiledResults);
+            var compiledResult = CompileTestResult(testClassExecutionResult, compiledResults);
+            compiledResults.Add(compiledResult);
         }
 
-        if (!rawExecutionResult.Exceptions.Any()) return new ClassExecutionSummary(rawExecutionResult.TestType, new List<ICompiledTestCaseResult>() { });
-        var compiledResult = new CompiledTestCaseResult(rawExecutionResult.Exceptions);
-        return new ClassExecutionSummary(rawExecutionResult.TestType, new List<ICompiledTestCaseResult>() { compiledResult });
+        return new ClassExecutionSummary(testClassResultGroup.TestClass, compiledResults);
     }
 
-    private void CompileTestResult(TestExecutionResult testExecutionResult, ICollection<ICompiledTestCaseResult> compiledResults)
+    private CompiledTestCaseResult CompileTestResult(TestCaseExecutionResult testCaseExecutionResult, ICollection<ICompiledTestCaseResult> compiledResults)
     {
-        if (testExecutionResult.IsSuccess)
+        if (!testCaseExecutionResult.IsSuccess)
         {
-            if (testExecutionResult is { PerformanceTimerResults.IsValid: false, IsSuccess: true })
-            {
-                var message = $"Somehow " +
-                              $"the test exception was successful, but the performance " +
-                              $"timer was invalid for test: {testExecutionResult.TestInstanceContainer?.TestCaseId.DisplayName}";
-                throw new SailfishException(message);
-            }
-
-            var descriptiveStatistics = ComputeStatistics(testExecutionResult, testExecutionResult.ExecutionSettings ?? new ExecutionSettings());
-            var compiledResult = new CompiledTestCaseResult(
-                testExecutionResult.TestInstanceContainer?.TestCaseId!,
-                testExecutionResult.TestInstanceContainer?.GroupingId!,
-                descriptiveStatistics);
-
-            if (testExecutionResult.Exception is not null)
-            {
-                compiledResult.Exceptions.Add(testExecutionResult.Exception);
-            }
-
-            compiledResults.Add(compiledResult);
+            return new CompiledTestCaseResult(testCaseExecutionResult.Exception ?? new SailfishException("Encountered test failure but could not find an exception"));
         }
-        else
+
+        if (testCaseExecutionResult is { PerformanceTimerResults.IsValid: false, IsSuccess: true })
         {
-            if (testExecutionResult.Exception is null) return;
-            var compiledResult = new CompiledTestCaseResult(testExecutionResult.Exception);
-            compiledResults.Add(compiledResult);
-            // if we have a failure, but no exception -- we have no information to report
+            var message = $"Somehow " +
+                          $"the test exception was successful, but the performance " +
+                          $"timer was invalid for test: {testCaseExecutionResult.TestInstanceContainer?.TestCaseId.DisplayName}";
+            throw new SailfishException(message);
         }
+
+        var descriptiveStatistics = ComputeStatistics(testCaseExecutionResult, testCaseExecutionResult.ExecutionSettings ?? new ExecutionSettings());
+        var compiledResult = new CompiledTestCaseResult(
+            testCaseExecutionResult.TestInstanceContainer?.TestCaseId!,
+            testCaseExecutionResult.TestInstanceContainer?.GroupingId!,
+            descriptiveStatistics);
+
+        if (testCaseExecutionResult.Exception is not null)
+        {
+            compiledResult.Exceptions.Add(testCaseExecutionResult.Exception);
+        }
+
+        return compiledResult;
     }
 
-    private PerformanceRunResult ComputeStatistics(TestExecutionResult result, IExecutionSettings executionSettings)
+    private PerformanceRunResult ComputeStatistics(TestCaseExecutionResult result, IExecutionSettings executionSettings)
     {
         return statsCompiler.Compile(result.TestInstanceContainer?.TestCaseId!, result.PerformanceTimerResults!, executionSettings);
     }

@@ -182,7 +182,7 @@ public class FullE2EExceptionCases
         result.Exceptions.Count().ShouldBe(1);
         result.Exceptions.Single().Message.ShouldBe("Parameter injection is not supported for void methods");
     }
-    
+
     [Fact]
     public async Task MultipleInjectionsOnAMethodThrows()
     {
@@ -198,5 +198,25 @@ public class FullE2EExceptionCases
         result.Exceptions.ShouldNotBeNull();
         result.Exceptions.Count().ShouldBe(1);
         result.Exceptions.Single().Message.ShouldBe("Parameter injection is only supported for a single parameter which must be a the CancellationToken type");
+    }
+
+    [Fact]
+    public async Task WhenTestExceptionOccursHandlersAreOnlyGivenRealData()
+    {
+        var runSettings = RunSettingsBuilder.CreateBuilder()
+            .WithTestNames(nameof(SailfishMethodException))
+            .ProvidersFromAssembliesContaining(typeof(E2ETestExceptionHandlingProvider))
+            .TestsFromAssembliesContaining(typeof(E2ETestExceptionHandlingProvider))
+            .Build();
+        var result = await SailfishRunner.Run(runSettings);
+
+        result.IsValid.ShouldBeFalse();
+
+        result.Exceptions.ShouldNotBeNull();
+        result.Exceptions?.Count().ShouldBe(1);
+        result.ExecutionSummaries
+            .SelectMany(x => x.CompiledTestCaseResults.Select(x => x.PerformanceRunResult))
+            .Count(x => x is null)
+            .ShouldBe(1);
     }
 }

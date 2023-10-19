@@ -53,8 +53,8 @@ internal class SailfishExecutor
         {
             var timeStamp = runSettings.TimeStamp ?? DateTime.Now.ToLocalTime();
 
-            var rawExecutionResults = await sailFishTestExecutor.Execute(testInitializationResult.Tests, cancellationToken);
-            var classExecutionSummaries = classExecutionSummaryCompiler.CompileToSummaries(rawExecutionResults, cancellationToken)
+            var testClassResultGroups = await sailFishTestExecutor.Execute(testInitializationResult.Tests, cancellationToken);
+            var classExecutionSummaries = classExecutionSummaryCompiler.CompileToSummaries(testClassResultGroups, cancellationToken)
                 .ToList();
 
             var executionSummaryTrackingDirectory = GetRunSettingsTrackingDirectoryPath(runSettings, DefaultFileSettings.DefaultExecutionSummaryTrackingDirectory);
@@ -75,12 +75,13 @@ internal class SailfishExecutor
                 await scaleFish.Analyze(timeStamp, runSettings, executionSummaryTrackingDirectory, cancellationToken);
             }
 
-            var exceptions =
-                classExecutionSummaries.SelectMany(e => e.CompiledTestCaseResults.SelectMany(c => c.Exceptions));
+            var exceptions = classExecutionSummaries
+                .SelectMany(classExecutionSummary =>
+                    classExecutionSummary
+                        .CompiledTestCaseResults
+                        .SelectMany(c => c.Exceptions));
 
-            return rawExecutionResults.Select(x => x.IsSuccess).All(x => x)
-                ? SailfishRunResult.CreateValidResult(classExecutionSummaries)
-                : SailfishRunResult.CreateInvalidResult(exceptions);
+            return SailfishRunResult.CreateResult(classExecutionSummaries, exceptions.ToList());
         }
 
         Log.Logger.Error("{NumErrors} errors encountered while discovering tests",
@@ -97,7 +98,7 @@ internal class SailfishExecutor
             }
         }
 
-        return SailfishRunResult.CreateInvalidResult(testDiscoveryExceptions);
+        return SailfishRunResult.CreateResult(Array.Empty<IClassExecutionSummary>(), testDiscoveryExceptions);
     }
 
     private static string GetRunSettingsTrackingDirectoryPath(IRunSettings runSettings, string defaultDirectory)

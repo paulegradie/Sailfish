@@ -1,10 +1,11 @@
 ﻿using System;
+using Sailfish.Extensions.Methods;
 
 namespace Sailfish.Execution;
 
-internal class TestExecutionResult
+internal class TestCaseExecutionResult
 {
-    public TestExecutionResult(TestInstanceContainer container)
+    public TestCaseExecutionResult(TestInstanceContainer container)
     {
         Exception = null;
         IsSuccess = true;
@@ -15,7 +16,7 @@ internal class TestExecutionResult
         PerformanceTimerResults = container.CoreInvoker.GetPerformanceResults();
     }
 
-    public TestExecutionResult(TestInstanceContainer container, Exception exception)
+    public TestCaseExecutionResult(TestInstanceContainer container, Exception exception)
     {
         Exception = exception;
         IsSuccess = false;
@@ -26,7 +27,7 @@ internal class TestExecutionResult
         PerformanceTimerResults = container.CoreInvoker.GetPerformanceResults(false);
     }
 
-    public TestExecutionResult(TestInstanceContainerProvider testProvider, Exception exception)
+    public TestCaseExecutionResult(TestInstanceContainerProvider testProvider, Exception exception)
     {
         Exception = exception;
         IsSuccess = false;
@@ -35,6 +36,18 @@ internal class TestExecutionResult
         TestInstanceContainer = null;
         TestInstanceContainerProvider = testProvider;
         ExecutionSettings = null;
+        PerformanceTimerResults = null;
+    }
+
+    public TestCaseExecutionResult(Type testType, Exception exception)
+    {
+        Exception = exception;
+        IsSuccess = false;
+        StatusCode = StatusCode.Failure;
+        ExecutionSettings = testType.RetrieveExecutionTestSettings();
+
+        TestInstanceContainer = null;
+        TestInstanceContainerProvider = null;
         PerformanceTimerResults = null;
     }
 

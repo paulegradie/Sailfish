@@ -15,7 +15,7 @@ namespace Sailfish.TestAdapter.Execution;
 
 internal interface IActivatorCallbacks
 {
-    Action<TestExecutionResult, TestInstanceContainer> PostTestResultCallback(
+    Action<TestCaseExecutionResult, TestInstanceContainer> PostTestResultCallback(
         IEnumerable<TestCase> testCaseGroups,
         TrackingFileDataList preloadedLastRunIfAvailable,
         SailDiffSettings? testSettings,
@@ -39,7 +39,7 @@ internal class AdapterActivatorCallbacks : IActivatorCallbacks
         this.sailDiff = sailDiff;
     }
 
-    public Action<TestExecutionResult, TestInstanceContainer> PostTestResultCallback(
+    public Action<TestCaseExecutionResult, TestInstanceContainer> PostTestResultCallback(
         IEnumerable<TestCase> testCaseGroups,
         TrackingFileDataList preloadedLastRunIfAvailable,
         SailDiffSettings? testSettings,
@@ -67,7 +67,7 @@ internal class AdapterActivatorCallbacks : IActivatorCallbacks
                 HandleSuccessfulTestCase(
                     result,
                     currentTestCase,
-                    new RawExecutionResult(result.TestInstanceContainer.Type, new List<TestExecutionResult> { result }),
+                    new TestClassResultGroup(result.TestInstanceContainer.Type, new List<TestCaseExecutionResult> { result }),
                     preloadedLastRunIfAvailable,
                     testSettings,
                     cancellationToken);
@@ -77,24 +77,22 @@ internal class AdapterActivatorCallbacks : IActivatorCallbacks
                 HandleFailureTestCase(
                     result,
                     currentTestCase,
-                    new RawExecutionResult(result.TestInstanceContainer.Type,
-                        result.Exception ??
-                        new Exception($"The exception details were null for {result.TestInstanceContainer.Type.Name}")),
+                    new TestClassResultGroup(result.TestInstanceContainer.Type, new List<TestCaseExecutionResult> { result }),
                     cancellationToken);
             }
         };
     }
 
     private void HandleSuccessfulTestCase(
-        TestExecutionResult result,
+        TestCaseExecutionResult result,
         TestCase currentTestCase,
-        RawExecutionResult rawResult,
+        TestClassResultGroup classResultGroup,
         IReadOnlyCollection<IReadOnlyCollection<IClassExecutionSummary>> preloadedLastRunIfAvailable,
         SailDiffSettings? testSettings,
         CancellationToken cancellationToken)
     {
         var classExecutionSummary = classExecutionSummaryCompiler
-            .CompileToSummaries(new List<RawExecutionResult>() { rawResult }, cancellationToken)
+            .CompileToSummaries(new List<TestClassResultGroup>() { classResultGroup }, cancellationToken)
             .Single();
         var medianTestRuntime = classExecutionSummary.CompiledTestCaseResults.Single().PerformanceRunResult?.Median ??
                                 throw new SailfishException("Error computing compiled results");
@@ -155,11 +153,12 @@ internal class AdapterActivatorCallbacks : IActivatorCallbacks
     }
 
     private void HandleFailureTestCase(
-        TestExecutionResult result,
+        TestCaseExecutionResult result,
         TestCase currentTestCase,
-        RawExecutionResult rawResult,
+        TestClassResultGroup classResultGroup,
         CancellationToken cancellationToken)
     {
+        cancellationToken.ThrowIfCancellationRequested();
         var testResult = new TestResult(currentTestCase);
 
         if (result.Exception is not null)
@@ -178,7 +177,7 @@ internal class AdapterActivatorCallbacks : IActivatorCallbacks
         testResult.Messages.Clear();
         testResult.ErrorMessage = result.Exception?.Message;
 
-        foreach (var exception in rawResult.Exceptions)
+        foreach (var exception in classResultGroup.ExecutionResults.Select(x => x.Exception).Where(x => x is not null).Cast<Exception>())
         {
             consoleWriter.WriteString("----- Exception -----", TestMessageLevel.Error);
             consoleWriter.WriteString(exception.Message, TestMessageLevel.Error);
@@ -256,7 +255,7 @@ internal class AdapterActivatorCallbacks : IActivatorCallbacks
             container.TestCaseId.DisplayName.EndsWith(testCase.GetPropertyHelper(SailfishManagedProperty.SailfishDisplayNameDefinitionProperty)));
     }
 
-    private void LogTestResults(TestExecutionResult result)
+    private void LogTestResults(TestCaseExecutionResult result)
     {
         foreach (var perf in result.PerformanceTimerResults?.MethodIterationPerformances!)
         {

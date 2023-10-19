@@ -23,7 +23,7 @@ public class MarkdownTableConverter : IMarkdownTableConverter
         var stringBuilder = new StringBuilder();
         foreach (var result in executionSummaries)
         {
-            AppendResults(result.Type.Name, result.CompiledTestCaseResults, stringBuilder);
+            AppendResults(result.TestClass.Name, result.CompiledTestCaseResults, stringBuilder);
 
             var exceptions = result.CompiledTestCaseResults.SelectMany(x => x.Exceptions).ToList();
             AppendExceptions(exceptions, stringBuilder);
