@@ -25,7 +25,7 @@ public class MarkdownTableConverter : IMarkdownTableConverter
         {
             AppendResults(result.TestClass.Name, result.CompiledTestCaseResults, stringBuilder);
 
-            var exceptions = result.CompiledTestCaseResults.SelectMany(x => x.Exceptions).ToList();
+            var exceptions = result.CompiledTestCaseResults.Select(x => x.Exception).ToList();
             AppendExceptions(exceptions, stringBuilder);
         }
 

@@ -1,5 +1,4 @@
 using System;
-using System.Collections.Generic;
 using System.Text.Json.Serialization;
 using Sailfish.Analysis;
 using Sailfish.Contracts.Serialization.V1.Converters;
@@ -23,18 +22,18 @@ public class CompiledTestCaseResultTrackingFormatV1
     public CompiledTestCaseResultTrackingFormatV1(
         string groupingId,
         PerformanceRunResultTrackingFormatV1 performanceRunResultTrackingFormatV1,
-        List<Exception> exceptions,
+        Exception? exception,
         TestCaseId testCaseId)
     {
         GroupingId = groupingId;
         PerformanceRunResultTrackingFormatV1 = performanceRunResultTrackingFormatV1;
-        Exceptions = exceptions;
+        Exception = exception ?? new Exception();
         TestCaseId = testCaseId;
     }
 
     public string GroupingId { get; set; }
     public PerformanceRunResultTrackingFormatV1 PerformanceRunResultTrackingFormatV1 { get; set; }
-    public List<Exception> Exceptions { get; set; } = new();
+    public Exception Exception { get; set; } = new();
 
     [JsonConverter(typeof(TestCaseIdConverter))]
     public TestCaseId? TestCaseId { get; set; }
