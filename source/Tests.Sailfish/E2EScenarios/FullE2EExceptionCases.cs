@@ -215,7 +215,7 @@ public class FullE2EExceptionCases
         result.Exceptions.ShouldNotBeNull();
         result.Exceptions?.Count().ShouldBe(1);
         result.ExecutionSummaries
-            .SelectMany(x => x.CompiledTestCaseResults.Select(x => x.PerformanceRunResult))
+            .SelectMany(x => x.CompiledTestCaseResults.Select(c => c.PerformanceRunResult))
             .Count(x => x is null)
             .ShouldBe(1);
     }

@@ -27,7 +27,7 @@ public static class TrackingFileConversionExtensionMethods
             x => new CompiledTestCaseResultTrackingFormatV1(
                 x.GroupingId!,
                 x.PerformanceRunResult!.ToTrackingFormat(),
-                x.Exceptions,
+                x.Exception,
                 x.TestCaseId!));
     }
 

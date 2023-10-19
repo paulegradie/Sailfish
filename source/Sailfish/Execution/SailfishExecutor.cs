@@ -79,9 +79,12 @@ internal class SailfishExecutor
                 .SelectMany(classExecutionSummary =>
                     classExecutionSummary
                         .CompiledTestCaseResults
-                        .SelectMany(c => c.Exceptions));
+                        .Where(e => e.Exception is not null)
+                        .Select(c => c.Exception))
+                .Cast<Exception>()
+                .ToList();
 
-            return SailfishRunResult.CreateResult(classExecutionSummaries, exceptions.ToList());
+            return SailfishRunResult.CreateResult(classExecutionSummaries, exceptions);
         }
 
         Log.Logger.Error("{NumErrors} errors encountered while discovering tests",

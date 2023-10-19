@@ -47,7 +47,7 @@ internal class SailfishWriteTrackingFileHandler : INotificationHandler<WriteCurr
 
     private bool AnyExceptions(IEnumerable<IClassExecutionSummary> notificationExecutionSummaries)
     {
-        var allResults = notificationExecutionSummaries.SelectMany(x => x.CompiledTestCaseResults).SelectMany(x => x.Exceptions).ToList();
+        var allResults = notificationExecutionSummaries.SelectMany(x => x.CompiledTestCaseResults).Select(x => x.Exception).ToList();
         return allResults.Any();
     }
 }

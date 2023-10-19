@@ -53,24 +53,22 @@ internal class AdapterConsoleWriter : IAdapterConsoleWriter
         {
             foreach (var compiledResult in result.CompiledTestCaseResults)
             {
-                if (!compiledResult.Exceptions.Any()) continue;
-                foreach (var exception in compiledResult.Exceptions)
-                {
-                    WriteMessage(exception.Message, TestMessageLevel.Error);
-                    consoleLogger.Error("{Error}", exception.Message);
+                if (compiledResult.Exception is null) continue;
+                WriteMessage(compiledResult.Exception.Message, TestMessageLevel.Error);
+                consoleLogger.Error("{Error}", compiledResult.Exception.Message);
 
-                    if (exception.StackTrace == null) continue;
-                    WriteMessage(exception.StackTrace, TestMessageLevel.Error);
-                    consoleLogger.Error("{StackTrace}", exception.Message);
+                if (compiledResult.Exception.StackTrace == null) continue;
+                WriteMessage(compiledResult.Exception.StackTrace, TestMessageLevel.Error);
+                consoleLogger.Error("{StackTrace}", compiledResult.Exception.Message);
 
-                    if (exception.InnerException is null) continue;
-                    WriteMessage(exception.InnerException.Message, TestMessageLevel.Error);
-                    consoleLogger.Error("{InnerError}", exception.InnerException.Message);
+                if (compiledResult.Exception.InnerException is null) continue;
+                WriteMessage(compiledResult.Exception.InnerException.Message, TestMessageLevel.Error);
+                consoleLogger.Error("{InnerError}", compiledResult.Exception.InnerException.Message);
 
-                    if (exception.InnerException.StackTrace == null) continue;
-                    WriteMessage(exception.InnerException.StackTrace, TestMessageLevel.Error);
-                    consoleLogger.Error("{InnerStackTrace}", exception.InnerException.StackTrace);
-                }
+                if (compiledResult.Exception.InnerException.StackTrace == null) continue;
+                WriteMessage(compiledResult.Exception.InnerException.StackTrace, TestMessageLevel.Error);
+                consoleLogger.Error("{InnerStackTrace}", compiledResult.Exception.InnerException.StackTrace);
+            
             }
         }
 
@@ -105,11 +103,11 @@ internal class AdapterConsoleWriter : IAdapterConsoleWriter
 
     private static string CreateIdeTestOutputWindowContent(ICompiledTestCaseResult testCaseResult)
     {
-        if (testCaseResult.Exceptions.Any())
+        if (testCaseResult.Exception is not null)
         {
             var exceptionBuilder = new StringBuilder();
             exceptionBuilder.AppendLine("____ Exceptions ____");
-            exceptionBuilder.AppendLine(string.Join("\n\n", testCaseResult.Exceptions.Select(x => x.Message)));
+            exceptionBuilder.AppendLine(string.Join("\n\n", testCaseResult.Exception.Message));
             return exceptionBuilder.ToString();
         }
 
