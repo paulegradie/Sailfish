@@ -7,7 +7,6 @@ internal class TestClassResultGroup
 {
     public TestClassResultGroup(Type testClass, List<TestCaseExecutionResult> executionResults)
     {
-        // IsSuccess = true;
         TestClass = testClass;
         ExecutionResults = executionResults;
     }
