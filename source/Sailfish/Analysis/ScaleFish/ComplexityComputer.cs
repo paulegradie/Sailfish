@@ -23,7 +23,7 @@ public class ComplexityComputer : IComplexityComputer
         foreach (var testClassSummary in executionSummaries)
         {
             var sailfishComplexityVariables = testClassSummary
-                .Type
+                .TestClass
                 .GetProperties()
                 .Where(x => x.IsSailfishComplexityVariable())
                 .ToList();
@@ -31,13 +31,13 @@ public class ComplexityComputer : IComplexityComputer
 
             // to filter out those we want to assess
             var complexityPropertyNames = testClassSummary
-                .Type
+                .TestClass
                 .GetProperties()
                 .Where(x => x.IsSailfishComplexityVariable())
                 .Select(x => x.Name)
                 .ToList();
 
-            var sailfishVariablesCountTuples = testClassSummary.Type
+            var sailfishVariablesCountTuples = testClassSummary.TestClass
                 .GetProperties()
                 .Where(x => x.PropertyHasSailfishAttribute())
                 .Select(y => (y.Name, y.GetSailfishVariableAttributeOrThrow().GetVariables().Count()))
@@ -102,7 +102,7 @@ public class ComplexityComputer : IComplexityComputer
                 resultsByMethod.Add(testCaseMethodName, complexityResultMap);
             }
 
-            finalResult.Add(testClassSummary.Type, resultsByMethod);
+            finalResult.Add(testClassSummary.TestClass, resultsByMethod);
         }
 
         return ScalefishClassModel.ParseResults(finalResult);

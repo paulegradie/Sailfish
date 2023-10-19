@@ -8,7 +8,7 @@ namespace Sailfish.TestAdapter.Execution;
 internal interface IAdapterSailDiff : ISailDiff
 {
     string ComputeTestCaseDiff(
-        TestExecutionResult testExecutionResult,
+        TestCaseExecutionResult testCaseExecutionResult,
         IClassExecutionSummary classExecutionSummary,
         SailDiffSettings sailDiffSettings,
         PerformanceRunResult preloadedLastRun,

@@ -6,7 +6,7 @@ namespace Sailfish.Execution;
 
 internal class TestCaseIterator : ITestCaseIterator
 {
-    public async Task<TestExecutionResult> Iterate(TestInstanceContainer testInstanceContainer, bool disableOverheadEstimation, CancellationToken cancellationToken)
+    public async Task<TestCaseExecutionResult> Iterate(TestInstanceContainer testInstanceContainer, bool disableOverheadEstimation, CancellationToken cancellationToken)
     {
         var overheadEstimator = new OverheadEstimator();
         var warmupResult = await WarmupIterations(testInstanceContainer, cancellationToken);
@@ -55,10 +55,10 @@ internal class TestCaseIterator : ITestCaseIterator
             testInstanceContainer.ApplyOverheadEstimates(overheadEstimator.GetAverageEstimate());
         }
 
-        return new TestExecutionResult(testInstanceContainer);
+        return new TestCaseExecutionResult(testInstanceContainer);
     }
 
-    private static async Task<TestExecutionResult> WarmupIterations(TestInstanceContainer testInstanceContainer, CancellationToken cancellationToken)
+    private static async Task<TestCaseExecutionResult> WarmupIterations(TestInstanceContainer testInstanceContainer, CancellationToken cancellationToken)
     {
         for (var i = 0; i < testInstanceContainer.NumWarmupIterations; i++)
         {
@@ -96,11 +96,11 @@ internal class TestCaseIterator : ITestCaseIterator
             }
         }
 
-        return new TestExecutionResult(testInstanceContainer);
+        return new TestCaseExecutionResult(testInstanceContainer);
     }
 
-    private static TestExecutionResult CatchAndReturn(TestInstanceContainer testProvider, Exception ex)
+    private static TestCaseExecutionResult CatchAndReturn(TestInstanceContainer testProvider, Exception ex)
     {
-        return new TestExecutionResult(testProvider, ex);
+        return new TestCaseExecutionResult(testProvider, ex);
     }
 }

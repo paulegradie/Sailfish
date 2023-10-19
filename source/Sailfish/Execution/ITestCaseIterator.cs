@@ -5,5 +5,5 @@ namespace Sailfish.Execution;
 
 internal interface ITestCaseIterator
 {
-    Task<TestExecutionResult> Iterate(TestInstanceContainer testInstanceContainer, bool DisableOverheadEstimation, CancellationToken cancellationToken);
+    Task<TestCaseExecutionResult> Iterate(TestInstanceContainer testInstanceContainer, bool DisableOverheadEstimation, CancellationToken cancellationToken);
 }

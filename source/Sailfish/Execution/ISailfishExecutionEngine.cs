@@ -8,14 +8,14 @@ namespace Sailfish.Execution;
 
 internal interface ISailfishExecutionEngine
 {
-    Task<List<TestExecutionResult>> ActivateContainer(
+    Task<List<TestCaseExecutionResult>> ActivateContainer(
         int testProviderIndex,
         int totalTestProviderCount,
         TestInstanceContainerProvider testProvider,
         MemoryCache memoryCache,
         string providerPropertiesCacheKey,
         Action<TestInstanceContainer>? preTestCallback = null,
-        Action<TestExecutionResult, TestInstanceContainer>? postTestCallback = null,
+        Action<TestCaseExecutionResult, TestInstanceContainer>? postTestCallback = null,
         Action<TestInstanceContainer?>? exceptionCallback = null,
         Action<TestInstanceContainer?>? testDisabledCallback = null,
         CancellationToken cancellationToken = default);

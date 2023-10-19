@@ -95,14 +95,14 @@ internal class AdapterSailDiff : IAdapterSailDiff
     }
 
     public string ComputeTestCaseDiff(
-        TestExecutionResult testExecutionResult,
+        TestCaseExecutionResult testCaseExecutionResult,
         IClassExecutionSummary classExecutionSummary,
         SailDiffSettings sailDiffSettings,
         PerformanceRunResult preloadedLastRun,
         CancellationToken cancellationToken)
     {
-        var beforeIds = new[] { testExecutionResult.TestInstanceContainer?.TestCaseId.DisplayName ?? string.Empty };
-        var afterIds = new[] { testExecutionResult.TestInstanceContainer?.TestCaseId.DisplayName ?? string.Empty };
+        var beforeIds = new[] { testCaseExecutionResult.TestInstanceContainer?.TestCaseId.DisplayName ?? string.Empty };
+        var afterIds = new[] { testCaseExecutionResult.TestInstanceContainer?.TestCaseId.DisplayName ?? string.Empty };
 
         var beforeTestData = new TestData(
             beforeIds,
@@ -110,7 +110,7 @@ internal class AdapterSailDiff : IAdapterSailDiff
 
         var afterTestData = new TestData(afterIds, classExecutionSummary.CompiledTestCaseResults
             .Select(x => x.PerformanceRunResult!)
-            .Where(x => x.DisplayName == testExecutionResult.TestInstanceContainer?.TestCaseId.DisplayName));
+            .Where(x => x.DisplayName == testCaseExecutionResult.TestInstanceContainer?.TestCaseId.DisplayName));
 
         var testResults = testComputer.ComputeTest(beforeTestData, afterTestData, sailDiffSettings);
 

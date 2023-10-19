@@ -28,15 +28,15 @@ internal class SailFishTestExecutor : ISailFishTestExecutor
         this.engine = engine;
     }
 
-    public async Task<List<RawExecutionResult>> Execute(
+    public async Task<List<TestClassResultGroup>> Execute(
         IEnumerable<Type> testTypes,
         CancellationToken cancellationToken = default)
     {
-        var rawResults = new List<RawExecutionResult>();
+        var allTestCaseResults = new List<TestClassResultGroup>();
         if (!FilterEnabledType(testTypes, out var enabledTestTypes))
         {
             logger.Warning("No Sailfish tests were discovered...");
-            return rawResults;
+            return allTestCaseResults;
         }
 
         SetConsoleTotals(enabledTestTypes);
@@ -48,32 +48,20 @@ internal class SailFishTestExecutor : ISailFishTestExecutor
             TestCaseCountPrinter.PrintTypeUpdate(testType.Name);
             try
             {
-                var rawResult = await Execute(testType, cancellationToken);
-
-                if (rawResult.All(x => x.IsSuccess))
-                {
-                    rawResults.Add(new RawExecutionResult(testType, rawResult));
-                }
-                else
-                {
-                    var exceptions = rawResult
-                        .Where(x => x.Exception != null)
-                        .Select(e => e.Exception)
-                        .Cast<Exception>();
-                    rawResults.Add(new RawExecutionResult(testType, exceptions));
-                }
+                var testCaseExecutionResults = await Execute(testType, cancellationToken);
+                allTestCaseResults.Add(new TestClassResultGroup(testType, testCaseExecutionResults));
             }
             catch (Exception ex)
             {
                 logger.Fatal("The Test runner encountered a fatal error: {Message}", ex.Message);
-                rawResults.Add(new RawExecutionResult(testType, ex));
+                allTestCaseResults.Add(new TestClassResultGroup(testType, new List<TestCaseExecutionResult>()));
             }
         }
 
-        return rawResults;
+        return allTestCaseResults;
     }
 
-    private async Task<List<TestExecutionResult>> Execute(
+    private async Task<List<TestCaseExecutionResult>> Execute(
         Type test,
         CancellationToken cancellationToken = default)
     {
@@ -81,11 +69,11 @@ internal class SailFishTestExecutor : ISailFishTestExecutor
         return await Execute(testInstanceContainerProviders, cancellationToken);
     }
 
-    private async Task<List<TestExecutionResult>> Execute(
+    private async Task<List<TestCaseExecutionResult>> Execute(
         IReadOnlyCollection<TestInstanceContainerProvider> testInstanceContainerProviders,
         CancellationToken cancellationToken = default)
     {
-        var results = new List<TestExecutionResult>();
+        var results = new List<TestCaseExecutionResult>();
 
         var testProviderIndex = 0;
         var totalMethodCount = testInstanceContainerProviders.Count - 1;

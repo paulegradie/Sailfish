@@ -42,14 +42,14 @@ internal class SailfishExecutionEngine : ISailfishExecutionEngine
     /// <param name="testDisabledCallback"></param>
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
-    public async Task<List<TestExecutionResult>> ActivateContainer(
+    public async Task<List<TestCaseExecutionResult>> ActivateContainer(
         [Range(1, int.MaxValue)] int testProviderIndex,
         [Range(1, int.MaxValue)] int totalTestProviderCount,
         TestInstanceContainerProvider testProvider,
         MemoryCache memoryCache,
         string providerPropertiesCacheKey,
         Action<TestInstanceContainer>? preTestCallback = null,
-        Action<TestExecutionResult, TestInstanceContainer>? postTestCallback = null,
+        Action<TestCaseExecutionResult, TestInstanceContainer>? postTestCallback = null,
         Action<TestInstanceContainer?>? exceptionCallback = null,
         Action<TestInstanceContainer?>? testDisabledCallback = null,
         CancellationToken cancellationToken = default)
@@ -76,11 +76,10 @@ internal class SailfishExecutionEngine : ISailfishExecutionEngine
             var msg = $"Error resolving test from {testProvider.Test.FullName}";
             Log.Logger.Fatal(ex, "{Message}", msg);
             if (exceptionCallback is null) throw;
-            var exceptionResult = new TestExecutionResult(testProvider, ex);
-            return new List<TestExecutionResult>() { exceptionResult };
+            return new List<TestCaseExecutionResult>() { new(testProvider, ex) };
         }
 
-        var results = new List<TestExecutionResult>();
+        var results = new List<TestCaseExecutionResult>();
 
         if (testProvider.Test.GetCustomAttributes<SailfishAttribute>().Single().Disabled)
         {
@@ -180,7 +179,7 @@ internal class SailfishExecutionEngine : ISailfishExecutionEngine
             }
             catch (Exception ex)
             {
-                var errorResult = new TestExecutionResult(testMethodContainer, ex);
+                var errorResult = new TestCaseExecutionResult(testMethodContainer, ex);
                 results.Add(errorResult);
             }
         } while (await TryMoveNextOrThrow(exceptionCallback, instanceContainerEnumerator));
@@ -216,13 +215,13 @@ internal class SailfishExecutionEngine : ISailfishExecutionEngine
         return continueIterating;
     }
 
-    private static List<TestExecutionResult> CatchAndReturn(TestInstanceContainerProvider testProvider, Exception ex)
+    private static List<TestCaseExecutionResult> CatchAndReturn(TestInstanceContainerProvider testProvider, Exception ex)
     {
-        var exceptionResult = new TestExecutionResult(testProvider, ex);
-        return new List<TestExecutionResult>() { exceptionResult };
+        var exceptionResult = new TestCaseExecutionResult(testProvider, ex);
+        return new List<TestCaseExecutionResult>() { exceptionResult };
     }
 
-    private async Task<TestExecutionResult> IterateOverVariableCombos(TestInstanceContainer testInstanceContainer, CancellationToken cancellationToken = default)
+    private async Task<TestCaseExecutionResult> IterateOverVariableCombos(TestInstanceContainer testInstanceContainer, CancellationToken cancellationToken = default)
     {
         try
         {
@@ -234,7 +233,7 @@ internal class SailfishExecutionEngine : ISailfishExecutionEngine
         catch (Exception exception)
         {
             if (exception is TestDisabledException) throw;
-            return new TestExecutionResult(testInstanceContainer, exception.InnerException ?? exception);
+            return new TestCaseExecutionResult(testInstanceContainer, exception.InnerException ?? exception);
         }
     }
 

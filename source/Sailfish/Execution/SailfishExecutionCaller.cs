@@ -42,7 +42,7 @@ internal static class SailfishExecutionCaller
             ct = (CancellationToken)cancellationToken;
         }
 
-        using var container = builder.Build();
+        await using var container = builder.Build();
         return await container.Resolve<SailfishExecutor>().Run(ct).ConfigureAwait(false);
     }
 }

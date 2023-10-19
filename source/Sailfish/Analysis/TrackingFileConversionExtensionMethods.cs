@@ -15,7 +15,7 @@ public static class TrackingFileConversionExtensionMethods
     {
         return executionSummaries.Select(x =>
             new ExecutionSummaryTrackingFormatV1(
-                x.Type,
+                x.TestClass,
                 x.Settings.ToTrackingFormat(),
                 x.CompiledTestCaseResults.ToTrackingFormat()
             ));
