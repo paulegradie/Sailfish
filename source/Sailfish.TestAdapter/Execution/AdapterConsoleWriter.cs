@@ -54,12 +54,13 @@ internal class AdapterConsoleWriter : IAdapterConsoleWriter
             foreach (var compiledResult in result.CompiledTestCaseResults)
             {
                 if (compiledResult.Exception is null) continue;
+
                 WriteMessage(compiledResult.Exception.Message, TestMessageLevel.Error);
                 consoleLogger.Error("{Error}", compiledResult.Exception.Message);
 
                 if (compiledResult.Exception.StackTrace == null) continue;
                 WriteMessage(compiledResult.Exception.StackTrace, TestMessageLevel.Error);
-                consoleLogger.Error("{StackTrace}", compiledResult.Exception.Message);
+                consoleLogger.Error("{StackTrace}", compiledResult.Exception.StackTrace);
 
                 if (compiledResult.Exception.InnerException is null) continue;
                 WriteMessage(compiledResult.Exception.InnerException.Message, TestMessageLevel.Error);
@@ -68,9 +69,9 @@ internal class AdapterConsoleWriter : IAdapterConsoleWriter
                 if (compiledResult.Exception.InnerException.StackTrace == null) continue;
                 WriteMessage(compiledResult.Exception.InnerException.StackTrace, TestMessageLevel.Error);
                 consoleLogger.Error("{InnerStackTrace}", compiledResult.Exception.InnerException.StackTrace);
-            
             }
         }
+        
 
         string ideOutputContent;
         if (summaryResults.Count > 1 || summaryResults.Single().CompiledTestCaseResults.Count() > 1)
@@ -81,6 +82,7 @@ internal class AdapterConsoleWriter : IAdapterConsoleWriter
         {
             ideOutputContent = CreateIdeTestOutputWindowContent(summaryResults.Single().CompiledTestCaseResults.Single());
         }
+
 
         WriteMessage(ideOutputContent, TestMessageLevel.Informational);
         consoleLogger.Information("{MarkdownTable}", ideOutputContent);
@@ -97,8 +99,8 @@ internal class AdapterConsoleWriter : IAdapterConsoleWriter
             .ToArray();
 
         return markdownTableConverter.ConvertToMarkdownTableString(summaryResults)
-                                  + "Raw results: \n"
-                                  + string.Join(", ", rawData);
+               + "Raw results: \n"
+               + string.Join(", ", rawData);
     }
 
     private static string CreateIdeTestOutputWindowContent(ICompiledTestCaseResult testCaseResult)

@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Reflection;
 using Sailfish.Analysis;
-using Sailfish.Extensions.Methods;
 using Sailfish.Utils;
 
 namespace Sailfish.Execution;
@@ -19,8 +18,7 @@ internal class TestInstanceContainer
         TestCaseId testCaseId,
         IExecutionSettings executionSettings,
         CoreInvoker coreInvoker,
-        bool disabled
-    )
+        bool disabled)
     {
         Type = type;
         Instance = instance;
@@ -45,13 +43,17 @@ internal class TestInstanceContainer
     public CoreInvoker CoreInvoker { get; private init; }
     public bool Disabled { get; }
 
-    public static TestInstanceContainer CreateTestInstance(object instance, MethodInfo method, string[] propertyNames, object[] variables, bool disabled)
+    public static TestInstanceContainer CreateTestInstance(
+        object instance,
+        MethodInfo method,
+        string[] propertyNames,
+        object[] variables,
+        bool disabled,
+        IExecutionSettings executionSettings)
     {
         if (propertyNames.Length != variables.Length) throw new Exception("Property names and variables do not match");
 
         var testCaseId = DisplayNameHelper.CreateTestCaseId(instance.GetType(), method.Name, propertyNames, variables); // a uniq id
-
-        var executionSettings = instance.GetType().RetrieveExecutionTestSettings();
 
         return new TestInstanceContainer(
             instance.GetType(),

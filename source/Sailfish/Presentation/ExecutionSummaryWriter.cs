@@ -64,7 +64,7 @@ internal class ExecutionSummaryWriter : IExecutionSummaryWriter
         {
             await mediator.Publish(
                     new WriteCurrentTrackingFileCommand(
-                        executionSummaries,
+                        executionSummaries.ToTrackingFormat(),
                         trackingDir,
                         timeStamp,
                         runSettings.Tags,

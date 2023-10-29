@@ -15,6 +15,6 @@ public sealed class WriteAsCsvMap : ClassMap<PerformanceRunResult>
         Map(m => m.UpperOutliers).Index(6);
         Map(m => m.TotalNumOutliers).Index(7);
         Map(m => m.SampleSize).Index(8);
-        Map(m => m.RawExecutionResults).Index(9);
+        Map(m => m.RawExecutionResults).TypeConverter<DoubleArrayConverter>().Index(9);
     }
 }

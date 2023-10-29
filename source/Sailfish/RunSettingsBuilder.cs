@@ -25,6 +25,8 @@ public class RunSettingsBuilder
     private bool scaleFish = false;
     private bool disableOverheadEstimation;
     private bool disableAnalysisGlobally = false;
+    private int? globalSampleSize;
+    private int? globalNumWarmupIterations;
 
     public static RunSettingsBuilder CreateBuilder()
     {
@@ -147,6 +149,18 @@ public class RunSettingsBuilder
         return this;
     }
 
+    public RunSettingsBuilder WithGlobalSampleSize(int sampleSize)
+    {
+        globalSampleSize = Math.Max(sampleSize, 1);
+        return this;
+    }
+
+    public RunSettingsBuilder WithGlobalNumWarmupIterations(int numIterations)
+    {
+        globalNumWarmupIterations = Math.Max(numIterations, 1);
+        return this;
+    }
+
     public IRunSettings Build()
     {
         return new RunSettings(
@@ -164,6 +178,8 @@ public class RunSettingsBuilder
             testAssembliesAnchorTypes.Count == 0 ? new[] { GetType() } : testAssembliesAnchorTypes,
             registrationProviderAnchorTypes.Count == 0 ? new[] { GetType() } : registrationProviderAnchorTypes,
             disableOverheadEstimation,
+            globalSampleSize,
+            globalNumWarmupIterations,
             disableAnalysisGlobally,
             debg
         );

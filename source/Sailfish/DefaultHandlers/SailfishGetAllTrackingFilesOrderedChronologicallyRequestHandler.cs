@@ -32,7 +32,7 @@ internal class SailfishGetAllTrackingFilesOrderedChronologicallyRequestHandler :
         if (!await trackingFileParser.TryParse(trackingFiles, data, cancellationToken))
         {
             throw new SailfishException(
-                $"Failed to deserialize data into {nameof(PerformanceRunResultTrackingFormatV1)}. Please remove any non v1 data from your tracking directory.");
+                $"Failed to deserialize data into {nameof(PerformanceRunResultTrackingFormat)}. Please remove any non v1 data from your tracking directory.");
         }
 
         return new SailfishGetAllTrackingDataOrderedChronologicallyResponse(data);

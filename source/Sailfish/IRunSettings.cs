@@ -22,5 +22,7 @@ public interface IRunSettings
     DateTime? TimeStamp { get; }
     bool DisableOverheadEstimation { get; }
     public bool DisableAnalysisGlobally { get; }
+    public int? SampleSizeOverride { get; set; }
+    public int? NumWarmupIterationsOverride { get; set; }
     bool Debug { get; set; }
 }

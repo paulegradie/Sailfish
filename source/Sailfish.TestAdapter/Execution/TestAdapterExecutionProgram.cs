@@ -65,9 +65,10 @@ internal class TestAdapterExecutionProgram : ITestAdapterExecutionProgram
         }
 
         var executionSummaries = await testAdapterExecutionEngine.Execute(testCases, preloadedLastRunsIfAvailable, runSettings.Settings, cancellationToken);
-        consoleWriter.Present(executionSummaries, new OrderedDictionary());
-        await executionSummaryWriter.Write(executionSummaries, timeStamp, trackingDir, runSettings, cancellationToken);
 
+        consoleWriter.Present(executionSummaries.Select(x => x.FilterForFailureTestCases()), new OrderedDictionary());
+        await executionSummaryWriter.Write(executionSummaries, timeStamp, trackingDir, runSettings, cancellationToken);
+        
         if (executionSummaries.SelectMany(x => x.CompiledTestCaseResults).Select(x => x.Exception).Any())
         {
             return;

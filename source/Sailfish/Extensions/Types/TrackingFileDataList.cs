@@ -6,7 +6,7 @@ namespace Sailfish.Extensions.Types;
 
 public class TrackingFileDataList : List<List<IClassExecutionSummary>>
 {
-    public List<IClassExecutionSummary> NextTrackingFileData()
+    public List<IClassExecutionSummary> PeekTrackingFileData()
     {
         return this.First();
     }

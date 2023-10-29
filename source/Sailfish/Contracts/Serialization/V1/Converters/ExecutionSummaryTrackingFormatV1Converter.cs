@@ -6,29 +6,65 @@ using Sailfish.Exceptions;
 
 namespace Sailfish.Contracts.Serialization.V1.Converters;
 
-public class ExecutionSummaryTrackingFormatV1Converter : JsonConverter<ExecutionSummaryTrackingFormatV1>
+public class ExecutionSummaryTrackingFormatV1Converter : JsonConverter<ClassExecutionSummaryTrackingFormat>
 {
-    public override ExecutionSummaryTrackingFormatV1? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+    public override ClassExecutionSummaryTrackingFormat? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
     {
         using var doc = JsonDocument.ParseValue(ref reader);
-        var jsonElementForExecutionSummaryTrackingFormatV1 = doc.RootElement;
+        var jsonElementClassExecutionSummary = doc.RootElement;
 
-        var typeName = jsonElementForExecutionSummaryTrackingFormatV1.GetProperty("Type").GetString() ?? throw new SailfishException("Failed to find property: 'Type'");
+        var typeName = jsonElementClassExecutionSummary.GetProperty(nameof(TrackingFileSerializationHelper.TestClass)).GetString() ??
+                       throw new SailfishException("Failed to find property: 'Type'");
+
         var type = Type.GetType(typeName);
 
-        var settings = jsonElementForExecutionSummaryTrackingFormatV1
-            .GetProperty("Settings")
+        var settings = jsonElementClassExecutionSummary
+            .GetProperty(nameof(TrackingFileSerializationHelper.ExecutionSettings))
             .Deserialize<ExecutionSettingsTrackingFormat>() ?? throw new SailfishException("Failed to deserialize 'Settings'");
-        var compiledTestCaseResults = jsonElementForExecutionSummaryTrackingFormatV1
-            .GetProperty("CompiledTestCaseResults")
-            .Deserialize<IEnumerable<CompiledTestCaseResultTrackingFormatV1>>() ?? throw new SailfishException("Failed to deserialize 'CompiledTestCaseResults'");
+        var compiledTestCaseResults = jsonElementClassExecutionSummary
+            .GetProperty(nameof(TrackingFileSerializationHelper.CompiledTestCaseResults))
+            .Deserialize<IEnumerable<CompiledTestCaseResultTrackingFormat>>() ?? throw new SailfishException("Failed to deserialize 'CompiledTestCaseResults'");
 
-        return new ExecutionSummaryTrackingFormatV1(type!, settings, compiledTestCaseResults);
+        return new ClassExecutionSummaryTrackingFormat(type!, settings, compiledTestCaseResults);
     }
 
-    public override void Write(Utf8JsonWriter writer, ExecutionSummaryTrackingFormatV1 value, JsonSerializerOptions options)
+    public override void Write(Utf8JsonWriter writer, ClassExecutionSummaryTrackingFormat value, JsonSerializerOptions options)
     {
-        JsonSerializer.Serialize(writer, new TrackingFileSerializationHelper(value.Type.AssemblyQualifiedName ?? string.Empty, value.Settings, value.CompiledTestCaseResults),
+        JsonSerializer.Serialize(
+            writer,
+            new TrackingFileSerializationHelper(
+                value.TestClass.AssemblyQualifiedName ?? string.Empty,
+                value.ExecutionSettings,
+                value.CompiledTestCaseResults),
             options);
+    }
+
+
+    /// <summary>
+    /// A transfer class that lets us move between the Type type for the Type property and string type for the Type property
+    /// NOTE: Names on this class MUST match the ExecutionSummaryTrackingFormatV1 property names
+    /// </summary>
+    internal class TrackingFileSerializationHelper
+    {
+        [JsonConstructor]
+#pragma warning disable CS8618
+        public TrackingFileSerializationHelper()
+#pragma warning restore CS8618
+        {
+        }
+
+        public TrackingFileSerializationHelper(
+            string testClass,
+            ExecutionSettingsTrackingFormat executionSettings,
+            IEnumerable<CompiledTestCaseResultTrackingFormat> compiledTestCaseResults)
+        {
+            TestClass = testClass;
+            ExecutionSettings = executionSettings;
+            CompiledTestCaseResults = compiledTestCaseResults;
+        }
+
+        public string TestClass { get; set; }
+        public ExecutionSettingsTrackingFormat ExecutionSettings { get; }
+        public IEnumerable<CompiledTestCaseResultTrackingFormat> CompiledTestCaseResults { get; set; }
     }
 }

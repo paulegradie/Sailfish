@@ -1,24 +1,24 @@
-﻿using System.Collections.Generic;
-using System.IO;
+﻿using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using MediatR;
-using Sailfish.Analysis;
 using Sailfish.Contracts.Public.Commands;
 using Sailfish.Contracts.Serialization.V1;
-using Sailfish.Execution;
 using Sailfish.Presentation;
+using Serilog;
 
 namespace Sailfish.DefaultHandlers;
 
 internal class SailfishWriteTrackingFileHandler : INotificationHandler<WriteCurrentTrackingFileCommand>
 {
     private readonly ITrackingFileSerialization trackingFileSerialization;
+    private readonly ILogger logger;
 
-    public SailfishWriteTrackingFileHandler(ITrackingFileSerialization trackingFileSerialization)
+    public SailfishWriteTrackingFileHandler(ITrackingFileSerialization trackingFileSerialization, ILogger logger)
     {
         this.trackingFileSerialization = trackingFileSerialization;
+        this.logger = logger;
     }
 
     public async Task Handle(WriteCurrentTrackingFileCommand notification, CancellationToken cancellationToken)
@@ -32,22 +32,15 @@ internal class SailfishWriteTrackingFileHandler : INotificationHandler<WriteCurr
         var fileName = DefaultFileSettings.AppendTagsToFilename(notification.DefaultFileName, notification.Tags);
         var filePath = Path.Join(output, fileName);
 
-
-        if (AnyExceptions(notification.ClassExecutionSummaries))
+        var successfulSummaries = notification.ClassExecutionSummaries.Select(x => x.FilterForSuccessfulTestCases());
+        foreach (var failedSummary in notification.ClassExecutionSummaries.SelectMany(x => x.GetFailedTestCases()))
         {
-            return;
+            logger.Warning(failedSummary.Exception, "Test case exception encountered");
         }
 
-        var trackingFormattedExecutionSummaries = notification.ClassExecutionSummaries.ToTrackingFormat();
-        var serialized = trackingFileSerialization.Serialize(trackingFormattedExecutionSummaries);
+        var serialized = trackingFileSerialization.Serialize(successfulSummaries);
 
         await using var streamWriter = new StreamWriter(filePath);
         await streamWriter.WriteAsync(serialized).ConfigureAwait(false);
-    }
-
-    private bool AnyExceptions(IEnumerable<IClassExecutionSummary> notificationExecutionSummaries)
-    {
-        var allResults = notificationExecutionSummaries.SelectMany(x => x.CompiledTestCaseResults).Select(x => x.Exception).ToList();
-        return allResults.Any();
     }
 }

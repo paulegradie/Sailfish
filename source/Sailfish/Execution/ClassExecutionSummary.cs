@@ -1,32 +1,33 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using Sailfish.Extensions.Methods;
 using Sailfish.Statistics;
 
 namespace Sailfish.Execution;
 
 public interface IClassExecutionSummary
 {
-    public Type TestClass { get; set; }
-    public IExecutionSettings Settings { get; }
-    public IEnumerable<ICompiledTestCaseResult> CompiledTestCaseResults { get; set; }
+    Type TestClass { get; set; }
+    IExecutionSettings ExecutionSettings { get; }
+    IEnumerable<ICompiledTestCaseResult> CompiledTestCaseResults { get; set; }
 
-    public IEnumerable<ICompiledTestCaseResult> GetSuccessfulTestCases();
+    IEnumerable<ICompiledTestCaseResult> GetSuccessfulTestCases();
     IEnumerable<ICompiledTestCaseResult> GetFailedTestCases();
+    IClassExecutionSummary FilterForSuccessfulTestCases();
+    IClassExecutionSummary FilterForFailureTestCases();
 }
 
-public class ClassExecutionSummary : IClassExecutionSummary
+internal class ClassExecutionSummary : IClassExecutionSummary
 {
-    public ClassExecutionSummary(Type type, IEnumerable<ICompiledTestCaseResult> compiledResults)
+    public ClassExecutionSummary(Type type, IExecutionSettings executionSettings, IEnumerable<ICompiledTestCaseResult> compiledResults)
     {
         TestClass = type;
         CompiledTestCaseResults = compiledResults;
-        Settings = type.RetrieveExecutionTestSettings();
+        ExecutionSettings = executionSettings;
     }
 
     public Type TestClass { get; set; }
-    public IExecutionSettings Settings { get; }
+    public IExecutionSettings ExecutionSettings { get; }
     public IEnumerable<ICompiledTestCaseResult> CompiledTestCaseResults { get; set; }
 
     public IEnumerable<ICompiledTestCaseResult> GetSuccessfulTestCases()
@@ -37,5 +38,15 @@ public class ClassExecutionSummary : IClassExecutionSummary
     public IEnumerable<ICompiledTestCaseResult> GetFailedTestCases()
     {
         return CompiledTestCaseResults.Where(x => x.PerformanceRunResult is null);
+    }
+
+    public IClassExecutionSummary FilterForSuccessfulTestCases()
+    {
+        return new ClassExecutionSummary(TestClass, ExecutionSettings, GetSuccessfulTestCases());
+    }
+
+    public IClassExecutionSummary FilterForFailureTestCases()
+    {
+        return new ClassExecutionSummary(TestClass, ExecutionSettings, GetFailedTestCases());
     }
 }

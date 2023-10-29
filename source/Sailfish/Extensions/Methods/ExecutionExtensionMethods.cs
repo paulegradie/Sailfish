@@ -7,22 +7,16 @@ namespace Sailfish.Extensions.Methods;
 
 internal static class ExecutionExtensionMethods
 {
-    public static IExecutionSettings RetrieveExecutionTestSettings(this Type type)
+    public static IExecutionSettings RetrieveExecutionTestSettings(this Type type, int? globalSampleSize, int? globalNumWarmupIterations)
     {
         var asMarkdown = type.GetCustomAttribute<WriteToMarkdownAttribute>();
         var asCsv = type.GetCustomAttribute<WriteToCsvAttribute>();
         var suppressConsole = type.GetCustomAttribute<SuppressConsoleAttribute>();
 
-        var sampleSize = type.GetSampleSize();
-        var numWarmupIterations = type.GetWarmupIterations();
+        var sampleSize = globalSampleSize ?? type.GetSampleSize();
+        var numWarmupIterations = globalNumWarmupIterations ?? type.GetWarmupIterations();
 
-        return new ExecutionSettings
-        {
-            AsCsv = asCsv is not null,
-            AsConsole = suppressConsole is null,
-            AsMarkdown = asMarkdown is not null,
-            SampleSize = sampleSize,
-            NumWarmupIterations = numWarmupIterations
-        };
+        return new ExecutionSettings(asCsv: asCsv is not null, asConsole: suppressConsole is null, asMarkdown: asMarkdown is not null, sampleSize: sampleSize,
+            numWarmupIterations: numWarmupIterations);
     }
 }

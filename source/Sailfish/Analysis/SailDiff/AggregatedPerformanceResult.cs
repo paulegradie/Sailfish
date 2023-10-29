@@ -33,6 +33,6 @@ public class AggregatedPerformanceResult
             aggregatedRawExecutionResults: allRawData,
             displayName: testCaseId.DisplayName,
             sampleSize: data.First().SampleSize,
-            numWarmupIterations: data.First().NumWarmups);
+            numWarmupIterations: data.First().NumWarmupIterations);
     }
 }
