@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using System.Text.Json.Serialization;
 using Sailfish.Contracts.Public;
 
 namespace Sailfish.Contracts.Serialization.V1;
