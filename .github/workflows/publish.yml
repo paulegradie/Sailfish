@@ -35,7 +35,7 @@ jobs:
         env:
           NUM: ${{ github.run_number }}
           ACTIONS_ALLOW_UNSECURE_COMMANDS: true
-        run: echo ::set-env name=VERSION::1.2.$(($NUM-245))  # change int to current version when bumping
+        run: echo ::set-env name=VERSION::1.3.$(($NUM-248))  # change int to current version when bumping
 
       - name: Test version (write)
         run: echo ${VERSION}
