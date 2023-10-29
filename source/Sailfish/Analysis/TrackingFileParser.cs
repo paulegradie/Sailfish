@@ -6,7 +6,9 @@ using System.Runtime.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
 using Sailfish.Contracts.Serialization.V1;
+using Sailfish.Execution;
 using Sailfish.Extensions.Types;
+using Sailfish.Presentation;
 using Serilog;
 
 namespace Sailfish.Analysis;
@@ -44,11 +46,11 @@ internal class TrackingFileParser : ITrackingFileParser
             {
                 var serialized = await File.ReadAllTextAsync(trackingFile, cancellationToken);
                 var deserializedFile = trackingFileSerialization.Deserialize(serialized)?.ToList();
-                if (deserializedFile is null) throw new SerializationException();
+                if (deserializedFile is null) throw new SerializationException($"Failed to deserialize {trackingFile}");
                 if (!deserializedFile.Any()) continue;
                 try
                 {
-                    trackingFormatData.Add(deserializedFile.ToSummaryFormat().ToList()); // only add if all files present succeed
+                    trackingFormatData.Add(new List<IClassExecutionSummary>(deserializedFile.ToSummaryFormat())); // only add if all files present succeed
                 }
                 catch (ArgumentException)
                 {
@@ -62,7 +64,7 @@ internal class TrackingFileParser : ITrackingFileParser
         catch (SerializationException ex)
         {
             logger.Fatal(
-                $"Failed to deserialize data into {nameof(PerformanceRunResultTrackingFormatV1)}. Please remove any non-V1(or corrupt) tracking data from your tracking directory.\n\n" +
+                $"Failed to deserialize data into {nameof(PerformanceRunResultTrackingFormat)}. Please remove any non-V1(or corrupt) tracking data from your tracking directory.\n\n" +
                 ex.Message);
             return false;
         }

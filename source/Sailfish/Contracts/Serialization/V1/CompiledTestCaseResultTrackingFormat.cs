@@ -12,28 +12,28 @@ namespace Sailfish.Contracts.Serialization.V1;
 /// Changes to this constitute a **BREAKING CHANGE** in the Sailfish data persistence contract
 /// Do not make changes to this lightly
 /// </summary>
-public class CompiledTestCaseResultTrackingFormatV1
+public class CompiledTestCaseResultTrackingFormat
 {
     [JsonConstructor]
-    public CompiledTestCaseResultTrackingFormatV1()
+    public CompiledTestCaseResultTrackingFormat()
     {
     }
 
-    public CompiledTestCaseResultTrackingFormatV1(
-        string groupingId,
-        PerformanceRunResultTrackingFormatV1 performanceRunResultTrackingFormatV1,
+    public CompiledTestCaseResultTrackingFormat(
+        string? groupingId,
+        PerformanceRunResultTrackingFormat? performanceRunResult,
         Exception? exception,
-        TestCaseId testCaseId)
+        TestCaseId? testCaseId)
     {
         GroupingId = groupingId;
-        PerformanceRunResultTrackingFormatV1 = performanceRunResultTrackingFormatV1;
-        Exception = exception ?? new Exception();
+        PerformanceRunResult = performanceRunResult;
+        Exception = exception;
         TestCaseId = testCaseId;
     }
 
-    public string GroupingId { get; set; }
-    public PerformanceRunResultTrackingFormatV1 PerformanceRunResultTrackingFormatV1 { get; set; }
-    public Exception Exception { get; set; } = new();
+    public string? GroupingId { get; set; }
+    public PerformanceRunResultTrackingFormat? PerformanceRunResult { get; set; }
+    public Exception? Exception { get; set; }
 
     [JsonConverter(typeof(TestCaseIdConverter))]
     public TestCaseId? TestCaseId { get; set; }

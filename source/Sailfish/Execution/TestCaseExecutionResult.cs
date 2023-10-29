@@ -1,5 +1,4 @@
 ﻿using System;
-using Sailfish.Extensions.Methods;
 
 namespace Sailfish.Execution;
 
@@ -39,12 +38,12 @@ internal class TestCaseExecutionResult
         PerformanceTimerResults = null;
     }
 
-    public TestCaseExecutionResult(Type testType, Exception exception)
+    public TestCaseExecutionResult(IExecutionSettings executionSettings, Exception exception)
     {
         Exception = exception;
         IsSuccess = false;
         StatusCode = StatusCode.Failure;
-        ExecutionSettings = testType.RetrieveExecutionTestSettings();
+        ExecutionSettings = executionSettings;
 
         TestInstanceContainer = null;
         TestInstanceContainerProvider = null;

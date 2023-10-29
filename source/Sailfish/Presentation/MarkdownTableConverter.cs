@@ -11,7 +11,8 @@ namespace Sailfish.Presentation;
 
 public class MarkdownTableConverter : IMarkdownTableConverter
 {
-    public string ConvertToMarkdownTableString(IEnumerable<IClassExecutionSummary> executionSummaries,
+    public string ConvertToMarkdownTableString(
+        IEnumerable<IClassExecutionSummary> executionSummaries,
         Func<IClassExecutionSummary, bool> summaryFilter)
     {
         var filteredSummaries = executionSummaries.Where(summaryFilter);
@@ -21,13 +22,15 @@ public class MarkdownTableConverter : IMarkdownTableConverter
     public string ConvertToMarkdownTableString(IEnumerable<IClassExecutionSummary> executionSummaries)
     {
         var stringBuilder = new StringBuilder();
+
+        var allExceptions = new List<Exception>();
         foreach (var result in executionSummaries)
         {
             AppendResults(result.TestClass.Name, result.CompiledTestCaseResults, stringBuilder);
-
-            var exceptions = result.CompiledTestCaseResults.Select(x => x.Exception).ToList();
-            AppendExceptions(exceptions, stringBuilder);
+            allExceptions.AddRange(result.CompiledTestCaseResults.Where(x => x.Exception is not null).Select(x => x.Exception).Cast<Exception>().ToList());
         }
+
+        AppendExceptions(allExceptions, stringBuilder);
 
         return stringBuilder.ToString();
     }
@@ -39,7 +42,7 @@ public class MarkdownTableConverter : IMarkdownTableConverter
             if (group.Key is null) continue;
             stringBuilder.AppendLine();
             var n = group.Select(x => x.PerformanceRunResult?.SampleSize).Distinct().Single();
-            if (n is null || n == 0)
+            if (n is null or 0)
             {
                 continue;
             }

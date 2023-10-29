@@ -22,6 +22,8 @@ internal class RunSettings : IRunSettings
     public DateTime? TimeStamp { get; }
     public bool DisableOverheadEstimation { get; }
     public bool DisableAnalysisGlobally { get; set; }
+    public int? SampleSizeOverride { get; set; }
+    public int? NumWarmupIterationsOverride { get; set; }
     public bool Debug { get; set; }
 
     public RunSettings(
@@ -72,6 +74,8 @@ internal class RunSettings : IRunSettings
         IEnumerable<Type> testLocationAnchors,
         IEnumerable<Type> registrationProviderAnchors,
         bool disableOverheadEstimation,
+        int? sampleSizeOverride = null,
+        int? numWarmupIterationsOverride = null,
         bool disableAnalysisGlobally = false,
         bool debug = false)
     {
@@ -91,9 +95,11 @@ internal class RunSettings : IRunSettings
         RegistrationProviderAnchors = registrationProviderAnchors;
         DisableOverheadEstimation = disableOverheadEstimation;
         DisableAnalysisGlobally = disableAnalysisGlobally;
+        SampleSizeOverride = sampleSizeOverride;
+        NumWarmupIterationsOverride = numWarmupIterationsOverride;
     }
 
-    // default available to end users
+    // default
     public RunSettings()
     {
         TestNames = Array.Empty<string>();

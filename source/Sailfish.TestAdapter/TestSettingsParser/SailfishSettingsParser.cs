@@ -7,7 +7,7 @@ namespace Sailfish.TestAdapter.TestSettingsParser;
 
 public class SailfishSettingsParser
 {
-    public static SailfishSettings Parse(string filePath)
+    public static SettingsConfiguration Parse(string filePath)
     {
         var json = File.ReadAllText(filePath);
 
@@ -17,6 +17,6 @@ public class SailfishSettingsParser
             ReadCommentHandling = JsonCommentHandling.Skip,
         };
 
-        return JsonSerializer.Deserialize<SailfishSettings>(json, options) ?? new SailfishSettings();
+        return JsonSerializer.Deserialize<SettingsConfiguration>(json, options) ?? new SettingsConfiguration();
     }
 }

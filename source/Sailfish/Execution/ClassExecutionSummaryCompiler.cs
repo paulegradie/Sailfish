@@ -3,6 +3,7 @@ using System.Linq;
 using System.Threading;
 using Sailfish.Contracts.Public;
 using Sailfish.Exceptions;
+using Sailfish.Extensions.Methods;
 using Sailfish.Statistics;
 
 namespace Sailfish.Execution;
@@ -10,10 +11,12 @@ namespace Sailfish.Execution;
 internal class ClassExecutionSummaryCompiler : IClassExecutionSummaryCompiler
 {
     private readonly IStatisticsCompiler statsCompiler;
+    private readonly IRunSettings runSettings;
 
-    public ClassExecutionSummaryCompiler(IStatisticsCompiler statsCompiler)
+    public ClassExecutionSummaryCompiler(IStatisticsCompiler statsCompiler, IRunSettings runSettings)
     {
         this.statsCompiler = statsCompiler;
+        this.runSettings = runSettings;
     }
 
     public IEnumerable<IClassExecutionSummary> CompileToSummaries(IEnumerable<TestClassResultGroup> rawExecutionResults, CancellationToken cancellationToken)
@@ -31,7 +34,9 @@ internal class ClassExecutionSummaryCompiler : IClassExecutionSummaryCompiler
             compiledResults.Add(compiledResult);
         }
 
-        return new ClassExecutionSummary(testClassResultGroup.TestClass, compiledResults);
+        var executionSettings = testClassResultGroup.TestClass.RetrieveExecutionTestSettings(runSettings.SampleSizeOverride, runSettings.NumWarmupIterationsOverride);
+
+        return new ClassExecutionSummary(testClassResultGroup.TestClass, executionSettings, compiledResults);
     }
 
     private CompiledTestCaseResult CompileTestResult(TestCaseExecutionResult testCaseExecutionResult, ICollection<ICompiledTestCaseResult> compiledResults)

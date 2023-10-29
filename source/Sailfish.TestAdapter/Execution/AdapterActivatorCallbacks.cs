@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
 using System.Threading;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel;
@@ -146,8 +145,6 @@ internal class AdapterActivatorCallbacks : IActivatorCallbacks
             testResult.Messages.Add(new TestResultMessage(TestResultMessage.StandardErrorCategory, result.Exception?.Message));
         }
 
-        LogTestResults(result);
-
         consoleWriter.RecordEnd(currentTestCase, testResult.Outcome);
         consoleWriter.RecordResult(testResult);
     }
@@ -253,14 +250,5 @@ internal class AdapterActivatorCallbacks : IActivatorCallbacks
     {
         return testCaseGroup.Single(testCase =>
             container.TestCaseId.DisplayName.EndsWith(testCase.GetPropertyHelper(SailfishManagedProperty.SailfishDisplayNameDefinitionProperty)));
-    }
-
-    private void LogTestResults(TestCaseExecutionResult result)
-    {
-        foreach (var perf in result.PerformanceTimerResults?.MethodIterationPerformances!)
-        {
-            var timeResult = perf.GetDurationFromTicks().MilliSeconds;
-            consoleWriter.WriteString($"Time: {timeResult.Duration.ToString(CultureInfo.InvariantCulture)} {timeResult.TimeScale.ToString().ToLowerInvariant()}");
-        }
     }
 }

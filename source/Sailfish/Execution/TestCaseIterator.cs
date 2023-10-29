@@ -6,6 +6,13 @@ namespace Sailfish.Execution;
 
 internal class TestCaseIterator : ITestCaseIterator
 {
+    private readonly IRunSettings runSettings;
+
+    public TestCaseIterator(IRunSettings runSettings)
+    {
+        this.runSettings = runSettings;
+    }
+    
     public async Task<TestCaseExecutionResult> Iterate(TestInstanceContainer testInstanceContainer, bool disableOverheadEstimation, CancellationToken cancellationToken)
     {
         var overheadEstimator = new OverheadEstimator();
@@ -20,7 +27,8 @@ internal class TestCaseIterator : ITestCaseIterator
             await overheadEstimator.Estimate();
         }
 
-        for (var i = 0; i < testInstanceContainer.SampleSize; i++)
+        var iterations = runSettings.SampleSizeOverride is not null ? Math.Max(runSettings.SampleSizeOverride.Value, 1) : testInstanceContainer.SampleSize;
+        for (var i = 0; i < iterations; i++)
         {
             cancellationToken.ThrowIfCancellationRequested();
 

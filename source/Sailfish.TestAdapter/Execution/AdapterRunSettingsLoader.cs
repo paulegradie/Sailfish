@@ -17,12 +17,12 @@ public static class AdapterRunSettingsLoader
     {
         var parsedSettings = ParseSettings();
 
-        if (parsedSettings.DisableEverything) throw new SailfishException("Everything is disabled!");
+        if (parsedSettings.GlobalSettings.DisableEverything) throw new SailfishException("Everything is disabled!");
 
         var runSettingsBuilder = RunSettingsBuilder.CreateBuilder();
-        if (!string.IsNullOrEmpty(parsedSettings.ResultsDirectory))
+        if (!string.IsNullOrEmpty(parsedSettings.GlobalSettings.ResultsDirectory))
         {
-            runSettingsBuilder = runSettingsBuilder.WithLocalOutputDirectory(parsedSettings.ResultsDirectory);
+            runSettingsBuilder = runSettingsBuilder.WithLocalOutputDirectory(parsedSettings.GlobalSettings.ResultsDirectory);
         }
 
         if (parsedSettings.SailDiffSettings.Disabled)
@@ -30,9 +30,19 @@ public static class AdapterRunSettingsLoader
             runSettingsBuilder = runSettingsBuilder.WithAnalysisDisabledGlobally();
         }
 
-        if (parsedSettings.DisableOverheadEstimation)
+        if (parsedSettings.SailfishSettings.DisableOverheadEstimation)
         {
             runSettingsBuilder = runSettingsBuilder.DisableOverheadEstimation();
+        }
+
+        if (parsedSettings.SailfishSettings.SampleSizeOverride is not null)
+        {
+            runSettingsBuilder = runSettingsBuilder.WithGlobalSampleSize(parsedSettings.SailfishSettings.SampleSizeOverride.Value);
+        }
+
+        if (parsedSettings.SailfishSettings.NumWarmupIterationsOverride is not null)
+        {
+            runSettingsBuilder = runSettingsBuilder.WithGlobalNumWarmupIterations(parsedSettings.SailfishSettings.NumWarmupIterationsOverride.Value);
         }
 
         var testSettings = MapToTestSettings(parsedSettings);
@@ -44,35 +54,35 @@ public static class AdapterRunSettingsLoader
         return runSettings;
     }
 
-    private static Analysis.SailDiff.SailDiffSettings MapToTestSettings(SailfishSettings settings)
+    private static Analysis.SailDiff.SailDiffSettings MapToTestSettings(SettingsConfiguration settingsConfiguration)
     {
         var mappedSettings = new Analysis.SailDiff.SailDiffSettings();
-        if (settings?.SailDiffSettings.TestType is not null)
+        if (settingsConfiguration?.SailDiffSettings.TestType is not null)
         {
-            mappedSettings.SetTestType(settings.SailDiffSettings.TestType);
+            mappedSettings.SetTestType(settingsConfiguration.SailDiffSettings.TestType);
         }
 
-        if (settings?.UseOutlierDetection is not null)
+        if (settingsConfiguration?.GlobalSettings.UseOutlierDetection is not null)
         {
-            mappedSettings.SetUseOutlierDetection(settings.UseOutlierDetection);
+            mappedSettings.SetUseOutlierDetection(settingsConfiguration.GlobalSettings.UseOutlierDetection);
         }
 
-        if (settings?.SailDiffSettings.Alpha is not null)
+        if (settingsConfiguration?.SailDiffSettings.Alpha is not null)
         {
-            mappedSettings.SetAlpha(settings.SailDiffSettings.Alpha);
+            mappedSettings.SetAlpha(settingsConfiguration.SailDiffSettings.Alpha);
         }
 
-        if (settings?.Round is not null)
+        if (settingsConfiguration?.GlobalSettings.Round is not null)
         {
-            mappedSettings.SetRound(settings.Round);
+            mappedSettings.SetRound(settingsConfiguration.GlobalSettings.Round);
         }
 
         return mappedSettings;
     }
 
-    private static SailfishSettings ParseSettings()
+    private static SettingsConfiguration ParseSettings()
     {
-        var parsedSettings = new SailfishSettings();
+        var parsedSettings = new SettingsConfiguration();
         try
         {
             var settingsFile = DirectoryRecursion.RecurseUpwardsUntilFileIsFound(

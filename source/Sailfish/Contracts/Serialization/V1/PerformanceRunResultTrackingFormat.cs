@@ -1,5 +1,6 @@
 using System;
 using System.Text.Json.Serialization;
+
 #pragma warning disable CS8618
 
 
@@ -10,14 +11,16 @@ namespace Sailfish.Contracts.Serialization.V1;
 /// Changes to this constitute a **BREAKING CHANGE** in the Sailfish data persistence contract
 /// Do not make changes to this lightly
 /// </summary>
-public class PerformanceRunResultTrackingFormatV1
+public class PerformanceRunResultTrackingFormat
 {
     [JsonConstructor]
-    public PerformanceRunResultTrackingFormatV1()
+    public PerformanceRunResultTrackingFormat()
     {
-        
     }
-    public PerformanceRunResultTrackingFormatV1(string displayName, double mean, double median, double stdDev, double variance, double globalDuration, DateTimeOffset globalStart, DateTimeOffset globalEnd, double[] rawExecutionResults, int sampleSize, int numWarmupIterations, double[] dataWithOutliersRemoved, double[] lowerOutliers, double[] upperOutliers, int totalNumOutliers)
+
+    public PerformanceRunResultTrackingFormat(string displayName, DateTimeOffset globalStart, DateTimeOffset globalEnd, double globalDuration, double mean, double median,
+        double stdDev, double variance, double[] rawExecutionResults, int sampleSize, int numWarmupIterations, double[] dataWithOutliersRemoved, double[] upperOutliers,
+        double[] lowerOutliers, int totalNumOutliers)
     {
         DisplayName = displayName;
         Mean = mean;

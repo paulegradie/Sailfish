@@ -9,13 +9,16 @@ namespace Sailfish.Execution;
 
 internal class TestInstanceContainerCreator : ITestInstanceContainerCreator
 {
+    private readonly IRunSettings runSettings;
     private readonly ITypeActivator typeActivator;
     private readonly IPropertySetGenerator propertySetGenerator;
 
     public TestInstanceContainerCreator(
+        IRunSettings runSettings,
         ITypeActivator typeActivator,
         IPropertySetGenerator propertySetGenerator)
     {
+        this.runSettings = runSettings;
         this.typeActivator = typeActivator;
         this.propertySetGenerator = propertySetGenerator;
     }
@@ -26,7 +29,7 @@ internal class TestInstanceContainerCreator : ITestInstanceContainerCreator
         Func<MethodInfo, bool>? instanceContainerFilter = null)
     {
         var sailfishVariableSets = propertySetGenerator.GenerateSailfishVariableSets(testType, out var variableProperties);
-        
+
         if (propertyTensorFilter is not null)
         {
             sailfishVariableSets = sailfishVariableSets.Where(propertyTensorFilter);
@@ -40,6 +43,7 @@ internal class TestInstanceContainerCreator : ITestInstanceContainerCreator
 
         return sailfishMethods
             .Select(instanceContainer => new TestInstanceContainerProvider(
+                runSettings,
                 typeActivator,
                 testType,
                 sailfishVariableSets,

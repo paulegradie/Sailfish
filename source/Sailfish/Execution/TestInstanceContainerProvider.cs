@@ -3,18 +3,21 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using Sailfish.Attributes;
+using Sailfish.Extensions.Methods;
 using Sailfish.Utils;
 
 namespace Sailfish.Execution;
 
 internal class TestInstanceContainerProvider
 {
+    private readonly IRunSettings runSettings;
     public readonly MethodInfo Method;
     public readonly Type Test;
     private readonly ITypeActivator typeActivator;
     private readonly IEnumerable<PropertySet> propertySets;
 
     public TestInstanceContainerProvider(
+        IRunSettings runSettings,
         ITypeActivator typeActivator,
         Type test,
         IEnumerable<PropertySet> propertySets,
@@ -23,6 +26,7 @@ internal class TestInstanceContainerProvider
         Method = method;
         Test = test;
 
+        this.runSettings = runSettings;
         this.typeActivator = typeActivator;
         this.propertySets = propertySets;
     }
@@ -46,7 +50,8 @@ internal class TestInstanceContainerProvider
         {
             var testCaseId = DisplayNameHelper.CreateTestCaseId(Test, Method.Name, Array.Empty<string>(), Array.Empty<object>()); // a uniq id
             var instance = typeActivator.CreateDehydratedTestInstance(Test, testCaseId, disabled);
-            yield return TestInstanceContainer.CreateTestInstance(instance, Method, Array.Empty<string>(), Array.Empty<object>(), disabled);
+            var executionSettings = instance.GetType().RetrieveExecutionTestSettings(runSettings.SampleSizeOverride, runSettings.NumWarmupIterationsOverride);
+            yield return TestInstanceContainer.CreateTestInstance(instance, Method, Array.Empty<string>(), Array.Empty<object>(), disabled, executionSettings);
         }
         else
         {
@@ -54,15 +59,18 @@ internal class TestInstanceContainerProvider
             {
                 var propertyNames = nextPropertySet.GetPropertyNames().ToArray();
                 var variableValues = nextPropertySet.GetPropertyValues().ToArray();
+
                 var testCaseId = DisplayNameHelper.CreateTestCaseId(Test, Method.Name, propertyNames, variableValues); // a uniq id
 
                 var instance = typeActivator.CreateDehydratedTestInstance(Test, testCaseId, disabled);
                 HydrateInstanceTestProperties(instance, nextPropertySet);
 
-                yield return TestInstanceContainer.CreateTestInstance(instance, Method, propertyNames, variableValues, disabled);
+                var executionSettings = instance.GetType().RetrieveExecutionTestSettings(runSettings.SampleSizeOverride, runSettings.NumWarmupIterationsOverride);
+                yield return TestInstanceContainer.CreateTestInstance(instance, Method, propertyNames, variableValues, disabled, executionSettings);
             }
         }
     }
+
 
     private static void HydrateInstanceTestProperties(object obj, PropertySet propertySet)
     {

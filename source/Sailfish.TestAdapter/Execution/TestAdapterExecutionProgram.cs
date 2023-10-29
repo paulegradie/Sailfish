@@ -65,6 +65,8 @@ internal class TestAdapterExecutionProgram : ITestAdapterExecutionProgram
         }
 
         var executionSummaries = await testAdapterExecutionEngine.Execute(testCases, preloadedLastRunsIfAvailable, runSettings.Settings, cancellationToken);
+
+        // Something weird is going on here when there is an exception - all of the testcases runs get logged into the test output window for the errored case
         consoleWriter.Present(executionSummaries, new OrderedDictionary());
         await executionSummaryWriter.Write(executionSummaries, timeStamp, trackingDir, runSettings, cancellationToken);
 
