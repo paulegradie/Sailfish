@@ -70,7 +70,7 @@ internal class TestAdapterExecutionProgram : ITestAdapterExecutionProgram
         consoleWriter.Present(executionSummaries, new OrderedDictionary());
         await executionSummaryWriter.Write(executionSummaries, timeStamp, trackingDir, runSettings, cancellationToken);
 
-        if (executionSummaries.SelectMany(x => x.CompiledTestCaseResults).Select(x => x.Exception).Any())
+        if (executionSummaries.SelectMany(x => x.CompiledTestCaseResults.Where(y => y.Exception is not null)).Any())
         {
             return;
         }
