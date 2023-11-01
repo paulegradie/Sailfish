@@ -2,7 +2,7 @@
   "SailfishSettings": {
     "DisableOverheadEstimation": false,
     "NumWarmupIterationsOverride": null,
-    "SampleSizeOverride": 2
+    "SampleSizeOverride": null
   },
   "SailDiffSettings": {
     "TestType": "TTest",

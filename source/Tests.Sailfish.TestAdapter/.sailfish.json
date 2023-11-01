@@ -1,13 +1,19 @@
 {
+  "SailfishSettings": {
+    "DisableOverheadEstimation": false,
+    "NumWarmupIterationsOverride": null,
+    "SampleSizeOverride": null
+  },
   "SailDiffSettings": {
     "TestType": "TTest",
     "Alpha": 0.005,
-    "Disabled": true
+    "Disabled": false
   },
   "ScaleFishSettings": {},
-  "Round": 5,
-  "UseOutlierDetection": true,
-  "ResultsDirectory": "SailfishIDETestOutput",
-  "DisableOverheadEstimation": true,
-  "DisableEverything": true
+  "GlobalSettings": {
+    "UseOutlierDetection": true,
+    "ResultsDirectory": "SailfishIDETestOutput",
+    "DisableEverything": false,
+    "Round": 5
+  }
 }

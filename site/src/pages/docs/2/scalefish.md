@@ -31,17 +31,23 @@ If using Sailfish as a test project, you can create a `.sailfish.json` file in t
 
 ```json
 {
+  "SailfishSettings": {
+    "DisableOverheadEstimation": false,
+    "NumWarmupIterationsOverride": 1,
+    "SampleSizeOverride": 30
+  },
   "SailDiffSettings": {
     "TestType": "TTest",
     "Alpha": 0.005,
     "Disabled": false
   },
   "ScaleFishSettings": {},
-  "Round": 5,
-  "UseOutlierDetection": true,
-  "ResultsDirectory": "SailfishIDETestOutput",
-  "DisableOverheadEstimation": false,
-  "DisableEverything": false
+  "GlobalSettings": {
+    "UseOutlierDetection": true,
+    "ResultsDirectory": "SailfishIDETestOutput",
+    "DisableEverything": false,
+    "Round": 5
+  }
 }
 ```
 
