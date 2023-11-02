@@ -7,9 +7,9 @@ using Sailfish.Extensions.Types;
 
 namespace Sailfish.Contracts.Private;
 
-internal class WriteToCsvCommand : INotification
+internal class WriteToCsvNotification : INotification
 {
-    public WriteToCsvCommand(
+    public WriteToCsvNotification(
         List<IClassExecutionSummary> content,
         string outputDirectory,
         DateTime timeStamp,

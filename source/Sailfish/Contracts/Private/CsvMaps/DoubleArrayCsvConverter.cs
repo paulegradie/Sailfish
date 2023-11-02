@@ -4,9 +4,9 @@ using CsvHelper;
 using CsvHelper.Configuration;
 using CsvHelper.TypeConversion;
 
-namespace Sailfish.Contracts.Public.CsvMaps;
+namespace Sailfish.Contracts.Private.CsvMaps;
 
-internal class DoubleArrayConverter : ITypeConverter
+internal class DoubleArrayCsvConverter : ITypeConverter
 {
     private const string Sep = ",";
 

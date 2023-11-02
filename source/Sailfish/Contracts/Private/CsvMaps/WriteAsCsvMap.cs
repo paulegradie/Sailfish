@@ -1,8 +1,9 @@
 using CsvHelper.Configuration;
+using Sailfish.Contracts.Public;
 
-namespace Sailfish.Contracts.Public.CsvMaps;
+namespace Sailfish.Contracts.Private.CsvMaps;
 
-public sealed class WriteAsCsvMap : ClassMap<PerformanceRunResult>
+internal sealed class WriteAsCsvMap : ClassMap<PerformanceRunResult>
 {
     public WriteAsCsvMap()
     {
@@ -15,6 +16,6 @@ public sealed class WriteAsCsvMap : ClassMap<PerformanceRunResult>
         Map(m => m.UpperOutliers).Index(6);
         Map(m => m.TotalNumOutliers).Index(7);
         Map(m => m.SampleSize).Index(8);
-        Map(m => m.RawExecutionResults).TypeConverter<DoubleArrayConverter>().Index(9);
+        Map(m => m.RawExecutionResults).TypeConverter<DoubleArrayCsvConverter>().Index(9);
     }
 }

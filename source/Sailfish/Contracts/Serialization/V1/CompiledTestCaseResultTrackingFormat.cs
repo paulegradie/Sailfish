@@ -1,7 +1,7 @@
 using System;
 using System.Text.Json.Serialization;
 using Sailfish.Analysis;
-using Sailfish.Contracts.Serialization.V1.Converters;
+using Sailfish.Contracts.Serialization.V1.JsonConverters;
 
 #pragma warning disable CS8618
 

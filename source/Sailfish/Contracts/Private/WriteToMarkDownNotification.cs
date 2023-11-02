@@ -1,15 +1,20 @@
 ﻿using System;
 using System.Collections.Generic;
-
 using MediatR;
 using Sailfish.Execution;
 using Sailfish.Extensions.Types;
 
 namespace Sailfish.Contracts.Private;
 
-internal class WriteToMarkDownCommand : INotification
+internal class WriteToMarkDownNotification : INotification
 {
-    public WriteToMarkDownCommand(List<IClassExecutionSummary> content, string outputDirectory, DateTime timeStamp, OrderedDictionary tags, OrderedDictionary args, IRunSettings settings)
+    public WriteToMarkDownNotification(
+        List<IClassExecutionSummary> content,
+        string outputDirectory,
+        DateTime timeStamp,
+        OrderedDictionary tags,
+        OrderedDictionary args,
+        IRunSettings settings)
     {
         Content = content;
         OutputDirectory = outputDirectory;

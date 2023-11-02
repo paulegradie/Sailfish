@@ -43,7 +43,8 @@ public class MannWhitneyWilcoxonTestSailfish : IMannWhitneyWilcoxonTestSailfish
                 new ParallelOptions()
                 {
                     MaxDegreeOfParallelism = 5
-                }, (_) =>
+                },
+                _ =>
                 {
                     var (p1, p2) = preprocessor.PreprocessJointlyWithDownSample(before, after, settings.UseOutlierDetection, maxArraySize: maxArraySize);
 

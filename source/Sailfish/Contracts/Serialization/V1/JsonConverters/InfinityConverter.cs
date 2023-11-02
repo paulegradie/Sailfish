@@ -2,7 +2,7 @@ using System;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
-namespace Sailfish.Contracts.Serialization.V1.Converters;
+namespace Sailfish.Contracts.Serialization.V1.JsonConverters;
 
 public class InfinityConverter : JsonConverter<double>
 {

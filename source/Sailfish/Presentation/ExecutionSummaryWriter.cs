@@ -6,21 +6,16 @@ using MediatR;
 using Sailfish.Contracts.Private;
 using Sailfish.Contracts.Public.Commands;
 using Sailfish.Execution;
-using Sailfish.Presentation.CsvAndJson;
 
 namespace Sailfish.Presentation;
 
 internal class ExecutionSummaryWriter : IExecutionSummaryWriter
 {
     private readonly IMediator mediator;
-    private readonly IPerformanceRunResultFileWriter performanceRunResultFileWriter;
 
-    public ExecutionSummaryWriter(
-        IMediator mediator,
-        IPerformanceRunResultFileWriter performanceRunResultFileWriter)
+    public ExecutionSummaryWriter(IMediator mediator)
     {
         this.mediator = mediator;
-        this.performanceRunResultFileWriter = performanceRunResultFileWriter;
     }
 
     public async Task Write(
@@ -31,7 +26,7 @@ internal class ExecutionSummaryWriter : IExecutionSummaryWriter
         CancellationToken cancellationToken)
     {
         await mediator.Publish(
-                new WriteToConsoleCommand(
+                new WriteToConsoleNotification(
                     executionSummaries,
                     runSettings.Tags,
                     runSettings),
@@ -39,7 +34,7 @@ internal class ExecutionSummaryWriter : IExecutionSummaryWriter
             .ConfigureAwait(false);
 
         await mediator.Publish(
-                new WriteToMarkDownCommand(
+                new WriteToMarkDownNotification(
                     executionSummaries,
                     runSettings.LocalOutputDirectory ?? DefaultFileSettings.DefaultOutputDirectory,
                     timeStamp,
@@ -50,7 +45,7 @@ internal class ExecutionSummaryWriter : IExecutionSummaryWriter
             .ConfigureAwait(false);
 
         await mediator.Publish(
-                new WriteToCsvCommand(
+                new WriteToCsvNotification(
                     executionSummaries,
                     runSettings.LocalOutputDirectory ?? DefaultFileSettings.DefaultOutputDirectory,
                     timeStamp,

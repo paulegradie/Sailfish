@@ -8,7 +8,7 @@ using Sailfish.Presentation.Markdown;
 
 namespace Sailfish.DefaultHandlers;
 
-internal class SailfishWriteToMarkdownHandler : INotificationHandler<WriteToMarkDownCommand>
+internal class SailfishWriteToMarkdownHandler : INotificationHandler<WriteToMarkDownNotification>
 {
     private readonly IMarkdownWriter markdownWriter;
 
@@ -17,7 +17,7 @@ internal class SailfishWriteToMarkdownHandler : INotificationHandler<WriteToMark
         this.markdownWriter = markdownWriter;
     }
 
-    public async Task Handle(WriteToMarkDownCommand notification, CancellationToken cancellationToken)
+    public async Task Handle(WriteToMarkDownNotification notification, CancellationToken cancellationToken)
     {
         var fileName = DefaultFileSettings.AppendTagsToFilename(DefaultFileSettings.DefaultPerformanceResultsFileNameStem(notification.TimeStamp) + ".md", notification.Tags);
         var filePath = Path.Combine(notification.OutputDirectory, fileName);

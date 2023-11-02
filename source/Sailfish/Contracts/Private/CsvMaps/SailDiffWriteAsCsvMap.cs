@@ -1,8 +1,9 @@
 using CsvHelper.Configuration;
+using Sailfish.Contracts.Public;
 
-namespace Sailfish.Contracts.Public.CsvMaps;
+namespace Sailfish.Contracts.Private.CsvMaps;
 
-public sealed class SailDiffWriteAsCsvMap : ClassMap<TestCaseResults>
+internal sealed class SailDiffWriteAsCsvMap : ClassMap<TestCaseResults>
 {
     public SailDiffWriteAsCsvMap()
     {
@@ -16,7 +17,7 @@ public sealed class SailDiffWriteAsCsvMap : ClassMap<TestCaseResults>
         Map(m => m.TestResultsWithOutlierAnalysis.TestResults.ChangeDescription).Index(7);
         Map(m => m.TestResultsWithOutlierAnalysis.TestResults.SampleSizeBefore).Index(8);
         Map(m => m.TestResultsWithOutlierAnalysis.TestResults.SampleSizeAfter).Index(9);
-        Map(m => m.TestResultsWithOutlierAnalysis.TestResults.RawDataBefore).TypeConverter<DoubleArrayConverter>().Index(10);
-        Map(m => m.TestResultsWithOutlierAnalysis.TestResults.RawDataAfter).TypeConverter<DoubleArrayConverter>().Index(11);
+        Map(m => m.TestResultsWithOutlierAnalysis.TestResults.RawDataBefore).TypeConverter<DoubleArrayCsvConverter>().Index(10);
+        Map(m => m.TestResultsWithOutlierAnalysis.TestResults.RawDataAfter).TypeConverter<DoubleArrayCsvConverter>().Index(11);
     }
 }

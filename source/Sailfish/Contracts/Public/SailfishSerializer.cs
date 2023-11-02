@@ -2,36 +2,43 @@ using System.Collections.Generic;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Sailfish.Analysis.ScaleFish;
-using Sailfish.Contracts.Serialization.V1.Converters;
+using Sailfish.Contracts.Serialization.V1.JsonConverters;
 
 namespace Sailfish.Contracts.Public;
 
 public static class SailfishSerializer
 {
-    private static readonly JsonSerializerOptions Options = new JsonSerializerOptions
+    private static readonly List<JsonConverter> Converters = new()
     {
-        WriteIndented = true, // Add this line to enable indented JSON
-        Converters =
-        {
-            new JsonNanConverter(),
-            new ComplexityFunctionConverter(),
-            new ExecutionSummaryTrackingFormatV1Converter(),
-            new TypePropertyConverter()
-        }
+        new JsonNanConverter(),
+        new ComplexityFunctionConverter(),
+        new ExecutionSummaryTrackingFormatV1Converter(),
+        new TypePropertyConverter()
     };
 
-    public static string Serialize<T>(T data)
-    {
-        return JsonSerializer.Serialize(data, Options);
-    }
+    public static string Serialize<T>(T data, IEnumerable<JsonConverter>? converters = null)
+        => JsonSerializer.Serialize(data, GetOptions(converters ?? new JsonConverter[] { }));
 
-    public static T? Deserialize<T>(string serializedData)
-    {
-        return JsonSerializer.Deserialize<T>(serializedData, Options);
-    }
+    public static T? Deserialize<T>(string serializedData, IEnumerable<JsonConverter>? converters = null)
+        => JsonSerializer.Deserialize<T>(serializedData, GetOptions(converters ?? new JsonConverter[] { }));
 
     public static IList<JsonConverter> GetConverters()
+        => Converters;
+
+    private static JsonSerializerOptions GetOptions(IEnumerable<JsonConverter> converters)
     {
-        return Options.Converters;
+        var allConverters = new List<JsonConverter>();
+        allConverters.AddRange(converters);
+        allConverters.AddRange(Converters);
+        var options = new JsonSerializerOptions()
+        {
+            WriteIndented = true,
+        };
+        foreach (var converter in allConverters)
+        {
+            options.Converters.Add(converter);
+        }
+
+        return options;
     }
 }

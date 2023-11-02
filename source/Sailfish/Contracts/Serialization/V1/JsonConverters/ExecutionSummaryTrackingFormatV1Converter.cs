@@ -4,7 +4,7 @@ using System.Text.Json;
 using System.Text.Json.Serialization;
 using Sailfish.Exceptions;
 
-namespace Sailfish.Contracts.Serialization.V1.Converters;
+namespace Sailfish.Contracts.Serialization.V1.JsonConverters;
 
 public class ExecutionSummaryTrackingFormatV1Converter : JsonConverter<ClassExecutionSummaryTrackingFormat>
 {

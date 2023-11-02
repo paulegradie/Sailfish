@@ -6,7 +6,7 @@ using Sailfish.Presentation.Console;
 
 namespace Sailfish.DefaultHandlers;
 
-internal class WriteToConsoleHandler : INotificationHandler<WriteToConsoleCommand>
+internal class WriteToConsoleHandler : INotificationHandler<WriteToConsoleNotification>
 {
     private readonly IConsoleWriter consoleWriter;
 
@@ -15,7 +15,7 @@ internal class WriteToConsoleHandler : INotificationHandler<WriteToConsoleComman
         this.consoleWriter = consoleWriter;
     }
 
-    public Task Handle(WriteToConsoleCommand notification, CancellationToken cancellationToken)
+    public Task Handle(WriteToConsoleNotification notification, CancellationToken cancellationToken)
     {
         consoleWriter.Present(notification.Content, notification.Tags);
         return Task.CompletedTask;

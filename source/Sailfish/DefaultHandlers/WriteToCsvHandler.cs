@@ -8,7 +8,7 @@ using Sailfish.Presentation.CsvAndJson;
 
 namespace Sailfish.DefaultHandlers;
 
-internal class WriteToCsvHandler : INotificationHandler<WriteToCsvCommand>
+internal class WriteToCsvHandler : INotificationHandler<WriteToCsvNotification>
 {
     private readonly IPerformanceRunResultFileWriter performanceRunResultFileWriter;
 
@@ -17,7 +17,7 @@ internal class WriteToCsvHandler : INotificationHandler<WriteToCsvCommand>
         this.performanceRunResultFileWriter = performanceRunResultFileWriter;
     }
 
-    public async Task Handle(WriteToCsvCommand notification, CancellationToken cancellationToken)
+    public async Task Handle(WriteToCsvNotification notification, CancellationToken cancellationToken)
     {
         var fileName = DefaultFileSettings.AppendTagsToFilename(DefaultFileSettings.DefaultPerformanceResultsFileNameStem(notification.TimeStamp) + ".csv", notification.Tags);
         var filePath = Path.Combine(notification.OutputDirectory, fileName);

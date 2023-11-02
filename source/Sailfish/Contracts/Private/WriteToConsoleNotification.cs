@@ -6,9 +6,9 @@ using Sailfish.Extensions.Types;
 
 namespace Sailfish.Contracts.Private;
 
-internal class WriteToConsoleCommand : INotification
+internal class WriteToConsoleNotification : INotification
 {
-    public WriteToConsoleCommand(List<IClassExecutionSummary> content, OrderedDictionary tags, IRunSettings settings)
+    public WriteToConsoleNotification(List<IClassExecutionSummary> content, OrderedDictionary tags, IRunSettings settings)
     {
         Content = content;
         Tags = tags;

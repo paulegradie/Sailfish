@@ -13,10 +13,10 @@ public class TestCaseResults
     {
     }
 
-    public TestCaseResults(TestCaseId TestCaseId, TestResultWithOutlierAnalysis testResultsWithOutlierAnalysis)
+    public TestCaseResults(TestCaseId testCaseId, TestResultWithOutlierAnalysis testResultsWithOutlierAnalysis)
     {
         TestResultsWithOutlierAnalysis = testResultsWithOutlierAnalysis;
-        this.TestCaseId = TestCaseId;
+        TestCaseId = testCaseId;
     }
 
     public TestCaseId TestCaseId { get; set; }
