@@ -15,29 +15,31 @@ namespace Sailfish.TestAdapter.Execution;
 internal class AdapterSailDiff : IAdapterSailDiff
 {
     private readonly IMediator mediator;
+    private readonly IRunSettings runSettings;
     private readonly IAdapterConsoleWriter consoleWriter;
     private readonly ITestComputer testComputer;
     private readonly ITestResultTableContentFormatter testResultTableContentFormatter;
 
     public AdapterSailDiff(
         IMediator mediator,
+        IRunSettings runSettings,
         IAdapterConsoleWriter consoleWriter,
         ITestComputer testComputer,
         ITestResultTableContentFormatter testResultTableContentFormatter)
     {
         this.mediator = mediator;
+        this.runSettings = runSettings;
         this.consoleWriter = consoleWriter;
         this.testComputer = testComputer;
         this.testResultTableContentFormatter = testResultTableContentFormatter;
     }
 
-    public async Task Analyze(DateTime timeStamp, IRunSettings runSettings, string trackingDir, CancellationToken cancellationToken)
+    public async Task Analyze(DateTime timeStamp, CancellationToken cancellationToken)
     {
         if (!runSettings.RunSailDiff) return;
 
         var beforeAndAfterFileLocations = await mediator.Send(
             new BeforeAndAfterFileLocationCommand(
-                trackingDir,
                 runSettings.Tags,
                 runSettings.ProvidedBeforeTrackingFiles,
                 runSettings.Args),

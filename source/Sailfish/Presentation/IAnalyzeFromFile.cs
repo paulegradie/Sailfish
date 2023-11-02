@@ -8,7 +8,5 @@ public interface IAnalyzeFromFile
 {
     public Task Analyze(
         DateTime timeStamp,
-        IRunSettings runSettings,
-        string trackingDir,
         CancellationToken cancellationToken);
 }

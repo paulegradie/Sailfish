@@ -9,15 +9,22 @@ namespace Sailfish.DefaultHandlers;
 
 internal class SailfishWriteScalefishResultHandler : INotificationHandler<WriteCurrentScalefishResultCommand>
 {
+    private readonly IRunSettings runSettings;
+
+    public SailfishWriteScalefishResultHandler(IRunSettings runSettings)
+    {
+        this.runSettings = runSettings;
+    }
+
     public async Task Handle(WriteCurrentScalefishResultCommand notification, CancellationToken cancellationToken)
     {
-        var output = notification.LocalOutputDirectory;
+        var output = runSettings.LocalOutputDirectory ?? DefaultFileSettings.DefaultOutputDirectory;
         if (!Directory.Exists(output))
         {
             Directory.CreateDirectory(output);
         }
 
-        var fileName = DefaultFileSettings.AppendTagsToFilename(notification.DefaultFileName, notification.Tags);
+        var fileName = DefaultFileSettings.AppendTagsToFilename(notification.DefaultFileName, runSettings.Tags);
         var filepath = Path.Join(output, fileName);
 
         await using var streamWriter = new StreamWriter(filepath);

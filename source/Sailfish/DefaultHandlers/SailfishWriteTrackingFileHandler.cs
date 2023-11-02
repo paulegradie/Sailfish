@@ -13,17 +13,19 @@ namespace Sailfish.DefaultHandlers;
 internal class SailfishWriteTrackingFileHandler : INotificationHandler<WriteCurrentTrackingFileCommand>
 {
     private readonly ITrackingFileSerialization trackingFileSerialization;
+    private readonly IRunSettings runSettings;
     private readonly ILogger logger;
 
-    public SailfishWriteTrackingFileHandler(ITrackingFileSerialization trackingFileSerialization, ILogger logger)
+    public SailfishWriteTrackingFileHandler(ITrackingFileSerialization trackingFileSerialization, IRunSettings runSettings, ILogger logger)
     {
         this.trackingFileSerialization = trackingFileSerialization;
+        this.runSettings = runSettings;
         this.logger = logger;
     }
 
     public async Task Handle(WriteCurrentTrackingFileCommand notification, CancellationToken cancellationToken)
     {
-        var output = notification.LocalOutputDirectory;
+        var output = runSettings.GetRunSettingsTrackingDirectoryPath();
         if (!Directory.Exists(output))
         {
             Directory.CreateDirectory(output);

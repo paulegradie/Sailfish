@@ -12,10 +12,12 @@ namespace Sailfish.DefaultHandlers;
 
 internal class SailfishBeforeAndAfterFileLocationHandler : IRequestHandler<BeforeAndAfterFileLocationCommand, BeforeAndAfterFileLocationResponse>
 {
+    private readonly IRunSettings runSettings;
     private readonly ITrackingFileDirectoryReader trackingFileDirectoryReader;
 
-    public SailfishBeforeAndAfterFileLocationHandler(ITrackingFileDirectoryReader trackingFileDirectoryReader)
+    public SailfishBeforeAndAfterFileLocationHandler(IRunSettings runSettings, ITrackingFileDirectoryReader trackingFileDirectoryReader)
     {
+        this.runSettings = runSettings;
         this.trackingFileDirectoryReader = trackingFileDirectoryReader;
     }
 
@@ -23,7 +25,7 @@ internal class SailfishBeforeAndAfterFileLocationHandler : IRequestHandler<Befor
         CancellationToken cancellationToken)
     {
         await Task.Yield();
-        var trackingFiles = trackingFileDirectoryReader.FindTrackingFilesInDirectoryOrderedByLastModified(request.TrackingDirectory, ascending: false);
+        var trackingFiles = trackingFileDirectoryReader.FindTrackingFilesInDirectoryOrderedByLastModified(runSettings.GetRunSettingsTrackingDirectoryPath(), ascending: false);
         if (trackingFiles.Count == 0)
         {
             return new BeforeAndAfterFileLocationResponse(new List<string>(), new List<string>());
@@ -41,7 +43,6 @@ internal class SailfishBeforeAndAfterFileLocationHandler : IRequestHandler<Befor
 
             return new BeforeAndAfterFileLocationResponse(filesFound.Select(x => x.file), new List<string> { trackingFiles.First() });
         }
-
 
         return trackingFiles.Count < 2
             ? new BeforeAndAfterFileLocationResponse(new List<string>(), new List<string>())

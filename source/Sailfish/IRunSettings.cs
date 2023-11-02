@@ -25,4 +25,6 @@ public interface IRunSettings
     public int? SampleSizeOverride { get; set; }
     public int? NumWarmupIterationsOverride { get; set; }
     bool Debug { get; set; }
+
+    string GetRunSettingsTrackingDirectoryPath();
 }

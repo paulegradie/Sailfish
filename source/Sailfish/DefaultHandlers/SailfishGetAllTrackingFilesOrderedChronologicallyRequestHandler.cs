@@ -13,11 +13,16 @@ namespace Sailfish.DefaultHandlers;
 internal class SailfishGetAllTrackingFilesOrderedChronologicallyRequestHandler : IRequestHandler<SailfishGetAllTrackingDataOrderedChronologicallyRequest,
     SailfishGetAllTrackingDataOrderedChronologicallyResponse>
 {
+    private readonly IRunSettings runSettings;
     private readonly ITrackingFileDirectoryReader trackingFileDirectoryReader;
     private readonly ITrackingFileParser trackingFileParser;
 
-    public SailfishGetAllTrackingFilesOrderedChronologicallyRequestHandler(ITrackingFileDirectoryReader trackingFileDirectoryReader, ITrackingFileParser trackingFileParser)
+    public SailfishGetAllTrackingFilesOrderedChronologicallyRequestHandler(
+        IRunSettings runSettings,
+        ITrackingFileDirectoryReader trackingFileDirectoryReader,
+        ITrackingFileParser trackingFileParser)
     {
+        this.runSettings = runSettings;
         this.trackingFileDirectoryReader = trackingFileDirectoryReader;
         this.trackingFileParser = trackingFileParser;
     }
@@ -26,7 +31,8 @@ internal class SailfishGetAllTrackingFilesOrderedChronologicallyRequestHandler :
         SailfishGetAllTrackingDataOrderedChronologicallyRequest request,
         CancellationToken cancellationToken)
     {
-        var trackingFiles = trackingFileDirectoryReader.FindTrackingFilesInDirectoryOrderedByLastModified(request.TrackingDirectory, ascending: request.Ascending);
+        var trackingFiles =
+            trackingFileDirectoryReader.FindTrackingFilesInDirectoryOrderedByLastModified(runSettings.GetRunSettingsTrackingDirectoryPath(), ascending: request.Ascending);
         var data = new TrackingFileDataList();
 
         if (!await trackingFileParser.TryParse(trackingFiles, data, cancellationToken))

@@ -12,6 +12,7 @@ namespace Sailfish.Presentation;
 internal class ExecutionSummaryWriter : IExecutionSummaryWriter
 {
     private readonly IMediator mediator;
+    private readonly IRunSettings runSettings;
 
     public ExecutionSummaryWriter(IMediator mediator)
     {
@@ -21,17 +22,9 @@ internal class ExecutionSummaryWriter : IExecutionSummaryWriter
     public async Task Write(
         List<IClassExecutionSummary> executionSummaries,
         DateTime timeStamp,
-        string trackingDir,
-        IRunSettings runSettings,
         CancellationToken cancellationToken)
     {
-        await mediator.Publish(
-                new WriteToConsoleNotification(
-                    executionSummaries,
-                    runSettings.Tags,
-                    runSettings),
-                cancellationToken)
-            .ConfigureAwait(false);
+        await mediator.Publish(new WriteToConsoleNotification(executionSummaries), cancellationToken).ConfigureAwait(false);
 
         await mediator.Publish(
                 new WriteToMarkDownNotification(
@@ -60,7 +53,6 @@ internal class ExecutionSummaryWriter : IExecutionSummaryWriter
             await mediator.Publish(
                     new WriteCurrentTrackingFileCommand(
                         executionSummaries.ToTrackingFormat(),
-                        trackingDir,
                         timeStamp,
                         runSettings.Tags,
                         runSettings.Args),

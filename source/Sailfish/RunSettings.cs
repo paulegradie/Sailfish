@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using Sailfish.Analysis.SailDiff;
 using Sailfish.Extensions.Types;
+using Sailfish.Presentation;
 
 namespace Sailfish;
 
@@ -99,7 +101,9 @@ internal class RunSettings : IRunSettings
         NumWarmupIterationsOverride = numWarmupIterationsOverride;
     }
 
-    // default
+    /// <summary>
+    /// Default Constructor
+    /// </summary>
     public RunSettings()
     {
         TestNames = Array.Empty<string>();
@@ -110,5 +114,26 @@ internal class RunSettings : IRunSettings
         ProvidedBeforeTrackingFiles = Array.Empty<string>();
         RunScalefish = true;
         RunSailDiff = true;
+    }
+
+    public string GetRunSettingsTrackingDirectoryPath()
+    {
+        string trackingDirectoryPath;
+        if (string.IsNullOrEmpty(LocalOutputDirectory) ||
+            string.IsNullOrWhiteSpace(LocalOutputDirectory))
+        {
+            trackingDirectoryPath = DefaultFileSettings.DefaultExecutionSummaryTrackingDirectory;
+        }
+        else
+        {
+            trackingDirectoryPath = Path.Join(LocalOutputDirectory, DefaultFileSettings.DefaultExecutionSummaryTrackingDirectory);
+        }
+
+        if (!Directory.Exists(trackingDirectoryPath))
+        {
+            Directory.CreateDirectory(trackingDirectoryPath);
+        }
+
+        return trackingDirectoryPath;
     }
 }

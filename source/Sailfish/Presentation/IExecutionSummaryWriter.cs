@@ -11,7 +11,5 @@ internal interface IExecutionSummaryWriter
     Task Write(
         List<IClassExecutionSummary> executionSummaries,
         DateTime timeStamp,
-        string trackingDir,
-        IRunSettings runSettings,
         CancellationToken cancellationToken);
 }

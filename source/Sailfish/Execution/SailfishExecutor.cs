@@ -17,7 +17,6 @@ internal class SailfishExecutor
     private readonly ITestFilter testFilter;
     private readonly IClassExecutionSummaryCompiler classExecutionSummaryCompiler;
     private readonly IExecutionSummaryWriter executionSummaryWriter;
-    private readonly IComplexityComputer complexityComputer;
     private readonly IRunSettings runSettings;
     private readonly ISailFishTestExecutor sailFishTestExecutor;
     private readonly ISailDiff sailDiff;
@@ -31,7 +30,6 @@ internal class SailfishExecutor
         IExecutionSummaryWriter executionSummaryWriter,
         ISailDiff sailDiff,
         IScaleFish scaleFish,
-        IComplexityComputer complexityComputer,
         IRunSettings runSettings
     )
     {
@@ -42,7 +40,6 @@ internal class SailfishExecutor
         this.executionSummaryWriter = executionSummaryWriter;
         this.sailDiff = sailDiff;
         this.scaleFish = scaleFish;
-        this.complexityComputer = complexityComputer;
         this.runSettings = runSettings;
     }
 
@@ -57,22 +54,17 @@ internal class SailfishExecutor
             var classExecutionSummaries = classExecutionSummaryCompiler.CompileToSummaries(testClassResultGroups, cancellationToken)
                 .ToList();
 
-            var executionSummaryTrackingDirectory = GetRunSettingsTrackingDirectoryPath(runSettings, DefaultFileSettings.DefaultExecutionSummaryTrackingDirectory);
-            await executionSummaryWriter.Write(
-                classExecutionSummaries,
-                timeStamp,
-                executionSummaryTrackingDirectory,
-                runSettings,
-                cancellationToken);
+            var trackingDirectory = runSettings.GetRunSettingsTrackingDirectoryPath();
+            await executionSummaryWriter.Write(classExecutionSummaries, timeStamp, cancellationToken);
 
             if (runSettings.RunSailDiff)
             {
-                await sailDiff.Analyze(timeStamp, runSettings, executionSummaryTrackingDirectory, cancellationToken);
+                await sailDiff.Analyze(timeStamp, cancellationToken);
             }
 
             if (runSettings.RunScalefish)
             {
-                await scaleFish.Analyze(timeStamp, runSettings, executionSummaryTrackingDirectory, cancellationToken);
+                await scaleFish.Analyze(timeStamp, cancellationToken);
             }
 
             var exceptions = classExecutionSummaries

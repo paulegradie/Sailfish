@@ -19,6 +19,7 @@ public interface ISailDiff : IAnalyzeFromFile
 public class SailDiff : ISailDiff
 {
     private readonly IMediator mediator;
+    private readonly IRunSettings runSettings;
     private readonly ILogger logger;
     private readonly ITestComputer testComputer;
     private readonly ITestResultTableContentFormatter testResultTableContentFormatter;
@@ -26,29 +27,26 @@ public class SailDiff : ISailDiff
 
     public SailDiff(
         IMediator mediator,
+        IRunSettings runSettings,
         ILogger logger,
         ITestComputer testComputer,
         ITestResultTableContentFormatter testResultTableContentFormatter,
         IConsoleWriter consoleWriter)
     {
         this.mediator = mediator;
+        this.runSettings = runSettings;
         this.logger = logger;
         this.testComputer = testComputer;
         this.testResultTableContentFormatter = testResultTableContentFormatter;
         this.consoleWriter = consoleWriter;
     }
 
-    public async Task Analyze(
-        DateTime timeStamp,
-        IRunSettings runSettings,
-        string trackingDir,
-        CancellationToken cancellationToken
+    public async Task Analyze(DateTime timeStamp, CancellationToken cancellationToken
     )
     {
         if (!runSettings.RunSailDiff) return;
         var beforeAndAfterFileLocations = await mediator.Send(
                 new BeforeAndAfterFileLocationCommand(
-                    trackingDir,
                     runSettings.Tags,
                     runSettings.ProvidedBeforeTrackingFiles,
                     runSettings.Args),

@@ -14,25 +14,28 @@ public class ScaleFish : IScaleFish
     private readonly IMarkdownTableConverter markdownTableConverter;
     private readonly IConsoleWriter consoleWriter;
     private readonly IMediator mediator;
+    private readonly IRunSettings runSettings;
     private readonly IComplexityComputer complexityComputer;
 
-    public ScaleFish(IMediator mediator, IComplexityComputer complexityComputer, IMarkdownTableConverter markdownTableConverter, IConsoleWriter consoleWriter)
+    public ScaleFish(
+        IMediator mediator,
+        IRunSettings runSettings,
+        IComplexityComputer complexityComputer,
+        IMarkdownTableConverter markdownTableConverter,
+        IConsoleWriter consoleWriter)
     {
         this.mediator = mediator;
+        this.runSettings = runSettings;
         this.complexityComputer = complexityComputer;
         this.markdownTableConverter = markdownTableConverter;
         this.consoleWriter = consoleWriter;
     }
 
-    public async Task Analyze(
-        DateTime timeStamp,
-        IRunSettings runSettings,
-        string trackingDir,
-        CancellationToken cancellationToken)
+    public async Task Analyze(DateTime timeStamp, CancellationToken cancellationToken)
     {
         if (!runSettings.RunScalefish) return;
 
-        var response = await mediator.Send(new SailfishGetLatestExecutionSummaryCommand(trackingDir, runSettings.Tags, runSettings.Args), cancellationToken);
+        var response = await mediator.Send(new SailfishGetLatestExecutionSummaryCommand(), cancellationToken);
         var executionSummaries = response.LatestExecutionSummaries;
         if (!executionSummaries.Any()) return;
 
@@ -42,21 +45,8 @@ public class ScaleFish : IScaleFish
             var complexityMarkdown = markdownTableConverter.ConvertScaleFishResultToMarkdown(complexityResults);
             consoleWriter.WriteString(complexityMarkdown);
 
-            await mediator.Publish(new WriteCurrentScalefishResultCommand(
-                        complexityMarkdown,
-                        runSettings.LocalOutputDirectory ?? DefaultFileSettings.DefaultOutputDirectory,
-                        timeStamp,
-                        runSettings.Tags,
-                        runSettings.Args),
-                    cancellationToken)
-                .ConfigureAwait(false);
-
-            await mediator.Publish(new WriteCurrentScalefishResultModelsCommand(
-                    complexityResults,
-                    runSettings.LocalOutputDirectory ?? DefaultFileSettings.DefaultOutputDirectory,
-                    timeStamp,
-                    runSettings.Tags,
-                    runSettings.Args),
+            await mediator.Publish(new WriteCurrentScalefishResultCommand(complexityMarkdown, timeStamp), cancellationToken).ConfigureAwait(false);
+            await mediator.Publish(new WriteCurrentScalefishResultModelsCommand(complexityResults, timeStamp),
                 cancellationToken
             ).ConfigureAwait(false);
         }

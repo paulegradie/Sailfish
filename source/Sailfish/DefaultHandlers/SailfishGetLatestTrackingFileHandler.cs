@@ -15,16 +15,18 @@ internal class SailfishGetLatestExecutionSummariesHandler : IRequestHandler<Sail
 {
     private readonly ITrackingFileDirectoryReader trackingFileDirectoryReader;
     private readonly ITrackingFileParser trackingFileParser;
+    private readonly IRunSettings runSettings;
 
-    public SailfishGetLatestExecutionSummariesHandler(ITrackingFileDirectoryReader trackingFileDirectoryReader, ITrackingFileParser trackingFileParser)
+    public SailfishGetLatestExecutionSummariesHandler(ITrackingFileDirectoryReader trackingFileDirectoryReader, ITrackingFileParser trackingFileParser, IRunSettings runSettings)
     {
         this.trackingFileDirectoryReader = trackingFileDirectoryReader;
         this.trackingFileParser = trackingFileParser;
+        this.runSettings = runSettings;
     }
 
     public async Task<SailfishGetLatestExecutionSummaryResponse> Handle(SailfishGetLatestExecutionSummaryCommand request, CancellationToken cancellationToken)
     {
-        var trackingFiles = trackingFileDirectoryReader.FindTrackingFilesInDirectoryOrderedByLastModified(request.TrackingDirectory, ascending: false);
+        var trackingFiles = trackingFileDirectoryReader.FindTrackingFilesInDirectoryOrderedByLastModified(runSettings.GetRunSettingsTrackingDirectoryPath(), ascending: false);
         if (trackingFiles.Count == 0) return new SailfishGetLatestExecutionSummaryResponse(new List<IClassExecutionSummary>());
 
         var executionSummaries = new TrackingFileDataList();
