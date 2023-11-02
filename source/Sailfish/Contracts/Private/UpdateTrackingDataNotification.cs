@@ -8,6 +8,7 @@ namespace Sailfish.Contracts.Private;
 
 internal class SailfishUpdateTrackingDataNotification : INotification
 {
+    public string TestCasePartialResult { get; set; }
 }
 
 internal class SailfishUpdateTrackingDataNotificationHandler : INotificationHandler<SailfishUpdateTrackingDataNotification>
@@ -26,5 +27,12 @@ internal class SailfishUpdateTrackingDataNotificationHandler : INotificationHand
         {
             Directory.CreateDirectory(output);
         }
+
+        // if file does not exist - create
+        // add partial result
+
+        // else
+        // deserialize and find preexisting
+        // if not exists - create else add
     }
 }

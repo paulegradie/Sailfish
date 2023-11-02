@@ -63,26 +63,15 @@ internal class TestAdapterExecutionProgram : ITestAdapterExecutionProgram
             }
         }
 
-        var executionSummaries = await testAdapterExecutionEngine.Execute(testCases, preloadedLastRunsIfAvailable, runSettings.Settings, cancellationToken);
+        var executionSummaries = await testAdapterExecutionEngine.Execute(testCases, preloadedLastRunsIfAvailable, cancellationToken);
 
         // Something weird is going on here when there is an exception - all of the testcases runs get logged into the test output window for the errored case
         consoleWriter.Present(executionSummaries, new OrderedDictionary());
+
         await executionSummaryWriter.Write(executionSummaries, timeStamp, cancellationToken);
-
-        if (executionSummaries.SelectMany(x => x.CompiledTestCaseResults.Where(y => y.Exception is not null)).Any())
-        {
-            return;
-        }
-
+        if (executionSummaries.SelectMany(x => x.CompiledTestCaseResults.Where(y => y.Exception is not null)).Any()) return;
         if (runSettings.DisableAnalysisGlobally) return;
-        if (runSettings.RunSailDiff)
-        {
-            await sailDiff.Analyze(timeStamp, cancellationToken);
-        }
-
-        if (runSettings.RunScalefish)
-        {
-            await scaleFish.Analyze(timeStamp, cancellationToken);
-        }
+        if (runSettings.RunSailDiff) await sailDiff.Analyze(timeStamp, cancellationToken);
+        if (runSettings.RunScalefish) await scaleFish.Analyze(timeStamp, cancellationToken);
     }
 }

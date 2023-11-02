@@ -13,7 +13,7 @@ public interface IRunSettings
     bool RunScalefish { get; }
     bool CreateTrackingFiles { get; }
     bool Notify { get; }
-    SailDiffSettings Settings { get; }
+    SailDiffSettings SailDiffSettings { get; }
     IEnumerable<Type> TestLocationAnchors { get; }
     IEnumerable<Type> RegistrationProviderAnchors { get; }
     OrderedDictionary Tags { get; }

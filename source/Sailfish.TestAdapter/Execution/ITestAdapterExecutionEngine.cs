@@ -13,6 +13,5 @@ internal interface ITestAdapterExecutionEngine
     Task<List<IClassExecutionSummary>> Execute(
         List<TestCase> testCases,
         TrackingFileDataList preloadedLastRunIfAvailable, 
-        SailDiffSettings? testSettings,
         CancellationToken cancellationToken);
 }

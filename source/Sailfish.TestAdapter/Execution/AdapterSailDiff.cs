@@ -62,7 +62,7 @@ internal class AdapterSailDiff : IAdapterSailDiff
         var testResults = testComputer.ComputeTest(
             beforeAndAfterData.BeforeData,
             beforeAndAfterData.AfterData,
-            runSettings.Settings);
+            runSettings.SailDiffSettings);
 
         if (!testResults.Any())
         {
@@ -73,13 +73,13 @@ internal class AdapterSailDiff : IAdapterSailDiff
         var testIds = new TestIds(beforeAndAfterData.BeforeData.TestIds, beforeAndAfterData.AfterData.TestIds);
         var testResultFormats = testResultTableContentFormatter.CreateTableFormats(testResults, testIds, cancellationToken);
 
-        consoleWriter.WriteStatTestResultsToConsole(testResultFormats.MarkdownFormat, testIds, runSettings.Settings);
+        consoleWriter.WriteStatTestResultsToConsole(testResultFormats.MarkdownFormat, testIds, runSettings.SailDiffSettings);
 
         await mediator.Publish(
                 new WriteTestResultsAsMarkdownCommand(
                     testResultFormats.MarkdownFormat,
                     runSettings.LocalOutputDirectory ?? DefaultFileSettings.DefaultOutputDirectory,
-                    runSettings.Settings,
+                    runSettings.SailDiffSettings,
                     timeStamp,
                     runSettings.Tags,
                     runSettings.Args),
@@ -89,7 +89,7 @@ internal class AdapterSailDiff : IAdapterSailDiff
         await mediator.Publish(
             new WriteTestResultsAsCsvCommand(testResultFormats.CsvFormat,
                 runSettings.LocalOutputDirectory ?? DefaultFileSettings.DefaultOutputDirectory,
-                runSettings.Settings,
+                runSettings.SailDiffSettings,
                 timeStamp,
                 runSettings.Tags,
                 runSettings.Args
@@ -99,7 +99,6 @@ internal class AdapterSailDiff : IAdapterSailDiff
     public string ComputeTestCaseDiff(
         TestCaseExecutionResult testCaseExecutionResult,
         IClassExecutionSummary classExecutionSummary,
-        SailDiffSettings sailDiffSettings,
         PerformanceRunResult preloadedLastRun,
         CancellationToken cancellationToken)
     {
@@ -114,10 +113,10 @@ internal class AdapterSailDiff : IAdapterSailDiff
             .Select(x => x.PerformanceRunResult!)
             .Where(x => x.DisplayName == testCaseExecutionResult.TestInstanceContainer?.TestCaseId.DisplayName));
 
-        var testResults = testComputer.ComputeTest(beforeTestData, afterTestData, sailDiffSettings);
+        var testResults = testComputer.ComputeTest(beforeTestData, afterTestData, runSettings.SailDiffSettings);
 
         return testResults.Count > 0
-            ? consoleWriter.WriteTestResultsToIdeConsole(testResults.Single(), new TestIds(beforeIds, afterIds), sailDiffSettings)
+            ? consoleWriter.WriteTestResultsToIdeConsole(testResults.Single(), new TestIds(beforeIds, afterIds), runSettings.SailDiffSettings)
             : "No prior runs found for statistical testing";
     }
 }

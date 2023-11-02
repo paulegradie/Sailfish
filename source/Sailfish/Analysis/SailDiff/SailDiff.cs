@@ -90,7 +90,7 @@ public class SailDiff : ISailDiff
         var testResults = testComputer.ComputeTest(
             beforeAndAfterData.BeforeData,
             beforeAndAfterData.AfterData,
-            runSettings.Settings);
+            runSettings.SailDiffSettings);
 
         if (!testResults.Any())
         {
@@ -101,13 +101,13 @@ public class SailDiff : ISailDiff
         var testIds = new TestIds(beforeAndAfterData.BeforeData.TestIds, beforeAndAfterData.AfterData.TestIds);
         var testResultFormats = testResultTableContentFormatter.CreateTableFormats(testResults, testIds, cancellationToken);
 
-        consoleWriter.WriteStatTestResultsToConsole(testResultFormats.MarkdownFormat, testIds, runSettings.Settings);
+        consoleWriter.WriteStatTestResultsToConsole(testResultFormats.MarkdownFormat, testIds, runSettings.SailDiffSettings);
 
         await mediator.Publish(
                 new WriteTestResultsAsMarkdownCommand(
                     testResultFormats.MarkdownFormat,
                     runSettings.LocalOutputDirectory ?? DefaultFileSettings.DefaultOutputDirectory,
-                    runSettings.Settings,
+                    runSettings.SailDiffSettings,
                     timeStamp,
                     runSettings.Tags,
                     runSettings.Args),
@@ -118,7 +118,7 @@ public class SailDiff : ISailDiff
                 new WriteTestResultsAsCsvCommand(
                     testResultFormats.CsvFormat,
                     runSettings.LocalOutputDirectory ?? DefaultFileSettings.DefaultOutputDirectory,
-                    runSettings.Settings,
+                    runSettings.SailDiffSettings,
                     timeStamp,
                     runSettings.Tags,
                     runSettings.Args),
@@ -130,7 +130,7 @@ public class SailDiff : ISailDiff
             await mediator.Publish(
                     new NotifyOnTestResultCommand(
                         testResultFormats,
-                        runSettings.Settings,
+                        runSettings.SailDiffSettings,
                         timeStamp,
                         runSettings.Tags,
                         runSettings.Args),

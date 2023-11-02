@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
+using MediatR;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.Logging;
 using Sailfish.Analysis.SailDiff;
@@ -14,34 +15,35 @@ namespace Sailfish.TestAdapter.Execution;
 
 internal interface IActivatorCallbacks
 {
-    Action<TestCaseExecutionResult, TestInstanceContainer> PostTestResultCallback(
+    Action<TestCaseExecutionResult, TestInstanceContainer> PostBenchmarkResultCallback(
         IEnumerable<TestCase> testCaseGroups,
         TrackingFileDataList preloadedLastRunIfAvailable,
-        SailDiffSettings? testSettings,
         CancellationToken cancellationToken);
 
-    Action<TestInstanceContainer?> TestDisabledCallback(IEnumerable<TestCase>? testCaseGroup);
-    Action<TestInstanceContainer?> ExceptionCallback(IEnumerable<TestCase> testCaseGroup);
-    Action<TestInstanceContainer> PreTestResultCallback(IEnumerable<TestCase> testCaseGroup);
+    Action<TestInstanceContainer?> BenchmarkDisabledCallback(IEnumerable<TestCase>? testCaseGroup);
+    Action<TestInstanceContainer?> BenchmarkExceptionCallback(IEnumerable<TestCase> testCaseGroup);
+    Action<TestInstanceContainer> PreBenchmarkResultCallback(IEnumerable<TestCase> testCaseGroup);
 }
 
 internal class AdapterActivatorCallbacks : IActivatorCallbacks
 {
+    private readonly IMediator mediator;
     private readonly IAdapterConsoleWriter consoleWriter;
     private readonly IClassExecutionSummaryCompiler classExecutionSummaryCompiler;
     private readonly IAdapterSailDiff sailDiff;
 
-    public AdapterActivatorCallbacks(IAdapterConsoleWriter consoleWriter, IClassExecutionSummaryCompiler classExecutionSummaryCompiler, IAdapterSailDiff sailDiff)
+    public AdapterActivatorCallbacks(IMediator mediator, IAdapterConsoleWriter consoleWriter, IClassExecutionSummaryCompiler classExecutionSummaryCompiler,
+        IAdapterSailDiff sailDiff)
     {
+        this.mediator = mediator;
         this.consoleWriter = consoleWriter;
         this.classExecutionSummaryCompiler = classExecutionSummaryCompiler;
         this.sailDiff = sailDiff;
     }
 
-    public Action<TestCaseExecutionResult, TestInstanceContainer> PostTestResultCallback(
+    public Action<TestCaseExecutionResult, TestInstanceContainer> PostBenchmarkResultCallback(
         IEnumerable<TestCase> testCaseGroups,
         TrackingFileDataList preloadedLastRunIfAvailable,
-        SailDiffSettings? testSettings,
         CancellationToken cancellationToken)
     {
         return (result, container) =>
@@ -68,7 +70,6 @@ internal class AdapterActivatorCallbacks : IActivatorCallbacks
                     currentTestCase,
                     new TestClassResultGroup(result.TestInstanceContainer.Type, new List<TestCaseExecutionResult> { result }),
                     preloadedLastRunIfAvailable,
-                    testSettings,
                     cancellationToken);
             }
             else
@@ -87,7 +88,6 @@ internal class AdapterActivatorCallbacks : IActivatorCallbacks
         TestCase currentTestCase,
         TestClassResultGroup classResultGroup,
         IReadOnlyCollection<IReadOnlyCollection<IClassExecutionSummary>> preloadedLastRunIfAvailable,
-        SailDiffSettings? testSettings,
         CancellationToken cancellationToken)
     {
         var classExecutionSummary = classExecutionSummaryCompiler
@@ -115,12 +115,12 @@ internal class AdapterActivatorCallbacks : IActivatorCallbacks
 
         var formattedExecutionSummary = consoleWriter.Present(new[] { classExecutionSummary }, new OrderedDictionary());
 
-        if (preloadedLastRunIfAvailable.Count > 0 && testSettings is not null)
+        if (preloadedLastRunIfAvailable.Count > 0)
         {
             // preloadedLastRun represents an entire tracking file
             foreach (var preloadedLastRun in preloadedLastRunIfAvailable)
             {
-                // iterate until we fine a match, then break; its possible - when running a group of tests then a single test - for a tracking file to be created without expected data.
+                // iterate until we find a match, then break; its possible - when running a group of tests then a single test - for a tracking file to be created without expected data.
                 var preloadedSummaryMatchingCurrentSummary = preloadedLastRun
                     .SelectMany(x => x.CompiledTestCaseResults)
                     .SingleOrDefault(x => x.TestCaseId?.DisplayName == result.TestInstanceContainer?.TestCaseId.DisplayName);
@@ -130,7 +130,6 @@ internal class AdapterActivatorCallbacks : IActivatorCallbacks
                 var testCaseResults = sailDiff.ComputeTestCaseDiff(
                     result,
                     classExecutionSummary,
-                    testSettings,
                     preloadedSummaryMatchingCurrentSummary.PerformanceRunResult,
                     cancellationToken);
                 formattedExecutionSummary += "\n" + testCaseResults;
@@ -184,7 +183,7 @@ internal class AdapterActivatorCallbacks : IActivatorCallbacks
         consoleWriter.RecordResult(testResult);
     }
 
-    public Action<TestInstanceContainer?> TestDisabledCallback(IEnumerable<TestCase>? testCaseGroup)
+    public Action<TestInstanceContainer?> BenchmarkDisabledCallback(IEnumerable<TestCase>? testCaseGroup)
     {
         void CreateDisabledResult(TestCase testCase)
         {
@@ -222,7 +221,7 @@ internal class AdapterActivatorCallbacks : IActivatorCallbacks
         };
     }
 
-    public Action<TestInstanceContainer?> ExceptionCallback(IEnumerable<TestCase> testCaseGroup)
+    public Action<TestInstanceContainer?> BenchmarkExceptionCallback(IEnumerable<TestCase> testCaseGroup)
     {
         return (container) =>
         {
@@ -241,7 +240,7 @@ internal class AdapterActivatorCallbacks : IActivatorCallbacks
         };
     }
 
-    public Action<TestInstanceContainer> PreTestResultCallback(IEnumerable<TestCase> testCaseGroup)
+    public Action<TestInstanceContainer> PreBenchmarkResultCallback(IEnumerable<TestCase> testCaseGroup)
     {
         return container => consoleWriter.RecordStart(GetTestCaseFromTestCaseGroupMatchingCurrentContainer(container, testCaseGroup));
     }

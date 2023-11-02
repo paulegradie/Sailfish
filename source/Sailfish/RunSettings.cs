@@ -15,7 +15,7 @@ internal class RunSettings : IRunSettings
     public bool RunSailDiff { get; }
     public bool RunScalefish { get; set; }
     public bool Notify { get; set; }
-    public SailDiffSettings Settings { get; }
+    public SailDiffSettings SailDiffSettings { get; }
     public IEnumerable<Type> TestLocationAnchors { get; }
     public IEnumerable<Type> RegistrationProviderAnchors { get; }
     public OrderedDictionary Tags { get; set; } = new();
@@ -35,7 +35,7 @@ internal class RunSettings : IRunSettings
         bool useSailDiff,
         bool useScaleFish,
         bool notify,
-        SailDiffSettings settings,
+        SailDiffSettings sailfDiffSettings,
         OrderedDictionary tags,
         OrderedDictionary args,
         IEnumerable<string> providedBeforeTrackingFiles,
@@ -48,7 +48,7 @@ internal class RunSettings : IRunSettings
         CreateTrackingFiles = createTrackingFiles;
         RunSailDiff = useSailDiff;
         RunScalefish = useScaleFish;
-        Settings = settings;
+        SailDiffSettings = sailfDiffSettings;
         Tags = tags;
         Args = args;
         ProvidedBeforeTrackingFiles = providedBeforeTrackingFiles;
@@ -68,7 +68,7 @@ internal class RunSettings : IRunSettings
         bool useSailDiff,
         bool useScaleFish,
         bool notify,
-        SailDiffSettings settings,
+        SailDiffSettings sailDiffSettings,
         OrderedDictionary tags,
         OrderedDictionary args,
         IEnumerable<string> providedBeforeTrackingFiles,
@@ -86,7 +86,7 @@ internal class RunSettings : IRunSettings
         CreateTrackingFiles = createTrackingFiles;
         RunSailDiff = useSailDiff;
         RunScalefish = useScaleFish;
-        Settings = settings;
+        SailDiffSettings = sailDiffSettings;
         Tags = tags;
         Args = args;
         ProvidedBeforeTrackingFiles = providedBeforeTrackingFiles;
@@ -108,7 +108,7 @@ internal class RunSettings : IRunSettings
     {
         TestNames = Array.Empty<string>();
         LocalOutputDirectory = null;
-        Settings = new SailDiffSettings();
+        SailDiffSettings = new SailDiffSettings();
         TestLocationAnchors = new[] { GetType() };
         RegistrationProviderAnchors = new[] { GetType() };
         ProvidedBeforeTrackingFiles = Array.Empty<string>();
@@ -118,22 +118,11 @@ internal class RunSettings : IRunSettings
 
     public string GetRunSettingsTrackingDirectoryPath()
     {
-        string trackingDirectoryPath;
-        if (string.IsNullOrEmpty(LocalOutputDirectory) ||
-            string.IsNullOrWhiteSpace(LocalOutputDirectory))
-        {
-            trackingDirectoryPath = DefaultFileSettings.DefaultExecutionSummaryTrackingDirectory;
-        }
-        else
-        {
-            trackingDirectoryPath = Path.Join(LocalOutputDirectory, DefaultFileSettings.DefaultExecutionSummaryTrackingDirectory);
-        }
+        var trackingDirectoryPath = (string.IsNullOrEmpty(LocalOutputDirectory) || string.IsNullOrWhiteSpace(LocalOutputDirectory))
+            ? DefaultFileSettings.DefaultExecutionSummaryTrackingDirectory
+            : Path.Join(LocalOutputDirectory, DefaultFileSettings.DefaultExecutionSummaryTrackingDirectory);
 
-        if (!Directory.Exists(trackingDirectoryPath))
-        {
-            Directory.CreateDirectory(trackingDirectoryPath);
-        }
-
+        if (!Directory.Exists(trackingDirectoryPath)) Directory.CreateDirectory(trackingDirectoryPath);
         return trackingDirectoryPath;
     }
 }
