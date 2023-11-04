@@ -63,9 +63,8 @@ internal class TrackingFileParser : ITrackingFileParser
         }
         catch (SerializationException ex)
         {
-            logger.Fatal(
-                $"Failed to deserialize data into {nameof(PerformanceRunResultTrackingFormat)}. Please remove any non-V1(or corrupt) tracking data from your tracking directory.\n\n" +
-                ex.Message);
+            logger.Warning(ex,
+                $"Failed to deserialize data into {nameof(PerformanceRunResultTrackingFormat)}. Please remove any non-V1 (or corrupt) tracking data from your tracking directory.\n\n");
             return false;
         }
     }

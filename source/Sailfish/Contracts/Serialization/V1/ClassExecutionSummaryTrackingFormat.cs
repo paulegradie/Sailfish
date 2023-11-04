@@ -36,7 +36,6 @@ public class ClassExecutionSummaryTrackingFormat
     public ExecutionSettingsTrackingFormat ExecutionSettings { get; }
     public IEnumerable<CompiledTestCaseResultTrackingFormat> CompiledTestCaseResults { get; set; }
 
-
     public IEnumerable<CompiledTestCaseResultTrackingFormat> GetSuccessfulTestCases()
     {
         return CompiledTestCaseResults.Where(x => x.PerformanceRunResult is not null);
