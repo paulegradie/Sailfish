@@ -6,9 +6,9 @@ using Sailfish.Presentation;
 
 namespace Sailfish.Contracts.Public.Commands;
 
-public class WriteCurrentScalefishResultModelsCommand : INotification
+public class WriteCurrentScalefishResultModelsNotification : INotification
 {
-    public WriteCurrentScalefishResultModelsCommand(List<IScalefishClassModels> testClassComplexityResults, DateTime timeStamp)
+    public WriteCurrentScalefishResultModelsNotification(List<IScalefishClassModels> testClassComplexityResults, DateTime timeStamp)
     {
         TestClassComplexityResults = testClassComplexityResults;
         TimeStamp = timeStamp;

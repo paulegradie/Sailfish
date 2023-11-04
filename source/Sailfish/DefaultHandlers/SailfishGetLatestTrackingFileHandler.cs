@@ -6,12 +6,13 @@ using MediatR;
 using Sailfish.Analysis;
 using Sailfish.Analysis.SailDiff;
 using Sailfish.Contracts.Public.Commands;
+using Sailfish.Contracts.Public.Requests;
 using Sailfish.Execution;
 using Sailfish.Extensions.Types;
 
 namespace Sailfish.DefaultHandlers;
 
-internal class SailfishGetLatestExecutionSummariesHandler : IRequestHandler<SailfishGetLatestExecutionSummaryCommand, SailfishGetLatestExecutionSummaryResponse>
+internal class SailfishGetLatestExecutionSummariesHandler : IRequestHandler<SailfishGetLatestExecutionSummaryRequest, SailfishGetLatestExecutionSummaryResponse>
 {
     private readonly ITrackingFileDirectoryReader trackingFileDirectoryReader;
     private readonly ITrackingFileParser trackingFileParser;
@@ -24,7 +25,7 @@ internal class SailfishGetLatestExecutionSummariesHandler : IRequestHandler<Sail
         this.runSettings = runSettings;
     }
 
-    public async Task<SailfishGetLatestExecutionSummaryResponse> Handle(SailfishGetLatestExecutionSummaryCommand request, CancellationToken cancellationToken)
+    public async Task<SailfishGetLatestExecutionSummaryResponse> Handle(SailfishGetLatestExecutionSummaryRequest request, CancellationToken cancellationToken)
     {
         var trackingFiles = trackingFileDirectoryReader.FindTrackingFilesInDirectoryOrderedByLastModified(runSettings.GetRunSettingsTrackingDirectoryPath(), ascending: false);
         if (trackingFiles.Count == 0) return new SailfishGetLatestExecutionSummaryResponse(new List<IClassExecutionSummary>());

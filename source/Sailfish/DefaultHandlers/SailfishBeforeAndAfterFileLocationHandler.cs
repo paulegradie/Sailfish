@@ -6,11 +6,12 @@ using System.Threading.Tasks;
 using MediatR;
 using Sailfish.Analysis.SailDiff;
 using Sailfish.Contracts.Public.Commands;
+using Sailfish.Contracts.Public.Requests;
 using Sailfish.Exceptions;
 
 namespace Sailfish.DefaultHandlers;
 
-internal class SailfishBeforeAndAfterFileLocationHandler : IRequestHandler<BeforeAndAfterFileLocationCommand, BeforeAndAfterFileLocationResponse>
+internal class SailfishBeforeAndAfterFileLocationHandler : IRequestHandler<BeforeAndAfterFileLocationRequest, BeforeAndAfterFileLocationResponse>
 {
     private readonly IRunSettings runSettings;
     private readonly ITrackingFileDirectoryReader trackingFileDirectoryReader;
@@ -21,7 +22,7 @@ internal class SailfishBeforeAndAfterFileLocationHandler : IRequestHandler<Befor
         this.trackingFileDirectoryReader = trackingFileDirectoryReader;
     }
 
-    public async Task<BeforeAndAfterFileLocationResponse> Handle(BeforeAndAfterFileLocationCommand request,
+    public async Task<BeforeAndAfterFileLocationResponse> Handle(BeforeAndAfterFileLocationRequest request,
         CancellationToken cancellationToken)
     {
         await Task.Yield();
@@ -38,7 +39,7 @@ internal class SailfishBeforeAndAfterFileLocationHandler : IRequestHandler<Befor
             {
                 var missingFiles = string.Join("\n - ", filesFound.Where(x => x.Item2 == false).Select(x => x.file));
                 throw new SailfishException(
-                    $"Not all {nameof(BeforeAndAfterFileLocationCommand.ProvidedBeforeTrackingFiles)} were found. Missing: {missingFiles}");
+                    $"Not all {nameof(BeforeAndAfterFileLocationRequest.ProvidedBeforeTrackingFiles)} were found. Missing: {missingFiles}");
             }
 
             return new BeforeAndAfterFileLocationResponse(filesFound.Select(x => x.file), new List<string> { trackingFiles.First() });

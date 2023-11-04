@@ -7,7 +7,7 @@ using Sailfish.Presentation;
 
 namespace Sailfish.DefaultHandlers;
 
-internal class SailfishWriteScalefishResultHandler : INotificationHandler<WriteCurrentScalefishResultCommand>
+internal class SailfishWriteScalefishResultHandler : INotificationHandler<WriteCurrentScalefishResultNotification>
 {
     private readonly IRunSettings runSettings;
 
@@ -16,7 +16,7 @@ internal class SailfishWriteScalefishResultHandler : INotificationHandler<WriteC
         this.runSettings = runSettings;
     }
 
-    public async Task Handle(WriteCurrentScalefishResultCommand notification, CancellationToken cancellationToken)
+    public async Task Handle(WriteCurrentScalefishResultNotification notification, CancellationToken cancellationToken)
     {
         var output = runSettings.LocalOutputDirectory ?? DefaultFileSettings.DefaultOutputDirectory;
         if (!Directory.Exists(output))

@@ -3,9 +3,9 @@ using Sailfish.Contracts.Public.Commands;
 
 namespace Tests.E2E.ExceptionHandling.Handlers;
 
-public class WriteTrackingDataHandler : INotificationHandler<WriteCurrentTrackingFileCommand>
+public class WriteTrackingDataHandler : INotificationHandler<WriteCurrentTrackingFileNotification>
 {
-    public async Task Handle(WriteCurrentTrackingFileCommand notification, CancellationToken cancellationToken)
+    public async Task Handle(WriteCurrentTrackingFileNotification notification, CancellationToken cancellationToken)
     {
         var classExecutionSummaries = notification.ClassExecutionSummaries.ToList();
         var successes = classExecutionSummaries.SelectMany(x => x.GetSuccessfulTestCases()).ToList();

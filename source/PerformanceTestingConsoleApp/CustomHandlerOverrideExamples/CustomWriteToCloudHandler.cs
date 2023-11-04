@@ -6,7 +6,7 @@ using Sailfish.Contracts.Public.Commands;
 
 namespace PerformanceTestingConsoleApp.CustomHandlerOverrideExamples;
 
-public class CustomWriteToCloudHandler : INotificationHandler<WriteCurrentTrackingFileCommand>
+public class CustomWriteToCloudHandler : INotificationHandler<WriteCurrentTrackingFileNotification>
 {
     private readonly ICloudWriter cloudWriter;
 
@@ -15,7 +15,7 @@ public class CustomWriteToCloudHandler : INotificationHandler<WriteCurrentTracki
         this.cloudWriter = cloudWriter;
     }
 
-    public async Task Handle(WriteCurrentTrackingFileCommand request, CancellationToken cancellationToken)
+    public async Task Handle(WriteCurrentTrackingFileNotification request, CancellationToken cancellationToken)
     {
         await cloudWriter.WriteToMyCloudStorageContainer(request.DefaultFileName, request.ClassExecutionSummaries.ToList());
     }

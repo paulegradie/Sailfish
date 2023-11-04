@@ -7,9 +7,9 @@ using Sailfish.Extensions.Types;
 
 namespace Sailfish.Contracts.Public.Commands;
 
-public class NotifyOnTestResultCommand : INotification
+public class NotifyOnTestResultNotification : INotification
 {
-    public NotifyOnTestResultCommand(
+    public NotifyOnTestResultNotification(
         TestResultFormats testResultFormats,
         SailDiffSettings sailDiffSettings,
         DateTime timeStamp,

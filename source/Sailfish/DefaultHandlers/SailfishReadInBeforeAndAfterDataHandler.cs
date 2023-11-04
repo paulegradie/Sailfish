@@ -5,12 +5,13 @@ using MediatR;
 using Sailfish.Analysis;
 using Sailfish.Contracts.Public;
 using Sailfish.Contracts.Public.Commands;
+using Sailfish.Contracts.Public.Requests;
 using Sailfish.Extensions.Types;
 using Serilog;
 
 namespace Sailfish.DefaultHandlers;
 
-internal class SailfishReadInBeforeAndAfterDataHandler : IRequestHandler<ReadInBeforeAndAfterDataCommand, ReadInBeforeAndAfterDataResponse>
+internal class SailfishReadInBeforeAndAfterDataHandler : IRequestHandler<ReadInBeforeAndAfterDataRequest, ReadInBeforeAndAfterDataResponse>
 {
     private readonly ITrackingFileParser trackingFileParser;
     private readonly ILogger logger;
@@ -21,7 +22,7 @@ internal class SailfishReadInBeforeAndAfterDataHandler : IRequestHandler<ReadInB
         this.logger = logger;
     }
 
-    public async Task<ReadInBeforeAndAfterDataResponse> Handle(ReadInBeforeAndAfterDataCommand request, CancellationToken cancellationToken)
+    public async Task<ReadInBeforeAndAfterDataResponse> Handle(ReadInBeforeAndAfterDataRequest request, CancellationToken cancellationToken)
     {
         var beforeData = new TrackingFileDataList();
         if (!await trackingFileParser.TryParse(request.BeforeFilePaths, beforeData, cancellationToken).ConfigureAwait(false))

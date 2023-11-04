@@ -11,7 +11,7 @@ using Sailfish.Presentation;
 
 namespace Sailfish.DefaultHandlers;
 
-internal class SailfishWriteTestResultAsCsvHandler : INotificationHandler<WriteTestResultsAsCsvCommand>
+internal class SailfishWriteTestResultAsCsvHandler : INotificationHandler<WriteTestResultsAsCsvNotification>
 {
     private readonly IFileIo fileIo;
 
@@ -20,7 +20,7 @@ internal class SailfishWriteTestResultAsCsvHandler : INotificationHandler<WriteT
         this.fileIo = fileIo;
     }
 
-    public async Task Handle(WriteTestResultsAsCsvCommand notification, CancellationToken cancellationToken)
+    public async Task Handle(WriteTestResultsAsCsvNotification notification, CancellationToken cancellationToken)
     {
         var fileName = DefaultFileSettings
             .AppendTagsToFilename(

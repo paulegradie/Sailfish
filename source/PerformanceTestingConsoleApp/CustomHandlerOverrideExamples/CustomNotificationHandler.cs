@@ -10,7 +10,7 @@ using Serilog;
 
 namespace PerformanceTestingConsoleApp.CustomHandlerOverrideExamples;
 
-public class CustomNotificationHandler : INotificationHandler<NotifyOnTestResultCommand>
+public class CustomNotificationHandler : INotificationHandler<NotifyOnTestResultNotification>
 {
     private readonly ILogger logger;
 
@@ -19,7 +19,7 @@ public class CustomNotificationHandler : INotificationHandler<NotifyOnTestResult
         this.logger = logger;
     }
 
-    public Task Handle(NotifyOnTestResultCommand notification, CancellationToken cancellationToken)
+    public Task Handle(NotifyOnTestResultNotification notification, CancellationToken cancellationToken)
     {
         if (string.IsNullOrEmpty(notification.TestResultFormats.MarkdownFormat)) return Task.CompletedTask;
 

@@ -22,14 +22,14 @@ public static class SailfishSerializer
     public static T? Deserialize<T>(string serializedData, IEnumerable<JsonConverter>? converters = null)
         => JsonSerializer.Deserialize<T>(serializedData, GetOptions(converters ?? new JsonConverter[] { }));
 
-    public static IList<JsonConverter> GetConverters()
+    public static IList<JsonConverter> GetDefaultConverters()
         => Converters;
 
     private static JsonSerializerOptions GetOptions(IEnumerable<JsonConverter> converters)
     {
         var allConverters = new List<JsonConverter>();
         allConverters.AddRange(converters);
-        allConverters.AddRange(Converters);
+        allConverters.AddRange(GetDefaultConverters());
         var options = new JsonSerializerOptions()
         {
             WriteIndented = true,

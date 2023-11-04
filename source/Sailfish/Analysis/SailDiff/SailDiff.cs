@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using MediatR;
 using Sailfish.Contracts.Public;
 using Sailfish.Contracts.Public.Commands;
+using Sailfish.Contracts.Public.Requests;
 using Sailfish.Presentation;
 using Sailfish.Presentation.Console;
 using Serilog;
@@ -46,7 +47,7 @@ public class SailDiff : ISailDiff
     {
         if (!runSettings.RunSailDiff) return;
         var beforeAndAfterFileLocations = await mediator.Send(
-                new BeforeAndAfterFileLocationCommand(
+                new BeforeAndAfterFileLocationRequest(
                     runSettings.Tags,
                     runSettings.ProvidedBeforeTrackingFiles,
                     runSettings.Args),
@@ -67,13 +68,13 @@ public class SailDiff : ISailDiff
             }
 
             message.Append(
-                $"If file locations are not provided, data must be provided via the {nameof(ReadInBeforeAndAfterDataCommand)} handler.");
+                $"If file locations are not provided, data must be provided via the {nameof(ReadInBeforeAndAfterDataRequest)} handler.");
             var msg = message.ToString();
             logger.Warning("{Message}", msg);
         }
 
         var beforeAndAfterData = await mediator.Send(
-                new ReadInBeforeAndAfterDataCommand(
+                new ReadInBeforeAndAfterDataRequest(
                     beforeAndAfterFileLocations.BeforeFilePaths,
                     beforeAndAfterFileLocations.AfterFilePaths,
                     runSettings.Tags,
@@ -104,7 +105,7 @@ public class SailDiff : ISailDiff
         consoleWriter.WriteStatTestResultsToConsole(testResultFormats.MarkdownFormat, testIds, runSettings.SailDiffSettings);
 
         await mediator.Publish(
-                new WriteTestResultsAsMarkdownCommand(
+                new WriteTestResultsAsMarkdownNotification(
                     testResultFormats.MarkdownFormat,
                     runSettings.LocalOutputDirectory ?? DefaultFileSettings.DefaultOutputDirectory,
                     runSettings.SailDiffSettings,
@@ -115,7 +116,7 @@ public class SailDiff : ISailDiff
             .ConfigureAwait(false);
 
         await mediator.Publish(
-                new WriteTestResultsAsCsvCommand(
+                new WriteTestResultsAsCsvNotification(
                     testResultFormats.CsvFormat,
                     runSettings.LocalOutputDirectory ?? DefaultFileSettings.DefaultOutputDirectory,
                     runSettings.SailDiffSettings,
@@ -128,7 +129,7 @@ public class SailDiff : ISailDiff
         if (runSettings.Notify)
         {
             await mediator.Publish(
-                    new NotifyOnTestResultCommand(
+                    new NotifyOnTestResultNotification(
                         testResultFormats,
                         runSettings.SailDiffSettings,
                         timeStamp,

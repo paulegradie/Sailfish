@@ -10,7 +10,7 @@ using Sailfish.Contracts.Serialization.V1;
 using Sailfish.Presentation;
 using Serilog;
 
-namespace Sailfish.Contracts.Public.Commands;
+namespace Sailfish.DefaultHandlers;
 
 public class SailfishUpdateTrackingDataNotificationHandler : INotificationHandler<SailfishUpdateTrackingDataNotification>
 {

@@ -1,13 +1,12 @@
 ﻿using System.Collections.Generic;
-
 using MediatR;
 using Sailfish.Extensions.Types;
 
-namespace Sailfish.Contracts.Public.Commands;
+namespace Sailfish.Contracts.Public.Requests;
 
-public class BeforeAndAfterFileLocationCommand : IRequest<BeforeAndAfterFileLocationResponse>
+public class BeforeAndAfterFileLocationRequest : IRequest<BeforeAndAfterFileLocationResponse>
 {
-    public BeforeAndAfterFileLocationCommand(
+    public BeforeAndAfterFileLocationRequest(
         OrderedDictionary tags,
         IEnumerable<string> providedBeforeTrackingFiles,
         OrderedDictionary args)

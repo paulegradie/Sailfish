@@ -31,7 +31,7 @@ internal class ExecutionSummaryWriter : IExecutionSummaryWriter
 
         if (runSettings.CreateTrackingFiles)
         {
-            await mediator.Publish(new WriteCurrentTrackingFileCommand(executionSummaries.ToTrackingFormat(), timeStamp), cancellationToken).ConfigureAwait(false);
+            await mediator.Publish(new WriteCurrentTrackingFileNotification(executionSummaries.ToTrackingFormat(), timeStamp), cancellationToken).ConfigureAwait(false);
         }
     }
 }

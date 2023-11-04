@@ -45,8 +45,8 @@ public class ScaleFish : IScaleFish
             var complexityMarkdown = markdownTableConverter.ConvertScaleFishResultToMarkdown(complexityResults);
             consoleWriter.WriteString(complexityMarkdown);
 
-            await mediator.Publish(new WriteCurrentScalefishResultCommand(complexityMarkdown, timeStamp), cancellationToken).ConfigureAwait(false);
-            await mediator.Publish(new WriteCurrentScalefishResultModelsCommand(complexityResults, timeStamp),
+            await mediator.Publish(new WriteCurrentScalefishResultNotification(complexityMarkdown, timeStamp), cancellationToken).ConfigureAwait(false);
+            await mediator.Publish(new WriteCurrentScalefishResultModelsNotification(complexityResults, timeStamp),
                 cancellationToken
             ).ConfigureAwait(false);
         }

@@ -6,9 +6,9 @@ using Sailfish.Presentation;
 
 namespace Sailfish.Contracts.Public.Commands;
 
-public class WriteCurrentTrackingFileCommand : INotification
+public class WriteCurrentTrackingFileNotification : INotification
 {
-    public WriteCurrentTrackingFileCommand(IEnumerable<ClassExecutionSummaryTrackingFormat> classExecutionSummaries, DateTime timeStamp)
+    public WriteCurrentTrackingFileNotification(IEnumerable<ClassExecutionSummaryTrackingFormat> classExecutionSummaries, DateTime timeStamp)
     {
         ClassExecutionSummaries = classExecutionSummaries;
         DefaultFileName = DefaultFileSettings.DefaultTrackingFileName(timeStamp);

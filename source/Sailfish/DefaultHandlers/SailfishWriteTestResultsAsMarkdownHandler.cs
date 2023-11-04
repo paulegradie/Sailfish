@@ -8,7 +8,7 @@ using Sailfish.Presentation;
 
 namespace Sailfish.DefaultHandlers;
 
-internal class SailfishWriteTestResultsAsMarkdownHandler : INotificationHandler<WriteTestResultsAsMarkdownCommand>
+internal class SailfishWriteTestResultsAsMarkdownHandler : INotificationHandler<WriteTestResultsAsMarkdownNotification>
 {
     private readonly IFileIo fileIo;
 
@@ -17,7 +17,7 @@ internal class SailfishWriteTestResultsAsMarkdownHandler : INotificationHandler<
         this.fileIo = fileIo;
     }
 
-    public async Task Handle(WriteTestResultsAsMarkdownCommand notification, CancellationToken cancellationToken)
+    public async Task Handle(WriteTestResultsAsMarkdownNotification notification, CancellationToken cancellationToken)
     {
         var filename = DefaultFileSettings.AppendTagsToFilename(DefaultFileSettings.DefaultSaildiffMarkdownFileName(notification.TimeStamp, notification.SailDiffSettings.TestType), notification.Tags);
         var outputPath = Path.Join(notification.OutputDirectory, filename);

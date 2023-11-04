@@ -4,9 +4,9 @@ using Sailfish.Presentation;
 
 namespace Sailfish.Contracts.Public.Commands;
 
-public class WriteCurrentScalefishResultCommand : INotification
+public class WriteCurrentScalefishResultNotification : INotification
 {
-    public WriteCurrentScalefishResultCommand(string scalefishResultMarkdown, DateTime timeStamp)
+    public WriteCurrentScalefishResultNotification(string scalefishResultMarkdown, DateTime timeStamp)
     {
         ScalefishResultMarkdown = scalefishResultMarkdown;
         TimeStamp = timeStamp;

@@ -17,8 +17,8 @@ public class RegistrationProvider : IProvideARegistrationCallback
     {
         builder.RegisterType<WebApplicationFactory<DemoApp>>();
         builder.RegisterInstance(Log.Logger).As<ILogger>();
-        builder.RegisterType<CustomWriteToCloudHandler>().As<INotificationHandler<WriteCurrentTrackingFileCommand>>();
-        builder.RegisterType<CustomNotificationHandler>().As<INotificationHandler<NotifyOnTestResultCommand>>();
+        builder.RegisterType<CustomWriteToCloudHandler>().As<INotificationHandler<WriteCurrentTrackingFileNotification>>();
+        builder.RegisterType<CustomNotificationHandler>().As<INotificationHandler<NotifyOnTestResultNotification>>();
         builder.RegisterType<CloudWriter>().As<ICloudWriter>();
 
         await Task.Yield();

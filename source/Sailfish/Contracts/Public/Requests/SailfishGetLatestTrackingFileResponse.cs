@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using Sailfish.Execution;
 
-namespace Sailfish.Contracts.Public.Commands;
+namespace Sailfish.Contracts.Public.Requests;
 
 public class SailfishGetLatestExecutionSummaryResponse
 {

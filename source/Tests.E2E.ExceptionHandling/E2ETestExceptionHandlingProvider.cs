@@ -16,6 +16,6 @@ public class E2ETestExceptionHandlingProvider : IProvideARegistrationCallback
         await Task.CompletedTask;
         builder.RegisterType<WebApplicationFactory<DemoApp>>();
         builder.RegisterInstance(Log.Logger).As<ILogger>();
-        builder.RegisterType<WriteTrackingDataHandler>().As<INotificationHandler<WriteCurrentTrackingFileCommand>>();
+        builder.RegisterType<WriteTrackingDataHandler>().As<INotificationHandler<WriteCurrentTrackingFileNotification>>();
     }
 }

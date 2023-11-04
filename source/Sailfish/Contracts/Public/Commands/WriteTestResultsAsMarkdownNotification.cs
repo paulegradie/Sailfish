@@ -6,9 +6,9 @@ using Sailfish.Extensions.Types;
 
 namespace Sailfish.Contracts.Public.Commands;
 
-public class WriteTestResultsAsMarkdownCommand : INotification
+public class WriteTestResultsAsMarkdownNotification : INotification
 {
-    public WriteTestResultsAsMarkdownCommand(
+    public WriteTestResultsAsMarkdownNotification(
         string markdownTable,
         string outputDirectory,
         SailDiffSettings sailDiffSettings,

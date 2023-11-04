@@ -7,6 +7,7 @@ using Sailfish.Analysis;
 using Sailfish.Analysis.SailDiff;
 using Sailfish.Contracts.Public;
 using Sailfish.Contracts.Public.Commands;
+using Sailfish.Contracts.Public.Requests;
 using Sailfish.Execution;
 using Sailfish.Presentation;
 
@@ -39,14 +40,14 @@ internal class AdapterSailDiff : IAdapterSailDiff
         if (!runSettings.RunSailDiff) return;
 
         var beforeAndAfterFileLocations = await mediator.Send(
-            new BeforeAndAfterFileLocationCommand(
+            new BeforeAndAfterFileLocationRequest(
                 runSettings.Tags,
                 runSettings.ProvidedBeforeTrackingFiles,
                 runSettings.Args),
             cancellationToken).ConfigureAwait(false);
 
         var beforeAndAfterData = await mediator.Send(
-            new ReadInBeforeAndAfterDataCommand(
+            new ReadInBeforeAndAfterDataRequest(
                 beforeAndAfterFileLocations.BeforeFilePaths,
                 beforeAndAfterFileLocations.AfterFilePaths,
                 runSettings.Tags,
@@ -76,7 +77,7 @@ internal class AdapterSailDiff : IAdapterSailDiff
         consoleWriter.WriteStatTestResultsToConsole(testResultFormats.MarkdownFormat, testIds, runSettings.SailDiffSettings);
 
         await mediator.Publish(
-                new WriteTestResultsAsMarkdownCommand(
+                new WriteTestResultsAsMarkdownNotification(
                     testResultFormats.MarkdownFormat,
                     runSettings.LocalOutputDirectory ?? DefaultFileSettings.DefaultOutputDirectory,
                     runSettings.SailDiffSettings,
@@ -87,7 +88,7 @@ internal class AdapterSailDiff : IAdapterSailDiff
             .ConfigureAwait(false);
 
         await mediator.Publish(
-            new WriteTestResultsAsCsvCommand(testResultFormats.CsvFormat,
+            new WriteTestResultsAsCsvNotification(testResultFormats.CsvFormat,
                 runSettings.LocalOutputDirectory ?? DefaultFileSettings.DefaultOutputDirectory,
                 runSettings.SailDiffSettings,
                 timeStamp,
