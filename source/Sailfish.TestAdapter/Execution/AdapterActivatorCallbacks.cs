@@ -91,7 +91,7 @@ internal class AdapterActivatorCallbacks : IActivatorCallbacks
         CancellationToken cancellationToken)
     {
         var classExecutionSummary = classExecutionSummaryCompiler
-            .CompileToSummaries(new List<TestClassResultGroup>() { classResultGroup }, cancellationToken)
+            .CompileToSummaries(new List<TestClassResultGroup>() { classResultGroup })
             .Single();
         var medianTestRuntime = classExecutionSummary.CompiledTestCaseResults.Single().PerformanceRunResult?.Median ??
                                 throw new SailfishException("Error computing compiled results");

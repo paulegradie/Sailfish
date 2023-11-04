@@ -8,26 +8,13 @@ namespace Sailfish.Contracts.Private;
 
 internal class WriteToMarkDownNotification : INotification
 {
-    public WriteToMarkDownNotification(
-        List<IClassExecutionSummary> content,
-        string outputDirectory,
-        DateTime timeStamp,
-        OrderedDictionary tags,
-        OrderedDictionary args,
-        IRunSettings settings)
+    public WriteToMarkDownNotification(List<IClassExecutionSummary> content, DateTime timeStamp)
     {
         Content = content;
-        OutputDirectory = outputDirectory;
         TimeStamp = timeStamp;
-        Tags = tags;
-        Args = args;
-        Settings = settings;
     }
 
     public List<IClassExecutionSummary> Content { get; }
-    public string OutputDirectory { get; }
     public DateTime TimeStamp { get; }
-    public OrderedDictionary Tags { get; }
-    public OrderedDictionary Args { get; }
-    public IRunSettings Settings { get; }
+
 }

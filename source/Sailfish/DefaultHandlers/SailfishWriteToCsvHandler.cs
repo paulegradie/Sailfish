@@ -8,12 +8,12 @@ using Sailfish.Presentation.CsvAndJson;
 
 namespace Sailfish.DefaultHandlers;
 
-internal class WriteToCsvHandler : INotificationHandler<WriteToCsvNotification>
+internal class SailfishWriteToCsvHandler : INotificationHandler<WriteToCsvNotification>
 {
     private readonly IPerformanceRunResultFileWriter performanceRunResultFileWriter;
     private readonly IRunSettings runSettings;
 
-    public WriteToCsvHandler(IPerformanceRunResultFileWriter performanceRunResultFileWriter, IRunSettings runSettings)
+    public SailfishWriteToCsvHandler(IPerformanceRunResultFileWriter performanceRunResultFileWriter, IRunSettings runSettings)
     {
         this.performanceRunResultFileWriter = performanceRunResultFileWriter;
         this.runSettings = runSettings;

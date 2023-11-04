@@ -78,14 +78,15 @@ internal class TestAdapterExecutionEngine : ITestAdapterExecutionEngine
                     activatorCallbacks.BenchmarkDisabledCallback(unsortedTestCaseGroup),
                     cancellationToken);
                 groupResults.AddRange(results);
+
+                // deref to free up memory
+                providerForCurrentTestCases[i] = null!;
             }
 
             rawExecutionResults.Add((groupKey, new TestClassResultGroup(testType, groupResults)));
         }
 
-        return classExecutionSummaryCompiler
-            .CompileToSummaries(rawExecutionResults.Select(x => x.Item2), cancellationToken)
-            .ToList();
+        return classExecutionSummaryCompiler.CompileToSummaries(rawExecutionResults.Select(x => x.Item2)).ToList();
     }
 
     private static IEnumerable<string> GetTestCaseProperties(TestProperty testProperty, IEnumerable<TestCase> testCases)

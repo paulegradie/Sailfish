@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using System.Threading;
 using Sailfish.Contracts.Public;
 using Sailfish.Exceptions;
 using Sailfish.Extensions.Methods;
@@ -19,14 +18,13 @@ internal class ClassExecutionSummaryCompiler : IClassExecutionSummaryCompiler
         this.runSettings = runSettings;
     }
 
-    public IEnumerable<IClassExecutionSummary> CompileToSummaries(IEnumerable<TestClassResultGroup> rawExecutionResults, CancellationToken cancellationToken)
+    public IEnumerable<IClassExecutionSummary> CompileToSummaries(IEnumerable<TestClassResultGroup> rawExecutionResults)
     {
-        return rawExecutionResults.Select(rawExecutionResult => IterateExecutionResults(rawExecutionResult, cancellationToken)).ToList();
+        return rawExecutionResults.Select(rawExecutionResult => IterateExecutionResults(rawExecutionResult)).ToList();
     }
 
-    private IClassExecutionSummary IterateExecutionResults(TestClassResultGroup testClassResultGroup, CancellationToken cancellationToken)
+    private IClassExecutionSummary IterateExecutionResults(TestClassResultGroup testClassResultGroup)
     {
-        cancellationToken.ThrowIfCancellationRequested();
         var compiledResults = new List<ICompiledTestCaseResult>();
         foreach (var testClassExecutionResult in testClassResultGroup.ExecutionResults)
         {

@@ -19,7 +19,7 @@ internal class MarkdownWriter : IMarkdownWriter
         this.markdownTableConverter = markdownTableConverter;
     }
 
-    public async Task Write(IEnumerable<IClassExecutionSummary> results, string filePath, IRunSettings settings, CancellationToken cancellationToken)
+    public async Task Write(IEnumerable<IClassExecutionSummary> results, string filePath, CancellationToken cancellationToken)
     {
         var markdownStringTable = markdownTableConverter.ConvertToMarkdownTableString(results, result => result.ExecutionSettings.AsMarkdown);
         if (!string.IsNullOrEmpty(markdownStringTable))

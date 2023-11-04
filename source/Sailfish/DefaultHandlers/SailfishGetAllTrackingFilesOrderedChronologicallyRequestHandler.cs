@@ -7,6 +7,7 @@ using Sailfish.Contracts.Private;
 using Sailfish.Contracts.Serialization.V1;
 using Sailfish.Exceptions;
 using Sailfish.Extensions.Types;
+using Serilog;
 
 namespace Sailfish.DefaultHandlers;
 
@@ -16,15 +17,18 @@ internal class SailfishGetAllTrackingFilesOrderedChronologicallyRequestHandler :
     private readonly IRunSettings runSettings;
     private readonly ITrackingFileDirectoryReader trackingFileDirectoryReader;
     private readonly ITrackingFileParser trackingFileParser;
+    private readonly ILogger logger;
 
     public SailfishGetAllTrackingFilesOrderedChronologicallyRequestHandler(
         IRunSettings runSettings,
         ITrackingFileDirectoryReader trackingFileDirectoryReader,
-        ITrackingFileParser trackingFileParser)
+        ITrackingFileParser trackingFileParser,
+        ILogger logger)
     {
         this.runSettings = runSettings;
         this.trackingFileDirectoryReader = trackingFileDirectoryReader;
         this.trackingFileParser = trackingFileParser;
+        this.logger = logger;
     }
 
     public async Task<SailfishGetAllTrackingDataOrderedChronologicallyResponse> Handle(
@@ -35,11 +39,7 @@ internal class SailfishGetAllTrackingFilesOrderedChronologicallyRequestHandler :
             trackingFileDirectoryReader.FindTrackingFilesInDirectoryOrderedByLastModified(runSettings.GetRunSettingsTrackingDirectoryPath(), ascending: request.Ascending);
         var data = new TrackingFileDataList();
 
-        if (!await trackingFileParser.TryParse(trackingFiles, data, cancellationToken))
-        {
-            throw new SailfishException(
-                $"Failed to deserialize data into {nameof(PerformanceRunResultTrackingFormat)}. Please remove any non v1 data from your tracking directory.");
-        }
+        await trackingFileParser.TryParse(trackingFiles, data, cancellationToken);
 
         return new SailfishGetAllTrackingDataOrderedChronologicallyResponse(data);
     }

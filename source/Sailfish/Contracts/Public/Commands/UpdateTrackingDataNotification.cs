@@ -5,11 +5,12 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using MediatR;
+using Sailfish.Contracts.Private;
 using Sailfish.Contracts.Serialization.V1;
 using Sailfish.Presentation;
 using Serilog;
-
-namespace Sailfish.Contracts.Private;
+using System;
+namespace Sailfish.Contracts.Public.Commands;
 
 public class SailfishUpdateTrackingDataNotificationHandler : INotificationHandler<SailfishUpdateTrackingDataNotification>
 {
@@ -42,7 +43,6 @@ public class SailfishUpdateTrackingDataNotificationHandler : INotificationHandle
         using var streamReader = new StreamReader(fileStream);
         var fileContents = await streamReader.ReadToEndAsync();
         streamReader.Close();
-
 
         var classExecutionSummaryTrackingFormats = trackingFileSerialization.Deserialize(fileContents)?.ToList()
                                                    ?? new List<ClassExecutionSummaryTrackingFormat>();

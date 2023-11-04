@@ -6,8 +6,12 @@ using System.Reflection;
 using System.Runtime.Caching;
 using System.Threading;
 using System.Threading.Tasks;
+using MediatR;
 using Sailfish.Attributes;
+using Sailfish.Contracts.Private;
+using Sailfish.Contracts.Serialization.V1;
 using Sailfish.Exceptions;
+using Sailfish.Presentation;
 using Sailfish.Program;
 using Sailfish.Utils;
 using Serilog;
@@ -17,11 +21,15 @@ namespace Sailfish.Execution;
 internal class SailfishExecutionEngine : ISailfishExecutionEngine
 {
     private readonly ITestCaseIterator testCaseIterator;
+    private readonly IMediator mediator;
+    private readonly IClassExecutionSummaryCompiler classExecutionSummaryCompiler;
     private readonly IRunSettings runSettings;
 
-    public SailfishExecutionEngine(ITestCaseIterator testCaseIterator, IRunSettings runSettings)
+    public SailfishExecutionEngine(ITestCaseIterator testCaseIterator, IMediator mediator, IClassExecutionSummaryCompiler classExecutionSummaryCompiler, IRunSettings runSettings)
     {
         this.testCaseIterator = testCaseIterator;
+        this.mediator = mediator;
+        this.classExecutionSummaryCompiler = classExecutionSummaryCompiler;
         this.runSettings = runSettings;
     }
 
@@ -225,16 +233,26 @@ internal class SailfishExecutionEngine : ISailfishExecutionEngine
     {
         try
         {
-            return await testCaseIterator.Iterate(testInstanceContainer,
-                runSettings.DisableOverheadEstimation
-                || ShouldDisableOverheadEstimationFromTypeOrMethod(testInstanceContainer),
-                cancellationToken);
+            var testExecutionResult = await testCaseIterator.Iterate(
+                testInstanceContainer,
+                runSettings.DisableOverheadEstimation || ShouldDisableOverheadEstimationFromTypeOrMethod(testInstanceContainer),
+                cancellationToken).ConfigureAwait(false);
+
+            await mediator.Publish(new SailfishUpdateTrackingDataNotification(MapResultToTrackingFormat(testInstanceContainer.Type, testExecutionResult), runSettings.TimeStamp), cancellationToken);
+
+            return testExecutionResult;
         }
         catch (Exception exception)
         {
             if (exception is TestDisabledException) throw;
             return new TestCaseExecutionResult(testInstanceContainer, exception.InnerException ?? exception);
         }
+    }
+
+    private ClassExecutionSummaryTrackingFormat MapResultToTrackingFormat(Type testClass, TestCaseExecutionResult testExecutionResult)
+    {
+        var group = new TestClassResultGroup(testClass, new List<TestCaseExecutionResult>() { testExecutionResult });
+        return classExecutionSummaryCompiler.CompileToSummaries(new[] { group }).ToTrackingFormat().Single();
     }
 
     private static bool ShouldDisableOverheadEstimationFromTypeOrMethod(TestInstanceContainer testInstanceContainer)
