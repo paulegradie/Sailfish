@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using MediatR;
 using Sailfish.Analysis.ScaleFish;
 using Sailfish.Contracts.Public.Commands;
+using Sailfish.Contracts.Public.Requests;
 using Sailfish.Presentation;
 
 namespace Sailfish.TestAdapter.Execution;
@@ -35,7 +36,7 @@ internal class AdapterScaleFish : IAdapterScaleFish
     {
         if (!runSettings.RunScalefish) return;
 
-        var response = await mediator.Send(new SailfishGetLatestExecutionSummaryCommand(), cancellationToken);
+        var response = await mediator.Send(new SailfishGetLatestExecutionSummaryRequest(), cancellationToken);
         var executionSummaries = response.LatestExecutionSummaries;
         if (!executionSummaries.Any()) return;
 

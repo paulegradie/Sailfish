@@ -4,6 +4,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using MediatR;
 using Sailfish.Contracts.Public.Commands;
+using Sailfish.Contracts.Public.Requests;
 using Sailfish.Presentation;
 using Sailfish.Presentation.Console;
 
@@ -35,7 +36,7 @@ public class ScaleFish : IScaleFish
     {
         if (!runSettings.RunScalefish) return;
 
-        var response = await mediator.Send(new SailfishGetLatestExecutionSummaryCommand(), cancellationToken);
+        var response = await mediator.Send(new SailfishGetLatestExecutionSummaryRequest(), cancellationToken);
         var executionSummaries = response.LatestExecutionSummaries;
         if (!executionSummaries.Any()) return;
 
