@@ -5,7 +5,6 @@ using System.Threading;
 using MediatR;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.Logging;
-using Sailfish.Analysis.SailDiff;
 using Sailfish.Exceptions;
 using Sailfish.Execution;
 using Sailfish.Extensions.Types;

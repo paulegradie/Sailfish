@@ -1,5 +1,4 @@
 using MediatR;
-using Sailfish.Extensions.Types;
 
 namespace Sailfish.Contracts.Public.Commands;
 

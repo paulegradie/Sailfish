@@ -6,7 +6,6 @@ using System.Runtime.Caching;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel;
-using Sailfish.Analysis.SailDiff;
 using Sailfish.Exceptions;
 using Sailfish.Execution;
 using Sailfish.Extensions.Types;
