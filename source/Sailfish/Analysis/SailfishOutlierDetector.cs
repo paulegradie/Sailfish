@@ -2,13 +2,7 @@
 using System.Linq;
 using Perfolizer.Mathematics.OutlierDetection;
 
-namespace Sailfish.MathOps;
-
-public record OutlierAnalysis(
-    double[] DataWithOutliersRemoved,
-    IEnumerable<double> LowerOutliers,
-    IEnumerable<double> UpperOutliers,
-    int TotalNumOutliers);
+namespace Sailfish.Analysis;
 
 public interface ISailfishOutlierDetector
 {

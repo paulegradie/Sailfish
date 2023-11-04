@@ -48,23 +48,21 @@ internal class SailfishExecutor
         var testInitializationResult = CollectTests(runSettings.TestNames, runSettings.TestLocationAnchors.ToArray());
         if (testInitializationResult.IsValid)
         {
-            var timeStamp = runSettings.TimeStamp ?? DateTime.Now.ToLocalTime();
+            var timeStamp = runSettings.TimeStamp;
 
-            var testClassResultGroups = await sailFishTestExecutor.Execute(testInitializationResult.Tests, cancellationToken);
-            var classExecutionSummaries = classExecutionSummaryCompiler.CompileToSummaries(testClassResultGroups, cancellationToken)
-                .ToList();
+            var testClassResultGroups = await sailFishTestExecutor.Execute(testInitializationResult.Tests, cancellationToken).ConfigureAwait(false);
+            var classExecutionSummaries = classExecutionSummaryCompiler.CompileToSummaries(testClassResultGroups).ToList();
 
-            var trackingDirectory = runSettings.GetRunSettingsTrackingDirectoryPath();
             await executionSummaryWriter.Write(classExecutionSummaries, timeStamp, cancellationToken);
 
             if (runSettings.RunSailDiff)
             {
-                await sailDiff.Analyze(timeStamp, cancellationToken);
+                await sailDiff.Analyze(timeStamp, cancellationToken).ConfigureAwait(false);
             }
 
             if (runSettings.RunScalefish)
             {
-                await scaleFish.Analyze(timeStamp, cancellationToken);
+                await scaleFish.Analyze(timeStamp, cancellationToken).ConfigureAwait(false);
             }
 
             var exceptions = classExecutionSummaries
@@ -94,28 +92,6 @@ internal class SailfishExecutor
         }
 
         return SailfishRunResult.CreateResult(Array.Empty<IClassExecutionSummary>(), testDiscoveryExceptions);
-    }
-
-    private static string GetRunSettingsTrackingDirectoryPath(IRunSettings runSettings, string defaultDirectory)
-    {
-        string trackingDirectoryPath;
-        if (string.IsNullOrEmpty(runSettings.LocalOutputDirectory) ||
-            string.IsNullOrWhiteSpace(runSettings.LocalOutputDirectory))
-        {
-            trackingDirectoryPath = defaultDirectory;
-        }
-        else
-        {
-            trackingDirectoryPath =
-                Path.Join(runSettings.LocalOutputDirectory, defaultDirectory);
-        }
-
-        if (!Directory.Exists(trackingDirectoryPath))
-        {
-            Directory.CreateDirectory(trackingDirectoryPath);
-        }
-
-        return trackingDirectoryPath;
     }
 
     private TestInitializationResult CollectTests(IEnumerable<string> testNames, IEnumerable<Type> locationTypes)

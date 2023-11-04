@@ -32,13 +32,13 @@ public static class DefaultFileSettings
         (timeStamp, testType) => $"Saildiff_{testType.ToString()}_{timeStamp.ToString(SortableFormat)}{CsvSuffix}";
 
     public static readonly Func<DateTime, string> DefaultTrackingFileName =
-        (timeStamp) => $"PerformanceTracking_{timeStamp.ToLocalTime().ToString(SortableFormat)}{TrackingSuffix}";
+        (timeStamp) => $"PerformanceTracking_{timeStamp.ToUniversalTime().ToString(SortableFormat)}{TrackingSuffix}";
 
     public static readonly Func<DateTime, string> DefaultScalefishFileName =
-        (timeStamp) => $"Scalefish_{timeStamp.ToLocalTime().ToString(SortableFormat)}{MarkdownSuffix}";
+        (timeStamp) => $"Scalefish_{timeStamp.ToUniversalTime().ToString(SortableFormat)}{MarkdownSuffix}";
 
     public static readonly Func<DateTime, string> DefaultScalefishModelFileName =
-        (timeStamp) => $"ScalefishModels_{timeStamp.ToLocalTime().ToString(SortableFormat)}{JsonSuffix}";
+        (timeStamp) => $"ScalefishModels_{timeStamp.ToUniversalTime().ToString(SortableFormat)}{JsonSuffix}";
 
     public static string JoinTags(OrderedDictionary tags)
     {
