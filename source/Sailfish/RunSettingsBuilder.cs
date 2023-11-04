@@ -27,12 +27,19 @@ public class RunSettingsBuilder
     private bool disableAnalysisGlobally = false;
     private int? globalSampleSize;
     private int? globalNumWarmupIterations;
-
+    private bool streamTrackingUpdates = true;
+    
     public static RunSettingsBuilder CreateBuilder()
     {
         return new RunSettingsBuilder();
     }
 
+    public RunSettingsBuilder DisableLocalTracking()
+    {
+        streamTrackingUpdates = false;
+        return this;
+    }
+    
     public RunSettingsBuilder WithTestNames(params string[] testNames)
     {
         names.AddRange(testNames);
@@ -181,6 +188,7 @@ public class RunSettingsBuilder
             globalSampleSize,
             globalNumWarmupIterations,
             disableAnalysisGlobally,
+            streamTrackingUpdates,
             debg
         );
     }

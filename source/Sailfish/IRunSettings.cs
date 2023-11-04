@@ -19,12 +19,13 @@ public interface IRunSettings
     OrderedDictionary Tags { get; }
     OrderedDictionary Args { get; }
     IEnumerable<string> ProvidedBeforeTrackingFiles { get; }
-    DateTime? TimeStamp { get; }
+    DateTime TimeStamp { get; }
     bool DisableOverheadEstimation { get; }
     public bool DisableAnalysisGlobally { get; }
     public int? SampleSizeOverride { get; set; }
     public int? NumWarmupIterationsOverride { get; set; }
     bool Debug { get; set; }
+    bool StreamTrackingUpdates { get; set; }
 
     string GetRunSettingsTrackingDirectoryPath();
 }

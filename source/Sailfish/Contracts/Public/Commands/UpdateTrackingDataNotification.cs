@@ -27,7 +27,7 @@ public class SailfishUpdateTrackingDataNotificationHandler : INotificationHandle
 
     public async Task Handle(SailfishUpdateTrackingDataNotification notification, CancellationToken cancellationToken)
     {
-        if (runSettings.TrackLocally is false) return;
+        if (runSettings.StreamTrackingUpdates is false) return;
 
         var output = runSettings.LocalOutputDirectory ?? DefaultFileSettings.DefaultOutputDirectory;
         if (!Directory.Exists(output))

@@ -21,12 +21,13 @@ internal class RunSettings : IRunSettings
     public OrderedDictionary Tags { get; set; } = new();
     public OrderedDictionary Args { get; } = new();
     public IEnumerable<string> ProvidedBeforeTrackingFiles { get; }
-    public DateTime? TimeStamp { get; }
+    public DateTime TimeStamp { get; }
     public bool DisableOverheadEstimation { get; }
     public bool DisableAnalysisGlobally { get; set; }
     public int? SampleSizeOverride { get; set; }
     public int? NumWarmupIterationsOverride { get; set; }
     public bool Debug { get; set; }
+    public bool StreamTrackingUpdates { get; set; }
 
     public RunSettings(
         IEnumerable<string> testNames,
@@ -40,6 +41,7 @@ internal class RunSettings : IRunSettings
         OrderedDictionary args,
         IEnumerable<string> providedBeforeTrackingFiles,
         DateTime? timeStamp,
+        bool streamTrackingUpdates,
         IEnumerable<Type> testLocationAnchors,
         IEnumerable<Type> registrationProviderAnchors)
     {
@@ -52,13 +54,14 @@ internal class RunSettings : IRunSettings
         Tags = tags;
         Args = args;
         ProvidedBeforeTrackingFiles = providedBeforeTrackingFiles;
-        TimeStamp = timeStamp;
+        TimeStamp = timeStamp ?? DateTime.Now.ToUniversalTime();
         Debug = false;
         Notify = notify;
         TestLocationAnchors = testLocationAnchors;
         RegistrationProviderAnchors = registrationProviderAnchors;
         DisableOverheadEstimation = false;
         DisableAnalysisGlobally = false;
+        StreamTrackingUpdates = streamTrackingUpdates;
     }
 
     public RunSettings(
@@ -79,6 +82,7 @@ internal class RunSettings : IRunSettings
         int? sampleSizeOverride = null,
         int? numWarmupIterationsOverride = null,
         bool disableAnalysisGlobally = false,
+        bool streamTrackingUpdates = true,
         bool debug = false)
     {
         TestNames = testNames;
@@ -90,7 +94,7 @@ internal class RunSettings : IRunSettings
         Tags = tags;
         Args = args;
         ProvidedBeforeTrackingFiles = providedBeforeTrackingFiles;
-        TimeStamp = timeStamp;
+        TimeStamp = timeStamp ?? DateTime.Now.ToUniversalTime();
         Debug = debug;
         Notify = notify;
         TestLocationAnchors = testLocationAnchors;
@@ -99,6 +103,7 @@ internal class RunSettings : IRunSettings
         DisableAnalysisGlobally = disableAnalysisGlobally;
         SampleSizeOverride = sampleSizeOverride;
         NumWarmupIterationsOverride = numWarmupIterationsOverride;
+        StreamTrackingUpdates = streamTrackingUpdates;
     }
 
     /// <summary>
@@ -114,6 +119,7 @@ internal class RunSettings : IRunSettings
         ProvidedBeforeTrackingFiles = Array.Empty<string>();
         RunScalefish = true;
         RunSailDiff = true;
+        StreamTrackingUpdates = true;
     }
 
     public string GetRunSettingsTrackingDirectoryPath()
