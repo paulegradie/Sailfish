@@ -7,7 +7,6 @@ using Sailfish.Analysis.ScaleFish;
 using Sailfish.Contracts.Public;
 using Sailfish.Contracts.Serialization.V1;
 using Sailfish.Execution;
-using Sailfish.MathOps;
 using Sailfish.Presentation;
 using Sailfish.Presentation.Console;
 using Sailfish.Presentation.CsvAndJson;

@@ -11,16 +11,18 @@ namespace Sailfish.DefaultHandlers;
 internal class WriteToCsvHandler : INotificationHandler<WriteToCsvNotification>
 {
     private readonly IPerformanceRunResultFileWriter performanceRunResultFileWriter;
+    private readonly IRunSettings runSettings;
 
-    public WriteToCsvHandler(IPerformanceRunResultFileWriter performanceRunResultFileWriter)
+    public WriteToCsvHandler(IPerformanceRunResultFileWriter performanceRunResultFileWriter, IRunSettings runSettings)
     {
         this.performanceRunResultFileWriter = performanceRunResultFileWriter;
+        this.runSettings = runSettings;
     }
 
     public async Task Handle(WriteToCsvNotification notification, CancellationToken cancellationToken)
     {
-        var fileName = DefaultFileSettings.AppendTagsToFilename(DefaultFileSettings.DefaultPerformanceResultsFileNameStem(notification.TimeStamp) + ".csv", notification.Tags);
-        var filePath = Path.Combine(notification.OutputDirectory, fileName);
+        var fileName = DefaultFileSettings.AppendTagsToFilename(DefaultFileSettings.DefaultPerformanceResultsFileNameStem(notification.TimeStamp) + ".csv", runSettings.Tags);
+        var filePath = Path.Combine(runSettings.LocalOutputDirectory ?? DefaultFileSettings.DefaultOutputDirectory, fileName);
         await performanceRunResultFileWriter.WriteToFileAsCsv(notification.Content, filePath, summary => summary.ExecutionSettings.AsCsv, cancellationToken).ConfigureAwait(false);
     }
 }

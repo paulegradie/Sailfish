@@ -1,5 +1,5 @@
-﻿using Sailfish.Analysis.SailDiff;
-using Sailfish.MathOps;
+﻿using Sailfish.Analysis;
+using Sailfish.Analysis.SailDiff;
 using Sailfish.Statistics.Tests;
 using Sailfish.Statistics.Tests.MWWilcoxonTestSailfish;
 using Sailfish.Statistics.Tests.TTestSailfish;

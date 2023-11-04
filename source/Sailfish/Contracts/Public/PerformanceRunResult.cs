@@ -3,7 +3,6 @@ using System.Linq;
 using MathNet.Numerics.Statistics;
 using Sailfish.Analysis;
 using Sailfish.Execution;
-using Sailfish.MathOps;
 
 namespace Sailfish.Contracts.Public;
 

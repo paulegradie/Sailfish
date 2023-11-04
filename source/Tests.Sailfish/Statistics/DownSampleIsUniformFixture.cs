@@ -1,4 +1,4 @@
-﻿using Sailfish.MathOps;
+﻿using Sailfish.Analysis;
 using Sailfish.Statistics.Tests;
 using Shouldly;
 using Xunit;

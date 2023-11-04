@@ -6,7 +6,6 @@ using Sailfish.Analysis;
 using Sailfish.Analysis.SailDiff;
 using Sailfish.Contracts.Public;
 using Sailfish.Extensions.Methods;
-using Sailfish.MathOps;
 using Sailfish.Statistics.Tests;
 using Sailfish.Statistics.Tests.KolmogorovSmirnovTestSailfish;
 using Sailfish.Statistics.Tests.MWWilcoxonTestSailfish;
