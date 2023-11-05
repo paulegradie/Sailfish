@@ -36,7 +36,7 @@ jobs:
         run: dotnet build ./source/Sailfish.Analyzers/Sailfish.Analyzers.csproj --configuration Release /p:Version=${VERSION}
 
       - name: Test
-        run: dotnet test ./source/Tests.Sailfish/Tests.Sailfish.csproj --verbosity normal
+        run: dotnet test ./source/Tests.Library/Tests.Library.csproj --verbosity normal
 
       - name: Test Adapter
         run: dotnet test ./source/Tests.Sailfish.TestAdapter/Tests.Sailfish.TestAdapter.csproj --verbosity normal
