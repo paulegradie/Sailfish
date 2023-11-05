@@ -50,8 +50,7 @@ internal class TestInstanceContainer
         string[] propertyNames,
         object[] variables,
         bool disabled,
-        IExecutionSettings executionSettings,
-        TestClassTimer testClassTimer
+        IExecutionSettings executionSettings
     )
     {
         if (propertyNames.Length != variables.Length) throw new Exception("Property names and variables do not match");

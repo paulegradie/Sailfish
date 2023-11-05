@@ -48,8 +48,7 @@ internal class TestInstanceContainerCreator : ITestInstanceContainerCreator
                 typeActivator,
                 testType,
                 sailfishVariableSets,
-                instanceContainer,
-                new TestClassTimer()))
+                instanceContainer))
             .ToList();
     }
 }
