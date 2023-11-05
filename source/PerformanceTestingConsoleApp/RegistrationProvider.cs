@@ -5,7 +5,7 @@ using Demo.API;
 using MediatR;
 using Microsoft.AspNetCore.Mvc.Testing;
 using PerformanceTestingConsoleApp.CustomHandlerOverrideExamples;
-using Sailfish.Contracts.Public.Commands;
+using Sailfish.Contracts.Public.Notifications;
 using Sailfish.Registration;
 using Serilog;
 
@@ -17,8 +17,7 @@ public class RegistrationProvider : IProvideARegistrationCallback
     {
         builder.RegisterType<WebApplicationFactory<DemoApp>>();
         builder.RegisterInstance(Log.Logger).As<ILogger>();
-        builder.RegisterType<CustomWriteToCloudHandler>().As<INotificationHandler<WriteCurrentTrackingFileNotification>>();
-        builder.RegisterType<CustomNotificationHandler>().As<INotificationHandler<NotifyOnTestResultNotification>>();
+        builder.RegisterType<CustomWriteToCloudHandler>().As<INotificationHandler<TestRunCompletedNotification>>();
         builder.RegisterType<CloudWriter>().As<ICloudWriter>();
 
         await Task.Yield();

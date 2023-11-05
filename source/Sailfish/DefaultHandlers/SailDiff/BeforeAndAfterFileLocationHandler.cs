@@ -5,18 +5,17 @@ using System.Threading;
 using System.Threading.Tasks;
 using MediatR;
 using Sailfish.Analysis.SailDiff;
-using Sailfish.Contracts.Public.Commands;
 using Sailfish.Contracts.Public.Requests;
 using Sailfish.Exceptions;
 
-namespace Sailfish.DefaultHandlers;
+namespace Sailfish.DefaultHandlers.SailDiff;
 
-internal class SailfishBeforeAndAfterFileLocationHandler : IRequestHandler<BeforeAndAfterFileLocationRequest, BeforeAndAfterFileLocationResponse>
+internal class BeforeAndAfterFileLocationHandler : IRequestHandler<BeforeAndAfterFileLocationRequest, BeforeAndAfterFileLocationResponse>
 {
     private readonly IRunSettings runSettings;
     private readonly ITrackingFileDirectoryReader trackingFileDirectoryReader;
 
-    public SailfishBeforeAndAfterFileLocationHandler(IRunSettings runSettings, ITrackingFileDirectoryReader trackingFileDirectoryReader)
+    public BeforeAndAfterFileLocationHandler(IRunSettings runSettings, ITrackingFileDirectoryReader trackingFileDirectoryReader)
     {
         this.runSettings = runSettings;
         this.trackingFileDirectoryReader = trackingFileDirectoryReader;

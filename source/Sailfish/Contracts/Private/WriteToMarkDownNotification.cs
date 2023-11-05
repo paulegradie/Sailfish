@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using MediatR;
 using Sailfish.Execution;
 
@@ -7,13 +6,10 @@ namespace Sailfish.Contracts.Private;
 
 internal class WriteToMarkDownNotification : INotification
 {
-    public WriteToMarkDownNotification(List<IClassExecutionSummary> content, DateTime timeStamp)
+    public WriteToMarkDownNotification(List<IClassExecutionSummary> classExecutionSummaries)
     {
-        Content = content;
-        TimeStamp = timeStamp;
+        ClassExecutionSummaries = classExecutionSummaries;
     }
 
-    public List<IClassExecutionSummary> Content { get; }
-    public DateTime TimeStamp { get; }
-
+    public List<IClassExecutionSummary> ClassExecutionSummaries { get; }
 }

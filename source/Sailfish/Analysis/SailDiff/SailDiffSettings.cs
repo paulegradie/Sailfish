@@ -12,7 +12,13 @@ public class SailDiffSettings
     /// <param name="useOutlierDetection"></param>
     /// <param name="maxDegreeOfParallelism"></param>
     /// <param name="disableOrdering"></param>
-    public SailDiffSettings(double alpha = 0.001, int round = 3, bool useOutlierDetection = false, TestType testType = TestType.WilcoxonRankSumTest, int maxDegreeOfParallelism = 4, bool disableOrdering = false)
+    public SailDiffSettings(
+        double alpha = 0.001,
+        int round = 3,
+        bool useOutlierDetection = false,
+        TestType testType = TestType.TwoSampleWilcoxonSignedRankTest,
+        int maxDegreeOfParallelism = 4,
+        bool disableOrdering = false)
     {
         Alpha = alpha;
         Round = round;

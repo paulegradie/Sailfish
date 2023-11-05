@@ -4,7 +4,7 @@ using MediatR;
 using Sailfish.Contracts.Private;
 using Sailfish.Presentation.Console;
 
-namespace Sailfish.DefaultHandlers;
+namespace Sailfish.DefaultHandlers.Sailfish;
 
 internal class WriteToConsoleHandler : INotificationHandler<WriteToConsoleNotification>
 {
@@ -19,7 +19,7 @@ internal class WriteToConsoleHandler : INotificationHandler<WriteToConsoleNotifi
 
     public Task Handle(WriteToConsoleNotification notification, CancellationToken cancellationToken)
     {
-        consoleWriter.Present(notification.Content, runSettings.Tags);
+        consoleWriter.WriteToConsole(notification.Content, runSettings.Tags);
         return Task.CompletedTask;
     }
 }

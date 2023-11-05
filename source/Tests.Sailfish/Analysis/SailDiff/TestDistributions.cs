@@ -1,7 +1,7 @@
 using System;
 using Accord.Statistics.Distributions.Univariate;
 
-namespace Test.Statistics;
+namespace Test.Analysis.SailDiff;
 
 public static class TestDistributions
 {

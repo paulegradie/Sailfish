@@ -1,11 +1,10 @@
-﻿using System;
-using System.Linq;
+﻿using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using MediatR;
 using Sailfish.Contracts.Public;
-using Sailfish.Contracts.Public.Commands;
+using Sailfish.Contracts.Public.Notifications;
 using Sailfish.Contracts.Public.Requests;
 using Sailfish.Presentation;
 using Sailfish.Presentation.Console;
@@ -23,7 +22,7 @@ public class SailDiff : ISailDiff
     private readonly IRunSettings runSettings;
     private readonly ILogger logger;
     private readonly ITestComputer testComputer;
-    private readonly ITestResultTableContentFormatter testResultTableContentFormatter;
+    private readonly ISailDiffResultMarkdownConverter sailDiffResultMarkdownConverter;
     private readonly IConsoleWriter consoleWriter;
 
     public SailDiff(
@@ -31,28 +30,23 @@ public class SailDiff : ISailDiff
         IRunSettings runSettings,
         ILogger logger,
         ITestComputer testComputer,
-        ITestResultTableContentFormatter testResultTableContentFormatter,
+        ISailDiffResultMarkdownConverter sailDiffResultMarkdownConverter,
         IConsoleWriter consoleWriter)
     {
         this.mediator = mediator;
         this.runSettings = runSettings;
         this.logger = logger;
         this.testComputer = testComputer;
-        this.testResultTableContentFormatter = testResultTableContentFormatter;
+        this.sailDiffResultMarkdownConverter = sailDiffResultMarkdownConverter;
         this.consoleWriter = consoleWriter;
     }
 
-    public async Task Analyze(DateTime timeStamp, CancellationToken cancellationToken
+    public async Task Analyze(CancellationToken cancellationToken
     )
     {
         if (!runSettings.RunSailDiff) return;
-        var beforeAndAfterFileLocations = await mediator.Send(
-                new BeforeAndAfterFileLocationRequest(
-                    runSettings.Tags,
-                    runSettings.ProvidedBeforeTrackingFiles,
-                    runSettings.Args),
-                cancellationToken)
-            .ConfigureAwait(false);
+        var beforeAndAfterFileLocations =
+            await mediator.Send(new BeforeAndAfterFileLocationRequest(runSettings.ProvidedBeforeTrackingFiles), cancellationToken).ConfigureAwait(false);
 
         if (!beforeAndAfterFileLocations.AfterFilePaths.Any() || !beforeAndAfterFileLocations.BeforeFilePaths.Any())
         {
@@ -73,13 +67,8 @@ public class SailDiff : ISailDiff
             logger.Warning("{Message}", msg);
         }
 
-        var beforeAndAfterData = await mediator.Send(
-                new ReadInBeforeAndAfterDataRequest(
-                    beforeAndAfterFileLocations.BeforeFilePaths,
-                    beforeAndAfterFileLocations.AfterFilePaths,
-                    runSettings.Tags,
-                    runSettings.Args),
-                cancellationToken)
+        var beforeAndAfterData = await mediator
+            .Send(new ReadInBeforeAndAfterDataRequest(beforeAndAfterFileLocations.BeforeFilePaths, beforeAndAfterFileLocations.AfterFilePaths), cancellationToken)
             .ConfigureAwait(false);
 
         if (beforeAndAfterData.BeforeData is null || beforeAndAfterData.AfterData is null)
@@ -100,43 +89,9 @@ public class SailDiff : ISailDiff
         }
 
         var testIds = new TestIds(beforeAndAfterData.BeforeData.TestIds, beforeAndAfterData.AfterData.TestIds);
-        var testResultFormats = testResultTableContentFormatter.CreateTableFormats(testResults, testIds, cancellationToken);
+        var resultsAsMarkdown = sailDiffResultMarkdownConverter.ConvertToMarkdownTable(testResults, testIds, cancellationToken);
 
-        consoleWriter.WriteStatTestResultsToConsole(testResultFormats.MarkdownFormat, testIds, runSettings.SailDiffSettings);
-
-        await mediator.Publish(
-                new WriteTestResultsAsMarkdownNotification(
-                    testResultFormats.MarkdownFormat,
-                    runSettings.LocalOutputDirectory ?? DefaultFileSettings.DefaultOutputDirectory,
-                    runSettings.SailDiffSettings,
-                    timeStamp,
-                    runSettings.Tags,
-                    runSettings.Args),
-                cancellationToken)
-            .ConfigureAwait(false);
-
-        await mediator.Publish(
-                new WriteTestResultsAsCsvNotification(
-                    testResultFormats.CsvFormat,
-                    runSettings.LocalOutputDirectory ?? DefaultFileSettings.DefaultOutputDirectory,
-                    runSettings.SailDiffSettings,
-                    timeStamp,
-                    runSettings.Tags,
-                    runSettings.Args),
-                cancellationToken)
-            .ConfigureAwait(false);
-
-        if (runSettings.Notify)
-        {
-            await mediator.Publish(
-                    new NotifyOnTestResultNotification(
-                        testResultFormats,
-                        runSettings.SailDiffSettings,
-                        timeStamp,
-                        runSettings.Tags,
-                        runSettings.Args),
-                    cancellationToken)
-                .ConfigureAwait(false);
-        }
+        consoleWriter.WriteStatTestResultsToConsole(resultsAsMarkdown, testIds, runSettings.SailDiffSettings);
+        await mediator.Publish(new SailDiffAnalysisCompleteNotification(testResults, resultsAsMarkdown), cancellationToken).ConfigureAwait(false);
     }
 }

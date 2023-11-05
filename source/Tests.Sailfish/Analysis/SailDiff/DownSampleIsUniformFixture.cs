@@ -3,7 +3,7 @@ using Sailfish.Statistics.Tests;
 using Shouldly;
 using Xunit;
 
-namespace Test.Statistics;
+namespace Test.Analysis.SailDiff;
 
 public class DownSampleIsUniformFixture
 {

@@ -8,7 +8,7 @@ namespace Sailfish;
 public interface IRunSettings
 {
     IEnumerable<string> TestNames { get; }
-    string? LocalOutputDirectory { get; }
+    string LocalOutputDirectory { get; }
     bool RunSailDiff { get; }
     bool RunScalefish { get; }
     bool CreateTrackingFiles { get; }
@@ -22,10 +22,10 @@ public interface IRunSettings
     DateTime TimeStamp { get; }
     bool DisableOverheadEstimation { get; }
     public bool DisableAnalysisGlobally { get; }
-    public int? SampleSizeOverride { get; set; }
-    public int? NumWarmupIterationsOverride { get; set; }
-    bool Debug { get; set; }
-    bool StreamTrackingUpdates { get; set; }
+    public int? SampleSizeOverride { get; }
+    public int? NumWarmupIterationsOverride { get; }
+    bool Debug { get; }
+    bool StreamTrackingUpdates { get; }
 
     string GetRunSettingsTrackingDirectoryPath();
 }

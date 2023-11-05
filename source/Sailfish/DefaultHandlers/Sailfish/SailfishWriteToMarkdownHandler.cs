@@ -6,7 +6,7 @@ using Sailfish.Contracts.Private;
 using Sailfish.Presentation;
 using Sailfish.Presentation.Markdown;
 
-namespace Sailfish.DefaultHandlers;
+namespace Sailfish.DefaultHandlers.Sailfish;
 
 internal class SailfishWriteToMarkdownHandler : INotificationHandler<WriteToMarkDownNotification>
 {
@@ -21,8 +21,8 @@ internal class SailfishWriteToMarkdownHandler : INotificationHandler<WriteToMark
 
     public async Task Handle(WriteToMarkDownNotification notification, CancellationToken cancellationToken)
     {
-        var fileName = DefaultFileSettings.AppendTagsToFilename(DefaultFileSettings.DefaultPerformanceResultsFileNameStem(notification.TimeStamp) + ".md", runSettings.Tags);
+        var fileName = DefaultFileSettings.AppendTagsToFilename(DefaultFileSettings.DefaultPerformanceResultsFileNameStem(runSettings.TimeStamp) + ".md", runSettings.Tags);
         var filePath = Path.Combine(runSettings.LocalOutputDirectory ?? DefaultFileSettings.DefaultOutputDirectory, fileName);
-        await markdownWriter.Write(notification.Content, filePath, cancellationToken).ConfigureAwait(false);
+        await markdownWriter.Write(notification.ClassExecutionSummaries, filePath, cancellationToken).ConfigureAwait(false);
     }
 }

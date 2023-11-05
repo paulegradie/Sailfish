@@ -2,21 +2,25 @@
 using System.Threading;
 using System.Threading.Tasks;
 using MediatR;
-using Sailfish.Contracts.Public.Commands;
+using Sailfish;
+using Sailfish.Contracts.Public.Notifications;
+using Sailfish.Presentation;
 
 namespace PerformanceTestingConsoleApp.CustomHandlerOverrideExamples;
 
-public class CustomWriteToCloudHandler : INotificationHandler<WriteCurrentTrackingFileNotification>
+public class CustomWriteToCloudHandler : INotificationHandler<TestRunCompletedNotification>
 {
     private readonly ICloudWriter cloudWriter;
+    private readonly IRunSettings runSettings;
 
-    public CustomWriteToCloudHandler(ICloudWriter cloudWriter)
+    public CustomWriteToCloudHandler(ICloudWriter cloudWriter, IRunSettings runSettings)
     {
         this.cloudWriter = cloudWriter;
+        this.runSettings = runSettings;
     }
 
-    public async Task Handle(WriteCurrentTrackingFileNotification request, CancellationToken cancellationToken)
+    public async Task Handle(TestRunCompletedNotification notification, CancellationToken cancellationToken)
     {
-        await cloudWriter.WriteToMyCloudStorageContainer(request.DefaultFileName, request.ClassExecutionSummaries.ToList());
+        await cloudWriter.WriteToMyCloudStorageContainer(DefaultFileSettings.DefaultTrackingFileName(runSettings.TimeStamp), notification.ClassExecutionSummaries.ToList());
     }
 }

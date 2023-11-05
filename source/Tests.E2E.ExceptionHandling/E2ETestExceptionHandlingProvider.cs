@@ -2,7 +2,7 @@ using Autofac;
 using Demo.API;
 using MediatR;
 using Microsoft.AspNetCore.Mvc.Testing;
-using Sailfish.Contracts.Public.Commands;
+using Sailfish.Contracts.Public.Notifications;
 using Sailfish.Registration;
 using Serilog;
 using Tests.E2E.ExceptionHandling.Handlers;
@@ -16,6 +16,6 @@ public class E2ETestExceptionHandlingProvider : IProvideARegistrationCallback
         await Task.CompletedTask;
         builder.RegisterType<WebApplicationFactory<DemoApp>>();
         builder.RegisterInstance(Log.Logger).As<ILogger>();
-        builder.RegisterType<WriteTrackingDataHandler>().As<INotificationHandler<WriteCurrentTrackingFileNotification>>();
+        builder.RegisterType<WriteTrackingDataHandler>().As<INotificationHandler<TestRunCompletedNotification>>();
     }
 }

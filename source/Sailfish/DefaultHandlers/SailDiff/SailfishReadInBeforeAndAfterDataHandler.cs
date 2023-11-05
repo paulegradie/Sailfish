@@ -4,12 +4,11 @@ using System.Threading.Tasks;
 using MediatR;
 using Sailfish.Analysis;
 using Sailfish.Contracts.Public;
-using Sailfish.Contracts.Public.Commands;
 using Sailfish.Contracts.Public.Requests;
 using Sailfish.Extensions.Types;
 using Serilog;
 
-namespace Sailfish.DefaultHandlers;
+namespace Sailfish.DefaultHandlers.SailDiff;
 
 internal class SailfishReadInBeforeAndAfterDataHandler : IRequestHandler<ReadInBeforeAndAfterDataRequest, ReadInBeforeAndAfterDataResponse>
 {

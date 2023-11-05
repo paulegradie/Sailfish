@@ -3,8 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using MediatR;
 using Sailfish.Analysis.SailDiff;
 using Sailfish.Analysis.ScaleFish;
+using Sailfish.Contracts.Public.Notifications;
 using Sailfish.Presentation;
 using Serilog;
 
@@ -17,11 +19,13 @@ internal class SailfishExecutor
     private readonly IClassExecutionSummaryCompiler classExecutionSummaryCompiler;
     private readonly IExecutionSummaryWriter executionSummaryWriter;
     private readonly IRunSettings runSettings;
+    private readonly IMediator mediator;
     private readonly ISailFishTestExecutor sailFishTestExecutor;
     private readonly ISailDiff sailDiff;
     private readonly IScaleFish scaleFish;
 
     public SailfishExecutor(
+        IMediator mediator,
         ISailFishTestExecutor sailFishTestExecutor,
         ITestCollector testCollector,
         ITestFilter testFilter,
@@ -32,6 +36,7 @@ internal class SailfishExecutor
         IRunSettings runSettings
     )
     {
+        this.mediator = mediator;
         this.sailFishTestExecutor = sailFishTestExecutor;
         this.testCollector = testCollector;
         this.testFilter = testFilter;
@@ -52,16 +57,17 @@ internal class SailfishExecutor
             var testClassResultGroups = await sailFishTestExecutor.Execute(testInitializationResult.Tests, cancellationToken).ConfigureAwait(false);
             var classExecutionSummaries = classExecutionSummaryCompiler.CompileToSummaries(testClassResultGroups).ToList();
 
-            await executionSummaryWriter.Write(classExecutionSummaries, timeStamp, cancellationToken);
+            await executionSummaryWriter.Write(classExecutionSummaries, cancellationToken);
+            await mediator.Publish(new TestRunCompletedNotification(classExecutionSummaries.ToTrackingFormat()), cancellationToken).ConfigureAwait(false);
 
             if (runSettings.RunSailDiff)
             {
-                await sailDiff.Analyze(timeStamp, cancellationToken).ConfigureAwait(false);
+                await sailDiff.Analyze(cancellationToken).ConfigureAwait(false);
             }
 
             if (runSettings.RunScalefish)
             {
-                await scaleFish.Analyze(timeStamp, cancellationToken).ConfigureAwait(false);
+                await scaleFish.Analyze(cancellationToken).ConfigureAwait(false);
             }
 
             var exceptions = classExecutionSummaries

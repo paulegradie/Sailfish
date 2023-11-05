@@ -46,7 +46,7 @@ internal class AdapterConsoleWriter : IAdapterConsoleWriter
         this.messageLogger = messageLogger;
     }
 
-    public string Present(IEnumerable<IClassExecutionSummary> results, OrderedDictionary? tags = null)
+    public string WriteToConsole(IEnumerable<IClassExecutionSummary> results, OrderedDictionary? tags = null)
     {
         var summaryResults = results.ToList();
         foreach (var result in summaryResults)

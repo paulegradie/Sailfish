@@ -5,14 +5,14 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using MediatR;
-using Sailfish.Contracts.Private;
+using Sailfish.Contracts.Public.Notifications;
 using Sailfish.Contracts.Serialization.V1;
 using Sailfish.Presentation;
 using Serilog;
 
-namespace Sailfish.DefaultHandlers;
+namespace Sailfish.DefaultHandlers.Sailfish;
 
-public class SailfishUpdateTrackingDataNotificationHandler : INotificationHandler<SailfishUpdateTrackingDataNotification>
+public class SailfishUpdateTrackingDataNotificationHandler : INotificationHandler<TestCaseCompletedNotification>
 {
     private readonly ITrackingFileSerialization trackingFileSerialization;
     private readonly IRunSettings runSettings;
@@ -25,9 +25,10 @@ public class SailfishUpdateTrackingDataNotificationHandler : INotificationHandle
         this.logger = logger;
     }
 
-    public async Task Handle(SailfishUpdateTrackingDataNotification notification, CancellationToken cancellationToken)
+    public async Task Handle(TestCaseCompletedNotification notification, CancellationToken cancellationToken)
     {
         if (runSettings.StreamTrackingUpdates is false) return;
+        if (runSettings.CreateTrackingFiles is false) return;
 
         var output = runSettings.LocalOutputDirectory ?? DefaultFileSettings.DefaultOutputDirectory;
         if (!Directory.Exists(output))

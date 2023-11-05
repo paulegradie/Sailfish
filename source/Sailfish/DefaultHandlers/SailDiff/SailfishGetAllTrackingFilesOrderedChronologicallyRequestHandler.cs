@@ -3,14 +3,14 @@ using System.Threading.Tasks;
 using MediatR;
 using Sailfish.Analysis;
 using Sailfish.Analysis.SailDiff;
-using Sailfish.Contracts.Private;
+using Sailfish.Contracts.Public.Requests;
 using Sailfish.Extensions.Types;
 using Serilog;
 
-namespace Sailfish.DefaultHandlers;
+namespace Sailfish.DefaultHandlers.SailDiff;
 
-internal class SailfishGetAllTrackingFilesOrderedChronologicallyRequestHandler : IRequestHandler<SailfishGetAllTrackingDataOrderedChronologicallyRequest,
-    SailfishGetAllTrackingDataOrderedChronologicallyResponse>
+internal class SailfishGetAllTrackingFilesOrderedChronologicallyRequestHandler : IRequestHandler<GetAllTrackingDataOrderedChronologicallyRequest,
+    GetAllTrackingDataOrderedChronologicallyResponse>
 {
     private readonly IRunSettings runSettings;
     private readonly ITrackingFileDirectoryReader trackingFileDirectoryReader;
@@ -29,16 +29,16 @@ internal class SailfishGetAllTrackingFilesOrderedChronologicallyRequestHandler :
         this.logger = logger;
     }
 
-    public async Task<SailfishGetAllTrackingDataOrderedChronologicallyResponse> Handle(
-        SailfishGetAllTrackingDataOrderedChronologicallyRequest request,
+    public async Task<GetAllTrackingDataOrderedChronologicallyResponse> Handle(
+        GetAllTrackingDataOrderedChronologicallyRequest request,
         CancellationToken cancellationToken)
     {
-        var trackingFiles =
-            trackingFileDirectoryReader.FindTrackingFilesInDirectoryOrderedByLastModified(runSettings.GetRunSettingsTrackingDirectoryPath(), ascending: request.Ascending);
-        var data = new TrackingFileDataList();
+        var trackingFiles = trackingFileDirectoryReader
+            .FindTrackingFilesInDirectoryOrderedByLastModified(runSettings.GetRunSettingsTrackingDirectoryPath(), ascending: request.Ascending);
 
+        var data = new TrackingFileDataList();
         await trackingFileParser.TryParse(trackingFiles, data, cancellationToken);
 
-        return new SailfishGetAllTrackingDataOrderedChronologicallyResponse(data);
+        return new GetAllTrackingDataOrderedChronologicallyResponse(data);
     }
 }

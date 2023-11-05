@@ -10,59 +10,24 @@ namespace Sailfish;
 internal class RunSettings : IRunSettings
 {
     public IEnumerable<string> TestNames { get; }
-    public string? LocalOutputDirectory { get; }
+    public string LocalOutputDirectory { get; }
     public bool CreateTrackingFiles { get; }
     public bool RunSailDiff { get; }
-    public bool RunScalefish { get; set; }
-    public bool Notify { get; set; }
+    public bool RunScalefish { get; }
+    public bool Notify { get; }
     public SailDiffSettings SailDiffSettings { get; }
     public IEnumerable<Type> TestLocationAnchors { get; }
     public IEnumerable<Type> RegistrationProviderAnchors { get; }
-    public OrderedDictionary Tags { get; set; } = new();
-    public OrderedDictionary Args { get; } = new();
+    public OrderedDictionary Tags { get; }
+    public OrderedDictionary Args { get; }
     public IEnumerable<string> ProvidedBeforeTrackingFiles { get; }
     public DateTime TimeStamp { get; }
     public bool DisableOverheadEstimation { get; }
-    public bool DisableAnalysisGlobally { get; set; }
-    public int? SampleSizeOverride { get; set; }
-    public int? NumWarmupIterationsOverride { get; set; }
-    public bool Debug { get; set; }
-    public bool StreamTrackingUpdates { get; set; }
-
-    public RunSettings(
-        IEnumerable<string> testNames,
-        string localOutputDirectory,
-        bool createTrackingFiles,
-        bool useSailDiff,
-        bool useScaleFish,
-        bool notify,
-        SailDiffSettings sailfDiffSettings,
-        OrderedDictionary tags,
-        OrderedDictionary args,
-        IEnumerable<string> providedBeforeTrackingFiles,
-        DateTime? timeStamp,
-        bool streamTrackingUpdates,
-        IEnumerable<Type> testLocationAnchors,
-        IEnumerable<Type> registrationProviderAnchors)
-    {
-        TestNames = testNames;
-        LocalOutputDirectory = localOutputDirectory;
-        CreateTrackingFiles = createTrackingFiles;
-        RunSailDiff = useSailDiff;
-        RunScalefish = useScaleFish;
-        SailDiffSettings = sailfDiffSettings;
-        Tags = tags;
-        Args = args;
-        ProvidedBeforeTrackingFiles = providedBeforeTrackingFiles;
-        TimeStamp = timeStamp ?? DateTime.Now.ToUniversalTime();
-        Debug = false;
-        Notify = notify;
-        TestLocationAnchors = testLocationAnchors;
-        RegistrationProviderAnchors = registrationProviderAnchors;
-        DisableOverheadEstimation = false;
-        DisableAnalysisGlobally = false;
-        StreamTrackingUpdates = streamTrackingUpdates;
-    }
+    public bool DisableAnalysisGlobally { get; }
+    public int? SampleSizeOverride { get; }
+    public int? NumWarmupIterationsOverride { get; }
+    public bool Debug { get; }
+    public bool StreamTrackingUpdates { get; }
 
     public RunSettings(
         IEnumerable<string> testNames,
@@ -75,10 +40,10 @@ internal class RunSettings : IRunSettings
         OrderedDictionary tags,
         OrderedDictionary args,
         IEnumerable<string> providedBeforeTrackingFiles,
-        DateTime? timeStamp,
         IEnumerable<Type> testLocationAnchors,
         IEnumerable<Type> registrationProviderAnchors,
-        bool disableOverheadEstimation,
+        bool disableOverheadEstimation = false,
+        DateTime? timeStamp = null,
         int? sampleSizeOverride = null,
         int? numWarmupIterationsOverride = null,
         bool disableAnalysisGlobally = false,
@@ -106,28 +71,9 @@ internal class RunSettings : IRunSettings
         StreamTrackingUpdates = streamTrackingUpdates;
     }
 
-    /// <summary>
-    /// Default Constructor
-    /// </summary>
-    public RunSettings()
-    {
-        TestNames = Array.Empty<string>();
-        LocalOutputDirectory = null;
-        SailDiffSettings = new SailDiffSettings();
-        TestLocationAnchors = new[] { GetType() };
-        RegistrationProviderAnchors = new[] { GetType() };
-        ProvidedBeforeTrackingFiles = Array.Empty<string>();
-        RunScalefish = true;
-        RunSailDiff = true;
-        StreamTrackingUpdates = true;
-    }
-
     public string GetRunSettingsTrackingDirectoryPath()
     {
-        var trackingDirectoryPath = (string.IsNullOrEmpty(LocalOutputDirectory) || string.IsNullOrWhiteSpace(LocalOutputDirectory))
-            ? DefaultFileSettings.DefaultExecutionSummaryTrackingDirectory
-            : Path.Join(LocalOutputDirectory, DefaultFileSettings.DefaultExecutionSummaryTrackingDirectory);
-
+        var trackingDirectoryPath = Path.Join(LocalOutputDirectory, DefaultFileSettings.DefaultExecutionSummaryTrackingDirectory);
         if (!Directory.Exists(trackingDirectoryPath)) Directory.CreateDirectory(trackingDirectoryPath);
         return trackingDirectoryPath;
     }

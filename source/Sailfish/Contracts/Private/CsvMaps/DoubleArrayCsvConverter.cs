@@ -6,7 +6,7 @@ using CsvHelper.TypeConversion;
 
 namespace Sailfish.Contracts.Private.CsvMaps;
 
-internal class DoubleArrayCsvConverter : ITypeConverter
+internal sealed class DoubleArrayCsvConverter : ITypeConverter
 {
     private const string Sep = ",";
 

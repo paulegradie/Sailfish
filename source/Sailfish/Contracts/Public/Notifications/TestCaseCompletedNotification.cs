@@ -3,11 +3,11 @@ using MediatR;
 using Sailfish.Contracts.Serialization.V1;
 using Sailfish.Presentation;
 
-namespace Sailfish.Contracts.Private;
+namespace Sailfish.Contracts.Public.Notifications;
 
-public class SailfishUpdateTrackingDataNotification : INotification
+public class TestCaseCompletedNotification : INotification
 {
-    public SailfishUpdateTrackingDataNotification(ClassExecutionSummaryTrackingFormat testCaseExecutionResult, DateTime timeStamp)
+    public TestCaseCompletedNotification(ClassExecutionSummaryTrackingFormat testCaseExecutionResult, DateTime timeStamp)
     {
         TestCaseExecutionResult = testCaseExecutionResult;
         DefaultFileName = DefaultFileSettings.DefaultTrackingFileName(timeStamp);

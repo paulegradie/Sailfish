@@ -112,7 +112,7 @@ internal class AdapterActivatorCallbacks : IActivatorCallbacks
 
         testResult.ErrorMessage = result.Exception?.Message;
 
-        var formattedExecutionSummary = consoleWriter.Present(new[] { classExecutionSummary }, new OrderedDictionary());
+        var formattedExecutionSummary = consoleWriter.WriteToConsole(new[] { classExecutionSummary }, new OrderedDictionary());
 
         if (preloadedLastRunIfAvailable.Count > 0)
         {

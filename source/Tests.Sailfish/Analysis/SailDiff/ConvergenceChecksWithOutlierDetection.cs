@@ -10,7 +10,7 @@ using Sailfish.Statistics.Tests.TwoSampleWilcoxonSignedRankTestSailfish;
 using Shouldly;
 using Xunit;
 
-namespace Test.Statistics;
+namespace Test.Analysis.SailDiff;
 
 public class ConvergenceChecksWithOutlierDetection
 {

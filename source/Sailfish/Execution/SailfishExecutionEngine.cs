@@ -8,7 +8,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using MediatR;
 using Sailfish.Attributes;
-using Sailfish.Contracts.Private;
+using Sailfish.Contracts.Public.Notifications;
 using Sailfish.Contracts.Serialization.V1;
 using Sailfish.Exceptions;
 using Sailfish.Presentation;
@@ -238,7 +238,7 @@ internal class SailfishExecutionEngine : ISailfishExecutionEngine
                 runSettings.DisableOverheadEstimation || ShouldDisableOverheadEstimationFromTypeOrMethod(testInstanceContainer),
                 cancellationToken).ConfigureAwait(false);
 
-            await mediator.Publish(new SailfishUpdateTrackingDataNotification(MapResultToTrackingFormat(testInstanceContainer.Type, testExecutionResult), runSettings.TimeStamp), cancellationToken);
+            await mediator.Publish(new TestCaseCompletedNotification(MapResultToTrackingFormat(testInstanceContainer.Type, testExecutionResult), runSettings.TimeStamp), cancellationToken);
 
             return testExecutionResult;
         }

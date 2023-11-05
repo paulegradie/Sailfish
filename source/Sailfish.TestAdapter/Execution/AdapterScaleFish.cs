@@ -4,7 +4,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using MediatR;
 using Sailfish.Analysis.ScaleFish;
-using Sailfish.Contracts.Public.Commands;
+using Sailfish.Contracts.Public.Notifications;
 using Sailfish.Contracts.Public.Requests;
 using Sailfish.Presentation;
 
@@ -32,11 +32,11 @@ internal class AdapterScaleFish : IAdapterScaleFish
         this.consoleWriter = consoleWriter;
     }
 
-    public async Task Analyze(DateTime timeStamp, CancellationToken cancellationToken)
+    public async Task Analyze(CancellationToken cancellationToken)
     {
         if (!runSettings.RunScalefish) return;
 
-        var response = await mediator.Send(new SailfishGetLatestExecutionSummaryRequest(), cancellationToken);
+        var response = await mediator.Send(new GetLatestExecutionSummaryRequest(), cancellationToken);
         var executionSummaries = response.LatestExecutionSummaries;
         if (!executionSummaries.Any()) return;
 
@@ -47,8 +47,7 @@ internal class AdapterScaleFish : IAdapterScaleFish
 
             var complexityMarkdown = markdownTableConverter.ConvertScaleFishResultToMarkdown(complexityResults);
             consoleWriter.WriteString(complexityMarkdown);
-            await mediator.Publish(new WriteCurrentScalefishResultNotification(complexityMarkdown, timeStamp), cancellationToken).ConfigureAwait(false);
-            await mediator.Publish(new WriteCurrentScalefishResultModelsNotification(complexityResults, timeStamp), cancellationToken).ConfigureAwait(false);
+            await mediator.Publish(new ScalefishAnalysisCompleteNotification(complexityMarkdown, complexityResults), cancellationToken).ConfigureAwait(false);
         }
         catch (Exception ex)
         {
