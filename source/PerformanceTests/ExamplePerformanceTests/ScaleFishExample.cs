@@ -6,10 +6,10 @@ using Sailfish.Attributes;
 namespace PerformanceTests.ExamplePerformanceTests;
 
 [WriteToMarkdown]
-[Sailfish(SampleSize = 2, DisableOverheadEstimation = true, Disabled = false)]
+[Sailfish(SampleSize = 20, DisableOverheadEstimation = true, Disabled = false)]
 public class ScaleFishExample
 {
-    [SailfishRangeVariable(true, start: 5, 4, 6)]
+    [SailfishRangeVariable(true, start: 5, 10, 6)]
     public int N { get; set; }
 
     [SailfishMethod]

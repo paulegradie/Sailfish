@@ -50,7 +50,7 @@ internal class TrackingFileParser : ITrackingFileParser
                 if (!deserializedFile.Any()) continue;
                 try
                 {
-                    trackingFormatData.Add(new List<IClassExecutionSummary>(deserializedFile.ToSummaryFormat())); // only add if all files present succeed
+                    trackingFormatData.Add(deserializedFile.ToSummaryFormat().ToList()); // only add if all files present succeed
                 }
                 catch (ArgumentException)
                 {

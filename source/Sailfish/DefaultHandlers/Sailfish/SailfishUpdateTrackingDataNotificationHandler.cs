@@ -55,10 +55,12 @@ public class SailfishUpdateTrackingDataNotificationHandler : INotificationHandle
 
         var success = notification.TestCaseExecutionResult.FilterForSuccessfulTestCases();
         if (!success.GetSuccessfulTestCases().Any()) return;
-        var preExistingSummary = classExecutionSummaryTrackingFormats.FirstOrDefault(x => x.TestClass == success.TestClass);
+        var preExistingSummary = classExecutionSummaryTrackingFormats.FirstOrDefault(x => x.TestClass.FullName == success.TestClass.FullName);
         if (preExistingSummary is not null)
         {
-            preExistingSummary.CompiledTestCaseResults.ToList().AddRange(success.CompiledTestCaseResults);
+            var update = preExistingSummary.CompiledTestCaseResults.ToList();
+            update.AddRange(success.CompiledTestCaseResults);
+            preExistingSummary.CompiledTestCaseResults = update;
         }
         else
         {
