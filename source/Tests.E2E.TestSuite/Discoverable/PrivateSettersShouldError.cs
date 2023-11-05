@@ -1,7 +1,7 @@
 using Sailfish.Attributes;
 using Shouldly;
 
-namespace Tests.E2ETestSuite.Discoverable;
+namespace Tests.E2E.TestSuite.Discoverable;
 
 [Sailfish(3, 1, Disabled = Constants.Disabled)]
 public class PrivateSettersShouldError

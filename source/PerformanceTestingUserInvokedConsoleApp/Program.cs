@@ -10,6 +10,7 @@ var settings = RunSettingsBuilder.CreateBuilder()
     .WithSailDiff()
     .WithScalefish()
     .WithGlobalSampleSize(5)
+    .DisableStreamingTrackingUpdates()
     .WithLocalOutputDirectory("my_custom_directory")
     .Build();
 var result = await SailfishRunner.Run(settings);

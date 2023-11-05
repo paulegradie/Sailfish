@@ -7,25 +7,17 @@ namespace Sailfish.Execution;
 public sealed class PerformanceTimer
 {
     public readonly List<IterationPerformance> ExecutionIterationPerformances = new();
-    private readonly Stopwatch executionTimer;
-    private readonly Stopwatch globalTimer;
-    public readonly List<IterationPerformance> MethodIterationPerformances = new(); // all iterations of the method
-    private readonly Stopwatch methodIterationTimer;
+    private readonly Stopwatch iterationTimer;
     private DateTimeOffset executionIterationStart;
 
-    // transient fields
-    private DateTimeOffset methodIterationStart;
+    private DateTimeOffset testCaseStart;
+    private DateTimeOffset testCaseStop;
 
     public PerformanceTimer()
     {
-        globalTimer = new Stopwatch();
-        methodIterationTimer = new Stopwatch();
-        executionTimer = new Stopwatch();
+        iterationTimer = new Stopwatch();
     }
 
-    public DateTimeOffset GlobalStart { get; private set; }
-    public DateTimeOffset GlobalStop { get; private set; }
-    public TimeSpan GlobalDuration { get; private set; }
     public bool IsValid { get; private set; } = true;
 
     public void SetAsInvalid()
@@ -41,51 +33,39 @@ public sealed class PerformanceTimer
         }
     }
 
+    public void SetTestCaseStart()
+    {
+        testCaseStart = DateTimeOffset.Now;
+    }
+
+    public void SetTestCaseStop()
+    {
+        testCaseStop = DateTimeOffset.Now;
+    }
+
     public void StartSailfishMethodExecutionTimer()
     {
-        if (executionTimer.IsRunning) return;
+        if (iterationTimer.IsRunning) return;
         executionIterationStart = DateTimeOffset.Now;
-        executionTimer.Start();
+        iterationTimer.Start();
     }
 
     public void StopSailfishMethodExecutionTimer()
     {
-        if (!executionTimer.IsRunning) return;
-        executionTimer.Stop();
+        if (!iterationTimer.IsRunning) return;
+        iterationTimer.Stop();
         var executionIterationStop = DateTimeOffset.Now;
-        ExecutionIterationPerformances.Add(new IterationPerformance(executionIterationStart, executionIterationStop, executionTimer.ElapsedTicks));
-        executionTimer.Reset();
+        ExecutionIterationPerformances.Add(new IterationPerformance(executionIterationStart, executionIterationStop, iterationTimer.ElapsedTicks));
+        iterationTimer.Reset();
     }
 
-    public void StartMethodLifecycleTimer()
+    public DateTimeOffset GetIterationStartTime()
     {
-        if (methodIterationTimer.IsRunning) return;
-        methodIterationStart = DateTimeOffset.Now;
-        methodIterationTimer.Start();
+        return testCaseStart;
     }
 
-    public void StopMethodLifecycleTimer()
+    public DateTimeOffset GetIterationStopTime()
     {
-        if (!methodIterationTimer.IsRunning) return;
-        methodIterationTimer.Stop();
-        var methodIterationStop = DateTimeOffset.Now;
-        MethodIterationPerformances.Add(new IterationPerformance(methodIterationStart, methodIterationStop, methodIterationTimer.ElapsedTicks));
-        methodIterationTimer.Reset();
-    }
-
-    public void StartGlobalLifecycleTimer()
-    {
-        if (globalTimer.IsRunning) return;
-        GlobalStart = DateTimeOffset.Now;
-        globalTimer.Start();
-    }
-
-    public void StopGlobalLifecycleTimer()
-    {
-        if (!globalTimer.IsRunning) return;
-        globalTimer.Stop();
-        GlobalStop = DateTimeOffset.Now;
-        GlobalDuration = GlobalStop - GlobalStart;
-        globalTimer.Reset();
+        return testCaseStop;
     }
 }

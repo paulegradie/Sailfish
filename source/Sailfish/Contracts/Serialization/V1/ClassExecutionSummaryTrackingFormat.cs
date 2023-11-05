@@ -2,7 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json.Serialization;
-using Sailfish.Contracts.Serialization.V1.Converters;
+using Sailfish.Contracts.Serialization.V1.JsonConverters;
+using Sailfish.Execution;
 
 namespace Sailfish.Contracts.Serialization.V1;
 
@@ -35,7 +36,6 @@ public class ClassExecutionSummaryTrackingFormat
 
     public ExecutionSettingsTrackingFormat ExecutionSettings { get; }
     public IEnumerable<CompiledTestCaseResultTrackingFormat> CompiledTestCaseResults { get; set; }
-
 
     public IEnumerable<CompiledTestCaseResultTrackingFormat> GetSuccessfulTestCases()
     {

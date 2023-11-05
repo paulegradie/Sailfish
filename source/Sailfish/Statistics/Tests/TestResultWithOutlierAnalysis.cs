@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
+using Sailfish.Analysis;
 using Sailfish.Contracts.Public;
-using Sailfish.MathOps;
 
 namespace Sailfish.Statistics.Tests;
 

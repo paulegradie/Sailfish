@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Mvc.Testing;
 using Sailfish.Registration;
 using Serilog;
 
-namespace Tests.E2ETestSuite;
+namespace Tests.E2E.TestSuite;
 
 public class E2ETestRegistrationProvider : IProvideARegistrationCallback
 {

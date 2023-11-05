@@ -1,7 +1,7 @@
 ﻿using Sailfish.Attributes;
 using Shouldly;
 
-namespace Tests.E2ETestSuite.Discoverable;
+namespace Tests.E2E.TestSuite.Discoverable;
 
 [Sailfish(1, 0, Disabled = Constants.Disabled)]
 public class VariablesIterateTest

@@ -1,11 +1,12 @@
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using MediatR;
 using Sailfish.Analysis.SailDiff;
 using Sailfish.Analysis.ScaleFish;
+using Sailfish.Contracts.Public.Notifications;
 using Sailfish.Presentation;
 using Serilog;
 
@@ -17,13 +18,14 @@ internal class SailfishExecutor
     private readonly ITestFilter testFilter;
     private readonly IClassExecutionSummaryCompiler classExecutionSummaryCompiler;
     private readonly IExecutionSummaryWriter executionSummaryWriter;
-    private readonly IComplexityComputer complexityComputer;
     private readonly IRunSettings runSettings;
+    private readonly IMediator mediator;
     private readonly ISailFishTestExecutor sailFishTestExecutor;
     private readonly ISailDiff sailDiff;
     private readonly IScaleFish scaleFish;
 
     public SailfishExecutor(
+        IMediator mediator,
         ISailFishTestExecutor sailFishTestExecutor,
         ITestCollector testCollector,
         ITestFilter testFilter,
@@ -31,10 +33,10 @@ internal class SailfishExecutor
         IExecutionSummaryWriter executionSummaryWriter,
         ISailDiff sailDiff,
         IScaleFish scaleFish,
-        IComplexityComputer complexityComputer,
         IRunSettings runSettings
     )
     {
+        this.mediator = mediator;
         this.sailFishTestExecutor = sailFishTestExecutor;
         this.testCollector = testCollector;
         this.testFilter = testFilter;
@@ -42,7 +44,6 @@ internal class SailfishExecutor
         this.executionSummaryWriter = executionSummaryWriter;
         this.sailDiff = sailDiff;
         this.scaleFish = scaleFish;
-        this.complexityComputer = complexityComputer;
         this.runSettings = runSettings;
     }
 
@@ -51,28 +52,20 @@ internal class SailfishExecutor
         var testInitializationResult = CollectTests(runSettings.TestNames, runSettings.TestLocationAnchors.ToArray());
         if (testInitializationResult.IsValid)
         {
-            var timeStamp = runSettings.TimeStamp ?? DateTime.Now.ToLocalTime();
+            var testClassResultGroups = await sailFishTestExecutor.Execute(testInitializationResult.Tests, cancellationToken).ConfigureAwait(false);
+            var classExecutionSummaries = classExecutionSummaryCompiler.CompileToSummaries(testClassResultGroups).ToList();
 
-            var testClassResultGroups = await sailFishTestExecutor.Execute(testInitializationResult.Tests, cancellationToken);
-            var classExecutionSummaries = classExecutionSummaryCompiler.CompileToSummaries(testClassResultGroups, cancellationToken)
-                .ToList();
-
-            var executionSummaryTrackingDirectory = GetRunSettingsTrackingDirectoryPath(runSettings, DefaultFileSettings.DefaultExecutionSummaryTrackingDirectory);
-            await executionSummaryWriter.Write(
-                classExecutionSummaries,
-                timeStamp,
-                executionSummaryTrackingDirectory,
-                runSettings,
-                cancellationToken);
+            await executionSummaryWriter.Write(classExecutionSummaries, cancellationToken);
+            await mediator.Publish(new TestRunCompletedNotification(classExecutionSummaries.ToTrackingFormat()), cancellationToken).ConfigureAwait(false);
 
             if (runSettings.RunSailDiff)
             {
-                await sailDiff.Analyze(timeStamp, runSettings, executionSummaryTrackingDirectory, cancellationToken);
+                await sailDiff.Analyze(cancellationToken).ConfigureAwait(false);
             }
 
             if (runSettings.RunScalefish)
             {
-                await scaleFish.Analyze(timeStamp, runSettings, executionSummaryTrackingDirectory, cancellationToken);
+                await scaleFish.Analyze(cancellationToken).ConfigureAwait(false);
             }
 
             var exceptions = classExecutionSummaries
@@ -102,28 +95,6 @@ internal class SailfishExecutor
         }
 
         return SailfishRunResult.CreateResult(Array.Empty<IClassExecutionSummary>(), testDiscoveryExceptions);
-    }
-
-    private static string GetRunSettingsTrackingDirectoryPath(IRunSettings runSettings, string defaultDirectory)
-    {
-        string trackingDirectoryPath;
-        if (string.IsNullOrEmpty(runSettings.LocalOutputDirectory) ||
-            string.IsNullOrWhiteSpace(runSettings.LocalOutputDirectory))
-        {
-            trackingDirectoryPath = defaultDirectory;
-        }
-        else
-        {
-            trackingDirectoryPath =
-                Path.Join(runSettings.LocalOutputDirectory, defaultDirectory);
-        }
-
-        if (!Directory.Exists(trackingDirectoryPath))
-        {
-            Directory.CreateDirectory(trackingDirectoryPath);
-        }
-
-        return trackingDirectoryPath;
     }
 
     private TestInitializationResult CollectTests(IEnumerable<string> testNames, IEnumerable<Type> locationTypes)

@@ -1,11 +1,11 @@
 using MediatR;
-using Sailfish.Contracts.Public.Commands;
+using Sailfish.Contracts.Public.Notifications;
 
 namespace Tests.E2E.ExceptionHandling.Handlers;
 
-public class WriteTrackingDataHandler : INotificationHandler<WriteCurrentTrackingFileCommand>
+public class WriteTrackingDataHandler : INotificationHandler<TestRunCompletedNotification>
 {
-    public async Task Handle(WriteCurrentTrackingFileCommand notification, CancellationToken cancellationToken)
+    public async Task Handle(TestRunCompletedNotification notification, CancellationToken cancellationToken)
     {
         var classExecutionSummaries = notification.ClassExecutionSummaries.ToList();
         var successes = classExecutionSummaries.SelectMany(x => x.GetSuccessfulTestCases()).ToList();

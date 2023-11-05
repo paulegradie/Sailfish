@@ -1,9 +1,9 @@
 using Demo.API;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Sailfish.Attributes;
-using Tests.E2ETestSuite.Utils;
+using Tests.E2E.TestSuite.Utils;
 
-namespace Tests.E2ETestSuite.Discoverable;
+namespace Tests.E2E.TestSuite.Discoverable;
 
 [Sailfish(SampleSize = 1, NumWarmupIterations = 1, Disabled = Constants.Disabled)]
 public class ProtectedConstructor : TestBase

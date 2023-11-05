@@ -12,7 +12,7 @@
         <TargetFramework>net6.0</TargetFramework>
         <Nullable>enable</Nullable>
         <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-        <LangVersion>10</LangVersion>
+        <LangVersion>latest</LangVersion>
         <IncludeSymbols>true</IncludeSymbols>
         <EnforceExtendedAnalyzerRules>true</EnforceExtendedAnalyzerRules>
     </PropertyGroup>

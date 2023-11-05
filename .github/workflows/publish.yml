@@ -35,7 +35,7 @@ jobs:
         env:
           NUM: ${{ github.run_number }}
           ACTIONS_ALLOW_UNSECURE_COMMANDS: true
-        run: echo ::set-env name=VERSION::1.3.$(($NUM-248))  # change int to current version when bumping
+        run: echo ::set-env name=VERSION::1.4.$(($NUM-254))  # change int to current version when bumping
 
       - name: Test version (write)
         run: echo ${VERSION}
@@ -50,7 +50,7 @@ jobs:
         run: dotnet build ./source/Sailfish.Analyzers/Sailfish.Analyzers.csproj --configuration Release /p:Version=${VERSION}
 
       - name: Test
-        run: dotnet test ./source/Tests.Sailfish/Tests.Sailfish.csproj --verbosity normal
+        run: dotnet test ./source/Tests.Library/Tests.Library.csproj --verbosity normal
 
       - name: Test Adapter
         run: dotnet test ./source/Tests.Sailfish.TestAdapter/Tests.Sailfish.TestAdapter.csproj --verbosity normal
@@ -62,10 +62,10 @@ jobs:
         run: dotnet pack ./source/Sailfish/Sailfish.csproj --configuration Release /p:Version=${{ env.VERSION }} --no-build --output .
 
       - name: Pack Adapter
-        run: dotnet pack ./source/Sailfish.TestAdapter/Sailfish.TestAdapter.csproj --configuration Release /p:Version=${{ env.VERSION }} --no-build --output .
+        run: dotnet pack ./source/Tests.TestAdapter/Tests.TestAdapter.csproj --configuration Release /p:Version=${{ env.VERSION }} --no-build --output .
 
       - name: Pack Analyzers
-        run: dotnet pack ./source/Sailfish.Analyzers/Sailfish.Analyzers.csproj --configuration Release /p:Version=${{ env.VERSION }} --no-build --output .
+        run: dotnet pack ./source/Tests.Analyzers/Tests.Analyzers.csproj --configuration Release /p:Version=${{ env.VERSION }} --no-build --output .
 
       - name: Push
         run: dotnet nuget push Sailfish.${{ env.VERSION }}.nupkg --source https://www.nuget.org --api-key ${{secrets.NUGET_API_KEY}}

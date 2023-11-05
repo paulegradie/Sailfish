@@ -8,26 +8,14 @@ using Sailfish.Extensions.Methods;
 
 namespace Sailfish.Contracts.Public;
 
-public interface ITestResultTableContentFormatter
+public interface ISailDiffResultMarkdownConverter
 {
-    TestResultFormats CreateTableFormats(List<TestCaseResults> testCaseResults, TestIds testIds, CancellationToken cancellationToken);
+    string ConvertToMarkdownTable(IEnumerable<TestCaseResults> testCaseResults, TestIds testIds, CancellationToken cancellationToken);
 }
 
-public class TestResultTableContentFormatter : ITestResultTableContentFormatter
+public class SailDiffResultMarkdownConverter : ISailDiffResultMarkdownConverter
 {
-    public TestResultFormats CreateTableFormats(List<TestCaseResults> testCaseResults, TestIds testIds, CancellationToken cancellationToken)
-    {
-        var markdownFormat = FormatAsMarkdown(testCaseResults);
-        var csvFormat = FormatAsCsv(testCaseResults);
-        return new TestResultFormats(markdownFormat, csvFormat, testIds);
-    }
-
-    private static IEnumerable<TestCaseResults> FormatAsCsv(IEnumerable<TestCaseResults> testCaseResults)
-    {
-        return testCaseResults;
-    }
-
-    private static string FormatAsMarkdown(IEnumerable<TestCaseResults> testCaseResults)
+    public string ConvertToMarkdownTable(IEnumerable<TestCaseResults> testCaseResults, TestIds testIds, CancellationToken cancellationToken)
     {
         var enumeratedResults = testCaseResults.ToList();
         var nBefore = enumeratedResults.Select(x => x.TestResultsWithOutlierAnalysis.TestResults.SampleSizeBefore).Distinct().Single();

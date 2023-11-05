@@ -4,7 +4,6 @@ public class SailDiffSettings
 {
     /// <summary>
     /// Settings to use with the regression tester.
-    /// 
     /// </summary>
     /// <param name="alpha">alpha is the significance threshold. Fewer iterations need a lower alpha for good discrimination between before and after. Typical may be 0.01 or lower.</param>
     /// <param name="round">The number of decimal places to round to. Typical is 4.</param>
@@ -12,7 +11,13 @@ public class SailDiffSettings
     /// <param name="useOutlierDetection"></param>
     /// <param name="maxDegreeOfParallelism"></param>
     /// <param name="disableOrdering"></param>
-    public SailDiffSettings(double alpha = 0.001, int round = 3, bool useOutlierDetection = false, TestType testType = TestType.WilcoxonRankSumTest, int maxDegreeOfParallelism = 4, bool disableOrdering = false)
+    public SailDiffSettings(
+        double alpha = 0.001,
+        int round = 3,
+        bool useOutlierDetection = true,
+        TestType testType = TestType.TwoSampleWilcoxonSignedRankTest,
+        int maxDegreeOfParallelism = 4,
+        bool disableOrdering = false)
     {
         Alpha = alpha;
         Round = round;
@@ -39,9 +44,9 @@ public class SailDiffSettings
         Round = round;
     }
 
-    public void SetUseOutlierDetection(bool use)
+    public void DisableOutlierDetection()
     {
-        UseOutlierDetection = use;
+        UseOutlierDetection = false;
     }
 
     public void SetTestType(TestType testType)

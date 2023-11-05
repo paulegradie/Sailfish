@@ -2,7 +2,7 @@ using Autofac;
 using Demo.API;
 using Microsoft.AspNetCore.Mvc.Testing;
 
-namespace Tests.E2ETestSuite.Utils;
+namespace Tests.E2E.TestSuite.Utils;
 
 // Example of what they can implement
 public class SailfishDependencies : IDisposable

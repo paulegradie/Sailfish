@@ -1,4 +1,3 @@
-using System;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -6,50 +5,45 @@ using MediatR;
 using Sailfish.Analysis;
 using Sailfish.Analysis.SailDiff;
 using Sailfish.Contracts.Public;
-using Sailfish.Contracts.Public.Commands;
+using Sailfish.Contracts.Public.Notifications;
+using Sailfish.Contracts.Public.Requests;
 using Sailfish.Execution;
-using Sailfish.Presentation;
 
 namespace Sailfish.TestAdapter.Execution;
 
 internal class AdapterSailDiff : IAdapterSailDiff
 {
     private readonly IMediator mediator;
+    private readonly IRunSettings runSettings;
     private readonly IAdapterConsoleWriter consoleWriter;
     private readonly ITestComputer testComputer;
-    private readonly ITestResultTableContentFormatter testResultTableContentFormatter;
+    private readonly ISailDiffResultMarkdownConverter sailDiffResultMarkdownConverter;
 
     public AdapterSailDiff(
         IMediator mediator,
+        IRunSettings runSettings,
         IAdapterConsoleWriter consoleWriter,
         ITestComputer testComputer,
-        ITestResultTableContentFormatter testResultTableContentFormatter)
+        ISailDiffResultMarkdownConverter sailDiffResultMarkdownConverter)
     {
         this.mediator = mediator;
+        this.runSettings = runSettings;
         this.consoleWriter = consoleWriter;
         this.testComputer = testComputer;
-        this.testResultTableContentFormatter = testResultTableContentFormatter;
+        this.sailDiffResultMarkdownConverter = sailDiffResultMarkdownConverter;
     }
 
-    public async Task Analyze(DateTime timeStamp, IRunSettings runSettings, string trackingDir, CancellationToken cancellationToken)
+    public async Task Analyze(CancellationToken cancellationToken)
     {
         if (!runSettings.RunSailDiff) return;
 
-        var beforeAndAfterFileLocations = await mediator.Send(
-            new BeforeAndAfterFileLocationCommand(
-                trackingDir,
-                runSettings.Tags,
-                runSettings.ProvidedBeforeTrackingFiles,
-                runSettings.Args),
-            cancellationToken).ConfigureAwait(false);
+        var beforeAndAfterFileLocations = await mediator
+            .Send(new BeforeAndAfterFileLocationRequest(runSettings.ProvidedBeforeTrackingFiles), cancellationToken)
+            .ConfigureAwait(false);
 
-        var beforeAndAfterData = await mediator.Send(
-            new ReadInBeforeAndAfterDataCommand(
-                beforeAndAfterFileLocations.BeforeFilePaths,
-                beforeAndAfterFileLocations.AfterFilePaths,
-                runSettings.Tags,
-                runSettings.Args),
-            cancellationToken).ConfigureAwait(false);
+        var beforeAndAfterData = await mediator
+            .Send(new ReadInBeforeAndAfterDataRequest(beforeAndAfterFileLocations.BeforeFilePaths, beforeAndAfterFileLocations.AfterFilePaths), cancellationToken)
+            .ConfigureAwait(false);
 
         if (beforeAndAfterData.BeforeData is null || beforeAndAfterData.AfterData is null)
         {
@@ -60,7 +54,7 @@ internal class AdapterSailDiff : IAdapterSailDiff
         var testResults = testComputer.ComputeTest(
             beforeAndAfterData.BeforeData,
             beforeAndAfterData.AfterData,
-            runSettings.Settings);
+            runSettings.SailDiffSettings);
 
         if (!testResults.Any())
         {
@@ -69,35 +63,15 @@ internal class AdapterSailDiff : IAdapterSailDiff
         }
 
         var testIds = new TestIds(beforeAndAfterData.BeforeData.TestIds, beforeAndAfterData.AfterData.TestIds);
-        var testResultFormats = testResultTableContentFormatter.CreateTableFormats(testResults, testIds, cancellationToken);
+        var resultsAsMarkdown = sailDiffResultMarkdownConverter.ConvertToMarkdownTable(testResults, testIds, cancellationToken);
 
-        consoleWriter.WriteStatTestResultsToConsole(testResultFormats.MarkdownFormat, testIds, runSettings.Settings);
-
-        await mediator.Publish(
-                new WriteTestResultsAsMarkdownCommand(
-                    testResultFormats.MarkdownFormat,
-                    runSettings.LocalOutputDirectory ?? DefaultFileSettings.DefaultOutputDirectory,
-                    runSettings.Settings,
-                    timeStamp,
-                    runSettings.Tags,
-                    runSettings.Args),
-                cancellationToken)
-            .ConfigureAwait(false);
-
-        await mediator.Publish(
-            new WriteTestResultsAsCsvCommand(testResultFormats.CsvFormat,
-                runSettings.LocalOutputDirectory ?? DefaultFileSettings.DefaultOutputDirectory,
-                runSettings.Settings,
-                timeStamp,
-                runSettings.Tags,
-                runSettings.Args
-            ), cancellationToken);
+        consoleWriter.WriteStatTestResultsToConsole(resultsAsMarkdown, testIds, runSettings.SailDiffSettings);
+        await mediator.Publish(new SailDiffAnalysisCompleteNotification(testResults, resultsAsMarkdown), cancellationToken).ConfigureAwait(false);
     }
 
     public string ComputeTestCaseDiff(
         TestCaseExecutionResult testCaseExecutionResult,
         IClassExecutionSummary classExecutionSummary,
-        SailDiffSettings sailDiffSettings,
         PerformanceRunResult preloadedLastRun,
         CancellationToken cancellationToken)
     {
@@ -112,10 +86,10 @@ internal class AdapterSailDiff : IAdapterSailDiff
             .Select(x => x.PerformanceRunResult!)
             .Where(x => x.DisplayName == testCaseExecutionResult.TestInstanceContainer?.TestCaseId.DisplayName));
 
-        var testResults = testComputer.ComputeTest(beforeTestData, afterTestData, sailDiffSettings);
+        var testResults = testComputer.ComputeTest(beforeTestData, afterTestData, runSettings.SailDiffSettings);
 
         return testResults.Count > 0
-            ? consoleWriter.WriteTestResultsToIdeConsole(testResults.Single(), new TestIds(beforeIds, afterIds), sailDiffSettings)
-            : "No prior runs found for statistical testing";
+            ? consoleWriter.WriteTestResultsToIdeConsole(testResults.Single(), new TestIds(beforeIds, afterIds), runSettings.SailDiffSettings)
+            : "Current or previous runs not suitable for statistical testing";
     }
 }

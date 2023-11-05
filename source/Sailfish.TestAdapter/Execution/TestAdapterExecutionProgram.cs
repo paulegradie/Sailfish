@@ -1,12 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using MediatR;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel;
-using Sailfish.Contracts.Private;
+using Sailfish.Contracts.Public.Notifications;
+using Sailfish.Contracts.Public.Requests;
 using Sailfish.Extensions.Types;
 using Sailfish.Presentation;
 
@@ -48,14 +48,12 @@ internal class TestAdapterExecutionProgram : ITestAdapterExecutionProgram
             return;
         }
 
-        var timeStamp = DateTime.Now;
-        var trackingDir = GetRunSettingsTrackingDirectoryPath(runSettings);
         var preloadedLastRunsIfAvailable = new TrackingFileDataList();
         if (!runSettings.DisableAnalysisGlobally && (runSettings.RunScalefish || runSettings.RunSailDiff))
         {
             try
             {
-                var response = await mediator.Send(new SailfishGetAllTrackingDataOrderedChronologicallyRequest(trackingDir, false), cancellationToken);
+                var response = await mediator.Send(new GetAllTrackingDataOrderedChronologicallyRequest(false), cancellationToken);
                 preloadedLastRunsIfAvailable.AddRange(response.TrackingData);
             }
             catch (Exception ex)
@@ -64,47 +62,17 @@ internal class TestAdapterExecutionProgram : ITestAdapterExecutionProgram
             }
         }
 
-        var executionSummaries = await testAdapterExecutionEngine.Execute(testCases, preloadedLastRunsIfAvailable, runSettings.Settings, cancellationToken);
+        var executionSummaries = await testAdapterExecutionEngine.Execute(testCases, preloadedLastRunsIfAvailable, cancellationToken);
 
         // Something weird is going on here when there is an exception - all of the testcases runs get logged into the test output window for the errored case
-        consoleWriter.Present(executionSummaries, new OrderedDictionary());
-        await executionSummaryWriter.Write(executionSummaries, timeStamp, trackingDir, runSettings, cancellationToken);
+        consoleWriter.WriteToConsole(executionSummaries, new OrderedDictionary());
 
-        if (executionSummaries.SelectMany(x => x.CompiledTestCaseResults.Where(y => y.Exception is not null)).Any())
-        {
-            return;
-        }
+        await executionSummaryWriter.Write(executionSummaries, cancellationToken);
+        await mediator.Publish(new TestRunCompletedNotification(executionSummaries.ToTrackingFormat()), cancellationToken).ConfigureAwait(false);
 
+        if (executionSummaries.SelectMany(x => x.CompiledTestCaseResults.Where(y => y.Exception is not null)).Any()) return;
         if (runSettings.DisableAnalysisGlobally) return;
-        if (runSettings.RunSailDiff)
-        {
-            await sailDiff.Analyze(timeStamp, runSettings, trackingDir, cancellationToken);
-        }
-
-        if (runSettings.RunScalefish)
-        {
-            await scaleFish.Analyze(timeStamp, runSettings, trackingDir, cancellationToken);
-        }
-    }
-
-    private static string GetRunSettingsTrackingDirectoryPath(IRunSettings runSettings)
-    {
-        string trackingDirectoryPath;
-        if (string.IsNullOrEmpty(runSettings.LocalOutputDirectory) ||
-            string.IsNullOrWhiteSpace(runSettings.LocalOutputDirectory))
-        {
-            trackingDirectoryPath = DefaultFileSettings.DefaultExecutionSummaryTrackingDirectory;
-        }
-        else
-        {
-            trackingDirectoryPath = Path.Join(runSettings.LocalOutputDirectory, DefaultFileSettings.DefaultExecutionSummaryTrackingDirectory);
-        }
-
-        if (!Directory.Exists(trackingDirectoryPath))
-        {
-            Directory.CreateDirectory(trackingDirectoryPath);
-        }
-
-        return trackingDirectoryPath;
+        if (runSettings.RunSailDiff) await sailDiff.Analyze(cancellationToken);
+        if (runSettings.RunScalefish) await scaleFish.Analyze(cancellationToken);
     }
 }

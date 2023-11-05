@@ -11,6 +11,7 @@ public class RunSettingsBuilder
 {
     private bool createTrackingFiles = true;
     private bool sailfDiff = false;
+    private bool scaleFish = false;
     private bool executeNotificationHandler = false;
     private readonly List<string> names = new();
     private readonly List<Type> testAssembliesAnchorTypes = new();
@@ -22,23 +23,44 @@ public class RunSettingsBuilder
     private SailDiffSettings? sdSettings;
     private DateTime? timeStamp;
     private bool debg = false;
-    private bool scaleFish = false;
     private bool disableOverheadEstimation;
     private bool disableAnalysisGlobally = false;
     private int? globalSampleSize;
     private int? globalNumWarmupIterations;
-
+    private bool streamTrackingUpdates = true;
+    
     public static RunSettingsBuilder CreateBuilder()
     {
         return new RunSettingsBuilder();
     }
 
+    /// <summary>
+    /// This method prevents the tracking data update notification from being emitted.
+    /// When this is used, the final tracking data will still be sent.
+    /// Consider using this when you want to ensure you capture test case results even when one test case may not finish in a
+    /// reasonable amount of time.
+    /// </summary>
+    public RunSettingsBuilder DisableStreamingTrackingUpdates()
+    {
+        streamTrackingUpdates = false;
+        return this;
+    }
+    
+    /// <summary>
+    /// Provide a string array of class names to execute. This will run all test cases in a class decorated with the SailfishAttribute.
+    /// </summary>
+    /// <param name="testNames"></param>
     public RunSettingsBuilder WithTestNames(params string[] testNames)
     {
         names.AddRange(testNames);
         return this;
     }
 
+    /// <summary>
+    /// Specifies the name of an output directory to be created.
+    /// </summary>
+    /// <param name="localOutputDirectory"></param>
+    /// <returns></returns>
     public RunSettingsBuilder WithLocalOutputDirectory(string localOutputDirectory)
     {
         localOutputDir = localOutputDirectory;
@@ -174,13 +196,14 @@ public class RunSettingsBuilder
             tags,
             args,
             providedBeforeTrackingFiles,
-            timeStamp,
             testAssembliesAnchorTypes.Count == 0 ? new[] { GetType() } : testAssembliesAnchorTypes,
             registrationProviderAnchorTypes.Count == 0 ? new[] { GetType() } : registrationProviderAnchorTypes,
             disableOverheadEstimation,
+            timeStamp,
             globalSampleSize,
             globalNumWarmupIterations,
             disableAnalysisGlobally,
+            streamTrackingUpdates,
             debg
         );
     }

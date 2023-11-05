@@ -6,7 +6,6 @@ using System.Runtime.Caching;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel;
-using Sailfish.Analysis.SailDiff;
 using Sailfish.Exceptions;
 using Sailfish.Execution;
 using Sailfish.Extensions.Types;
@@ -38,11 +37,7 @@ internal class TestAdapterExecutionEngine : ITestAdapterExecutionEngine
         this.consoleWriter = consoleWriter;
     }
 
-    public async Task<List<IClassExecutionSummary>> Execute(
-        List<TestCase> testCases,
-        TrackingFileDataList preloadedLastRunIfAvailable,
-        SailDiffSettings? testSettings,
-        CancellationToken cancellationToken)
+    public async Task<List<IClassExecutionSummary>> Execute(List<TestCase> testCases, TrackingFileDataList preloadedLastRunIfAvailable, CancellationToken cancellationToken)
     {
         var rawExecutionResults = new List<(string, TestClassResultGroup)>();
         var testCaseGroups = testCases.GroupBy(testCase => testCase.GetPropertyHelper(SailfishManagedProperty.SailfishTypeProperty));
@@ -54,12 +49,11 @@ internal class TestAdapterExecutionEngine : ITestAdapterExecutionEngine
             if (testType is null) continue;
 
             // list of methods with their many variable combos. Each element is a container, which represents a SailfishMethod
-            var providerForCurrentTestCases =
-                testInstanceContainerCreator
-                    .CreateTestContainerInstanceProviders(
-                        testType,
-                        CreatePropertyFilter(GetTestCaseProperties(SailfishManagedProperty.SailfishFormedVariableSectionDefinitionProperty, testCases)),
-                        CreateMethodFilter(GetTestCaseProperties(SailfishManagedProperty.SailfishMethodFilterProperty, testCases)));
+            var providerForCurrentTestCases = testInstanceContainerCreator
+                .CreateTestContainerInstanceProviders(
+                    testType,
+                    CreatePropertyFilter(GetTestCaseProperties(SailfishManagedProperty.SailfishFormedVariableSectionDefinitionProperty, testCases)),
+                    CreateMethodFilter(GetTestCaseProperties(SailfishManagedProperty.SailfishMethodFilterProperty, testCases)));
 
             var totalTestProviderCount = providerForCurrentTestCases.Count - 1;
 
@@ -77,20 +71,21 @@ internal class TestAdapterExecutionEngine : ITestAdapterExecutionEngine
                     testProvider,
                     memoryCache,
                     providerPropertiesCacheKey,
-                    activatorCallbacks.PreTestResultCallback(unsortedTestCaseGroup),
-                    activatorCallbacks.PostTestResultCallback(unsortedTestCaseGroup, preloadedLastRunIfAvailable, testSettings, cancellationToken),
-                    activatorCallbacks.ExceptionCallback(unsortedTestCaseGroup),
-                    activatorCallbacks.TestDisabledCallback(unsortedTestCaseGroup),
+                    activatorCallbacks.PreBenchmarkResultCallback(unsortedTestCaseGroup),
+                    activatorCallbacks.PostBenchmarkResultCallback(unsortedTestCaseGroup, preloadedLastRunIfAvailable, cancellationToken),
+                    activatorCallbacks.BenchmarkExceptionCallback(unsortedTestCaseGroup),
+                    activatorCallbacks.BenchmarkDisabledCallback(unsortedTestCaseGroup),
                     cancellationToken);
                 groupResults.AddRange(results);
+
+                // deref to free up memory
+                providerForCurrentTestCases[i] = null!;
             }
 
             rawExecutionResults.Add((groupKey, new TestClassResultGroup(testType, groupResults)));
         }
 
-        return classExecutionSummaryCompiler
-            .CompileToSummaries(rawExecutionResults.Select(x => x.Item2), cancellationToken)
-            .ToList();
+        return classExecutionSummaryCompiler.CompileToSummaries(rawExecutionResults.Select(x => x.Item2)).ToList();
     }
 
     private static IEnumerable<string> GetTestCaseProperties(TestProperty testProperty, IEnumerable<TestCase> testCases)

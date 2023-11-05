@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using Sailfish.Contracts.Public;
+using Serilog;
 
 namespace Sailfish.Contracts.Serialization.V1;
 
@@ -11,6 +12,13 @@ public interface ITrackingFileSerialization
 
 public class TrackingFileSerialization : ITrackingFileSerialization
 {
+    private readonly ILogger logger;
+
+    public TrackingFileSerialization(ILogger logger)
+    {
+        this.logger = logger;
+    }
+
     public string Serialize(IEnumerable<ClassExecutionSummaryTrackingFormat> executionSummaries)
     {
         return SailfishSerializer.Serialize(executionSummaries);
@@ -18,6 +26,14 @@ public class TrackingFileSerialization : ITrackingFileSerialization
 
     public IEnumerable<ClassExecutionSummaryTrackingFormat>? Deserialize(string serialized)
     {
-        return SailfishSerializer.Deserialize<List<ClassExecutionSummaryTrackingFormat>>(serialized);
+        try
+        {
+            return SailfishSerializer.Deserialize<List<ClassExecutionSummaryTrackingFormat>>(serialized);
+        }
+        catch (System.Text.Json.JsonException ex)
+        {
+            logger.Warning(ex, "Failed to deserialize file content");
+            return null;
+        }
     }
 }

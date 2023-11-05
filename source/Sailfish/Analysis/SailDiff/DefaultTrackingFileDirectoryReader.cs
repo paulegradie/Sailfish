@@ -7,7 +7,7 @@ namespace Sailfish.Analysis.SailDiff;
 
 internal class DefaultTrackingFileDirectoryReader : ITrackingFileDirectoryReader
 {
-    public virtual List<string> FindTrackingFilesInDirectoryOrderedByLastModified(string directory, bool ascending = false)
+    public List<string> FindTrackingFilesInDirectoryOrderedByLastModified(string directory, bool ascending = false)
     {
         var files = Directory.GetFiles(directory).Where(x => x.EndsWith(DefaultFileSettings.TrackingSuffix));
         if (ascending)

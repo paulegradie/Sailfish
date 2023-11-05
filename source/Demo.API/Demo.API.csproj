@@ -4,6 +4,6 @@
         <TargetFramework>net6.0</TargetFramework>
         <Nullable>enable</Nullable>
         <RootNamespace>Demo.API</RootNamespace>
-        <LangVersion>10</LangVersion>
+        <LangVersion>latest</LangVersion>
     </PropertyGroup>
 </Project>

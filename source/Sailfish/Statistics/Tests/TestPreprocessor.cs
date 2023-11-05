@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using Sailfish.MathOps;
+using Sailfish.Analysis;
 
 namespace Sailfish.Statistics.Tests;
 

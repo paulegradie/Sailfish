@@ -6,7 +6,7 @@ using Sailfish.Attributes;
 namespace PerformanceTests.ExamplePerformanceTests;
 
 [WriteToMarkdown]
-[Sailfish(SampleSize = 2, Disabled = false)]
+[Sailfish(SampleSize = 20, DisableOverheadEstimation = true, Disabled = false)]
 public class ScaleFishExample
 {
     [SailfishRangeVariable(true, start: 5, 10, 6)]

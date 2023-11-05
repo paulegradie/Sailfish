@@ -81,8 +81,6 @@ internal class SailFishTestExecutor : ISailFishTestExecutor
         var memoryCache = new MemoryCache(MemoryCacheName);
         foreach (var testProvider in testInstanceContainerProviders.OrderBy(x => x.Method.Name))
         {
-            // Do not early bail on additional methods in case the exception comes from the sailfish method itself - later can consider tagging executions to make that call
-            // we currently have tests that expect multiple exceptions to surface
             var providerPropertiesCacheKey = testProvider.Test.FullName ?? throw new SailfishException($"Failed to read the FullName of {testProvider.Test.Name}");
             TestCaseCountPrinter.PrintMethodUpdate(testProvider.Method);
             var executionResults = await engine.ActivateContainer(

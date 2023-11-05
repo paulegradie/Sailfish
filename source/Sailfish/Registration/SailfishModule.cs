@@ -7,7 +7,6 @@ using Sailfish.Analysis.ScaleFish;
 using Sailfish.Contracts.Public;
 using Sailfish.Contracts.Serialization.V1;
 using Sailfish.Execution;
-using Sailfish.MathOps;
 using Sailfish.Presentation;
 using Sailfish.Presentation.Console;
 using Sailfish.Presentation.CsvAndJson;
@@ -78,7 +77,7 @@ public class SailfishModule : Module
         builder.RegisterType<PerformanceRunResultFileWriter>().As<IPerformanceRunResultFileWriter>();
         builder.RegisterType<TrackingFileFinder>().As<ITrackingFileFinder>();
         builder.RegisterType<IterationVariableRetriever>().As<IIterationVariableRetriever>();
-        builder.RegisterType<TestResultTableContentFormatter>().As<ITestResultTableContentFormatter>();
+        builder.RegisterType<SailDiffResultMarkdownConverter>().As<ISailDiffResultMarkdownConverter>();
         builder.RegisterType<SailfishExecutionEngine>().As<ISailfishExecutionEngine>();
         builder.RegisterType<MarkdownTableConverter>().As<IMarkdownTableConverter>().InstancePerDependency();
         builder.RegisterType<TrackingFileParser>().As<ITrackingFileParser>();

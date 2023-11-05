@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
 using Sailfish.Registration;
 
-namespace Tests.E2ETestSuite.Utils;
+namespace Tests.E2E.TestSuite.Utils;
 
 public class TestBase : ISailfishFixture<SailfishDependencies>
 {
