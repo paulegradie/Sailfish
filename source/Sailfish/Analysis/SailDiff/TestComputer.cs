@@ -53,6 +53,8 @@ public class TestComputer : ITestComputer
 
                 if (beforeCompiled is null || afterCompiled is null) return;
 
+                if (beforeCompiled.AggregatedRawExecutionResults.Length < 3 || afterCompiled.AggregatedRawExecutionResults.Length < 3) return;
+
                 var result = statisticalTestExecutor.ExecuteStatisticalTest(
                     beforeCompiled.AggregatedRawExecutionResults,
                     afterCompiled.AggregatedRawExecutionResults,

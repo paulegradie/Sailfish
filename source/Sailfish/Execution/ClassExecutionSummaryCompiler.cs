@@ -20,7 +20,7 @@ internal class ClassExecutionSummaryCompiler : IClassExecutionSummaryCompiler
 
     public IEnumerable<IClassExecutionSummary> CompileToSummaries(IEnumerable<TestClassResultGroup> rawExecutionResults)
     {
-        return rawExecutionResults.Select(rawExecutionResult => IterateExecutionResults(rawExecutionResult)).ToList();
+        return rawExecutionResults.Select(IterateExecutionResults).ToList();
     }
 
     private IClassExecutionSummary IterateExecutionResults(TestClassResultGroup testClassResultGroup)

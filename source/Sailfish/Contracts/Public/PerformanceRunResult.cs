@@ -68,9 +68,11 @@ public class PerformanceRunResult
         var detector = new SailfishOutlierDetector();
 
         var (cleanData, lowerOutliers, upperOutliers, totalNumOutliers) = detector.DetectOutliers(executionIterations);
-        var (mean, stdDev) = cleanData.MeanStandardDeviation();
+
+        var mean = cleanData.Mean();
         var median = cleanData.Median();
-        var variance = cleanData.Variance();
+        var stdDev = executionIterations.Length > 1 ? cleanData.StandardDeviation() : 0;
+        var variance = executionIterations.Length > 1 ? cleanData.Variance() : 0;
         return new PerformanceRunResult(displayName: testCaseId.DisplayName, globalStart: performanceTimer.GlobalStart, globalEnd: performanceTimer.GlobalStop,
             globalDuration: performanceTimer.GlobalDuration.TotalSeconds, mean: mean, stdDev: stdDev, variance: variance, median: median, rawExecutionResults: executionIterations,
             sampleSize: executionSettings.SampleSize, numWarmupIterations: executionSettings.NumWarmupIterations, dataWithOutliersRemoved: cleanData,

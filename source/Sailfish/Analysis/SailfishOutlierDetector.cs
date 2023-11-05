@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using Perfolizer.Mathematics.OutlierDetection;
 
@@ -13,6 +14,11 @@ public class SailfishOutlierDetector : ISailfishOutlierDetector
 {
     public OutlierAnalysis DetectOutliers(IReadOnlyList<double> data)
     {
+        if (data.Count <= 3)
+        {
+            return new OutlierAnalysis(data.ToArray(), Array.Empty<double>(), Array.Empty<double>(), 0);
+        }
+
         var detector = TukeyOutlierDetector.Create(data);
 
         var outliersRemoved = data.Where(x => Between(x, detector.UpperFence, detector.LowerFence)).ToArray();

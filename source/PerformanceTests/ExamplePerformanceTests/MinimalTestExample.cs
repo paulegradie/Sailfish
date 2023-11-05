@@ -5,7 +5,7 @@ namespace PerformanceTests.ExamplePerformanceTests;
 
 [WriteToCsv]
 [WriteToMarkdown]
-[Sailfish(SampleSize = 10)]
+[Sailfish(SampleSize = 1, NumWarmupIterations = 0)]
 public class MinimalTestExample
 {
     [SailfishIterationSetup]

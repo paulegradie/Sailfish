@@ -90,6 +90,6 @@ internal class AdapterSailDiff : IAdapterSailDiff
 
         return testResults.Count > 0
             ? consoleWriter.WriteTestResultsToIdeConsole(testResults.Single(), new TestIds(beforeIds, afterIds), runSettings.SailDiffSettings)
-            : "No prior runs found for statistical testing";
+            : "Current or previous runs not suitable for statistical testing";
     }
 }

@@ -154,11 +154,11 @@ internal class AdapterConsoleWriter : IAdapterConsoleWriter
                                      string.Join(", ", testCaseResult.PerformanceRunResult.LowerOutliers.Select(x => Math.Round(x, 4))));
 
         // distribution
-        const string textLineDist = "Adjusted Distribution (ms)";
+        const string textLineDist = "Distribution (ms)";
         stringBuilder.AppendLine();
         stringBuilder.AppendLine(textLineDist);
         stringBuilder.AppendLine(string.Join("", Enumerable.Range(0, textLineDist.Length).Select(x => "-")));
-        stringBuilder.AppendLine(string.Join(", ", results.RawExecutionResults.Select(x => Math.Round(x, 4))));
+        stringBuilder.AppendLine(string.Join(", ", results.DataWithOutliersRemoved.Select(x => Math.Round(x, 4))));
 
         return stringBuilder.ToString();
     }
