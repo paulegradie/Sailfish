@@ -39,10 +39,10 @@ jobs:
         run: dotnet test ./source/Tests.Library/Tests.Library.csproj --verbosity normal
 
       - name: Test Adapter
-        run: dotnet test ./source/Tests.Sailfish.TestAdapter/Tests.Sailfish.TestAdapter.csproj --verbosity normal
+        run: dotnet test ./source/Tests.TestAdapter/Tests.TestAdapter.csproj --verbosity normal
 
       - name: Test Analyzer
-        run: dotnet test ./source/Tests.Sailfish.Analyzers/Tests.Sailfish.Analyzers.csproj --verbosity normal
+        run: dotnet test ./source/Tests.Analyzers/Tests.Analyzers.csproj --verbosity normal
 
       - name: Pack
         run: dotnet pack ./source/Sailfish/Sailfish.csproj --configuration Release /p:Version=${{ env.VERSION }} --no-build --output .

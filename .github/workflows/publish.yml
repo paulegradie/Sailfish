@@ -62,10 +62,10 @@ jobs:
         run: dotnet pack ./source/Sailfish/Sailfish.csproj --configuration Release /p:Version=${{ env.VERSION }} --no-build --output .
 
       - name: Pack Adapter
-        run: dotnet pack ./source/Sailfish.TestAdapter/Sailfish.TestAdapter.csproj --configuration Release /p:Version=${{ env.VERSION }} --no-build --output .
+        run: dotnet pack ./source/Tests.TestAdapter/Tests.TestAdapter.csproj --configuration Release /p:Version=${{ env.VERSION }} --no-build --output .
 
       - name: Pack Analyzers
-        run: dotnet pack ./source/Sailfish.Analyzers/Sailfish.Analyzers.csproj --configuration Release /p:Version=${{ env.VERSION }} --no-build --output .
+        run: dotnet pack ./source/Tests.Analyzers/Tests.Analyzers.csproj --configuration Release /p:Version=${{ env.VERSION }} --no-build --output .
 
       - name: Push
         run: dotnet nuget push Sailfish.${{ env.VERSION }}.nupkg --source https://www.nuget.org --api-key ${{secrets.NUGET_API_KEY}}
