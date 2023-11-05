@@ -1,4 +1,4 @@
-namespace Tests.E2ETestSuite;
+namespace Tests.E2E.TestSuite;
 
 public static class Constants
 {

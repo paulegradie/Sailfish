@@ -1,6 +1,6 @@
 ﻿using Sailfish.Attributes;
 
-namespace Tests.E2ETestSuite.Discoverable;
+namespace Tests.E2E.TestSuite.Discoverable;
 
 public class ATestBase
 {

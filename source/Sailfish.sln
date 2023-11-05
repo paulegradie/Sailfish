@@ -4,7 +4,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sailfish", "Sailfish\Sailfi
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Demo.API", "Demo.API\Demo.API.csproj", "{2B832E9F-13DC-482C-8391-6E3ADA2CA49B}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tests.Sailfish", "Tests.Sailfish\Tests.Sailfish.csproj", "{A42A41D3-7A3F-4475-B245-A2E896A2589F}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tests.Library", "Tests.Library\Tests.Library.csproj", "{A42A41D3-7A3F-4475-B245-A2E896A2589F}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PerformanceTestingConsoleApp", "PerformanceTestingConsoleApp\PerformanceTestingConsoleApp.csproj", "{EE33D17C-3F19-40A9-8394-D966232723A6}"
 EndProject
@@ -16,7 +16,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Demo", "Demo", "{AA777AE3-7
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{74A88B77-784B-4600-9F69-097A6CDF71D5}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tests.Sailfish.TestAdapter", "Tests.Sailfish.TestAdapter\Tests.Sailfish.TestAdapter.csproj", "{46F5F8AF-033A-4DE4-BDC3-134AEED4551A}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tests.TestAdapter", "Tests.TestAdapter\Tests.TestAdapter.csproj", "{46F5F8AF-033A-4DE4-BDC3-134AEED4551A}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tests.E2E.TestSuite", "Tests.E2E.TestSuite\Tests.E2E.TestSuite.csproj", "{E48F48D1-A39A-4F19-BE07-2312244284AA}"
 EndProject
@@ -26,7 +26,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tests.E2E.ExceptionHandling
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sailfish.Analyzers", "Sailfish.Analyzers\Sailfish.Analyzers.csproj", "{042345EC-1A8D-41CC-BB57-8D8354D5F698}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tests.Sailfish.Analyzers", "Tests.Sailfish.Analyzers\Tests.Sailfish.Analyzers.csproj", "{8D35AC3D-E18E-46A3-BCC5-2F3EEC7DA2B6}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tests.Analyzers", "Tests.Analyzers\Tests.Analyzers.csproj", "{8D35AC3D-E18E-46A3-BCC5-2F3EEC7DA2B6}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ModelPredictions", "ModelPredictions\ModelPredictions.csproj", "{AEB0818A-54F5-4243-A3EF-65974D9A8886}"
 EndProject

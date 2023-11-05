@@ -1,9 +1,9 @@
 ﻿using Sailfish.Analysis;
 using Sailfish.Attributes;
 using Shouldly;
-using Tests.E2ETestSuite.Utils;
+using Tests.E2E.TestSuite.Utils;
 
-namespace Tests.E2ETestSuite.Discoverable;
+namespace Tests.E2E.TestSuite.Discoverable;
 
 [Sailfish(3, 0, Disabled = Constants.Disabled)]
 public class ResolveTestCaseIdTest

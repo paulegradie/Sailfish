@@ -16,7 +16,7 @@ public class TestDiscoverer : ITestDiscoverer
     private readonly List<string> exclusions = new()
     {
         "Sailfish.TestAdapter.dll",
-        "Tests.Sailfish.TestAdapter.dll"
+        "Tests.Library.TestAdapter.dll"
     };
 
     public void DiscoverTests(IEnumerable<string> sources, IDiscoveryContext discoveryContext, IMessageLogger logger, ITestCaseDiscoverySink discoverySink)

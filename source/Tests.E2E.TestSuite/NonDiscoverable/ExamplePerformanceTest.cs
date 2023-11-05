@@ -2,10 +2,10 @@ using Demo.API;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Sailfish.Attributes;
 using Serilog;
-using Tests.E2ETestSuite.Utils;
+using Tests.E2E.TestSuite.Utils;
 
 // Tests here are automatically discovered and executed
-namespace Tests.E2ETestSuite.NonDiscoverable;
+namespace Tests.E2E.TestSuite.NonDiscoverable;
 
 [WriteToMarkdown]
 [WriteToCsv]
