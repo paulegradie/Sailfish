@@ -21,6 +21,14 @@ public class TestComputer : ITestComputer
         this.logger = logger;
     }
 
+    /// <summary>
+    /// Compute a statistical test using the given TestData and SailDiffSettings
+    /// </summary>
+    /// <remarks>All RawExecutionResult data is aggregated prior to test execution - if outlier detection is enabled, it is applied to the aggregated RawExecutionResults</remarks>
+    /// <param name="before"></param>
+    /// <param name="after"></param>
+    /// <param name="settings"></param>
+    /// <returns></returns>
     public List<TestCaseResults> ComputeTest(TestData before, TestData after, SailDiffSettings settings)
     {
         var testCaseIdGroups = after

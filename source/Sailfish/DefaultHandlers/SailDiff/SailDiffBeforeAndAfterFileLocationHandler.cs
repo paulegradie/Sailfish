@@ -10,12 +10,12 @@ using Sailfish.Exceptions;
 
 namespace Sailfish.DefaultHandlers.SailDiff;
 
-internal class BeforeAndAfterFileLocationHandler : IRequestHandler<BeforeAndAfterFileLocationRequest, BeforeAndAfterFileLocationResponse>
+internal class SailDiffBeforeAndAfterFileLocationHandler : IRequestHandler<BeforeAndAfterFileLocationRequest, BeforeAndAfterFileLocationResponse>
 {
     private readonly IRunSettings runSettings;
     private readonly ITrackingFileDirectoryReader trackingFileDirectoryReader;
 
-    public BeforeAndAfterFileLocationHandler(IRunSettings runSettings, ITrackingFileDirectoryReader trackingFileDirectoryReader)
+    public SailDiffBeforeAndAfterFileLocationHandler(IRunSettings runSettings, ITrackingFileDirectoryReader trackingFileDirectoryReader)
     {
         this.runSettings = runSettings;
         this.trackingFileDirectoryReader = trackingFileDirectoryReader;

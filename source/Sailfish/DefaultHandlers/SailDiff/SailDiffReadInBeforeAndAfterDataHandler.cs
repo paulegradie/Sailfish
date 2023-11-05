@@ -10,12 +10,12 @@ using Serilog;
 
 namespace Sailfish.DefaultHandlers.SailDiff;
 
-internal class SailfishReadInBeforeAndAfterDataHandler : IRequestHandler<ReadInBeforeAndAfterDataRequest, ReadInBeforeAndAfterDataResponse>
+internal class SailDiffReadInBeforeAndAfterDataHandler : IRequestHandler<ReadInBeforeAndAfterDataRequest, ReadInBeforeAndAfterDataResponse>
 {
     private readonly ITrackingFileParser trackingFileParser;
     private readonly ILogger logger;
 
-    public SailfishReadInBeforeAndAfterDataHandler(ITrackingFileParser trackingFileParser, ILogger logger)
+    public SailDiffReadInBeforeAndAfterDataHandler(ITrackingFileParser trackingFileParser, ILogger logger)
     {
         this.trackingFileParser = trackingFileParser;
         this.logger = logger;

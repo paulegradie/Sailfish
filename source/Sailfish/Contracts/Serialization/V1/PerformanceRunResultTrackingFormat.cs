@@ -18,7 +18,7 @@ public class PerformanceRunResultTrackingFormat
     {
     }
 
-    public PerformanceRunResultTrackingFormat(string displayName, DateTimeOffset globalStart, DateTimeOffset globalEnd, double globalDuration, double mean, double median,
+    public PerformanceRunResultTrackingFormat(string displayName, double mean, double median,
         double stdDev, double variance, double[] rawExecutionResults, int sampleSize, int numWarmupIterations, double[] dataWithOutliersRemoved, double[] upperOutliers,
         double[] lowerOutliers, int totalNumOutliers)
     {
@@ -27,9 +27,6 @@ public class PerformanceRunResultTrackingFormat
         Median = median;
         StdDev = stdDev;
         Variance = variance;
-        GlobalDuration = globalDuration;
-        GlobalStart = globalStart;
-        GlobalEnd = globalEnd;
         RawExecutionResults = rawExecutionResults;
         SampleSize = sampleSize;
         NumWarmupIterations = numWarmupIterations;
@@ -44,10 +41,6 @@ public class PerformanceRunResultTrackingFormat
     public double Median { get; init; }
     public double StdDev { get; init; }
     public double Variance { get; init; }
-
-    public double GlobalDuration { get; init; }
-    public DateTimeOffset GlobalStart { get; init; }
-    public DateTimeOffset GlobalEnd { get; init; }
 
     public double[] RawExecutionResults { get; init; } // milliseconds
 

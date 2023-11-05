@@ -52,8 +52,6 @@ internal class SailfishExecutor
         var testInitializationResult = CollectTests(runSettings.TestNames, runSettings.TestLocationAnchors.ToArray());
         if (testInitializationResult.IsValid)
         {
-            var timeStamp = runSettings.TimeStamp;
-
             var testClassResultGroups = await sailFishTestExecutor.Execute(testInitializationResult.Tests, cancellationToken).ConfigureAwait(false);
             var classExecutionSummaries = classExecutionSummaryCompiler.CompileToSummaries(testClassResultGroups).ToList();
 

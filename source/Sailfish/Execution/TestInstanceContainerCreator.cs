@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using Sailfish.Attributes;
@@ -47,7 +48,8 @@ internal class TestInstanceContainerCreator : ITestInstanceContainerCreator
                 typeActivator,
                 testType,
                 sailfishVariableSets,
-                instanceContainer))
+                instanceContainer,
+                new TestClassTimer()))
             .ToList();
     }
 }

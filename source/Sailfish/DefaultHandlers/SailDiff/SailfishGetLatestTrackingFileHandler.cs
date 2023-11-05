@@ -11,13 +11,13 @@ using Sailfish.Extensions.Types;
 
 namespace Sailfish.DefaultHandlers.SailDiff;
 
-internal class SailfishGetLatestExecutionSummariesHandler : IRequestHandler<GetLatestExecutionSummaryRequest, GetLatestExecutionSummaryResponse>
+internal class SailDiffGetLatestExecutionSummariesHandler : IRequestHandler<GetLatestExecutionSummaryRequest, GetLatestExecutionSummaryResponse>
 {
     private readonly ITrackingFileDirectoryReader trackingFileDirectoryReader;
     private readonly ITrackingFileParser trackingFileParser;
     private readonly IRunSettings runSettings;
 
-    public SailfishGetLatestExecutionSummariesHandler(ITrackingFileDirectoryReader trackingFileDirectoryReader, ITrackingFileParser trackingFileParser, IRunSettings runSettings)
+    public SailDiffGetLatestExecutionSummariesHandler(ITrackingFileDirectoryReader trackingFileDirectoryReader, ITrackingFileParser trackingFileParser, IRunSettings runSettings)
     {
         this.trackingFileDirectoryReader = trackingFileDirectoryReader;
         this.trackingFileParser = trackingFileParser;

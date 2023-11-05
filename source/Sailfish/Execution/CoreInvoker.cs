@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using System.Threading;
@@ -19,14 +20,14 @@ internal class CoreInvoker
     private readonly List<MethodInfo> iterationTeardown;
     private readonly List<MethodInfo> methodSetup;
     private readonly List<MethodInfo> methodTeardown;
-    private readonly PerformanceTimer performanceTimer;
+    private readonly PerformanceTimer testCasePerformanceTimer;
 
     private readonly MethodInfo mainMethod;
 
-    public CoreInvoker(object instance, MethodInfo method, PerformanceTimer performanceTimer)
+    public CoreInvoker(object instance, MethodInfo method, PerformanceTimer testCasePerformanceTimer)
     {
         this.instance = instance;
-        this.performanceTimer = performanceTimer;
+        this.testCasePerformanceTimer = testCasePerformanceTimer;
 
         mainMethod = method;
         globalSetup = instance.FindMethodsDecoratedWithAttribute<SailfishGlobalSetupAttribute>();
@@ -63,7 +64,6 @@ internal class CoreInvoker
 
     public async Task GlobalSetup(CancellationToken cancellationToken)
     {
-        performanceTimer.StartGlobalLifecycleTimer();
         foreach (var lifecycleMethod in globalSetup)
         {
             await lifecycleMethod.TryInvoke(instance, cancellationToken).ConfigureAwait(false);
@@ -72,7 +72,6 @@ internal class CoreInvoker
 
     public async Task MethodSetup(CancellationToken cancellationToken)
     {
-        performanceTimer.StartMethodLifecycleTimer();
         await InvokeLifecycleMethods<SailfishMethodSetupAttribute>(methodSetup, cancellationToken).ConfigureAwait(false);
     }
 
@@ -85,7 +84,7 @@ internal class CoreInvoker
     {
         if (timed)
         {
-            await mainMethod.TryInvokeWithTimer(instance, performanceTimer, cancellationToken).ConfigureAwait(false);
+            await mainMethod.TryInvokeWithTimer(instance, testCasePerformanceTimer, cancellationToken).ConfigureAwait(false);
         }
         else
         {
@@ -101,7 +100,6 @@ internal class CoreInvoker
     public async Task MethodTearDown(CancellationToken cancellationToken)
     {
         await InvokeLifecycleMethods<SailfishMethodTeardownAttribute>(methodTeardown, cancellationToken);
-        performanceTimer.StopMethodLifecycleTimer();
     }
 
     public async Task GlobalTeardown(CancellationToken cancellationToken)
@@ -110,27 +108,35 @@ internal class CoreInvoker
         {
             await lifecycleMethod.TryInvoke(instance, cancellationToken).ConfigureAwait(false);
         }
-
-        performanceTimer.StopGlobalLifecycleTimer();
     }
 
     public PerformanceTimer GetPerformanceResults(bool isValid = true)
     {
         if (!isValid)
         {
-            performanceTimer.SetAsInvalid();
+            testCasePerformanceTimer.SetAsInvalid();
         }
 
         if (OverheadEstimate > 0)
         {
-            performanceTimer.ApplyOverheadEstimate(OverheadEstimate);
+            testCasePerformanceTimer.ApplyOverheadEstimate(OverheadEstimate);
         }
 
-        return performanceTimer;
+        return testCasePerformanceTimer;
     }
 
     public void AssignOverheadEstimate(int overheadEstimate)
     {
         OverheadEstimate = overheadEstimate;
+    }
+
+    public void SetTestCaseStart()
+    {
+        testCasePerformanceTimer.SetTestCaseStart();
+    }
+
+    public void SetTestCaseStop()
+    {
+        testCasePerformanceTimer.SetTestCaseStop();
     }
 }

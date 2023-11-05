@@ -37,7 +37,7 @@ public class SailfishUpdateTrackingDataNotificationHandler : INotificationHandle
         }
 
         var trackingDirectory = runSettings.GetRunSettingsTrackingDirectoryPath();
-        var fileName = DefaultFileSettings.AppendTagsToFilename(notification.DefaultFileName, runSettings.Tags);
+        var fileName = DefaultFileSettings.AppendTagsToFilename(DefaultFileSettings.DefaultTrackingFileName(runSettings.TimeStamp), runSettings.Tags);
         var filePath = Path.Join(trackingDirectory, fileName);
 
         await using var fileStream = new FileStream(filePath, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.ReadWrite);

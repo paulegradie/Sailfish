@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using Sailfish.Attributes;
@@ -12,6 +13,7 @@ internal class TestInstanceContainerProvider
 {
     private readonly IRunSettings runSettings;
     public readonly MethodInfo Method;
+    private readonly TestClassTimer testClassTimer;
     public readonly Type Test;
     private readonly ITypeActivator typeActivator;
     private readonly IEnumerable<PropertySet> propertySets;
@@ -21,11 +23,13 @@ internal class TestInstanceContainerProvider
         ITypeActivator typeActivator,
         Type test,
         IEnumerable<PropertySet> propertySets,
-        MethodInfo method)
+        MethodInfo method,
+        TestClassTimer testClassTimer)
     {
         Method = method;
         Test = test;
 
+        this.testClassTimer = testClassTimer;
         this.runSettings = runSettings;
         this.typeActivator = typeActivator;
         this.propertySets = propertySets;
@@ -51,7 +55,7 @@ internal class TestInstanceContainerProvider
             var testCaseId = DisplayNameHelper.CreateTestCaseId(Test, Method.Name, Array.Empty<string>(), Array.Empty<object>()); // a uniq id
             var instance = typeActivator.CreateDehydratedTestInstance(Test, testCaseId, disabled);
             var executionSettings = instance.GetType().RetrieveExecutionTestSettings(runSettings.SampleSizeOverride, runSettings.NumWarmupIterationsOverride);
-            yield return TestInstanceContainer.CreateTestInstance(instance, Method, Array.Empty<string>(), Array.Empty<object>(), disabled, executionSettings);
+            yield return TestInstanceContainer.CreateTestInstance(instance, Method, Array.Empty<string>(), Array.Empty<object>(), disabled, executionSettings, testClassTimer);
         }
         else
         {
@@ -66,7 +70,7 @@ internal class TestInstanceContainerProvider
                 HydrateInstanceTestProperties(instance, nextPropertySet);
 
                 var executionSettings = instance.GetType().RetrieveExecutionTestSettings(runSettings.SampleSizeOverride, runSettings.NumWarmupIterationsOverride);
-                yield return TestInstanceContainer.CreateTestInstance(instance, Method, propertyNames, variableValues, disabled, executionSettings);
+                yield return TestInstanceContainer.CreateTestInstance(instance, Method, propertyNames, variableValues, disabled, executionSettings, testClassTimer);
             }
         }
     }

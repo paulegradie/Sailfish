@@ -69,14 +69,12 @@ public class AllTheFeatures
     public void ADisabledMethod()
     {
         throw new Exception("WTF");
-        reg.Noop();
-        dep.NowHoldOnJustASec();
     }
 }
 
 public class MyClient : ISailfishDependency
 {
-    private HttpClient client;
+    private readonly HttpClient client;
 
     public MyClient()
     {

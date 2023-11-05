@@ -33,8 +33,10 @@ internal class ClassExecutionSummaryCompiler : IClassExecutionSummaryCompiler
         }
 
         var executionSettings = testClassResultGroup.TestClass.RetrieveExecutionTestSettings(runSettings.SampleSizeOverride, runSettings.NumWarmupIterationsOverride);
-
-        return new ClassExecutionSummary(testClassResultGroup.TestClass, executionSettings, compiledResults);
+        return new ClassExecutionSummary(
+            testClassResultGroup.TestClass,
+            executionSettings,
+            compiledResults);
     }
 
     private CompiledTestCaseResult CompileTestResult(TestCaseExecutionResult testCaseExecutionResult, ICollection<ICompiledTestCaseResult> compiledResults)

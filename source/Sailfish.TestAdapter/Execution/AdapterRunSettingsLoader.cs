@@ -62,9 +62,9 @@ public static class AdapterRunSettingsLoader
             mappedSettings.SetTestType(settingsConfiguration.SailDiffSettings.TestType);
         }
 
-        if (settingsConfiguration?.GlobalSettings.UseOutlierDetection is not null)
+        if (settingsConfiguration?.GlobalSettings.DisableOutlierDetection is true)
         {
-            mappedSettings.SetUseOutlierDetection(settingsConfiguration.GlobalSettings.UseOutlierDetection);
+            mappedSettings.DisableOutlierDetection();
         }
 
         if (settingsConfiguration?.SailDiffSettings.Alpha is not null)
@@ -87,7 +87,9 @@ public static class AdapterRunSettingsLoader
         {
             var settingsFile = DirectoryRecursion.RecurseUpwardsUntilFileIsFound(
                 ".sailfish.json",
+#pragma warning disable RS1035
                 Directory.GetCurrentDirectory(),
+#pragma warning restore RS1035
                 6);
             return SailfishSettingsParser.Parse(settingsFile.FullName);
         }

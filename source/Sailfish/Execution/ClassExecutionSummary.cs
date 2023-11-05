@@ -19,12 +19,16 @@ public interface IClassExecutionSummary
 
 internal class ClassExecutionSummary : IClassExecutionSummary
 {
-    public ClassExecutionSummary(Type type, IExecutionSettings executionSettings, IEnumerable<ICompiledTestCaseResult> compiledResults)
+    public ClassExecutionSummary(
+        Type type,
+        IExecutionSettings executionSettings,
+        IEnumerable<ICompiledTestCaseResult> compiledResults)
     {
         TestClass = type;
         CompiledTestCaseResults = compiledResults;
         ExecutionSettings = executionSettings;
     }
+
 
     public Type TestClass { get; set; }
     public IExecutionSettings ExecutionSettings { get; }

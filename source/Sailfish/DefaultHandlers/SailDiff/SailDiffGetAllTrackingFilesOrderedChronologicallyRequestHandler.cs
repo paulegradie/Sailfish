@@ -9,7 +9,7 @@ using Serilog;
 
 namespace Sailfish.DefaultHandlers.SailDiff;
 
-internal class SailfishGetAllTrackingFilesOrderedChronologicallyRequestHandler : IRequestHandler<GetAllTrackingDataOrderedChronologicallyRequest,
+internal class SailDiffGetAllTrackingFilesOrderedChronologicallyRequestHandler : IRequestHandler<GetAllTrackingDataOrderedChronologicallyRequest,
     GetAllTrackingDataOrderedChronologicallyResponse>
 {
     private readonly IRunSettings runSettings;
@@ -17,7 +17,7 @@ internal class SailfishGetAllTrackingFilesOrderedChronologicallyRequestHandler :
     private readonly ITrackingFileParser trackingFileParser;
     private readonly ILogger logger;
 
-    public SailfishGetAllTrackingFilesOrderedChronologicallyRequestHandler(
+    public SailDiffGetAllTrackingFilesOrderedChronologicallyRequestHandler(
         IRunSettings runSettings,
         ITrackingFileDirectoryReader trackingFileDirectoryReader,
         ITrackingFileParser trackingFileParser,

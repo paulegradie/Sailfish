@@ -6,7 +6,7 @@ using Sailfish.Exceptions;
 
 namespace Sailfish.Contracts.Serialization.V1.JsonConverters;
 
-public class ExecutionSummaryTrackingFormatV1Converter : JsonConverter<ClassExecutionSummaryTrackingFormat>
+public class ExecutionSummaryTrackingFormatConverter : JsonConverter<ClassExecutionSummaryTrackingFormat>
 {
     public override ClassExecutionSummaryTrackingFormat? Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
     {
@@ -24,9 +24,6 @@ public class ExecutionSummaryTrackingFormatV1Converter : JsonConverter<ClassExec
         var compiledTestCaseResults = jsonElementClassExecutionSummary
             .GetProperty(nameof(TrackingFileSerializationHelper.CompiledTestCaseResults))
             .Deserialize<IEnumerable<CompiledTestCaseResultTrackingFormat>>() ?? throw new SailfishException("Failed to deserialize 'CompiledTestCaseResults'");
-
-        var testClassStart = jsonElementClassExecutionSummary
-            .GetProperty(nameof(TrackingFileSerializationHelper.))
 
         return new ClassExecutionSummaryTrackingFormat(type!, settings, compiledTestCaseResults);
     }
@@ -59,23 +56,15 @@ public class ExecutionSummaryTrackingFormatV1Converter : JsonConverter<ClassExec
         public TrackingFileSerializationHelper(
             string testClass,
             ExecutionSettingsTrackingFormat executionSettings,
-            IEnumerable<CompiledTestCaseResultTrackingFormat> compiledTestCaseResults,
-            DateTimeOffset testClassStart,
-            DateTimeOffset testClassStop)
+            IEnumerable<CompiledTestCaseResultTrackingFormat> compiledTestCaseResults)
         {
             TestClass = testClass;
             ExecutionSettings = executionSettings;
             CompiledTestCaseResults = compiledTestCaseResults;
-            TestClassStart = testClassStart;
-            TestClassStop = testClassStop;
-            TestClassDuration = TestClassStop - TestClassStart;
         }
 
         public string TestClass { get; set; }
         public ExecutionSettingsTrackingFormat ExecutionSettings { get; }
         public IEnumerable<CompiledTestCaseResultTrackingFormat> CompiledTestCaseResults { get; set; }
-        public DateTimeOffset TestClassStart { get; set; }
-        public DateTimeOffset TestClassStop { get; set; }
-        public TimeSpan TestClassDuration { get; set; }
     }
 }

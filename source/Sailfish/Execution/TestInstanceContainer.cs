@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Diagnostics;
 using System.Reflection;
 using Sailfish.Analysis;
 using Sailfish.Utils;
@@ -49,7 +50,9 @@ internal class TestInstanceContainer
         string[] propertyNames,
         object[] variables,
         bool disabled,
-        IExecutionSettings executionSettings)
+        IExecutionSettings executionSettings,
+        TestClassTimer testClassTimer
+    )
     {
         if (propertyNames.Length != variables.Length) throw new Exception("Property names and variables do not match");
 

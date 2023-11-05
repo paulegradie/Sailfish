@@ -12,7 +12,7 @@ internal class TestCaseIterator : ITestCaseIterator
     {
         this.runSettings = runSettings;
     }
-    
+
     public async Task<TestCaseExecutionResult> Iterate(TestInstanceContainer testInstanceContainer, bool disableOverheadEstimation, CancellationToken cancellationToken)
     {
         var overheadEstimator = new OverheadEstimator();
@@ -28,6 +28,8 @@ internal class TestCaseIterator : ITestCaseIterator
         }
 
         var iterations = runSettings.SampleSizeOverride is not null ? Math.Max(runSettings.SampleSizeOverride.Value, 1) : testInstanceContainer.SampleSize;
+
+        testInstanceContainer.CoreInvoker.SetTestCaseStart();
         for (var i = 0; i < iterations; i++)
         {
             cancellationToken.ThrowIfCancellationRequested();
@@ -53,9 +55,12 @@ internal class TestCaseIterator : ITestCaseIterator
             }
             catch (Exception ex)
             {
+                testInstanceContainer.CoreInvoker.SetTestCaseStop();
                 return CatchAndReturn(testInstanceContainer, ex);
             }
         }
+
+        testInstanceContainer.CoreInvoker.SetTestCaseStop();
 
         if (!disableOverheadEstimation)
         {

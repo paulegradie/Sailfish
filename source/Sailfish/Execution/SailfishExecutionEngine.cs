@@ -238,7 +238,7 @@ internal class SailfishExecutionEngine : ISailfishExecutionEngine
                 runSettings.DisableOverheadEstimation || ShouldDisableOverheadEstimationFromTypeOrMethod(testInstanceContainer),
                 cancellationToken).ConfigureAwait(false);
 
-            await mediator.Publish(new TestCaseCompletedNotification(MapResultToTrackingFormat(testInstanceContainer.Type, testExecutionResult), runSettings.TimeStamp), cancellationToken);
+            await mediator.Publish(new TestCaseCompletedNotification(MapResultToTrackingFormat(testInstanceContainer.Type, testExecutionResult)), cancellationToken);
 
             return testExecutionResult;
         }

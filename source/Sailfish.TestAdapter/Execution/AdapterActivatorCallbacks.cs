@@ -67,7 +67,9 @@ internal class AdapterActivatorCallbacks : IActivatorCallbacks
                 HandleSuccessfulTestCase(
                     result,
                     currentTestCase,
-                    new TestClassResultGroup(result.TestInstanceContainer.Type, new List<TestCaseExecutionResult> { result }),
+                    new TestClassResultGroup(
+                        result.TestInstanceContainer.Type,
+                        new List<TestCaseExecutionResult> { result }),
                     preloadedLastRunIfAvailable,
                     cancellationToken);
             }
@@ -76,7 +78,9 @@ internal class AdapterActivatorCallbacks : IActivatorCallbacks
                 HandleFailureTestCase(
                     result,
                     currentTestCase,
-                    new TestClassResultGroup(result.TestInstanceContainer.Type, new List<TestCaseExecutionResult> { result }),
+                    new TestClassResultGroup(
+                        result.TestInstanceContainer.Type,
+                        new List<TestCaseExecutionResult> { result }),
                     cancellationToken);
             }
         };
@@ -106,8 +110,8 @@ internal class AdapterActivatorCallbacks : IActivatorCallbacks
         testResult.Outcome = result.StatusCode == 0 ? TestOutcome.Passed : TestOutcome.Failed;
         testResult.DisplayName = currentTestCase.DisplayName;
 
-        testResult.StartTime = result.PerformanceTimerResults?.GlobalStart ?? new DateTimeOffset();
-        testResult.EndTime = result.PerformanceTimerResults?.GlobalStop ?? new DateTimeOffset();
+        testResult.StartTime = result.PerformanceTimerResults?.GetIterationStartTime() ?? new DateTimeOffset();
+        testResult.EndTime = result.PerformanceTimerResults?.GetIterationStopTime() ?? new DateTimeOffset();
         testResult.Duration = TimeSpan.FromMilliseconds(double.IsNaN(medianTestRuntime) ? 0 : medianTestRuntime);
 
         testResult.ErrorMessage = result.Exception?.Message;
@@ -165,8 +169,8 @@ internal class AdapterActivatorCallbacks : IActivatorCallbacks
         testResult.Outcome = result.StatusCode == 0 ? TestOutcome.Passed : TestOutcome.Failed;
         testResult.DisplayName = currentTestCase.DisplayName;
 
-        testResult.StartTime = result.PerformanceTimerResults?.GlobalStart ?? new DateTimeOffset();
-        testResult.EndTime = result.PerformanceTimerResults?.GlobalStop ?? new DateTimeOffset();
+        testResult.StartTime = result.PerformanceTimerResults?.GetIterationStartTime() ?? new DateTimeOffset();
+        testResult.EndTime = result.PerformanceTimerResults?.GetIterationStopTime() ?? new DateTimeOffset();
         testResult.Duration = TimeSpan.Zero;
 
         testResult.Messages.Clear();

@@ -23,13 +23,16 @@ internal static class DirectoryRecursion
         var dirName = Path.GetDirectoryName(sourceFile);
         if (dirName is null) return null;
 
+#pragma warning disable RS1035
         var csprojFile = Directory.GetFiles(dirName).SingleOrDefault(x => x.EndsWith(suffixToMatch));
+#pragma warning restore RS1035
         if (csprojFile is null)
         {
             return ThereIsAParentDirectory(new DirectoryInfo(sourceFile), out var parentDir)
                 ? RecurseUpwardsUntilFileIsFoundInner(suffixToMatch, parentDir.FullName, maxParentDirLevel - 1)
                 : null;
         }
+
         return new FileInfo(csprojFile);
     }
 
@@ -47,10 +50,12 @@ internal static class DirectoryRecursion
 
     public static List<string> FindAllFilesRecursively(FileInfo originReferenceFile, string searchPattern, IMessageLogger logger, Func<string, bool>? where = null)
     {
+#pragma warning disable RS1035
         var filePaths = Directory.GetFiles(
             Path.GetDirectoryName(originReferenceFile.FullName)!,
             searchPattern,
             SearchOption.AllDirectories);
+#pragma warning restore RS1035
 
         if (where is not null) filePaths = filePaths.Where(where).ToArray();
         return filePaths.ToList();

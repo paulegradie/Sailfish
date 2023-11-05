@@ -7,12 +7,10 @@ namespace Sailfish.Contracts.Public.Notifications;
 
 public class TestCaseCompletedNotification : INotification
 {
-    public TestCaseCompletedNotification(ClassExecutionSummaryTrackingFormat testCaseExecutionResult, DateTime timeStamp)
+    public TestCaseCompletedNotification(ClassExecutionSummaryTrackingFormat testCaseExecutionResult)
     {
         TestCaseExecutionResult = testCaseExecutionResult;
-        DefaultFileName = DefaultFileSettings.DefaultTrackingFileName(timeStamp);
     }
 
-    public string DefaultFileName { get; }
     public ClassExecutionSummaryTrackingFormat TestCaseExecutionResult { get; }
 }

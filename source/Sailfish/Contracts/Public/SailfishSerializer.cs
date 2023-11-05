@@ -12,7 +12,7 @@ public static class SailfishSerializer
     {
         new JsonNanConverter(),
         new ComplexityFunctionConverter(),
-        new ExecutionSummaryTrackingFormatV1Converter(),
+        new ExecutionSummaryTrackingFormatConverter(),
         new TypePropertyConverter()
     };
 
