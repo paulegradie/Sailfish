@@ -10,6 +10,9 @@ When enabled, scalefish will discover test cases with scalefish-enabled variable
 
 This outputs a model file and a results file once your run is complete. The model file can be used to make predictions.
 
+**NOTE**: The more data you collect, the more accurate these measurements will be.
+
+
 ## Enabling / Configuring ScaleFish
 
 The first thing you'll need to do when enabling **ScaleFish** is to specify a SailfishVariable or SailfishRangeVariable and set the optional complexity boolean to true.
@@ -25,9 +28,9 @@ public int N { get; set; }
 
 ```
 
-### Test Project / IDE
+If using Sailfish as a test project, you can create a `.sailfish.json` file in the root of your test project (next to your `.csproj` file). This file can hold various configuration settings. When found, SailDiff will be automatically run. If any compatible setting is omitted, a sensible default will be used.
 
-If using Sailfish as a test project, you can create a `.sailfish.json` file in the root of your test project (next to your `.csproj` file). This file can hold various configuration settings. If any compatible setting is omitted, a sensible default will be used.
+**Example `.sailfish.json`**
 
 ```json
 {
@@ -52,8 +55,6 @@ If using Sailfish as a test project, you can create a `.sailfish.json` file in t
 ```
 
 There are currently no customizations for the ScaleFishSettings.
-
-There are currently no IDE outputs for ScaleFish.
 
 ### Library
 

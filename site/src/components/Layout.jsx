@@ -42,7 +42,6 @@ const navigation = [
     title: 'Advanced Sailfish',
     links: [
       { title: 'Extensibility', href: '/docs/3/extensibility' },
-      { title: 'Which Test to Use', href: '/docs/3/which-test-to-use' },
       { title: 'Example App', href: '/docs/3/example-app' },
     ],
   }
