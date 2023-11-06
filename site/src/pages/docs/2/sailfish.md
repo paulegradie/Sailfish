@@ -10,9 +10,41 @@ Different outputs are availabe depending on where you use Sailfish as test proje
 
 When used as a test project, you can run Sailfish tests directly from the IDE - similar to how you might run an NUnit or xUnit test.
 
+### Test Project / IDE
+
+If using Sailfish as a test project, you can create a `.sailfish.json` file in the root of your test project (next to your `.csproj` file). This file can hold various configuration settings. If any compatible setting is omitted, a sensible default will be used.
+
+**Example `.sailfish.json`**
+
+```json
+{
+  "SailfishSettings": {
+    "DisableOverheadEstimation": false,
+    "NumWarmupIterationsOverride": 1,
+    "SampleSizeOverride": 30
+  },
+  "SailDiffSettings": {
+    "TestType": "TTest",
+    "Alpha": 0.005,
+    "Disabled": false
+  },
+  "ScaleFishSettings": {},
+  "GlobalSettings": {
+    "UseOutlierDetection": true,
+    "ResultsDirectory": "SailfishIDETestOutput",
+    "DisableEverything": false,
+    "Round": 5
+  }
+}
+```
+
+
 ⚠️ If you are using Jetbrains Rider - you will need to [enable VS Test Adapter Support](https://www.jetbrains.com/help/rider/Reference__Options__Tools__Unit_Testing__VSTest.html)
 
 **In contrast to test frameworks natively supported by JetBrains Rider, tests from VSTest adapters are only discovered after test projects are build.**
+
+
+## Outputs
 
 A run will produce the following result in the test output window:
 
@@ -23,19 +55,19 @@ Descriptive Statistics
 ----------------------
 | Stat   |  Time (ms) |
 | ---    | ---        |
-| Mean   |   111.1442 |
-| Median |   107.8113 |
-| StdDev |     7.4208 |
-| Min    |   105.9743 |
-| Max    |   119.6471 |
+| Mean   |     62.411 |
+| Median |     62.986 |
+| StdDev |     1.4544 |
+| Min    |    59.8693 |
+| Max    |    63.4148 |
 
 
 Outliers Removed (0)
 --------------------
 
-Adjusted Distribution (ms)
---------------------------
-119.6471, 105.9743, 107.8113
+Distribution (ms)
+-----------------
+59.8693, 62.5765, 62.986, 63.4148, 63.2082
 ```
 
 These are the basic descriptive statistics describing your Sailfish test run. Persisted outputs (such as markdown or csv files) will be found the output directory in the calling assembly's **/bin** folder.
@@ -53,15 +85,16 @@ await SailfishRunner.Run(settings);
 
 ### Markdown
 
+
 Example
 
-| Display Name      | Mean         | Median     | StdDev (N=3) | Variance  |
-| ----------------- | ------------ | ---------- | ------------ | --------- |
-| Example.Minimal() | 55.006299 ms | 56.1542 ms | 3.170436 ms  | 10.051667 |
+| Display Name                 | Mean                  | Median    | StdDev (N=5)          | Variance          |
+| ---------------------------- | --------------------- | --------- | --------------------- | ----------------- |
+| Example.Minimal() | 62.410959999999996 ms | 62.986 ms | 1.4544239763562794 ms | 2.115349103000011 |
 
 ### CSV
 
 ```csv
 DisplayName,Median,Mean,StdDev,Variance,LowerOutliers,UpperOutliers,TotalNumOutliers,SampleSize,RawExecutionResults
-MinimalTestExample.Minimal(),56.1542,55.006299,3.170436,10.051667,0,3,56.1542,51.4218,57.4429
+MinimalTestExample.Minimal(),62.3577,59.79556,5.118877113488853,26.202902902999977,,,0,5,"61.0641,62.370000000000005,62.4878,50.6982,62.3577"
 ```

@@ -21,7 +21,8 @@ internal class SailDiffBeforeAndAfterFileLocationHandler : IRequestHandler<Befor
         this.trackingFileDirectoryReader = trackingFileDirectoryReader;
     }
 
-    public async Task<BeforeAndAfterFileLocationResponse> Handle(BeforeAndAfterFileLocationRequest request,
+    public async Task<BeforeAndAfterFileLocationResponse> Handle(
+        BeforeAndAfterFileLocationRequest request,
         CancellationToken cancellationToken)
     {
         await Task.Yield();
@@ -46,7 +47,6 @@ internal class SailDiffBeforeAndAfterFileLocationHandler : IRequestHandler<Befor
 
         return trackingFiles.Count < 2
             ? new BeforeAndAfterFileLocationResponse(new List<string>(), new List<string>())
-            : new BeforeAndAfterFileLocationResponse(new List<string> { trackingFiles[1] },
-                new List<string> { trackingFiles[0] });
+            : new BeforeAndAfterFileLocationResponse(new List<string> { trackingFiles[1] }, new List<string> { trackingFiles[0] });
     }
 }
