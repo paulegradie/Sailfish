@@ -85,6 +85,7 @@ public class MarkdownTableConverter : IMarkdownTableConverter
         var tableBuilder = new StringBuilder();
         foreach (var testClassComplexityResult in testClassComplexityResults)
         {
+            tableBuilder.AppendLine($"Namespace: {testClassComplexityResult.NameSpace}");
             tableBuilder.AppendLine($"Test Class: {testClassComplexityResult.TestClassName}");
             tableBuilder.AppendLine();
             var methodGroups = testClassComplexityResult

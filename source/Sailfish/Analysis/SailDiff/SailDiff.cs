@@ -12,11 +12,16 @@ using Serilog;
 
 namespace Sailfish.Analysis.SailDiff;
 
-public interface ISailDiff : IAnalyzeFromFile
+public interface ISailDiffInternal : IAnalyzeFromFile
 {
 }
 
-public class SailDiff : ISailDiff
+public interface ISailDiff
+{
+    void Analyze(TestData beforeData, TestData afterData, SailDiffSettings settings);
+}
+
+internal class SailDiff : ISailDiffInternal, ISailDiff
 {
     private readonly IMediator mediator;
     private readonly IRunSettings runSettings;
@@ -41,8 +46,7 @@ public class SailDiff : ISailDiff
         this.consoleWriter = consoleWriter;
     }
 
-    public async Task Analyze(CancellationToken cancellationToken
-    )
+    public async Task Analyze(CancellationToken cancellationToken)
     {
         if (!runSettings.RunSailDiff) return;
         var beforeAndAfterFileLocations =
@@ -93,5 +97,10 @@ public class SailDiff : ISailDiff
 
         consoleWriter.WriteStatTestResultsToConsole(resultsAsMarkdown, testIds, runSettings.SailDiffSettings);
         await mediator.Publish(new SailDiffAnalysisCompleteNotification(testResults, resultsAsMarkdown), cancellationToken).ConfigureAwait(false);
+    }
+
+    public void Analyze(TestData beforeData, TestData afterData, SailDiffSettings settings)
+    {
+        throw new System.NotImplementedException();
     }
 }

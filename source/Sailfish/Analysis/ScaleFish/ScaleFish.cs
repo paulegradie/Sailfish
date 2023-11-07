@@ -5,12 +5,13 @@ using System.Threading.Tasks;
 using MediatR;
 using Sailfish.Contracts.Public.Notifications;
 using Sailfish.Contracts.Public.Requests;
+using Sailfish.Contracts.Serialization.V1;
 using Sailfish.Presentation;
 using Sailfish.Presentation.Console;
 
 namespace Sailfish.Analysis.ScaleFish;
 
-public class ScaleFish : IScaleFish
+internal class ScaleFish : IScaleFish, IScaleFishInternal
 {
     private readonly IMarkdownTableConverter markdownTableConverter;
     private readonly IConsoleWriter consoleWriter;
@@ -52,5 +53,10 @@ public class ScaleFish : IScaleFish
         {
             consoleWriter.WriteString(ex.Message);
         }
+    }
+
+    public void Analyze(ClassExecutionSummaryTrackingFormat summaryTrackingFormat)
+    {
+        throw new NotImplementedException();
     }
 }

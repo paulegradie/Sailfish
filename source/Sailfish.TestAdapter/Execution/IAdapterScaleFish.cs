@@ -2,7 +2,7 @@ using Sailfish.Analysis.ScaleFish;
 
 namespace Sailfish.TestAdapter.Execution;
 
-internal interface IAdapterScaleFish : IScaleFish
+internal interface IAdapterScaleFish : IScaleFishInternal
 {
     
 }

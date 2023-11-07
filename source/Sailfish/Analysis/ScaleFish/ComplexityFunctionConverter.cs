@@ -18,18 +18,23 @@ public class ComplexityFunctionConverter : JsonConverter<List<ScalefishClassMode
         var results = new List<ScalefishClassModel>();
         foreach (var testClassElement in root.EnumerateArray())
         {
-            var testClassName = testClassElement.GetProperty(nameof(ScalefishClassModel.TestClassName)).GetString() ?? throw new SailfishException("Failed to find property: 'TestClassName'");
+            var testNameSpace = testClassElement.GetProperty(nameof(ScalefishClassModel.NameSpace)).GetString() ??
+                                throw new SailfishException($"Failed to find '{nameof(ScalefishClassModel.NameSpace)}'");
+            var testClassName = testClassElement.GetProperty(nameof(ScalefishClassModel.TestClassName)).GetString() ??
+                                throw new SailfishException($"Failed to find property: '{nameof(ScalefishClassModel.TestClassName)}'");
             var testMethodComplexityResults = new List<ScaleFishMethodModel>();
 
             foreach (var testMethodElement in testClassElement.GetProperty(nameof(ScalefishClassModel.ScaleFishMethodModels)).EnumerateArray())
             {
-                var testMethodName = testMethodElement.GetProperty(nameof(ScaleFishMethodModel.TestMethodName)).GetString() ?? throw new SailfishException("Failed to find property 'TestMethodName'");
+                var testMethodName = testMethodElement.GetProperty(nameof(ScaleFishMethodModel.TestMethodName)).GetString() ??
+                                     throw new SailfishException($"Failed to find property '{nameof(ScaleFishMethodModel.TestMethodName)}'");
 
                 var testPropertyComplexityResults = new List<ScaleFishPropertyModel>();
 
                 foreach (var testPropertyElement in testMethodElement.GetProperty(nameof(ScaleFishMethodModel.ScaleFishPropertyModels)).EnumerateArray())
                 {
-                    var propertyName = testPropertyElement.GetProperty(nameof(ScaleFishPropertyModel.PropertyName)).GetString() ?? throw new SailfishException("Failed to find property 'Property Name'");
+                    var propertyName = testPropertyElement.GetProperty(nameof(ScaleFishPropertyModel.PropertyName)).GetString() ??
+                                       throw new SailfishException($"Failed to find property '{nameof(ScaleFishPropertyModel.PropertyName)}'");
                     var complexityResultJsonElement = testPropertyElement.GetProperty(nameof(ScaleFishPropertyModel.ScalefishModel));
 
                     var complexityFunctionProperty = complexityResultJsonElement.GetProperty(nameof(ScalefishModel.ScaleFishModelFunction));
@@ -56,7 +61,7 @@ public class ComplexityFunctionConverter : JsonConverter<List<ScalefishClassMode
                 testMethodComplexityResults.Add(new ScaleFishMethodModel(testMethodName, testPropertyComplexityResults));
             }
 
-            results.Add(new ScalefishClassModel(testClassName, testMethodComplexityResults));
+            results.Add(new ScalefishClassModel(testNameSpace, testClassName, testMethodComplexityResults));
         }
 
         return results;

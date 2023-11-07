@@ -21,8 +21,8 @@ internal class SailfishExecutor
     private readonly IRunSettings runSettings;
     private readonly IMediator mediator;
     private readonly ISailFishTestExecutor sailFishTestExecutor;
-    private readonly ISailDiff sailDiff;
-    private readonly IScaleFish scaleFish;
+    private readonly ISailDiffInternal sailDiff;
+    private readonly IScaleFishInternal scaleFish;
 
     public SailfishExecutor(
         IMediator mediator,
@@ -31,8 +31,8 @@ internal class SailfishExecutor
         ITestFilter testFilter,
         IClassExecutionSummaryCompiler classExecutionSummaryCompiler,
         IExecutionSummaryWriter executionSummaryWriter,
-        ISailDiff sailDiff,
-        IScaleFish scaleFish,
+        ISailDiffInternal sailDiff,
+        IScaleFishInternal scaleFish,
         IRunSettings runSettings
     )
     {

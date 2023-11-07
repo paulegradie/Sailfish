@@ -1,108 +1,45 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Sailfish.Attributes;
-using Sailfish.Exceptions;
 using Sailfish.Execution;
-using Sailfish.Statistics;
 
 namespace Sailfish.Analysis.ScaleFish;
 
 public class ComplexityComputer : IComplexityComputer
 {
     private readonly IComplexityEstimator complexityEstimator;
+    private readonly IScalefishObservationCompiler scalefishObservationCompiler;
 
-    public ComplexityComputer(IComplexityEstimator complexityEstimator)
+    public ComplexityComputer(
+        IComplexityEstimator complexityEstimator,
+        IScalefishObservationCompiler scalefishObservationCompiler)
     {
         this.complexityEstimator = complexityEstimator;
+        this.scalefishObservationCompiler = scalefishObservationCompiler;
     }
 
     public IEnumerable<IScalefishClassModels> AnalyzeComplexity(List<IClassExecutionSummary> executionSummaries)
     {
-        var finalResult = new Dictionary<Type, Dictionary<string, Dictionary<string, ScalefishModel>>>();
+        var finalResult = new Dictionary<Type, ComplexityMethodResult>();
         foreach (var testClassSummary in executionSummaries)
         {
-            var sailfishComplexityVariables = testClassSummary
-                .TestClass
-                .GetProperties()
-                .Where(x => x.IsSailfishComplexityVariable())
-                .ToList();
-            if (sailfishComplexityVariables.Count == 0) continue;
+            var observationSet = scalefishObservationCompiler.CompileObservationSet(testClassSummary);
+            if (observationSet is null) continue;
 
-            // to filter out those we want to assess
-            var complexityPropertyNames = testClassSummary
-                .TestClass
-                .GetProperties()
-                .Where(x => x.IsSailfishComplexityVariable())
-                .Select(x => x.Name)
-                .ToList();
-
-            var sailfishVariablesCountTuples = testClassSummary.TestClass
-                .GetProperties()
-                .Where(x => x.PropertyHasSailfishAttribute())
-                .Select(y => (y.Name, y.GetSailfishVariableAttributeOrThrow().GetVariables().Count()))
-                .ToList();
-
-            //                                method name    complexity property  result
-            var resultsByMethod = new Dictionary<string, Dictionary<string, ScalefishModel>>();
-            var observations = new Dictionary<string, (List<int>, List<ICompiledTestCaseResult>)>();
-
-            var testCaseGroups = testClassSummary.CompiledTestCaseResults.GroupBy(x => x.TestCaseId!.TestCaseName.Name);
-            foreach (var testCaseGroup in testCaseGroups)
+            var methodResult = new ComplexityMethodResult();
+            foreach (var observationGroup in observationSet.Observations.GroupBy(x => x.MethodName))
             {
-                var testCaseMethodName = testCaseGroup.Key;
-
-                for (var i = 0; i < sailfishVariablesCountTuples.Count; i++)
+                var complexityResultMap = new ComplexityProperty();
+                foreach (var observation in observationGroup.ToList())
                 {
-                    var currentVar = sailfishVariablesCountTuples[i];
-                    if (!complexityPropertyNames.Contains(currentVar.Name)) continue;
-
-                    var currentSailfishProperty = sailfishComplexityVariables.Single(x => x.Name == sailfishVariablesCountTuples[i].Name);
-                    var sailfishAttribute = currentSailfishProperty.GetSailfishVariableAttributeOrThrow();
-
-                    var rawCurrentSailfishVariables = sailfishAttribute.GetVariables().ToList();
-                    if (rawCurrentSailfishVariables.Any(x => x is not int))
-                    {
-                        throw new SailfishException("Complexity analysis is only compatible with integer ISailfishVariables");
-                    }
-
-                    var currentSailfishVariables = rawCurrentSailfishVariables
-                        .Cast<int>()
-                        .ToList();
-
-                    var step = i < sailfishVariablesCountTuples.Count - 1
-                        ? sailfishVariablesCountTuples
-                            .Skip(i + 1)
-                            .Select(x => x.Item2)
-                            .Aggregate(1, (a, b) => a * b)
-                        : 1;
-
-                    var indices = Enumerable.Range(0, currentVar.Item2).Select(j => j * step).ToList();
-                    var testResult = indices.Select(index => testCaseGroup.ToList()[index]).ToList();
-
-                    observations.Add(string.Join(".", testCaseMethodName, currentVar.Name), (currentSailfishVariables, testResult));
+                    var complexityResult = complexityEstimator.EstimateComplexity(observation.ComplexityMeasurements);
+                    complexityResultMap.Add(observation.ToString(), complexityResult);
                 }
 
-                var complexityResultMap = new Dictionary<string, ScalefishModel>();
-                foreach (var complexityProperty in complexityPropertyNames)
-                {
-                    var observationKey = string.Join(".", testCaseMethodName, complexityProperty);
-                    var complexityMeasurements = observations[observationKey]
-                        .Item1
-                        .Zip(observations[observationKey].Item2)
-                        .Select((data) =>
-                            new ComplexityMeasurement(data.First, data.Second.PerformanceRunResult!.Mean))
-                        .ToArray();
-
-                    var complexityResult = complexityEstimator.EstimateComplexity(complexityMeasurements);
-
-                    complexityResultMap.Add(observationKey, complexityResult);
-                }
-
-                resultsByMethod.Add(testCaseMethodName, complexityResultMap);
+                methodResult.Add(observationGroup.Key, complexityResultMap);
             }
 
-            finalResult.Add(testClassSummary.TestClass, resultsByMethod);
+            finalResult.Add(testClassSummary.TestClass, methodResult);
         }
 
         return ScalefishClassModel.ParseResults(finalResult);
