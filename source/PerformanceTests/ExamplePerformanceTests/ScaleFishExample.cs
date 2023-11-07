@@ -9,8 +9,10 @@ namespace PerformanceTests.ExamplePerformanceTests;
 [Sailfish(SampleSize = 20, DisableOverheadEstimation = true, Disabled = false)]
 public class ScaleFishExample
 {
-    [SailfishRangeVariable(true, start: 5, 10, 6)]
+    [SailfishRangeVariable(true, start: 5, 4, 6)]
     public int N { get; set; }
+
+    [SailfishVariable(true, 2, 3, 4, 5)] public int M { get; set; }
 
     [SailfishMethod]
     public async Task Linear(CancellationToken ct)

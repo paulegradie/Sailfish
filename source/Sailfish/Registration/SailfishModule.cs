@@ -81,8 +81,10 @@ public class SailfishModule : Module
         builder.RegisterType<SailfishExecutionEngine>().As<ISailfishExecutionEngine>();
         builder.RegisterType<MarkdownTableConverter>().As<IMarkdownTableConverter>().InstancePerDependency();
         builder.RegisterType<TrackingFileParser>().As<ITrackingFileParser>();
-        builder.RegisterType<SailDiff>().As<ISailDiff>();
-        builder.RegisterType<ScaleFish>().As<IScaleFish>();
+        builder.RegisterType<SailDiff>().As<ISailDiffInternal>().InstancePerDependency();
+        builder.RegisterType<SailDiff>().As<ISailDiff>().InstancePerDependency();
+        builder.RegisterType<ScaleFish>().As<IScaleFishInternal>().InstancePerDependency();
+        builder.RegisterType<ScaleFish>().As<IScaleFish>().InstancePerDependency();
         builder.RegisterType<TrackingFileSerialization>().As<ITrackingFileSerialization>();
         builder.RegisterType<TypeActivator>().As<ITypeActivator>();
         builder.RegisterType<TestComputer>().As<ITestComputer>();
@@ -96,5 +98,6 @@ public class SailfishModule : Module
         builder.RegisterType<MannWhitneyWilcoxonTestSailfish>().As<IMannWhitneyWilcoxonTestSailfish>();
         builder.RegisterType<TwoSampleWilcoxonSignedRankTestSailfish>().As<ITwoSampleWilcoxonSignedRankTestSailfish>();
         builder.RegisterType<KolmogorovSmirnovTestSailfish>().As<IKolmogorovSmirnovTestSailfish>();
+        builder.RegisterType<ScalefishObservationCompiler>().As<IScalefishObservationCompiler>();
     }
 }

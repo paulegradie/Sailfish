@@ -21,10 +21,10 @@ internal static class AttributeDiscoveryExtensionMethods
 
     internal static bool IsSailfishVariableAttribute(this Attribute attribute)
     {
-        return attribute.GetType() == typeof(SailfishVariableAttribute) || (attribute.GetType() == typeof(SailfishRangeVariableAttribute));
+        return attribute is SailfishVariableAttribute or SailfishRangeVariableAttribute;
     }
 
-    internal static bool PropertyHasSailfishAttribute(this PropertyInfo propertyInfo)
+    internal static bool PropertyHasSailfishVariableAttribute(this PropertyInfo propertyInfo)
     {
         return propertyInfo.GetCustomAttributes<SailfishVariableAttribute>().Any() || propertyInfo.GetCustomAttributes<SailfishRangeVariableAttribute>().Any();
     }

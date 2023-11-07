@@ -3,12 +3,6 @@ using System.Linq;
 
 namespace Sailfish.Analysis.ScaleFish;
 
-public interface IScaleFishPropertyModels
-{
-    string PropertyName { get; set; }
-    ScalefishModel ScalefishModel { get; set; }
-}
-
 public class ScaleFishPropertyModel : IScaleFishPropertyModels
 {
     public ScaleFishPropertyModel(string propertyName, ScalefishModel scalefishModel)

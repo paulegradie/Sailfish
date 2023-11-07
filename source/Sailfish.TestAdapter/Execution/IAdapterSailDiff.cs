@@ -5,7 +5,7 @@ using Sailfish.Execution;
 
 namespace Sailfish.TestAdapter.Execution;
 
-internal interface IAdapterSailDiff : ISailDiff
+internal interface IAdapterSailDiff : ISailDiffInternal
 {
     string ComputeTestCaseDiff(
         TestCaseExecutionResult testCaseExecutionResult,

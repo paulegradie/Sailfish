@@ -25,9 +25,9 @@ internal class TestAdapterModule : Module
         builder.RegisterType<TestAdapterExecutionEngine>().As<ITestAdapterExecutionEngine>();
         builder.RegisterType<AdapterActivatorCallbacks>().As<IActivatorCallbacks>();
         builder.RegisterType<AdapterConsoleWriter>().As<IAdapterConsoleWriter>();
-        builder.RegisterType<AdapterSailDiff>().As<ISailDiff>();
+        builder.RegisterType<AdapterSailDiff>().As<ISailDiffInternal>().InstancePerDependency();
         builder.RegisterType<AdapterSailDiff>().As<IAdapterSailDiff>();
-        builder.RegisterType<AdapterScaleFish>().As<IScaleFish>();
+        builder.RegisterType<AdapterScaleFish>().As<IScaleFishInternal>();
         builder.RegisterType<AdapterScaleFish>().As<IAdapterScaleFish>();
     }
 }

@@ -20,7 +20,7 @@ public class ScaleFishMethodModel : IScaleFishMethodModels
     public string TestMethodName { get; set; }
     public IEnumerable<ScaleFishPropertyModel> ScaleFishPropertyModels { get; set; }
 
-    public static IEnumerable<ScaleFishMethodModel> ParseResult(IEnumerable<KeyValuePair<string, Dictionary<string, ScalefishModel>>> rawResult)
+    public static IEnumerable<ScaleFishMethodModel> ParseResult(IEnumerable<KeyValuePair<string, ComplexityProperty>> rawResult)
     {
         return rawResult
             .Select(

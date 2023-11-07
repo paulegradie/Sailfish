@@ -21,7 +21,7 @@ public class ScalefishClassModel : IScalefishClassModels
     public string TestClassName { get; set; }
     public IEnumerable<ScaleFishMethodModel> ScaleFishMethodModels { get; set; }
 
-    public static IEnumerable<IScalefishClassModels> ParseResults(Dictionary<Type, Dictionary<string, Dictionary<string, ScalefishModel>>> rawResult)
+    public static IEnumerable<IScalefishClassModels> ParseResults(Dictionary<Type, ComplexityMethodResult> rawResult)
     {
         return rawResult
             .Select(
