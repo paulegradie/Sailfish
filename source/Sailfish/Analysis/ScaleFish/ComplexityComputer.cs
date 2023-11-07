@@ -18,7 +18,7 @@ public class ComplexityComputer : IComplexityComputer
         this.scalefishObservationCompiler = scalefishObservationCompiler;
     }
 
-    public IEnumerable<IScalefishClassModels> AnalyzeComplexity(List<IClassExecutionSummary> executionSummaries)
+    public IEnumerable<ScalefishClassModel> AnalyzeComplexity(List<IClassExecutionSummary> executionSummaries)
     {
         var finalResult = new Dictionary<Type, ComplexityMethodResult>();
         foreach (var testClassSummary in executionSummaries)
@@ -27,16 +27,16 @@ public class ComplexityComputer : IComplexityComputer
             if (observationSet is null) continue;
 
             var methodResult = new ComplexityMethodResult();
-            foreach (var observationGroup in observationSet.Observations.GroupBy(x => x.MethodName))
+            foreach (var observationMethodGroup in observationSet.Observations.GroupBy(x => x.MethodName))
             {
                 var complexityResultMap = new ComplexityProperty();
-                foreach (var observation in observationGroup.ToList())
+                foreach (var observationProperty in observationMethodGroup.ToList())
                 {
-                    var complexityResult = complexityEstimator.EstimateComplexity(observation.ComplexityMeasurements);
-                    complexityResultMap.Add(observation.ToString(), complexityResult);
+                    var complexityResult = complexityEstimator.EstimateComplexity(observationProperty.ComplexityMeasurements);
+                    complexityResultMap.Add(observationProperty.ToString(), complexityResult);
                 }
 
-                methodResult.Add(observationGroup.Key, complexityResultMap);
+                methodResult.Add(observationMethodGroup.Key, complexityResultMap);
             }
 
             finalResult.Add(testClassSummary.TestClass, methodResult);
