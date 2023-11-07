@@ -27,7 +27,7 @@ public class ComplexityComputer : IComplexityComputer
             if (observationSet is null) continue;
 
             var methodResult = new ComplexityMethodResult();
-            foreach (var observationGroup in observationSet.Observations.GroupBy(x => x.PropertyName))
+            foreach (var observationGroup in observationSet.Observations.GroupBy(x => x.MethodName))
             {
                 var complexityResultMap = new ComplexityProperty();
                 foreach (var observation in observationGroup.ToList())

@@ -49,7 +49,7 @@ public static class ModelLoader
 
     public static ScaleFishPropertyModel? GetModelsForProperty(this IEnumerable<ScaleFishPropertyModel> testPropertyComplexityResults, string testProperty)
     {
-        return testPropertyComplexityResults.SingleOrDefault(x => x.PropertyName.EndsWith(testProperty));
+        return testPropertyComplexityResults.SingleOrDefault(x => x.PropertyName.EndsWith($".{testProperty}"));
     }
 
     public static ScaleFishPropertyModel? GetModelsForProperty(this IEnumerable<ScaleFishPropertyModel> testPropertyComplexityResults, MemberInfo testProperty)
