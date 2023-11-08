@@ -4,14 +4,7 @@ using System.Linq;
 
 namespace Sailfish.Analysis.ScaleFish;
 
-public interface IScalefishClassModels
-{
-    string TestClassName { get; }
-    IEnumerable<ScaleFishMethodModel> ScaleFishMethodModels { get; }
-    string NameSpace { get; }
-}
-
-public class ScalefishClassModel : IScalefishClassModels
+public class ScalefishClassModel
 {
     public ScalefishClassModel(string nameSpace, string testClassName, IEnumerable<ScaleFishMethodModel> scaleFishMethodModels)
     {
@@ -24,7 +17,7 @@ public class ScalefishClassModel : IScalefishClassModels
     public string TestClassName { get; set; }
     public IEnumerable<ScaleFishMethodModel> ScaleFishMethodModels { get; set; }
 
-    public static IEnumerable<IScalefishClassModels> ParseResults(Dictionary<Type, ComplexityMethodResult> rawResult)
+    public static IEnumerable<ScalefishClassModel> ParseResults(Dictionary<Type, ComplexityMethodResult> rawResult)
     {
         return rawResult
             .Select(

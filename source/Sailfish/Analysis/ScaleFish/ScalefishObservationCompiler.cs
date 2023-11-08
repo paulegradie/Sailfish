@@ -23,9 +23,6 @@ internal class ScalefishObservationCompiler : IScalefishObservationCompiler
 
         if (complexityCases.Count == 0) return null;
 
-        // TODO: for public interface
-        // throw new SailfishException($"Failed to discover any complexity cases for {testClassSummary.TestClass.FullName}");
-
         var testCaseGroups = testClassSummary
             .FilterForSuccessfulTestCases()
             .CompiledTestCaseResults
@@ -36,27 +33,37 @@ internal class ScalefishObservationCompiler : IScalefishObservationCompiler
         var observations = new List<ScaleFishObservation>();
         foreach (var testCaseGroup in testCaseGroups)
         {
-            foreach (var (complexityCase, i) in complexityCases.Zip(Enumerable.Range(0, complexityCases.Count)))
+            foreach (var (complexityCase, caseIndex) in complexityCases.Zip(Enumerable.Range(0, complexityCases.Count)))
             {
-                var step = i < complexityCase.VariableCount - 1
-                    ? complexityCases
-                        .Skip(i + 1)
-                        .Select(x => x.VariableCount)
-                        .Aggregate(1, (a, b) => a * b)
-                    : 1;
-
-                var indices = Enumerable.Range(0, complexityCase.VariableCount).Select(j => j * step).ToList();
-                var testResult = indices.Select(index => testCaseGroup.TestCaseGroup[index]).ToList();
-
-                var complexityMeasurements = complexityCase
-                    .Variables
-                    .Zip(testResult.Select(x => x.PerformanceRunResult!.Mean)).Select(x => new ComplexityMeasurement(x.First, x.Second))
-                    .ToList();
-
+                var complexityMeasurements = ComputeComplexityMeasurements(caseIndex, complexityCase, complexityCases, testCaseGroup);
                 observations.Add(new ScaleFishObservation(testCaseGroup.TestCaseMethodName, complexityCase.ComplexityPropertyName, complexityMeasurements.ToArray()));
             }
         }
 
         return new ObservationSetFromSummaries(testClassSummary.TestClass.FullName ?? $"Unknown-Namespace-{testClassSummary.TestClass.Name}", observations);
+    }
+
+    // a bit mind bending here
+    private static List<ComplexityMeasurement> ComputeComplexityMeasurements(
+        int testCaseGroupIndex,
+        ComplexityCase complexityCase,
+        IEnumerable<ComplexityCase> complexityCases,
+        TestCaseComplexityGroup testCaseGroup)
+    {
+        var step = testCaseGroupIndex < complexityCase.VariableCount - 1
+            ? complexityCases
+                .Skip(testCaseGroupIndex + 1)
+                .Select(x => x.VariableCount)
+                .Aggregate(1, (a, b) => a * b)
+            : 1;
+
+        var indices = Enumerable.Range(0, complexityCase.VariableCount).Select(j => j * step).ToList();
+        var testResult = indices.Select(idx => testCaseGroup.TestCaseGroup[idx]).ToList();
+
+        var complexityMeasurements = complexityCase
+            .Variables
+            .Zip(testResult.Select(x => x.PerformanceRunResult!.Mean)).Select(x => new ComplexityMeasurement(x.First, x.Second))
+            .ToList();
+        return complexityMeasurements;
     }
 }

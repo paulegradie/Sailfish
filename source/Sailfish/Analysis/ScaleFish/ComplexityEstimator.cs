@@ -6,8 +6,9 @@ namespace Sailfish.Analysis.ScaleFish;
 
 public class ComplexityEstimator : IComplexityEstimator
 {
-    public ScalefishModel EstimateComplexity(ComplexityMeasurement[] measurements)
+    public ScalefishModel? EstimateComplexity(ComplexityMeasurement[] measurements)
     {
+        if (measurements.Length < 2) return null;
         var complexityFunctions = ComplexityReferences.GetComplexityFunctions();
 
         var fitnessResults = new List<(ScaleFishModelFunction, FitnessResult)>();

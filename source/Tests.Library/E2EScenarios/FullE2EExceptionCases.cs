@@ -4,6 +4,7 @@ using Sailfish;
 using Shouldly;
 using Tests.E2E.ExceptionHandling;
 using Tests.E2E.ExceptionHandling.Tests;
+using Tests.Library.Utils;
 using Xunit;
 
 namespace Tests.Library.E2EScenarios;
@@ -14,6 +15,7 @@ public class FullE2EExceptionCases
     public async Task GlobalSetupExceptionsAreHandled()
     {
         var runSettings = RunSettingsBuilder.CreateBuilder()
+            .WithLocalOutputDirectory(Some.RandomString())
             .WithTestNames(nameof(GlobalSetupExceptionIsHandled))
             .ProvidersFromAssembliesContaining(typeof(E2ETestExceptionHandlingProvider))
             .TestsFromAssembliesContaining(typeof(E2ETestExceptionHandlingProvider))
@@ -31,6 +33,7 @@ public class FullE2EExceptionCases
     public async Task MethodSetupExceptionsAreHandled()
     {
         var runSettings = RunSettingsBuilder.CreateBuilder()
+            .WithLocalOutputDirectory(Some.RandomString())
             .WithTestNames(nameof(MethodSetupExceptionIsHandled))
             .ProvidersFromAssembliesContaining(typeof(E2ETestExceptionHandlingProvider))
             .TestsFromAssembliesContaining(typeof(E2ETestExceptionHandlingProvider))
@@ -48,6 +51,7 @@ public class FullE2EExceptionCases
     public async Task IterationSetupExceptionsAreHandled()
     {
         var runSettings = RunSettingsBuilder.CreateBuilder()
+            .WithLocalOutputDirectory(Some.RandomString())
             .WithTestNames(nameof(IterationSetupExceptionIsHandled))
             .ProvidersFromAssembliesContaining(typeof(E2ETestExceptionHandlingProvider))
             .TestsFromAssembliesContaining(typeof(E2ETestExceptionHandlingProvider))
@@ -65,6 +69,7 @@ public class FullE2EExceptionCases
     public async Task IterationTeardownExceptionsAreHandled()
     {
         var runSettings = RunSettingsBuilder.CreateBuilder()
+            .WithLocalOutputDirectory(Some.RandomString())
             .WithTestNames(nameof(IterationTeardownExceptionIsHandled))
             .ProvidersFromAssembliesContaining(typeof(E2ETestExceptionHandlingProvider))
             .TestsFromAssembliesContaining(typeof(E2ETestExceptionHandlingProvider))
@@ -76,13 +81,13 @@ public class FullE2EExceptionCases
         result.Exceptions.ShouldNotBeNull();
         result.Exceptions.Count().ShouldBe(1);
         result.Exceptions.Single().Message.ShouldBe("Iteration Teardown Exception");
-        ;
     }
 
     [Fact]
     public async Task MethodTeardownExceptionsAreHandled()
     {
         var runSettings = RunSettingsBuilder.CreateBuilder()
+            .WithLocalOutputDirectory(Some.RandomString())
             .WithTestNames(nameof(MethodTeardownExceptionIsHandled))
             .ProvidersFromAssembliesContaining(typeof(E2ETestExceptionHandlingProvider))
             .TestsFromAssembliesContaining(typeof(E2ETestExceptionHandlingProvider))
@@ -100,6 +105,7 @@ public class FullE2EExceptionCases
     public async Task GlobalTeardownExceptionsAreHandled()
     {
         var runSettings = RunSettingsBuilder.CreateBuilder()
+            .WithLocalOutputDirectory(Some.RandomString())
             .WithTestNames(nameof(GlobalTeardownExceptionIsHandled))
             .ProvidersFromAssembliesContaining(typeof(E2ETestExceptionHandlingProvider))
             .TestsFromAssembliesContaining(typeof(E2ETestExceptionHandlingProvider))
@@ -117,6 +123,7 @@ public class FullE2EExceptionCases
     public async Task MultipleLifecycleExceptionsAreHandledWithMethodTeardownSurfacing()
     {
         var runSettings = RunSettingsBuilder.CreateBuilder()
+            .WithLocalOutputDirectory(Some.RandomString())
             .WithTestNames(nameof(MethodTeardownExceptionComesFirst))
             .ProvidersFromAssembliesContaining(typeof(E2ETestExceptionHandlingProvider))
             .TestsFromAssembliesContaining(typeof(E2ETestExceptionHandlingProvider))
@@ -134,6 +141,7 @@ public class FullE2EExceptionCases
     public async Task MultipleLifecycleExceptionsAreHandledWithIterationSetupSurfacing()
     {
         var runSettings = RunSettingsBuilder.CreateBuilder()
+            .WithLocalOutputDirectory(Some.RandomString())
             .WithTestNames(nameof(IterationSetupExceptionComesFirst))
             .ProvidersFromAssembliesContaining(typeof(E2ETestExceptionHandlingProvider))
             .TestsFromAssembliesContaining(typeof(E2ETestExceptionHandlingProvider))
@@ -153,6 +161,7 @@ public class FullE2EExceptionCases
     public async Task OnlySailfishMethodThrows()
     {
         var runSettings = RunSettingsBuilder.CreateBuilder()
+            .WithLocalOutputDirectory(Some.RandomString())
             .WithTestNames(nameof(OnlyTheSailfishMethodThrows))
             .ProvidersFromAssembliesContaining(typeof(E2ETestExceptionHandlingProvider))
             .TestsFromAssembliesContaining(typeof(E2ETestExceptionHandlingProvider))
@@ -170,6 +179,7 @@ public class FullE2EExceptionCases
     public async Task VoidMethodRequestsCancellationTokenThrows()
     {
         var runSettings = RunSettingsBuilder.CreateBuilder()
+            .WithLocalOutputDirectory(Some.RandomString())
             .WithTestNames(nameof(VoidMethodRequestsCancellationToken))
             .ProvidersFromAssembliesContaining(typeof(E2ETestExceptionHandlingProvider))
             .TestsFromAssembliesContaining(typeof(E2ETestExceptionHandlingProvider))
@@ -187,6 +197,7 @@ public class FullE2EExceptionCases
     public async Task MultipleInjectionsOnAMethodThrows()
     {
         var runSettings = RunSettingsBuilder.CreateBuilder()
+            .WithLocalOutputDirectory(Some.RandomString())
             .WithTestNames(nameof(MultipleInjectionsOnAsyncMethod))
             .ProvidersFromAssembliesContaining(typeof(E2ETestExceptionHandlingProvider))
             .TestsFromAssembliesContaining(typeof(E2ETestExceptionHandlingProvider))
@@ -204,6 +215,7 @@ public class FullE2EExceptionCases
     public async Task WhenTestExceptionOccursHandlersAreOnlyGivenRealData()
     {
         var runSettings = RunSettingsBuilder.CreateBuilder()
+            .WithLocalOutputDirectory(Some.RandomString())
             .WithTestNames(nameof(SailfishMethodException))
             .ProvidersFromAssembliesContaining(typeof(E2ETestExceptionHandlingProvider))
             .TestsFromAssembliesContaining(typeof(E2ETestExceptionHandlingProvider))

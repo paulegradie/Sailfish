@@ -4,6 +4,7 @@ using Sailfish;
 using Shouldly;
 using Tests.E2E.TestSuite;
 using Tests.E2E.TestSuite.Discoverable;
+using Tests.Library.Utils;
 using Xunit;
 
 namespace Tests.Library.E2EScenarios;
@@ -14,6 +15,7 @@ public class FullE2EFixture
     public async Task AFullTestRunOfTheDemoDoesNotError()
     {
         var runSettings = RunSettingsBuilder.CreateBuilder()
+            .WithLocalOutputDirectory(Some.RandomString())
             .ProvidersFromAssembliesContaining(typeof(E2ETestRegistrationProvider))
             .TestsFromAssembliesContaining(typeof(E2ETestRegistrationProvider))
             .DisableOverheadEstimation()
@@ -32,6 +34,7 @@ public class FullE2EFixture
     public async Task AFullTestRunOfTheDemoShouldFind13Tests()
     {
         var runSettings = RunSettingsBuilder.CreateBuilder()
+            .WithLocalOutputDirectory(Some.RandomString())
             .ProvidersFromAssembliesContaining(typeof(E2ETestRegistrationProvider))
             .TestsFromAssembliesContaining(typeof(E2ETestRegistrationProvider))
             .DisableOverheadEstimation()
@@ -49,6 +52,7 @@ public class FullE2EFixture
     {
         const int sampleSizeOverride = 4;
         var runSettings = RunSettingsBuilder.CreateBuilder()
+            .WithLocalOutputDirectory(Some.RandomString())
             .ProvidersFromAssembliesContaining(typeof(E2ETestRegistrationProvider))
             .TestsFromAssembliesContaining(typeof(E2ETestRegistrationProvider))
             .WithTestNames(nameof(MinimalTest))

@@ -9,5 +9,5 @@ public interface IMarkdownTableConverter
 {
     string ConvertToMarkdownTableString(IEnumerable<IClassExecutionSummary> executionSummaries);
     string ConvertToMarkdownTableString(IEnumerable<IClassExecutionSummary> executionSummaries, Func<IClassExecutionSummary, bool> summaryFilter);
-    string ConvertScaleFishResultToMarkdown(IEnumerable<IScalefishClassModels> testClassComplexityResults);
+    string ConvertScaleFishResultToMarkdown(IEnumerable<ScalefishClassModel> testClassComplexityResults);
 }

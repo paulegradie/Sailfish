@@ -79,7 +79,7 @@ public class MarkdownTableConverter : IMarkdownTableConverter
         }
     }
 
-    public string ConvertScaleFishResultToMarkdown(IEnumerable<IScalefishClassModels> testClassComplexityResultsEnumerable)
+    public string ConvertScaleFishResultToMarkdown(IEnumerable<ScalefishClassModel> testClassComplexityResultsEnumerable)
     {
         var testClassComplexityResults = testClassComplexityResultsEnumerable.ToList();
         var tableBuilder = new StringBuilder();
