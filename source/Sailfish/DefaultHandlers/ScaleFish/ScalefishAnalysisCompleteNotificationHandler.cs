@@ -32,14 +32,14 @@ internal class ScalefishAnalysisCompleteNotificationHandler : INotificationHandl
         await WriteModels(DefaultFileSettings.DefaultScalefishModelFileName(runSettings.TimeStamp), notification.TestClassComplexityResults, cancellationToken);
     }
 
-    async Task WriteModels(string fileName, List<ScalefishClassModel> models, CancellationToken cancellationToken)
+    private async Task WriteModels(string fileName, List<ScalefishClassModel> models, CancellationToken cancellationToken)
     {
         var filepath = Path.Join(runSettings.LocalOutputDirectory, DefaultFileSettings.AppendTagsToFilename(fileName, runSettings.Tags));
         var result = SailfishSerializer.Serialize(models);
         await fileIo.WriteStringToFile(result, filepath, cancellationToken).ConfigureAwait(false);
     }
 
-    async Task WriteResults(string fileName, string result, CancellationToken cancellationToken)
+    private async Task WriteResults(string fileName, string result, CancellationToken cancellationToken)
     {
         var filepath = Path.Join(runSettings.LocalOutputDirectory, DefaultFileSettings.AppendTagsToFilename(fileName, runSettings.Tags));
         await fileIo.WriteStringToFile(result, filepath, cancellationToken).ConfigureAwait(false);

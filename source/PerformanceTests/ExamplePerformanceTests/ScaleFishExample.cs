@@ -12,8 +12,6 @@ public class ScaleFishExample
     [SailfishRangeVariable(true, start: 5, 10, 6)]
     public int N { get; set; }
 
-    [SailfishVariable(true, 1, 2, 3)] public int M { get; set; }
-
     [SailfishMethod]
     public async Task Linear(CancellationToken ct)
     {

@@ -26,22 +26,39 @@ public class ComplexityComputer : IComplexityComputer
             var observationSet = scalefishObservationCompiler.CompileObservationSet(testClassSummary);
             if (observationSet is null) continue;
 
-            var methodResult = new ComplexityMethodResult();
-            foreach (var observationMethodGroup in observationSet.Observations.GroupBy(x => x.MethodName))
-            {
-                var complexityResultMap = new ComplexityProperty();
-                foreach (var observationProperty in observationMethodGroup.ToList())
-                {
-                    var complexityResult = complexityEstimator.EstimateComplexity(observationProperty.ComplexityMeasurements);
-                    complexityResultMap.Add(observationProperty.ToString(), complexityResult);
-                }
+            var resultsByMethod = ComputeComplexityMethodResult(observationSet);
 
-                methodResult.Add(observationMethodGroup.Key, complexityResultMap);
-            }
-
-            finalResult.Add(testClassSummary.TestClass, methodResult);
+            finalResult.Add(testClassSummary.TestClass, resultsByMethod);
         }
 
         return ScalefishClassModel.ParseResults(finalResult);
+    }
+
+    private ComplexityMethodResult ComputeComplexityMethodResult(ObservationSetFromSummaries observationSet)
+    {
+        var methodResult = new ComplexityMethodResult();
+        foreach (var observationMethodGroup in observationSet.Observations.GroupBy(x => x.MethodName))
+        {
+            var complexityResultMap = ComputeComplexityPropertyResult(observationMethodGroup);
+
+            methodResult.Add(observationMethodGroup.Key, complexityResultMap);
+        }
+
+        return methodResult;
+    }
+
+    private ComplexityProperty ComputeComplexityPropertyResult(IEnumerable<ScaleFishObservation> observationMethodGroup)
+    {
+        var complexityResultMap = new ComplexityProperty();
+        foreach (var observationProperty in observationMethodGroup.ToList())
+        {
+            var complexityResult = complexityEstimator.EstimateComplexity(observationProperty.ComplexityMeasurements);
+            if (complexityResult is not null)
+            {
+                complexityResultMap.Add(observationProperty.ToString(), complexityResult);
+            }
+        }
+
+        return complexityResultMap;
     }
 }

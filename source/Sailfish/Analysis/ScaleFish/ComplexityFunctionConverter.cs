@@ -4,6 +4,7 @@ using System.Runtime.Serialization;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Sailfish.Analysis.ScaleFish.ComplexityFunctions;
+using Sailfish.Contracts.Serialization.V1.JsonConverters;
 using Sailfish.Exceptions;
 
 namespace Sailfish.Analysis.ScaleFish;
@@ -67,6 +68,23 @@ public class ComplexityFunctionConverter : JsonConverter<List<ScalefishClassMode
         return results;
     }
 
+    public override void Write(Utf8JsonWriter writer, List<ScalefishClassModel> value, JsonSerializerOptions options)
+    {
+        var opts = new JsonSerializerOptions();
+        var converters = new List<JsonConverter>()
+        {
+            new JsonNanConverter(),
+            new ExecutionSummaryTrackingFormatConverter(),
+            new TypePropertyConverter()
+        };
+        foreach (var converter in converters)
+        {
+            opts.Converters.Add(converter);
+        }
+
+        JsonSerializer.Serialize(writer, value, opts);
+    }
+
     private static ScaleFishModelFunction DeserializeComplexityFunction(string complexityFunctionTypeName, JsonElement complexityFunctionProperty)
     {
         ScaleFishModelFunction? deserialized = complexityFunctionTypeName switch
@@ -84,10 +102,5 @@ public class ComplexityFunctionConverter : JsonConverter<List<ScalefishClassMode
 
         if (deserialized is null) throw new SerializationException($"Failed to deserialize {complexityFunctionTypeName}");
         return deserialized;
-    }
-
-    public override void Write(Utf8JsonWriter writer, List<ScalefishClassModel> value, JsonSerializerOptions options)
-    {
-        throw new NotImplementedException();
     }
 }
