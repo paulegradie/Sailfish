@@ -13,7 +13,7 @@ namespace Sailfish.Attributes;
 public sealed class SailfishMethodAttribute : Attribute
 {
     /// <summary>
-    /// Sets the order of execution for a method within the Sailfish class.
+    /// Sets the order of execution for a SailfishMethod within the Sailfish class.
     /// Ordered methods are always executed before unordered methods.
     /// Order of unordered methods is not guaranteed.
     /// </summary>
