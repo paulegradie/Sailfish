@@ -1,6 +1,7 @@
 using System;
 using System.Linq;
 using System.Reflection;
+using System.Threading.Tasks;
 using Sailfish.Analysis.ScaleFish;
 using Sailfish.Analysis.ScaleFish.ComplexityFunctions;
 using Shouldly;
@@ -58,10 +59,11 @@ public class ScaleFishFixture
         Assert<SqrtN>();
     }
 
-
     private void Assert<TComplexityFunction>() where TComplexityFunction : ScaleFishModelFunction
     {
-        new ComplexityEstimator().EstimateComplexity(GetMeasurements<TComplexityFunction>()).ScaleFishModelFunction.Name.ShouldBe(typeof(TComplexityFunction).Name);
+        var estimation = new ComplexityEstimator().EstimateComplexity(GetMeasurements<TComplexityFunction>());
+        estimation.ShouldNotBeNull();
+        estimation.ScaleFishModelFunction.Name.ShouldBe(typeof(TComplexityFunction).Name);
     }
 
     private static ComplexityMeasurement[] GetMeasurements<TComplexityFunction>() where TComplexityFunction : ScaleFishModelFunction
@@ -69,7 +71,7 @@ public class ScaleFishFixture
         var constructor = typeof(TComplexityFunction)
             .GetConstructors(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)
             .Single();
-        var instance = constructor.Invoke(new object[] {  }) as ScaleFishModelFunction;
+        var instance = constructor.Invoke(new object[] { }) as ScaleFishModelFunction;
         instance.ShouldNotBeNull();
 
         const double scale = 1;
