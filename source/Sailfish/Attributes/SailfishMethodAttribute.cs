@@ -1,4 +1,5 @@
 using System;
+using System.ComponentModel.DataAnnotations;
 
 namespace Sailfish.Attributes;
 
@@ -11,6 +12,13 @@ namespace Sailfish.Attributes;
 [AttributeUsage(AttributeTargets.Method, Inherited = true, AllowMultiple = false)]
 public sealed class SailfishMethodAttribute : Attribute
 {
+    /// <summary>
+    /// Indicates whether the Sailfish method is disabled.
+    /// </summary>
+    /// <value><c>true</c> if the test is disabled; otherwise, <c>false</c>.</value>
+    [Range(0, int.MaxValue)]
+    public int Order { get; set; } = int.MaxValue;
+
     /// <summary>
     /// Indicates whether the Sailfish method is disabled.
     /// </summary>

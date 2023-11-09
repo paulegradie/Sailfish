@@ -35,10 +35,13 @@ internal class TestInstanceContainerCreator : ITestInstanceContainerCreator
             sailfishVariableSets = sailfishVariableSets.Where(propertyTensorFilter);
         }
 
-        var sailfishMethods = testType.GetMethodsWithAttribute<SailfishMethodAttribute>();
+        var sailfishMethods = testType
+            .GetMethodsWithAttribute<SailfishMethodAttribute>()
+            .OrderBy(x => x.GetCustomAttribute<SailfishMethodAttribute>()?.Order).ToList();
+
         if (instanceContainerFilter is not null)
         {
-            sailfishMethods = sailfishMethods.Where(instanceContainerFilter);
+            sailfishMethods = sailfishMethods.Where(instanceContainerFilter).ToList();
         }
 
         return sailfishMethods
