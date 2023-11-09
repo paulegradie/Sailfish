@@ -3,7 +3,7 @@ using Sailfish.Contracts.Public.Notifications;
 
 namespace Tests.E2E.ExceptionHandling.Handlers;
 
-public class WriteTrackingDataHandler : INotificationHandler<TestRunCompletedNotification>
+public class TestRunCompletedNotificationHandler : INotificationHandler<TestRunCompletedNotification>
 {
     public async Task Handle(TestRunCompletedNotification notification, CancellationToken cancellationToken)
     {

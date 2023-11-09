@@ -2,6 +2,9 @@
 
 namespace Tests.E2E.TestSuite.Discoverable;
 
+/// <summary>
+///  These attributes are depended upon by the tests. Do Not Change.
+/// </summary>
 [WriteToCsv]
 [WriteToMarkdown]
 [Sailfish(Disabled = Constants.Disabled)]
