@@ -13,9 +13,10 @@ namespace Sailfish.Attributes;
 public sealed class SailfishMethodAttribute : Attribute
 {
     /// <summary>
-    /// Indicates whether the Sailfish method is disabled.
+    /// Sets the order of execution for a method within the Sailfish class.
+    /// Ordered methods are always executed before unordered methods.
+    /// Order of unordered methods is not guaranteed.
     /// </summary>
-    /// <value><c>true</c> if the test is disabled; otherwise, <c>false</c>.</value>
     [Range(0, int.MaxValue)]
     public int Order { get; set; } = int.MaxValue;
 
