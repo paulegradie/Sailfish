@@ -21,10 +21,11 @@ internal class TestListValidator : ITestListValidator
         var erroredTests = new Dictionary<string, List<string>>();
         var requestedByUser = testsRequestedByUser.ToList();
         var testClasses = filteredTestNames.ToList();
-        if (TestsAreRequestedButCannotFindAllOfThem(requestedByUser, testClasses.Select(x => x.Name).ToArray(), out var missingTests))
+
+        if (TestsAreRequestedButFailedToDisambiguate(requestedByUser, testClasses.Select(x => x.FullName ?? x.Name).ToArray(), out var missingTests))
         {
-            logger.Fatal("Could not find the tests specified: {Tests}", requestedByUser.Where(x => !testClasses.Select(x => x.Name).Contains(x)));
-            erroredTests.Add("Could not find the following tests:", missingTests);
+            logger.Fatal("Failed to disambiguate the following tests: {Tests}", requestedByUser.Where(x => !testClasses.Select(x => x.FullName ?? x.Name).Contains(x)));
+            erroredTests.Add("Failed to disambiguate the following tests:", missingTests);
         }
 
 
@@ -54,7 +55,7 @@ internal class TestListValidator : ITestListValidator
         {
             if (!TypeHasMoreThanZeroExecutionMethods(test) && !test.SailfishTypeIsDisabled())
             {
-                missingExecutionMethod.Add(test.Name);
+                missingExecutionMethod.Add(test.FullName ?? test.Name);
             }
         }
 
@@ -69,7 +70,7 @@ internal class TestListValidator : ITestListValidator
             .Length > 0;
     }
 
-    private static bool TestsAreRequestedButCannotFindAllOfThem(
+    private static bool TestsAreRequestedButFailedToDisambiguate(
         IEnumerable<string> testsRequestedByUser,
         IEnumerable<string> filteredTestNames,
         out List<string> missingTests)

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data.SqlTypes;
 using System.Linq;
 
 namespace Sailfish.Execution;
@@ -24,11 +25,12 @@ internal class TestFilter : ITestFilter
     private static IEnumerable<Type> FilterTests(IEnumerable<Type> tests, IEnumerable<string> testsRequestedByUser)
     {
         var requestedByUser = testsRequestedByUser as string[] ?? testsRequestedByUser.ToArray();
-        if (requestedByUser.Any())
-            return tests
-                .Where(test => requestedByUser.Contains(test.Name))
-                .ToArray();
-
-        return tests;
+        return requestedByUser.Any()
+            ? tests.Where(test => requestedByUser.Any(requested =>
+            {
+                var name = test.FullName ?? test.Name;
+                return name.EndsWith(requested);
+            }))
+            : tests;
     }
 }

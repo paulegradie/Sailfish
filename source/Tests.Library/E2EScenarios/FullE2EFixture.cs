@@ -44,7 +44,7 @@ public class FullE2EFixture
         var result = await SailfishRunner.Run(runSettings);
 
         result.IsValid.ShouldBe(true);
-        result.ExecutionSummaries.Count().ShouldBe(13);
+        result.ExecutionSummaries.Count().ShouldBe(14);
     }
 
     [Fact]
@@ -55,7 +55,7 @@ public class FullE2EFixture
             .WithLocalOutputDirectory(Some.RandomString())
             .ProvidersFromAssembliesContaining(typeof(E2ETestRegistrationProvider))
             .TestsFromAssembliesContaining(typeof(E2ETestRegistrationProvider))
-            .WithTestNames(nameof(MinimalTest))
+            .WithTestNames(typeof(MinimalTest).FullName)
             .DisableOverheadEstimation()
             .WithGlobalSampleSize(sampleSizeOverride)
             .WithAnalysisDisabledGlobally()
