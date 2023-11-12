@@ -24,6 +24,7 @@ public static class DiscoveryAnalysisMethods
     /// 
     /// </summary>
     /// <param name="sourceFiles"></param>
+    /// <param name="performanceTestTypes"></param>
     /// <param name="classAttributePrefix"></param>
     /// <param name="methodAttributePrefix"></param>
     /// <returns>Dictionary of className:ClassMetaData</returns>
@@ -88,12 +89,13 @@ public static class DiscoveryAnalysisMethods
                                 attr.Name.ToString() == methodAttributePrefix
                                 || attr.Name.ToString() == $"{methodAttributePrefix}Attribute"));
 
-                    var className = classDeclaration.Identifier.ValueText;
-                    var performanceTestType = performanceTestTypes.SingleOrDefault(x => x.Name == className);
+                    // var className = classDeclaration.Identifier.ValueText;
+                    var classFullName = RetrieveClassFullName(classDeclaration);
+                    var performanceTestType = performanceTestTypes.SingleOrDefault(x => x.FullName == classFullName);
                     if (performanceTestType is null) continue;
 
                     var classMetaData = new ClassMetaData(
-                        className: className,
+                        classFullName: classFullName,
                         performanceTestType: performanceTestType,
                         filePath: filePath,
                         methods: (
@@ -107,7 +109,25 @@ public static class DiscoveryAnalysisMethods
                     classMetas.Add(classMetaData);
                 }
             });
+
         if (!result.IsCompleted) throw new Exception("Exception encountered while reading and parsing source files");
         return classMetas;
+    }
+
+    static string RetrieveClassFullName(ClassDeclarationSyntax classDeclarationSyntax)
+    {
+        var parentNode = classDeclarationSyntax.Parent;
+        var fullClassName = "";
+        while (parentNode != null)
+        {
+            if (parentNode is FileScopedNamespaceDeclarationSyntax namespaceNode)
+            {
+                fullClassName = $"{namespaceNode.Name}.{classDeclarationSyntax.Identifier.ValueText}";
+            }
+
+            parentNode = parentNode.Parent;
+        }
+
+        return fullClassName;
     }
 }

@@ -66,7 +66,7 @@ internal static class TestDiscovery
                     perfTestTypes,
                     nameof(SailfishAttribute).Replace(nameof(Attribute), ""),
                     nameof(SailfishMethodAttribute).Replace(nameof(Attribute), ""))
-                .OrderBy(meta => meta.ClassName);
+                .OrderBy(meta => meta.ClassFullName.Split(".").Last());
 
             foreach (var classMetaData in classMetaDatas)
             {
