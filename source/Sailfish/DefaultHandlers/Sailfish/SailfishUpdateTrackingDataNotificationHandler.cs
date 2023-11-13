@@ -45,8 +45,9 @@ public class SailfishUpdateTrackingDataNotificationHandler : INotificationHandle
         var fileContents = await streamReader.ReadToEndAsync();
         streamReader.Close();
 
-        var classExecutionSummaryTrackingFormats = trackingFileSerialization.Deserialize(fileContents)?.ToList()
-                                                   ?? new List<ClassExecutionSummaryTrackingFormat>();
+        var classExecutionSummaryTrackingFormats = string.IsNullOrEmpty(fileContents)
+            ? new List<ClassExecutionSummaryTrackingFormat>()
+            : trackingFileSerialization.Deserialize(fileContents)?.ToList() ?? new List<ClassExecutionSummaryTrackingFormat>();
 
         foreach (var failedSummary in notification.TestCaseExecutionResult.GetFailedTestCases())
         {
