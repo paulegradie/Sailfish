@@ -79,7 +79,7 @@ internal class SailFishTestExecutor : ISailFishTestExecutor
         var totalMethodCount = testInstanceContainerProviders.Count - 1;
 
         var memoryCache = new MemoryCache(MemoryCacheName);
-        foreach (var testProvider in testInstanceContainerProviders.OrderBy(x => x.Method.Name))
+        foreach (var testProvider in testInstanceContainerProviders)
         {
             var providerPropertiesCacheKey = testProvider.Test.FullName ?? throw new SailfishException($"Failed to read the FullName of {testProvider.Test.Name}");
             TestCaseCountPrinter.PrintMethodUpdate(testProvider.Method);
