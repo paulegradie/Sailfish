@@ -8,7 +8,7 @@ using Sailfish.Contracts.Public;
 
 namespace Sailfish.Statistics.Tests.TTestSailfish;
 
-internal class TTestSailfish : ITTestSailfish
+public class TTestSailfish : ITTestSailfish
 {
     private readonly ITestPreprocessor preprocessor;
 
