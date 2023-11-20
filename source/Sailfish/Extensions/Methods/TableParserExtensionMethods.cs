@@ -9,7 +9,7 @@ using Sailfish.Exceptions;
 
 namespace Sailfish.Extensions.Methods;
 
-internal static class TableParserExtensionMethods
+public static class TableParserExtensionMethods
 {
     public static string ToStringTable<T>(
         this IEnumerable<T> values,
