@@ -41,7 +41,7 @@ public class AllTheFeatures
     {
         var wait = Delay - Multiplier * Multiplier;
         Console.WriteLine("Waiting: " + wait);
-        await Task.Delay(wait, ct);
+        await Task.Delay(Math.Max(0, wait), ct);
         reg.Noop();
     }
 

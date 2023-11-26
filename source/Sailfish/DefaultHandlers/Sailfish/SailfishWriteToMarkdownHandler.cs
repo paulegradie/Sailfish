@@ -22,7 +22,9 @@ internal class SailfishWriteToMarkdownHandler : INotificationHandler<WriteToMark
     public async Task Handle(WriteToMarkDownNotification notification, CancellationToken cancellationToken)
     {
         var fileName = DefaultFileSettings.AppendTagsToFilename(DefaultFileSettings.DefaultPerformanceResultsFileNameStem(runSettings.TimeStamp) + ".md", runSettings.Tags);
-        var filePath = Path.Combine(runSettings.LocalOutputDirectory ?? DefaultFileSettings.DefaultOutputDirectory, fileName);
-        await markdownWriter.Write(notification.ClassExecutionSummaries, filePath, cancellationToken).ConfigureAwait(false);
+
+        var outputDirectory = runSettings.LocalOutputDirectory ?? DefaultFileSettings.DefaultOutputDirectory;
+        if (!Directory.Exists(outputDirectory)) Directory.CreateDirectory(outputDirectory);
+        await markdownWriter.Write(notification.ClassExecutionSummaries, Path.Combine(outputDirectory, fileName), cancellationToken).ConfigureAwait(false);
     }
 }

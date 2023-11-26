@@ -20,7 +20,7 @@
             Use these in combination to write a basic performance regression detection system for your application's
             delivery pipeline.
         </Description>
-        <TargetFramework>net6.0</TargetFramework>
+        <TargetFrameworks>net6.0;net7.0;net8.0</TargetFrameworks>
         <LangVersion>latest</LangVersion>
         <Nullable>enable</Nullable>
         <ImplicitUsings>enable</ImplicitUsings>
