@@ -55,7 +55,7 @@ public class FullE2EFixture
             .WithLocalOutputDirectory(Some.RandomString())
             .ProvidersFromAssembliesContaining(typeof(E2ETestRegistrationProvider))
             .TestsFromAssembliesContaining(typeof(E2ETestRegistrationProvider))
-            .WithTestNames(typeof(MinimalTest).FullName)
+            .WithTestNames(typeof(MinimalTest).FullName!)
             .DisableOverheadEstimation()
             .WithGlobalSampleSize(sampleSizeOverride)
             .WithAnalysisDisabledGlobally()

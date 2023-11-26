@@ -5,7 +5,7 @@ using Sailfish;
 
 var settings = RunSettingsBuilder.CreateBuilder()
     .TestsFromAssembliesContaining(typeof(PerformanceTestProjectDiscoveryAnchor))
-    .WithTestNames(typeof(MinimalTestExample).FullName)
+    .WithTestNames(typeof(MinimalTestExample).FullName!)
     .ProvidersFromAssembliesContaining(typeof(AppRegistrationProvider))
     .WithSailDiff()
     .WithScalefish()

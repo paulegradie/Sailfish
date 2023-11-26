@@ -4,7 +4,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Sailfish.Attributes;
 using Sailfish.Registration;
-using Shouldly;
 
 namespace PerformanceTests.ExamplePerformanceTests;
 
@@ -101,6 +100,6 @@ public class SomethingIRegistered : ISailfishDependency
 {
     public void NowHoldOnJustASec()
     {
-        2.ShouldBe(1);
+        if (2 != 1) throw new Exception();
     }
 }
