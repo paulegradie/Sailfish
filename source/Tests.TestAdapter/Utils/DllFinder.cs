@@ -16,9 +16,9 @@ public static class DllFinder
             path => !path.Contains($"{Path.DirectorySeparatorChar}obj{Path.DirectorySeparatorChar}"));
 
 #if DEBUG
-        return allDlls.Single(x => x.Contains(Path.Join("bin", "Debug")));
+        return allDlls.Single(x => x.Contains(Path.Join("bin", "Debug", "net8.0"))); // if this throws - check that you've removed non-target directories in your bin directory or that you've changed the target framework
 #else
-        return allDlls.Single(x => x.Contains(Path.Join("bin", "Release")));
+        return allDlls.Single(x => x.Contains(Path.Join("bin", "net8.0", "Release")));
 #endif
     }
 }

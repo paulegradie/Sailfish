@@ -1,5 +1,6 @@
 ﻿using Autofac;
-using MediatR;
+using MediatR.Extensions.Autofac.DependencyInjection;
+using MediatR.Extensions.Autofac.DependencyInjection.Builder;
 using Microsoft.Extensions.Configuration;
 using Sailfish.Analysis;
 using Sailfish.Analysis.SailDiff;
@@ -35,22 +36,11 @@ public class SailfishModule : Module
         base.Load(builder);
         var configuration = new ConfigurationBuilder().AddJsonFile("sailfish.logging.json", true).Build();
 
-        builder
-            .RegisterType<Mediator>()
-            .As<IMediator>()
-            .InstancePerLifetimeScope();
-        builder.Register<ServiceFactory>(
-            context =>
-            {
-                var c = context.Resolve<IComponentContext>();
-                return t => c.Resolve(t);
-            });
+        builder.RegisterMediatR(MediatRConfigurationBuilder.Create(typeof(SailfishModule).Assembly).Build());
         builder.RegisterAssemblyTypes(typeof(SailfishExecutor).Assembly)
             .Where(x => x != typeof(ISailfishDependency))
             .AsImplementedInterfaces(); // via assembly scan
-
         builder.RegisterInstance(runSettings).As<IRunSettings>();
-
         builder.Register<ILogger>(
             (c, p) =>
                 new LoggerConfiguration()

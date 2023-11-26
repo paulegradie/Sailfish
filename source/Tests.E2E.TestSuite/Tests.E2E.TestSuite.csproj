@@ -1,16 +1,16 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFramework>net6.0</TargetFramework>
+        <TargetFramework>net8.0</TargetFramework>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
         <LangVersion>latest</LangVersion>
     </PropertyGroup>
 
     <ItemGroup>
-        <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" Version="6.0.13" />
-        <PackageReference Include="Sailfish.Analyzers" Version="0.1.216" />
-        <PackageReference Include="Shouldly" Version="4.1.0" />
+        <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" Version="8.0.0" />
+        <PackageReference Include="Sailfish.Analyzers" Version="1.4.9" />
+        <PackageReference Include="Shouldly" Version="4.2.1" />
     </ItemGroup>
     <ItemGroup>
         <ProjectReference Include="..\Demo.API\Demo.API.csproj" />
