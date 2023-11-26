@@ -9,7 +9,7 @@
             against your component or API - without with all the extra ceremony.
         </Description>
         <RootNamespace>Sailfish.TestAdapter</RootNamespace>
-        <TargetFramework>net6.0</TargetFramework>
+        <TargetFrameworks>net6.0;net7.0;net8.0</TargetFrameworks>
         <Nullable>enable</Nullable>
         <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
         <LangVersion>latest</LangVersion>
