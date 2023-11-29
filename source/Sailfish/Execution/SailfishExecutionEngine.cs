@@ -11,10 +11,10 @@ using Sailfish.Attributes;
 using Sailfish.Contracts.Public.Notifications;
 using Sailfish.Contracts.Serialization.V1;
 using Sailfish.Exceptions;
+using Sailfish.Logging;
 using Sailfish.Presentation;
 using Sailfish.Program;
 using Sailfish.Utils;
-using Serilog;
 
 namespace Sailfish.Execution;
 

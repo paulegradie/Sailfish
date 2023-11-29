@@ -11,11 +11,10 @@ using Sailfish.Contracts.Public;
 using Sailfish.Execution;
 using Sailfish.Extensions.Methods;
 using Sailfish.Extensions.Types;
+using Sailfish.Logging;
 using Sailfish.Presentation;
 using Sailfish.Presentation.Console;
 using Sailfish.Statistics;
-using Serilog;
-using Serilog.Core;
 
 
 namespace Sailfish.TestAdapter.Execution;
@@ -34,9 +33,7 @@ internal class AdapterConsoleWriter : IAdapterConsoleWriter
     private readonly IMarkdownTableConverter markdownTableConverter;
     private readonly IFrameworkHandle? messageLogger;
 
-    private readonly Logger consoleLogger = new LoggerConfiguration()
-        .WriteTo.Console()
-        .CreateLogger();
+    private readonly ILogger consoleLogger = new DefaultLogger();
 
     public AdapterConsoleWriter(
         IMarkdownTableConverter markdownTableConverter,
@@ -71,7 +68,6 @@ internal class AdapterConsoleWriter : IAdapterConsoleWriter
                 consoleLogger.Error("{InnerStackTrace}", compiledResult.Exception.InnerException.StackTrace);
             }
         }
-        
 
         string ideOutputContent;
         if (summaryResults.Count > 1 || summaryResults.Single().CompiledTestCaseResults.Count() > 1)
@@ -82,7 +78,6 @@ internal class AdapterConsoleWriter : IAdapterConsoleWriter
         {
             ideOutputContent = CreateIdeTestOutputWindowContent(summaryResults.Single().CompiledTestCaseResults.Single());
         }
-
 
         WriteMessage(ideOutputContent, TestMessageLevel.Informational);
         consoleLogger.Information("{MarkdownTable}", ideOutputContent);

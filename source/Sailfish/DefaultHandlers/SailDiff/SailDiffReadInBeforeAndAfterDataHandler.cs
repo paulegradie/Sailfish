@@ -6,7 +6,7 @@ using Sailfish.Analysis;
 using Sailfish.Contracts.Public;
 using Sailfish.Contracts.Public.Requests;
 using Sailfish.Extensions.Types;
-using Serilog;
+using Sailfish.Logging;
 
 namespace Sailfish.DefaultHandlers.SailDiff;
 

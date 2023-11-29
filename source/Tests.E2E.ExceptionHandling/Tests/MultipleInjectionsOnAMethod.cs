@@ -1,5 +1,5 @@
 using Sailfish.Attributes;
-using Serilog;
+using Sailfish.Logging;
 
 namespace Tests.E2E.ExceptionHandling.Tests;
 

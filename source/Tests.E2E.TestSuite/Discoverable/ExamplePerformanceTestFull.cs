@@ -1,7 +1,7 @@
 using Demo.API;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Sailfish.Attributes;
-using Serilog;
+using Sailfish.Logging;
 using Tests.E2E.TestSuite.Utils;
 
 // Tests here are automatically discovered and executed

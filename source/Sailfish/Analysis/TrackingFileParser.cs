@@ -7,8 +7,8 @@ using System.Threading;
 using System.Threading.Tasks;
 using Sailfish.Contracts.Serialization.V1;
 using Sailfish.Extensions.Types;
+using Sailfish.Logging;
 using Sailfish.Presentation;
-using Serilog;
 
 namespace Sailfish.Analysis;
 

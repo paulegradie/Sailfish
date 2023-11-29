@@ -6,9 +6,9 @@ using MediatR;
 using Sailfish.Contracts.Public;
 using Sailfish.Contracts.Public.Notifications;
 using Sailfish.Contracts.Public.Requests;
+using Sailfish.Logging;
 using Sailfish.Presentation;
 using Sailfish.Presentation.Console;
-using Serilog;
 
 namespace Sailfish.Analysis.SailDiff;
 

@@ -1,6 +1,6 @@
 using System.Collections.Generic;
 using Sailfish.Contracts.Public;
-using Serilog;
+using Sailfish.Logging;
 
 namespace Sailfish.Contracts.Serialization.V1;
 

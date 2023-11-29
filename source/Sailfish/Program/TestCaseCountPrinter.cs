@@ -1,5 +1,5 @@
 using System.Reflection;
-using Serilog;
+using Sailfish.Logging;
 
 namespace Sailfish.Program;
 
@@ -74,8 +74,8 @@ public static class TestCaseCountPrinter
     }
 
 
-    public static void SetLogger(ILogger? lger)
+    public static void SetLogger(ILogger? l)
     {
-        logger = lger;
+        logger = l;
     }
 }

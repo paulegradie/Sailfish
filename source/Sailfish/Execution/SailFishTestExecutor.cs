@@ -6,8 +6,8 @@ using System.Threading;
 using System.Threading.Tasks;
 using Sailfish.Exceptions;
 using Sailfish.Extensions.Methods;
+using Sailfish.Logging;
 using Sailfish.Program;
-using Serilog;
 
 namespace Sailfish.Execution;
 

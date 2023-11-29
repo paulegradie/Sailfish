@@ -7,8 +7,8 @@ using System.Threading.Tasks;
 using MediatR;
 using Sailfish.Contracts.Public.Notifications;
 using Sailfish.Contracts.Serialization.V1;
+using Sailfish.Logging;
 using Sailfish.Presentation;
-using Serilog;
 
 namespace Sailfish.DefaultHandlers.Sailfish;
 
@@ -51,7 +51,7 @@ public class SailfishUpdateTrackingDataNotificationHandler : INotificationHandle
 
         foreach (var failedSummary in notification.TestCaseExecutionResult.GetFailedTestCases())
         {
-            logger.Warning(failedSummary.Exception, "Test case exception encountered");
+            logger.Warning(failedSummary.Exception!, "Test case exception encountered");
         }
 
         var success = notification.TestCaseExecutionResult.FilterForSuccessfulTestCases();
