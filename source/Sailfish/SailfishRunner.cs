@@ -8,7 +8,7 @@ using Sailfish.Utils;
 namespace Sailfish;
 
 /// <summary>
-///     This is the main entry point to Sailfish when executing as a console app or tool
+/// This is the main entry point to Sailfish library
 /// </summary>
 public static class SailfishRunner
 {
@@ -18,12 +18,9 @@ public static class SailfishRunner
         IRunSettings runSettings,
         Action<ContainerBuilder> registerAdditionalTypes,
         CancellationToken cancellationToken = default)
-    {
-        return await SailfishExecutionCaller.Run(runSettings, registerAdditionalTypes, cancellationToken);
-    }
+        => await SailfishExecutionCaller.Run(runSettings, registerAdditionalTypes, cancellationToken);
+
 
     public static async Task<SailfishRunResult> Run(IRunSettings runSettings, CancellationToken cancellationToken = default)
-    {
-        return await SailfishExecutionCaller.Run(runSettings, null, cancellationToken);
-    }
+        => await SailfishExecutionCaller.Run(runSettings, null, cancellationToken);
 }

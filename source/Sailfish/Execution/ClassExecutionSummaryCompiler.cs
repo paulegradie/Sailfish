@@ -7,6 +7,11 @@ using Sailfish.Statistics;
 
 namespace Sailfish.Execution;
 
+internal interface IClassExecutionSummaryCompiler
+{
+    IEnumerable<IClassExecutionSummary> CompileToSummaries(IEnumerable<TestClassResultGroup> results);
+}
+
 internal class ClassExecutionSummaryCompiler : IClassExecutionSummaryCompiler
 {
     private readonly IStatisticsCompiler statsCompiler;

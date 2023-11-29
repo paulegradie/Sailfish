@@ -7,6 +7,11 @@ using Sailfish.Execution;
 
 namespace Sailfish.Presentation;
 
+internal interface IExecutionSummaryWriter
+{
+    Task Write(List<IClassExecutionSummary> executionSummaries, CancellationToken cancellationToken);
+}
+
 internal class ExecutionSummaryWriter : IExecutionSummaryWriter
 {
     private readonly IMediator mediator;

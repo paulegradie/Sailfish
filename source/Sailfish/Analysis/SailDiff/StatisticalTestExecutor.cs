@@ -8,6 +8,11 @@ using Sailfish.Statistics.Tests.TwoSampleWilcoxonSignedRankTestSailfish;
 
 namespace Sailfish.Analysis.SailDiff;
 
+public interface IStatisticalTestExecutor
+{
+    TestResultWithOutlierAnalysis ExecuteStatisticalTest(double[] beforeData, double[] afterData, SailDiffSettings settings);
+}
+
 public class StatisticalTestExecutor : IStatisticalTestExecutor
 {
     private readonly IMannWhitneyWilcoxonTestSailfish mannWhitneyWilcoxonTestSailfish;

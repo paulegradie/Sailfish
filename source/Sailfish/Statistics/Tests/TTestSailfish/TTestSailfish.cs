@@ -8,6 +8,10 @@ using Sailfish.Contracts.Public;
 
 namespace Sailfish.Statistics.Tests.TTestSailfish;
 
+public interface ITTestSailfish : ITest
+{
+}
+
 public class TTestSailfish : ITTestSailfish
 {
     private readonly ITestPreprocessor preprocessor;

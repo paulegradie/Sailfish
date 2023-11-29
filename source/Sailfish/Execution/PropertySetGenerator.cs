@@ -4,6 +4,11 @@ using System.Linq;
 
 namespace Sailfish.Execution;
 
+internal interface IPropertySetGenerator
+{
+    IEnumerable<PropertySet> GenerateSailfishVariableSets(Type test, out Dictionary<string, VariableAttributeMeta> variableProperties);
+}
+
 internal class PropertySetGenerator : IPropertySetGenerator
 {
     private readonly IParameterCombinator parameterCombinator;

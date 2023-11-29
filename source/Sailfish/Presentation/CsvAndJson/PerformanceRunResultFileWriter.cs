@@ -1,23 +1,34 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
+using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using CsvHelper;
 using Sailfish.Contracts.Private.CsvMaps;
 using Sailfish.Contracts.Public;
 using Sailfish.Execution;
 
 namespace Sailfish.Presentation.CsvAndJson;
 
+internal interface IPerformanceRunResultFileWriter
+{
+    Task WriteToFileAsCsv(IEnumerable<IClassExecutionSummary> results, string filePath, Func<IClassExecutionSummary, bool> summaryFilter, CancellationToken cancellationToken);
+}
+
 internal class PerformanceRunResultFileWriter : IPerformanceRunResultFileWriter
 {
-    private readonly IFileIo fileIo = new FileIo();
-
-    public async Task WriteToFileAsCsv(IEnumerable<IClassExecutionSummary> results, string filePath, Func<IClassExecutionSummary, bool> summaryFilter, CancellationToken cancellationToken)
+    public async Task WriteToFileAsCsv(IEnumerable<IClassExecutionSummary> results, string filePath, Func<IClassExecutionSummary, bool> summaryFilter,
+        CancellationToken cancellationToken)
     {
         var summaryToDescriptive = ExtractPerformanceRunResults(results.Where(summaryFilter)).ToList();
         if (summaryToDescriptive.Count == 0) return;
-        await fileIo.WriteDataAsCsvToFile<WriteAsCsvMap, IEnumerable<PerformanceRunResult>>(summaryToDescriptive, filePath, cancellationToken);
+
+        await using var writer = new StreamWriter(filePath);
+        await using var csv = new CsvWriter(writer, CultureInfo.InvariantCulture);
+        csv.Context.RegisterClassMap<WriteAsCsvMap>();
+        await csv.WriteRecordsAsync(summaryToDescriptive, cancellationToken).ConfigureAwait(false);
     }
 
     private static IEnumerable<PerformanceRunResult> ExtractPerformanceRunResults(IEnumerable<IClassExecutionSummary> results)

@@ -11,6 +11,11 @@ using Sailfish.Presentation.Console;
 
 namespace Sailfish.Analysis.ScaleFish;
 
+public interface IScaleFish
+{
+    void Analyze(ClassExecutionSummaryTrackingFormat summaryTrackingFormat);
+}
+
 internal class ScaleFish : IScaleFish, IScaleFishInternal
 {
     private readonly IMarkdownTableConverter markdownTableConverter;

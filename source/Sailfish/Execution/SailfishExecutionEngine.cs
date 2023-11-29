@@ -18,6 +18,21 @@ using Serilog;
 
 namespace Sailfish.Execution;
 
+internal interface ISailfishExecutionEngine
+{
+    Task<List<TestCaseExecutionResult>> ActivateContainer(
+        int testProviderIndex,
+        int totalTestProviderCount,
+        TestInstanceContainerProvider testProvider,
+        MemoryCache memoryCache,
+        string providerPropertiesCacheKey,
+        Action<TestInstanceContainer>? preTestCallback = null,
+        Action<TestCaseExecutionResult, TestInstanceContainer>? postTestCallback = null,
+        Action<TestInstanceContainer?>? exceptionCallback = null,
+        Action<TestInstanceContainer?>? testDisabledCallback = null,
+        CancellationToken cancellationToken = default);
+}
+
 internal class SailfishExecutionEngine : ISailfishExecutionEngine
 {
     private readonly ITestCaseIterator testCaseIterator;

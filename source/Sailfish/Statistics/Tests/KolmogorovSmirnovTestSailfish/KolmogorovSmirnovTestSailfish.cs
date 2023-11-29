@@ -8,6 +8,10 @@ using Sailfish.Contracts.Public;
 
 namespace Sailfish.Statistics.Tests.KolmogorovSmirnovTestSailfish;
 
+public interface IKolmogorovSmirnovTestSailfish : ITest
+{
+}
+
 public class KolmogorovSmirnovTestSailfish : IKolmogorovSmirnovTestSailfish
 {
     private readonly ITestPreprocessor preprocessor;

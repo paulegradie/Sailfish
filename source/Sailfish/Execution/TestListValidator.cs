@@ -7,6 +7,11 @@ using Serilog;
 
 namespace Sailfish.Execution;
 
+internal interface ITestListValidator
+{
+    TestInitializationResult ValidateTests(IEnumerable<string> testsRequestedByUser, IEnumerable<Type> filteredTestNames);
+}
+
 internal class TestListValidator : ITestListValidator
 {
     private readonly ILogger logger;

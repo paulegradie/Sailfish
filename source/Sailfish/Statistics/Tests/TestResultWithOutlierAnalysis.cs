@@ -9,11 +9,11 @@ public class TestResultWithOutlierAnalysis
 {
     public TestResultWithOutlierAnalysis(TestResults testResults, OutlierAnalysis? sample1, OutlierAnalysis? sample2)
     {
-        this.TestResults = testResults;
-        this.Sample1 = sample1;
-        this.Sample2 = sample2;
-        this.ExceptionMessage = string.Empty;
-        this.StackTrace = string.Empty;
+        TestResults = testResults;
+        Sample1 = sample1;
+        Sample2 = sample2;
+        ExceptionMessage = string.Empty;
+        StackTrace = string.Empty;
     }
 
     public TestResultWithOutlierAnalysis(Exception exception)

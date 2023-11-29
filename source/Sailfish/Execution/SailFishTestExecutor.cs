@@ -11,6 +11,13 @@ using Serilog;
 
 namespace Sailfish.Execution;
 
+internal interface ISailFishTestExecutor
+{
+    Task<List<TestClassResultGroup>> Execute(
+        IEnumerable<Type> testTypes,
+        CancellationToken cancellationToken = default);
+}
+
 internal class SailFishTestExecutor : ISailFishTestExecutor
 {
     private readonly ILogger logger;

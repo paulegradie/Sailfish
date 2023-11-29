@@ -12,6 +12,12 @@ using Serilog;
 
 namespace Sailfish.Analysis;
 
+internal interface ITrackingFileParser
+{
+    Task<bool> TryParse(string trackingFile, TrackingFileDataList data, CancellationToken cancellationToken);
+    Task<bool> TryParse(IEnumerable<string> trackingFiles, TrackingFileDataList data, CancellationToken cancellationToken);
+}
+
 internal class TrackingFileParser : ITrackingFileParser
 {
     private readonly ITrackingFileSerialization trackingFileSerialization;

@@ -12,6 +12,11 @@ using Sailfish.Presentation;
 
 namespace Sailfish.TestAdapter.Execution;
 
+public interface ITestAdapterExecutionProgram
+{
+    Task Run(List<TestCase> testCases, CancellationToken cancellationToken);
+}
+
 internal class TestAdapterExecutionProgram : ITestAdapterExecutionProgram
 {
     private readonly IRunSettings runSettings;

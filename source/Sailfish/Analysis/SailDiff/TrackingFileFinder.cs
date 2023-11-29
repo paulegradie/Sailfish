@@ -5,6 +5,11 @@ using Sailfish.Presentation;
 
 namespace Sailfish.Analysis.SailDiff;
 
+internal interface ITrackingFileFinder
+{
+    BeforeAndAfterTrackingFiles GetBeforeAndAfterTrackingFiles(string directory, string beforeTarget, OrderedDictionary tags);
+}
+
 internal class TrackingFileFinder : ITrackingFileFinder
 {
     private readonly ITrackingFileDirectoryReader trackingFileDirectoryReader;

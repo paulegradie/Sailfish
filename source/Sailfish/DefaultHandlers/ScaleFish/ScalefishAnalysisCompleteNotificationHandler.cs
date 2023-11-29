@@ -12,12 +12,10 @@ namespace Sailfish.DefaultHandlers.ScaleFish;
 
 internal class ScalefishAnalysisCompleteNotificationHandler : INotificationHandler<ScalefishAnalysisCompleteNotification>
 {
-    private readonly IFileIo fileIo;
     private readonly IRunSettings runSettings;
 
-    public ScalefishAnalysisCompleteNotificationHandler(IFileIo fileIo, IRunSettings runSettings)
+    public ScalefishAnalysisCompleteNotificationHandler(IRunSettings runSettings)
     {
-        this.fileIo = fileIo;
         this.runSettings = runSettings;
     }
 
@@ -36,12 +34,20 @@ internal class ScalefishAnalysisCompleteNotificationHandler : INotificationHandl
     {
         var filepath = Path.Join(runSettings.LocalOutputDirectory, DefaultFileSettings.AppendTagsToFilename(fileName, runSettings.Tags));
         var result = SailfishSerializer.Serialize(models);
-        await fileIo.WriteStringToFile(result, filepath, cancellationToken).ConfigureAwait(false);
+        await WriteStringToFile(result, filepath, cancellationToken).ConfigureAwait(false);
     }
 
     private async Task WriteResults(string fileName, string result, CancellationToken cancellationToken)
     {
         var filepath = Path.Join(runSettings.LocalOutputDirectory, DefaultFileSettings.AppendTagsToFilename(fileName, runSettings.Tags));
-        await fileIo.WriteStringToFile(result, filepath, cancellationToken).ConfigureAwait(false);
+        await WriteStringToFile(result, filepath, cancellationToken).ConfigureAwait(false);
+    }
+
+    private static async Task WriteStringToFile(string contents, string filePath, CancellationToken cancellationToken)
+    {
+        if (Directory.Exists(filePath)) throw new IOException("Cannot write to a directory");
+
+        await File.WriteAllTextAsync(filePath, contents, cancellationToken).ConfigureAwait(false);
+        File.SetAttributes(filePath, FileAttributes.ReadOnly);
     }
 }

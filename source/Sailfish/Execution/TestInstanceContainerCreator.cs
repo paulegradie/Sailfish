@@ -7,6 +7,14 @@ using Sailfish.Extensions.Methods;
 
 namespace Sailfish.Execution;
 
+internal interface ITestInstanceContainerCreator
+{
+    List<TestInstanceContainerProvider> CreateTestContainerInstanceProviders(
+        Type test,
+        Func<PropertySet, bool>? propertyTensorFilter = null,
+        Func<MethodInfo, bool>? instanceContainerFilter = null);
+}
+
 internal class TestInstanceContainerCreator : ITestInstanceContainerCreator
 {
     private readonly IRunSettings runSettings;

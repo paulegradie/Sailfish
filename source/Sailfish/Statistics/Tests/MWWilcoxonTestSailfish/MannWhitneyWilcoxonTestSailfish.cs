@@ -12,6 +12,10 @@ using Sailfish.Contracts.Public;
 
 namespace Sailfish.Statistics.Tests.MWWilcoxonTestSailfish;
 
+public interface IMannWhitneyWilcoxonTestSailfish : ITest
+{
+}
+
 public class MannWhitneyWilcoxonTestSailfish : IMannWhitneyWilcoxonTestSailfish
 {
     private readonly ITestPreprocessor preprocessor;

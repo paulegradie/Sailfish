@@ -7,6 +7,11 @@ using Sailfish.Extensions.Methods;
 
 namespace Sailfish.Execution;
 
+internal interface ITestCollector
+{
+    IEnumerable<Type> CollectTestTypes(IEnumerable<Type> sourceTypes);
+}
+
 internal class TestCollector : ITestCollector
 {
     public IEnumerable<Type> CollectTestTypes(IEnumerable<Type> sourceTypes)

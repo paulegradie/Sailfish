@@ -9,7 +9,7 @@ using Sailfish.Exceptions;
 
 namespace Sailfish.Analysis.ScaleFish;
 
-public abstract class ScaleFishModelFunction : IScaleFishModelFunction
+public abstract class ScaleFishModelFunction
 {
     protected ScaleFishModelFunction()
     {
@@ -56,10 +56,9 @@ public abstract class ScaleFishModelFunction : IScaleFishModelFunction
         }
         catch
         {
-            ;
+            // to hard to fit - plate at end of list
+            return new FitnessResult(0, 9999999999, 999999999, 999999999, 999999999, 999999999);
         }
-
-        return new FitnessResult(0, 9999999999, 999999999, 999999999, 999999999, 999999999);
     }
 
     public double Predict(int x)

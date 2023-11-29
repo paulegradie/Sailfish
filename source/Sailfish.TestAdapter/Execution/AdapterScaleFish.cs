@@ -10,6 +10,10 @@ using Sailfish.Presentation;
 
 namespace Sailfish.TestAdapter.Execution;
 
+internal interface IAdapterScaleFish : IScaleFishInternal
+{
+}
+
 internal class AdapterScaleFish : IAdapterScaleFish
 {
     private readonly IMediator mediator;

@@ -6,6 +6,11 @@ using Sailfish.Attributes;
 
 namespace Sailfish.Execution;
 
+internal interface IIterationVariableRetriever
+{
+    Dictionary<string, VariableAttributeMeta> RetrieveIterationVariables(Type type);
+}
+
 internal class IterationVariableRetriever : IIterationVariableRetriever
 {
     public Dictionary<string, VariableAttributeMeta> RetrieveIterationVariables(Type type)

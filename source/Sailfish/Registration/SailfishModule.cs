@@ -1,7 +1,6 @@
 ﻿using Autofac;
 using MediatR.Extensions.Autofac.DependencyInjection;
 using MediatR.Extensions.Autofac.DependencyInjection.Builder;
-using Microsoft.Extensions.Configuration;
 using Sailfish.Analysis;
 using Sailfish.Analysis.SailDiff;
 using Sailfish.Analysis.ScaleFish;
@@ -18,7 +17,6 @@ using Sailfish.Statistics.Tests.KolmogorovSmirnovTestSailfish;
 using Sailfish.Statistics.Tests.MWWilcoxonTestSailfish;
 using Sailfish.Statistics.Tests.TTestSailfish;
 using Sailfish.Statistics.Tests.TwoSampleWilcoxonSignedRankTestSailfish;
-using Serilog;
 
 namespace Sailfish.Registration;
 
@@ -34,20 +32,15 @@ public class SailfishModule : Module
     protected override void Load(ContainerBuilder builder)
     {
         base.Load(builder);
-        var configuration = new ConfigurationBuilder().AddJsonFile("sailfish.logging.json", true).Build();
+        // var configuration = new ConfigurationBuilder().AddJsonFile("sailfish.logging.json", true).Build();
 
         builder.RegisterMediatR(MediatRConfigurationBuilder.Create(typeof(SailfishModule).Assembly).Build());
-        builder.RegisterAssemblyTypes(typeof(SailfishExecutor).Assembly)
+        builder.RegisterAssemblyTypes(typeof(SailfishModule).Assembly)
             .Where(x => x != typeof(ISailfishDependency))
-            .AsImplementedInterfaces(); // via assembly scan
+            .AsImplementedInterfaces(); // via assembly scan?
+
+
         builder.RegisterInstance(runSettings).As<IRunSettings>();
-        builder.Register<ILogger>(
-            (c, p) =>
-                new LoggerConfiguration()
-                    .ReadFrom.Configuration(configuration)
-                    .WriteTo.Console()
-                    .MinimumLevel.Verbose()
-                    .CreateLogger()).SingleInstance();
 
         builder.RegisterType<SailfishExecutor>().AsSelf();
         builder.RegisterType<SailFishTestExecutor>().As<ISailFishTestExecutor>();
@@ -61,7 +54,6 @@ public class SailfishModule : Module
         builder.RegisterType<StatisticsCompiler>().As<IStatisticsCompiler>();
         builder.RegisterType<ClassExecutionSummaryCompiler>().As<IClassExecutionSummaryCompiler>();
         builder.RegisterType<ExecutionSummaryWriter>().As<IExecutionSummaryWriter>();
-        builder.RegisterType<FileIo>().As<IFileIo>();
         builder.RegisterType<MarkdownWriter>().As<IMarkdownWriter>();
         builder.RegisterType<ConsoleWriter>().As<IConsoleWriter>();
         builder.RegisterType<PerformanceRunResultFileWriter>().As<IPerformanceRunResultFileWriter>();

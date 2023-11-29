@@ -8,6 +8,11 @@ using Serilog;
 
 namespace Sailfish.Analysis.SailDiff;
 
+public interface ITestComputer
+{
+    List<TestCaseResults> ComputeTest(TestData beforeTestData, TestData afterTestData, SailDiffSettings settings);
+}
+
 public class TestComputer : ITestComputer
 {
     private readonly IStatisticalTestExecutor statisticalTestExecutor;

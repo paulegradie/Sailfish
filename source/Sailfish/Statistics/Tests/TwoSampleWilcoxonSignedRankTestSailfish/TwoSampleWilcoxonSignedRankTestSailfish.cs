@@ -8,6 +8,10 @@ using Sailfish.Contracts.Public;
 
 namespace Sailfish.Statistics.Tests.TwoSampleWilcoxonSignedRankTestSailfish;
 
+public interface ITwoSampleWilcoxonSignedRankTestSailfish : ITest
+{
+}
+
 public class TwoSampleWilcoxonSignedRankTestSailfish : ITwoSampleWilcoxonSignedRankTestSailfish
 {
     private readonly ITestPreprocessor preprocessor;
