@@ -5,16 +5,19 @@ using Sailfish.Analysis;
 using Sailfish.Analysis.SailDiff;
 using Sailfish.Execution;
 using Sailfish.Extensions.Types;
+using Sailfish.Logging;
 
 namespace Sailfish.Presentation.Console;
 
 internal class ConsoleWriter : IConsoleWriter
 {
     private readonly IMarkdownTableConverter markdownTableConverter;
+    private readonly ILogger logger;
 
-    public ConsoleWriter(IMarkdownTableConverter markdownTableConverter)
+    public ConsoleWriter(IMarkdownTableConverter markdownTableConverter, ILogger logger)
     {
         this.markdownTableConverter = markdownTableConverter;
+        this.logger = logger;
     }
 
     public string WriteToConsole(IEnumerable<IClassExecutionSummary> results, OrderedDictionary tags)
@@ -24,10 +27,10 @@ internal class ConsoleWriter : IConsoleWriter
         if ((tags.Count > 0)) System.Console.WriteLine($"{Environment.NewLine}Tags:");
         foreach (var entry in tags)
         {
-            System.Console.WriteLine($"{entry.Key}: {entry.Value}");
+            logger.Log(LogLevel.Information, $"{entry.Key}: {entry.Value}");
         }
 
-        System.Console.WriteLine(markdownStringTable);
+        logger.Log(LogLevel.Information, markdownStringTable);
         return markdownStringTable;
     }
 
@@ -36,12 +39,12 @@ internal class ConsoleWriter : IConsoleWriter
         var stringBuilder = new StringBuilder();
         BuildHeader(stringBuilder, testIds.BeforeTestIds, testIds.AfterTestIds, sailDiffSettings);
         stringBuilder.AppendLine(markdownBody);
-        System.Console.WriteLine(stringBuilder.ToString());
+        logger.Log(LogLevel.Information, stringBuilder.ToString());
     }
 
     public void WriteString(string content)
     {
-        System.Console.Write(content);
+        logger.Log(LogLevel.Information, content);
     }
 
     private static void BuildHeader(StringBuilder stringBuilder, IEnumerable<string> beforeIds, IEnumerable<string> afterIds, SailDiffSettings sailDiffSettings)

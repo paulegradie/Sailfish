@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using Sailfish.Attributes;
+using Sailfish.Contracts.Public;
 using Sailfish.Extensions.Methods;
 using Sailfish.Utils;
 
@@ -43,7 +44,7 @@ internal class TestInstanceContainerProvider
         return (methodIsDisabled || typeIsDisabled);
     }
 
-    public IEnumerable<TestInstanceContainer> ProvideNextTestInstanceContainer()
+    public IEnumerable<TestInstanceContainer> ProvideNextTestCaseEnumeratorForClass()
     {
         var disabled = TestIsDisabled(Test, Method);
         if (GetNumberOfPropertySetsInTheQueue() is 0)

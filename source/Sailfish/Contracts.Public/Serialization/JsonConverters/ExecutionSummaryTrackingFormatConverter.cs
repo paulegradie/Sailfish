@@ -2,9 +2,10 @@ using System;
 using System.Collections.Generic;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Sailfish.Contracts.Public.Serialization.Tracking.V1;
 using Sailfish.Exceptions;
 
-namespace Sailfish.Contracts.Serialization.V1.JsonConverters;
+namespace Sailfish.Contracts.Public.Serialization.JsonConverters;
 
 public class ExecutionSummaryTrackingFormatConverter : JsonConverter<ClassExecutionSummaryTrackingFormat>
 {

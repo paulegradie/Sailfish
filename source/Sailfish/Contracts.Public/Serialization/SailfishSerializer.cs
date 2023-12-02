@@ -2,9 +2,9 @@ using System.Collections.Generic;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Sailfish.Analysis.ScaleFish;
-using Sailfish.Contracts.Serialization.V1.JsonConverters;
+using Sailfish.Contracts.Public.Serialization.JsonConverters;
 
-namespace Sailfish.Contracts.Public;
+namespace Sailfish.Contracts.Public.Serialization;
 
 public static class SailfishSerializer
 {

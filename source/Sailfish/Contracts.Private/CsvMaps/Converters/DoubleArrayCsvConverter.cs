@@ -4,7 +4,7 @@ using CsvHelper;
 using CsvHelper.Configuration;
 using CsvHelper.TypeConversion;
 
-namespace Sailfish.Contracts.Private.CsvMaps;
+namespace Sailfish.Contracts.Private.CsvMaps.Converters;
 
 internal sealed class DoubleArrayCsvConverter : ITypeConverter
 {

@@ -21,16 +21,19 @@ internal interface ISailFishTestExecutor
 internal class SailFishTestExecutor : ISailFishTestExecutor
 {
     private readonly ILogger logger;
+    private readonly ITestCaseCountPrinter testCaseCountPrinter;
     private readonly ITestInstanceContainerCreator testInstanceContainerCreator;
     private readonly ISailfishExecutionEngine engine;
     private const string MemoryCacheName = "GlobalStateMemoryCache";
 
     public SailFishTestExecutor(
         ILogger logger,
+        ITestCaseCountPrinter testCaseCountPrinter,
         ITestInstanceContainerCreator testInstanceContainerCreator,
         ISailfishExecutionEngine engine)
     {
         this.logger = logger;
+        this.testCaseCountPrinter = testCaseCountPrinter;
         this.testInstanceContainerCreator = testInstanceContainerCreator;
         this.engine = engine;
     }
@@ -42,17 +45,16 @@ internal class SailFishTestExecutor : ISailFishTestExecutor
         var allTestCaseResults = new List<TestClassResultGroup>();
         if (!FilterEnabledType(testTypes, out var enabledTestTypes))
         {
-            logger.Warning("No Sailfish tests were discovered...");
+            logger.Log(LogLevel.Warning, "No Sailfish tests were discovered...");
             return allTestCaseResults;
         }
 
         SetConsoleTotals(enabledTestTypes);
-        TestCaseCountPrinter.SetLogger(logger);
-        TestCaseCountPrinter.SetTestTypeTotal(enabledTestTypes.Length);
-        TestCaseCountPrinter.PrintDiscoveredTotal();
+        testCaseCountPrinter.SetTestTypeTotal(enabledTestTypes.Length);
+        testCaseCountPrinter.PrintDiscoveredTotal();
         foreach (var testType in enabledTestTypes)
         {
-            TestCaseCountPrinter.PrintTypeUpdate(testType.Name);
+            testCaseCountPrinter.PrintTypeUpdate(testType.Name);
             try
             {
                 var testCaseExecutionResults = await Execute(testType, cancellationToken);
@@ -60,7 +62,7 @@ internal class SailFishTestExecutor : ISailFishTestExecutor
             }
             catch (Exception ex)
             {
-                logger.Fatal("The Test runner encountered a fatal error: {Message}", ex.Message);
+                logger.Log(LogLevel.Error, ex, "The Test runner encountered an error - aborting ${testType.Full} test execution");
                 allTestCaseResults.Add(new TestClassResultGroup(testType, new List<TestCaseExecutionResult>()));
             }
         }
@@ -89,7 +91,7 @@ internal class SailFishTestExecutor : ISailFishTestExecutor
         foreach (var testProvider in testInstanceContainerProviders)
         {
             var providerPropertiesCacheKey = testProvider.Test.FullName ?? throw new SailfishException($"Failed to read the FullName of {testProvider.Test.Name}");
-            TestCaseCountPrinter.PrintMethodUpdate(testProvider.Method);
+            testCaseCountPrinter.PrintMethodUpdate(testProvider.Method);
             var executionResults = await engine.ActivateContainer(
                 testProviderIndex,
                 totalMethodCount,
@@ -121,7 +123,7 @@ internal class SailFishTestExecutor : ISailFishTestExecutor
             overallMethods += providers.Select(x => x.Method).ToList().Count;
         }
 
-        TestCaseCountPrinter.SetTestCaseTotal(overallTotalCases);
-        TestCaseCountPrinter.SetTestMethodTotal(overallMethods);
+        testCaseCountPrinter.SetTestCaseTotal(overallTotalCases);
+        testCaseCountPrinter.SetTestMethodTotal(overallMethods);
     }
 }

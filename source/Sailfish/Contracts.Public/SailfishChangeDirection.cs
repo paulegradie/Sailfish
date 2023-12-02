@@ -1,4 +1,4 @@
-﻿namespace Sailfish.Contracts;
+﻿namespace Sailfish.Contracts.Public;
 
 public class SailfishChangeDirection
 {

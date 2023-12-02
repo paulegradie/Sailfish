@@ -6,6 +6,7 @@ using MediatR;
 using Sailfish.Analysis.ScaleFish;
 using Sailfish.Contracts.Public;
 using Sailfish.Contracts.Public.Notifications;
+using Sailfish.Contracts.Public.Serialization;
 using Sailfish.Presentation;
 
 namespace Sailfish.DefaultHandlers.ScaleFish;

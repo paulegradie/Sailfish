@@ -1,171 +1,93 @@
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
-using System.Runtime.CompilerServices;
-using System.Text;
 using System.Text.RegularExpressions;
 
 namespace Sailfish.Logging;
 
 internal class DefaultLogger : ILogger
 {
-    public void Verbose(string message)
+    private readonly IEnumerable<LogLevel> allowedLogLevels;
+
+    public DefaultLogger(LogLevel minimumLogLevel)
     {
-        JoinAndWriteLines(message);
+        allowedLogLevels = new List<LogLevel>()
+            {
+                LogLevel.Verbose,
+                LogLevel.Debug,
+                LogLevel.Information,
+                LogLevel.Warning,
+                LogLevel.Error,
+                LogLevel.Fatal,
+            }
+            .SkipWhile(x => x != minimumLogLevel);
     }
 
-    public void Verbose(string template, params object[] values)
+    public void Log(LogLevel level, string template, params object[] values)
     {
-        JoinAndWriteLines(WriteTemplate(template, values));
+        var formattedLog = FormatTemplate(template, values);
+        JoinAndWriteLines(level, new[] { formattedLog });
     }
 
-    public void Verbose(Exception ex, string message)
+    public void Log(LogLevel level, Exception ex, string template, params object[] values)
     {
-        JoinAndWriteLines(message, UnpackException(ex));
+        var lines = new List<string> { template, ex.Message };
+        if (ex.StackTrace is not null)
+            lines.AddRange(ex.StackTrace.Split());
+
+        if (ex.InnerException is not null)
+        {
+            var innerExceptionMessage = ex.InnerException?.Message;
+            if (innerExceptionMessage is not null)
+            {
+                lines.Add(innerExceptionMessage);
+            }
+
+            var innerStackTrace = ex.InnerException?.StackTrace;
+            if (innerStackTrace is not null)
+            {
+                lines.AddRange(innerStackTrace.Split(Environment.NewLine));
+            }
+        }
+
+        JoinAndWriteLines(level, lines);
     }
 
-    public void Verbose(Exception ex, string template, params object[] values)
+    private void JoinAndWriteLines(LogLevel level, IEnumerable<string> lines)
     {
-        JoinAndWriteLines(WriteTemplate(template, values), UnpackException(ex));
-    }
-
-    public void Debug(string message)
-    {
-        JoinAndWriteLines(message);
-    }
-
-    public void Debug(string template, params object[] values)
-    {
-        JoinAndWriteLines(WriteTemplate(template, values));
-    }
-
-    public void Debug(Exception ex, string message)
-    {
-        JoinAndWriteLines(message, UnpackException(ex));
-    }
-
-    public void Debug(Exception ex, string template, params object[] values)
-    {
-        JoinAndWriteLines(WriteTemplate(template, values), UnpackException(ex));
-    }
-
-    public void Information(string message)
-    {
-        JoinAndWriteLines(message);
-    }
-
-    public void Information(string template, params object[] values)
-    {
-        JoinAndWriteLines(WriteTemplate(template, values));
-    }
-
-    public void Information(Exception ex, string message)
-    {
-        JoinAndWriteLines(message, UnpackException(ex));
-    }
-
-    public void Information(Exception ex, string template, params object[] values)
-    {
-        JoinAndWriteLines(WriteTemplate(template, values), UnpackException(ex));
-    }
-
-    public void Warning(string message)
-    {
-        JoinAndWriteLines(message);
-    }
-
-    public void Warning(string template, params object[] values)
-    {
-        JoinAndWriteLines(WriteTemplate(template, values));
-    }
-
-    public void Warning(Exception ex, string message)
-    {
-        JoinAndWriteLines(message, UnpackException(ex));
-    }
-
-    public void Warning(Exception ex, string template, params object[] values)
-    {
-        JoinAndWriteLines(WriteTemplate(template, values), UnpackException(ex));
-    }
-
-    public void Error(string message)
-    {
-        JoinAndWriteLines(message);
-    }
-
-    public void Error(string template, params object[] values)
-    {
-        JoinAndWriteLines(WriteTemplate(template, values));
-    }
-
-    public void Error(Exception ex, string message)
-    {
-        JoinAndWriteLines(message, UnpackException(ex));
-    }
-
-    public void Error(Exception ex, string template, params object[] values)
-    {
-        JoinAndWriteLines(WriteTemplate(template, values), UnpackException(ex));
-    }
-
-    public void Fatal(string message)
-    {
-        JoinAndWriteLines(message);
-    }
-
-    public void Fatal(string template, params object[] values)
-    {
-        JoinAndWriteLines(WriteTemplate(template, values));
-    }
-
-    public void Fatal(Exception ex, string message)
-    {
-        JoinAndWriteLines(message, UnpackException(ex));
-    }
-
-    public void Fatal(Exception ex, string template, params object[] values)
-    {
-        JoinAndWriteLines(WriteTemplate(template, values), UnpackException(ex));
-    }
-
-    private static void JoinAndWriteLines(params string[] lines)
-    {
-        var linesToWrite = new StringBuilder();
+        if (!allowedLogLevels.Contains(level)) return;
         foreach (var line in lines)
         {
-            linesToWrite.AppendLine(line);
+            var timestamp = $"[{DateTime.Now:HH:mm:ss}";
+            Console.Write(timestamp);
+            Console.ForegroundColor = levelColors[level];
+            Console.Write($" {nameMap[level]}");
+            Console.WriteLine($"]: {line}");
+            Console.ResetColor();
         }
-
-        Console.WriteLine(linesToWrite.ToString());
     }
 
-    public string UnpackException(Exception exception, [CallerMemberName] string? memberName = null)
+    private readonly Dictionary<LogLevel, string> nameMap = new()
     {
-        var innerLineBuilder = new StringBuilder();
-        foreach (var innerLine in exception.InnerException?.Message.Split() ?? Array.Empty<string>())
-        {
-            innerLineBuilder.AppendLine($"{nameMap[memberName!]} {innerLine}");
-        }
-
-        return new StringBuilder()
-            .AppendLine(exception.Message)
-            .AppendLine(innerLineBuilder.ToString())
-            .ToString();
-    }
-
-    private readonly Dictionary<string, string> nameMap = new()
-    {
-        { nameof(Verbose), "[Verb]:" },
-        { nameof(Debug), "[Debug]:" },
-        { nameof(Information), "[Inf]:" },
-        { nameof(Warning), "[Warn]:" },
-        { nameof(Error), "[Err]:" },
-        { nameof(Fatal), "[Fatal]:" },
+        { LogLevel.Verbose, "VRB" },
+        { LogLevel.Debug, "DBG" },
+        { LogLevel.Information, "INF" },
+        { LogLevel.Warning, "WRN" },
+        { LogLevel.Error, "ERR" },
+        { LogLevel.Fatal, "FATAL" },
     };
 
-    private static string WriteTemplate(string template, params object[] values)
+    private readonly Dictionary<LogLevel, ConsoleColor> levelColors = new()
+    {
+        { LogLevel.Verbose, ConsoleColor.Gray }, // Gray for verbose, as it's usually less important
+        { LogLevel.Debug, ConsoleColor.Blue }, // Blue for debug, a standard color for debugging information
+        { LogLevel.Information, ConsoleColor.White }, // White for general information
+        { LogLevel.Warning, ConsoleColor.Yellow }, // Yellow for warnings, as it's often associated with caution
+        { LogLevel.Error, ConsoleColor.Red }, // Red for errors, indicating danger or serious issues
+        { LogLevel.Fatal, ConsoleColor.DarkRed }, // Dark red for fatal errors, indicating critical problems
+    };
+
+    private static string FormatTemplate(string template, params object[] values)
     {
         var populatedTemplate = (string)template.Clone();
         var matches = new Regex("{(.+?)}")

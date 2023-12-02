@@ -1,16 +1,19 @@
 ﻿using Autofac;
+using MediatR;
 using MediatR.Extensions.Autofac.DependencyInjection;
 using MediatR.Extensions.Autofac.DependencyInjection.Builder;
 using Sailfish.Analysis;
 using Sailfish.Analysis.SailDiff;
 using Sailfish.Analysis.ScaleFish;
 using Sailfish.Contracts.Public;
-using Sailfish.Contracts.Serialization.V1;
+using Sailfish.Contracts.Public.Serialization.Tracking.V1;
 using Sailfish.Execution;
+using Sailfish.Logging;
 using Sailfish.Presentation;
 using Sailfish.Presentation.Console;
 using Sailfish.Presentation.CsvAndJson;
 using Sailfish.Presentation.Markdown;
+using Sailfish.Program;
 using Sailfish.Statistics;
 using Sailfish.Statistics.Tests;
 using Sailfish.Statistics.Tests.KolmogorovSmirnovTestSailfish;
@@ -32,16 +35,21 @@ public class SailfishModule : Module
     protected override void Load(ContainerBuilder builder)
     {
         base.Load(builder);
-        // var configuration = new ConfigurationBuilder().AddJsonFile("sailfish.logging.json", true).Build();
 
+        builder.RegisterInstance(
+            runSettings.DisableLogging
+                ? new SilentLogger()
+                : runSettings.CustomLogger ?? new DefaultLogger(runSettings.MinimumLogLevel)).As<ILogger>();
         builder.RegisterMediatR(MediatRConfigurationBuilder.Create(typeof(SailfishModule).Assembly).Build());
         builder.RegisterAssemblyTypes(typeof(SailfishModule).Assembly)
-            .Where(x => x != typeof(ISailfishDependency))
-            .AsImplementedInterfaces(); // via assembly scan?
-
+            .AsClosedTypesOf(typeof(INotificationHandler<>))
+            .AsImplementedInterfaces();
+        builder.RegisterAssemblyTypes(typeof(SailfishModule).Assembly)
+            .AsClosedTypesOf(typeof(IRequestHandler<,>))
+            .AsImplementedInterfaces();
 
         builder.RegisterInstance(runSettings).As<IRunSettings>();
-
+        builder.RegisterType<TestCaseCountPrinter>().As<ITestCaseCountPrinter>().SingleInstance();
         builder.RegisterType<SailfishExecutor>().AsSelf();
         builder.RegisterType<SailFishTestExecutor>().As<ISailFishTestExecutor>();
         builder.RegisterType<TestFilter>().As<ITestFilter>();
@@ -58,6 +66,7 @@ public class SailfishModule : Module
         builder.RegisterType<ConsoleWriter>().As<IConsoleWriter>();
         builder.RegisterType<PerformanceRunResultFileWriter>().As<IPerformanceRunResultFileWriter>();
         builder.RegisterType<TrackingFileFinder>().As<ITrackingFileFinder>();
+        builder.RegisterType<DefaultTrackingFileDirectoryReader>().As<ITrackingFileDirectoryReader>();
         builder.RegisterType<IterationVariableRetriever>().As<IIterationVariableRetriever>();
         builder.RegisterType<SailDiffResultMarkdownConverter>().As<ISailDiffResultMarkdownConverter>();
         builder.RegisterType<SailfishExecutionEngine>().As<ISailfishExecutionEngine>();

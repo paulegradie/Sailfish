@@ -4,7 +4,7 @@ using System.Runtime.Serialization;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Sailfish.Analysis.ScaleFish.ComplexityFunctions;
-using Sailfish.Contracts.Serialization.V1.JsonConverters;
+using Sailfish.Contracts.Public.Serialization.JsonConverters;
 using Sailfish.Exceptions;
 
 namespace Sailfish.Analysis.ScaleFish;

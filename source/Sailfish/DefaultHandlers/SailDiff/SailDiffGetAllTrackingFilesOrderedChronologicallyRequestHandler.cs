@@ -3,9 +3,9 @@ using System.Threading.Tasks;
 using MediatR;
 using Sailfish.Analysis;
 using Sailfish.Analysis.SailDiff;
+using Sailfish.Contracts.Public;
 using Sailfish.Contracts.Public.Requests;
 using Sailfish.Extensions.Types;
-using Sailfish.Logging;
 
 namespace Sailfish.DefaultHandlers.SailDiff;
 

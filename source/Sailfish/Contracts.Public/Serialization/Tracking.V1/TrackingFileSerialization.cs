@@ -1,8 +1,7 @@
 using System.Collections.Generic;
-using Sailfish.Contracts.Public;
 using Sailfish.Logging;
 
-namespace Sailfish.Contracts.Serialization.V1;
+namespace Sailfish.Contracts.Public.Serialization.Tracking.V1;
 
 public interface ITrackingFileSerialization
 {
@@ -32,7 +31,7 @@ public class TrackingFileSerialization : ITrackingFileSerialization
         }
         catch (System.Text.Json.JsonException ex)
         {
-            logger.Warning(ex, "Failed to deserialize file content");
+            logger.Log(LogLevel.Warning, "Failed to deserialize file content", ex);
             return null;
         }
     }

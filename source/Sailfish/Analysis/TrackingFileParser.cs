@@ -5,7 +5,7 @@ using System.Linq;
 using System.Runtime.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
-using Sailfish.Contracts.Serialization.V1;
+using Sailfish.Contracts.Public.Serialization.Tracking.V1;
 using Sailfish.Extensions.Types;
 using Sailfish.Logging;
 using Sailfish.Presentation;
@@ -68,8 +68,10 @@ internal class TrackingFileParser : ITrackingFileParser
         }
         catch (SerializationException ex)
         {
-            logger.Warning(ex,
-                $"Failed to deserialize data into {nameof(PerformanceRunResultTrackingFormat)}. Please remove any non-V1 (or corrupt) tracking data from your tracking directory.\n\n");
+            logger.Log(
+                LogLevel.Warning,
+                $"Failed to deserialize data into {nameof(PerformanceRunResultTrackingFormat)}. Please remove any non-V1 (or corrupt) tracking data from your tracking directory.\n\n",
+                ex);
             return false;
         }
     }

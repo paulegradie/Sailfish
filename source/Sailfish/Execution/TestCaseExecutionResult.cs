@@ -21,32 +21,20 @@ internal class TestCaseExecutionResult
         IsSuccess = false;
         StatusCode = StatusCode.Failure;
 
+        // TestInstanceContainerProvider = null;
         TestInstanceContainer = container;
         ExecutionSettings = container.ExecutionSettings;
         PerformanceTimerResults = container.CoreInvoker.GetPerformanceResults(false);
     }
 
-    public TestCaseExecutionResult(TestInstanceContainerProvider testProvider, Exception exception)
+    public TestCaseExecutionResult(Exception exception)
     {
         Exception = exception;
         IsSuccess = false;
         StatusCode = StatusCode.Failure;
 
         TestInstanceContainer = null;
-        TestInstanceContainerProvider = testProvider;
         ExecutionSettings = null;
-        PerformanceTimerResults = null;
-    }
-
-    public TestCaseExecutionResult(IExecutionSettings executionSettings, Exception exception)
-    {
-        Exception = exception;
-        IsSuccess = false;
-        StatusCode = StatusCode.Failure;
-        ExecutionSettings = executionSettings;
-
-        TestInstanceContainer = null;
-        TestInstanceContainerProvider = null;
         PerformanceTimerResults = null;
     }
 
@@ -54,7 +42,6 @@ internal class TestCaseExecutionResult
     public Exception? Exception { get; }
     public StatusCode StatusCode { get; }
     public bool IsSuccess { get; }
-    public TestInstanceContainer? TestInstanceContainer { get; set; }
-    public TestInstanceContainerProvider? TestInstanceContainerProvider { get; set; }
+    public TestInstanceContainer? TestInstanceContainer { get; }
     public PerformanceTimer? PerformanceTimerResults { get; }
 }

@@ -4,7 +4,7 @@ using System.Text.Json.Serialization;
 using Sailfish.Analysis;
 using Sailfish.Exceptions;
 
-namespace Sailfish.Contracts.Serialization.V1.JsonConverters;
+namespace Sailfish.Contracts.Public.Serialization.JsonConverters;
 
 public class TestCaseIdConverter : JsonConverter<TestCaseId?>
 {

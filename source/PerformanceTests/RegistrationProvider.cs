@@ -4,7 +4,6 @@ using Autofac;
 using Demo.API;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Sailfish.Registration;
-using Serilog;
 
 namespace PerformanceTests;
 
@@ -14,6 +13,5 @@ public class RegistrationProvider : IProvideARegistrationCallback
     {
         await Task.CompletedTask;
         builder.RegisterType<WebApplicationFactory<DemoApp>>();
-        builder.RegisterInstance(Log.Logger).As<ILogger>();
     }
 }

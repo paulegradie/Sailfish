@@ -3,7 +3,7 @@ using System.Text.Json.Serialization;
 #pragma warning disable CS8618
 
 
-namespace Sailfish.Contracts.Serialization.V1;
+namespace Sailfish.Contracts.Public.Serialization.Tracking.V1;
 
 /// <summary>
 /// Data structure contract used specifically for serializing and deserializing tracking file data

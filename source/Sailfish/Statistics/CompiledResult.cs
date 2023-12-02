@@ -6,10 +6,10 @@ namespace Sailfish.Statistics;
 
 public interface ICompiledTestCaseResult
 {
-    public string? GroupingId { get; set; }
-    public PerformanceRunResult? PerformanceRunResult { get; set; }
-    public Exception? Exception { get; set; }
-    public TestCaseId? TestCaseId { get; set; }
+    public string? GroupingId { get; }
+    public PerformanceRunResult? PerformanceRunResult { get; }
+    public Exception? Exception { get; }
+    public TestCaseId? TestCaseId { get; }
 }
 
 internal class CompiledTestCaseResult : ICompiledTestCaseResult
@@ -21,7 +21,7 @@ internal class CompiledTestCaseResult : ICompiledTestCaseResult
         PerformanceRunResult = performanceRunResult;
     }
 
-    public CompiledTestCaseResult(TestCaseId? testCaseId, string? groupingId, Exception exception)
+    public CompiledTestCaseResult(TestCaseId testCaseId, string? groupingId, Exception exception)
     {
         TestCaseId = testCaseId;
         GroupingId = groupingId;
@@ -31,5 +31,5 @@ internal class CompiledTestCaseResult : ICompiledTestCaseResult
     public string? GroupingId { get; set; }
     public PerformanceRunResult? PerformanceRunResult { get; set; }
     public Exception? Exception { get; set; }
-    public TestCaseId? TestCaseId { get; set; }
+    public TestCaseId TestCaseId { get; set; }
 }

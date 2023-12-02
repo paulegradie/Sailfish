@@ -68,7 +68,7 @@ internal class SailDiff : ISailDiffInternal, ISailDiff
             message.Append(
                 $"If file locations are not provided, data must be provided via the {nameof(ReadInBeforeAndAfterDataRequest)} handler.");
             var msg = message.ToString();
-            logger.Warning("{Message}", msg);
+            logger.Log(LogLevel.Warning, "{Message}", msg);
         }
 
         var beforeAndAfterData = await mediator
@@ -77,7 +77,7 @@ internal class SailDiff : ISailDiffInternal, ISailDiff
 
         if (beforeAndAfterData.BeforeData is null || beforeAndAfterData.AfterData is null)
         {
-            logger.Warning("Failed to retrieve tracking data... aborting the test operation");
+            logger.Log(LogLevel.Warning, "Failed to retrieve tracking data... aborting the test operation");
             return;
         }
 
@@ -88,7 +88,7 @@ internal class SailDiff : ISailDiffInternal, ISailDiff
 
         if (!testResults.Any())
         {
-            logger.Information("No prior test results found for the current set");
+            logger.Log(LogLevel.Information, "No prior test results found for the current set");
             return;
         }
 

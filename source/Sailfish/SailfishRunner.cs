@@ -2,6 +2,7 @@
 using System.Threading;
 using System.Threading.Tasks;
 using Autofac;
+using Sailfish.Contracts.Public;
 using Sailfish.Execution;
 using Sailfish.Utils;
 
