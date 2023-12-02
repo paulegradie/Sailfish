@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
-using Sailfish.Analysis;
+using Sailfish.Contracts.Public.Models;
 using Sailfish.Exceptions;
 
 namespace Sailfish.Execution;

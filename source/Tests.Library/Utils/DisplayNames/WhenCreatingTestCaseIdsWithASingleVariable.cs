@@ -1,6 +1,6 @@
 using System.Linq;
 using System.Threading.Tasks;
-using Sailfish.Analysis;
+using Sailfish.Contracts.Public.Models;
 using Sailfish.Utils;
 using Shouldly;
 using Xunit;

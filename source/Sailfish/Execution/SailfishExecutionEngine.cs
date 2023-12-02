@@ -8,13 +8,12 @@ using System.Threading;
 using System.Threading.Tasks;
 using MediatR;
 using Sailfish.Attributes;
-using Sailfish.Contracts.Public;
+using Sailfish.Contracts.Public.Models;
 using Sailfish.Contracts.Public.Notifications;
 using Sailfish.Contracts.Public.Serialization.Tracking.V1;
 using Sailfish.Exceptions;
 using Sailfish.Logging;
 using Sailfish.Presentation;
-using Sailfish.Program;
 using Sailfish.Utils;
 
 namespace Sailfish.Execution;

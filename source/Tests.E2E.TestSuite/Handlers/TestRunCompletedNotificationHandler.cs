@@ -1,5 +1,5 @@
 using MediatR;
-using Sailfish.Contracts.Public;
+using Sailfish.Contracts.Public.Models;
 using Sailfish.Contracts.Public.Notifications;
 
 namespace Tests.E2E.TestSuite.Handlers;

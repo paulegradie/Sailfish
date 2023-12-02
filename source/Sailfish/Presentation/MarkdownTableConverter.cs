@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Sailfish.Analysis.ScaleFish;
+using Sailfish.Contracts.Public.Models;
 using Sailfish.Execution;
 using Sailfish.Extensions.Methods;
-using Sailfish.Statistics;
 
 namespace Sailfish.Presentation;
 

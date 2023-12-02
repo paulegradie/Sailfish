@@ -2,7 +2,7 @@ using System;
 using System.Linq;
 using System.Reflection;
 using Autofac;
-using Sailfish.Analysis;
+using Sailfish.Contracts.Public.Models;
 using Sailfish.Exceptions;
 using Sailfish.Extensions.Methods;
 

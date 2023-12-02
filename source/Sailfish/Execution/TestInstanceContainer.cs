@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Reflection;
-using Sailfish.Analysis;
+using Sailfish.Contracts.Public.Models;
 using Sailfish.Utils;
 
 namespace Sailfish.Execution;

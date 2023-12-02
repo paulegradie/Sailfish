@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using Sailfish.Attributes;
@@ -32,7 +31,7 @@ public class ScenariosExample
     [SailfishMethod]
     public async Task TestMethod(CancellationToken cancellationToken) // token is injected when requested
     {
-        Console.WriteLine(scenarioMap[Scenario]);
+        var result = scenarioMap[Scenario];
         await Task.Delay(100, cancellationToken);
     }
 }

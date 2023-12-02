@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using Sailfish.Attributes;
-using Sailfish.Contracts.Public;
+using Sailfish.Contracts.Public.Models;
 using Sailfish.Extensions.Methods;
 
 namespace Sailfish.Execution;

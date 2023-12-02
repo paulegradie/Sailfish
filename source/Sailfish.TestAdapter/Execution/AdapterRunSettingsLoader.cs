@@ -1,5 +1,5 @@
 using System.IO;
-using Sailfish.Contracts.Public;
+using Sailfish.Contracts.Public.Models;
 using Sailfish.Exceptions;
 using Sailfish.TestAdapter.Discovery;
 using Sailfish.TestAdapter.TestSettingsParser;

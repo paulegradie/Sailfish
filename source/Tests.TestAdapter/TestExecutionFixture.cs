@@ -14,7 +14,7 @@ using Sailfish.TestAdapter.Execution;
 using Shouldly;
 using Tests.TestAdapter.Utils;
 using Xunit;
-using IRunSettings = Sailfish.Contracts.Public.IRunSettings;
+using IRunSettings = Sailfish.Contracts.Public.Models.IRunSettings;
 
 namespace Tests.TestAdapter;
 

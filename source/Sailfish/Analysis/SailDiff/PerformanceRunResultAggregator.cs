@@ -1,5 +1,5 @@
 using System.Collections.Generic;
-using Sailfish.Contracts.Public;
+using Sailfish.Contracts.Public.Models;
 
 namespace Sailfish.Analysis.SailDiff;
 

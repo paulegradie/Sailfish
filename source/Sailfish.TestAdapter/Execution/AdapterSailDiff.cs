@@ -2,9 +2,9 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using MediatR;
-using Sailfish.Analysis;
 using Sailfish.Analysis.SailDiff;
 using Sailfish.Contracts.Public;
+using Sailfish.Contracts.Public.Models;
 using Sailfish.Contracts.Public.Notifications;
 using Sailfish.Contracts.Public.Requests;
 using Sailfish.Execution;
@@ -25,20 +25,20 @@ internal class AdapterSailDiff : IAdapterSailDiff
     private readonly IMediator mediator;
     private readonly IRunSettings runSettings;
     private readonly IAdapterConsoleWriter consoleWriter;
-    private readonly ITestComputer testComputer;
+    private readonly IStatisticalTestComputer statisticalTestComputer;
     private readonly ISailDiffResultMarkdownConverter sailDiffResultMarkdownConverter;
 
     public AdapterSailDiff(
         IMediator mediator,
         IRunSettings runSettings,
         IAdapterConsoleWriter consoleWriter,
-        ITestComputer testComputer,
+        IStatisticalTestComputer statisticalTestComputer,
         ISailDiffResultMarkdownConverter sailDiffResultMarkdownConverter)
     {
         this.mediator = mediator;
         this.runSettings = runSettings;
         this.consoleWriter = consoleWriter;
-        this.testComputer = testComputer;
+        this.statisticalTestComputer = statisticalTestComputer;
         this.sailDiffResultMarkdownConverter = sailDiffResultMarkdownConverter;
     }
 
@@ -60,7 +60,7 @@ internal class AdapterSailDiff : IAdapterSailDiff
             return;
         }
 
-        var testResults = testComputer.ComputeTest(
+        var testResults = statisticalTestComputer.ComputeTest(
             beforeAndAfterData.BeforeData,
             beforeAndAfterData.AfterData,
             runSettings.SailDiffSettings);
@@ -95,7 +95,7 @@ internal class AdapterSailDiff : IAdapterSailDiff
             .Select(x => x.PerformanceRunResult!)
             .Where(x => x.DisplayName == testCaseExecutionResult.TestInstanceContainer?.TestCaseId.DisplayName));
 
-        var testResults = testComputer.ComputeTest(beforeTestData, afterTestData, runSettings.SailDiffSettings);
+        var testResults = statisticalTestComputer.ComputeTest(beforeTestData, afterTestData, runSettings.SailDiffSettings);
 
         return testResults.Count > 0
             ? consoleWriter.WriteTestResultsToIdeConsole(testResults.Single(), new TestIds(beforeIds, afterIds), runSettings.SailDiffSettings)

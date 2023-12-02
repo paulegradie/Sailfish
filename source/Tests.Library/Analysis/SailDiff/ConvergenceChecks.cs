@@ -3,10 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using Sailfish.Analysis;
 using Sailfish.Analysis.SailDiff;
+using Sailfish.Analysis.SailDiff.Statistics.Tests;
+using Sailfish.Analysis.SailDiff.Statistics.Tests.MWWilcoxonTestSailfish;
+using Sailfish.Analysis.SailDiff.Statistics.Tests.TwoSampleWilcoxonSignedRankTestSailfish;
 using Sailfish.Contracts.Public;
-using Sailfish.Statistics.Tests;
-using Sailfish.Statistics.Tests.MWWilcoxonTestSailfish;
-using Sailfish.Statistics.Tests.TwoSampleWilcoxonSignedRankTestSailfish;
 using Shouldly;
 using Xunit;
 
@@ -30,7 +30,7 @@ public class ConvergenceChecks
             results.Add(test.ExecuteTest(bf, af, new SailDiffSettings(0.0001, 4, false, TestType.TwoSampleWilcoxonSignedRankTest)));
         }
 
-        var converged = results.All(x => x.TestResults.ChangeDescription == SailfishChangeDirection.NoChange);
+        var converged = results.All(x => x.StatisticalTestResult.ChangeDescription == SailfishChangeDirection.NoChange);
         converged.ShouldBeTrue();
     }
 
@@ -48,7 +48,7 @@ public class ConvergenceChecks
             results.Add(test.ExecuteTest(bf, af, new SailDiffSettings(0.0001, 4, false, TestType.TwoSampleWilcoxonSignedRankTest)));
         }
 
-        var converged = results.All(x => x.TestResults.ChangeDescription == SailfishChangeDirection.Regressed);
+        var converged = results.All(x => x.StatisticalTestResult.ChangeDescription == SailfishChangeDirection.Regressed);
         converged.ShouldBeTrue();
     }
 
@@ -66,7 +66,7 @@ public class ConvergenceChecks
             results.Add(test.ExecuteTest(bf, af, new SailDiffSettings(0.0001, 4, false, TestType.WilcoxonRankSumTest)));
         }
 
-        var converged = results.All(x => x.TestResults.ChangeDescription == SailfishChangeDirection.NoChange);
+        var converged = results.All(x => x.StatisticalTestResult.ChangeDescription == SailfishChangeDirection.NoChange);
         converged.ShouldBeTrue();
     }
 
@@ -84,7 +84,7 @@ public class ConvergenceChecks
             results.Add(test.ExecuteTest(bf, af, new SailDiffSettings(0.0001, 4, false, TestType.WilcoxonRankSumTest)));
         }
 
-        var converged = results.All(x => x.TestResults.ChangeDescription == SailfishChangeDirection.Regressed);
+        var converged = results.All(x => x.StatisticalTestResult.ChangeDescription == SailfishChangeDirection.Regressed);
         converged.ShouldBeTrue();
     }
 
@@ -102,7 +102,7 @@ public class ConvergenceChecks
             results.Add(test.ExecuteTest(bf, af, new SailDiffSettings(0.0001, 4, false, TestType.WilcoxonRankSumTest)));
         }
 
-        var converged = results.All(x => x.TestResults.ChangeDescription == SailfishChangeDirection.NoChange);
+        var converged = results.All(x => x.StatisticalTestResult.ChangeDescription == SailfishChangeDirection.NoChange);
         converged.ShouldBeTrue();
     }
 

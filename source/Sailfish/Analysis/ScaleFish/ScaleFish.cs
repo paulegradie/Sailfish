@@ -3,7 +3,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using MediatR;
-using Sailfish.Contracts.Public;
+using Sailfish.Contracts.Public.Models;
 using Sailfish.Contracts.Public.Notifications;
 using Sailfish.Contracts.Public.Requests;
 using Sailfish.Contracts.Public.Serialization.Tracking.V1;

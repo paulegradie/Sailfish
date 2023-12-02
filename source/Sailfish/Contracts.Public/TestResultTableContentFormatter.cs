@@ -4,32 +4,33 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Threading;
 using Sailfish.Analysis;
+using Sailfish.Contracts.Public.Models;
 using Sailfish.Extensions.Methods;
 
 namespace Sailfish.Contracts.Public;
 
 public interface ISailDiffResultMarkdownConverter
 {
-    string ConvertToMarkdownTable(IEnumerable<TestCaseResults> testCaseResults, TestIds testIds, CancellationToken cancellationToken);
+    string ConvertToMarkdownTable(IEnumerable<SailDiffResult> testCaseResults, TestIds testIds, CancellationToken cancellationToken);
 }
 
 public class SailDiffResultMarkdownConverter : ISailDiffResultMarkdownConverter
 {
-    public string ConvertToMarkdownTable(IEnumerable<TestCaseResults> testCaseResults, TestIds testIds, CancellationToken cancellationToken)
+    public string ConvertToMarkdownTable(IEnumerable<SailDiffResult> testCaseResults, TestIds testIds, CancellationToken cancellationToken)
     {
         var enumeratedResults = testCaseResults.ToList();
-        var nBefore = enumeratedResults.Select(x => x.TestResultsWithOutlierAnalysis.TestResults.SampleSizeBefore).Distinct().Single();
-        var nAfter = enumeratedResults.Select(x => x.TestResultsWithOutlierAnalysis.TestResults.SampleSizeAfter).Distinct().Single();
+        var nBefore = enumeratedResults.Select(x => x.TestResultsWithOutlierAnalysis.StatisticalTestResult.SampleSizeBefore).Distinct().Single();
+        var nAfter = enumeratedResults.Select(x => x.TestResultsWithOutlierAnalysis.StatisticalTestResult.SampleSizeAfter).Distinct().Single();
 
-        var selectors = new List<Expression<Func<TestCaseResults, object>>>
+        var selectors = new List<Expression<Func<SailDiffResult, object>>>
         {
             m => m.TestCaseId.DisplayName,
-            m => m.TestResultsWithOutlierAnalysis.TestResults.MeanBefore,
-            m => m.TestResultsWithOutlierAnalysis.TestResults.MeanAfter,
-            m => m.TestResultsWithOutlierAnalysis.TestResults.MedianBefore,
-            m => m.TestResultsWithOutlierAnalysis.TestResults.MedianAfter,
-            m => m.TestResultsWithOutlierAnalysis.TestResults.PValue,
-            m => m.TestResultsWithOutlierAnalysis.TestResults.ChangeDescription,
+            m => m.TestResultsWithOutlierAnalysis.StatisticalTestResult.MeanBefore,
+            m => m.TestResultsWithOutlierAnalysis.StatisticalTestResult.MeanAfter,
+            m => m.TestResultsWithOutlierAnalysis.StatisticalTestResult.MedianBefore,
+            m => m.TestResultsWithOutlierAnalysis.StatisticalTestResult.MedianAfter,
+            m => m.TestResultsWithOutlierAnalysis.StatisticalTestResult.PValue,
+            m => m.TestResultsWithOutlierAnalysis.StatisticalTestResult.ChangeDescription,
         };
 
         var headers = new List<string>()

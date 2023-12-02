@@ -1,4 +1,3 @@
-using System;
 using System.Threading;
 using System.Threading.Tasks;
 using Sailfish.Attributes;
@@ -20,13 +19,11 @@ public class AttributesInheritedBase
     [SailfishGlobalSetup]
     public void GlobalSetup()
     {
-        Console.WriteLine($"Global Setup was run from {nameof(AttributesInheritedBase)}");
     }
 
     [SailfishMethod]
     public void MethodOnBaseShouldNotExecute()
     {
         Thread.Sleep(10);
-        Console.WriteLine("Base test method won't be run");
     }
 }

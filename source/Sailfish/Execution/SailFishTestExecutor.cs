@@ -7,7 +7,6 @@ using System.Threading.Tasks;
 using Sailfish.Exceptions;
 using Sailfish.Extensions.Methods;
 using Sailfish.Logging;
-using Sailfish.Program;
 
 namespace Sailfish.Execution;
 
