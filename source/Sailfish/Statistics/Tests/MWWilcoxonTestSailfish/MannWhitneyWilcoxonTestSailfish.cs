@@ -7,10 +7,13 @@ using Accord.Statistics;
 using Accord.Statistics.Testing;
 using MathNet.Numerics.Statistics;
 using Sailfish.Analysis.SailDiff;
-using Sailfish.Contracts;
 using Sailfish.Contracts.Public;
 
 namespace Sailfish.Statistics.Tests.MWWilcoxonTestSailfish;
+
+public interface IMannWhitneyWilcoxonTestSailfish : ITest
+{
+}
 
 public class MannWhitneyWilcoxonTestSailfish : IMannWhitneyWilcoxonTestSailfish
 {

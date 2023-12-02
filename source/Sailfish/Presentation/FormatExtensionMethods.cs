@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using Sailfish.Contracts.Public;
-using Sailfish.Contracts.Serialization.V1;
+using Sailfish.Contracts.Public.Serialization.Tracking.V1;
 using Sailfish.Execution;
 using Sailfish.Statistics;
 
@@ -35,7 +35,7 @@ public static class FormatExtensionMethods
                                 )
                                 : null!)
                         : new CompiledTestCaseResult(
-                            y.TestCaseId,
+                            y.TestCaseId!,
                             y.GroupingId,
                             y.Exception!)
                 )

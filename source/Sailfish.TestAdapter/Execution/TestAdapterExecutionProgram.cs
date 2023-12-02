@@ -5,12 +5,18 @@ using System.Threading;
 using System.Threading.Tasks;
 using MediatR;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel;
+using Sailfish.Contracts.Public;
 using Sailfish.Contracts.Public.Notifications;
 using Sailfish.Contracts.Public.Requests;
 using Sailfish.Extensions.Types;
 using Sailfish.Presentation;
 
 namespace Sailfish.TestAdapter.Execution;
+
+public interface ITestAdapterExecutionProgram
+{
+    Task Run(List<TestCase> testCases, CancellationToken cancellationToken);
+}
 
 internal class TestAdapterExecutionProgram : ITestAdapterExecutionProgram
 {
@@ -49,7 +55,7 @@ internal class TestAdapterExecutionProgram : ITestAdapterExecutionProgram
         }
 
         var preloadedLastRunsIfAvailable = new TrackingFileDataList();
-        if (!runSettings.DisableAnalysisGlobally && (runSettings.RunScalefish || runSettings.RunSailDiff))
+        if (!runSettings.DisableAnalysisGlobally && (runSettings.RunScaleFish || runSettings.RunSailDiff))
         {
             try
             {
@@ -73,6 +79,6 @@ internal class TestAdapterExecutionProgram : ITestAdapterExecutionProgram
         if (executionSummaries.SelectMany(x => x.CompiledTestCaseResults.Where(y => y.Exception is not null)).Any()) return;
         if (runSettings.DisableAnalysisGlobally) return;
         if (runSettings.RunSailDiff) await sailDiff.Analyze(cancellationToken);
-        if (runSettings.RunScalefish) await scaleFish.Analyze(cancellationToken);
+        if (runSettings.RunScaleFish) await scaleFish.Analyze(cancellationToken);
     }
 }

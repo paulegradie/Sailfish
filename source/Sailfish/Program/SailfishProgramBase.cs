@@ -6,6 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Autofac;
 using McMaster.Extensions.CommandLineUtils;
+using Sailfish.Contracts.Public;
 using Sailfish.Execution;
 using Sailfish.Extensions.Types;
 using Sailfish.Presentation;
@@ -101,7 +102,6 @@ public abstract class SailfishProgramBase
         }
 
         settings = settings
-            .ExecuteNotificationHandler()
             .WithTags(parsedTags)
             .WithArgs(parsedArgs)
             .WithProvidedBeforeTrackingFiles(BeforeTargets ?? Array.Empty<string>())
@@ -162,11 +162,6 @@ public abstract class SailfishProgramBase
 
     [Option("-t|--tests", CommandOptionType.MultipleValue, Description = "List of tests to execute")]
     public string[] TestNames { get; set; } = Array.Empty<string>();
-
-    [Option("-y|--notify", CommandOptionType.NoValue,
-        Description =
-            "Use this option to enable sending of the notification command. There are no default handlers, but users can implement their own to process test results and send messages to webhooks in response")]
-    public bool Notify { get; set; } = true;
 
     [Option("-l|--disable-overhead-estimation", CommandOptionType.SingleValue, Description = "Disable overhead estimation to speed up test run")]
     public bool DisableOverheadEstimation { get; set; }

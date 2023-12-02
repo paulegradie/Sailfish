@@ -3,8 +3,8 @@ using Demo.API;
 using MediatR;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Sailfish.Contracts.Public.Notifications;
+using Sailfish.Logging;
 using Sailfish.Registration;
-using Serilog;
 using Tests.E2E.ExceptionHandling.Handlers;
 
 namespace Tests.E2E.ExceptionHandling;

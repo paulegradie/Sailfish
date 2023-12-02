@@ -10,15 +10,9 @@ public static class IsASailfishTestTypeExtensionMethods
         const string sailfishAttribute = "SailfishAttribute";
         var typeSymbol = semanticModel.GetDeclaredSymbol(typeDeclaration);
 
-        if (typeSymbol == null)
-        {
-            return false;
-        }
+        if (typeSymbol == null) return false;
 
-        if (typeSymbol.GetAttributes().Any(attr => attr.AttributeClass?.Name == sailfishAttribute))
-        {
-            return true;
-        }
+        if (typeSymbol.GetAttributes().Any(attr => attr.AttributeClass?.Name == sailfishAttribute)) return true;
 
         var compilation = semanticModel.Compilation;
 
@@ -32,8 +26,7 @@ public static class IsASailfishTestTypeExtensionMethods
             var derivedSemanticModel = compilation.GetSemanticModel(derivedType.SyntaxTree);
             var derivedTypeSymbol = derivedSemanticModel.GetDeclaredSymbol(derivedType);
 
-            if (derivedTypeSymbol != null && derivedTypeSymbol.GetAttributes().Any(attr => attr.AttributeClass?.Name == sailfishAttribute))
-                return true;
+            if (derivedTypeSymbol != null && derivedTypeSymbol.GetAttributes().Any(attr => attr.AttributeClass?.Name == sailfishAttribute)) return true;
         }
 
         return false;

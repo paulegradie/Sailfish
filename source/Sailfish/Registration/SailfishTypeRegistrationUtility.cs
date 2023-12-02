@@ -90,7 +90,7 @@ internal static class SailfishTypeRegistrationUtility
     {
         var assemblyTypes = allAssemblyTypes.ToList();
         var asyncProviders = GetRegistrationCallbackProviders<IProvideARegistrationCallback>(assemblyTypes).ToList();
-        if (!asyncProviders.Any())
+        if (asyncProviders.Count == 0)
         {
             asyncProviders = GetRegistrationCallbackProviders<IProvideARegistrationCallback>(assemblyTypes).ToList();
         }
@@ -113,15 +113,11 @@ internal static class SailfishTypeRegistrationUtility
         }
     }
 
-    public static IEnumerable<T> GetRegistrationCallbackProviders<T>(IEnumerable<Type> allAssemblyTypes)
-    {
-        var providers = allAssemblyTypes
+    private static List<T> GetRegistrationCallbackProviders<T>(IEnumerable<Type> allAssemblyTypes)
+        => allAssemblyTypes
             .Where(type => type.GetInterfaces().Contains(typeof(T)))
             .Distinct()
             .Select(Activator.CreateInstance)
             .Cast<T>()
             .ToList();
-
-        return providers;
-    }
 }

@@ -4,11 +4,16 @@ using System.Threading;
 using System.Threading.Tasks;
 using MediatR;
 using Sailfish.Analysis.ScaleFish;
+using Sailfish.Contracts.Public;
 using Sailfish.Contracts.Public.Notifications;
 using Sailfish.Contracts.Public.Requests;
 using Sailfish.Presentation;
 
 namespace Sailfish.TestAdapter.Execution;
+
+internal interface IAdapterScaleFish : IScaleFishInternal
+{
+}
 
 internal class AdapterScaleFish : IAdapterScaleFish
 {
@@ -34,7 +39,7 @@ internal class AdapterScaleFish : IAdapterScaleFish
 
     public async Task Analyze(CancellationToken cancellationToken)
     {
-        if (!runSettings.RunScalefish) return;
+        if (!runSettings.RunScaleFish) return;
 
         var response = await mediator.Send(new GetLatestExecutionSummaryRequest(), cancellationToken);
         var executionSummaries = response.LatestExecutionSummaries;

@@ -3,10 +3,13 @@ using System.Collections.Generic;
 using Accord.Statistics.Testing;
 using MathNet.Numerics.Statistics;
 using Sailfish.Analysis.SailDiff;
-using Sailfish.Contracts;
 using Sailfish.Contracts.Public;
 
 namespace Sailfish.Statistics.Tests.TTestSailfish;
+
+public interface ITTestSailfish : ITest
+{
+}
 
 public class TTestSailfish : ITTestSailfish
 {

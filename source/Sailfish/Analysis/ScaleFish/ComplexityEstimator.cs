@@ -4,6 +4,11 @@ using Sailfish.Analysis.ScaleFish.CurveFitting;
 
 namespace Sailfish.Analysis.ScaleFish;
 
+public interface IComplexityEstimator
+{
+    ScalefishModel? EstimateComplexity(ComplexityMeasurement[] measurements);
+}
+
 public class ComplexityEstimator : IComplexityEstimator
 {
     public ScalefishModel? EstimateComplexity(ComplexityMeasurement[] measurements)

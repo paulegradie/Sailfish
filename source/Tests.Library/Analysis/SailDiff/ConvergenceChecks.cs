@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Sailfish.Analysis;
 using Sailfish.Analysis.SailDiff;
-using Sailfish.Contracts;
+using Sailfish.Contracts.Public;
 using Sailfish.Statistics.Tests;
 using Sailfish.Statistics.Tests.MWWilcoxonTestSailfish;
 using Sailfish.Statistics.Tests.TwoSampleWilcoxonSignedRankTestSailfish;

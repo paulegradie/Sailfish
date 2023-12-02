@@ -7,9 +7,9 @@ namespace Sailfish.Execution;
 
 public interface IClassExecutionSummary
 {
-    Type TestClass { get; set; }
+    Type TestClass { get; }
     IExecutionSettings ExecutionSettings { get; }
-    IEnumerable<ICompiledTestCaseResult> CompiledTestCaseResults { get; set; }
+    IEnumerable<ICompiledTestCaseResult> CompiledTestCaseResults { get; }
 
     IEnumerable<ICompiledTestCaseResult> GetSuccessfulTestCases();
     IEnumerable<ICompiledTestCaseResult> GetFailedTestCases();
@@ -29,10 +29,9 @@ internal class ClassExecutionSummary : IClassExecutionSummary
         ExecutionSettings = executionSettings;
     }
 
-
-    public Type TestClass { get; set; }
+    public Type TestClass { get; }
     public IExecutionSettings ExecutionSettings { get; }
-    public IEnumerable<ICompiledTestCaseResult> CompiledTestCaseResults { get; set; }
+    public IEnumerable<ICompiledTestCaseResult> CompiledTestCaseResults { get; }
 
     public IEnumerable<ICompiledTestCaseResult> GetSuccessfulTestCases()
     {

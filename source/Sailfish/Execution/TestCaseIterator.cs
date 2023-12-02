@@ -1,8 +1,14 @@
 ﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
+using Sailfish.Contracts.Public;
 
 namespace Sailfish.Execution;
+
+internal interface ITestCaseIterator
+{
+    Task<TestCaseExecutionResult> Iterate(TestInstanceContainer testInstanceContainer, bool DisableOverheadEstimation, CancellationToken cancellationToken);
+}
 
 internal class TestCaseIterator : ITestCaseIterator
 {

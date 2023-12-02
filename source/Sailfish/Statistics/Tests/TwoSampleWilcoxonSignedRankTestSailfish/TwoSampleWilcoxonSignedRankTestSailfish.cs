@@ -3,10 +3,13 @@ using System.Collections.Generic;
 using Accord.Statistics;
 using Accord.Statistics.Testing;
 using Sailfish.Analysis.SailDiff;
-using Sailfish.Contracts;
 using Sailfish.Contracts.Public;
 
 namespace Sailfish.Statistics.Tests.TwoSampleWilcoxonSignedRankTestSailfish;
+
+public interface ITwoSampleWilcoxonSignedRankTestSailfish : ITest
+{
+}
 
 public class TwoSampleWilcoxonSignedRankTestSailfish : ITwoSampleWilcoxonSignedRankTestSailfish
 {

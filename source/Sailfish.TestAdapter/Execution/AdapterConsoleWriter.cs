@@ -11,11 +11,10 @@ using Sailfish.Contracts.Public;
 using Sailfish.Execution;
 using Sailfish.Extensions.Methods;
 using Sailfish.Extensions.Types;
+using Sailfish.Logging;
 using Sailfish.Presentation;
 using Sailfish.Presentation.Console;
 using Sailfish.Statistics;
-using Serilog;
-using Serilog.Core;
 
 
 namespace Sailfish.TestAdapter.Execution;
@@ -34,9 +33,7 @@ internal class AdapterConsoleWriter : IAdapterConsoleWriter
     private readonly IMarkdownTableConverter markdownTableConverter;
     private readonly IFrameworkHandle? messageLogger;
 
-    private readonly Logger consoleLogger = new LoggerConfiguration()
-        .WriteTo.Console()
-        .CreateLogger();
+    private readonly ILogger consoleLogger;
 
     public AdapterConsoleWriter(
         IMarkdownTableConverter markdownTableConverter,
@@ -44,6 +41,7 @@ internal class AdapterConsoleWriter : IAdapterConsoleWriter
     {
         this.markdownTableConverter = markdownTableConverter;
         this.messageLogger = messageLogger;
+        consoleLogger = new DefaultLogger(LogLevel.Verbose);
     }
 
     public string WriteToConsole(IEnumerable<IClassExecutionSummary> results, OrderedDictionary? tags = null)
@@ -56,22 +54,21 @@ internal class AdapterConsoleWriter : IAdapterConsoleWriter
                 if (compiledResult.Exception is null) continue;
 
                 WriteMessage(compiledResult.Exception.Message, TestMessageLevel.Error);
-                consoleLogger.Error("{Error}", compiledResult.Exception.Message);
+                consoleLogger.Log(LogLevel.Error, "{Error}", compiledResult.Exception.Message);
 
                 if (compiledResult.Exception.StackTrace == null) continue;
                 WriteMessage(compiledResult.Exception.StackTrace, TestMessageLevel.Error);
-                consoleLogger.Error("{StackTrace}", compiledResult.Exception.StackTrace);
+                consoleLogger.Log(LogLevel.Error, "{StackTrace}", compiledResult.Exception.StackTrace);
 
                 if (compiledResult.Exception.InnerException is null) continue;
                 WriteMessage(compiledResult.Exception.InnerException.Message, TestMessageLevel.Error);
-                consoleLogger.Error("{InnerError}", compiledResult.Exception.InnerException.Message);
+                consoleLogger.Log(LogLevel.Error, "{InnerError}", compiledResult.Exception.InnerException.Message);
 
                 if (compiledResult.Exception.InnerException.StackTrace == null) continue;
                 WriteMessage(compiledResult.Exception.InnerException.StackTrace, TestMessageLevel.Error);
-                consoleLogger.Error("{InnerStackTrace}", compiledResult.Exception.InnerException.StackTrace);
+                consoleLogger.Log(LogLevel.Error, "{InnerStackTrace}", compiledResult.Exception.InnerException.StackTrace);
             }
         }
-        
 
         string ideOutputContent;
         if (summaryResults.Count > 1 || summaryResults.Single().CompiledTestCaseResults.Count() > 1)
@@ -83,9 +80,8 @@ internal class AdapterConsoleWriter : IAdapterConsoleWriter
             ideOutputContent = CreateIdeTestOutputWindowContent(summaryResults.Single().CompiledTestCaseResults.Single());
         }
 
-
         WriteMessage(ideOutputContent, TestMessageLevel.Informational);
-        consoleLogger.Information("{MarkdownTable}", ideOutputContent);
+        consoleLogger.Log(LogLevel.Information, "{MarkdownTable}", ideOutputContent);
 
         return ideOutputContent;
     }
@@ -169,7 +165,7 @@ internal class AdapterConsoleWriter : IAdapterConsoleWriter
         BuildHeader(stringBuilder, testIds.BeforeTestIds, testIds.AfterTestIds, sailDiffSettings);
         stringBuilder.AppendLine(markdownBody);
         var result = stringBuilder.ToString();
-        consoleLogger.Information(result);
+        consoleLogger.Log(LogLevel.Information, result);
         WriteMessage(result, TestMessageLevel.Informational);
     }
 
@@ -244,7 +240,7 @@ internal class AdapterConsoleWriter : IAdapterConsoleWriter
 
     public void WriteString(string content, TestMessageLevel messageLevel)
     {
-        consoleLogger.Information(content);
+        consoleLogger.Log(LogLevel.Information, content);
         WriteMessage(content, messageLevel);
     }
 

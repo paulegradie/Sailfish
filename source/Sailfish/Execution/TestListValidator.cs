@@ -3,9 +3,14 @@ using System.Collections.Generic;
 using System.Linq;
 using Sailfish.Attributes;
 using Sailfish.Extensions.Methods;
-using Serilog;
+using Sailfish.Logging;
 
 namespace Sailfish.Execution;
+
+internal interface ITestListValidator
+{
+    TestInitializationResult ValidateTests(IEnumerable<string> testsRequestedByUser, IEnumerable<Type> filteredTestNames);
+}
 
 internal class TestListValidator : ITestListValidator
 {
@@ -24,7 +29,10 @@ internal class TestListValidator : ITestListValidator
 
         if (TestsAreRequestedButFailedToDisambiguate(requestedByUser, testClasses.Select(x => x.FullName ?? x.Name).ToArray(), out var missingTests))
         {
-            logger.Fatal("Failed to disambiguate the following tests: {Tests}", requestedByUser.Where(x => !testClasses.Select(x => x.FullName ?? x.Name).Contains(x)));
+            logger.Log(
+                LogLevel.Fatal,
+                "Failed to disambiguate the following tests: {Tests}",
+                requestedByUser.Where(x => !testClasses.Select(x => x.FullName ?? x.Name).Contains(x)));
             erroredTests.Add("Failed to disambiguate the following tests:", missingTests);
         }
 

@@ -6,9 +6,10 @@ using System.Threading.Tasks;
 using MediatR;
 using Sailfish.Analysis.SailDiff;
 using Sailfish.Analysis.ScaleFish;
+using Sailfish.Contracts.Public;
 using Sailfish.Contracts.Public.Notifications;
+using Sailfish.Logging;
 using Sailfish.Presentation;
-using Serilog;
 
 namespace Sailfish.Execution;
 
@@ -19,6 +20,7 @@ internal class SailfishExecutor
     private readonly IClassExecutionSummaryCompiler classExecutionSummaryCompiler;
     private readonly IExecutionSummaryWriter executionSummaryWriter;
     private readonly IRunSettings runSettings;
+    private readonly ILogger logger;
     private readonly IMediator mediator;
     private readonly ISailFishTestExecutor sailFishTestExecutor;
     private readonly ISailDiffInternal sailDiff;
@@ -33,7 +35,8 @@ internal class SailfishExecutor
         IExecutionSummaryWriter executionSummaryWriter,
         ISailDiffInternal sailDiff,
         IScaleFishInternal scaleFish,
-        IRunSettings runSettings
+        IRunSettings runSettings,
+        ILogger logger
     )
     {
         this.mediator = mediator;
@@ -45,6 +48,7 @@ internal class SailfishExecutor
         this.sailDiff = sailDiff;
         this.scaleFish = scaleFish;
         this.runSettings = runSettings;
+        this.logger = logger;
     }
 
     public async Task<SailfishRunResult> Run(CancellationToken cancellationToken)
@@ -63,7 +67,7 @@ internal class SailfishExecutor
                 await sailDiff.Analyze(cancellationToken).ConfigureAwait(false);
             }
 
-            if (runSettings.RunScalefish)
+            if (runSettings.RunScaleFish)
             {
                 await scaleFish.Analyze(cancellationToken).ConfigureAwait(false);
             }
@@ -80,16 +84,16 @@ internal class SailfishExecutor
             return SailfishRunResult.CreateResult(classExecutionSummaries, exceptions);
         }
 
-        Log.Logger.Error("{NumErrors} errors encountered while discovering tests",
+        logger.Log(LogLevel.Error, "{NumErrors} errors encountered while discovering tests",
             testInitializationResult.Errors.Count);
 
         var testDiscoveryExceptions = new List<Exception>();
         foreach (var (reason, names) in testInitializationResult.Errors)
         {
-            Log.Logger.Error("{Reason}", reason);
+            logger.Log(LogLevel.Error, "{Reason}", reason);
             foreach (var testName in names)
             {
-                Log.Logger.Error("--- {TestName}", testName);
+                logger.Log(LogLevel.Error, "--- {TestName}", testName);
                 testDiscoveryExceptions.Add(new Exception($"Test: {testName} - Error: {reason}"));
             }
         }

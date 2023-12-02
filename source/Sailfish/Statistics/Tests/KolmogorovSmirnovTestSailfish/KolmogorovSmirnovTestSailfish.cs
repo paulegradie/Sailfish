@@ -3,10 +3,13 @@ using System.Collections.Generic;
 using Accord.Statistics.Testing;
 using MathNet.Numerics.Statistics;
 using Sailfish.Analysis.SailDiff;
-using Sailfish.Contracts;
 using Sailfish.Contracts.Public;
 
 namespace Sailfish.Statistics.Tests.KolmogorovSmirnovTestSailfish;
+
+public interface IKolmogorovSmirnovTestSailfish : ITest
+{
+}
 
 public class KolmogorovSmirnovTestSailfish : IKolmogorovSmirnovTestSailfish
 {

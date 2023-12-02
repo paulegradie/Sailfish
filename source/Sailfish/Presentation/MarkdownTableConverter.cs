@@ -9,6 +9,13 @@ using Sailfish.Statistics;
 
 namespace Sailfish.Presentation;
 
+public interface IMarkdownTableConverter
+{
+    string ConvertToMarkdownTableString(IEnumerable<IClassExecutionSummary> executionSummaries);
+    string ConvertToMarkdownTableString(IEnumerable<IClassExecutionSummary> executionSummaries, Func<IClassExecutionSummary, bool> summaryFilter);
+    string ConvertScaleFishResultToMarkdown(IEnumerable<ScalefishClassModel> testClassComplexityResults);
+}
+
 public class MarkdownTableConverter : IMarkdownTableConverter
 {
     public string ConvertToMarkdownTableString(

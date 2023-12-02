@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using Sailfish.Analysis.SailDiff;
+using Sailfish.Contracts.Public;
 using Sailfish.Extensions.Types;
+using Sailfish.Logging;
 using Sailfish.Presentation;
 
 
@@ -10,28 +12,51 @@ namespace Sailfish;
 public class RunSettingsBuilder
 {
     private bool createTrackingFiles = true;
-    private bool sailfDiff = false;
+    private bool sailDiff = false;
     private bool scaleFish = false;
-    private bool executeNotificationHandler = false;
     private readonly List<string> names = new();
     private readonly List<Type> testAssembliesAnchorTypes = new();
     private readonly List<Type> registrationProviderAnchorTypes = new();
     private readonly List<string> providedBeforeTrackingFiles = new();
-    private OrderedDictionary tags = new();
-    private OrderedDictionary args = new();
+    private readonly OrderedDictionary tags = new();
+    private readonly OrderedDictionary args = new();
     private string? localOutputDir;
     private SailDiffSettings? sdSettings;
     private DateTime? timeStamp;
-    private bool debg = false;
+    private bool setDebug = false;
     private bool disableOverheadEstimation;
     private bool disableAnalysisGlobally = false;
     private int? globalSampleSize;
     private int? globalNumWarmupIterations;
     private bool streamTrackingUpdates = true;
-    
+    private bool disableLogging = false;
+    private ILogger? customLogger;
+    private LogLevel? level;
+
     public static RunSettingsBuilder CreateBuilder()
     {
         return new RunSettingsBuilder();
+    }
+
+    public RunSettingsBuilder WithMinimumLogLevel(LogLevel logLevel)
+    {
+        level = logLevel;
+        return this;
+    }
+
+    public RunSettingsBuilder WithCustomLogger(ILogger logger)
+    {
+        customLogger = logger;
+        return this;
+    }
+
+    /// <summary>
+    /// Disables logging to stdOut by setting the static global logger to an instance of the SilentLogger and setting the disableLogging IRunSetting property to true.
+    /// </summary>
+    public RunSettingsBuilder DisableLogging()
+    {
+        disableLogging = true;
+        return this;
     }
 
     /// <summary>
@@ -45,7 +70,7 @@ public class RunSettingsBuilder
         streamTrackingUpdates = false;
         return this;
     }
-    
+
     /// <summary>
     /// Provide a string array of class names to execute. This will run all test cases in a class decorated with the SailfishAttribute.
     /// </summary>
@@ -67,34 +92,42 @@ public class RunSettingsBuilder
         return this;
     }
 
+    /// <summary>
+    /// Configures whether or not to produce tracking files for the current run. Tracking files are used by SailDiff and ScaleFish
+    /// </summary>
+    /// <param name="track"></param>
+    /// <returns></returns>
     public RunSettingsBuilder CreateTrackingFiles(bool track = true)
     {
         createTrackingFiles = track;
         return this;
     }
 
+    /// <summary>
+    /// Configures whether or not to enable SailDiff for the current run.
+    /// </summary>
     public RunSettingsBuilder WithSailDiff()
     {
-        sailfDiff = true;
+        sailDiff = true;
         return this;
     }
 
+    /// <summary>
+    /// Configures whether or not to enable SailDiff for the current run with a custom SailDiffSettings object.
+    /// </summary>
     public RunSettingsBuilder WithSailDiff(SailDiffSettings settings)
     {
         sdSettings = settings;
-        sailfDiff = true;
+        sailDiff = true;
         return this;
     }
 
-    public RunSettingsBuilder WithScalefish()
+    /// <summary>
+    /// Configures whether or not to enable ScaleFish for the current run.
+    /// </summary>
+    public RunSettingsBuilder WithScaleFish()
     {
         scaleFish = true;
-        return this;
-    }
-
-    public RunSettingsBuilder ExecuteNotificationHandler()
-    {
-        executeNotificationHandler = true;
         return this;
     }
 
@@ -118,10 +151,13 @@ public class RunSettingsBuilder
 
     public RunSettingsBuilder WithTags(OrderedDictionary tags)
     {
-        this.tags = tags;
+        foreach (var runTag in tags)
+        {
+            tags.Add(runTag.Key, runTag.Value);
+        }
+
         return this;
     }
-
 
     public RunSettingsBuilder WithArg(string key, string value)
     {
@@ -129,9 +165,13 @@ public class RunSettingsBuilder
         return this;
     }
 
-    public RunSettingsBuilder WithArgs(OrderedDictionary args)
+    public RunSettingsBuilder WithArgs(OrderedDictionary runArgs)
     {
-        this.args = args;
+        foreach (var runArg in runArgs)
+        {
+            args.Add(runArg.Key, runArg.Value);
+        }
+
         return this;
     }
 
@@ -155,7 +195,7 @@ public class RunSettingsBuilder
 
     public RunSettingsBuilder InDebugMode(bool debug = false)
     {
-        debg = debug;
+        setDebug = debug;
         return this;
     }
 
@@ -184,27 +224,26 @@ public class RunSettingsBuilder
     }
 
     public IRunSettings Build()
-    {
-        return new RunSettings(
+        => new RunSettings(
             names,
             localOutputDir ?? DefaultFileSettings.DefaultOutputDirectory,
             createTrackingFiles,
-            sailfDiff,
+            sailDiff,
             scaleFish,
-            executeNotificationHandler,
             sdSettings ?? new SailDiffSettings(),
             tags,
             args,
             providedBeforeTrackingFiles,
             testAssembliesAnchorTypes.Count == 0 ? new[] { GetType() } : testAssembliesAnchorTypes,
             registrationProviderAnchorTypes.Count == 0 ? new[] { GetType() } : registrationProviderAnchorTypes,
+            customLogger,
             disableOverheadEstimation,
             timeStamp,
             globalSampleSize,
             globalNumWarmupIterations,
             disableAnalysisGlobally,
             streamTrackingUpdates,
-            debg
-        );
-    }
+            disableLogging,
+            level ?? LogLevel.Verbose,
+            setDebug);
 }

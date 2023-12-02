@@ -13,6 +13,14 @@ using Sailfish.TestAdapter.TestProperties;
 
 namespace Sailfish.TestAdapter.Execution;
 
+internal interface ITestAdapterExecutionEngine
+{
+    Task<List<IClassExecutionSummary>> Execute(
+        List<TestCase> testCases,
+        TrackingFileDataList preloadedLastRunIfAvailable,
+        CancellationToken cancellationToken);
+}
+
 internal class TestAdapterExecutionEngine : ITestAdapterExecutionEngine
 {
     private const string MemoryCacheName = "GlobalStateMemoryCache";

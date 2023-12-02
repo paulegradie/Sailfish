@@ -43,7 +43,7 @@ async Task<ScalefishModel> LoadAModelFile(string rootDir)
             .TestsFromAssembliesContaining(typeof(ScaleFishExample))
             .ProvidersFromAssembliesContaining(typeof(ScaleFishExample))
             .WithSailDiff(new SailDiffSettings(testType: TestType.TTest))
-            .WithScalefish()
+            .WithScaleFish()
             .WithLocalOutputDirectory(outputDir)
             .Build());
 

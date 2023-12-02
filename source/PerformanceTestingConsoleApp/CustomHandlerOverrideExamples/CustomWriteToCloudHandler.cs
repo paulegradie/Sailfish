@@ -2,7 +2,7 @@
 using System.Threading;
 using System.Threading.Tasks;
 using MediatR;
-using Sailfish;
+using Sailfish.Contracts.Public;
 using Sailfish.Contracts.Public.Notifications;
 using Sailfish.Presentation;
 

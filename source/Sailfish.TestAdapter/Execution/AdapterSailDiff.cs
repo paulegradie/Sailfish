@@ -11,6 +11,15 @@ using Sailfish.Execution;
 
 namespace Sailfish.TestAdapter.Execution;
 
+internal interface IAdapterSailDiff : ISailDiffInternal
+{
+    string ComputeTestCaseDiff(
+        TestCaseExecutionResult testCaseExecutionResult,
+        IClassExecutionSummary classExecutionSummary,
+        PerformanceRunResult preloadedLastRun,
+        CancellationToken cancellationToken);
+}
+
 internal class AdapterSailDiff : IAdapterSailDiff
 {
     private readonly IMediator mediator;

@@ -1,8 +1,8 @@
 using System.IO;
+using Sailfish.Contracts.Public;
 using Sailfish.Exceptions;
 using Sailfish.TestAdapter.Discovery;
 using Sailfish.TestAdapter.TestSettingsParser;
-
 
 namespace Sailfish.TestAdapter.Execution;
 
@@ -49,7 +49,7 @@ public static class AdapterRunSettingsLoader
         var runSettings = runSettingsBuilder
             .CreateTrackingFiles()
             .WithSailDiff(testSettings)
-            .WithScalefish()
+            .WithScaleFish()
             .Build();
         return runSettings;
     }

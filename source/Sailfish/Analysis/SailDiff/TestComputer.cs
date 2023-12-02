@@ -4,9 +4,14 @@ using System.Linq;
 using System.Threading.Tasks;
 using Sailfish.Contracts.Public;
 using Sailfish.Extensions.Methods;
-using Serilog;
+using Sailfish.Logging;
 
 namespace Sailfish.Analysis.SailDiff;
+
+public interface ITestComputer
+{
+    List<TestCaseResults> ComputeTest(TestData beforeTestData, TestData afterTestData, SailDiffSettings settings);
+}
 
 public class TestComputer : ITestComputer
 {

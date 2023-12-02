@@ -5,6 +5,11 @@ using Sailfish.Execution;
 
 namespace Sailfish.Analysis.ScaleFish;
 
+public interface IScalefishObservationCompiler
+{
+    ObservationSetFromSummaries? CompileObservationSet(IClassExecutionSummary testClassSummary);
+}
+
 internal class ScalefishObservationCompiler : IScalefishObservationCompiler
 {
     public ObservationSetFromSummaries? CompileObservationSet(IClassExecutionSummary testClassSummary)

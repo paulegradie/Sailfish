@@ -8,6 +8,11 @@ using Sailfish.Extensions.Methods;
 
 namespace Sailfish.Execution;
 
+public interface ITypeActivator
+{
+    object CreateDehydratedTestInstance(Type test, TestCaseId testCaseId, bool disabled = false);
+}
+
 public class TypeActivator : ITypeActivator
 {
     private readonly ILifetimeScope lifetimeScope;
@@ -38,7 +43,7 @@ public class TypeActivator : ITypeActivator
         }
 
         var constructors = test.GetConstructors(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
-        
+
         var obj = constructors.Length switch
         {
             0 => Activator.CreateInstance(test),

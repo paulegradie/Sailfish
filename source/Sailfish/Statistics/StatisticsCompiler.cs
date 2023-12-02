@@ -5,8 +5,13 @@ using Sailfish.Extensions.Methods;
 
 namespace Sailfish.Statistics;
 
+internal interface IStatisticsCompiler
+{
+    PerformanceRunResult Compile(TestCaseId testCaseId, PerformanceTimer populatedTimer, IExecutionSettings executionSettings);
+}
+
 internal class StatisticsCompiler : IStatisticsCompiler
-{ 
+{
     public PerformanceRunResult Compile(TestCaseId testCaseId, PerformanceTimer populatedTimer, IExecutionSettings executionSettings)
     {
         return populatedTimer.ToDescriptiveStatistics(testCaseId, executionSettings);

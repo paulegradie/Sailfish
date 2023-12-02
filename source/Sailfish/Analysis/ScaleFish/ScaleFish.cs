@@ -3,13 +3,19 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using MediatR;
+using Sailfish.Contracts.Public;
 using Sailfish.Contracts.Public.Notifications;
 using Sailfish.Contracts.Public.Requests;
-using Sailfish.Contracts.Serialization.V1;
+using Sailfish.Contracts.Public.Serialization.Tracking.V1;
 using Sailfish.Presentation;
 using Sailfish.Presentation.Console;
 
 namespace Sailfish.Analysis.ScaleFish;
+
+public interface IScaleFish
+{
+    void Analyze(ClassExecutionSummaryTrackingFormat summaryTrackingFormat);
+}
 
 internal class ScaleFish : IScaleFish, IScaleFishInternal
 {
@@ -35,7 +41,7 @@ internal class ScaleFish : IScaleFish, IScaleFishInternal
 
     public async Task Analyze(CancellationToken cancellationToken)
     {
-        if (!runSettings.RunScalefish) return;
+        if (!runSettings.RunScaleFish) return;
 
         var response = await mediator.Send(new GetLatestExecutionSummaryRequest(), cancellationToken);
         var executionSummaries = response.LatestExecutionSummaries;

@@ -3,9 +3,18 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using Sailfish.Attributes;
+using Sailfish.Contracts.Public;
 using Sailfish.Extensions.Methods;
 
 namespace Sailfish.Execution;
+
+internal interface ITestInstanceContainerCreator
+{
+    List<TestInstanceContainerProvider> CreateTestContainerInstanceProviders(
+        Type test,
+        Func<PropertySet, bool>? propertyTensorFilter = null,
+        Func<MethodInfo, bool>? instanceContainerFilter = null);
+}
 
 internal class TestInstanceContainerCreator : ITestInstanceContainerCreator
 {

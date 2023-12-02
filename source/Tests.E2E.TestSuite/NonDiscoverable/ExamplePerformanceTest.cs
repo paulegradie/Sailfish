@@ -1,7 +1,7 @@
 using Demo.API;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Sailfish.Attributes;
-using Serilog;
+using Sailfish.Logging;
 using Tests.E2E.TestSuite.Utils;
 
 // Tests here are automatically discovered and executed
@@ -25,21 +25,18 @@ public class ExamplePerformanceTest : TestBase
     [SailfishGlobalSetup]
     public void GlobalSetup(CancellationToken cancellationToken)
     {
-        ;
         // logger.Information("This is the Global Setup");
     }
 
     [SailfishMethodSetup]
     public void ExecutionMethodSetup(CancellationToken cancellationToken)
     {
-        ;
         // logger.Information("This is the Execution Method Setup");
     }
 
     [SailfishIterationSetup]
     public void IterationSetup(CancellationToken cancellationToken)
     {
-        ;
         // logger.Warning("This is the Iteration Setup - use sparingly");
     }
 
@@ -60,14 +57,12 @@ public class ExamplePerformanceTest : TestBase
     [SailfishIterationTeardown]
     public void IterationTeardown(CancellationToken cancellationToken)
     {
-        ;
         // logger.Warning("This is the Iteration Teardown - use sparingly");
     }
 
     [SailfishMethodTeardown]
     public void ExecutionMethodTeardown(CancellationToken cancellationToken)
     {
-        ;
         // logger.Verbose("This is the Execution Method Teardown");
     }
 

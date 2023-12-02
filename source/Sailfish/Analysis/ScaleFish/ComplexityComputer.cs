@@ -5,6 +5,11 @@ using Sailfish.Execution;
 
 namespace Sailfish.Analysis.ScaleFish;
 
+public interface IComplexityComputer
+{
+    IEnumerable<ScalefishClassModel> AnalyzeComplexity(List<IClassExecutionSummary> executionSummaries);
+}
+
 public class ComplexityComputer : IComplexityComputer
 {
     private readonly IComplexityEstimator complexityEstimator;
