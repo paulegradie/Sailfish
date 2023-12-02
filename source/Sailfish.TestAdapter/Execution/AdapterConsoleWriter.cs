@@ -7,15 +7,15 @@ using Microsoft.VisualStudio.TestPlatform.ObjectModel.Adapter;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.Logging;
 using Sailfish.Analysis;
 using Sailfish.Analysis.SailDiff;
+using Sailfish.Analysis.SailDiff.Statistics;
 using Sailfish.Contracts.Public;
+using Sailfish.Contracts.Public.Models;
 using Sailfish.Execution;
 using Sailfish.Extensions.Methods;
 using Sailfish.Extensions.Types;
 using Sailfish.Logging;
 using Sailfish.Presentation;
 using Sailfish.Presentation.Console;
-using Sailfish.Statistics;
-
 
 namespace Sailfish.TestAdapter.Execution;
 
@@ -25,7 +25,7 @@ internal interface IAdapterConsoleWriter : IConsoleWriter
     void RecordStart(TestCase testCase);
     void RecordResult(TestResult testResult);
     void RecordEnd(TestCase testCase, TestOutcome testOutcome);
-    string WriteTestResultsToIdeConsole(TestCaseResults testCaseResults, TestIds testIds, SailDiffSettings sailDiffSettings);
+    string WriteTestResultsToIdeConsole(SailDiffResult sailDiffResult, TestIds testIds, SailDiffSettings sailDiffSettings);
 }
 
 internal class AdapterConsoleWriter : IAdapterConsoleWriter
@@ -169,30 +169,29 @@ internal class AdapterConsoleWriter : IAdapterConsoleWriter
         WriteMessage(result, TestMessageLevel.Informational);
     }
 
-    public string WriteTestResultsToIdeConsole(TestCaseResults testCaseResults, TestIds testIds, SailDiffSettings sailDiffSettings)
+    public string WriteTestResultsToIdeConsole(SailDiffResult sailDiffResult, TestIds testIds, SailDiffSettings sailDiffSettings)
     {
         var stringBuilder = new StringBuilder();
-        if (testCaseResults.TestResultsWithOutlierAnalysis.TestResults.Failed)
-        {
-            stringBuilder.AppendLine("Statistical testing failed:");
-            stringBuilder.AppendLine(testCaseResults.TestResultsWithOutlierAnalysis.ExceptionMessage);
-            stringBuilder.AppendLine(testCaseResults.TestResultsWithOutlierAnalysis.ExceptionMessage);
-            return stringBuilder.ToString();
-        }
+        return StatisticalTestFailsThenBailAndReturnNothing(sailDiffResult, stringBuilder, out var nothingToWrite)
+            ? nothingToWrite
+            : FormattedSailDiffResult(sailDiffResult, sailDiffSettings, stringBuilder);
+    }
 
+    private static string FormattedSailDiffResult(SailDiffResult sailDiffResult, SailDiffSettings sailDiffSettings, StringBuilder stringBuilder)
+    {
         const string testLine = "Statistical Test";
         stringBuilder.AppendLine(testLine);
         stringBuilder.AppendLine(string.Join("", Enumerable.Range(0, testLine.Length).Select(x => "-")));
 
         stringBuilder.AppendLine("Test Used:       " + sailDiffSettings.TestType);
         stringBuilder.AppendLine("PVal Threshold:  " + sailDiffSettings.Alpha);
-        stringBuilder.AppendLine("PValue:          " + testCaseResults.TestResultsWithOutlierAnalysis.TestResults.PValue);
-        var significant = testCaseResults.TestResultsWithOutlierAnalysis.TestResults.PValue < sailDiffSettings.Alpha;
+        stringBuilder.AppendLine("PValue:          " + sailDiffResult.TestResultsWithOutlierAnalysis.StatisticalTestResult.PValue);
+        var significant = sailDiffResult.TestResultsWithOutlierAnalysis.StatisticalTestResult.PValue < sailDiffSettings.Alpha;
         var changeLine = "Change:          "
-                         + testCaseResults.TestResultsWithOutlierAnalysis.TestResults.ChangeDescription
+                         + sailDiffResult.TestResultsWithOutlierAnalysis.StatisticalTestResult.ChangeDescription
                          + (significant
-                             ? $"  (reason: {testCaseResults.TestResultsWithOutlierAnalysis.TestResults.PValue} < {sailDiffSettings.Alpha} )"
-                             : $"  (reason: {testCaseResults.TestResultsWithOutlierAnalysis.TestResults.PValue} > {sailDiffSettings.Alpha})");
+                             ? $"  (reason: {sailDiffResult.TestResultsWithOutlierAnalysis.StatisticalTestResult.PValue} < {sailDiffSettings.Alpha} )"
+                             : $"  (reason: {sailDiffResult.TestResultsWithOutlierAnalysis.StatisticalTestResult.PValue} > {sailDiffSettings.Alpha})");
         stringBuilder.AppendLine(changeLine);
         stringBuilder.AppendLine();
 
@@ -200,18 +199,18 @@ internal class AdapterConsoleWriter : IAdapterConsoleWriter
         {
             new()
             {
-                Name = "Mean", Before = Math.Round(testCaseResults.TestResultsWithOutlierAnalysis.TestResults.MeanBefore, 4),
-                After = Math.Round(testCaseResults.TestResultsWithOutlierAnalysis.TestResults.MeanAfter, 4)
+                Name = "Mean", Before = Math.Round(sailDiffResult.TestResultsWithOutlierAnalysis.StatisticalTestResult.MeanBefore, 4),
+                After = Math.Round(sailDiffResult.TestResultsWithOutlierAnalysis.StatisticalTestResult.MeanAfter, 4)
             },
             new()
             {
-                Name = "Median", Before = Math.Round(testCaseResults.TestResultsWithOutlierAnalysis.TestResults.MedianBefore, 4),
-                After = Math.Round(testCaseResults.TestResultsWithOutlierAnalysis.TestResults.MedianAfter, 4)
+                Name = "Median", Before = Math.Round(sailDiffResult.TestResultsWithOutlierAnalysis.StatisticalTestResult.MedianBefore, 4),
+                After = Math.Round(sailDiffResult.TestResultsWithOutlierAnalysis.StatisticalTestResult.MedianAfter, 4)
             },
             new()
             {
-                Name = "Sample Size", Before = testCaseResults.TestResultsWithOutlierAnalysis.TestResults.SampleSizeBefore,
-                After = testCaseResults.TestResultsWithOutlierAnalysis.TestResults.SampleSizeAfter
+                Name = "Sample Size", Before = sailDiffResult.TestResultsWithOutlierAnalysis.StatisticalTestResult.SampleSizeBefore,
+                After = sailDiffResult.TestResultsWithOutlierAnalysis.StatisticalTestResult.SampleSizeAfter
             }
         };
 
@@ -223,6 +222,19 @@ internal class AdapterConsoleWriter : IAdapterConsoleWriter
             t => t.After));
 
         return stringBuilder.ToString();
+    }
+
+    private static bool StatisticalTestFailsThenBailAndReturnNothing(SailDiffResult sailDiffResult, StringBuilder stringBuilder, out string s)
+    {
+        s = string.Empty;
+        if (!sailDiffResult.TestResultsWithOutlierAnalysis.StatisticalTestResult.Failed) return false;
+        stringBuilder.AppendLine("Statistical testing failed:");
+        stringBuilder.AppendLine(sailDiffResult.TestResultsWithOutlierAnalysis.ExceptionMessage);
+        stringBuilder.AppendLine(sailDiffResult.TestResultsWithOutlierAnalysis.ExceptionMessage);
+        {
+            s = stringBuilder.ToString();
+            return true;
+        }
     }
 
     private void WriteMessage(string message, TestMessageLevel messageLevel)
@@ -259,7 +271,11 @@ internal class AdapterConsoleWriter : IAdapterConsoleWriter
         messageLogger?.RecordEnd(testCase, testOutcome);
     }
 
-    private static void BuildHeader(StringBuilder stringBuilder, IEnumerable<string> beforeIds, IEnumerable<string> afterIds, SailDiffSettings sailDiffSettings)
+    private static void BuildHeader(
+        StringBuilder stringBuilder,
+        IEnumerable<string> beforeIds,
+        IEnumerable<string> afterIds,
+        SailDiffSettings sailDiffSettings)
     {
         stringBuilder.AppendLine();
         stringBuilder.AppendLine("-----------------------------------");

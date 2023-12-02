@@ -1,6 +1,6 @@
 using CsvHelper.Configuration;
 using Sailfish.Contracts.Private.CsvMaps.Converters;
-using Sailfish.Contracts.Public;
+using Sailfish.Contracts.Public.Models;
 
 namespace Sailfish.Contracts.Private.CsvMaps;
 

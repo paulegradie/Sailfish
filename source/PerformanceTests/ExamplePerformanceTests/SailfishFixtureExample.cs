@@ -54,7 +54,6 @@ public class ExampleDep
 {
     public void WriteSomething(string something, int sleepPeriod)
     {
-        Console.WriteLine(something);
         Thread.Sleep(sleepPeriod);
     }
 }

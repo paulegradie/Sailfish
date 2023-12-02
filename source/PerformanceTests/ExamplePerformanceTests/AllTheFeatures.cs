@@ -39,7 +39,6 @@ public class AllTheFeatures
     public async Task SlowerMethod(CancellationToken ct)
     {
         var wait = Delay - Multiplier * Multiplier;
-        Console.WriteLine("Waiting: " + wait);
         await Task.Delay(Math.Max(0, wait), ct);
         reg.Noop();
     }

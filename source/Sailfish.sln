@@ -6,13 +6,11 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Demo.API", "Demo.API\Demo.A
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tests.Library", "Tests.Library\Tests.Library.csproj", "{A42A41D3-7A3F-4475-B245-A2E896A2589F}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PerformanceTestingConsoleApp", "PerformanceTestingConsoleApp\PerformanceTestingConsoleApp.csproj", "{EE33D17C-3F19-40A9-8394-D966232723A6}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sailfish.TestAdapter", "Sailfish.TestAdapter\Sailfish.TestAdapter.csproj", "{71C488BD-3668-4D53-A5BD-6E9307215B5E}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PerformanceTests", "PerformanceTests\PerformanceTests.csproj", "{589A178C-41ED-4B33-9DB4-DD6300DE41FB}"
 EndProject
-Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Demo", "Demo", "{AA777AE3-7608-4068-9BDE-3AE366657722}"
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Demos", "Demos", "{AA777AE3-7608-4068-9BDE-3AE366657722}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Tests", "Tests", "{74A88B77-784B-4600-9F69-097A6CDF71D5}"
 EndProject
@@ -20,7 +18,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tests.TestAdapter", "Tests.
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tests.E2E.TestSuite", "Tests.E2E.TestSuite\Tests.E2E.TestSuite.csproj", "{E48F48D1-A39A-4F19-BE07-2312244284AA}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PerformanceTestingUserInvokedConsoleApp", "PerformanceTestingUserInvokedConsoleApp\PerformanceTestingUserInvokedConsoleApp.csproj", "{EBBA336B-1931-4340-82F5-C31815DE5357}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConsoleAppDemo", "ConsoleAppDemo\ConsoleAppDemo.csproj", "{EBBA336B-1931-4340-82F5-C31815DE5357}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tests.E2E.ExceptionHandling", "Tests.E2E.ExceptionHandling\Tests.E2E.ExceptionHandling.csproj", "{F806AE1E-4D04-4EBF-BEA5-47731A37B0F0}"
 EndProject
@@ -28,7 +26,7 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Sailfish.Analyzers", "Sailf
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tests.Analyzers", "Tests.Analyzers\Tests.Analyzers.csproj", "{8D35AC3D-E18E-46A3-BCC5-2F3EEC7DA2B6}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ModelPredictions", "ModelPredictions\ModelPredictions.csproj", "{AEB0818A-54F5-4243-A3EF-65974D9A8886}"
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ScaleFishDemo", "ScaleFishDemo\ScaleFishDemo.csproj", "{AEB0818A-54F5-4243-A3EF-65974D9A8886}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -48,10 +46,6 @@ Global
 		{A42A41D3-7A3F-4475-B245-A2E896A2589F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A42A41D3-7A3F-4475-B245-A2E896A2589F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A42A41D3-7A3F-4475-B245-A2E896A2589F}.Release|Any CPU.Build.0 = Release|Any CPU
-		{EE33D17C-3F19-40A9-8394-D966232723A6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{EE33D17C-3F19-40A9-8394-D966232723A6}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{EE33D17C-3F19-40A9-8394-D966232723A6}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{EE33D17C-3F19-40A9-8394-D966232723A6}.Release|Any CPU.Build.0 = Release|Any CPU
 		{71C488BD-3668-4D53-A5BD-6E9307215B5E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{71C488BD-3668-4D53-A5BD-6E9307215B5E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{71C488BD-3668-4D53-A5BD-6E9307215B5E}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -90,7 +84,6 @@ Global
 		{AEB0818A-54F5-4243-A3EF-65974D9A8886}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(NestedProjects) = preSolution
-		{EE33D17C-3F19-40A9-8394-D966232723A6} = {AA777AE3-7608-4068-9BDE-3AE366657722}
 		{589A178C-41ED-4B33-9DB4-DD6300DE41FB} = {AA777AE3-7608-4068-9BDE-3AE366657722}
 		{A42A41D3-7A3F-4475-B245-A2E896A2589F} = {74A88B77-784B-4600-9F69-097A6CDF71D5}
 		{46F5F8AF-033A-4DE4-BDC3-134AEED4551A} = {74A88B77-784B-4600-9F69-097A6CDF71D5}

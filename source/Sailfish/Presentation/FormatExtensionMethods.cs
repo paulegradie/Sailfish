@@ -1,9 +1,8 @@
 using System.Collections.Generic;
 using System.Linq;
-using Sailfish.Contracts.Public;
+using Sailfish.Contracts.Public.Models;
 using Sailfish.Contracts.Public.Serialization.Tracking.V1;
 using Sailfish.Execution;
-using Sailfish.Statistics;
 
 namespace Sailfish.Presentation;
 

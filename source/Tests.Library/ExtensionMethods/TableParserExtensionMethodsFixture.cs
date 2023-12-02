@@ -4,13 +4,13 @@ using System.Linq;
 using System.Linq.Expressions;
 using Sailfish.Analysis;
 using Sailfish.Analysis.SailDiff;
-using Sailfish.Contracts.Public;
+using Sailfish.Analysis.SailDiff.Statistics.Tests;
+using Sailfish.Analysis.SailDiff.Statistics.Tests.KolmogorovSmirnovTestSailfish;
+using Sailfish.Analysis.SailDiff.Statistics.Tests.MWWilcoxonTestSailfish;
+using Sailfish.Analysis.SailDiff.Statistics.Tests.TTestSailfish;
+using Sailfish.Analysis.SailDiff.Statistics.Tests.TwoSampleWilcoxonSignedRankTestSailfish;
+using Sailfish.Contracts.Public.Models;
 using Sailfish.Extensions.Methods;
-using Sailfish.Statistics.Tests;
-using Sailfish.Statistics.Tests.KolmogorovSmirnovTestSailfish;
-using Sailfish.Statistics.Tests.MWWilcoxonTestSailfish;
-using Sailfish.Statistics.Tests.TTestSailfish;
-using Sailfish.Statistics.Tests.TwoSampleWilcoxonSignedRankTestSailfish;
 using Shouldly;
 using Xunit;
 
@@ -21,16 +21,16 @@ public class TableParserExtensionMethodsFixture
     [Fact]
     public void TableIsParsedCorrectly()
     {
-        var selectors = new Expression<Func<TestCaseResults, object>>[]
+        var selectors = new Expression<Func<SailDiffResult, object>>[]
         {
             m => m.TestCaseId.DisplayName,
-            m => m.TestResultsWithOutlierAnalysis.TestResults.MeanBefore,
-            m => m.TestResultsWithOutlierAnalysis.TestResults.MeanAfter,
-            m => m.TestResultsWithOutlierAnalysis.TestResults.MedianBefore,
-            m => m.TestResultsWithOutlierAnalysis.TestResults.MedianAfter,
-            m => m.TestResultsWithOutlierAnalysis.TestResults.PValue,
-            m => m.TestResultsWithOutlierAnalysis.TestResults.TestStatistic,
-            m => m.TestResultsWithOutlierAnalysis.TestResults.ChangeDescription
+            m => m.TestResultsWithOutlierAnalysis.StatisticalTestResult.MeanBefore,
+            m => m.TestResultsWithOutlierAnalysis.StatisticalTestResult.MeanAfter,
+            m => m.TestResultsWithOutlierAnalysis.StatisticalTestResult.MedianBefore,
+            m => m.TestResultsWithOutlierAnalysis.StatisticalTestResult.MedianAfter,
+            m => m.TestResultsWithOutlierAnalysis.StatisticalTestResult.PValue,
+            m => m.TestResultsWithOutlierAnalysis.StatisticalTestResult.TestStatistic,
+            m => m.TestResultsWithOutlierAnalysis.StatisticalTestResult.ChangeDescription
         };
 
         var colSuffixes = new[]
@@ -51,7 +51,7 @@ public class TableParserExtensionMethodsFixture
             new SailDiffSettings(0.01, 0, false, TestType.TTest));
 
         var testCaseId = new TestCaseId("MyClass.MySampleTest(N: 2, X: 4)");
-        var testCaseResults = new List<TestCaseResults>() { new(testCaseId, result) };
+        var testCaseResults = new List<SailDiffResult>() { new(testCaseId, result) };
 
         var res = testCaseResults
             .ToStringTable(colSuffixes, selectors)

@@ -4,8 +4,15 @@ using MediatR.Extensions.Autofac.DependencyInjection;
 using MediatR.Extensions.Autofac.DependencyInjection.Builder;
 using Sailfish.Analysis;
 using Sailfish.Analysis.SailDiff;
+using Sailfish.Analysis.SailDiff.Statistics;
+using Sailfish.Analysis.SailDiff.Statistics.Tests;
+using Sailfish.Analysis.SailDiff.Statistics.Tests.KolmogorovSmirnovTestSailfish;
+using Sailfish.Analysis.SailDiff.Statistics.Tests.MWWilcoxonTestSailfish;
+using Sailfish.Analysis.SailDiff.Statistics.Tests.TTestSailfish;
+using Sailfish.Analysis.SailDiff.Statistics.Tests.TwoSampleWilcoxonSignedRankTestSailfish;
 using Sailfish.Analysis.ScaleFish;
 using Sailfish.Contracts.Public;
+using Sailfish.Contracts.Public.Models;
 using Sailfish.Contracts.Public.Serialization.Tracking.V1;
 using Sailfish.Execution;
 using Sailfish.Logging;
@@ -13,13 +20,6 @@ using Sailfish.Presentation;
 using Sailfish.Presentation.Console;
 using Sailfish.Presentation.CsvAndJson;
 using Sailfish.Presentation.Markdown;
-using Sailfish.Program;
-using Sailfish.Statistics;
-using Sailfish.Statistics.Tests;
-using Sailfish.Statistics.Tests.KolmogorovSmirnovTestSailfish;
-using Sailfish.Statistics.Tests.MWWilcoxonTestSailfish;
-using Sailfish.Statistics.Tests.TTestSailfish;
-using Sailfish.Statistics.Tests.TwoSampleWilcoxonSignedRankTestSailfish;
 
 namespace Sailfish.Registration;
 
@@ -78,7 +78,7 @@ public class SailfishModule : Module
         builder.RegisterType<ScaleFish>().As<IScaleFish>().InstancePerDependency();
         builder.RegisterType<TrackingFileSerialization>().As<ITrackingFileSerialization>();
         builder.RegisterType<TypeActivator>().As<ITypeActivator>();
-        builder.RegisterType<TestComputer>().As<ITestComputer>();
+        builder.RegisterType<StatisticalTestComputer>().As<IStatisticalTestComputer>();
         builder.RegisterType<TestPreprocessor>().As<ITestPreprocessor>();
         builder.RegisterType<StatisticalTestExecutor>().As<IStatisticalTestExecutor>();
         builder.RegisterType<PerformanceRunResultAggregator>().As<IPerformanceRunResultAggregator>();

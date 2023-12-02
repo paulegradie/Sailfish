@@ -1,5 +1,5 @@
-﻿using Sailfish.Analysis;
-using Sailfish.Attributes;
+﻿using Sailfish.Attributes;
+using Sailfish.Contracts.Public.Models;
 using Shouldly;
 using Tests.E2E.TestSuite.Utils;
 

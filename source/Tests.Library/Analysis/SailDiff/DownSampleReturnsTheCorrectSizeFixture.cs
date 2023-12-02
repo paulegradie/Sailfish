@@ -1,6 +1,6 @@
 ﻿using System.Threading.Tasks;
 using Sailfish.Analysis;
-using Sailfish.Statistics.Tests;
+using Sailfish.Analysis.SailDiff.Statistics.Tests;
 using Shouldly;
 using Xunit;
 

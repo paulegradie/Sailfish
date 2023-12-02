@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using Sailfish.Contracts.Public.Models;
 
 namespace Sailfish.Contracts.Public;
 

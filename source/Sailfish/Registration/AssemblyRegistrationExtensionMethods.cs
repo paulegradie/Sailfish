@@ -1,5 +1,5 @@
 ﻿using Autofac;
-using Sailfish.Contracts.Public;
+using Sailfish.Contracts.Public.Models;
 
 namespace Sailfish.Registration;
 

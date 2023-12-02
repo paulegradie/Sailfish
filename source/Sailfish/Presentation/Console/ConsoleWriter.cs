@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
-using Sailfish.Analysis;
 using Sailfish.Analysis.SailDiff;
+using Sailfish.Contracts.Public.Models;
 using Sailfish.Execution;
 using Sailfish.Extensions.Types;
 using Sailfish.Logging;

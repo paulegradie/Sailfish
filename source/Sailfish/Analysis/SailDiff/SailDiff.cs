@@ -4,6 +4,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using MediatR;
 using Sailfish.Contracts.Public;
+using Sailfish.Contracts.Public.Models;
 using Sailfish.Contracts.Public.Notifications;
 using Sailfish.Contracts.Public.Requests;
 using Sailfish.Logging;
@@ -26,7 +27,7 @@ internal class SailDiff : ISailDiffInternal, ISailDiff
     private readonly IMediator mediator;
     private readonly IRunSettings runSettings;
     private readonly ILogger logger;
-    private readonly ITestComputer testComputer;
+    private readonly IStatisticalTestComputer statisticalTestComputer;
     private readonly ISailDiffResultMarkdownConverter sailDiffResultMarkdownConverter;
     private readonly IConsoleWriter consoleWriter;
 
@@ -34,14 +35,14 @@ internal class SailDiff : ISailDiffInternal, ISailDiff
         IMediator mediator,
         IRunSettings runSettings,
         ILogger logger,
-        ITestComputer testComputer,
+        IStatisticalTestComputer statisticalTestComputer,
         ISailDiffResultMarkdownConverter sailDiffResultMarkdownConverter,
         IConsoleWriter consoleWriter)
     {
         this.mediator = mediator;
         this.runSettings = runSettings;
         this.logger = logger;
-        this.testComputer = testComputer;
+        this.statisticalTestComputer = statisticalTestComputer;
         this.sailDiffResultMarkdownConverter = sailDiffResultMarkdownConverter;
         this.consoleWriter = consoleWriter;
     }
@@ -81,7 +82,7 @@ internal class SailDiff : ISailDiffInternal, ISailDiff
             return;
         }
 
-        var testResults = testComputer.ComputeTest(
+        var testResults = statisticalTestComputer.ComputeTest(
             beforeAndAfterData.BeforeData,
             beforeAndAfterData.AfterData,
             runSettings.SailDiffSettings);

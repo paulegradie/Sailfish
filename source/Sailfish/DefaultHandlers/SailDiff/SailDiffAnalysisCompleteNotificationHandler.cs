@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 using CsvHelper;
 using MediatR;
 using Sailfish.Contracts.Private.CsvMaps;
-using Sailfish.Contracts.Public;
+using Sailfish.Contracts.Public.Models;
 using Sailfish.Contracts.Public.Notifications;
 using Sailfish.Presentation;
 
@@ -43,7 +43,7 @@ internal class SailDiffAnalysisCompleteNotificationHandler : INotificationHandle
         }
     }
 
-    private async Task WriteCsvFile(IReadOnlyCollection<TestCaseResults> testCaseResults, CancellationToken cancellationToken)
+    private async Task WriteCsvFile(IReadOnlyCollection<SailDiffResult> testCaseResults, CancellationToken cancellationToken)
     {
         var fileName = DefaultFileSettings
             .AppendTagsToFilename(

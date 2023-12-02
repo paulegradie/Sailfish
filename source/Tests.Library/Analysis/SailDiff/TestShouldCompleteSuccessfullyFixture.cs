@@ -1,11 +1,11 @@
 ﻿using System.Threading.Tasks;
 using Sailfish.Analysis;
 using Sailfish.Analysis.SailDiff;
-using Sailfish.Statistics.Tests;
-using Sailfish.Statistics.Tests.KolmogorovSmirnovTestSailfish;
-using Sailfish.Statistics.Tests.MWWilcoxonTestSailfish;
-using Sailfish.Statistics.Tests.TTestSailfish;
-using Sailfish.Statistics.Tests.TwoSampleWilcoxonSignedRankTestSailfish;
+using Sailfish.Analysis.SailDiff.Statistics.Tests;
+using Sailfish.Analysis.SailDiff.Statistics.Tests.KolmogorovSmirnovTestSailfish;
+using Sailfish.Analysis.SailDiff.Statistics.Tests.MWWilcoxonTestSailfish;
+using Sailfish.Analysis.SailDiff.Statistics.Tests.TTestSailfish;
+using Sailfish.Analysis.SailDiff.Statistics.Tests.TwoSampleWilcoxonSignedRankTestSailfish;
 using Shouldly;
 using Xunit;
 

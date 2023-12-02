@@ -7,7 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using CsvHelper;
 using Sailfish.Contracts.Private.CsvMaps;
-using Sailfish.Contracts.Public;
+using Sailfish.Contracts.Public.Models;
 using Sailfish.Execution;
 
 namespace Sailfish.Presentation.CsvAndJson;
