@@ -1,13 +1,11 @@
-using System.Collections.Immutable;
-using System.Diagnostics;
 using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Diagnostics;
 using Sailfish.Analyzers.Utils;
 using Sailfish.Analyzers.Utils.TreeParsingExtensionMethods;
-using DiagnosticDescriptor = Microsoft.CodeAnalysis.DiagnosticDescriptor;
-using LanguageNames = Microsoft.CodeAnalysis.LanguageNames;
-using SyntaxKind = Microsoft.CodeAnalysis.CSharp.SyntaxKind;
+using System.Collections.Immutable;
+using System.Diagnostics;
 
 namespace Sailfish.Analyzers.DiagnosticAnalyzers.SailfishVariable;
 
@@ -54,7 +52,7 @@ public class ShouldHavePublicSettersAnalyzer : DiagnosticAnalyzer
                 .OfType<AttributeSyntax>().Any(a => a.Name.ToString() == "SailfishVariable");
             if (!isSailfishVariableProperty) continue;
 
-            var propertySymbol = context.SemanticModel.GetDeclaredSymbol(property);
+            var propertySymbol = ModelExtensions.GetDeclaredSymbol(context.SemanticModel, property);
             if (propertySymbol is null || propertySymbol.DeclaredAccessibility != Accessibility.Public) continue;
 
             var setterIsPublic = propertySymbol
@@ -66,10 +64,7 @@ public class ShouldHavePublicSettersAnalyzer : DiagnosticAnalyzer
                 .SingleOrDefault(m => m.MethodKind == MethodKind.PropertySet)?
                 .DeclaredAccessibility == Accessibility.Public;
 
-            if (!setterIsPublic)
-            {
-                context.ReportDiagnostic(Diagnostic.Create(Descriptor, property.Identifier.GetLocation(), property.Identifier.Text));
-            }
+            if (!setterIsPublic) context.ReportDiagnostic(Diagnostic.Create(Descriptor, property.Identifier.GetLocation(), property.Identifier.Text));
         }
     }
 }

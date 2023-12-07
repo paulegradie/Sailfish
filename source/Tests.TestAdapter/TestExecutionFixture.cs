@@ -1,7 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using System.Threading;
-using Autofac;
+﻿using Autofac;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.Adapter;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.Logging;
@@ -12,6 +9,9 @@ using Sailfish.TestAdapter;
 using Sailfish.TestAdapter.Discovery;
 using Sailfish.TestAdapter.Execution;
 using Shouldly;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading;
 using Tests.TestAdapter.Utils;
 using Xunit;
 using IRunSettings = Sailfish.Contracts.Public.Models.IRunSettings;
@@ -20,9 +20,9 @@ namespace Tests.TestAdapter;
 
 public class TestExecutionFixture
 {
-    private readonly List<TestCase> testCases;
     private readonly ContainerBuilder builder;
     private readonly IFrameworkHandle frameworkHandle;
+    private readonly List<TestCase> testCases;
 
     public TestExecutionFixture()
     {

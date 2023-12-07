@@ -1,8 +1,8 @@
-﻿using System;
+﻿using Microsoft.VisualStudio.TestPlatform.ObjectModel.Logging;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using Microsoft.VisualStudio.TestPlatform.ObjectModel.Logging;
 
 namespace Sailfish.TestAdapter.Discovery;
 
@@ -27,11 +27,9 @@ internal static class DirectoryRecursion
         var csprojFile = Directory.GetFiles(dirName).SingleOrDefault(x => x.EndsWith(suffixToMatch));
 #pragma warning restore RS1035
         if (csprojFile is null)
-        {
             return ThereIsAParentDirectory(new DirectoryInfo(sourceFile), out var parentDir)
                 ? RecurseUpwardsUntilFileIsFoundInner(suffixToMatch, parentDir.FullName, maxParentDirLevel - 1)
                 : null;
-        }
 
         return new FileInfo(csprojFile);
     }
@@ -60,7 +58,6 @@ internal static class DirectoryRecursion
         if (where is not null) filePaths = filePaths.Where(where).ToArray();
         return filePaths.ToList();
     }
-
 
     public static class FileSearchFilters
     {

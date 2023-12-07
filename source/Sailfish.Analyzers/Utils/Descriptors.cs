@@ -78,9 +78,9 @@ public static class Descriptors
 
     public static readonly DiagnosticDescriptor SuppressNonNullablePropertiesNotSetRule = DescriptorHelper.CreateDescriptor(
         AnalyzerGroups.SuppressionAnalyzers,
-        idValue: 7000,
-        title: "NonNullableSuppression",
-        description: "Suppresses warnings when a non nullable property is set in the global setup method",
+        7000,
+        "NonNullableSuppression",
+        "Suppresses warnings when a non nullable property is set in the global setup method",
         messageFormat: "'{0}' should be suppressed",
         isEnabledByDefault: true,
         severity: DiagnosticSeverity.Hidden

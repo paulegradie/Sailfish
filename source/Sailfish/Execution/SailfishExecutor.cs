@@ -1,8 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 using MediatR;
 using Sailfish.Analysis.SailDiff;
 using Sailfish.Analysis.ScaleFish;
@@ -10,46 +5,37 @@ using Sailfish.Contracts.Public.Models;
 using Sailfish.Contracts.Public.Notifications;
 using Sailfish.Logging;
 using Sailfish.Presentation;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Sailfish.Execution;
 
-internal class SailfishExecutor
-{
-    private readonly ITestCollector testCollector;
-    private readonly ITestFilter testFilter;
-    private readonly IClassExecutionSummaryCompiler classExecutionSummaryCompiler;
-    private readonly IExecutionSummaryWriter executionSummaryWriter;
-    private readonly IRunSettings runSettings;
-    private readonly ILogger logger;
-    private readonly IMediator mediator;
-    private readonly ISailFishTestExecutor sailFishTestExecutor;
-    private readonly ISailDiffInternal sailDiff;
-    private readonly IScaleFishInternal scaleFish;
-
-    public SailfishExecutor(
-        IMediator mediator,
-        ISailFishTestExecutor sailFishTestExecutor,
-        ITestCollector testCollector,
-        ITestFilter testFilter,
-        IClassExecutionSummaryCompiler classExecutionSummaryCompiler,
-        IExecutionSummaryWriter executionSummaryWriter,
-        ISailDiffInternal sailDiff,
-        IScaleFishInternal scaleFish,
-        IRunSettings runSettings,
-        ILogger logger
+internal class SailfishExecutor(
+    IMediator mediator,
+    ISailFishTestExecutor sailFishTestExecutor,
+    ITestCollector testCollector,
+    ITestFilter testFilter,
+    IClassExecutionSummaryCompiler classExecutionSummaryCompiler,
+    IExecutionSummaryWriter executionSummaryWriter,
+    ISailDiffInternal sailDiff,
+    IScaleFishInternal scaleFish,
+    IRunSettings runSettings,
+    ILogger logger
     )
-    {
-        this.mediator = mediator;
-        this.sailFishTestExecutor = sailFishTestExecutor;
-        this.testCollector = testCollector;
-        this.testFilter = testFilter;
-        this.classExecutionSummaryCompiler = classExecutionSummaryCompiler;
-        this.executionSummaryWriter = executionSummaryWriter;
-        this.sailDiff = sailDiff;
-        this.scaleFish = scaleFish;
-        this.runSettings = runSettings;
-        this.logger = logger;
-    }
+{
+    private readonly IClassExecutionSummaryCompiler classExecutionSummaryCompiler = classExecutionSummaryCompiler;
+    private readonly IExecutionSummaryWriter executionSummaryWriter = executionSummaryWriter;
+    private readonly ILogger logger = logger;
+    private readonly IMediator mediator = mediator;
+    private readonly IRunSettings runSettings = runSettings;
+    private readonly ISailDiffInternal sailDiff = sailDiff;
+    private readonly ISailFishTestExecutor sailFishTestExecutor = sailFishTestExecutor;
+    private readonly IScaleFishInternal scaleFish = scaleFish;
+    private readonly ITestCollector testCollector = testCollector;
+    private readonly ITestFilter testFilter = testFilter;
 
     public async Task<SailfishRunResult> Run(CancellationToken cancellationToken)
     {
@@ -62,15 +48,9 @@ internal class SailfishExecutor
             await executionSummaryWriter.Write(classExecutionSummaries, cancellationToken);
             await mediator.Publish(new TestRunCompletedNotification(classExecutionSummaries.ToTrackingFormat()), cancellationToken).ConfigureAwait(false);
 
-            if (runSettings.RunSailDiff)
-            {
-                await sailDiff.Analyze(cancellationToken).ConfigureAwait(false);
-            }
+            if (runSettings.RunSailDiff) await sailDiff.Analyze(cancellationToken).ConfigureAwait(false);
 
-            if (runSettings.RunScaleFish)
-            {
-                await scaleFish.Analyze(cancellationToken).ConfigureAwait(false);
-            }
+            if (runSettings.RunScaleFish) await scaleFish.Analyze(cancellationToken).ConfigureAwait(false);
 
             var exceptions = classExecutionSummaries
                 .SelectMany(classExecutionSummary =>
@@ -88,7 +68,7 @@ internal class SailfishExecutor
             testInitializationResult.Errors.Count);
 
         var testDiscoveryExceptions = new List<Exception>();
-        foreach (var (reason, names) in testInitializationResult.Errors)
+        foreach ((var reason, var names) in testInitializationResult.Errors)
         {
             logger.Log(LogLevel.Error, "{Reason}", reason);
             foreach (var testName in names)

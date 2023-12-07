@@ -8,16 +8,10 @@ public class JsonNanConverter : JsonConverter<double>
 {
     public override double Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
     {
-        if (reader.TryGetDouble(out var value))
-        {
-            return value;
-        }
+        if (reader.TryGetDouble(out var value)) return value;
 
         var stringValue = reader.GetString();
-        if (stringValue != null && stringValue.Equals("NaN", StringComparison.InvariantCultureIgnoreCase))
-        {
-            return double.NaN;
-        }
+        if (stringValue != null && stringValue.Equals("NaN", StringComparison.InvariantCultureIgnoreCase)) return double.NaN;
 
         return stringValue switch
         {
@@ -31,16 +25,10 @@ public class JsonNanConverter : JsonConverter<double>
     public override void Write(Utf8JsonWriter writer, double value, JsonSerializerOptions options)
     {
         if (double.IsNaN(value))
-        {
             writer.WriteStringValue("NaN");
-        }
         else if (double.IsInfinity(value))
-        {
             writer.WriteStringValue(value.ToString());
-        }
         else
-        {
             writer.WriteNumberValue(value);
-        }
     }
 }

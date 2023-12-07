@@ -1,9 +1,9 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using Sailfish.Analysis.SailDiff.Statistics;
+﻿using Sailfish.Analysis.SailDiff.Statistics;
 using Sailfish.Contracts.Public.Models;
 using Sailfish.Exceptions;
 using Sailfish.Extensions.Methods;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace Sailfish.Execution;
 
@@ -12,16 +12,10 @@ internal interface IClassExecutionSummaryCompiler
     IEnumerable<IClassExecutionSummary> CompileToSummaries(IEnumerable<TestClassResultGroup> results);
 }
 
-internal class ClassExecutionSummaryCompiler : IClassExecutionSummaryCompiler
+internal class ClassExecutionSummaryCompiler(IStatisticsCompiler statsCompiler, IRunSettings runSettings) : IClassExecutionSummaryCompiler
 {
-    private readonly IStatisticsCompiler statsCompiler;
-    private readonly IRunSettings runSettings;
-
-    public ClassExecutionSummaryCompiler(IStatisticsCompiler statsCompiler, IRunSettings runSettings)
-    {
-        this.statsCompiler = statsCompiler;
-        this.runSettings = runSettings;
-    }
+    private readonly IRunSettings runSettings = runSettings;
+    private readonly IStatisticsCompiler statsCompiler = statsCompiler;
 
     public IEnumerable<IClassExecutionSummary> CompileToSummaries(IEnumerable<TestClassResultGroup> rawExecutionResults)
     {
@@ -33,7 +27,7 @@ internal class ClassExecutionSummaryCompiler : IClassExecutionSummaryCompiler
         var compiledResults = new List<ICompiledTestCaseResult>();
         foreach (var testClassExecutionResult in testClassResultGroup.ExecutionResults)
         {
-            var compiledResult = CompileTestResult(testClassExecutionResult, compiledResults);
+            var compiledResult = CompileTestResult(testClassExecutionResult);
             compiledResults.Add(compiledResult);
         }
 
@@ -44,16 +38,14 @@ internal class ClassExecutionSummaryCompiler : IClassExecutionSummaryCompiler
             compiledResults);
     }
 
-    private CompiledTestCaseResult CompileTestResult(TestCaseExecutionResult testCaseExecutionResult, ICollection<ICompiledTestCaseResult> compiledResults)
+    private CompiledTestCaseResult CompileTestResult(TestCaseExecutionResult testCaseExecutionResult)
     {
         if (!testCaseExecutionResult.IsSuccess)
-        {
             return new CompiledTestCaseResult(
                 testCaseExecutionResult.TestInstanceContainer?.TestCaseId,
                 testCaseExecutionResult.TestInstanceContainer?.GroupingId,
                 testCaseExecutionResult.Exception ?? new SailfishException("Encountered test failure but could not find an exception")
             );
-        }
 
         if (testCaseExecutionResult is { PerformanceTimerResults.IsValid: false, IsSuccess: true })
         {
@@ -70,10 +62,7 @@ internal class ClassExecutionSummaryCompiler : IClassExecutionSummaryCompiler
             descriptiveStatistics);
 
         // should never be the case...
-        if (testCaseExecutionResult.Exception is not null)
-        {
-            throw testCaseExecutionResult.Exception;
-        }
+        if (testCaseExecutionResult.Exception is not null) throw testCaseExecutionResult.Exception;
 
         return compiledResult;
     }

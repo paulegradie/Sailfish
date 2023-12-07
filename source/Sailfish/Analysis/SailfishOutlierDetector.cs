@@ -1,7 +1,7 @@
-﻿using System;
+﻿using Perfolizer.Mathematics.OutlierDetection;
+using System;
 using System.Collections.Generic;
 using System.Linq;
-using Perfolizer.Mathematics.OutlierDetection;
 
 namespace Sailfish.Analysis;
 
@@ -14,10 +14,7 @@ public class SailfishOutlierDetector : ISailfishOutlierDetector
 {
     public ProcessedStatisticalTestData DetectOutliers(IReadOnlyList<double> originalData)
     {
-        if (originalData.Count <= 3)
-        {
-            return new ProcessedStatisticalTestData(originalData.ToArray(), originalData.ToArray(), Array.Empty<double>(), Array.Empty<double>(), 0);
-        }
+        if (originalData.Count <= 3) return new ProcessedStatisticalTestData([.. originalData], [.. originalData], Array.Empty<double>(), Array.Empty<double>(), 0);
 
         var detector = TukeyOutlierDetector.Create(originalData);
 
@@ -25,10 +22,21 @@ public class SailfishOutlierDetector : ISailfishOutlierDetector
         var lowerOutliers = originalData.Where(x => Below(x, detector.LowerFence)).ToArray();
         var upperOutliers = originalData.Where(x => Above(x, detector.UpperFence)).ToArray();
 
-        return new ProcessedStatisticalTestData(originalData.ToArray(), outliersRemoved, lowerOutliers, upperOutliers, lowerOutliers.Length + upperOutliers.Length);
+        return new ProcessedStatisticalTestData([.. originalData], outliersRemoved, lowerOutliers, upperOutliers, lowerOutliers.Length + upperOutliers.Length);
     }
 
-    private static bool Between(double val, double hi, double low) => val > low && val < hi;
-    private static bool Below(double val, double fence) => val < fence;
-    private static bool Above(double val, double fence) => val > fence;
+    private static bool Between(double val, double hi, double low)
+    {
+        return val > low && val < hi;
+    }
+
+    private static bool Below(double val, double fence)
+    {
+        return val < fence;
+    }
+
+    private static bool Above(double val, double fence)
+    {
+        return val > fence;
+    }
 }

@@ -49,7 +49,7 @@ public class TestClass
         const string source = @"
 public class TestClass
 {
-    [SailfishVariable(1, 2, 3)] 
+    [SailfishVariable(1, 2, 3)]
     private int Placeholder { get; set; }
 }";
 
@@ -109,7 +109,7 @@ namespace Two
 {
     public class BaseAnalyzerClass
     {
-        [SailfishVariable(1, 2, 3)] 
+        [SailfishVariable(1, 2, 3)]
         private int {|#1:MyVar|} { get; set; }
 
         public int BaseValue { get; set; }

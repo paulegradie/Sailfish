@@ -1,48 +1,31 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using MathNet.Numerics.Statistics;
+﻿using MathNet.Numerics.Statistics;
 using Sailfish.Analysis;
 using Sailfish.Execution;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace Sailfish.Contracts.Public.Models;
 
-public class PerformanceRunResult
+public class PerformanceRunResult(string displayName, double mean, double stdDev, double variance,
+    double median, double[] rawExecutionResults, int sampleSize, int numWarmupIterations,
+    double[] dataWithOutliersRemoved, double[] upperOutliers, double[] lowerOutliers,
+    int totalNumOutliers)
 {
-    public PerformanceRunResult(string displayName, double mean, double stdDev, double variance,
-        double median, double[] rawExecutionResults, int sampleSize, int numWarmupIterations, 
-        double[] dataWithOutliersRemoved, double[] upperOutliers, double[] lowerOutliers,
-        int totalNumOutliers)
-    {
-        DisplayName = displayName;
-        Mean = mean;
-        StdDev = stdDev;
-        Variance = variance;
-        Median = median;
-        RawExecutionResults = rawExecutionResults;
-        SampleSize = sampleSize;
-        NumWarmupIterations = numWarmupIterations;
-        DataWithOutliersRemoved = dataWithOutliersRemoved;
-        UpperOutliers = upperOutliers;
-        LowerOutliers = lowerOutliers;
-        TotalNumOutliers = totalNumOutliers;
-    }
+    public string DisplayName { get; } = displayName;
+    public double Mean { get; } = mean;
+    public double Median { get; } = median;
+    public double StdDev { get; } = stdDev;
+    public double Variance { get; } = variance;
 
-    private const double Tolerance = 0.000000001;
-    public string DisplayName { get; }
-    public double Mean { get; }
-    public double Median { get; }
-    public double StdDev { get; }
-    public double Variance { get; }
+    public double[] RawExecutionResults { get; } = rawExecutionResults;
 
-    public double[] RawExecutionResults { get; } // milliseconds
+    public int SampleSize { get; } = sampleSize;
+    public int NumWarmupIterations { get; } = numWarmupIterations;
 
-    public int SampleSize { get; }
-    public int NumWarmupIterations { get; }
-
-    public double[] DataWithOutliersRemoved { get; } // milliseconds
-    public double[] LowerOutliers { get; }
-    public double[] UpperOutliers { get; }
-    public int TotalNumOutliers { get; }
+    public double[] DataWithOutliersRemoved { get; } = dataWithOutliersRemoved;
+    public double[] LowerOutliers { get; } = lowerOutliers;
+    public double[] UpperOutliers { get; } = upperOutliers;
+    public int TotalNumOutliers { get; } = totalNumOutliers;
 
     public static PerformanceRunResult ConvertFromPerfTimer(TestCaseId testCaseId, PerformanceTimer performanceTimer, IExecutionSettings executionSettings)
     {
@@ -60,15 +43,15 @@ public class PerformanceRunResult
     {
         var detector = new SailfishOutlierDetector();
 
-        var (rawExecutionResults, cleanData, lowerOutliers, upperOutliers, totalNumOutliers) = detector.DetectOutliers(executionIterations);
+        (var rawExecutionResults, var cleanData, var lowerOutliers, var upperOutliers, var totalNumOutliers) = detector.DetectOutliers(executionIterations);
 
         var mean = cleanData.Mean();
         var median = cleanData.Median();
         var stdDev = executionIterations.Count > 1 ? cleanData.StandardDeviation() : 0;
         var variance = executionIterations.Count > 1 ? cleanData.Variance() : 0;
-        return new PerformanceRunResult(displayName: testCaseId.DisplayName,
-            mean: mean, stdDev: stdDev, variance: variance, median: median, rawExecutionResults: rawExecutionResults,
-            sampleSize: executionSettings.SampleSize, numWarmupIterations: executionSettings.NumWarmupIterations, dataWithOutliersRemoved: cleanData,
-            upperOutliers: upperOutliers.ToArray(), lowerOutliers: lowerOutliers.ToArray(), totalNumOutliers: totalNumOutliers);
+        return new PerformanceRunResult(testCaseId.DisplayName,
+            mean, stdDev, variance, median, rawExecutionResults,
+            executionSettings.SampleSize, executionSettings.NumWarmupIterations, cleanData,
+            upperOutliers.ToArray(), lowerOutliers.ToArray(), totalNumOutliers);
     }
 }

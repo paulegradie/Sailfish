@@ -1,7 +1,7 @@
-using System.Threading;
-using System.Threading.Tasks;
 using Autofac;
 using Sailfish.Registration;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Tests.TestAdapter.TestResources;
 

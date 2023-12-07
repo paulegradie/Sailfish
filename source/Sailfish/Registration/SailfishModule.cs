@@ -8,7 +8,7 @@ using Sailfish.Analysis.SailDiff.Statistics;
 using Sailfish.Analysis.SailDiff.Statistics.Tests;
 using Sailfish.Analysis.SailDiff.Statistics.Tests.KolmogorovSmirnovTestSailfish;
 using Sailfish.Analysis.SailDiff.Statistics.Tests.MWWilcoxonTestSailfish;
-using Sailfish.Analysis.SailDiff.Statistics.Tests.TTestSailfish;
+using Sailfish.Analysis.SailDiff.Statistics.Tests.TTest;
 using Sailfish.Analysis.SailDiff.Statistics.Tests.TwoSampleWilcoxonSignedRankTestSailfish;
 using Sailfish.Analysis.ScaleFish;
 using Sailfish.Contracts.Public;
@@ -23,14 +23,9 @@ using Sailfish.Presentation.Markdown;
 
 namespace Sailfish.Registration;
 
-public class SailfishModule : Module
+public class SailfishModule(IRunSettings runSettings) : Module
 {
-    private readonly IRunSettings runSettings;
-
-    public SailfishModule(IRunSettings runSettings)
-    {
-        this.runSettings = runSettings;
-    }
+    private readonly IRunSettings runSettings = runSettings;
 
     protected override void Load(ContainerBuilder builder)
     {
@@ -85,10 +80,10 @@ public class SailfishModule : Module
         builder.RegisterType<ComplexityComputer>().As<IComplexityComputer>();
         builder.RegisterType<ComplexityEstimator>().As<IComplexityEstimator>();
         builder.RegisterType<SailfishOutlierDetector>().As<ISailfishOutlierDetector>();
-        builder.RegisterType<TTestSailfish>().As<ITTestSailfish>();
-        builder.RegisterType<MannWhitneyWilcoxonTestSailfish>().As<IMannWhitneyWilcoxonTestSailfish>();
-        builder.RegisterType<TwoSampleWilcoxonSignedRankTestSailfish>().As<ITwoSampleWilcoxonSignedRankTestSailfish>();
-        builder.RegisterType<KolmogorovSmirnovTestSailfish>().As<IKolmogorovSmirnovTestSailfish>();
+        builder.RegisterType<TTest>().As<ITTest>();
+        builder.RegisterType<MannWhitneyWilcoxonTest>().As<IMannWhitneyWilcoxonTest>();
+        builder.RegisterType<TwoSampleWilcoxonSignedRankTest>().As<ITwoSampleWilcoxonSignedRankTest>();
+        builder.RegisterType<KolmogorovSmirnovTest>().As<IKolmogorovSmirnovTest>();
         builder.RegisterType<ScalefishObservationCompiler>().As<IScalefishObservationCompiler>();
     }
 }

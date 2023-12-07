@@ -1,13 +1,13 @@
-﻿using System;
-using System.Reflection;
-using Sailfish.Contracts.Public.Models;
+﻿using Sailfish.Contracts.Public.Models;
 using Sailfish.Utils;
+using System;
+using System.Reflection;
 
 namespace Sailfish.Execution;
 
 /// <summary>
-/// A test instance container is a single case for a single method for a single type
-/// It will contain all of the necessary items to execute a test case
+///     A test instance container is a single case for a single method for a single type
+///     It will contain all of the necessary items to execute a test case
 /// </summary>
 internal class TestInstanceContainer
 {
@@ -40,7 +40,7 @@ internal class TestInstanceContainer
 
     public IExecutionSettings ExecutionSettings { get; }
 
-    public CoreInvoker CoreInvoker { get; private init; }
+    public CoreInvoker CoreInvoker { get; }
     public bool Disabled { get; }
 
     public static TestInstanceContainer CreateTestInstance(

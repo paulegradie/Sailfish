@@ -1,5 +1,5 @@
-﻿using System.Threading;
-using Sailfish.Attributes;
+﻿using Sailfish.Attributes;
+using System.Threading;
 
 namespace PerformanceTests.ExamplePerformanceTests;
 
@@ -9,5 +9,8 @@ namespace PerformanceTests.ExamplePerformanceTests;
 public class MinimalTestExample
 {
     [SailfishMethod(Order = 3)]
-    public void Minimal() => Thread.Sleep(50);
+    public void Minimal()
+    {
+        Thread.Sleep(50);
+    }
 }

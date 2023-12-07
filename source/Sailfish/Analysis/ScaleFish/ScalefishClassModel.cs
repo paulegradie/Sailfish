@@ -4,18 +4,11 @@ using System.Linq;
 
 namespace Sailfish.Analysis.ScaleFish;
 
-public class ScalefishClassModel
+public class ScalefishClassModel(string nameSpace, string testClassName, IEnumerable<ScaleFishMethodModel> scaleFishMethodModels)
 {
-    public ScalefishClassModel(string nameSpace, string testClassName, IEnumerable<ScaleFishMethodModel> scaleFishMethodModels)
-    {
-        NameSpace = nameSpace;
-        TestClassName = testClassName;
-        ScaleFishMethodModels = scaleFishMethodModels;
-    }
-
-    public string NameSpace { get; set; }
-    public string TestClassName { get; set; }
-    public IEnumerable<ScaleFishMethodModel> ScaleFishMethodModels { get; set; }
+    public string NameSpace { get; set; } = nameSpace;
+    public string TestClassName { get; set; } = testClassName;
+    public IEnumerable<ScaleFishMethodModel> ScaleFishMethodModels { get; set; } = scaleFishMethodModels;
 
     public static IEnumerable<ScalefishClassModel> ParseResults(Dictionary<Type, ComplexityMethodResult> rawResult)
     {

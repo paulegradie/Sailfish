@@ -4,7 +4,8 @@
 
 ## Usage
 
-Use this test when you have non-normal distributions and need to test if your current population fits the other distribution.
+Use this test when you have non-normal distributions and need to test if your current population fits the other
+distribution.
 
 This test assumes equal sample sizes. An exception will be thrown if samples sizes differ.
 

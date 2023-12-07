@@ -1,7 +1,7 @@
+using Sailfish.Execution;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Sailfish.Execution;
 
 namespace Sailfish.Analysis.ScaleFish;
 
@@ -10,18 +10,12 @@ public interface IComplexityComputer
     IEnumerable<ScalefishClassModel> AnalyzeComplexity(List<IClassExecutionSummary> executionSummaries);
 }
 
-public class ComplexityComputer : IComplexityComputer
+public class ComplexityComputer(
+    IComplexityEstimator complexityEstimator,
+    IScalefishObservationCompiler scalefishObservationCompiler) : IComplexityComputer
 {
-    private readonly IComplexityEstimator complexityEstimator;
-    private readonly IScalefishObservationCompiler scalefishObservationCompiler;
-
-    public ComplexityComputer(
-        IComplexityEstimator complexityEstimator,
-        IScalefishObservationCompiler scalefishObservationCompiler)
-    {
-        this.complexityEstimator = complexityEstimator;
-        this.scalefishObservationCompiler = scalefishObservationCompiler;
-    }
+    private readonly IComplexityEstimator complexityEstimator = complexityEstimator;
+    private readonly IScalefishObservationCompiler scalefishObservationCompiler = scalefishObservationCompiler;
 
     public IEnumerable<ScalefishClassModel> AnalyzeComplexity(List<IClassExecutionSummary> executionSummaries)
     {
@@ -58,10 +52,7 @@ public class ComplexityComputer : IComplexityComputer
         foreach (var observationProperty in observationMethodGroup.ToList())
         {
             var complexityResult = complexityEstimator.EstimateComplexity(observationProperty.ComplexityMeasurements);
-            if (complexityResult is not null)
-            {
-                complexityResultMap.Add(observationProperty.ToString(), complexityResult);
-            }
+            if (complexityResult is not null) complexityResultMap.Add(observationProperty.ToString(), complexityResult);
         }
 
         return complexityResultMap;

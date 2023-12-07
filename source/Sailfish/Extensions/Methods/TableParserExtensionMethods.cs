@@ -1,11 +1,11 @@
-﻿using System;
+﻿using Sailfish.Exceptions;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Text;
-using Sailfish.Exceptions;
 
 namespace Sailfish.Extensions.Methods;
 
@@ -70,10 +70,7 @@ public static class TableParserExtensionMethods
 
     private static void AssertColumnHeadersMatchColumnsOrThrow(IReadOnlyCollection<string> columnHeaders, IReadOnlyCollection<string> columnSuffixes)
     {
-        if (columnSuffixes.Count > 0 && columnSuffixes.Count != columnHeaders.Count)
-        {
-            throw new Exception("Header suffix array length must match num columns");
-        }
+        if (columnSuffixes.Count > 0 && columnSuffixes.Count != columnHeaders.Count) throw new Exception("Header suffix array length must match num columns");
     }
 
     private static string WriteTable<T>(
@@ -87,15 +84,9 @@ public static class TableParserExtensionMethods
         var maxColumnsWidth = ComputeColumnWidths<T>(internalMatrix.GetLength(1), internalMatrix.GetLength(0), internalMatrix);
 
         var sb = new StringBuilder();
-        if (!string.IsNullOrEmpty(title))
-        {
-            sb.AppendLine(title + "\n");
-        }
+        if (!string.IsNullOrEmpty(title)) sb.AppendLine(title + "\n");
 
-        for (var rowIndex = 0; rowIndex < internalMatrix.GetLength(0); rowIndex++)
-        {
-            PrintRow(internalMatrix, maxColumnsWidth, rowIndex, sb);
-        }
+        for (var rowIndex = 0; rowIndex < internalMatrix.GetLength(0); rowIndex++) PrintRow(internalMatrix, maxColumnsWidth, rowIndex, sb);
 
         return sb.ToString();
     }
@@ -116,24 +107,17 @@ public static class TableParserExtensionMethods
         IReadOnlyList<Func<T, object>> valueSelectors, int numCols, int numRows)
     {
         var headerHasAnyValues = columnHeaders.Any(x => !string.IsNullOrEmpty(x));
-        var internalMatrix = new string[(headerHasAnyValues ? numRows + 2 : numRows), numCols];
+        var internalMatrix = new string[headerHasAnyValues ? numRows + 2 : numRows, numCols];
         if (headerHasAnyValues)
         {
             // Fill Headers
-            for (var colIndex = 0; colIndex < numCols; colIndex++)
-            {
-                internalMatrix[0, colIndex] = columnHeaders[colIndex];
-            }
+            for (var colIndex = 0; colIndex < numCols; colIndex++) internalMatrix[0, colIndex] = columnHeaders[colIndex];
 
-            for (var colIndex = 0; colIndex < numCols; colIndex++)
-            {
-                internalMatrix[1, colIndex] = "---";
-            }
+            for (var colIndex = 0; colIndex < numCols; colIndex++) internalMatrix[1, colIndex] = "---";
         }
 
-        var adjustedNumRows = (headerHasAnyValues ? numRows + 2 : numRows);
+        var adjustedNumRows = headerHasAnyValues ? numRows + 2 : numRows;
         for (var rowIndex = headerHasAnyValues ? 2 : 0; rowIndex < adjustedNumRows; rowIndex++)
-        {
             for (var colIndex = 0; colIndex < numCols; colIndex++)
             {
                 var value = valueSelectors[colIndex].Invoke(values[headerHasAnyValues ? rowIndex - 2 : rowIndex]);
@@ -145,7 +129,6 @@ public static class TableParserExtensionMethods
 
                 internalMatrix[rowIndex, colIndex] = cell.Trim();
             }
-        }
 
         return internalMatrix;
     }
@@ -159,10 +142,7 @@ public static class TableParserExtensionMethods
             var cell = internalMatrix[rowIndex, colIndex].Trim();
             cell = colIndex == 0 || cell.Equals("---") ? cell.PadRight(maxColumnsWidth[colIndex]) : cell.PadLeft(maxColumnsWidth[colIndex]);
             sb.Append(cell);
-            if (colIndex <= numCols)
-            {
-                sb.Append(" | ");
-            }
+            if (colIndex <= numCols) sb.Append(" | ");
         }
 
         sb.AppendLine();
@@ -172,10 +152,10 @@ public static class TableParserExtensionMethods
     {
         return selector.Body switch
         {
-            UnaryExpression { Operand: MemberExpression operand } => (operand.Member as PropertyInfo) ??
+            UnaryExpression { Operand: MemberExpression operand } => operand.Member as PropertyInfo ??
                                                                      throw new SailfishException(
                                                                          $"Property selector derived from UnaryExpression must be of type {typeof(PropertyInfo)}"),
-            MemberExpression memberExpression => (memberExpression.Member as PropertyInfo) ?? throw new SailfishException($"Property selector derived from "),
+            MemberExpression memberExpression => memberExpression.Member as PropertyInfo ?? throw new SailfishException("Property selector derived from "),
             _ => throw new SailfishException("")
         };
     }

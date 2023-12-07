@@ -3,14 +3,8 @@ using System.Collections.Generic;
 
 namespace Sailfish.Execution;
 
-internal class TestClassResultGroup
+internal class TestClassResultGroup(Type testClass, List<TestCaseExecutionResult> executionResults)
 {
-    public TestClassResultGroup(Type testClass, List<TestCaseExecutionResult> executionResults)
-    {
-        TestClass = testClass;
-        ExecutionResults = executionResults;
-    }
-
-    public Type TestClass { get; }
-    public List<TestCaseExecutionResult> ExecutionResults { get; }
+    public Type TestClass { get; } = testClass;
+    public List<TestCaseExecutionResult> ExecutionResults { get; } = executionResults;
 }

@@ -1,37 +1,28 @@
-﻿using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
-using MediatR;
+﻿using MediatR;
 using Sailfish.Analysis.SailDiff;
 using Sailfish.Contracts.Public.Models;
 using Sailfish.Contracts.Public.Requests;
 using Sailfish.Exceptions;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Sailfish.DefaultHandlers.SailDiff;
 
-internal class SailDiffBeforeAndAfterFileLocationHandler : IRequestHandler<BeforeAndAfterFileLocationRequest, BeforeAndAfterFileLocationResponse>
+internal class SailDiffBeforeAndAfterFileLocationHandler(IRunSettings runSettings, ITrackingFileDirectoryReader trackingFileDirectoryReader) : IRequestHandler<BeforeAndAfterFileLocationRequest, BeforeAndAfterFileLocationResponse>
 {
-    private readonly IRunSettings runSettings;
-    private readonly ITrackingFileDirectoryReader trackingFileDirectoryReader;
-
-    public SailDiffBeforeAndAfterFileLocationHandler(IRunSettings runSettings, ITrackingFileDirectoryReader trackingFileDirectoryReader)
-    {
-        this.runSettings = runSettings;
-        this.trackingFileDirectoryReader = trackingFileDirectoryReader;
-    }
+    private readonly IRunSettings runSettings = runSettings;
+    private readonly ITrackingFileDirectoryReader trackingFileDirectoryReader = trackingFileDirectoryReader;
 
     public async Task<BeforeAndAfterFileLocationResponse> Handle(
         BeforeAndAfterFileLocationRequest request,
         CancellationToken cancellationToken)
     {
         await Task.Yield();
-        var trackingFiles = trackingFileDirectoryReader.FindTrackingFilesInDirectoryOrderedByLastModified(runSettings.GetRunSettingsTrackingDirectoryPath(), ascending: false);
-        if (trackingFiles.Count == 0)
-        {
-            return new BeforeAndAfterFileLocationResponse(new List<string>(), new List<string>());
-        }
+        var trackingFiles = trackingFileDirectoryReader.FindTrackingFilesInDirectoryOrderedByLastModified(runSettings.GetRunSettingsTrackingDirectoryPath(), false);
+        if (trackingFiles.Count == 0) return new BeforeAndAfterFileLocationResponse(new List<string>(), new List<string>());
 
         if (request.ProvidedBeforeTrackingFiles.Any())
         {

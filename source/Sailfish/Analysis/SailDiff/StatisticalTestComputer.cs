@@ -1,10 +1,10 @@
-﻿using System.Collections.Concurrent;
+﻿using Sailfish.Contracts.Public;
+using Sailfish.Contracts.Public.Models;
+using Sailfish.Extensions.Methods;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Sailfish.Contracts.Public;
-using Sailfish.Contracts.Public.Models;
-using Sailfish.Extensions.Methods;
 
 namespace Sailfish.Analysis.SailDiff;
 
@@ -13,21 +13,18 @@ public interface IStatisticalTestComputer
     List<SailDiffResult> ComputeTest(TestData beforeTestData, TestData afterTestData, SailDiffSettings settings);
 }
 
-public class StatisticalTestComputer : IStatisticalTestComputer
+public class StatisticalTestComputer(IStatisticalTestExecutor statisticalTestExecutor, IPerformanceRunResultAggregator aggregator) : IStatisticalTestComputer
 {
-    private readonly IStatisticalTestExecutor statisticalTestExecutor;
-    private readonly IPerformanceRunResultAggregator aggregator;
-
-    public StatisticalTestComputer(IStatisticalTestExecutor statisticalTestExecutor, IPerformanceRunResultAggregator aggregator)
-    {
-        this.statisticalTestExecutor = statisticalTestExecutor;
-        this.aggregator = aggregator;
-    }
+    private readonly IPerformanceRunResultAggregator aggregator = aggregator;
+    private readonly IStatisticalTestExecutor statisticalTestExecutor = statisticalTestExecutor;
 
     /// <summary>
-    /// Compute a statistical test using the given TestData and SailDiffSettings
+    ///     Compute a statistical test using the given TestData and SailDiffSettings
     /// </summary>
-    /// <remarks>All RawExecutionResult data is aggregated prior to test execution - if outlier detection is enabled, it is applied to the aggregated RawExecutionResults</remarks>
+    /// <remarks>
+    ///     All RawExecutionResult data is aggregated prior to test execution - if outlier detection is enabled, it is
+    ///     applied to the aggregated RawExecutionResults
+    /// </remarks>
     /// <param name="before"></param>
     /// <param name="after"></param>
     /// <param name="settings"></param>
@@ -42,11 +39,11 @@ public class StatisticalTestComputer : IStatisticalTestComputer
         var results = new ConcurrentBag<SailDiffResult>();
         Parallel.ForEach(
             testCaseIdGroups,
-            new ParallelOptions()
+            new ParallelOptions
             {
                 MaxDegreeOfParallelism = settings.MaxDegreeOfParallelism
             },
-            (testCaseId) =>
+            testCaseId =>
             {
                 var afterCompiled = aggregator.Aggregate(
                     testCaseId,
@@ -73,10 +70,7 @@ public class StatisticalTestComputer : IStatisticalTestComputer
                 results.Add(new SailDiffResult(testCaseId, result));
             });
 
-        if (settings.DisableOrdering || results.Count > 60)
-        {
-            return results.ToList();
-        }
+        if (settings.DisableOrdering || results.Count > 60) return [.. results];
 
         try
         {
@@ -84,9 +78,12 @@ public class StatisticalTestComputer : IStatisticalTestComputer
         }
         catch
         {
-            return results
-                .OrderByDescending(x => x.TestCaseId.DisplayName)
-                .ToList();
+            return
+            [
+                .. results
+                                .OrderByDescending(x => x.TestCaseId.DisplayName)
+,
+            ];
         }
     }
 }

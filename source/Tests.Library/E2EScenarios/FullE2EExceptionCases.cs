@@ -1,7 +1,7 @@
-﻿using System.Linq;
-using System.Threading.Tasks;
-using Sailfish;
+﻿using Sailfish;
 using Shouldly;
+using System.Linq;
+using System.Threading.Tasks;
 using Tests.E2E.ExceptionHandling;
 using Tests.E2E.ExceptionHandling.Tests;
 using Tests.Library.Utils;

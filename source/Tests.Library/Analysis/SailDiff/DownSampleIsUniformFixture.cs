@@ -7,8 +7,8 @@ namespace Tests.Library.Analysis.SailDiff;
 
 public class DownSampleIsUniformFixture
 {
-    private readonly TestPreprocessor preprocessor = new(new SailfishOutlierDetector());
     private const int seed = 42;
+    private readonly TestPreprocessor preprocessor = new(new SailfishOutlierDetector());
 
     [Fact]
     public void TestDownSampleIsUniform()
@@ -46,7 +46,7 @@ public class DownSampleIsUniformFixture
     {
         var input = new double[] { 1, 2, 3, 4, 5 };
 
-        var output = preprocessor.PreprocessWithDownSample(input, false, 5, maxArraySize: 2, seed: seed);
+        var output = preprocessor.PreprocessWithDownSample(input, false, 5, 2, seed);
 
         output.RawData.Length.ShouldBe(5);
         input.ShouldBe(output.RawData);
@@ -57,7 +57,7 @@ public class DownSampleIsUniformFixture
     {
         var input = new double[] { 1, 2, 3, 4, 5 };
 
-        var output = preprocessor.PreprocessWithDownSample(input, false, 3, 3, seed: seed);
+        var output = preprocessor.PreprocessWithDownSample(input, false, 3, 3, seed);
         output.RawData.Length.ShouldBe(3);
     }
 

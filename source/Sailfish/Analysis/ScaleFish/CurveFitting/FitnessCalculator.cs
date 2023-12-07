@@ -1,13 +1,14 @@
-using System;
-using System.Linq;
 using MathNet.Numerics;
 using Sailfish.Exceptions;
+using System;
+using System.Linq;
 
 namespace Sailfish.Analysis.ScaleFish.CurveFitting;
 
 public interface IFitnessCalculator
 {
     FittedCurve CalculateScaleAndBias(ComplexityMeasurement[] observations, Func<double, double, double, double> aFunc);
+
     FitnessResult CalculateError(double[] modeledValues, double[] observedValues);
 }
 
@@ -20,7 +21,7 @@ public class FitnessCalculator : IFitnessCalculator
         var xValues = observations.Select(x => x.X).ToArray();
         var yValues = observations.Select(x => x.Y).ToArray();
 
-        var (bias, scale) = Fit.Curve(
+        (var bias, var scale) = Fit.Curve(
             xValues,
             yValues,
             aFunc,
@@ -39,10 +40,7 @@ public class FitnessCalculator : IFitnessCalculator
     public FitnessResult CalculateError(double[] modeledValues, double[] observedValues)
     {
         var n = observedValues.Length;
-        if (modeledValues.Length != n)
-        {
-            throw new ArgumentException("The length of the fittedValues array must match the length of the original data array.");
-        }
+        if (modeledValues.Length != n) throw new ArgumentException("The length of the fittedValues array must match the length of the original data array.");
 
         var rSquared = RSquared(modeledValues, observedValues);
         var rmse = RMSE(modeledValues, observedValues);
@@ -60,8 +58,13 @@ public class FitnessCalculator : IFitnessCalculator
             meanSquaredError);
     }
 
-    private static double RSquared(double[] modeledValues, double[] observedValues) => GoodnessOfFit.RSquared(modeledValues, observedValues);
+    private static double RSquared(double[] modeledValues, double[] observedValues)
+    {
+        return GoodnessOfFit.RSquared(modeledValues, observedValues);
+    }
 
-    private static double RMSE(double[] modeledValues, double[] observedValues) =>
-        Math.Sqrt(observedValues.Zip(modeledValues, (y, yFit) => Math.Pow(y - yFit, 2)).Sum() / observedValues.Length);
+    private static double RMSE(double[] modeledValues, double[] observedValues)
+    {
+        return Math.Sqrt(observedValues.Zip(modeledValues, (y, yFit) => Math.Pow(y - yFit, 2)).Sum() / observedValues.Length);
+    }
 }

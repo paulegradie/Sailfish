@@ -1,6 +1,6 @@
+using Sailfish.Attributes;
 using System;
 using System.IO;
-using Sailfish.Attributes;
 
 namespace Tests.TestAdapter.TestResources;
 

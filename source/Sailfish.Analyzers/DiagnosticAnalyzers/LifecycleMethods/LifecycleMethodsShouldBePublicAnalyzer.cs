@@ -1,11 +1,11 @@
-using System.Collections.Immutable;
-using System.Diagnostics;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Diagnostics;
 using Sailfish.Analyzers.Utils;
 using Sailfish.Analyzers.Utils.TreeParsingExtensionMethods;
+using System.Collections.Immutable;
+using System.Diagnostics;
 
 namespace Sailfish.Analyzers.DiagnosticAnalyzers.LifecycleMethods;
 
@@ -46,7 +46,6 @@ public class LifecycleMethodsShouldBePublicAnalyzer : DiagnosticAnalyzer
             context.ReportDiagnostic(diagnostic);
         }
     }
-
 
     private static IEnumerable<MethodDeclarationSyntax> GetLifecycleMethods(TypeDeclarationSyntax classDeclaration)
     {

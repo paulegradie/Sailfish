@@ -1,11 +1,11 @@
-using System.Collections.Immutable;
-using System.Diagnostics;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Diagnostics;
 using Sailfish.Analyzers.Utils;
 using Sailfish.Analyzers.Utils.TreeParsingExtensionMethods;
+using System.Collections.Immutable;
+using System.Diagnostics;
 
 namespace Sailfish.Analyzers.DiagnosticAnalyzers.LifecycleMethods;
 
@@ -57,9 +57,7 @@ public class OnlyOneLifecycleAttributePerMethod : DiagnosticAnalyzer
                 .ToList();
 
             if (lifecycleAttributes.Count > 1)
-            {
                 context.ReportDiagnostic(Diagnostic.Create(Descriptor, methodsWithLifecycleAttribute.Identifier.GetLocation(), methodsWithLifecycleAttribute.Identifier.Text));
-            }
         }
     }
 }

@@ -1,3 +1,8 @@
+using Microsoft.VisualStudio.TestPlatform.ObjectModel;
+using Sailfish.Exceptions;
+using Sailfish.Execution;
+using Sailfish.Extensions.Types;
+using Sailfish.TestAdapter.TestProperties;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -5,11 +10,6 @@ using System.Reflection;
 using System.Runtime.Caching;
 using System.Threading;
 using System.Threading.Tasks;
-using Microsoft.VisualStudio.TestPlatform.ObjectModel;
-using Sailfish.Exceptions;
-using Sailfish.Execution;
-using Sailfish.Extensions.Types;
-using Sailfish.TestAdapter.TestProperties;
 
 namespace Sailfish.TestAdapter.Execution;
 
@@ -25,10 +25,10 @@ internal class TestAdapterExecutionEngine : ITestAdapterExecutionEngine
 {
     private const string MemoryCacheName = "GlobalStateMemoryCache";
     private readonly IActivatorCallbacks activatorCallbacks;
-    private readonly ITestInstanceContainerCreator testInstanceContainerCreator;
     private readonly IClassExecutionSummaryCompiler classExecutionSummaryCompiler;
-    private readonly ISailfishExecutionEngine engine;
     private readonly IAdapterConsoleWriter consoleWriter;
+    private readonly ISailfishExecutionEngine engine;
+    private readonly ITestInstanceContainerCreator testInstanceContainerCreator;
 
     public TestAdapterExecutionEngine(
         IActivatorCallbacks activatorCallbacks,

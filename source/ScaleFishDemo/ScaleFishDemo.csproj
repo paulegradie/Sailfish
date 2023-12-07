@@ -10,8 +10,8 @@
     </PropertyGroup>
 
     <ItemGroup>
-      <ProjectReference Include="..\PerformanceTests\PerformanceTests.csproj" />
-      <ProjectReference Include="..\Sailfish\Sailfish.csproj" />
+        <ProjectReference Include="..\PerformanceTests\PerformanceTests.csproj"/>
+        <ProjectReference Include="..\Sailfish\Sailfish.csproj"/>
     </ItemGroup>
 
 </Project>

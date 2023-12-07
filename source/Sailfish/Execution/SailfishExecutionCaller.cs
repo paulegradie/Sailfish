@@ -1,10 +1,10 @@
-﻿using System;
-using System.Threading;
-using System.Threading.Tasks;
-using Autofac;
+﻿using Autofac;
 using Sailfish.Contracts.Public.Models;
 using Sailfish.Registration;
 using Sailfish.Utils;
+using System;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Sailfish.Execution;
 
@@ -15,7 +15,10 @@ internal static class SailfishExecutionCaller
     internal static async Task<SailfishRunResult> Run(
         IRunSettings runSettings,
         Action<ContainerBuilder>? registerAdditionalTypes,
-        CancellationToken? cancellationToken = null) => await RunInner(runSettings, registerAdditionalTypes, cancellationToken).ConfigureAwait(false);
+        CancellationToken? cancellationToken = null)
+    {
+        return await RunInner(runSettings, registerAdditionalTypes, cancellationToken).ConfigureAwait(false);
+    }
 
     private static async Task<SailfishRunResult> RunInner(
         IRunSettings runSettings,

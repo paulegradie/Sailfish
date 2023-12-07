@@ -1,17 +1,17 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Linq.Expressions;
-using Sailfish.Analysis;
+﻿using Sailfish.Analysis;
 using Sailfish.Analysis.SailDiff;
 using Sailfish.Analysis.SailDiff.Statistics.Tests;
 using Sailfish.Analysis.SailDiff.Statistics.Tests.KolmogorovSmirnovTestSailfish;
 using Sailfish.Analysis.SailDiff.Statistics.Tests.MWWilcoxonTestSailfish;
-using Sailfish.Analysis.SailDiff.Statistics.Tests.TTestSailfish;
+using Sailfish.Analysis.SailDiff.Statistics.Tests.TTest;
 using Sailfish.Analysis.SailDiff.Statistics.Tests.TwoSampleWilcoxonSignedRankTestSailfish;
 using Sailfish.Contracts.Public.Models;
 using Sailfish.Extensions.Methods;
 using Shouldly;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Linq.Expressions;
 using Xunit;
 
 namespace Tests.Library.ExtensionMethods;
@@ -41,17 +41,17 @@ public class TableParserExtensionMethodsFixture
         var preprocessor = new TestPreprocessor(new SailfishOutlierDetector());
 
         var result = new StatisticalTestExecutor(
-            new MannWhitneyWilcoxonTestSailfish(preprocessor),
-            new TTestSailfish(preprocessor),
-            new TwoSampleWilcoxonSignedRankTestSailfish(preprocessor),
-            new KolmogorovSmirnovTestSailfish(preprocessor)
+            new MannWhitneyWilcoxonTest(preprocessor),
+            new TTest(preprocessor),
+            new TwoSampleWilcoxonSignedRankTest(preprocessor),
+            new KolmogorovSmirnovTest(preprocessor)
         ).ExecuteStatisticalTest(
             new double[] { 2, 2, 4, 4, 5, 5, 6, 7, 6 },
             new double[] { 9, 8, 7, 6, 4, 4, 1, 2, 3, 2 },
             new SailDiffSettings(0.01, 0, false, TestType.TTest));
 
-        var testCaseId = new TestCaseId("MyClass.MySampleTest(N: 2, X: 4)");
-        var testCaseResults = new List<SailDiffResult>() { new(testCaseId, result) };
+        TestCaseId testCaseId = new("MyClass.MySampleTest(N: 2, X: 4)");
+        var testCaseResults = new List<SailDiffResult> { new(testCaseId, result) };
 
         var res = testCaseResults
             .ToStringTable(colSuffixes, selectors)

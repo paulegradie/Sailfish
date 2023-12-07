@@ -1,30 +1,23 @@
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
 using MediatR;
 using Sailfish.Contracts.Public.Models;
 using Sailfish.Contracts.Public.Notifications;
 using Sailfish.Contracts.Public.Serialization.Tracking.V1;
 using Sailfish.Logging;
 using Sailfish.Presentation;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Sailfish.DefaultHandlers.Sailfish;
 
-public class SailfishUpdateTrackingDataNotificationHandler : INotificationHandler<TestCaseCompletedNotification>
+public class SailfishUpdateTrackingDataNotificationHandler(ITrackingFileSerialization trackingFileSerialization, IRunSettings runSettings, ILogger logger) : INotificationHandler<TestCaseCompletedNotification>
 {
-    private readonly ITrackingFileSerialization trackingFileSerialization;
-    private readonly IRunSettings runSettings;
-    private readonly ILogger logger;
-
-    public SailfishUpdateTrackingDataNotificationHandler(ITrackingFileSerialization trackingFileSerialization, IRunSettings runSettings, ILogger logger)
-    {
-        this.trackingFileSerialization = trackingFileSerialization;
-        this.runSettings = runSettings;
-        this.logger = logger;
-    }
+    private readonly ILogger logger = logger;
+    private readonly IRunSettings runSettings = runSettings;
+    private readonly ITrackingFileSerialization trackingFileSerialization = trackingFileSerialization;
 
     public async Task Handle(TestCaseCompletedNotification notification, CancellationToken cancellationToken)
     {
@@ -32,10 +25,7 @@ public class SailfishUpdateTrackingDataNotificationHandler : INotificationHandle
         if (runSettings.CreateTrackingFiles is false) return;
 
         var output = runSettings.LocalOutputDirectory ?? DefaultFileSettings.DefaultOutputDirectory;
-        if (!Directory.Exists(output))
-        {
-            Directory.CreateDirectory(output);
-        }
+        if (!Directory.Exists(output)) Directory.CreateDirectory(output);
 
         var trackingDirectory = runSettings.GetRunSettingsTrackingDirectoryPath();
         var fileName = DefaultFileSettings.AppendTagsToFilename(DefaultFileSettings.DefaultTrackingFileName(runSettings.TimeStamp), runSettings.Tags);
@@ -51,9 +41,7 @@ public class SailfishUpdateTrackingDataNotificationHandler : INotificationHandle
             : trackingFileSerialization.Deserialize(fileContents)?.ToList() ?? new List<ClassExecutionSummaryTrackingFormat>();
 
         foreach (var failedSummary in notification.TestCaseExecutionResult.GetFailedTestCases())
-        {
             logger.Log(LogLevel.Warning, failedSummary.Exception!, "Test case exception encountered");
-        }
 
         var success = notification.TestCaseExecutionResult.FilterForSuccessfulTestCases();
         if (!success.GetSuccessfulTestCases().Any()) return;
@@ -71,7 +59,7 @@ public class SailfishUpdateTrackingDataNotificationHandler : INotificationHandle
 
         var serialized = trackingFileSerialization.Serialize(classExecutionSummaryTrackingFormats);
 
-        await using var streamWriter = new StreamWriter(filePath, Encoding.UTF8, new FileStreamOptions()
+        await using var streamWriter = new StreamWriter(filePath, Encoding.UTF8, new FileStreamOptions
         {
             Access = FileAccess.ReadWrite,
             Mode = FileMode.OpenOrCreate

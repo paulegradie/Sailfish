@@ -1,9 +1,9 @@
-using System.Threading;
-using System.Threading.Tasks;
 using Autofac;
 using Demo.API;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Sailfish.Registration;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace PerformanceTests;
 

@@ -1,7 +1,6 @@
+using Sailfish.Contracts.Public.Models;
 using System;
 using System.Collections.Generic;
-using Sailfish.Contracts.Public;
-using Sailfish.Contracts.Public.Models;
 
 namespace Sailfish.Analysis.SailDiff.Statistics.Tests;
 
@@ -28,8 +27,8 @@ public class TestResultWithOutlierAnalysis
             string.Empty,
             0,
             0,
-            new double[] { },
-            new double[] { },
+            [],
+            [],
             new Dictionary<string, object>());
         ExceptionMessage = exception.Message;
         StackTrace = exception.StackTrace ?? string.Empty;

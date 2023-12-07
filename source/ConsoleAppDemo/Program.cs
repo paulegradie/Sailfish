@@ -1,10 +1,8 @@
 ﻿using PerformanceTestingUserInvokedConsoleApp;
 using PerformanceTests;
-using PerformanceTests.ExamplePerformanceTests;
 using Sailfish;
 using Sailfish.Logging;
-using Serilog;
-using ILogger = Sailfish.Logging.ILogger;
+using Serilog.Events;
 
 var settings = RunSettingsBuilder
     .CreateBuilder()
@@ -29,21 +27,32 @@ namespace PerformanceTestingUserInvokedConsoleApp
     internal class CustomLogger : ILogger
     {
         private readonly Serilog.ILogger logger;
-        public CustomLogger(Serilog.ILogger seriLogger) => logger = seriLogger;
-        public void Log(LogLevel level, string template, params object[] values) => logger.Write(GetEventLevel(level), template, values);
-        public void Log(LogLevel level, Exception ex, string template, params object[] values) => logger.Write(GetEventLevel(level), ex, template, values);
 
-        static Serilog.Events.LogEventLevel GetEventLevel(LogLevel level)
+        public CustomLogger(Serilog.ILogger seriLogger)
+        {
+            logger = seriLogger;
+        }
+
+        public void Log(LogLevel level, string template, params object[] values)
+        {
+            logger.Write(GetEventLevel(level), template, values);
+        }
+
+        public void Log(LogLevel level, Exception ex, string template, params object[] values)
+        {
+            logger.Write(GetEventLevel(level), ex, template, values);
+        }
+
+        private static LogEventLevel GetEventLevel(LogLevel level)
         {
             return level switch
-            { 
-            
-                LogLevel.Debug => Serilog.Events.LogEventLevel.Debug,
-                LogLevel.Information => Serilog.Events.LogEventLevel.Information,
-                LogLevel.Warning => Serilog.Events.LogEventLevel.Warning,
-                LogLevel.Error => Serilog.Events.LogEventLevel.Error,
-                LogLevel.Fatal => Serilog.Events.LogEventLevel.Fatal,
-                _ => Serilog.Events.LogEventLevel.Verbose
+            {
+                LogLevel.Debug => LogEventLevel.Debug,
+                LogLevel.Information => LogEventLevel.Information,
+                LogLevel.Warning => LogEventLevel.Warning,
+                LogLevel.Error => LogEventLevel.Error,
+                LogLevel.Fatal => LogEventLevel.Fatal,
+                _ => LogEventLevel.Verbose
             };
         }
     }

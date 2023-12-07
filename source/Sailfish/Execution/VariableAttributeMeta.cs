@@ -1,13 +1,7 @@
 namespace Sailfish.Execution;
 
-internal class VariableAttributeMeta
+internal class VariableAttributeMeta(object[] orderedVariables, bool estimateComplexity)
 {
-    public VariableAttributeMeta(object[] orderedVariables, bool estimateComplexity)
-    {
-        OrderedVariables = orderedVariables;
-        EstimateComplexity = estimateComplexity;
-    }
-
-    public object[] OrderedVariables { get; }
-    public bool EstimateComplexity { get; }
+    public object[] OrderedVariables { get; } = orderedVariables;
+    public bool EstimateComplexity { get; } = estimateComplexity;
 }

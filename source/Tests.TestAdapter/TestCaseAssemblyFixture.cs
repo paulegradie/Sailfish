@@ -1,9 +1,9 @@
-﻿using System.IO;
-using System.Linq;
-using NSubstitute;
+﻿using NSubstitute;
 using Sailfish.Attributes;
 using Sailfish.TestAdapter.Discovery;
 using Shouldly;
+using System.IO;
+using System.Linq;
 using Tests.TestAdapter.TestResources;
 using Xunit;
 

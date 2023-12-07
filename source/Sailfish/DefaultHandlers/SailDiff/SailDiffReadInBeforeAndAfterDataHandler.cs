@@ -1,25 +1,18 @@
-﻿using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
-using MediatR;
+﻿using MediatR;
 using Sailfish.Analysis;
 using Sailfish.Contracts.Public;
 using Sailfish.Contracts.Public.Requests;
 using Sailfish.Extensions.Types;
 using Sailfish.Logging;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Sailfish.DefaultHandlers.SailDiff;
 
-internal class SailDiffReadInBeforeAndAfterDataHandler : IRequestHandler<ReadInBeforeAndAfterDataRequest, ReadInBeforeAndAfterDataResponse>
+internal class SailDiffReadInBeforeAndAfterDataHandler(ITrackingFileParser trackingFileParser, ILogger logger) : IRequestHandler<ReadInBeforeAndAfterDataRequest, ReadInBeforeAndAfterDataResponse>
 {
-    private readonly ITrackingFileParser trackingFileParser;
-    private readonly ILogger logger;
-
-    public SailDiffReadInBeforeAndAfterDataHandler(ITrackingFileParser trackingFileParser, ILogger logger)
-    {
-        this.trackingFileParser = trackingFileParser;
-        this.logger = logger;
-    }
+    private readonly ITrackingFileParser trackingFileParser = trackingFileParser;
 
     public async Task<ReadInBeforeAndAfterDataResponse> Handle(ReadInBeforeAndAfterDataRequest request, CancellationToken cancellationToken)
     {

@@ -9,16 +9,36 @@ internal class DefaultLogger : ILogger
 {
     private readonly IEnumerable<LogLevel> allowedLogLevels;
 
+    private readonly Dictionary<LogLevel, ConsoleColor> levelColors = new()
+    {
+        { LogLevel.Verbose, ConsoleColor.Gray }, // Gray for verbose, as it's usually less important
+        { LogLevel.Debug, ConsoleColor.Blue }, // Blue for debug, a standard color for debugging information
+        { LogLevel.Information, ConsoleColor.White }, // White for general information
+        { LogLevel.Warning, ConsoleColor.Yellow }, // Yellow for warnings, as it's often associated with caution
+        { LogLevel.Error, ConsoleColor.Red }, // Red for errors, indicating danger or serious issues
+        { LogLevel.Fatal, ConsoleColor.DarkRed } // Dark red for fatal errors, indicating critical problems
+    };
+
+    private readonly Dictionary<LogLevel, string> nameMap = new()
+    {
+        { LogLevel.Verbose, "VRB" },
+        { LogLevel.Debug, "DBG" },
+        { LogLevel.Information, "INF" },
+        { LogLevel.Warning, "WRN" },
+        { LogLevel.Error, "ERR" },
+        { LogLevel.Fatal, "FATAL" }
+    };
+
     public DefaultLogger(LogLevel minimumLogLevel)
     {
-        allowedLogLevels = new List<LogLevel>()
+        allowedLogLevels = new List<LogLevel>
             {
                 LogLevel.Verbose,
                 LogLevel.Debug,
                 LogLevel.Information,
                 LogLevel.Warning,
                 LogLevel.Error,
-                LogLevel.Fatal,
+                LogLevel.Fatal
             }
             .SkipWhile(x => x != minimumLogLevel);
     }
@@ -38,16 +58,10 @@ internal class DefaultLogger : ILogger
         if (ex.InnerException is not null)
         {
             var innerExceptionMessage = ex.InnerException?.Message;
-            if (innerExceptionMessage is not null)
-            {
-                lines.Add(innerExceptionMessage);
-            }
+            if (innerExceptionMessage is not null) lines.Add(innerExceptionMessage);
 
             var innerStackTrace = ex.InnerException?.StackTrace;
-            if (innerStackTrace is not null)
-            {
-                lines.AddRange(innerStackTrace.Split(Environment.NewLine));
-            }
+            if (innerStackTrace is not null) lines.AddRange(innerStackTrace.Split(Environment.NewLine));
         }
 
         JoinAndWriteLines(level, lines);
@@ -67,26 +81,6 @@ internal class DefaultLogger : ILogger
         }
     }
 
-    private readonly Dictionary<LogLevel, string> nameMap = new()
-    {
-        { LogLevel.Verbose, "VRB" },
-        { LogLevel.Debug, "DBG" },
-        { LogLevel.Information, "INF" },
-        { LogLevel.Warning, "WRN" },
-        { LogLevel.Error, "ERR" },
-        { LogLevel.Fatal, "FATAL" },
-    };
-
-    private readonly Dictionary<LogLevel, ConsoleColor> levelColors = new()
-    {
-        { LogLevel.Verbose, ConsoleColor.Gray }, // Gray for verbose, as it's usually less important
-        { LogLevel.Debug, ConsoleColor.Blue }, // Blue for debug, a standard color for debugging information
-        { LogLevel.Information, ConsoleColor.White }, // White for general information
-        { LogLevel.Warning, ConsoleColor.Yellow }, // Yellow for warnings, as it's often associated with caution
-        { LogLevel.Error, ConsoleColor.Red }, // Red for errors, indicating danger or serious issues
-        { LogLevel.Fatal, ConsoleColor.DarkRed }, // Dark red for fatal errors, indicating critical problems
-    };
-
     private static string FormatTemplate(string template, params object[] values)
     {
         var populatedTemplate = (string)template.Clone();
@@ -97,7 +91,7 @@ internal class DefaultLogger : ILogger
 
         var pairs = matches.Zip(values).ToArray();
 
-        foreach (var (original, replacement) in pairs) populatedTemplate = populatedTemplate.Replace(original, replacement.ToString());
+        foreach ((var original, var replacement) in pairs) populatedTemplate = populatedTemplate.Replace(original, replacement.ToString());
         return populatedTemplate;
     }
 }

@@ -1,10 +1,10 @@
 ﻿using MediatR;
-using System.Collections.Generic;
-using System.Threading;
-using System.Threading.Tasks;
 using Sailfish.Contracts.Private;
 using Sailfish.Contracts.Public.Models;
 using Sailfish.Execution;
+using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Sailfish.Presentation;
 
@@ -13,16 +13,9 @@ internal interface IExecutionSummaryWriter
     Task Write(List<IClassExecutionSummary> executionSummaries, CancellationToken cancellationToken);
 }
 
-internal class ExecutionSummaryWriter : IExecutionSummaryWriter
+internal class ExecutionSummaryWriter(IMediator mediator, IRunSettings runSettings) : IExecutionSummaryWriter
 {
-    private readonly IMediator mediator;
-    private readonly IRunSettings runSettings;
-
-    public ExecutionSummaryWriter(IMediator mediator, IRunSettings runSettings)
-    {
-        this.mediator = mediator;
-        this.runSettings = runSettings;
-    }
+    private readonly IMediator mediator = mediator;
 
     public async Task Write(
         List<IClassExecutionSummary> executionSummaries,

@@ -1,7 +1,7 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using Sailfish.Extensions.Types;
+﻿using Sailfish.Extensions.Types;
 using Sailfish.Presentation;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace Sailfish.Analysis.SailDiff;
 
@@ -10,14 +10,9 @@ internal interface ITrackingFileFinder
     BeforeAndAfterTrackingFiles GetBeforeAndAfterTrackingFiles(string directory, string beforeTarget, OrderedDictionary tags);
 }
 
-internal class TrackingFileFinder : ITrackingFileFinder
+internal class TrackingFileFinder(ITrackingFileDirectoryReader trackingFileDirectoryReader) : ITrackingFileFinder
 {
-    private readonly ITrackingFileDirectoryReader trackingFileDirectoryReader;
-
-    public TrackingFileFinder(ITrackingFileDirectoryReader trackingFileDirectoryReader)
-    {
-        this.trackingFileDirectoryReader = trackingFileDirectoryReader;
-    }
+    private readonly ITrackingFileDirectoryReader trackingFileDirectoryReader = trackingFileDirectoryReader;
 
     public BeforeAndAfterTrackingFiles GetBeforeAndAfterTrackingFiles(string directory, string beforeTarget, OrderedDictionary tags)
     {
@@ -35,6 +30,6 @@ internal class TrackingFileFinder : ITrackingFileFinder
 
         return files.Count < 2
             ? new BeforeAndAfterTrackingFiles(new List<string>(), new List<string>())
-            : new BeforeAndAfterTrackingFiles(new List<string> { files[1] }, new List<string>() { files[0] });
+            : new BeforeAndAfterTrackingFiles(new List<string> { files[1] }, new List<string> { files[0] });
     }
 }

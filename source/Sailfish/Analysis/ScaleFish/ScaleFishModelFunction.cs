@@ -1,11 +1,11 @@
+using MathNet.Numerics;
+using Sailfish.Analysis.ScaleFish.CurveFitting;
+using Sailfish.Exceptions;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Text.Json.Serialization;
-using MathNet.Numerics;
-using Sailfish.Analysis.ScaleFish.CurveFitting;
-using Sailfish.Exceptions;
 
 namespace Sailfish.Analysis.ScaleFish;
 

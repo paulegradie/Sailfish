@@ -1,14 +1,9 @@
-﻿using System.Collections.Generic;
-using MediatR;
+﻿using MediatR;
+using System.Collections.Generic;
 
 namespace Sailfish.Contracts.Public.Requests;
 
-public class BeforeAndAfterFileLocationRequest : IRequest<BeforeAndAfterFileLocationResponse>
+public class BeforeAndAfterFileLocationRequest(IEnumerable<string> providedBeforeTrackingFiles) : IRequest<BeforeAndAfterFileLocationResponse>
 {
-    public BeforeAndAfterFileLocationRequest(IEnumerable<string> providedBeforeTrackingFiles)
-    {
-        ProvidedBeforeTrackingFiles = providedBeforeTrackingFiles;
-    }
-
-    public IEnumerable<string> ProvidedBeforeTrackingFiles { get; }
+    public IEnumerable<string> ProvidedBeforeTrackingFiles { get; } = providedBeforeTrackingFiles;
 }

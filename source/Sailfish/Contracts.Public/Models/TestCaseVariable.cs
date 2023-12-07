@@ -5,7 +5,6 @@ namespace Sailfish.Contracts.Public.Models;
 public class TestCaseVariable
 {
     [JsonConstructor]
-#pragma warning disable CS8618
     public TestCaseVariable()
 #pragma warning restore CS8618
     {

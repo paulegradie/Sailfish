@@ -2,7 +2,7 @@
 using Sailfish.Analysis.SailDiff;
 using Sailfish.Analysis.SailDiff.Statistics.Tests;
 using Sailfish.Analysis.SailDiff.Statistics.Tests.MWWilcoxonTestSailfish;
-using Sailfish.Analysis.SailDiff.Statistics.Tests.TTestSailfish;
+using Sailfish.Analysis.SailDiff.Statistics.Tests.TTest;
 using Sailfish.Analysis.SailDiff.Statistics.Tests.TwoSampleWilcoxonSignedRankTestSailfish;
 using Shouldly;
 using Xunit;
@@ -14,7 +14,7 @@ public class StatisticalTestFixture
     [Fact]
     public void WhenStdDevIsZeroMannWhitneyWilcoxonTestSailfishDoesNotThrow()
     {
-        var test = new MannWhitneyWilcoxonTestSailfish(new TestPreprocessor(new SailfishOutlierDetector()));
+        var test = new MannWhitneyWilcoxonTest(new TestPreprocessor(new SailfishOutlierDetector()));
 
         var before = new[] { 0.0, 0, 0, 0, 0 };
         var after = new[] { 0.0, 0, 0, 0, 0 };
@@ -25,7 +25,7 @@ public class StatisticalTestFixture
     [Fact]
     public void WhenStdDevIsZeroTwoSampleWilcoxonSignedRankTestSailfishDoesNotThrow()
     {
-        var test = new TwoSampleWilcoxonSignedRankTestSailfish(new TestPreprocessor(new SailfishOutlierDetector()));
+        var test = new TwoSampleWilcoxonSignedRankTest(new TestPreprocessor(new SailfishOutlierDetector()));
 
         var before = new[] { 0.0, 0, 0, 0, 0 };
         var after = new[] { 0.0, 0, 0, 0, 0 };
@@ -36,7 +36,7 @@ public class StatisticalTestFixture
     [Fact]
     public void WhenStdDevIsZeroTestSailfishDoesNotThrow()
     {
-        var test = new TTestSailfish(new TestPreprocessor(new SailfishOutlierDetector()));
+        var test = new TTest(new TestPreprocessor(new SailfishOutlierDetector()));
 
         var before = new[] { 0.0, 0, 0, 0, 0 };
         var after = new[] { 0.0, 0, 0, 0, 0 };

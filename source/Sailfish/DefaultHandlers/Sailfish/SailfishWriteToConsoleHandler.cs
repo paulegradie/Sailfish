@@ -1,22 +1,16 @@
-﻿using System.Threading;
-using System.Threading.Tasks;
-using MediatR;
+﻿using MediatR;
 using Sailfish.Contracts.Private;
 using Sailfish.Contracts.Public.Models;
 using Sailfish.Presentation.Console;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Sailfish.DefaultHandlers.Sailfish;
 
-internal class WriteToConsoleHandler : INotificationHandler<WriteToConsoleNotification>
+internal class WriteToConsoleHandler(IConsoleWriter consoleWriter, IRunSettings runSettings) : INotificationHandler<WriteToConsoleNotification>
 {
-    private readonly IConsoleWriter consoleWriter;
-    private readonly IRunSettings runSettings;
-
-    public WriteToConsoleHandler(IConsoleWriter consoleWriter, IRunSettings runSettings)
-    {
-        this.consoleWriter = consoleWriter;
-        this.runSettings = runSettings;
-    }
+    private readonly IConsoleWriter consoleWriter = consoleWriter;
+    private readonly IRunSettings runSettings = runSettings;
 
     public Task Handle(WriteToConsoleNotification notification, CancellationToken cancellationToken)
     {

@@ -12,12 +12,10 @@ public class TestRunCompletedNotificationHandler : INotificationHandler<TestRunC
         var failures = classExecutionSummaries.SelectMany(x => x.GetFailedTestCases()).ToList();
 
         if (failures.Any())
-        {
             foreach (var failure in failures)
             {
                 var exceptions = failure.Exception;
             }
-        }
 
         await Task.CompletedTask;
     }

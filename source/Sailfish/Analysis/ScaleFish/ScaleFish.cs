@@ -1,7 +1,3 @@
-using System;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 using MediatR;
 using Sailfish.Contracts.Public.Models;
 using Sailfish.Contracts.Public.Notifications;
@@ -9,6 +5,10 @@ using Sailfish.Contracts.Public.Requests;
 using Sailfish.Contracts.Public.Serialization.Tracking.V1;
 using Sailfish.Presentation;
 using Sailfish.Presentation.Console;
+using System;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Sailfish.Analysis.ScaleFish;
 
@@ -17,26 +17,22 @@ public interface IScaleFish
     void Analyze(ClassExecutionSummaryTrackingFormat summaryTrackingFormat);
 }
 
-internal class ScaleFish : IScaleFish, IScaleFishInternal
+internal class ScaleFish(
+    IMediator mediator,
+    IRunSettings runSettings,
+    IComplexityComputer complexityComputer,
+    IMarkdownTableConverter markdownTableConverter,
+    IConsoleWriter consoleWriter) : IScaleFish, IScaleFishInternal
 {
-    private readonly IMarkdownTableConverter markdownTableConverter;
-    private readonly IConsoleWriter consoleWriter;
-    private readonly IMediator mediator;
-    private readonly IRunSettings runSettings;
-    private readonly IComplexityComputer complexityComputer;
+    private readonly IComplexityComputer complexityComputer = complexityComputer;
+    private readonly IConsoleWriter consoleWriter = consoleWriter;
+    private readonly IMarkdownTableConverter markdownTableConverter = markdownTableConverter;
+    private readonly IMediator mediator = mediator;
+    private readonly IRunSettings runSettings = runSettings;
 
-    public ScaleFish(
-        IMediator mediator,
-        IRunSettings runSettings,
-        IComplexityComputer complexityComputer,
-        IMarkdownTableConverter markdownTableConverter,
-        IConsoleWriter consoleWriter)
+    public void Analyze(ClassExecutionSummaryTrackingFormat summaryTrackingFormat)
     {
-        this.mediator = mediator;
-        this.runSettings = runSettings;
-        this.complexityComputer = complexityComputer;
-        this.markdownTableConverter = markdownTableConverter;
-        this.consoleWriter = consoleWriter;
+        throw new NotImplementedException();
     }
 
     public async Task Analyze(CancellationToken cancellationToken)
@@ -59,10 +55,5 @@ internal class ScaleFish : IScaleFish, IScaleFishInternal
         {
             consoleWriter.WriteString(ex.Message);
         }
-    }
-
-    public void Analyze(ClassExecutionSummaryTrackingFormat summaryTrackingFormat)
-    {
-        throw new NotImplementedException();
     }
 }

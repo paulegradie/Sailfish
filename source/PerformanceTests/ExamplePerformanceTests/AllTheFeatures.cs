@@ -1,9 +1,9 @@
+using Sailfish.Attributes;
+using Sailfish.Registration;
 using System;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
-using Sailfish.Attributes;
-using Sailfish.Registration;
 
 namespace PerformanceTests.ExamplePerformanceTests;
 
@@ -12,9 +12,9 @@ namespace PerformanceTests.ExamplePerformanceTests;
 [Sailfish(SampleSize = 2, NumWarmupIterations = 1, DisableOverheadEstimation = false, Disabled = false)]
 public class AllTheFeatures
 {
+    private readonly MyClient client;
     private readonly SomethingIRegistered dep;
     private readonly SomethingYouRegistered reg;
-    private readonly MyClient client;
 
     public AllTheFeatures(SomethingIRegistered dep, SomethingYouRegistered reg, MyClient client)
     {
@@ -23,11 +23,10 @@ public class AllTheFeatures
         this.client = client;
     }
 
-    [SailfishRangeVariable(scaleFish: true, 10, 3, 2)]
+    [SailfishRangeVariable(true, 10, 3, 2)]
     public int Delay { get; set; }
 
     [SailfishVariable(3, 5)] public int Multiplier { get; set; }
-
 
     [SailfishGlobalSetup]
     public void GlobalSetup()
@@ -42,7 +41,6 @@ public class AllTheFeatures
         await Task.Delay(Math.Max(0, wait), ct);
         reg.Noop();
     }
-
 
     [SailfishMethodSetup(nameof(FasterMethod))]
     public void SpecificSetup()
@@ -61,7 +59,6 @@ public class AllTheFeatures
         await Task.Delay(Delay, ct);
         reg.Noop();
     }
-
 
     [SailfishMethod(Disabled = true)]
     public void ADisabledMethod()

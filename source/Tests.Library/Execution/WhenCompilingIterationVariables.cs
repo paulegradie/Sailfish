@@ -1,30 +1,24 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using Sailfish.Contracts.Public.Models;
-using Sailfish.Exceptions;
+﻿using Sailfish.Exceptions;
 using Sailfish.Execution;
 using Shouldly;
+using System.Collections.Generic;
+using System.Linq;
 using Xunit;
 using Xunit.Abstractions;
 
 namespace Tests.Library.Execution;
 
-public class WhenCompilingIterationVariables
+public class WhenCompilingIterationVariables(ITestOutputHelper testOutputHelper)
 {
-    private readonly ITestOutputHelper testOutputHelper;
-
-    public WhenCompilingIterationVariables(ITestOutputHelper testOutputHelper)
-    {
-        this.testOutputHelper = testOutputHelper;
-    }
+    private readonly ITestOutputHelper testOutputHelper = testOutputHelper;
 
     [Fact]
     public void AllCombinationsAreFound_TwoProperties()
     {
         var combinator = new ParameterCombinator();
         var result = combinator.GetAllPossibleCombos(
-            new List<string>() { "PropA", "PropB" },
-            new List<IEnumerable<dynamic>>() { new List<object>() { 1, 2 }, new List<object>() { 20, 50 } }).ToArray();
+            new List<string> { "PropA", "PropB" },
+            new List<IEnumerable<dynamic>> { new List<object> { 1, 2 }, new List<object> { 20, 50 } }).ToArray();
 
         result.Length.ShouldBe(4);
     }
@@ -37,16 +31,16 @@ public class WhenCompilingIterationVariables
 
         var combinator = new ParameterCombinator();
         var result = combinator.GetAllPossibleCombos(
-                new List<string>() { propA, propB },
-                new List<IEnumerable<object>>() { new List<object>() { 1, 2 }, new List<object>() { 20, 50 } })
+                new List<string> { propA, propB },
+                new List<IEnumerable<object>> { new List<object> { 1, 2 }, new List<object> { 20, 50 } })
             .ToList();
 
-        var expected = new List<PropertySet>()
+        var expected = new List<PropertySet>
         {
-            new(new List<TestCaseVariable>() { new(propA, 1), new(propB, 20) }),
-            new(new List<TestCaseVariable>() { new(propA, 1), new(propB, 50) }),
-            new(new List<TestCaseVariable>() { new(propA, 2), new(propB, 20) }),
-            new(new List<TestCaseVariable>() { new(propA, 2), new(propB, 50) }),
+            new([new(propA, 1), new(propB, 20)]),
+            new([new(propA, 1), new(propB, 50)]),
+            new([new(propA, 2), new(propB, 20)]),
+            new([new(propA, 2), new(propB, 50)])
         };
 
         result.ShouldBeEquivalentTo(expected);
@@ -57,8 +51,8 @@ public class WhenCompilingIterationVariables
     {
         const string propA = nameof(propA);
         const string propB = nameof(propB);
-        var propertyNames = new List<string>() { propA, propB };
-        var propertyValueSets = new List<IEnumerable<object>>() { new List<object>() { 1, 2 } };
+        var propertyNames = new List<string> { propA, propB };
+        var propertyValueSets = new List<IEnumerable<object>> { new List<object> { 1, 2 } };
 
         var combinator = new ParameterCombinator();
         var exception = Should.Throw<SailfishException>(() => combinator.GetAllPossibleCombos(propertyNames, propertyValueSets));

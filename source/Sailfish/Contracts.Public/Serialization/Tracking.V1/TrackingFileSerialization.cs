@@ -1,22 +1,19 @@
-using System.Collections.Generic;
 using Sailfish.Logging;
+using System.Collections.Generic;
+using System.Text.Json;
 
 namespace Sailfish.Contracts.Public.Serialization.Tracking.V1;
 
 public interface ITrackingFileSerialization
 {
     string Serialize(IEnumerable<ClassExecutionSummaryTrackingFormat> executionSummaries);
+
     IEnumerable<ClassExecutionSummaryTrackingFormat>? Deserialize(string serialized);
 }
 
-public class TrackingFileSerialization : ITrackingFileSerialization
+public class TrackingFileSerialization(ILogger logger) : ITrackingFileSerialization
 {
-    private readonly ILogger logger;
-
-    public TrackingFileSerialization(ILogger logger)
-    {
-        this.logger = logger;
-    }
+    private readonly ILogger logger = logger;
 
     public string Serialize(IEnumerable<ClassExecutionSummaryTrackingFormat> executionSummaries)
     {
@@ -29,7 +26,7 @@ public class TrackingFileSerialization : ITrackingFileSerialization
         {
             return SailfishSerializer.Deserialize<List<ClassExecutionSummaryTrackingFormat>>(serialized);
         }
-        catch (System.Text.Json.JsonException ex)
+        catch (JsonException ex)
         {
             logger.Log(LogLevel.Warning, "Failed to deserialize file content", ex);
             return null;

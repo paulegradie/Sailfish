@@ -1,7 +1,7 @@
-﻿using System;
+﻿using Sailfish.Contracts.Public.Models;
+using System;
 using System.Collections.Generic;
 using System.Linq;
-using Sailfish.Contracts.Public.Models;
 
 namespace Sailfish.Execution;
 
@@ -12,26 +12,22 @@ public interface IClassExecutionSummary
     IEnumerable<ICompiledTestCaseResult> CompiledTestCaseResults { get; }
 
     IEnumerable<ICompiledTestCaseResult> GetSuccessfulTestCases();
+
     IEnumerable<ICompiledTestCaseResult> GetFailedTestCases();
+
     IClassExecutionSummary FilterForSuccessfulTestCases();
+
     IClassExecutionSummary FilterForFailureTestCases();
 }
 
-internal class ClassExecutionSummary : IClassExecutionSummary
+internal class ClassExecutionSummary(
+    Type type,
+    IExecutionSettings executionSettings,
+    IEnumerable<ICompiledTestCaseResult> compiledResults) : IClassExecutionSummary
 {
-    public ClassExecutionSummary(
-        Type type,
-        IExecutionSettings executionSettings,
-        IEnumerable<ICompiledTestCaseResult> compiledResults)
-    {
-        TestClass = type;
-        CompiledTestCaseResults = compiledResults;
-        ExecutionSettings = executionSettings;
-    }
-
-    public Type TestClass { get; }
-    public IExecutionSettings ExecutionSettings { get; }
-    public IEnumerable<ICompiledTestCaseResult> CompiledTestCaseResults { get; }
+    public Type TestClass { get; } = type;
+    public IExecutionSettings ExecutionSettings { get; } = executionSettings;
+    public IEnumerable<ICompiledTestCaseResult> CompiledTestCaseResults { get; } = compiledResults;
 
     public IEnumerable<ICompiledTestCaseResult> GetSuccessfulTestCases()
     {

@@ -1,9 +1,9 @@
-﻿using System;
+﻿using Sailfish.Attributes;
+using Sailfish.Extensions.Methods;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using Sailfish.Attributes;
-using Sailfish.Extensions.Methods;
 
 namespace Sailfish.Execution;
 
@@ -17,10 +17,7 @@ internal class TestCollector : ITestCollector
     public IEnumerable<Type> CollectTestTypes(IEnumerable<Type> sourceTypes)
     {
         var enumerable = sourceTypes.ToList();
-        if (!enumerable.Any())
-        {
-            return CollectTestTypes();
-        }
+        if (!enumerable.Any()) return CollectTestTypes();
 
         var allTests = new List<Type>();
         foreach (var sourceType in enumerable)

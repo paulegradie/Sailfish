@@ -16,10 +16,7 @@ internal class TestAdapterModule : Module
 
     protected override void Load(ContainerBuilder builder)
     {
-        if (frameworkHandle is not null)
-        {
-            builder.RegisterInstance(frameworkHandle).As<IFrameworkHandle>();
-        }
+        if (frameworkHandle is not null) builder.RegisterInstance(frameworkHandle).As<IFrameworkHandle>();
 
         builder.RegisterType<TestAdapterExecutionProgram>().As<ITestAdapterExecutionProgram>();
         builder.RegisterType<TestAdapterExecutionEngine>().As<ITestAdapterExecutionEngine>();

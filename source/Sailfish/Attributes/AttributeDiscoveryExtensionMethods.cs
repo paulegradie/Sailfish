@@ -1,9 +1,9 @@
-﻿using System;
+﻿using Sailfish.Exceptions;
+using Sailfish.Extensions.Methods;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using Sailfish.Exceptions;
-using Sailfish.Extensions.Methods;
 
 namespace Sailfish.Attributes;
 
@@ -24,10 +24,7 @@ internal static class AttributeDiscoveryExtensionMethods
         return attribute is SailfishVariableAttribute or SailfishRangeVariableAttribute;
     }
 
-    internal static bool PropertyHasSailfishVariableAttribute(this PropertyInfo propertyInfo)
-    {
-        return propertyInfo.GetCustomAttributes<SailfishVariableAttribute>().Any() || propertyInfo.GetCustomAttributes<SailfishRangeVariableAttribute>().Any();
-    }
+
 
     internal static ISailfishVariableAttribute GetSailfishVariableAttributeOrThrow(this PropertyInfo propertyInfo)
     {

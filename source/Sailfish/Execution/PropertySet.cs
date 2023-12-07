@@ -1,22 +1,17 @@
+using Sailfish.Contracts.Public.Models;
 using System.Collections.Generic;
 using System.Linq;
-using Sailfish.Contracts.Public.Models;
 
 namespace Sailfish.Execution;
 
 /// <summary>
-/// A property set is a container that holds an array of TestCaseVariables
-/// There should only ever be as many TestCaseVariable objects in the list as there are properties on the test class
-/// So each PropertySet represents a test case that should be executed
+///     A property set is a container that holds an array of TestCaseVariables
+///     There should only ever be as many TestCaseVariable objects in the list as there are properties on the test class
+///     So each PropertySet represents a test case that should be executed
 /// </summary>
-public class PropertySet
+public class PropertySet(List<TestCaseVariable> variableSet)
 {
-    public  PropertySet(List<TestCaseVariable> variableSet)
-    {
-        VariableSet = variableSet;
-    }
-
-    public List<TestCaseVariable> VariableSet { get; set; }
+    public List<TestCaseVariable> VariableSet { get; set; } = variableSet;
 
     public IEnumerable<string> GetPropertyNames()
     {

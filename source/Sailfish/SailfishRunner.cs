@@ -1,15 +1,15 @@
-﻿using System;
-using System.Threading;
-using System.Threading.Tasks;
-using Autofac;
+﻿using Autofac;
 using Sailfish.Contracts.Public.Models;
 using Sailfish.Execution;
 using Sailfish.Utils;
+using System;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Sailfish;
 
 /// <summary>
-/// This is the main entry point to Sailfish library
+///     This is the main entry point to Sailfish library
 /// </summary>
 public static class SailfishRunner
 {
@@ -19,9 +19,12 @@ public static class SailfishRunner
         IRunSettings runSettings,
         Action<ContainerBuilder> registerAdditionalTypes,
         CancellationToken cancellationToken = default)
-        => await SailfishExecutionCaller.Run(runSettings, registerAdditionalTypes, cancellationToken);
-
+    {
+        return await SailfishExecutionCaller.Run(runSettings, registerAdditionalTypes, cancellationToken);
+    }
 
     public static async Task<SailfishRunResult> Run(IRunSettings runSettings, CancellationToken cancellationToken = default)
-        => await SailfishExecutionCaller.Run(runSettings, null, cancellationToken);
+    {
+        return await SailfishExecutionCaller.Run(runSettings, null, cancellationToken);
+    }
 }

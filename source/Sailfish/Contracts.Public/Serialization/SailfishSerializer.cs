@@ -1,8 +1,8 @@
+using Sailfish.Analysis.ScaleFish;
+using Sailfish.Contracts.Public.Serialization.JsonConverters;
 using System.Collections.Generic;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using Sailfish.Analysis.ScaleFish;
-using Sailfish.Contracts.Public.Serialization.JsonConverters;
 
 namespace Sailfish.Contracts.Public.Serialization;
 
@@ -17,27 +17,30 @@ public static class SailfishSerializer
     };
 
     public static string Serialize<T>(T data, IEnumerable<JsonConverter>? converters = null)
-        => JsonSerializer.Serialize(data, GetOptions(converters ?? new JsonConverter[] { }));
+    {
+        return JsonSerializer.Serialize(data, GetOptions(converters ?? System.Array.Empty<JsonConverter>()));
+    }
 
     public static T? Deserialize<T>(string serializedData, IEnumerable<JsonConverter>? converters = null)
-        => JsonSerializer.Deserialize<T>(serializedData, GetOptions(converters ?? new JsonConverter[] { }));
+    {
+        return JsonSerializer.Deserialize<T>(serializedData, GetOptions(converters ?? System.Array.Empty<JsonConverter>()));
+    }
 
     public static IList<JsonConverter> GetDefaultConverters()
-        => Converters;
+    {
+        return Converters;
+    }
 
     private static JsonSerializerOptions GetOptions(IEnumerable<JsonConverter> converters)
     {
         var allConverters = new List<JsonConverter>();
         allConverters.AddRange(converters);
         allConverters.AddRange(GetDefaultConverters());
-        var options = new JsonSerializerOptions()
+        var options = new JsonSerializerOptions
         {
-            WriteIndented = true,
+            WriteIndented = true
         };
-        foreach (var converter in allConverters)
-        {
-            options.Converters.Add(converter);
-        }
+        foreach (var converter in allConverters) options.Converters.Add(converter);
 
         return options;
     }

@@ -1,16 +1,7 @@
 namespace Sailfish.Execution;
 
-public class DurationConversion
+public class DurationConversion(double duration, DurationConversion.TimeScaleUnit timeScaleUnit)
 {
-    public DurationConversion(double duration, TimeScaleUnit timeScaleUnit)
-    {
-        Duration = duration;
-        TimeScale = timeScaleUnit;
-    }
-
-    public double Duration { get; set; }
-    public TimeScaleUnit TimeScale { get; set; }
-
     public enum TimeScaleUnit
     {
         Ns,
@@ -19,4 +10,6 @@ public class DurationConversion
         S,
         M
     }
+
+    public double Duration { get; set; } = duration;
 }

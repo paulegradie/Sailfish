@@ -1,12 +1,12 @@
-﻿using System;
+﻿using Autofac;
+using Sailfish.Attributes;
+using Sailfish.Exceptions;
+using Sailfish.Extensions.Methods;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Autofac;
-using Sailfish.Attributes;
-using Sailfish.Exceptions;
-using Sailfish.Extensions.Methods;
 
 namespace Sailfish.Registration;
 
@@ -18,7 +18,7 @@ internal static class SailfishTypeRegistrationUtility
         IEnumerable<Type> registrationProviderAnchorTypes,
         CancellationToken cancellationToken = default)
     {
-        if (registrationProviderAnchorTypes == null) throw new ArgumentNullException(nameof(registrationProviderAnchorTypes));
+        ArgumentNullException.ThrowIfNull(registrationProviderAnchorTypes);
 
         var registrationProviderAssembliesTypes = registrationProviderAnchorTypes
             .Select(t => t.Assembly)
@@ -51,10 +51,7 @@ internal static class SailfishTypeRegistrationUtility
     private static void RegisterISailfishDependencyTypes(ContainerBuilder containerBuilder, IEnumerable<Type> types)
     {
         var basicTypes = types.Where(t => t.GetInterfaces().Contains(typeof(ISailfishDependency)));
-        foreach (var basicType in basicTypes)
-        {
-            containerBuilder.RegisterType(basicType).AsSelf();
-        }
+        foreach (var basicType in basicTypes) containerBuilder.RegisterType(basicType).AsSelf();
     }
 
     private static void RegisterISailfishFixtureGenericTypes(ContainerBuilder containerBuilder, IEnumerable<Type> allAssemblyTypes)
@@ -90,10 +87,7 @@ internal static class SailfishTypeRegistrationUtility
     {
         var assemblyTypes = allAssemblyTypes.ToList();
         var asyncProviders = GetRegistrationCallbackProviders<IProvideARegistrationCallback>(assemblyTypes).ToList();
-        if (asyncProviders.Count == 0)
-        {
-            asyncProviders = GetRegistrationCallbackProviders<IProvideARegistrationCallback>(assemblyTypes).ToList();
-        }
+        if (asyncProviders.Count == 0) asyncProviders = [.. GetRegistrationCallbackProviders<IProvideARegistrationCallback>(assemblyTypes)];
 
         foreach (var asyncCallback in asyncProviders)
         {
@@ -105,19 +99,18 @@ internal static class SailfishTypeRegistrationUtility
             else
             {
                 var task = asyncCallback.RegisterAsync(containerBuilder, cancellationToken);
-                if (!task.IsCompletedSuccessfully)
-                {
-                    throw new Exception("Task error in your registration callback");
-                }
+                if (!task.IsCompletedSuccessfully) throw new Exception("Task error in your registration callback");
             }
         }
     }
 
     private static List<T> GetRegistrationCallbackProviders<T>(IEnumerable<Type> allAssemblyTypes)
-        => allAssemblyTypes
+    {
+        return allAssemblyTypes
             .Where(type => type.GetInterfaces().Contains(typeof(T)))
             .Distinct()
             .Select(Activator.CreateInstance)
             .Cast<T>()
             .ToList();
+    }
 }

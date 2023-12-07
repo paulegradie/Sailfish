@@ -1,15 +1,15 @@
-﻿using System.Threading.Tasks;
-using Sailfish.Analysis;
+﻿using Sailfish.Analysis;
 using Sailfish.Analysis.SailDiff.Statistics.Tests;
 using Shouldly;
+using System.Threading.Tasks;
 using Xunit;
 
 namespace Tests.Library.Analysis.SailDiff;
 
 public class DownSampleFixture : IAsyncLifetime
 {
-    private double[] data = null!;
     private readonly TestPreprocessor preprocessor = new(new SailfishOutlierDetector());
+    private double[] data = null!;
 
     public Task InitializeAsync()
     {
@@ -17,6 +17,11 @@ public class DownSampleFixture : IAsyncLifetime
         {
             100.0, 100, 100, 100, 99, 100, 100, 100, 100, 100, 100, 102, 200, 43, 12, 12, 200, 43, 12, 12
         };
+        return Task.CompletedTask;
+    }
+
+    public Task DisposeAsync()
+    {
         return Task.CompletedTask;
     }
 
@@ -60,11 +65,5 @@ public class DownSampleFixture : IAsyncLifetime
     public void DownSampleReturnsCorrectSizeF()
     {
         preprocessor.PreprocessWithDownSample(data, false, 10).RawData.Length.ShouldBe(10);
-    }
-
-
-    public Task DisposeAsync()
-    {
-        return Task.CompletedTask;
     }
 }

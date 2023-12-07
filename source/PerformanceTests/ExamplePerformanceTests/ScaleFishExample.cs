@@ -1,7 +1,7 @@
+using Sailfish.Attributes;
 using System;
 using System.Threading;
 using System.Threading.Tasks;
-using Sailfish.Attributes;
 
 namespace PerformanceTests.ExamplePerformanceTests;
 
@@ -9,7 +9,7 @@ namespace PerformanceTests.ExamplePerformanceTests;
 [Sailfish(SampleSize = 20, DisableOverheadEstimation = true, Disabled = false)]
 public class ScaleFishExample
 {
-    [SailfishRangeVariable(true, start: 5, 10, 6)]
+    [SailfishRangeVariable(true, 5, 10, 6)]
     public int N { get; set; }
 
     [SailfishMethod]

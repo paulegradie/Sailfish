@@ -11,7 +11,7 @@ namespace Sailfish.Analysis.ScaleFish;
 public static class ModelLoader
 {
     /// <summary>
-    /// Method to load a file of Scalefish models into a List of TestClassComplexityResults
+    ///     Method to load a file of Scalefish models into a List of TestClassComplexityResults
     /// </summary>
     /// <param name="filePath"></param>
     /// <returns></returns>
@@ -19,7 +19,7 @@ public static class ModelLoader
     {
         var options = new JsonSerializerOptions
         {
-            Converters = { new ComplexityFunctionConverter() },
+            Converters = { new ComplexityFunctionConverter() }
         };
 
         var jsonContent = File.ReadAllText(filePath); // Read the JSON content from the file
@@ -58,7 +58,7 @@ public static class ModelLoader
     }
 
     /// <summary>
-    ///  Easiest way to load a Scalefish model for making predictions
+    ///     Easiest way to load a Scalefish model for making predictions
     /// </summary>
     /// <param name="classModels"></param>
     /// <param name="testClass"></param>

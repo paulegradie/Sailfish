@@ -1,6 +1,3 @@
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 using MediatR;
 using Sailfish.Analysis.SailDiff;
 using Sailfish.Contracts.Public;
@@ -8,6 +5,9 @@ using Sailfish.Contracts.Public.Models;
 using Sailfish.Contracts.Public.Notifications;
 using Sailfish.Contracts.Public.Requests;
 using Sailfish.Execution;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Sailfish.TestAdapter.Execution;
 
@@ -22,11 +22,11 @@ internal interface IAdapterSailDiff : ISailDiffInternal
 
 internal class AdapterSailDiff : IAdapterSailDiff
 {
+    private readonly IAdapterConsoleWriter consoleWriter;
     private readonly IMediator mediator;
     private readonly IRunSettings runSettings;
-    private readonly IAdapterConsoleWriter consoleWriter;
-    private readonly IStatisticalTestComputer statisticalTestComputer;
     private readonly ISailDiffResultMarkdownConverter sailDiffResultMarkdownConverter;
+    private readonly IStatisticalTestComputer statisticalTestComputer;
 
     public AdapterSailDiff(
         IMediator mediator,

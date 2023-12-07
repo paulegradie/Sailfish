@@ -1,6 +1,6 @@
-using System.Diagnostics;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.Diagnostics;
+using System.Diagnostics;
 
 namespace Sailfish.Analyzers.Utils;
 
@@ -13,7 +13,7 @@ public abstract class DiagnosticAnalyzerBase : DiagnosticAnalyzer
         context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None);
         if (!Debugger.IsAttached) context.EnableConcurrentExecution();
 
-        var (analyzer, syntaxKinds) = CreateAnalyzer(context);
+        (var analyzer, var syntaxKinds) = CreateAnalyzer(context);
         context.RegisterSyntaxNodeAction(analyzer, syntaxKinds);
     }
 }

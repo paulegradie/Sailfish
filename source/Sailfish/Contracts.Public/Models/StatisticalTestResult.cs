@@ -6,15 +6,13 @@ namespace Sailfish.Contracts.Public.Models;
 public class StatisticalTestResult
 {
 #pragma warning disable CS8618
+
     public StatisticalTestResult(Exception ex)
 #pragma warning restore CS8618
     {
         Failed = true;
         Exception = ex;
     }
-
-    public bool Failed { get; set; }
-    public Exception Exception { get; set; }
 
     public StatisticalTestResult(
         double meanBefore,
@@ -44,6 +42,9 @@ public class StatisticalTestResult
         AdditionalResults = additionalResults;
         Exception = null!;
     }
+
+    public bool Failed { get; set; }
+    public Exception Exception { get; set; }
 
     public double MeanBefore { get; set; }
     public double MeanAfter { get; set; }

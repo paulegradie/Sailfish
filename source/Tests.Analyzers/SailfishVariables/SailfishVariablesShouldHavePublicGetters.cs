@@ -16,7 +16,7 @@ public class SailfishVariablesShouldHavePublicGetters
 [Sailfish]
 public class TestClass
 {
-    [SailfishVariable(1, 2, 3)] 
+    [SailfishVariable(1, 2, 3)]
     public int {|#0:Placeholder|} { private get; set; }
 
     [SailfishMethod]
@@ -49,7 +49,6 @@ public class TestClass
 ";
         await AnalyzerVerifier<ShouldHavePublicGettersAnalyzer>.VerifyAnalyzerAsync(source.AddSailfishAttributeDependencies());
     }
-
 
     [Fact]
     public async Task PrivatePropertyWithPublicGetterShouldNotErrorWhenASailfishVariableIsPresent()
@@ -89,7 +88,7 @@ namespace Two
 {
     public class BaseAnalyzerClass
     {
-        [SailfishVariable(1, 2, 3)] 
+        [SailfishVariable(1, 2, 3)]
         public int {|#0:MyVar|} { private get; set; }
 
         public int BaseValue { get; set; }

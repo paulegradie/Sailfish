@@ -9,6 +9,11 @@ public class PerfTestWithISailfishFixture : ISailfishFixture<SailfishDependencie
 {
     private readonly SailfishDependencies sailfishDependencies;
 
+    public PerfTestWithISailfishFixture(SailfishDependencies sailfishDependencies)
+    {
+        this.sailfishDependencies = sailfishDependencies;
+    }
+
     [SailfishVariable(1, 2, 3)] public int VariableA { get; set; }
 
     [SailfishMethod]
@@ -23,10 +28,5 @@ public class PerfTestWithISailfishFixture : ISailfishFixture<SailfishDependencie
     {
         var testDependency = sailfishDependencies.ResolveType<ExampleDep>();
         await Task.Delay(14, cancellationToken);
-    }
-
-    public PerfTestWithISailfishFixture(SailfishDependencies sailfishDependencies)
-    {
-        this.sailfishDependencies = sailfishDependencies;
     }
 }

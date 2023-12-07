@@ -1,17 +1,11 @@
-using System.Collections.Generic;
 using MediatR;
 using Sailfish.Analysis.ScaleFish;
+using System.Collections.Generic;
 
 namespace Sailfish.Contracts.Public.Notifications;
 
-public class ScalefishAnalysisCompleteNotification : INotification
+public class ScalefishAnalysisCompleteNotification(string scalefishResultMarkdown, List<ScalefishClassModel> testClassComplexityResults) : INotification
 {
-    public ScalefishAnalysisCompleteNotification(string scalefishResultMarkdown, List<ScalefishClassModel> testClassComplexityResults)
-    {
-        ScalefishResultMarkdown = scalefishResultMarkdown;
-        TestClassComplexityResults = testClassComplexityResults;
-    }
-
-    public List<ScalefishClassModel> TestClassComplexityResults { get; }
-    public string ScalefishResultMarkdown { get; }
+    public List<ScalefishClassModel> TestClassComplexityResults { get; } = testClassComplexityResults;
+    public string ScalefishResultMarkdown { get; } = scalefishResultMarkdown;
 }

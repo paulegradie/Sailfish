@@ -13,11 +13,6 @@ internal class HashWrapper : IHashAlgorithm
         hashAlgorithm = SHA1.Create();
     }
 
-    private byte[] ComputeHash(byte[] buffer)
-    {
-        return hashAlgorithm.ComputeHash(buffer);
-    }
-
     public Guid GuidFromString(string data)
     {
         var hash = hashAlgorithm.ComputeHash(Encoding.Unicode.GetBytes(data));

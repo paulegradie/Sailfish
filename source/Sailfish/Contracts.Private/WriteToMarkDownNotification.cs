@@ -1,15 +1,10 @@
-﻿using System.Collections.Generic;
-using MediatR;
+﻿using MediatR;
 using Sailfish.Execution;
+using System.Collections.Generic;
 
 namespace Sailfish.Contracts.Private;
 
-internal class WriteToMarkDownNotification : INotification
+internal class WriteToMarkDownNotification(List<IClassExecutionSummary> classExecutionSummaries) : INotification
 {
-    public WriteToMarkDownNotification(List<IClassExecutionSummary> classExecutionSummaries)
-    {
-        ClassExecutionSummaries = classExecutionSummaries;
-    }
-
-    public List<IClassExecutionSummary> ClassExecutionSummaries { get; }
+    public List<IClassExecutionSummary> ClassExecutionSummaries { get; } = classExecutionSummaries;
 }

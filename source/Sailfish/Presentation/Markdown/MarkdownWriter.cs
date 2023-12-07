@@ -1,8 +1,8 @@
-﻿using System.Collections.Generic;
+﻿using Sailfish.Execution;
+using System.Collections.Generic;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
-using Sailfish.Execution;
 
 namespace Sailfish.Presentation.Markdown;
 
@@ -11,14 +11,9 @@ internal interface IMarkdownWriter
     Task Write(IEnumerable<IClassExecutionSummary> result, string filePath, CancellationToken cancellationToken);
 }
 
-internal class MarkdownWriter : IMarkdownWriter
+internal class MarkdownWriter(IMarkdownTableConverter markdownTableConverter) : IMarkdownWriter
 {
-    private readonly IMarkdownTableConverter markdownTableConverter;
-
-    public MarkdownWriter(IMarkdownTableConverter markdownTableConverter)
-    {
-        this.markdownTableConverter = markdownTableConverter;
-    }
+    private readonly IMarkdownTableConverter markdownTableConverter = markdownTableConverter;
 
     public async Task Write(IEnumerable<IClassExecutionSummary> results, string filePath, CancellationToken cancellationToken)
     {

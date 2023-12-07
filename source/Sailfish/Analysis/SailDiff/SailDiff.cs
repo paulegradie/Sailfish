@@ -1,8 +1,4 @@
-﻿using System.Linq;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
-using MediatR;
+﻿using MediatR;
 using Sailfish.Contracts.Public;
 using Sailfish.Contracts.Public.Models;
 using Sailfish.Contracts.Public.Notifications;
@@ -10,6 +6,11 @@ using Sailfish.Contracts.Public.Requests;
 using Sailfish.Logging;
 using Sailfish.Presentation;
 using Sailfish.Presentation.Console;
+using System;
+using System.Linq;
+using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Sailfish.Analysis.SailDiff;
 
@@ -22,29 +23,24 @@ public interface ISailDiff
     void Analyze(TestData beforeData, TestData afterData, SailDiffSettings settings);
 }
 
-internal class SailDiff : ISailDiffInternal, ISailDiff
+internal class SailDiff(
+    IMediator mediator,
+    IRunSettings runSettings,
+    ILogger logger,
+    IStatisticalTestComputer statisticalTestComputer,
+    ISailDiffResultMarkdownConverter sailDiffResultMarkdownConverter,
+    IConsoleWriter consoleWriter) : ISailDiffInternal, ISailDiff
 {
-    private readonly IMediator mediator;
-    private readonly IRunSettings runSettings;
-    private readonly ILogger logger;
-    private readonly IStatisticalTestComputer statisticalTestComputer;
-    private readonly ISailDiffResultMarkdownConverter sailDiffResultMarkdownConverter;
-    private readonly IConsoleWriter consoleWriter;
+    private readonly IConsoleWriter consoleWriter = consoleWriter;
+    private readonly ILogger logger = logger;
+    private readonly IMediator mediator = mediator;
+    private readonly IRunSettings runSettings = runSettings;
+    private readonly ISailDiffResultMarkdownConverter sailDiffResultMarkdownConverter = sailDiffResultMarkdownConverter;
+    private readonly IStatisticalTestComputer statisticalTestComputer = statisticalTestComputer;
 
-    public SailDiff(
-        IMediator mediator,
-        IRunSettings runSettings,
-        ILogger logger,
-        IStatisticalTestComputer statisticalTestComputer,
-        ISailDiffResultMarkdownConverter sailDiffResultMarkdownConverter,
-        IConsoleWriter consoleWriter)
+    public void Analyze(TestData beforeData, TestData afterData, SailDiffSettings settings)
     {
-        this.mediator = mediator;
-        this.runSettings = runSettings;
-        this.logger = logger;
-        this.statisticalTestComputer = statisticalTestComputer;
-        this.sailDiffResultMarkdownConverter = sailDiffResultMarkdownConverter;
-        this.consoleWriter = consoleWriter;
+        throw new NotImplementedException();
     }
 
     public async Task Analyze(CancellationToken cancellationToken)
@@ -56,15 +52,9 @@ internal class SailDiff : ISailDiffInternal, ISailDiff
         if (!beforeAndAfterFileLocations.AfterFilePaths.Any() || !beforeAndAfterFileLocations.BeforeFilePaths.Any())
         {
             var message = new StringBuilder();
-            if (!beforeAndAfterFileLocations.BeforeFilePaths.Any())
-            {
-                message.Append("No 'Before' file locations discovered. ");
-            }
+            if (!beforeAndAfterFileLocations.BeforeFilePaths.Any()) message.Append("No 'Before' file locations discovered. ");
 
-            if (!beforeAndAfterFileLocations.AfterFilePaths.Any())
-            {
-                message.Append("No 'After' file locations discovered. ");
-            }
+            if (!beforeAndAfterFileLocations.AfterFilePaths.Any()) message.Append("No 'After' file locations discovered. ");
 
             message.Append(
                 $"If file locations are not provided, data must be provided via the {nameof(ReadInBeforeAndAfterDataRequest)} handler.");
@@ -98,10 +88,5 @@ internal class SailDiff : ISailDiffInternal, ISailDiff
 
         consoleWriter.WriteStatTestResultsToConsole(resultsAsMarkdown, testIds, runSettings.SailDiffSettings);
         await mediator.Publish(new SailDiffAnalysisCompleteNotification(testResults, resultsAsMarkdown), cancellationToken).ConfigureAwait(false);
-    }
-
-    public void Analyze(TestData beforeData, TestData afterData, SailDiffSettings settings)
-    {
-        throw new System.NotImplementedException();
     }
 }

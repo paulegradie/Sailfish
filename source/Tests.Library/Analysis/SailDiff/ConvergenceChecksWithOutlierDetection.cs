@@ -1,6 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using Sailfish.Analysis;
 using Sailfish.Analysis.SailDiff;
 using Sailfish.Analysis.SailDiff.Statistics.Tests;
@@ -8,6 +5,9 @@ using Sailfish.Analysis.SailDiff.Statistics.Tests.MWWilcoxonTestSailfish;
 using Sailfish.Analysis.SailDiff.Statistics.Tests.TwoSampleWilcoxonSignedRankTestSailfish;
 using Sailfish.Contracts.Public;
 using Shouldly;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using Xunit;
 
 namespace Tests.Library.Analysis.SailDiff;
@@ -19,14 +19,14 @@ public class ConvergenceChecksWithOutlierDetection
     [Fact]
     public void TwoSampleWilcoxonSignedRankTestSailfish_NoChange()
     {
-        var test = new TwoSampleWilcoxonSignedRankTestSailfish(new TestPreprocessor(new SailfishOutlierDetector()));
-        var results = new List<TestResultWithOutlierAnalysis>();
+        TwoSampleWilcoxonSignedRankTest test = new(new TestPreprocessor(new SailfishOutlierDetector()));
+        List<TestResultWithOutlierAnalysis> results = [];
         for (var i = 0; i < 1000; i++)
         {
             var bf = GenerateRandomNormalDistribution(15, 10, 5);
             var af = GenerateRandomNormalDistribution(15, 11, 5);
 
-            results.Add(test.ExecuteTest(bf, af, new SailDiffSettings(0.0001, 4, true, TestType.TwoSampleWilcoxonSignedRankTest)));
+            results.Add(test.ExecuteTest(bf, af, new SailDiffSettings(0.0001, 4)));
         }
 
         var converged = results.All(x => x.StatisticalTestResult.ChangeDescription == SailfishChangeDirection.NoChange);
@@ -36,7 +36,7 @@ public class ConvergenceChecksWithOutlierDetection
     [Fact]
     public void TwoSampleWilcoxonSignedRankTestSailfish_Regresssed()
     {
-        var test = new TwoSampleWilcoxonSignedRankTestSailfish(new TestPreprocessor(new SailfishOutlierDetector()));
+        var test = new TwoSampleWilcoxonSignedRankTest(new TestPreprocessor(new SailfishOutlierDetector()));
 
         var results = new List<TestResultWithOutlierAnalysis>();
 
@@ -44,7 +44,7 @@ public class ConvergenceChecksWithOutlierDetection
         {
             var bf = GenerateRandomNormalDistribution(30, 10, 1);
             var af = GenerateRandomNormalDistribution(30, 73, 1);
-            results.Add(test.ExecuteTest(bf, af, new SailDiffSettings(0.0001, 4, true, TestType.TwoSampleWilcoxonSignedRankTest)));
+            results.Add(test.ExecuteTest(bf, af, new SailDiffSettings(0.0001, 4)));
         }
 
         var converged = results.All(x => x.StatisticalTestResult.ChangeDescription == SailfishChangeDirection.Regressed);
@@ -59,11 +59,8 @@ public class ConvergenceChecksWithOutlierDetection
 
         var results = new List<TestResultWithOutlierAnalysis>();
 
-        var test = new MannWhitneyWilcoxonTestSailfish(new TestPreprocessor(new SailfishOutlierDetector()));
-        for (var i = 0; i < 20; i++)
-        {
-            results.Add(test.ExecuteTest(bf, af, new SailDiffSettings(0.0001, 4, true, TestType.WilcoxonRankSumTest)));
-        }
+        var test = new MannWhitneyWilcoxonTest(new TestPreprocessor(new SailfishOutlierDetector()));
+        for (var i = 0; i < 20; i++) results.Add(test.ExecuteTest(bf, af, new SailDiffSettings(0.0001, 4, true, TestType.WilcoxonRankSumTest)));
 
         var converged = results.All(x => x.StatisticalTestResult.ChangeDescription == SailfishChangeDirection.NoChange);
         converged.ShouldBeTrue();
@@ -77,11 +74,8 @@ public class ConvergenceChecksWithOutlierDetection
 
         var results = new List<TestResultWithOutlierAnalysis>();
 
-        var test = new MannWhitneyWilcoxonTestSailfish(new TestPreprocessor(new SailfishOutlierDetector()));
-        for (var i = 0; i < 20; i++)
-        {
-            results.Add(test.ExecuteTest(bf, af, new SailDiffSettings(0.0001, 4, true, TestType.WilcoxonRankSumTest)));
-        }
+        var test = new MannWhitneyWilcoxonTest(new TestPreprocessor(new SailfishOutlierDetector()));
+        for (var i = 0; i < 20; i++) results.Add(test.ExecuteTest(bf, af, new SailDiffSettings(0.0001, 4, true, TestType.WilcoxonRankSumTest)));
 
         var converged = results.All(x => x.StatisticalTestResult.ChangeDescription == SailfishChangeDirection.Regressed);
         converged.ShouldBeTrue();
@@ -95,11 +89,8 @@ public class ConvergenceChecksWithOutlierDetection
 
         var results = new List<TestResultWithOutlierAnalysis>();
 
-        var test = new MannWhitneyWilcoxonTestSailfish(new TestPreprocessor(new SailfishOutlierDetector()));
-        for (var i = 0; i < 20; i++)
-        {
-            results.Add(test.ExecuteTest(bf, af, new SailDiffSettings(0.0001, 4, true, TestType.WilcoxonRankSumTest)));
-        }
+        var test = new MannWhitneyWilcoxonTest(new TestPreprocessor(new SailfishOutlierDetector()));
+        for (var i = 0; i < 20; i++) results.Add(test.ExecuteTest(bf, af, new SailDiffSettings(0.0001, 4, true, TestType.WilcoxonRankSumTest)));
 
         var converged = results.All(x => x.StatisticalTestResult.ChangeDescription == SailfishChangeDirection.NoChange);
         converged.ShouldBeTrue();

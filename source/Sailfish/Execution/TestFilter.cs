@@ -9,14 +9,9 @@ internal interface ITestFilter
     TestInitializationResult FilterAndValidate(IEnumerable<Type> tests, IEnumerable<string> testsRequestedByUser);
 }
 
-internal class TestFilter : ITestFilter
+internal class TestFilter(ITestListValidator testListValidator) : ITestFilter
 {
-    private readonly ITestListValidator testListValidator;
-
-    public TestFilter(ITestListValidator testListValidator)
-    {
-        this.testListValidator = testListValidator;
-    }
+    private readonly ITestListValidator testListValidator = testListValidator;
 
     public TestInitializationResult FilterAndValidate(IEnumerable<Type> tests, IEnumerable<string> testsRequestedByUser)
     {

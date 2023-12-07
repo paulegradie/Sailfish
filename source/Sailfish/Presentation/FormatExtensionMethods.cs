@@ -1,8 +1,8 @@
-using System.Collections.Generic;
-using System.Linq;
 using Sailfish.Contracts.Public.Models;
 using Sailfish.Contracts.Public.Serialization.Tracking.V1;
 using Sailfish.Execution;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace Sailfish.Presentation;
 
@@ -41,7 +41,6 @@ public static class FormatExtensionMethods
             )
         );
     }
-
 
     public static IEnumerable<ClassExecutionSummaryTrackingFormat> ToTrackingFormat(this IEnumerable<IClassExecutionSummary> summaries)
     {

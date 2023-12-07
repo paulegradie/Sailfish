@@ -1,5 +1,5 @@
-using System.Threading;
 using Sailfish.Attributes;
+using System.Threading;
 
 namespace PerformanceTests.ExamplePerformanceTests.NonDiscoverable;
 

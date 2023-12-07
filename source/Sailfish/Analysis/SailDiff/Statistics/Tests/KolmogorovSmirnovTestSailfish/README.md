@@ -1,10 +1,12 @@
 # Kolmogorov-Smirnov test
 
-**The Kolmogorov-Smirnov test tries to determine if two samples have been drawn from the same probability distribution.**
+**The Kolmogorov-Smirnov test tries to determine if two samples have been drawn from the same probability distribution.
+**
 
 ## Usage
 
-The two-sample KS test is one of the most useful and general nonparametric methods for comparing two samples, as it is sensitive to differences in both location and shape of the
+The two-sample KS test is one of the most useful and general nonparametric methods for comparing two samples, as it is
+sensitive to differences in both location and shape of the
 empirical cumulative distribution functions of the two samples.
 
 ## Example
@@ -32,19 +34,19 @@ double[] whitney =
 39.1, 26.5, 22.7
 };
 
-// Create a t-test as a first attempt.
+
 var t = new TwoSampleTTest(redwell, whitney);
 
 Console.WriteLine("T-Test");
-Console.WriteLine("Test p-value: " + t.PValue);    // ~0.837
-Console.WriteLine("Significant? " + t.Significant); // false
+Console.WriteLine("Test p-value: " + t.PValue);    
+Console.WriteLine("Significant? " + t.Significant); 
 
-// Create a non-parametric Kolmogorov-Smirnov test
+
 var ks = new TwoSampleKolmogorovSmirnovTest(redwell, whitney);
 
 Console.WriteLine("KS-Test");
-Console.WriteLine("Test p-value: " + ks.PValue);    // ~0.038
-Console.WriteLine("Significant? " + ks.Significant); // true
+Console.WriteLine("Test p-value: " + ks.PValue);    
+Console.WriteLine("Significant? " + ks.Significant); 
 ``````
 
-http://accord-framework.net/docs/html/T_Accord_Statistics_Testing_TwoSampleKolmogorovSmirnovTest.htm
+http:

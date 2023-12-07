@@ -1,5 +1,5 @@
-using System.Collections.Generic;
 using Sailfish.Contracts.Public.Models;
+using System.Collections.Generic;
 
 namespace Sailfish.Analysis.ScaleFish;
 

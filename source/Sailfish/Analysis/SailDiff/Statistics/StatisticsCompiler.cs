@@ -1,5 +1,4 @@
-﻿using Sailfish.Contracts.Public;
-using Sailfish.Contracts.Public.Models;
+﻿using Sailfish.Contracts.Public.Models;
 using Sailfish.Execution;
 using Sailfish.Extensions.Methods;
 

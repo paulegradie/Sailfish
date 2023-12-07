@@ -1,8 +1,8 @@
-﻿using System.IO;
-using System.Linq;
-using Microsoft.VisualStudio.TestPlatform.ObjectModel.Logging;
+﻿using Microsoft.VisualStudio.TestPlatform.ObjectModel.Logging;
 using NSubstitute;
 using Sailfish.TestAdapter.Discovery;
+using System.IO;
+using System.Linq;
 
 namespace Tests.TestAdapter.Utils;
 
@@ -16,7 +16,10 @@ public static class DllFinder
             path => !path.Contains($"{Path.DirectorySeparatorChar}obj{Path.DirectorySeparatorChar}"));
 
 #if DEBUG
-        return allDlls.Single(x => x.Contains(Path.Join("bin", "Debug", "net8.0"))); // if this throws - check that you've removed non-target directories in your bin directory or that you've changed the target framework
+        return
+            allDlls.Single(x =>
+                x.Contains(Path.Join("bin", "Debug",
+                    "net8.0"))); // if this throws - check that you've removed non-target directories in your bin directory or that you've changed the target framework
 #else
         return allDlls.Single(x => x.Contains(Path.Join("bin", "net8.0", "Release")));
 #endif
