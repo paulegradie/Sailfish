@@ -10,15 +10,15 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\PerformanceTests\PerformanceTests.csproj" />
-        <ProjectReference Include="..\Sailfish\Sailfish.csproj" />
+        <ProjectReference Include="..\PerformanceTests\PerformanceTests.csproj"/>
+        <ProjectReference Include="..\Sailfish\Sailfish.csproj"/>
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="Serilog.Extensions.Autofac.DependencyInjection" Version="5.0.0" />
-        <PackageReference Include="Serilog.Sinks.Console" Version="5.0.0" />
-        <PackageReference Include="Serilog.Sinks.Seq" Version="6.0.0" />
-        <PackageReference Include="Serilog.Settings.Configuration" Version="8.0.0" />
+        <PackageReference Include="Serilog.Extensions.Autofac.DependencyInjection" Version="5.0.0"/>
+        <PackageReference Include="Serilog.Sinks.Console" Version="5.0.0"/>
+        <PackageReference Include="Serilog.Sinks.Seq" Version="6.0.0"/>
+        <PackageReference Include="Serilog.Settings.Configuration" Version="8.0.0"/>
     </ItemGroup>
 
     <ItemGroup>

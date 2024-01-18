@@ -1,22 +1,27 @@
+using Octopus.Client;
+using Octopus.Client.Model;
+using Sailfish.Attributes;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Octopus.Client;
-using Octopus.Client.Model;
-using Sailfish.Attributes;
 
 namespace PerformanceTests.ExamplePerformanceTests;
 
 /// <summary>
-/// If you'd like to run a test against server running in your ide - use this format
+///     If you'd like to run a test against server running in your ide - use this format
 /// </summary>
 [Sailfish(SampleSize = 3)]
 public class ExampleUsingAClient
 {
     public IOctopusAsyncClient Client { get; set; } = null!;
     public EnvironmentResource Environment { get; set; } = null!;
+
+    [SailfishVariable(true, 10, 50, 100, 500)]
+    public int NumMachines { get; set; }
+
+    public List<MachineResource> Machines { get; set; } = new();
 
     [SailfishGlobalSetup]
     public async Task GlobalSetup(CancellationToken ct)
@@ -29,17 +34,12 @@ public class ExampleUsingAClient
         }, ct);
     }
 
-    [SailfishVariable(true, 10, 50, 100, 500)]
-    public int NumMachines { get; set; }
-
-    public List<MachineResource> Machines { get; set; } = new();
-
     [SailfishIterationSetup]
     public void IterationSetup()
     {
         Machines.Clear();
         Machines = Enumerable.Range(1, NumMachines)
-            .Select(x => new MachineResource()
+            .Select(x => new MachineResource
             {
                 Name = Guid.NewGuid().ToString(),
                 Roles = new ReferenceCollection("MyRole"),
@@ -57,5 +57,8 @@ public class ExampleUsingAClient
     }
 
     [SailfishIterationTeardown]
-    public async Task DestroyMachinesEachIteration(CancellationToken ct) => await Task.WhenAll(Machines.Select(m => Client.Repository.Machines.Delete(m, ct)));
+    public async Task DestroyMachinesEachIteration(CancellationToken ct)
+    {
+        await Task.WhenAll(Machines.Select(m => Client.Repository.Machines.Delete(m, ct)));
+    }
 }

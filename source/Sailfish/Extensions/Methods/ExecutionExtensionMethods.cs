@@ -1,7 +1,7 @@
-﻿using System;
-using System.Reflection;
-using Sailfish.Attributes;
+﻿using Sailfish.Attributes;
 using Sailfish.Execution;
+using System;
+using System.Reflection;
 
 namespace Sailfish.Extensions.Methods;
 
@@ -16,7 +16,7 @@ internal static class ExecutionExtensionMethods
         var sampleSize = globalSampleSize ?? type.GetSampleSize();
         var numWarmupIterations = globalNumWarmupIterations ?? type.GetWarmupIterations();
 
-        return new ExecutionSettings(asCsv: asCsv is not null, asConsole: suppressConsole is null, asMarkdown: asMarkdown is not null, sampleSize: sampleSize,
-            numWarmupIterations: numWarmupIterations);
+        return new ExecutionSettings(asCsv is not null, suppressConsole is null, asMarkdown is not null, sampleSize,
+            numWarmupIterations);
     }
 }

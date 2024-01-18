@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json.Serialization;
 
@@ -11,12 +12,12 @@ public class TestCaseVariables
     private const char Colon = ':';
 
 #pragma warning disable CS8618
+
     public TestCaseVariables()
 #pragma warning restore CS8618
     {
-        
     }
-    
+
     public TestCaseVariables(string displayName)
     {
         Variables = GetElements(displayName);
@@ -71,14 +72,12 @@ public class TestCaseVariables
             .ToList();
 
         if (rawElements.Any())
-        {
             return rawElements
                 .Select(ParseVariable)
                 .OrderByDescending(x => x.Name)
                 .ThenBy(x => x.Value)
                 .ToList();
-        }
 
-        return System.Array.Empty<TestCaseVariable>();
+        return Array.Empty<TestCaseVariable>();
     }
 }

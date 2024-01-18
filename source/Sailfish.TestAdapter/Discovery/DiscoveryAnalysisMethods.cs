@@ -1,12 +1,12 @@
+using Microsoft.CodeAnalysis;
+using Microsoft.CodeAnalysis.CSharp;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
-using Microsoft.CodeAnalysis;
-using Microsoft.CodeAnalysis.CSharp;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
 
 // ReSharper disable HeapView.ClosureAllocation
 
@@ -15,13 +15,11 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 // ReSharper disable HeapView.BoxingAllocation
 // ReSharper disable HeapView.ObjectAllocation.Evident
 
-
 namespace Sailfish.TestAdapter.Discovery;
 
 public static class DiscoveryAnalysisMethods
 {
     /// <summary>
-    /// 
     /// </summary>
     /// <param name="sourceFiles"></param>
     /// <param name="performanceTestTypes"></param>
@@ -102,7 +100,7 @@ public static class DiscoveryAnalysisMethods
                             from methodDeclaration in methodDeclarations
                             let lineSpan = syntaxTree.GetLineSpan(methodDeclaration.Span)
                             let lineNumber = lineSpan.StartLinePosition.Line + 1
-                            select new MethodMetaData(methodName: methodDeclaration.Identifier.ValueText, lineNumber: lineNumber))
+                            select new MethodMetaData(methodDeclaration.Identifier.ValueText, lineNumber))
                         .ToArray(),
                         syntaxTree: syntaxTree);
 
@@ -114,16 +112,13 @@ public static class DiscoveryAnalysisMethods
         return classMetas;
     }
 
-    static string RetrieveClassFullName(ClassDeclarationSyntax classDeclarationSyntax)
+    private static string RetrieveClassFullName(ClassDeclarationSyntax classDeclarationSyntax)
     {
         var parentNode = classDeclarationSyntax.Parent;
         var fullClassName = "";
         while (parentNode != null)
         {
-            if (parentNode is FileScopedNamespaceDeclarationSyntax namespaceNode)
-            {
-                fullClassName = $"{namespaceNode.Name}.{classDeclarationSyntax.Identifier.ValueText}";
-            }
+            if (parentNode is FileScopedNamespaceDeclarationSyntax namespaceNode) fullClassName = $"{namespaceNode.Name}.{classDeclarationSyntax.Identifier.ValueText}";
 
             parentNode = parentNode.Parent;
         }

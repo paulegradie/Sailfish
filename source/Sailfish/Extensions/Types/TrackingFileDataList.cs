@@ -1,6 +1,6 @@
+using Sailfish.Execution;
 using System.Collections.Generic;
 using System.Linq;
-using Sailfish.Execution;
 
 namespace Sailfish.Extensions.Types;
 
@@ -23,6 +23,6 @@ public class TrackingFileDataList : List<List<IClassExecutionSummary>>
         var updated = this.Skip(1).ToList();
         Clear();
         AddRange(updated);
-        return (Count > 0);
+        return Count > 0;
     }
 }

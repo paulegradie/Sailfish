@@ -1,15 +1,9 @@
 namespace Sailfish.Contracts.Public.Requests;
 
-public class ReadInBeforeAndAfterDataResponse
+public class ReadInBeforeAndAfterDataResponse(TestData? beforeData, TestData? afterData)
 {
-    public TestData? BeforeData { get; }
-    public TestData? AfterData { get; }
-
-    public ReadInBeforeAndAfterDataResponse(TestData? beforeData, TestData? afterData)
-    {
-        BeforeData = beforeData;
-        AfterData = afterData;
-    }
+    public TestData? BeforeData { get; } = beforeData;
+    public TestData? AfterData { get; } = afterData;
 
     public static ReadInBeforeAndAfterDataResponse CreateNullResponse()
     {

@@ -6,17 +6,16 @@ namespace Tests.E2E.TestSuite.Discoverable;
 [Sailfish(SampleSize = 1, Disabled = Constants.Disabled)]
 public class TestWithStringVariable
 {
-    private IClient client = null!;
+    private const string ScenarioA = "ScenarioA";
+    private const string ScenarioB = "ScenarioB";
     private readonly Configuration configuration;
     private readonly Dictionary<string, ScenarioData> scenarioMap = new();
+    private IClient client = null!;
 
     public TestWithStringVariable(Configuration configuration)
     {
         this.configuration = configuration;
     }
-
-    private const string ScenarioA = "ScenarioA";
-    private const string ScenarioB = "ScenarioB";
 
     [SailfishVariable(ScenarioA, ScenarioB)]
     public string? Scenario { get; set; }

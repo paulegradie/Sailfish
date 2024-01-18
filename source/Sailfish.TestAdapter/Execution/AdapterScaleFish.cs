@@ -1,13 +1,13 @@
-using System;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 using MediatR;
 using Sailfish.Analysis.ScaleFish;
 using Sailfish.Contracts.Public.Models;
 using Sailfish.Contracts.Public.Notifications;
 using Sailfish.Contracts.Public.Requests;
 using Sailfish.Presentation;
+using System;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Sailfish.TestAdapter.Execution;
 
@@ -17,11 +17,11 @@ internal interface IAdapterScaleFish : IScaleFishInternal
 
 internal class AdapterScaleFish : IAdapterScaleFish
 {
+    private readonly IComplexityComputer complexityComputer;
+    private readonly IAdapterConsoleWriter consoleWriter;
+    private readonly IMarkdownTableConverter markdownTableConverter;
     private readonly IMediator mediator;
     private readonly IRunSettings runSettings;
-    private readonly IComplexityComputer complexityComputer;
-    private readonly IMarkdownTableConverter markdownTableConverter;
-    private readonly IAdapterConsoleWriter consoleWriter;
 
     public AdapterScaleFish(
         IMediator mediator,

@@ -7,8 +7,6 @@ namespace Tests.E2E.TestSuite.Utils;
 // Example of what they can implement
 public class SailfishDependencies : IDisposable
 {
-    private IContainer Container { get; set; }
-
     // single parameterless ctor is all this is allowed
     public SailfishDependencies()
     {
@@ -17,16 +15,18 @@ public class SailfishDependencies : IDisposable
         Container = builder.Build();
     }
 
+    private IContainer Container { get; }
+
+    public void Dispose()
+    {
+        Container.Dispose();
+    }
+
     private static void RegisterThings(ContainerBuilder builder)
     {
         builder.RegisterType<ExampleDep>().AsSelf();
         builder.RegisterType<SailfishDependencies>().AsSelf();
         builder.RegisterType<WebApplicationFactory<DemoApp>>();
-    }
-
-    public void Dispose()
-    {
-        Container.Dispose();
     }
 
     public object ResolveType(Type type)

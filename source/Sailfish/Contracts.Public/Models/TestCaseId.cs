@@ -4,7 +4,7 @@ using System.Text.Json.Serialization;
 namespace Sailfish.Contracts.Public.Models;
 
 /// <summary>
-/// Strong Typing for Test Case strings
+///     Strong Typing for Test Case strings
 /// </summary>
 public class TestCaseId
 {
@@ -39,10 +39,7 @@ public class TestCaseId
     {
         // Need to check for null since deserialization with throw prematurely
         // ReSharper disable once ConditionIsAlwaysTrueOrFalseAccordingToNullableAPIContract
-        if (TestCaseName?.Name is not null && TestCaseVariables is not null)
-        {
-            return TestCaseName.Name + TestCaseVariables.FormVariableSection();
-        }
+        if (TestCaseName?.Name is not null && TestCaseVariables is not null) return TestCaseName.Name + TestCaseVariables.FormVariableSection();
 
         return string.Empty;
     }

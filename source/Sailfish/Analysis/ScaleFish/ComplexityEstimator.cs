@@ -1,6 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using Sailfish.Analysis.ScaleFish.CurveFitting;
+using System.Collections.Generic;
 using System.Linq;
-using Sailfish.Analysis.ScaleFish.CurveFitting;
 
 namespace Sailfish.Analysis.ScaleFish;
 
@@ -18,7 +18,6 @@ public class ComplexityEstimator : IComplexityEstimator
 
         var fitnessResults = new List<(ScaleFishModelFunction, FitnessResult)>();
         foreach (var complexityFunction in complexityFunctions)
-        {
             try
             {
                 var fitness = complexityFunction.AnalyzeFitness(measurements);
@@ -28,7 +27,6 @@ public class ComplexityEstimator : IComplexityEstimator
             {
                 // ignore this complexity - too difficult to converge - find the next best curve to explain the data
             }
-        }
 
         var orderedFitnessResults = fitnessResults
             .Where(x => x.Item2.IsValid)

@@ -9,16 +9,10 @@ internal interface IPropertySetGenerator
     IEnumerable<PropertySet> GenerateSailfishVariableSets(Type test, out Dictionary<string, VariableAttributeMeta> variableProperties);
 }
 
-internal class PropertySetGenerator : IPropertySetGenerator
+internal class PropertySetGenerator(IParameterCombinator parameterCombinator, IIterationVariableRetriever iterationVariableRetriever) : IPropertySetGenerator
 {
-    private readonly IParameterCombinator parameterCombinator;
-    private readonly IIterationVariableRetriever iterationVariableRetriever;
-
-    public PropertySetGenerator(IParameterCombinator parameterCombinator, IIterationVariableRetriever iterationVariableRetriever)
-    {
-        this.parameterCombinator = parameterCombinator;
-        this.iterationVariableRetriever = iterationVariableRetriever;
-    }
+    private readonly IIterationVariableRetriever iterationVariableRetriever = iterationVariableRetriever;
+    private readonly IParameterCombinator parameterCombinator = parameterCombinator;
 
     public IEnumerable<PropertySet> GenerateSailfishVariableSets(Type test, out Dictionary<string, VariableAttributeMeta> variableProperties)
     {

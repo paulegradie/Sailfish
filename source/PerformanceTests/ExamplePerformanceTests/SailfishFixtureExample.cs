@@ -1,13 +1,13 @@
-using System;
-using System.Net.Http;
-using System.Threading;
-using System.Threading.Tasks;
 using Autofac;
 using Demo.API;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
 using Sailfish.Attributes;
 using Sailfish.Registration;
+using System;
+using System.Net.Http;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace PerformanceTests.ExamplePerformanceTests;
 
@@ -18,18 +18,22 @@ public class SailfishFixtureExample : TestBase
 {
     private readonly SailfishFixture sailfishFixture;
 
+    public ExampleDep ExampleDep = null!;
+
+    public SailfishFixtureExample(SailfishFixture sailfishFixture, WebApplicationFactory<DemoApp> factory) : base(factory)
+    {
+        this.sailfishFixture = sailfishFixture;
+    }
+
     [SailfishVariable(1, 10)] public int VariableA { get; set; }
 
-    [SailfishRangeVariable(true, 1, 4, 1)] public int Multiplier { get; set; }
-
+    [SailfishRangeVariable(true, 1, 4)] public int Multiplier { get; set; }
 
     [SailfishMethod]
     public async Task Control(CancellationToken cancellationToken)
     {
         await Task.Delay(VariableA * Multiplier, cancellationToken);
     }
-
-    public ExampleDep ExampleDep = null!;
 
     [SailfishMethodSetup(nameof(TestB))]
     public void ResolveSetup()
@@ -42,11 +46,6 @@ public class SailfishFixtureExample : TestBase
     {
         await Task.CompletedTask;
         ExampleDep.WriteSomething("Hello", VariableA * Multiplier);
-    }
-
-    public SailfishFixtureExample(SailfishFixture sailfishFixture, WebApplicationFactory<DemoApp> factory) : base(factory)
-    {
-        this.sailfishFixture = sailfishFixture;
     }
 }
 
@@ -79,8 +78,6 @@ public class TestBase : ISailfishFixture<SailfishFixture>
 // Example of what can be implemented
 public class SailfishFixture : IDisposable
 {
-    private IContainer Container { get; set; }
-
     // single parameterless ctor is all that is allowed
     public SailfishFixture()
     {
@@ -89,13 +86,18 @@ public class SailfishFixture : IDisposable
         Container = builder.Build();
     }
 
+    private IContainer Container { get; }
+
+    public void Dispose()
+    {
+        Container.Dispose();
+    }
+
     private static void RegisterThings(ContainerBuilder builder)
     {
         builder.RegisterType<ExampleDep>().AsSelf();
         builder.RegisterType<WebApplicationFactory<DemoApp>>();
     }
-
-    public void Dispose() => Container.Dispose();
 
     public object ResolveType(Type type)
     {

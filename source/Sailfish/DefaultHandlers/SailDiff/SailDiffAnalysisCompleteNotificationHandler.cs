@@ -1,26 +1,21 @@
-﻿using System.Collections.Generic;
-using System.Globalization;
-using System.IO;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
-using CsvHelper;
+﻿using CsvHelper;
 using MediatR;
 using Sailfish.Contracts.Private.CsvMaps;
 using Sailfish.Contracts.Public.Models;
 using Sailfish.Contracts.Public.Notifications;
 using Sailfish.Presentation;
+using System.Collections.Generic;
+using System.Globalization;
+using System.IO;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Sailfish.DefaultHandlers.SailDiff;
 
-internal class SailDiffAnalysisCompleteNotificationHandler : INotificationHandler<SailDiffAnalysisCompleteNotification>
+internal class SailDiffAnalysisCompleteNotificationHandler(IRunSettings runSettings) : INotificationHandler<SailDiffAnalysisCompleteNotification>
 {
-    private readonly IRunSettings runSettings;
-
-    public SailDiffAnalysisCompleteNotificationHandler(IRunSettings runSettings)
-    {
-        this.runSettings = runSettings;
-    }
+    private readonly IRunSettings runSettings = runSettings;
 
     public async Task Handle(SailDiffAnalysisCompleteNotification notification, CancellationToken cancellationToken)
     {

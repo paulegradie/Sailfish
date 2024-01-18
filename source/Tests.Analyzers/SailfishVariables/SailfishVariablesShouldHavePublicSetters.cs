@@ -16,7 +16,7 @@ public class SailfishVariablesShouldHavePublicSetters
 [Sailfish]
 public class TestClass
 {
-    [SailfishVariable(1, 2, 3)] 
+    [SailfishVariable(1, 2, 3)]
     public int {|#0:Placeholder|} { get; private set; }
 
     [SailfishMethod]
@@ -50,7 +50,6 @@ public class TestClass
         await AnalyzerVerifier<ShouldHavePublicSettersAnalyzer>.VerifyAnalyzerAsync(source.AddSailfishAttributeDependencies());
     }
 
-
     [Fact]
     public async Task PrivatePropertyWithPublicSetterShouldNotErrorWhenASailfishVariableIsPresent()
     {
@@ -60,7 +59,7 @@ public class TestClass
 {
     private int Type { get; set; }
     public int TypeTwo { private get; set; }
-    public int TypeThree { get; private set; }    
+    public int TypeThree { get; private set; }
 
     [SailfishVariable(200, 300)] public int WaitPeriod { get; set; }
 
@@ -90,7 +89,7 @@ namespace Two
 {
     public class BaseAnalyzerClass
     {
-        [SailfishVariable(1, 2, 3)] 
+        [SailfishVariable(1, 2, 3)]
         public int {|#1:MyVar|} { get; private set; }
 
         public int BaseValue { get; set; }

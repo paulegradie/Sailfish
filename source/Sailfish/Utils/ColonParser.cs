@@ -1,6 +1,4 @@
-﻿
-
-using Sailfish.Extensions.Types;
+﻿using Sailfish.Extensions.Types;
 
 namespace Sailfish.Utils;
 

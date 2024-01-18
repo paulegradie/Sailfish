@@ -1,13 +1,13 @@
-﻿using System;
+﻿using Sailfish.Attributes;
+using Sailfish.Exceptions;
+using Sailfish.Execution;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
-using Sailfish.Attributes;
-using Sailfish.Exceptions;
-using Sailfish.Execution;
 
 namespace Sailfish.Extensions.Methods;
 
@@ -38,18 +38,6 @@ public static class ReflectionExtensionMethods
         return type.GetMethods(BindingFlags.Public | BindingFlags.Instance).Where(x => x.HasAttribute<TAttribute>());
     }
 
-    internal static List<MethodInfo> GetMethodsWithAttribute<TAttribute>(this object instance) where TAttribute : Attribute
-    {
-        return instance.GetType().GetMethodsWithAttribute<TAttribute>().ToList();
-    }
-
-    internal static MethodInfo? GetMethodWithAttribute<TAttribute>(this object instance) where TAttribute : Attribute
-    {
-        var methods = instance.GetType().GetMethodsWithAttribute<TAttribute>().ToList();
-        if (methods.Count > 1) throw new SailfishException($"Multiple methods with attribute {typeof(TAttribute).Name} found");
-        return methods.SingleOrDefault();
-    }
-
     internal static bool IsAsyncMethod(this MethodInfo method)
     {
         return method.HasAttribute<AsyncStateMachineAttribute>();
@@ -58,12 +46,9 @@ public static class ReflectionExtensionMethods
     private static async Task InvokeAs(this MethodInfo method, object instance)
     {
         if (method.IsAsyncMethod())
-        {
             await (Task)method.Invoke(instance, null)!;
-        }
         else method.Invoke(instance, null);
     }
-
 
     private static async Task InvokeAsWithCancellation(this MethodInfo method, object instance, CancellationToken cancellationToken)
     {
@@ -110,25 +95,23 @@ public static class ReflectionExtensionMethods
         if (methodInfo is null) return;
         var parameters = methodInfo.GetParameters().ToList();
         if (methodInfo.IsAsyncMethod())
-        {
             switch (parameters.Count)
             {
                 case 0:
                     await methodInfo.InvokeAs(instance);
                     break;
+
                 case 1:
-                {
-                    var paramIsCancellationToken = parameters.Single().ParameterType == typeof(CancellationToken);
-                    if (!paramIsCancellationToken) throw new TestFormatException($"Parameter injection is only supported for the ${nameof(CancellationToken)} type");
-                    await methodInfo.InvokeAsWithCancellation(instance, cancellationToken).ConfigureAwait(false);
-                    break;
-                }
+                    {
+                        var paramIsCancellationToken = parameters.Single().ParameterType == typeof(CancellationToken);
+                        if (!paramIsCancellationToken) throw new TestFormatException($"Parameter injection is only supported for the ${nameof(CancellationToken)} type");
+                        await methodInfo.InvokeAsWithCancellation(instance, cancellationToken).ConfigureAwait(false);
+                        break;
+                    }
                 default:
                     throw new TestFormatException($"Parameter injection is only supported for a single parameter which must be a the {nameof(CancellationToken)} type");
             }
-        }
         else
-        {
             try
             {
                 if (parameters.Count > 0) throw new SailfishException("Parameter injection is not supported for void methods");
@@ -138,7 +121,6 @@ public static class ReflectionExtensionMethods
             {
                 throw new SailfishException(ex.InnerException?.Message ?? $"Unhandled unknown exception has occurred: {ex.Message}");
             }
-        }
     }
 
     public static async Task TryInvokeWithTimer(this MethodInfo? methodInfo, object instance, PerformanceTimer performanceTimer, CancellationToken cancellationToken)
@@ -146,26 +128,24 @@ public static class ReflectionExtensionMethods
         if (methodInfo is null) return;
         var parameters = methodInfo.GetParameters().ToList();
         if (methodInfo.IsAsyncMethod())
-        {
             switch (parameters.Count)
             {
                 case 0:
                     await methodInfo.InvokeAsWithTimer(instance, performanceTimer);
                     break;
-                case 1:
-                {
-                    var paramIsCancellationToken = parameters.Single().ParameterType == typeof(CancellationToken);
-                    if (!paramIsCancellationToken) throw new TestFormatException($"Parameter injection is only supported for the ${nameof(CancellationToken)} type");
 
-                    await methodInfo.InvokeAsWithCancellationWithTimer(instance, performanceTimer, cancellationToken).ConfigureAwait(false);
-                    break;
-                }
+                case 1:
+                    {
+                        var paramIsCancellationToken = parameters.Single().ParameterType == typeof(CancellationToken);
+                        if (!paramIsCancellationToken) throw new TestFormatException($"Parameter injection is only supported for the ${nameof(CancellationToken)} type");
+
+                        await methodInfo.InvokeAsWithCancellationWithTimer(instance, performanceTimer, cancellationToken).ConfigureAwait(false);
+                        break;
+                    }
                 default:
                     throw new TestFormatException($"Parameter injection is only supported for a single parameter which must be a the {nameof(CancellationToken)} type");
             }
-        }
         else
-        {
             try
             {
                 if (parameters.Count > 0) throw new SailfishException("Parameter injection is not supported for void methods");
@@ -176,7 +156,6 @@ public static class ReflectionExtensionMethods
             {
                 throw new SailfishException(ex.InnerException?.Message ?? $"Unhandled unknown exception has occurred: {ex.Message}");
             }
-        }
     }
 
     internal static int GetSampleSize(this Type type)
@@ -223,10 +202,10 @@ public static class ReflectionExtensionMethods
                 .OrderBy(m => m.Name)
                 .ToArray();
 
-            methods = baseMethods.Concat(methods).ToArray();
+            methods = [.. baseMethods, .. methods];
             baseType = baseType.BaseType;
         }
 
-        return methods.ToList();
+        return [.. methods];
     }
 }

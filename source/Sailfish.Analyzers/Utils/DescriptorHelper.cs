@@ -16,14 +16,13 @@ public static class DescriptorHelper
     {
         return new DiagnosticDescriptor(
             $"SF{idValue}",
-            title: title,
-            messageFormat: messageFormat,
-            category: group.Category,
-            defaultSeverity: severity,
-            isEnabledByDefault: isEnabledByDefault,
+            title,
+            messageFormat,
+            group.Category,
+            severity,
+            isEnabledByDefault,
             helpLinkUri: $"{group.HelpLink} - {helpLinkUriAddendum}",
             description: description
         );
     }
-    
 }

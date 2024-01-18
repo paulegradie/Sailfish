@@ -14,6 +14,7 @@ public class ResolveTestCaseIdTest
     {
         this.testCaseId = testCaseId;
     }
+
     [SailfishMethod]
     public void MainMethod()
     {
@@ -30,10 +31,10 @@ public class ResolveTestCaseIdTestMultipleCtorArgs
     {
         this.testCaseId = testCaseId;
     }
+
     [SailfishMethod]
     public void MainMethod()
     {
         testCaseId.DisplayName.ShouldBe($"{nameof(ResolveTestCaseIdTestMultipleCtorArgs)}.{nameof(MainMethod)}()");
     }
 }
-

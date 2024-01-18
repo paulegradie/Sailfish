@@ -1,7 +1,7 @@
+using Sailfish.Exceptions;
 using System;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using Sailfish.Exceptions;
 
 namespace Sailfish.Contracts.Public.Serialization.JsonConverters;
 

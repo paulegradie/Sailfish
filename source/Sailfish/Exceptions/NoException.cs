@@ -4,5 +4,4 @@ namespace Sailfish.Exceptions;
 
 public class NoException : Exception
 {
-    
 }

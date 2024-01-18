@@ -1,6 +1,6 @@
+using Sailfish.Contracts.Public.Models;
 using System.Collections.Generic;
 using System.Linq;
-using Sailfish.Contracts.Public.Models;
 
 namespace Sailfish.Analysis.SailDiff;
 
@@ -18,7 +18,6 @@ public class AggregatedPerformanceResult
         NumWarmupIterations = numWarmupIterations;
     }
 
-    private const double Tolerance = 0.000000001;
     public string DisplayName { get; init; }
 
     public double[] AggregatedRawExecutionResults { get; init; } // milliseconds
@@ -30,9 +29,9 @@ public class AggregatedPerformanceResult
     {
         var allRawData = data.SelectMany(x => x.RawExecutionResults).ToArray();
         return new AggregatedPerformanceResult(
-            aggregatedRawExecutionResults: allRawData,
-            displayName: testCaseId.DisplayName,
-            sampleSize: data.First().SampleSize,
-            numWarmupIterations: data.First().NumWarmupIterations);
+            allRawData,
+            testCaseId.DisplayName,
+            data.First().SampleSize,
+            data.First().NumWarmupIterations);
     }
 }

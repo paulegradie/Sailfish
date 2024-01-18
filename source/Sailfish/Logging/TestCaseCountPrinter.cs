@@ -5,30 +5,30 @@ namespace Sailfish.Logging;
 internal interface ITestCaseCountPrinter
 {
     void SetTestCaseTotal(int count);
+
     void SetTestMethodTotal(int count);
+
     void SetTestTypeTotal(int count);
+
     void PrintDiscoveredTotal();
+
     void PrintTypeUpdate(string typeName);
+
     void PrintMethodUpdate(MethodInfo methodInfo);
+
     void PrintCaseUpdate(string displayName);
 }
 
-internal class TestCaseCountPrinter : ITestCaseCountPrinter
+internal class TestCaseCountPrinter(ILogger logger) : ITestCaseCountPrinter
 {
-    private int testTypeTotal = 1;
-    private int testMethodTotal = 1;
-    private int testCaseTotal = 0;
-
-    private int currentType = 1;
+    private readonly ILogger logger = logger;
     private int currentMethod = 1;
     private int currentTestCase = 1;
 
-    private readonly ILogger logger;
-
-    public TestCaseCountPrinter(ILogger logger)
-    {
-        this.logger = logger;
-    }
+    private int currentType = 1;
+    private int testCaseTotal;
+    private int testMethodTotal = 1;
+    private int testTypeTotal = 1;
 
     public void SetTestCaseTotal(int count)
     {
@@ -45,29 +45,12 @@ internal class TestCaseCountPrinter : ITestCaseCountPrinter
         testTypeTotal = count;
     }
 
-    private void IncrementType()
-    {
-        currentType += 1;
-    }
-
-    private void IncrementMethod()
-    {
-        currentMethod += 1;
-    }
-
-    private void IncrementCase()
-    {
-        currentTestCase += 1;
-    }
-
     public void PrintDiscoveredTotal()
     {
         if (testCaseTotal > 0)
-        {
             WriteUpdate(
                 "Discovered {TotalTestCaseCount} test cases across {TotalTestMethods} test methods from {TotalTestClasses} classes", testCaseTotal, testMethodTotal,
                 testTypeTotal);
-        }
     }
 
     public void PrintTypeUpdate(string typeName)
@@ -89,7 +72,22 @@ internal class TestCaseCountPrinter : ITestCaseCountPrinter
         IncrementCase();
     }
 
-    void WriteUpdate(string template, params object[] values)
+    private void IncrementType()
+    {
+        currentType += 1;
+    }
+
+    private void IncrementMethod()
+    {
+        currentMethod += 1;
+    }
+
+    private void IncrementCase()
+    {
+        currentTestCase += 1;
+    }
+
+    private void WriteUpdate(string template, params object[] values)
     {
         logger.Log(LogLevel.Information, template, values);
     }

@@ -1,11 +1,11 @@
+using Sailfish.Analysis.ScaleFish.ComplexityFunctions;
+using Sailfish.Contracts.Public.Serialization.JsonConverters;
+using Sailfish.Exceptions;
 using System;
 using System.Collections.Generic;
 using System.Runtime.Serialization;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using Sailfish.Analysis.ScaleFish.ComplexityFunctions;
-using Sailfish.Contracts.Public.Serialization.JsonConverters;
-using Sailfish.Exceptions;
 
 namespace Sailfish.Analysis.ScaleFish;
 
@@ -71,16 +71,13 @@ public class ComplexityFunctionConverter : JsonConverter<List<ScalefishClassMode
     public override void Write(Utf8JsonWriter writer, List<ScalefishClassModel> value, JsonSerializerOptions options)
     {
         var opts = new JsonSerializerOptions();
-        var converters = new List<JsonConverter>()
+        var converters = new List<JsonConverter>
         {
             new JsonNanConverter(),
             new ExecutionSummaryTrackingFormatConverter(),
             new TypePropertyConverter()
         };
-        foreach (var converter in converters)
-        {
-            opts.Converters.Add(converter);
-        }
+        foreach (var converter in converters) opts.Converters.Add(converter);
 
         JsonSerializer.Serialize(writer, value, opts);
     }
@@ -89,14 +86,14 @@ public class ComplexityFunctionConverter : JsonConverter<List<ScalefishClassMode
     {
         ScaleFishModelFunction? deserialized = complexityFunctionTypeName switch
         {
-            (nameof(Cubic)) => complexityFunctionProperty.Deserialize<Cubic>(),
-            (nameof(Exponential)) => complexityFunctionProperty.Deserialize<Exponential>(),
-            (nameof(Factorial)) => complexityFunctionProperty.Deserialize<Factorial>(),
-            (nameof(Linear)) => complexityFunctionProperty.Deserialize<Linear>(),
-            (nameof(LogLinear)) => complexityFunctionProperty.Deserialize<LogLinear>(),
-            (nameof(NLogN)) => complexityFunctionProperty.Deserialize<NLogN>(),
-            (nameof(Quadratic)) => complexityFunctionProperty.Deserialize<Quadratic>(),
-            (nameof(SqrtN)) => complexityFunctionProperty.Deserialize<SqrtN>(),
+            nameof(Cubic) => complexityFunctionProperty.Deserialize<Cubic>(),
+            nameof(Exponential) => complexityFunctionProperty.Deserialize<Exponential>(),
+            nameof(Factorial) => complexityFunctionProperty.Deserialize<Factorial>(),
+            nameof(Linear) => complexityFunctionProperty.Deserialize<Linear>(),
+            nameof(LogLinear) => complexityFunctionProperty.Deserialize<LogLinear>(),
+            nameof(NLogN) => complexityFunctionProperty.Deserialize<NLogN>(),
+            nameof(Quadratic) => complexityFunctionProperty.Deserialize<Quadratic>(),
+            nameof(SqrtN) => complexityFunctionProperty.Deserialize<SqrtN>(),
             _ => throw new SailfishException($"Failed to identify complexity function type: {complexityFunctionTypeName}")
         };
 

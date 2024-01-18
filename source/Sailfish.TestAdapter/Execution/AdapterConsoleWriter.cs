@@ -1,14 +1,7 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.Adapter;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.Logging;
-using Sailfish.Analysis;
 using Sailfish.Analysis.SailDiff;
-using Sailfish.Analysis.SailDiff.Statistics;
-using Sailfish.Contracts.Public;
 using Sailfish.Contracts.Public.Models;
 using Sailfish.Execution;
 using Sailfish.Extensions.Methods;
@@ -16,24 +9,31 @@ using Sailfish.Extensions.Types;
 using Sailfish.Logging;
 using Sailfish.Presentation;
 using Sailfish.Presentation.Console;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
 
 namespace Sailfish.TestAdapter.Execution;
 
 internal interface IAdapterConsoleWriter : IConsoleWriter
 {
     void WriteString(string content, TestMessageLevel testMessageLevel);
+
     void RecordStart(TestCase testCase);
+
     void RecordResult(TestResult testResult);
+
     void RecordEnd(TestCase testCase, TestOutcome testOutcome);
+
     string WriteTestResultsToIdeConsole(SailDiffResult sailDiffResult, TestIds testIds, SailDiffSettings sailDiffSettings);
 }
 
 internal class AdapterConsoleWriter : IAdapterConsoleWriter
 {
+    private readonly ILogger consoleLogger;
     private readonly IMarkdownTableConverter markdownTableConverter;
     private readonly IFrameworkHandle? messageLogger;
-
-    private readonly ILogger consoleLogger;
 
     public AdapterConsoleWriter(
         IMarkdownTableConverter markdownTableConverter,
@@ -48,7 +48,6 @@ internal class AdapterConsoleWriter : IAdapterConsoleWriter
     {
         var summaryResults = results.ToList();
         foreach (var result in summaryResults)
-        {
             foreach (var compiledResult in result.CompiledTestCaseResults)
             {
                 if (compiledResult.Exception is null) continue;
@@ -68,22 +67,61 @@ internal class AdapterConsoleWriter : IAdapterConsoleWriter
                 WriteMessage(compiledResult.Exception.InnerException.StackTrace, TestMessageLevel.Error);
                 consoleLogger.Log(LogLevel.Error, "{InnerStackTrace}", compiledResult.Exception.InnerException.StackTrace);
             }
-        }
 
         string ideOutputContent;
         if (summaryResults.Count > 1 || summaryResults.Single().CompiledTestCaseResults.Count() > 1)
-        {
             ideOutputContent = CreateFullTable(summaryResults);
-        }
         else
-        {
             ideOutputContent = CreateIdeTestOutputWindowContent(summaryResults.Single().CompiledTestCaseResults.Single());
-        }
 
         WriteMessage(ideOutputContent, TestMessageLevel.Informational);
         consoleLogger.Log(LogLevel.Information, "{MarkdownTable}", ideOutputContent);
 
         return ideOutputContent;
+    }
+
+    public void WriteStatTestResultsToConsole(string markdownBody, TestIds testIds, SailDiffSettings sailDiffSettings)
+    {
+        var stringBuilder = new StringBuilder();
+        BuildHeader(stringBuilder, testIds.BeforeTestIds, testIds.AfterTestIds, sailDiffSettings);
+        stringBuilder.AppendLine(markdownBody);
+        var result = stringBuilder.ToString();
+        consoleLogger.Log(LogLevel.Information, result);
+        WriteMessage(result, TestMessageLevel.Informational);
+    }
+
+    public string WriteTestResultsToIdeConsole(SailDiffResult sailDiffResult, TestIds testIds, SailDiffSettings sailDiffSettings)
+    {
+        var stringBuilder = new StringBuilder();
+        return StatisticalTestFailsThenBailAndReturnNothing(sailDiffResult, stringBuilder, out var nothingToWrite)
+            ? nothingToWrite
+            : FormattedSailDiffResult(sailDiffResult, sailDiffSettings, stringBuilder);
+    }
+
+    public void WriteString(string content)
+    {
+        WriteString(content, TestMessageLevel.Informational);
+    }
+
+    public void WriteString(string content, TestMessageLevel messageLevel)
+    {
+        consoleLogger.Log(LogLevel.Information, content);
+        WriteMessage(content, messageLevel);
+    }
+
+    public void RecordStart(TestCase testCase)
+    {
+        messageLogger?.RecordStart(testCase);
+    }
+
+    public void RecordResult(TestResult testResult)
+    {
+        messageLogger?.RecordResult(testResult);
+    }
+
+    public void RecordEnd(TestCase testCase, TestOutcome testOutcome)
+    {
+        messageLogger?.RecordEnd(testCase, testOutcome);
     }
 
     private string CreateFullTable(IReadOnlyCollection<IClassExecutionSummary> summaryResults)
@@ -113,7 +151,7 @@ internal class AdapterConsoleWriter : IAdapterConsoleWriter
         var testCaseName = testCaseResult.TestCaseId;
         var results = testCaseResult.PerformanceRunResult!;
 
-        var momentTable = new List<Row>()
+        var momentTable = new List<Row>
         {
             new(Math.Round(results.Mean, 4), "Mean"),
             new(Math.Round(results.Median, 4), "Median"),
@@ -159,24 +197,6 @@ internal class AdapterConsoleWriter : IAdapterConsoleWriter
         return stringBuilder.ToString();
     }
 
-    public void WriteStatTestResultsToConsole(string markdownBody, TestIds testIds, SailDiffSettings sailDiffSettings)
-    {
-        var stringBuilder = new StringBuilder();
-        BuildHeader(stringBuilder, testIds.BeforeTestIds, testIds.AfterTestIds, sailDiffSettings);
-        stringBuilder.AppendLine(markdownBody);
-        var result = stringBuilder.ToString();
-        consoleLogger.Log(LogLevel.Information, result);
-        WriteMessage(result, TestMessageLevel.Informational);
-    }
-
-    public string WriteTestResultsToIdeConsole(SailDiffResult sailDiffResult, TestIds testIds, SailDiffSettings sailDiffSettings)
-    {
-        var stringBuilder = new StringBuilder();
-        return StatisticalTestFailsThenBailAndReturnNothing(sailDiffResult, stringBuilder, out var nothingToWrite)
-            ? nothingToWrite
-            : FormattedSailDiffResult(sailDiffResult, sailDiffSettings, stringBuilder);
-    }
-
     private static string FormattedSailDiffResult(SailDiffResult sailDiffResult, SailDiffSettings sailDiffSettings, StringBuilder stringBuilder)
     {
         const string testLine = "Statistical Test";
@@ -195,7 +215,7 @@ internal class AdapterConsoleWriter : IAdapterConsoleWriter
         stringBuilder.AppendLine(changeLine);
         stringBuilder.AppendLine();
 
-        var tableValues = new List<Table>()
+        var tableValues = new List<Table>
         {
             new()
             {
@@ -239,36 +259,7 @@ internal class AdapterConsoleWriter : IAdapterConsoleWriter
 
     private void WriteMessage(string message, TestMessageLevel messageLevel)
     {
-        if (!string.IsNullOrEmpty(message))
-        {
-            messageLogger?.SendMessage(messageLevel, message);
-        }
-    }
-
-    public void WriteString(string content)
-    {
-        WriteString(content, TestMessageLevel.Informational);
-    }
-
-    public void WriteString(string content, TestMessageLevel messageLevel)
-    {
-        consoleLogger.Log(LogLevel.Information, content);
-        WriteMessage(content, messageLevel);
-    }
-
-    public void RecordStart(TestCase testCase)
-    {
-        messageLogger?.RecordStart(testCase);
-    }
-
-    public void RecordResult(TestResult testResult)
-    {
-        messageLogger?.RecordResult(testResult);
-    }
-
-    public void RecordEnd(TestCase testCase, TestOutcome testOutcome)
-    {
-        messageLogger?.RecordEnd(testCase, testOutcome);
+        if (!string.IsNullOrEmpty(message)) messageLogger?.SendMessage(messageLevel, message);
     }
 
     private static void BuildHeader(
@@ -294,8 +285,8 @@ internal class AdapterConsoleWriter : IAdapterConsoleWriter
             Item = item;
         }
 
-        public string Name { get; set; }
-        public double Item { get; set; }
+        public string Name { get; }
+        public double Item { get; }
     }
 
     private class Table

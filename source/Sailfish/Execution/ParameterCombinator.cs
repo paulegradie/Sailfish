@@ -1,13 +1,14 @@
-﻿using System.Collections.Generic;
-using System.Linq;
-using Sailfish.Contracts.Public.Models;
+﻿using Sailfish.Contracts.Public.Models;
 using Sailfish.Exceptions;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace Sailfish.Execution;
 
 internal interface IParameterCombinator
 {
     IEnumerable<PropertySet> GetAllPossibleCombos(IEnumerable<string> orderedPropertyNames, IEnumerable<IEnumerable<object>> orderedPropertyValues);
+
     IEnumerable<PropertySet> GetAllPossibleCombos(IEnumerable<string> orderedPropertyNames, IEnumerable<IEnumerable<int>> orderedPropertyValues);
 }
 
@@ -16,17 +17,12 @@ internal class ParameterCombinator : IParameterCombinator
     public IEnumerable<PropertySet> GetAllPossibleCombos(IEnumerable<string> orderedPropertyNames, IEnumerable<IEnumerable<object>> orderedPropertyValues)
     {
         var propNames = orderedPropertyNames.ToArray();
-        if (propNames.Length == 0)
-        {
-            return new List<PropertySet>().AsEnumerable();
-        }
+        if (propNames.Length == 0) return new List<PropertySet>().AsEnumerable();
 
         var orderedPropertyObjects = orderedPropertyValues.Select(x => x.ToArray()).ToArray();
         if (orderedPropertyObjects.ToArray().Length != propNames.Length)
-        {
             throw new SailfishException(
                 $"The number of property {propNames.Length} names did not match the number of property value sets {orderedPropertyObjects.Length}");
-        }
 
         var combos = GetAllCombinations(orderedPropertyObjects).ToArray();
 
@@ -61,23 +57,16 @@ internal class ParameterCombinator : IParameterCombinator
         for (var count = 0; count < total; count++)
         {
             var combination = new object[arrays.Count];
-            for (var i = 0; i < indices.Length; i++)
-            {
-                combination[i] = arrays[i].GetValue(indices[i])!;
-            }
+            for (var i = 0; i < indices.Length; i++) combination[i] = arrays[i].GetValue(indices[i])!;
 
             yield return combination;
             for (var i = indices.Length - 1; i >= 0; i--)
             {
                 indices[i]++;
                 if (indices[i] == arrays[i].Length)
-                {
                     indices[i] = 0;
-                }
                 else
-                {
                     break;
-                }
             }
         }
     }

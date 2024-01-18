@@ -1,6 +1,6 @@
+using Autofac;
 using System.Threading;
 using System.Threading.Tasks;
-using Autofac;
 
 namespace Sailfish.Registration;
 

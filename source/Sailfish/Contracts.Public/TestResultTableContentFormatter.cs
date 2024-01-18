@@ -1,11 +1,10 @@
-﻿using System;
+﻿using Sailfish.Contracts.Public.Models;
+using Sailfish.Extensions.Methods;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Threading;
-using Sailfish.Analysis;
-using Sailfish.Contracts.Public.Models;
-using Sailfish.Extensions.Methods;
 
 namespace Sailfish.Contracts.Public;
 
@@ -30,14 +29,14 @@ public class SailDiffResultMarkdownConverter : ISailDiffResultMarkdownConverter
             m => m.TestResultsWithOutlierAnalysis.StatisticalTestResult.MedianBefore,
             m => m.TestResultsWithOutlierAnalysis.StatisticalTestResult.MedianAfter,
             m => m.TestResultsWithOutlierAnalysis.StatisticalTestResult.PValue,
-            m => m.TestResultsWithOutlierAnalysis.StatisticalTestResult.ChangeDescription,
+            m => m.TestResultsWithOutlierAnalysis.StatisticalTestResult.ChangeDescription
         };
 
-        var headers = new List<string>()
+        var headers = new List<string>
         {
             "Display Name", $"MeanBefore (N={nBefore})", $"MeanAfter (N={nAfter})", "MedianBefore", "MedianAfter", "PValue", "Change Description"
         };
-        var columnValueSuffixes = new List<string>()
+        var columnValueSuffixes = new List<string>
         {
             "", "ms", "ms", "ms", "ms", "", ""
         };
@@ -52,6 +51,6 @@ public class SailDiffResultMarkdownConverter : ISailDiffResultMarkdownConverter
         return enumeratedResults.ToStringTable(
             columnValueSuffixes,
             headers,
-            selectors.ToArray());
+            [.. selectors]);
     }
 }

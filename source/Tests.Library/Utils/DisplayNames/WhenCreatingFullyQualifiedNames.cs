@@ -23,6 +23,7 @@ public class WhenCreatingFullyQualifiedNames
 
 #pragma warning disable xUnit1013
 #pragma warning disable CA1822
+
     public void HelperMethod(int x, int y)
 #pragma warning restore CA1822
 #pragma warning restore xUnit1013

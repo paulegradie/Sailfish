@@ -1,36 +1,26 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
-using Sailfish.Attributes;
+﻿using Sailfish.Attributes;
 using Sailfish.Contracts.Public.Models;
 using Sailfish.Extensions.Methods;
 using Sailfish.Utils;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Reflection;
 
 namespace Sailfish.Execution;
 
-internal class TestInstanceContainerProvider
+internal class TestInstanceContainerProvider(
+    IRunSettings runSettings,
+    ITypeActivator typeActivator,
+    Type test,
+    IEnumerable<PropertySet> propertySets,
+    MethodInfo method)
 {
-    private readonly IRunSettings runSettings;
-    public readonly MethodInfo Method;
-    public readonly Type Test;
-    private readonly ITypeActivator typeActivator;
-    private readonly IEnumerable<PropertySet> propertySets;
-
-    public TestInstanceContainerProvider(
-        IRunSettings runSettings,
-        ITypeActivator typeActivator,
-        Type test,
-        IEnumerable<PropertySet> propertySets,
-        MethodInfo method)
-    {
-        Method = method;
-        Test = test;
-
-        this.runSettings = runSettings;
-        this.typeActivator = typeActivator;
-        this.propertySets = propertySets;
-    }
+    public readonly MethodInfo Method = method;
+    private readonly IEnumerable<PropertySet> propertySets = propertySets;
+    private readonly IRunSettings runSettings = runSettings;
+    public readonly Type Test = test;
+    private readonly ITypeActivator typeActivator = typeActivator;
 
     public int GetNumberOfPropertySetsInTheQueue()
     {
@@ -41,7 +31,7 @@ internal class TestInstanceContainerProvider
     {
         var typeIsDisabled = test.GetCustomAttributes<SailfishAttribute>().Single().Disabled;
         var methodIsDisabled = method.GetCustomAttributes<SailfishMethodAttribute>().Single().Disabled;
-        return (methodIsDisabled || typeIsDisabled);
+        return methodIsDisabled || typeIsDisabled;
     }
 
     public IEnumerable<TestInstanceContainer> ProvideNextTestCaseEnumeratorForClass()
@@ -49,10 +39,10 @@ internal class TestInstanceContainerProvider
         var disabled = TestIsDisabled(Test, Method);
         if (GetNumberOfPropertySetsInTheQueue() is 0)
         {
-            var testCaseId = DisplayNameHelper.CreateTestCaseId(Test, Method.Name, Array.Empty<string>(), Array.Empty<object>()); // a uniq id
+            var testCaseId = DisplayNameHelper.CreateTestCaseId(Test, Method.Name, [], []); // a uniq id
             var instance = typeActivator.CreateDehydratedTestInstance(Test, testCaseId, disabled);
             var executionSettings = instance.GetType().RetrieveExecutionTestSettings(runSettings.SampleSizeOverride, runSettings.NumWarmupIterationsOverride);
-            yield return TestInstanceContainer.CreateTestInstance(instance, Method, Array.Empty<string>(), Array.Empty<object>(), disabled, executionSettings);
+            yield return TestInstanceContainer.CreateTestInstance(instance, Method, [], [], disabled, executionSettings);
         }
         else
         {
@@ -71,7 +61,6 @@ internal class TestInstanceContainerProvider
             }
         }
     }
-
 
     private static void HydrateInstanceTestProperties(object obj, PropertySet propertySet)
     {

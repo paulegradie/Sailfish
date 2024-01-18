@@ -2,14 +2,8 @@
 
 namespace Sailfish.Analysis.SailDiff;
 
-internal class BeforeAndAfterTrackingFiles
+internal class BeforeAndAfterTrackingFiles(List<string> beforeFilePaths, List<string> afterFilePaths)
 {
-    public BeforeAndAfterTrackingFiles(List<string> beforeFilePaths, List<string> afterFilePaths)
-    {
-        BeforeFilePaths = beforeFilePaths;
-        AfterFilePaths = afterFilePaths;
-    }
-
-    public List<string> BeforeFilePaths { get; set; }
-    public List<string> AfterFilePaths { get; set; }
+    public List<string> BeforeFilePaths { get; set; } = beforeFilePaths;
+    public List<string> AfterFilePaths { get; set; } = afterFilePaths;
 }

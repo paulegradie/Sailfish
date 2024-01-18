@@ -1,5 +1,5 @@
+using Sailfish.Analysis.SailDiff.Statistics.StatsCore.Distributions;
 using System;
-using Accord.Statistics.Distributions.Univariate;
 
 namespace Tests.Library.Analysis.SailDiff;
 

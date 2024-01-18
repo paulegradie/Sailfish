@@ -1,21 +1,13 @@
 namespace Sailfish.Analysis.ScaleFish;
 
-public class ScalefishModel
+public class ScalefishModel(
+    ScaleFishModelFunction scaleFishModelFunction,
+    double goodnessOfFit,
+    ScaleFishModelFunction nextClosestScaleFishModelFunction,
+    double nextClosestGoodnessOfFit)
 {
-    public ScalefishModel(
-        ScaleFishModelFunction scaleFishModelFunction,
-        double goodnessOfFit,
-        ScaleFishModelFunction nextClosestScaleFishModelFunction,
-        double nextClosestGoodnessOfFit)
-    {
-        ScaleFishModelFunction = scaleFishModelFunction;
-        GoodnessOfFit = goodnessOfFit;
-        NextClosestScaleFishModelFunction = nextClosestScaleFishModelFunction;
-        NextClosestGoodnessOfFit = nextClosestGoodnessOfFit;
-    }
-
-    public ScaleFishModelFunction ScaleFishModelFunction { get; init; }
-    public double GoodnessOfFit { get; init; }
-    public ScaleFishModelFunction NextClosestScaleFishModelFunction { get; init; }
-    public double NextClosestGoodnessOfFit { get; init; }
+    public ScaleFishModelFunction ScaleFishModelFunction { get; init; } = scaleFishModelFunction;
+    public double GoodnessOfFit { get; init; } = goodnessOfFit;
+    public ScaleFishModelFunction NextClosestScaleFishModelFunction { get; init; } = nextClosestScaleFishModelFunction;
+    public double NextClosestGoodnessOfFit { get; init; } = nextClosestGoodnessOfFit;
 }

@@ -1,48 +1,34 @@
-﻿using System;
+﻿using Sailfish.Attributes;
+using Sailfish.Exceptions;
+using Sailfish.Extensions.Methods;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
-using Sailfish.Attributes;
-using Sailfish.Exceptions;
-using Sailfish.Extensions.Methods;
 
 namespace Sailfish.Execution;
 
-internal class CoreInvoker
+internal class CoreInvoker(object instance, MethodInfo method, PerformanceTimer testCasePerformanceTimer)
 {
-    private readonly object instance;
-    private readonly List<MethodInfo> globalSetup;
-    private readonly List<MethodInfo> globalTeardown;
-    private readonly List<MethodInfo> iterationSetup;
-    private readonly List<MethodInfo> iterationTeardown;
-    private readonly List<MethodInfo> methodSetup;
-    private readonly List<MethodInfo> methodTeardown;
-    private readonly PerformanceTimer testCasePerformanceTimer;
+    private readonly List<MethodInfo> globalSetup = instance.FindMethodsDecoratedWithAttribute<SailfishGlobalSetupAttribute>();
+    private readonly List<MethodInfo> globalTeardown = instance.FindMethodsDecoratedWithAttribute<SailfishGlobalTeardownAttribute>();
+    private readonly object instance = instance;
+    private readonly List<MethodInfo> iterationSetup = instance.FindMethodsDecoratedWithAttribute<SailfishIterationSetupAttribute>();
+    private readonly List<MethodInfo> iterationTeardown = instance.FindMethodsDecoratedWithAttribute<SailfishIterationTeardownAttribute>();
 
-    private readonly MethodInfo mainMethod;
+    private readonly MethodInfo mainMethod = method;
+    private readonly List<MethodInfo> methodSetup = instance.FindMethodsDecoratedWithAttribute<SailfishMethodSetupAttribute>();
+    private readonly List<MethodInfo> methodTeardown = instance.FindMethodsDecoratedWithAttribute<SailfishMethodTeardownAttribute>();
+    private readonly PerformanceTimer testCasePerformanceTimer = testCasePerformanceTimer;
 
-    public CoreInvoker(object instance, MethodInfo method, PerformanceTimer testCasePerformanceTimer)
-    {
-        this.instance = instance;
-        this.testCasePerformanceTimer = testCasePerformanceTimer;
-
-        mainMethod = method;
-        globalSetup = instance.FindMethodsDecoratedWithAttribute<SailfishGlobalSetupAttribute>();
-        globalTeardown = instance.FindMethodsDecoratedWithAttribute<SailfishGlobalTeardownAttribute>();
-        methodSetup = instance.FindMethodsDecoratedWithAttribute<SailfishMethodSetupAttribute>();
-        methodTeardown = instance.FindMethodsDecoratedWithAttribute<SailfishMethodTeardownAttribute>();
-        iterationSetup = instance.FindMethodsDecoratedWithAttribute<SailfishIterationSetupAttribute>();
-        iterationTeardown = instance.FindMethodsDecoratedWithAttribute<SailfishIterationTeardownAttribute>();
-    }
-
-    public int OverheadEstimate { get; set; } = 0;
+    public int OverheadEstimate { get; set; }
     private string MainMethodName => mainMethod.Name;
 
     /// <summary>
-    /// If the setup method doesn't have any method names, then its applied to all methods.
-    /// if it has names, its only applied to those names given
+    ///     If the setup method doesn't have any method names, then its applied to all methods.
+    ///     if it has names, its only applied to those names given
     /// </summary>
     /// <param name="lifecycleMethods"></param>
     /// <param name="cancellationToken"></param>
@@ -55,18 +41,13 @@ internal class CoreInvoker
             var attribute = lifecycleMethod.GetCustomAttribute<TAttribute>();
             if (attribute is null) throw new SailfishException($"{nameof(TAttribute)}, was somehow missing");
             if (attribute.MethodNames.Length == 0 || attribute.MethodNames.Contains(MainMethodName))
-            {
                 await lifecycleMethod.TryInvoke(instance, cancellationToken).ConfigureAwait(false);
-            }
         }
     }
 
     public async Task GlobalSetup(CancellationToken cancellationToken)
     {
-        foreach (var lifecycleMethod in globalSetup)
-        {
-            await lifecycleMethod.TryInvoke(instance, cancellationToken).ConfigureAwait(false);
-        }
+        foreach (var lifecycleMethod in globalSetup) await lifecycleMethod.TryInvoke(instance, cancellationToken).ConfigureAwait(false);
     }
 
     public async Task MethodSetup(CancellationToken cancellationToken)
@@ -82,13 +63,9 @@ internal class CoreInvoker
     public async Task ExecutionMethod(CancellationToken cancellationToken, bool timed = true)
     {
         if (timed)
-        {
             await mainMethod.TryInvokeWithTimer(instance, testCasePerformanceTimer, cancellationToken).ConfigureAwait(false);
-        }
         else
-        {
             await mainMethod.TryInvoke(instance, cancellationToken).ConfigureAwait(false);
-        }
     }
 
     public async Task IterationTearDown(CancellationToken cancellationToken)
@@ -103,23 +80,14 @@ internal class CoreInvoker
 
     public async Task GlobalTeardown(CancellationToken cancellationToken)
     {
-        foreach (var lifecycleMethod in globalTeardown)
-        {
-            await lifecycleMethod.TryInvoke(instance, cancellationToken).ConfigureAwait(false);
-        }
+        foreach (var lifecycleMethod in globalTeardown) await lifecycleMethod.TryInvoke(instance, cancellationToken).ConfigureAwait(false);
     }
 
     public PerformanceTimer GetPerformanceResults(bool isValid = true)
     {
-        if (!isValid)
-        {
-            testCasePerformanceTimer.SetAsInvalid();
-        }
+        if (!isValid) testCasePerformanceTimer.SetAsInvalid();
 
-        if (OverheadEstimate > 0)
-        {
-            testCasePerformanceTimer.ApplyOverheadEstimate(OverheadEstimate);
-        }
+        if (OverheadEstimate > 0) testCasePerformanceTimer.ApplyOverheadEstimate(OverheadEstimate);
 
         return testCasePerformanceTimer;
     }

@@ -1,16 +1,10 @@
-﻿using System.Collections.Generic;
-using MediatR;
+﻿using MediatR;
 using Sailfish.Execution;
-
+using System.Collections.Generic;
 
 namespace Sailfish.Contracts.Private;
 
-internal class WriteToConsoleNotification : INotification
+internal class WriteToConsoleNotification(List<IClassExecutionSummary> content) : INotification
 {
-    public WriteToConsoleNotification(List<IClassExecutionSummary> content)
-    {
-        Content = content;
-    }
-
-    public List<IClassExecutionSummary> Content { get; }
+    public List<IClassExecutionSummary> Content { get; } = content;
 }

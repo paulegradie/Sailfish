@@ -1,11 +1,11 @@
+using Sailfish.Analysis.SailDiff;
+using Sailfish.Exceptions;
+using Sailfish.Extensions.Types;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
-using Sailfish.Analysis.SailDiff;
-using Sailfish.Exceptions;
-using Sailfish.Extensions.Types;
 
 namespace Sailfish.Presentation;
 
@@ -14,13 +14,13 @@ public static class DefaultFileSettings
     public const string CsvSuffix = ".csv";
     public const string MarkdownSuffix = ".md";
     public const string JsonSuffix = ".json";
-    public static readonly string SortableFormat = "yyyyMMdd_HHmmss";
     public const string TrackingSuffix = $"{JsonSuffix}.tracking";
     public const string TagsPrefix = "tags-";
     public const string KeyValueDelimiter = "=";
     public const string MapDelimiter = "__";
     public const string DefaultExecutionSummaryTrackingDirectory = "sailfish_tracking_output";
     public const string DefaultOutputDirectory = "sailfish_default_output";
+    public static readonly string SortableFormat = "yyyyMMdd_HHmmss";
 
     public static readonly Func<DateTime, string> DefaultPerformanceResultsFileNameStem = // for WriteToMarkdown & co.
         timestamp => $"PerformanceResults_{timestamp.ToString(SortableFormat)}"; // sortable file name with date
@@ -32,13 +32,13 @@ public static class DefaultFileSettings
         (timeStamp, testType) => $"Saildiff_{testType.ToString()}_{timeStamp.ToString(SortableFormat)}{CsvSuffix}";
 
     public static readonly Func<DateTime, string> DefaultTrackingFileName =
-        (timeStamp) => $"PerformanceTracking_{timeStamp.ToUniversalTime().ToString(SortableFormat)}{TrackingSuffix}";
+        timeStamp => $"PerformanceTracking_{timeStamp.ToUniversalTime().ToString(SortableFormat)}{TrackingSuffix}";
 
     public static readonly Func<DateTime, string> DefaultScalefishFileName =
-        (timeStamp) => $"Scalefish_{timeStamp.ToUniversalTime().ToString(SortableFormat)}{MarkdownSuffix}";
+        timeStamp => $"Scalefish_{timeStamp.ToUniversalTime().ToString(SortableFormat)}{MarkdownSuffix}";
 
     public static readonly Func<DateTime, string> DefaultScalefishModelFileName =
-        (timeStamp) => $"ScalefishModels_{timeStamp.ToUniversalTime().ToString(SortableFormat)}{JsonSuffix}";
+        timeStamp => $"ScalefishModels_{timeStamp.ToUniversalTime().ToString(SortableFormat)}{JsonSuffix}";
 
     public static string JoinTags(OrderedDictionary tags)
     {

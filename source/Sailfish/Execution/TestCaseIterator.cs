@@ -1,7 +1,7 @@
-﻿using System;
+﻿using Sailfish.Contracts.Public.Models;
+using System;
 using System.Threading;
 using System.Threading.Tasks;
-using Sailfish.Contracts.Public.Models;
 
 namespace Sailfish.Execution;
 
@@ -10,28 +10,17 @@ internal interface ITestCaseIterator
     Task<TestCaseExecutionResult> Iterate(TestInstanceContainer testInstanceContainer, bool DisableOverheadEstimation, CancellationToken cancellationToken);
 }
 
-internal class TestCaseIterator : ITestCaseIterator
+internal class TestCaseIterator(IRunSettings runSettings) : ITestCaseIterator
 {
-    private readonly IRunSettings runSettings;
-
-    public TestCaseIterator(IRunSettings runSettings)
-    {
-        this.runSettings = runSettings;
-    }
+    private readonly IRunSettings runSettings = runSettings;
 
     public async Task<TestCaseExecutionResult> Iterate(TestInstanceContainer testInstanceContainer, bool disableOverheadEstimation, CancellationToken cancellationToken)
     {
         var overheadEstimator = new OverheadEstimator();
         var warmupResult = await WarmupIterations(testInstanceContainer, cancellationToken);
-        if (!warmupResult.IsSuccess)
-        {
-            return warmupResult;
-        }
+        if (!warmupResult.IsSuccess) return warmupResult;
 
-        if (!disableOverheadEstimation)
-        {
-            await overheadEstimator.Estimate();
-        }
+        if (!disableOverheadEstimation) await overheadEstimator.Estimate();
 
         var iterations = runSettings.SampleSizeOverride is not null ? Math.Max(runSettings.SampleSizeOverride.Value, 1) : testInstanceContainer.SampleSize;
 
@@ -96,7 +85,7 @@ internal class TestCaseIterator : ITestCaseIterator
 
             try
             {
-                await testInstanceContainer.CoreInvoker.ExecutionMethod(cancellationToken, timed: false).ConfigureAwait(false);
+                await testInstanceContainer.CoreInvoker.ExecutionMethod(cancellationToken, false).ConfigureAwait(false);
             }
             catch (Exception ex)
             {

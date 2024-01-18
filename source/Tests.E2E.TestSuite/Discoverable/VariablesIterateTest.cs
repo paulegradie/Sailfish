@@ -6,9 +6,10 @@ namespace Tests.E2E.TestSuite.Discoverable;
 [Sailfish(1, 0, Disabled = Constants.Disabled)]
 public class VariablesIterateTest
 {
-    [SailfishVariable(1, 2)] public int N { get; set; }
+    private static List<int> Expected = new();
 
     private string FieldMan = null!;
+    [SailfishVariable(1, 2)] public int N { get; set; }
 
     public int MyInt { get; set; } = 456;
 
@@ -27,11 +28,9 @@ public class VariablesIterateTest
     [SailfishMethod]
     public void Increment()
     {
-        FieldMan.ShouldBe("WOW"); 
+        FieldMan.ShouldBe("WOW");
         Expected.Add(N);
     }
-
-    private static List<int> Expected = new();
 
     [SailfishMethod]
     public void SecondIncrement()
@@ -45,7 +44,7 @@ public class VariablesIterateTest
     public void GlobalTeardownAssertions()
     {
         FieldMan.ShouldBe("WOW");
-        Expected.ShouldBe(new List<int>() { 1, 2, 1, 2 });
+        Expected.ShouldBe(new List<int> { 1, 2, 1, 2 });
         Expected = new List<int>();
     }
 }

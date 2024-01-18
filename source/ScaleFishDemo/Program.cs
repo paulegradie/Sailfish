@@ -1,8 +1,7 @@
-﻿using Sailfish;
-using Sailfish.Analysis.ScaleFish;
+﻿using PerformanceTests.ExamplePerformanceTests;
+using Sailfish;
 using Sailfish.Analysis.SailDiff;
-using PerformanceTests.ExamplePerformanceTests;
-
+using Sailfish.Analysis.ScaleFish;
 
 Console.Clear();
 Console.WriteLine("\nThis demo shows you how run Scalefish, load a model file, and then use it to make predictions at scale" +
@@ -17,7 +16,7 @@ Console.Clear();
 // make predictions
 Console.WriteLine($"\nFitted Model: {model.ScaleFishModelFunction}");
 Console.WriteLine("Model predictions:\n");
-var nValues = new List<int>() { 10, 100, 1000, 50_000 };
+var nValues = new List<int> { 10, 100, 1000, 50_000 };
 foreach (var val in nValues)
 {
     var result = model.ScaleFishModelFunction.Predict(val);

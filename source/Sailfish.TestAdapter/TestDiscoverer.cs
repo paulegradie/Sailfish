@@ -1,11 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using Microsoft.VisualStudio.TestPlatform.ObjectModel;
+﻿using Microsoft.VisualStudio.TestPlatform.ObjectModel;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.Adapter;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.Logging;
 using Sailfish.Exceptions;
 using Sailfish.TestAdapter.Discovery;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace Sailfish.TestAdapter;
 
@@ -13,11 +13,11 @@ namespace Sailfish.TestAdapter;
 [DefaultExecutorUri(TestExecutor.ExecutorUriString)]
 public class TestDiscoverer : ITestDiscoverer
 {
-    private readonly List<string> exclusions = new()
-    {
+    private readonly List<string> exclusions =
+    [
         "Sailfish.TestAdapter.dll",
         "Tests.Library.TestAdapter.dll"
-    };
+    ];
 
     public void DiscoverTests(IEnumerable<string> sources, IDiscoveryContext discoveryContext, IMessageLogger logger, ITestCaseDiscoverySink discoverySink)
     {
@@ -44,9 +44,6 @@ public class TestDiscoverer : ITestDiscoverer
             throw new SailfishException(ex);
         }
 
-        foreach (var testCase in testCases)
-        {
-            discoverySink.SendTestCase(testCase);
-        }
+        foreach (var testCase in testCases) discoverySink.SendTestCase(testCase);
     }
 }

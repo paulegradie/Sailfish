@@ -1,8 +1,8 @@
-using System.Globalization;
-using System.Linq;
 using CsvHelper;
 using CsvHelper.Configuration;
 using CsvHelper.TypeConversion;
+using System.Globalization;
+using System.Linq;
 
 namespace Sailfish.Contracts.Private.CsvMaps.Converters;
 
@@ -10,7 +10,10 @@ internal sealed class DoubleArrayCsvConverter : ITypeConverter
 {
     private const string Sep = ",";
 
-    public object? ConvertFromString(string? text, IReaderRow row, MemberMapData memberMapData) => text?.Split(Sep).Select(double.Parse).ToArray();
+    public object? ConvertFromString(string? text, IReaderRow row, MemberMapData memberMapData)
+    {
+        return text?.Split(Sep).Select(double.Parse).ToArray();
+    }
 
     public string? ConvertToString(object? value, IWriterRow row, MemberMapData memberMapData)
     {

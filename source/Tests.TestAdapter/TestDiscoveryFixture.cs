@@ -1,6 +1,6 @@
-﻿using System.Linq;
-using Sailfish.TestAdapter.Discovery;
+﻿using Sailfish.TestAdapter.Discovery;
 using Shouldly;
+using System.Linq;
 using Tests.TestAdapter.Utils;
 using Xunit;
 
@@ -15,7 +15,7 @@ public class TestDiscoveryFixture
         var source = DllFinder.FindThisProjectsDllRecursively();
 
         // Assumes there is one valid test file.
-        // And The discoverer tests will be those found from inside the 
+        // And The discoverer tests will be those found from inside the
         var testCases = TestDiscovery.DiscoverTests(new[] { source }, new LoggerHelper()).ToList();
         testCases.Count.ShouldBe(18);
     }

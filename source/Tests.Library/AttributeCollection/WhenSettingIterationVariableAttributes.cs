@@ -1,7 +1,7 @@
-﻿using System.Linq;
-using Sailfish.Attributes;
+﻿using Sailfish.Attributes;
 using Sailfish.Execution;
 using Shouldly;
+using System.Linq;
 using Xunit;
 
 namespace Tests.Library.AttributeCollection;
@@ -36,6 +36,5 @@ public class WhenSettingSailfishAttributes
 
 public class TestClass
 {
-    [SailfishVariable(1, 2, 3)]
-    public int[]? Count { get; set; }
+    [SailfishVariable(1, 2, 3)] public int[]? Count { get; set; }
 }

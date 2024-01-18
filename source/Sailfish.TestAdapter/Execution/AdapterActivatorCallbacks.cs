@@ -1,7 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading;
 using MediatR;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.Logging;
@@ -9,6 +5,10 @@ using Sailfish.Exceptions;
 using Sailfish.Execution;
 using Sailfish.Extensions.Types;
 using Sailfish.TestAdapter.TestProperties;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading;
 
 namespace Sailfish.TestAdapter.Execution;
 
@@ -20,25 +20,19 @@ internal interface IActivatorCallbacks
         CancellationToken cancellationToken);
 
     Action<TestInstanceContainer?> BenchmarkDisabledCallback(IEnumerable<TestCase>? testCaseGroup);
+
     Action<TestInstanceContainer?> BenchmarkExceptionCallback(IEnumerable<TestCase> testCaseGroup);
+
     Action<TestInstanceContainer> PreBenchmarkResultCallback(IEnumerable<TestCase> testCaseGroup);
 }
 
-internal class AdapterActivatorCallbacks : IActivatorCallbacks
+internal class AdapterActivatorCallbacks(IMediator mediator, IAdapterConsoleWriter consoleWriter, IClassExecutionSummaryCompiler classExecutionSummaryCompiler,
+    IAdapterSailDiff sailDiff) : IActivatorCallbacks
 {
-    private readonly IMediator mediator;
-    private readonly IAdapterConsoleWriter consoleWriter;
-    private readonly IClassExecutionSummaryCompiler classExecutionSummaryCompiler;
-    private readonly IAdapterSailDiff sailDiff;
-
-    public AdapterActivatorCallbacks(IMediator mediator, IAdapterConsoleWriter consoleWriter, IClassExecutionSummaryCompiler classExecutionSummaryCompiler,
-        IAdapterSailDiff sailDiff)
-    {
-        this.mediator = mediator;
-        this.consoleWriter = consoleWriter;
-        this.classExecutionSummaryCompiler = classExecutionSummaryCompiler;
-        this.sailDiff = sailDiff;
-    }
+    private readonly IClassExecutionSummaryCompiler classExecutionSummaryCompiler = classExecutionSummaryCompiler;
+    private readonly IAdapterConsoleWriter consoleWriter = consoleWriter;
+    private readonly IMediator mediator = mediator;
+    private readonly IAdapterSailDiff sailDiff = sailDiff;
 
     public Action<TestCaseExecutionResult, TestInstanceContainer> PostBenchmarkResultCallback(
         IEnumerable<TestCase> testCaseGroups,
@@ -63,27 +57,79 @@ internal class AdapterActivatorCallbacks : IActivatorCallbacks
 
             var currentTestCase = GetTestCaseFromTestCaseGroupMatchingCurrentContainer(container, testCaseGroups);
             if (result.IsSuccess)
-            {
                 HandleSuccessfulTestCase(
                     result,
                     currentTestCase,
                     new TestClassResultGroup(
                         result.TestInstanceContainer.Type,
-                        new List<TestCaseExecutionResult> { result }),
+                        [result]),
                     preloadedLastRunIfAvailable,
                     cancellationToken);
-            }
             else
-            {
                 HandleFailureTestCase(
                     result,
                     currentTestCase,
                     new TestClassResultGroup(
                         result.TestInstanceContainer.Type,
-                        new List<TestCaseExecutionResult> { result }),
+                        [result]),
                     cancellationToken);
+        };
+    }
+
+    public Action<TestInstanceContainer?> BenchmarkDisabledCallback(IEnumerable<TestCase>? testCaseGroup)
+    {
+        void CreateDisabledResult(TestCase testCase)
+        {
+            var testResult = new TestResult(testCase)
+            {
+                ErrorMessage = "Test Disabled",
+                ErrorStackTrace = null,
+                Outcome = TestOutcome.Skipped,
+                DisplayName = testCase.DisplayName,
+                ComputerName = null,
+                Duration = TimeSpan.Zero,
+                StartTime = default,
+                EndTime = default
+            };
+
+            consoleWriter.RecordEnd(testCase, testResult.Outcome);
+            consoleWriter.RecordResult(testResult);
+        }
+
+        return container =>
+        {
+            if (testCaseGroup is null) return; // no idea why this would happen, but exceptions are not the way
+            if (container is null) // then we've disabled the class - return all the results for the group
+            {
+                foreach (var testCase in testCaseGroup) CreateDisabledResult(testCase);
+            }
+            else // we've only disabled this method, send a single result
+            {
+                var currentTestCase = GetTestCaseFromTestCaseGroupMatchingCurrentContainer(container, testCaseGroup);
+                CreateDisabledResult(currentTestCase);
             }
         };
+    }
+
+    public Action<TestInstanceContainer?> BenchmarkExceptionCallback(IEnumerable<TestCase> testCaseGroup)
+    {
+        return container =>
+        {
+            if (container is null)
+            {
+                foreach (var testCase in testCaseGroup) consoleWriter.RecordEnd(testCase, TestOutcome.Failed);
+            }
+            else
+            {
+                var currentTestCase = GetTestCaseFromTestCaseGroupMatchingCurrentContainer(container, testCaseGroup);
+                consoleWriter.RecordEnd(currentTestCase, TestOutcome.Failed);
+            }
+        };
+    }
+
+    public Action<TestInstanceContainer> PreBenchmarkResultCallback(IEnumerable<TestCase> testCaseGroup)
+    {
+        return container => consoleWriter.RecordStart(GetTestCaseFromTestCaseGroupMatchingCurrentContainer(container, testCaseGroup));
     }
 
     private void HandleSuccessfulTestCase(
@@ -94,7 +140,7 @@ internal class AdapterActivatorCallbacks : IActivatorCallbacks
         CancellationToken cancellationToken)
     {
         var classExecutionSummary = classExecutionSummaryCompiler
-            .CompileToSummaries(new List<TestClassResultGroup>() { classResultGroup })
+            .CompileToSummaries(new List<TestClassResultGroup> { classResultGroup })
             .Single();
         var medianTestRuntime = classExecutionSummary.CompiledTestCaseResults.Single().PerformanceRunResult?.Median ??
                                 throw new SailfishException("Error computing compiled results");
@@ -116,10 +162,9 @@ internal class AdapterActivatorCallbacks : IActivatorCallbacks
 
         testResult.ErrorMessage = result.Exception?.Message;
 
-        var formattedExecutionSummary = consoleWriter.WriteToConsole(new[] { classExecutionSummary }, new OrderedDictionary());
+        var formattedExecutionSummary = consoleWriter.WriteToConsole(new[] { classExecutionSummary }, []);
 
         if (preloadedLastRunIfAvailable.Count > 0)
-        {
             // preloadedLastRun represents an entire tracking file
             foreach (var preloadedLastRun in preloadedLastRunIfAvailable)
             {
@@ -138,14 +183,10 @@ internal class AdapterActivatorCallbacks : IActivatorCallbacks
                 formattedExecutionSummary += "\n" + testCaseResults;
                 break;
             }
-        }
 
         testResult.Messages.Add(new TestResultMessage(TestResultMessage.StandardOutCategory, formattedExecutionSummary));
 
-        if (result.Exception is not null)
-        {
-            testResult.Messages.Add(new TestResultMessage(TestResultMessage.StandardErrorCategory, result.Exception?.Message));
-        }
+        if (result.Exception is not null) testResult.Messages.Add(new TestResultMessage(TestResultMessage.StandardErrorCategory, result.Exception?.Message));
 
         consoleWriter.RecordEnd(currentTestCase, testResult.Outcome);
         consoleWriter.RecordResult(testResult);
@@ -184,68 +225,6 @@ internal class AdapterActivatorCallbacks : IActivatorCallbacks
 
         consoleWriter.RecordEnd(currentTestCase, testResult.Outcome);
         consoleWriter.RecordResult(testResult);
-    }
-
-    public Action<TestInstanceContainer?> BenchmarkDisabledCallback(IEnumerable<TestCase>? testCaseGroup)
-    {
-        void CreateDisabledResult(TestCase testCase)
-        {
-            var testResult = new TestResult(testCase)
-            {
-                ErrorMessage = $"Test Disabled",
-                ErrorStackTrace = null,
-                Outcome = TestOutcome.Skipped,
-                DisplayName = testCase.DisplayName,
-                ComputerName = null,
-                Duration = TimeSpan.Zero,
-                StartTime = default,
-                EndTime = default
-            };
-
-            consoleWriter.RecordEnd(testCase, testResult.Outcome);
-            consoleWriter.RecordResult(testResult);
-        }
-
-        return container =>
-        {
-            if (testCaseGroup is null) return; // no idea why this would happen, but exceptions are not the way
-            if (container is null) // then we've disabled the class - return all the results for the group
-            {
-                foreach (var testCase in testCaseGroup)
-                {
-                    CreateDisabledResult(testCase);
-                }
-            }
-            else // we've only disabled this method, send a single result
-            {
-                var currentTestCase = GetTestCaseFromTestCaseGroupMatchingCurrentContainer(container, testCaseGroup);
-                CreateDisabledResult(currentTestCase);
-            }
-        };
-    }
-
-    public Action<TestInstanceContainer?> BenchmarkExceptionCallback(IEnumerable<TestCase> testCaseGroup)
-    {
-        return (container) =>
-        {
-            if (container is null)
-            {
-                foreach (var testCase in testCaseGroup)
-                {
-                    consoleWriter.RecordEnd(testCase, TestOutcome.Failed);
-                }
-            }
-            else
-            {
-                var currentTestCase = GetTestCaseFromTestCaseGroupMatchingCurrentContainer(container, testCaseGroup);
-                consoleWriter.RecordEnd(currentTestCase, TestOutcome.Failed);
-            }
-        };
-    }
-
-    public Action<TestInstanceContainer> PreBenchmarkResultCallback(IEnumerable<TestCase> testCaseGroup)
-    {
-        return container => consoleWriter.RecordStart(GetTestCaseFromTestCaseGroupMatchingCurrentContainer(container, testCaseGroup));
     }
 
     private static TestCase GetTestCaseFromTestCaseGroupMatchingCurrentContainer(TestInstanceContainer container, IEnumerable<TestCase> testCaseGroup)

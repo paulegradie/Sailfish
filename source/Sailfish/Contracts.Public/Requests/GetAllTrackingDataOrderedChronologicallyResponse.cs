@@ -2,12 +2,7 @@ using Sailfish.Extensions.Types;
 
 namespace Sailfish.Contracts.Public.Requests;
 
-public class GetAllTrackingDataOrderedChronologicallyResponse
+public class GetAllTrackingDataOrderedChronologicallyResponse(TrackingFileDataList trackingData)
 {
-    public TrackingFileDataList TrackingData { get; }
-
-    public GetAllTrackingDataOrderedChronologicallyResponse(TrackingFileDataList trackingData)
-    {
-        TrackingData = trackingData;
-    }
+    public TrackingFileDataList TrackingData { get; } = trackingData;
 }

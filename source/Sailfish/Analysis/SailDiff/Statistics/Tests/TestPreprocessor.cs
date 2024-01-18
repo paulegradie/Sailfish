@@ -26,16 +26,10 @@ public interface ITestPreprocessor
         int? seed = null);
 }
 
-public class TestPreprocessor : ITestPreprocessor
+public class TestPreprocessor(ISailfishOutlierDetector outlierDetector) : ITestPreprocessor
 {
-    private readonly ISailfishOutlierDetector outlierDetector;
     private const int MinAnalysisSampSize = 3;
-    private const double Shift = 0.00000001;
-
-    public TestPreprocessor(ISailfishOutlierDetector outlierDetector)
-    {
-        this.outlierDetector = outlierDetector;
-    }
+    private readonly ISailfishOutlierDetector outlierDetector = outlierDetector;
 
     public PreprocessedData Preprocess(double[] rawData, bool useOutlierDetection)
     {
@@ -56,11 +50,7 @@ public class TestPreprocessor : ITestPreprocessor
             var outlierAnalysis = outlierDetector.DetectOutliers(rawData);
             var downSampled = DownSampleWithRandomUniform(outlierAnalysis.DataWithOutliersRemoved, minArraySize, maxArraySize, seed);
             return new PreprocessedData(rawData,
-                new ProcessedStatisticalTestData(rawData,
-                    downSampled,
-                    outlierAnalysis.LowerOutliers,
-                    outlierAnalysis.UpperOutliers,
-                    outlierAnalysis.TotalNumOutliers));
+                outlierAnalysis with { OriginalData = rawData, DataWithOutliersRemoved = downSampled });
         }
 
         var downSampledNoOutlierDetection = DownSampleWithRandomUniform(rawData, minArraySize, maxArraySize, seed);
@@ -102,34 +92,19 @@ public class TestPreprocessor : ITestPreprocessor
 
     private static double[] DownSampleWithRandomUniform(double[] inputArray, int minArraySize, int maxArraySize, int? seed = null)
     {
-        if (maxArraySize < minArraySize)
-        {
-            maxArraySize = minArraySize;
-        }
+        if (maxArraySize < minArraySize) maxArraySize = minArraySize;
 
-        if (inputArray.Length <= maxArraySize)
-        {
-            return inputArray;
-        }
+        if (inputArray.Length <= maxArraySize) return inputArray;
 
-        if (inputArray.Length <= minArraySize)
-        {
-            return inputArray;
-        }
+        if (inputArray.Length <= minArraySize) return inputArray;
 
         var rand = seed is not null ? new Random(seed.Value) : new Random();
         var indices = new HashSet<int>();
-        while (indices.Count < maxArraySize)
-        {
-            indices.Add(rand.Next(inputArray.Length));
-        }
+        while (indices.Count < maxArraySize) indices.Add(rand.Next(inputArray.Length));
 
         var output = new double[maxArraySize];
         var i = 0;
-        foreach (var index in indices)
-        {
-            output[i++] = inputArray[index];
-        }
+        foreach (var index in indices) output[i++] = inputArray[index];
 
         return output;
     }

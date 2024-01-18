@@ -3,14 +3,8 @@ using System.Reflection;
 
 namespace Sailfish.Utils;
 
-internal class PropertiesAndFields
+internal class PropertiesAndFields(Dictionary<PropertyInfo, object?> properties, Dictionary<FieldInfo, object?> fields)
 {
-    public PropertiesAndFields(Dictionary<PropertyInfo, object?> properties, Dictionary<FieldInfo, object?> fields)
-    {
-        Properties = properties;
-        Fields = fields;
-    }
-
-    public Dictionary<PropertyInfo, object?> Properties { get; set; }
-    public Dictionary<FieldInfo, object?> Fields { get; set; }
+    public Dictionary<PropertyInfo, object?> Properties { get; set; } = properties;
+    public Dictionary<FieldInfo, object?> Fields { get; set; } = fields;
 }

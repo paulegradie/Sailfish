@@ -1,12 +1,12 @@
-﻿using System;
+﻿using Sailfish.Exceptions;
+using Sailfish.Extensions.Methods;
+using Sailfish.Logging;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Caching;
 using System.Threading;
 using System.Threading.Tasks;
-using Sailfish.Exceptions;
-using Sailfish.Extensions.Methods;
-using Sailfish.Logging;
 
 namespace Sailfish.Execution;
 
@@ -17,25 +17,17 @@ internal interface ISailFishTestExecutor
         CancellationToken cancellationToken = default);
 }
 
-internal class SailFishTestExecutor : ISailFishTestExecutor
+internal class SailFishTestExecutor(
+    ILogger logger,
+    ITestCaseCountPrinter testCaseCountPrinter,
+    ITestInstanceContainerCreator testInstanceContainerCreator,
+    ISailfishExecutionEngine engine) : ISailFishTestExecutor
 {
-    private readonly ILogger logger;
-    private readonly ITestCaseCountPrinter testCaseCountPrinter;
-    private readonly ITestInstanceContainerCreator testInstanceContainerCreator;
-    private readonly ISailfishExecutionEngine engine;
     private const string MemoryCacheName = "GlobalStateMemoryCache";
-
-    public SailFishTestExecutor(
-        ILogger logger,
-        ITestCaseCountPrinter testCaseCountPrinter,
-        ITestInstanceContainerCreator testInstanceContainerCreator,
-        ISailfishExecutionEngine engine)
-    {
-        this.logger = logger;
-        this.testCaseCountPrinter = testCaseCountPrinter;
-        this.testInstanceContainerCreator = testInstanceContainerCreator;
-        this.engine = engine;
-    }
+    private readonly ISailfishExecutionEngine engine = engine;
+    private readonly ILogger logger = logger;
+    private readonly ITestCaseCountPrinter testCaseCountPrinter = testCaseCountPrinter;
+    private readonly ITestInstanceContainerCreator testInstanceContainerCreator = testInstanceContainerCreator;
 
     public async Task<List<TestClassResultGroup>> Execute(
         IEnumerable<Type> testTypes,

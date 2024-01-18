@@ -1,34 +1,25 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-using Sailfish.Analysis.SailDiff;
+﻿using Sailfish.Analysis.SailDiff;
 using Sailfish.Contracts.Public.Models;
 using Sailfish.Execution;
 using Sailfish.Extensions.Types;
 using Sailfish.Logging;
+using System;
+using System.Collections.Generic;
+using System.Text;
 
 namespace Sailfish.Presentation.Console;
 
-internal class ConsoleWriter : IConsoleWriter
+internal class ConsoleWriter(IMarkdownTableConverter markdownTableConverter, ILogger logger) : IConsoleWriter
 {
-    private readonly IMarkdownTableConverter markdownTableConverter;
-    private readonly ILogger logger;
-
-    public ConsoleWriter(IMarkdownTableConverter markdownTableConverter, ILogger logger)
-    {
-        this.markdownTableConverter = markdownTableConverter;
-        this.logger = logger;
-    }
+    private readonly ILogger logger = logger;
+    private readonly IMarkdownTableConverter markdownTableConverter = markdownTableConverter;
 
     public string WriteToConsole(IEnumerable<IClassExecutionSummary> results, OrderedDictionary tags)
     {
         var markdownStringTable = markdownTableConverter.ConvertToMarkdownTableString(results);
 
-        if ((tags.Count > 0)) System.Console.WriteLine($"{Environment.NewLine}Tags:");
-        foreach (var entry in tags)
-        {
-            logger.Log(LogLevel.Information, $"{entry.Key}: {entry.Value}");
-        }
+        if (tags.Count > 0) System.Console.WriteLine($"{Environment.NewLine}Tags:");
+        foreach (var entry in tags) logger.Log(LogLevel.Information, $"{entry.Key}: {entry.Value}");
 
         logger.Log(LogLevel.Information, markdownStringTable);
         return markdownStringTable;

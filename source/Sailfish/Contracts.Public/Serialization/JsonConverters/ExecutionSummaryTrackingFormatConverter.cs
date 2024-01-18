@@ -1,9 +1,9 @@
+using Sailfish.Contracts.Public.Serialization.Tracking.V1;
+using Sailfish.Exceptions;
 using System;
 using System.Collections.Generic;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using Sailfish.Contracts.Public.Serialization.Tracking.V1;
-using Sailfish.Exceptions;
 
 namespace Sailfish.Contracts.Public.Serialization.JsonConverters;
 
@@ -40,15 +40,14 @@ public class ExecutionSummaryTrackingFormatConverter : JsonConverter<ClassExecut
             options);
     }
 
-
     /// <summary>
-    /// A transfer class that lets us move between the Type type for the Type property and string type for the Type property
-    /// NOTE: Names on this class MUST match the ExecutionSummaryTrackingFormat property names
+    ///     A transfer class that lets us move between the Type type for the Type property and string type for the Type
+    ///     property
+    ///     NOTE: Names on this class MUST match the ExecutionSummaryTrackingFormat property names
     /// </summary>
     internal class TrackingFileSerializationHelper
     {
         [JsonConstructor]
-#pragma warning disable CS8618
         public TrackingFileSerializationHelper()
 #pragma warning restore CS8618
         {

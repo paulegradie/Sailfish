@@ -1,51 +1,23 @@
-﻿using System.Threading.Tasks;
-using Sailfish.Analysis;
+﻿using Sailfish.Analysis;
 using Sailfish.Analysis.SailDiff;
 using Sailfish.Analysis.SailDiff.Statistics.Tests;
 using Sailfish.Analysis.SailDiff.Statistics.Tests.KolmogorovSmirnovTestSailfish;
 using Sailfish.Analysis.SailDiff.Statistics.Tests.MWWilcoxonTestSailfish;
-using Sailfish.Analysis.SailDiff.Statistics.Tests.TTestSailfish;
+using Sailfish.Analysis.SailDiff.Statistics.Tests.TTest;
 using Sailfish.Analysis.SailDiff.Statistics.Tests.TwoSampleWilcoxonSignedRankTestSailfish;
 using Shouldly;
+using System.Threading.Tasks;
 using Xunit;
 
 namespace Tests.Library.Analysis.SailDiff;
 
 public class TestShouldCompleteSuccessfullyFixture : IAsyncLifetime
 {
-    private double[] before = null!;
     private double[] after = null!;
-
-    [Fact]
-    public void TwoSample()
-    {
-        var test = new TwoSampleWilcoxonSignedRankTestSailfish(new TestPreprocessor(new SailfishOutlierDetector()));
-        Should.NotThrow(() => test.ExecuteTest(before, after, new SailDiffSettings(0.0001, 4, false, TestType.TwoSampleWilcoxonSignedRankTest)));
-    }
-
-    [Fact]
-    public void RankSum()
-    {
-        var test = new MannWhitneyWilcoxonTestSailfish(new TestPreprocessor(new SailfishOutlierDetector()));
-        Should.NotThrow(() => test.ExecuteTest(before, after, new SailDiffSettings(0.0001, 4, false, TestType.WilcoxonRankSumTest)));
-    }
-
-    [Fact]
-    public void TTEst()
-    {
-        var test = new TTestSailfish(new TestPreprocessor(new SailfishOutlierDetector()));
-        Should.NotThrow(() => test.ExecuteTest(before, after, new SailDiffSettings(0.0001, 4, false, TestType.TTest)));
-    }
-
-    [Fact]
-    public void KolmogorovSmirnov()
-    {
-        var test = new KolmogorovSmirnovTestSailfish(new TestPreprocessor(new SailfishOutlierDetector()));
-        Should.NotThrow(() => test.ExecuteTest(before, after, new SailDiffSettings(0.0001, 4, false, TestType.KolmogorovSmirnovTest)));
-    }
+    private double[] before = null!;
 
     /// <summary>
-    /// These data should both be large, and of unequal size!
+    ///     These data should both be large, and of unequal size!
     /// </summary>
     /// <returns></returns>
     public Task InitializeAsync()
@@ -60,7 +32,6 @@ public class TestShouldCompleteSuccessfullyFixture : IAsyncLifetime
             22.6, 1, 35.3, 7.0, 19.3, 21.3, 10.1, 20.2, 1, 36.2, 16.7, 21.1, 39.1,
             19.9, 32.1
         };
-
 
         after = new[]
         {
@@ -78,5 +49,33 @@ public class TestShouldCompleteSuccessfullyFixture : IAsyncLifetime
     public Task DisposeAsync()
     {
         return Task.CompletedTask;
+    }
+
+    [Fact]
+    public void TwoSample()
+    {
+        var test = new TwoSampleWilcoxonSignedRankTest(new TestPreprocessor(new SailfishOutlierDetector()));
+        Should.NotThrow(() => test.ExecuteTest(before, after, new SailDiffSettings(0.0001, 4, false)));
+    }
+
+    [Fact]
+    public void RankSum()
+    {
+        var test = new MannWhitneyWilcoxonTest(new TestPreprocessor(new SailfishOutlierDetector()));
+        Should.NotThrow(() => test.ExecuteTest(before, after, new SailDiffSettings(0.0001, 4, false, TestType.WilcoxonRankSumTest)));
+    }
+
+    [Fact]
+    public void TTEst()
+    {
+        var test = new TTest(new TestPreprocessor(new SailfishOutlierDetector()));
+        Should.NotThrow(() => test.ExecuteTest(before, after, new SailDiffSettings(0.0001, 4, false, TestType.TTest)));
+    }
+
+    [Fact]
+    public void KolmogorovSmirnov()
+    {
+        var test = new KolmogorovSmirnovTest(new TestPreprocessor(new SailfishOutlierDetector()));
+        Should.NotThrow(() => test.ExecuteTest(before, after, new SailDiffSettings(0.0001, 4, false, TestType.KolmogorovSmirnovTest)));
     }
 }

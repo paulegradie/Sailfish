@@ -1,3 +1,7 @@
+using Sailfish.Contracts.Public.Serialization.Tracking.V1;
+using Sailfish.Extensions.Types;
+using Sailfish.Logging;
+using Sailfish.Presentation;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -5,37 +9,29 @@ using System.Linq;
 using System.Runtime.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
-using Sailfish.Contracts.Public.Serialization.Tracking.V1;
-using Sailfish.Extensions.Types;
-using Sailfish.Logging;
-using Sailfish.Presentation;
 
 namespace Sailfish.Analysis;
 
 internal interface ITrackingFileParser
 {
     Task<bool> TryParse(string trackingFile, TrackingFileDataList data, CancellationToken cancellationToken);
+
     Task<bool> TryParse(IEnumerable<string> trackingFiles, TrackingFileDataList data, CancellationToken cancellationToken);
 }
 
-internal class TrackingFileParser : ITrackingFileParser
+internal class TrackingFileParser(ITrackingFileSerialization trackingFileSerialization, ILogger logger) : ITrackingFileParser
 {
-    private readonly ITrackingFileSerialization trackingFileSerialization;
-    private readonly ILogger logger;
-
-    public TrackingFileParser(ITrackingFileSerialization trackingFileSerialization, ILogger logger)
-    {
-        this.trackingFileSerialization = trackingFileSerialization;
-        this.logger = logger;
-    }
+    private readonly ILogger logger = logger;
+    private readonly ITrackingFileSerialization trackingFileSerialization = trackingFileSerialization;
 
     public async Task<bool> TryParse(string trackingFile, TrackingFileDataList data, CancellationToken cancellationToken)
     {
-        return await TryParse(new List<string>() { trackingFile }, data, cancellationToken).ConfigureAwait(false);
+        return await TryParse(new List<string> { trackingFile }, data, cancellationToken).ConfigureAwait(false);
     }
 
     /// <summary>
-    /// Returns a list of deserialized IExecutionSummaries, where each element represents a tracking file. Useful for searching prior executions for prior results. 
+    ///     Returns a list of deserialized IExecutionSummaries, where each element represents a tracking file. Useful for
+    ///     searching prior executions for prior results.
     /// </summary>
     /// <param name="trackingFiles"></param>
     /// <param name="data"></param>

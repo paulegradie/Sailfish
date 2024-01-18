@@ -27,10 +27,7 @@ public sealed class PerformanceTimer
 
     public void ApplyOverheadEstimate(int overheadEstimate)
     {
-        foreach (var executionIterationPerformance in ExecutionIterationPerformances)
-        {
-            executionIterationPerformance.ApplyOverheadEstimate(overheadEstimate);
-        }
+        foreach (var executionIterationPerformance in ExecutionIterationPerformances) executionIterationPerformance.ApplyOverheadEstimate(overheadEstimate);
     }
 
     public void SetTestCaseStart()

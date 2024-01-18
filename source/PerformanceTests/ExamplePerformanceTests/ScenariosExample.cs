@@ -1,19 +1,18 @@
-﻿using System.Collections.Generic;
+﻿using Sailfish.Attributes;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using Sailfish.Attributes;
 
 namespace PerformanceTests.ExamplePerformanceTests;
 
 [Sailfish(Disabled = false)]
 public class ScenariosExample
 {
+    private const string ScenarioA = "ScenarioA";
+    private const string ScenarioB = "ScenarioB";
     private Dictionary<string, string> scenarioMap = null!;
 
     [SailfishVariable("wow", "ok")] public string N { get; set; } = null!;
-
-    private const string ScenarioA = "ScenarioA";
-    private const string ScenarioB = "ScenarioB";
 
     [SailfishVariable(ScenarioA, ScenarioB)]
     public string Scenario { get; set; } = null!;

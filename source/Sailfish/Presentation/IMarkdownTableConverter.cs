@@ -1,2 +1,0 @@
-namespace Sailfish.Presentation;
-

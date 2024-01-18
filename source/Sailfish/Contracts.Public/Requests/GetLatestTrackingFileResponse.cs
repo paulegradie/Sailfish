@@ -1,10 +1,9 @@
-using System.Collections.Generic;
 using Sailfish.Execution;
+using System.Collections.Generic;
 
 namespace Sailfish.Contracts.Public.Requests;
 
-public class GetLatestExecutionSummaryResponse
+public class GetLatestExecutionSummaryResponse(List<IClassExecutionSummary> latestExecutionSummaries)
 {
-    public GetLatestExecutionSummaryResponse(List<IClassExecutionSummary> latestExecutionSummaries) => LatestExecutionSummaries = latestExecutionSummaries;
-    public List<IClassExecutionSummary> LatestExecutionSummaries { get; set; }
+    public List<IClassExecutionSummary> LatestExecutionSummaries { get; set; } = latestExecutionSummaries;
 }

@@ -1,18 +1,18 @@
+using MathNet.Numerics.Statistics;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading.Tasks;
-using MathNet.Numerics.Statistics;
 
 namespace Sailfish.Execution;
 
 public class OverheadEstimator
 {
     private const double NumMilliSecondsToWait = 100;
-    private static double TicksPerMillisecond => Stopwatch.Frequency / (double)1_000;
-    private static double ExpectedWaitPeriodInTicks => TicksPerMillisecond * (double)NumMilliSecondsToWait;
 
     private readonly List<double> estimates = new();
+    private static double TicksPerMillisecond => Stopwatch.Frequency / (double)1_000;
+    private static double ExpectedWaitPeriodInTicks => TicksPerMillisecond * NumMilliSecondsToWait;
 
     public int GetAverageEstimate()
     {
@@ -69,6 +69,7 @@ public class OverheadEstimator
     }
 
 #pragma warning disable CA1822
+
     public async Task Wait()
 #pragma warning restore CA1822
     {

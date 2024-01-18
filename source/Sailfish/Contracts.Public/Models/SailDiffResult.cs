@@ -1,5 +1,5 @@
-﻿using System.Text.Json.Serialization;
-using Sailfish.Analysis.SailDiff.Statistics.Tests;
+﻿using Sailfish.Analysis.SailDiff.Statistics.Tests;
+using System.Text.Json.Serialization;
 
 #pragma warning disable CS8618
 

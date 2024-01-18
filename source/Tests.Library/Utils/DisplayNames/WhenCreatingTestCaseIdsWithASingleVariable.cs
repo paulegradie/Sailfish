@@ -1,18 +1,33 @@
-using System.Linq;
-using System.Threading.Tasks;
 using Sailfish.Contracts.Public.Models;
 using Sailfish.Utils;
 using Shouldly;
+using System.Linq;
+using System.Threading.Tasks;
 using Xunit;
 
 namespace Tests.Library.Utils.DisplayNames;
 
 public class WhenCreatingTestCaseIdsWithASingleVariable : IAsyncLifetime
 {
-    private TestCaseId testCaseId = null!;
     private const string VariableName = "YoMamma";
     private const string MethodName = "TestMethod";
     private const int Param = 1;
+    private TestCaseId testCaseId = null!;
+
+    public async Task InitializeAsync()
+    {
+        testCaseId = DisplayNameHelper.CreateTestCaseId(
+            typeof(WhenCreatingTestCaseIdsWithASingleVariable),
+            "TestMethod",
+            new[] { VariableName },
+            new object[] { Param });
+        await Task.Yield();
+    }
+
+    public async Task DisposeAsync()
+    {
+        await Task.Yield();
+    }
 
     [Fact]
     public void DisplayNameIsFormedCorrectly()
@@ -73,23 +88,8 @@ public class WhenCreatingTestCaseIdsWithASingleVariable : IAsyncLifetime
             "TestMethod",
             new[] { varA, varB },
             new object[] { 10, 50 });
-        
+
         var result = tci.TestCaseVariables.FormVariableSection();
         result.ShouldBe($"({varA}: 10, {varB}: 50)");
-    }
-
-    public async Task InitializeAsync()
-    {
-        testCaseId = DisplayNameHelper.CreateTestCaseId(
-            typeof(WhenCreatingTestCaseIdsWithASingleVariable),
-            "TestMethod",
-            new[] { VariableName },
-            new object[] { Param });
-        await Task.Yield();
-    }
-
-    public async Task DisposeAsync()
-    {
-        await Task.Yield();
     }
 }

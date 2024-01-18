@@ -1,9 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using Sailfish.Attributes;
+﻿using Sailfish.Attributes;
 using Sailfish.Extensions.Methods;
 using Sailfish.Logging;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace Sailfish.Execution;
 
@@ -12,14 +12,9 @@ internal interface ITestListValidator
     TestInitializationResult ValidateTests(IEnumerable<string> testsRequestedByUser, IEnumerable<Type> filteredTestNames);
 }
 
-internal class TestListValidator : ITestListValidator
+internal class TestListValidator(ILogger logger) : ITestListValidator
 {
-    private readonly ILogger logger;
-
-    public TestListValidator(ILogger logger)
-    {
-        this.logger = logger;
-    }
+    private readonly ILogger logger = logger;
 
     public TestInitializationResult ValidateTests(IEnumerable<string> testsRequestedByUser, IEnumerable<Type> filteredTestNames)
     {
@@ -36,16 +31,10 @@ internal class TestListValidator : ITestListValidator
             erroredTests.Add("Failed to disambiguate the following tests:", missingTests);
         }
 
-
         if (AnyTestHasNoExecutionMethods(testClasses, out var noExecutionMethodTests))
-        {
             erroredTests.Add("The following tests have no execution method defined:", noExecutionMethodTests);
-        }
 
-        if (erroredTests.Keys.Count > 0)
-        {
-            return TestInitializationResult.CreateFailure(testClasses, erroredTests);
-        }
+        if (erroredTests.Keys.Count > 0) return TestInitializationResult.CreateFailure(testClasses, erroredTests);
 
         if (!testClasses.Any())
         {
@@ -60,12 +49,8 @@ internal class TestListValidator : ITestListValidator
     {
         missingExecutionMethod = new List<string>();
         foreach (var test in testClasses)
-        {
             if (!TypeHasMoreThanZeroExecutionMethods(test) && !test.SailfishTypeIsDisabled())
-            {
                 missingExecutionMethod.Add(test.FullName ?? test.Name);
-            }
-        }
 
         return missingExecutionMethod.Count > 0;
     }

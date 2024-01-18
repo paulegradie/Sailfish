@@ -2,13 +2,12 @@ using System.Text.Json.Serialization;
 
 #pragma warning disable CS8618
 
-
 namespace Sailfish.Contracts.Public.Serialization.Tracking.V1;
 
 /// <summary>
-/// Data structure contract used specifically for serializing and deserializing tracking file data
-/// Changes to this constitute a **BREAKING CHANGE** in the Sailfish data persistence contract
-/// Do not make changes to this lightly
+///     Data structure contract used specifically for serializing and deserializing tracking file data
+///     Changes to this constitute a **BREAKING CHANGE** in the Sailfish data persistence contract
+///     Do not make changes to this lightly
 /// </summary>
 public class PerformanceRunResultTrackingFormat
 {

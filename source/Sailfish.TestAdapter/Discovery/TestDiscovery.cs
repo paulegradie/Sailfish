@@ -1,17 +1,17 @@
-﻿using System;
+﻿using Microsoft.VisualStudio.TestPlatform.ObjectModel;
+using Microsoft.VisualStudio.TestPlatform.ObjectModel.Logging;
+using Sailfish.Attributes;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using Microsoft.VisualStudio.TestPlatform.ObjectModel;
-using Microsoft.VisualStudio.TestPlatform.ObjectModel.Logging;
-using Sailfish.Attributes;
 
 namespace Sailfish.TestAdapter.Discovery;
 
 internal static class TestDiscovery
 {
     /// <summary>
-    /// This method should scan through the dlls provided, and extract each type that qualifies as a test type
+    ///     This method should scan through the dlls provided, and extract each type that qualifies as a test type
     /// </summary>
     /// <param name="sourceDllPaths"></param>
     /// <param name="logger"></param>

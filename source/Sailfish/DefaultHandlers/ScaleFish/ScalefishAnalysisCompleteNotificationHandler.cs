@@ -1,31 +1,23 @@
-using System.Collections.Generic;
-using System.IO;
-using System.Threading;
-using System.Threading.Tasks;
 using MediatR;
 using Sailfish.Analysis.ScaleFish;
 using Sailfish.Contracts.Public.Models;
 using Sailfish.Contracts.Public.Notifications;
 using Sailfish.Contracts.Public.Serialization;
 using Sailfish.Presentation;
+using System.Collections.Generic;
+using System.IO;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Sailfish.DefaultHandlers.ScaleFish;
 
-internal class ScalefishAnalysisCompleteNotificationHandler : INotificationHandler<ScalefishAnalysisCompleteNotification>
+internal class ScalefishAnalysisCompleteNotificationHandler(IRunSettings runSettings) : INotificationHandler<ScalefishAnalysisCompleteNotification>
 {
-    private readonly IRunSettings runSettings;
-
-    public ScalefishAnalysisCompleteNotificationHandler(IRunSettings runSettings)
-    {
-        this.runSettings = runSettings;
-    }
+    private readonly IRunSettings runSettings = runSettings;
 
     public async Task Handle(ScalefishAnalysisCompleteNotification notification, CancellationToken cancellationToken)
     {
-        if (!Directory.Exists(runSettings.LocalOutputDirectory))
-        {
-            Directory.CreateDirectory(runSettings.LocalOutputDirectory);
-        }
+        if (!Directory.Exists(runSettings.LocalOutputDirectory)) Directory.CreateDirectory(runSettings.LocalOutputDirectory);
 
         await WriteResults(DefaultFileSettings.DefaultScalefishFileName(runSettings.TimeStamp), notification.ScalefishResultMarkdown, cancellationToken);
         await WriteModels(DefaultFileSettings.DefaultScalefishModelFileName(runSettings.TimeStamp), notification.TestClassComplexityResults, cancellationToken);

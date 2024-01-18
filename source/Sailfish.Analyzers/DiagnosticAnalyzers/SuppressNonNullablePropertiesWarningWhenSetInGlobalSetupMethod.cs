@@ -1,11 +1,11 @@
-using System.Collections.Immutable;
-using System.Diagnostics;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Diagnostics;
 using Sailfish.Analyzers.Utils;
 using Sailfish.Analyzers.Utils.TreeParsingExtensionMethods;
+using System.Collections.Immutable;
+using System.Diagnostics;
 
 namespace Sailfish.Analyzers.DiagnosticAnalyzers;
 
@@ -66,13 +66,11 @@ public class SuppressNonNullablePropertiesWarningWhenSetInGlobalSetupMethod : Di
             if (propertyDeclaration is null) continue;
 
             if (!IsWarningSuppressed(semanticModel, "CS8618"))
-            {
                 // Actively suppress the warning by reporting a hidden diagnostic
                 context.ReportDiagnostic(Diagnostic.Create(
                     Descriptor,
                     propertyDeclaration.GetLocation(),
                     propertyDeclaration.Identifier.Text));
-            }
         }
     }
 

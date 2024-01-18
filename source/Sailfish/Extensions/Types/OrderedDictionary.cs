@@ -60,10 +60,7 @@ public class OrderedDictionary : IDictionary<string, string>
 
     public IEnumerator<KeyValuePair<string, string>> GetEnumerator()
     {
-        foreach (DictionaryEntry entry in orderedDictionary)
-        {
-            yield return new KeyValuePair<string, string?>((string)entry.Key, (string)entry.Value!)!;
-        }
+        foreach (DictionaryEntry entry in orderedDictionary) yield return new KeyValuePair<string, string?>((string)entry.Key, (string)entry.Value!)!;
     }
 
     IEnumerator IEnumerable.GetEnumerator()
@@ -83,10 +80,7 @@ public class OrderedDictionary : IDictionary<string, string>
 
     public void CopyTo(KeyValuePair<string, string>[] array, int arrayIndex)
     {
-        foreach (var entry in this)
-        {
-            array[arrayIndex++] = entry;
-        }
+        foreach (var entry in this) array[arrayIndex++] = entry;
     }
 
     public bool Remove(KeyValuePair<string, string> item)

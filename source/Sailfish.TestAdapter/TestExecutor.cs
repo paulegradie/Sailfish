@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
-using System.Threading;
-using Accord.Diagnostics;
-using Autofac;
+﻿using Autofac;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.Adapter;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.Logging;
@@ -13,18 +7,23 @@ using Sailfish.Registration;
 using Sailfish.TestAdapter.Discovery;
 using Sailfish.TestAdapter.Execution;
 using Sailfish.TestAdapter.TestProperties;
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Linq;
+using System.Reflection;
+using System.Threading;
 
 namespace Sailfish.TestAdapter;
 
 [ExtensionUri(ExecutorUriString)]
-// ReSharper disable once ClassNeverInstantiated.Global
 public class TestExecutor : ITestExecutor
 {
     public const string ExecutorUriString = "executor://sailfishexecutor/v1";
     public static readonly Uri ExecutorUri = new(ExecutorUriString);
+    private readonly CancellationTokenSource cancellationTokenSource = new();
 
     private readonly object lockObject = new();
-    private readonly CancellationTokenSource cancellationTokenSource = new();
     public bool Cancelled;
 
     public void RunTests(IEnumerable<TestCase>? testCases, IRunContext? runContext, IFrameworkHandle? frameworkHandle)
@@ -46,6 +45,15 @@ public class TestExecutor : ITestExecutor
         var testCases = TestDiscovery.DiscoverTests(enumeratedSources, frameworkHandle).ToList();
 
         ExecuteTests(testCases, frameworkHandle);
+    }
+
+    public void Cancel()
+    {
+        lock (lockObject)
+        {
+            cancellationTokenSource.Cancel();
+            Cancelled = true;
+        }
     }
 
     private void ExecuteTests(List<TestCase> testCases, IFrameworkHandle frameworkHandle)
@@ -83,15 +91,6 @@ public class TestExecutor : ITestExecutor
                 frameworkHandle.RecordResult(result);
                 frameworkHandle.RecordEnd(testCase, TestOutcome.None);
             }
-        }
-    }
-
-    public void Cancel()
-    {
-        lock (lockObject)
-        {
-            cancellationTokenSource.Cancel();
-            Cancelled = true;
         }
     }
 

@@ -1,5 +1,5 @@
-﻿using System.Text;
-using Sailfish.Attributes;
+﻿using Sailfish.Attributes;
+using System.Text;
 
 namespace Tests.TestAdapter.TestResources;
 
@@ -9,34 +9,24 @@ public class ExampleComponentTest
     public const string A = "Wow";
     public const string B = "SoFast";
 
-    [SailfishVariable(1, 10, 100)]
-    public int N { get; set; }
+    [SailfishVariable(1, 10, 100)] public int N { get; set; }
 
     [SailfishMethod]
     public void Interpolate()
     {
-        for (var i = 0; i < N; i++)
-        {
-            ExampleComponent.InterpolateStrings(A, B);
-        }
+        for (var i = 0; i < N; i++) ExampleComponent.InterpolateStrings(A, B);
     }
 
     [SailfishMethod]
     public void Concatenate()
     {
-        for (var i = 0; i < N; i++)
-        {
-            ExampleComponent.ConcatenateStrings(A, B);
-        }
+        for (var i = 0; i < N; i++) ExampleComponent.ConcatenateStrings(A, B);
     }
 
     [SailfishMethod]
     public void StringBuilder()
     {
-        for (var i = 0; i < N; i++)
-        {
-            ExampleComponent.StringBuilder(A, B);
-        }
+        for (var i = 0; i < N; i++) ExampleComponent.StringBuilder(A, B);
     }
 }
 

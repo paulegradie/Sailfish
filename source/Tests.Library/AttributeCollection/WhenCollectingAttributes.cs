@@ -1,8 +1,8 @@
-using System.Linq;
-using System.Reflection;
 using Sailfish.Attributes;
 using Sailfish.Extensions.Methods;
 using Shouldly;
+using System.Linq;
+using System.Reflection;
 using Xunit;
 
 namespace Tests.Library.AttributeCollection;

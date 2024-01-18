@@ -17,12 +17,11 @@ public class PropertiesShouldHavePublicGetters
 public class PrivateSettersShouldError
 {
     public int {|#0:PrivateGetter|} { private get; set; }
-    
+
     [SailfishGlobalSetup]
     public void GlobalSetup()
     {
         {|#1:PrivateGetter|} = 99;
-  
     }
 
     [SailfishMethod]
@@ -47,12 +46,11 @@ public class PrivateSettersShouldError
 public class TestMethod
 {
     public int PublicGetter { get; set; }
-    
+
     [SailfishGlobalSetup]
     public void GlobalSetup()
     {
         PublicGetter = 99;
-  
     }
 
     [SailfishMethod]

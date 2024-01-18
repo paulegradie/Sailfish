@@ -2,7 +2,6 @@ using System.Text.Json.Serialization;
 
 namespace Sailfish.TestAdapter.TestSettingsParser;
 
-#pragma warning disable CS8618
 public class GlobalSettings
 {
     [JsonPropertyName("Round")] public int Round { get; set; }
