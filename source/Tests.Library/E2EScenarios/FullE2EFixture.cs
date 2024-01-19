@@ -31,7 +31,7 @@ public class FullE2EFixture
 
     // will need to update this if more tests are added to the the project
     [Fact]
-    public async Task AFullTestRunOfTheDemoShouldFind13Tests()
+    public async Task AFullTestRunOfTheDemoShouldFindAllTests()
     {
         var runSettings = RunSettingsBuilder.CreateBuilder()
             .WithLocalOutputDirectory(Some.RandomString())
@@ -44,7 +44,7 @@ public class FullE2EFixture
         var result = await SailfishRunner.Run(runSettings);
 
         result.IsValid.ShouldBe(true);
-        result.ExecutionSummaries.Count().ShouldBe(14);
+        result.ExecutionSummaries.Count().ShouldBe(15);
     }
 
     [Fact]
