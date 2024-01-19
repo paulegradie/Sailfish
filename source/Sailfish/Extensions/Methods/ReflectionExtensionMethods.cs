@@ -14,148 +14,86 @@ namespace Sailfish.Extensions.Methods;
 public static class ReflectionExtensionMethods
 {
     internal static bool HasAttribute<TAttribute>(this Type type, bool inherit = false) where TAttribute : Attribute
-    {
-        return type.GetCustomAttributes(typeof(TAttribute), inherit).Length > 0;
-    }
+    { return type.GetCustomAttributes(typeof(TAttribute), inherit).Length > 0; }
 
-    internal static bool HasAttribute<TAttribute>(this MethodInfo method, bool inherit = false) where TAttribute : Attribute
-    {
-        return method.GetCustomAttributes(typeof(TAttribute), inherit).Length > 0;
-    }
+    internal static bool HasAttribute<TAttribute>(this MethodInfo method, bool inherit = false)
+        where TAttribute : Attribute
+    { return method.GetCustomAttributes(typeof(TAttribute), inherit).Length > 0; }
 
-    private static bool HasAttribute<TAttribute>(this PropertyInfo property, bool inherit = false) where TAttribute : Attribute
-    {
-        return property.GetCustomAttributes(typeof(TAttribute), inherit).Length > 0;
-    }
+    private static bool HasAttribute<TAttribute>(this PropertyInfo property, bool inherit = false)
+        where TAttribute : Attribute
+    { return property.GetCustomAttributes(typeof(TAttribute), inherit).Length > 0; }
 
-    internal static IEnumerable<PropertyInfo> GetPropertiesWithAttribute<TAttribute>(this Type type) where TAttribute : Attribute
-    {
-        return type.GetProperties().Where(x => x.HasAttribute<TAttribute>());
-    }
+    internal static IEnumerable<PropertyInfo> GetPropertiesWithAttribute<TAttribute>(this Type type)
+        where TAttribute : Attribute
+    { return type.GetProperties().Where(x => x.HasAttribute<TAttribute>()); }
 
-    internal static IEnumerable<MethodInfo> GetMethodsWithAttribute<TAttribute>(this Type type) where TAttribute : Attribute
-    {
-        return type.GetMethods(BindingFlags.Public | BindingFlags.Instance).Where(x => x.HasAttribute<TAttribute>());
-    }
+    internal static IEnumerable<MethodInfo> GetMethodsWithAttribute<TAttribute>(this Type type)
+        where TAttribute : Attribute
+    { return type.GetMethods(BindingFlags.Public | BindingFlags.Instance).Where(x => x.HasAttribute<TAttribute>()); }
 
     internal static bool IsAsyncMethod(this MethodInfo method)
+    { return method.HasAttribute<AsyncStateMachineAttribute>(); }
+
+    internal static bool ReturnTypeIsTask(Type returnType)
     {
-        return method.HasAttribute<AsyncStateMachineAttribute>();
+        return returnType == typeof(Task) ||
+            returnType.IsGenericType &&
+            returnType.GetGenericTypeDefinition() == typeof(Task<>);
     }
 
-    private static async Task InvokeAs(this MethodInfo method, object instance)
+    internal static bool ReturnTypeIsValueTask(Type returnType)
     {
+        return returnType == typeof(ValueTask) ||
+            returnType.IsGenericType &&
+            returnType.GetGenericTypeDefinition() == typeof(ValueTask<>);
+    }
+
+    internal static async Task TryInvoke(this MethodInfo? method, object instance, CancellationToken cancellationToken, PerformanceTimer? performanceTimer = null)
+    {
+        if (method is null) return;
+        var parameters = method.GetParameters().ToList();
+        var arguments = new List<object> { };
+        var errorMsg = $"The '{method.Name}' method in class '{instance.GetType().Name}' may only receive a single '{nameof(CancellationToken)}' parameter";
+        if (parameters.Count > 1)
+        {
+            throw new TestFormatException(errorMsg);
+        }
+        if (parameters.Count == 1)
+        {
+            var paramIsCancellationToken = parameters.Single().ParameterType == typeof(CancellationToken);
+            if (!paramIsCancellationToken)
+            {
+                throw new TestFormatException(errorMsg);
+            }
+            arguments.Add(cancellationToken);
+        }
+
         if (method.IsAsyncMethod())
-            await (Task)method.Invoke(instance, null)!;
-        else method.Invoke(instance, null);
-    }
-
-    private static async Task InvokeAsWithCancellation(this MethodInfo method, object instance, CancellationToken cancellationToken)
-    {
-        var parameters = new object[] { cancellationToken };
-        if (method.IsAsyncMethod()) await (Task)method.Invoke(instance, parameters)!;
-        else method.Invoke(instance, parameters);
-    }
-
-    private static async Task InvokeAsWithTimer(this MethodInfo method, object instance, PerformanceTimer performanceTimer)
-    {
-        if (method.IsAsyncMethod())
         {
-            performanceTimer.StartSailfishMethodExecutionTimer();
-            await (Task)method.Invoke(instance, null)!;
-            performanceTimer.StopSailfishMethodExecutionTimer();
+            if (ReturnTypeIsTask(method.ReturnType))
+            {
+                performanceTimer?.StartSailfishMethodExecutionTimer();
+                await (Task)method.Invoke(instance, [.. arguments])!;
+                performanceTimer?.StopSailfishMethodExecutionTimer();
+            }
+            else if (ReturnTypeIsValueTask(method.ReturnType))
+            {
+                performanceTimer?.StartSailfishMethodExecutionTimer();
+                await (ValueTask)method.Invoke(instance, [.. arguments])!;
+                performanceTimer?.StopSailfishMethodExecutionTimer();
+            }
+            else
+            {
+                throw new TestFormatException($"The async '{method.Name}' method in class '{instance.GetType().Name}' may only return '{nameof(Task)}' or '{nameof(ValueTask)}'");
+            }
         }
         else
         {
-            performanceTimer.StartSailfishMethodExecutionTimer();
-            method.Invoke(instance, null);
-            performanceTimer.StopSailfishMethodExecutionTimer();
+            performanceTimer?.StartSailfishMethodExecutionTimer();
+            method.Invoke(instance, [.. arguments]);
+            performanceTimer?.StopSailfishMethodExecutionTimer();
         }
-    }
-
-    private static async Task InvokeAsWithCancellationWithTimer(this MethodInfo method, object instance, PerformanceTimer performanceTimer, CancellationToken cancellationToken)
-    {
-        var parameters = new object[] { cancellationToken };
-        if (method.IsAsyncMethod())
-        {
-            performanceTimer.StartSailfishMethodExecutionTimer();
-            await (Task)method.Invoke(instance, parameters)!;
-            performanceTimer.StopSailfishMethodExecutionTimer();
-        }
-        else
-        {
-            performanceTimer.StartSailfishMethodExecutionTimer();
-            method.Invoke(instance, parameters);
-            performanceTimer.StopSailfishMethodExecutionTimer();
-        }
-    }
-
-    public static async Task TryInvoke(this MethodInfo? methodInfo, object instance, CancellationToken cancellationToken)
-    {
-        if (methodInfo is null) return;
-        var parameters = methodInfo.GetParameters().ToList();
-        if (methodInfo.IsAsyncMethod())
-            switch (parameters.Count)
-            {
-                case 0:
-                    await methodInfo.InvokeAs(instance);
-                    break;
-
-                case 1:
-                    {
-                        var paramIsCancellationToken = parameters.Single().ParameterType == typeof(CancellationToken);
-                        if (!paramIsCancellationToken) throw new TestFormatException($"Parameter injection is only supported for the ${nameof(CancellationToken)} type");
-                        await methodInfo.InvokeAsWithCancellation(instance, cancellationToken).ConfigureAwait(false);
-                        break;
-                    }
-                default:
-                    throw new TestFormatException($"Parameter injection is only supported for a single parameter which must be a the {nameof(CancellationToken)} type");
-            }
-        else
-            try
-            {
-                if (parameters.Count > 0) throw new SailfishException("Parameter injection is not supported for void methods");
-                await methodInfo.InvokeAs(instance);
-            }
-            catch (TargetInvocationException ex)
-            {
-                throw new SailfishException(ex.InnerException?.Message ?? $"Unhandled unknown exception has occurred: {ex.Message}");
-            }
-    }
-
-    public static async Task TryInvokeWithTimer(this MethodInfo? methodInfo, object instance, PerformanceTimer performanceTimer, CancellationToken cancellationToken)
-    {
-        if (methodInfo is null) return;
-        var parameters = methodInfo.GetParameters().ToList();
-        if (methodInfo.IsAsyncMethod())
-            switch (parameters.Count)
-            {
-                case 0:
-                    await methodInfo.InvokeAsWithTimer(instance, performanceTimer);
-                    break;
-
-                case 1:
-                    {
-                        var paramIsCancellationToken = parameters.Single().ParameterType == typeof(CancellationToken);
-                        if (!paramIsCancellationToken) throw new TestFormatException($"Parameter injection is only supported for the ${nameof(CancellationToken)} type");
-
-                        await methodInfo.InvokeAsWithCancellationWithTimer(instance, performanceTimer, cancellationToken).ConfigureAwait(false);
-                        break;
-                    }
-                default:
-                    throw new TestFormatException($"Parameter injection is only supported for a single parameter which must be a the {nameof(CancellationToken)} type");
-            }
-        else
-            try
-            {
-                if (parameters.Count > 0) throw new SailfishException("Parameter injection is not supported for void methods");
-
-                await methodInfo.InvokeAsWithTimer(instance, performanceTimer);
-            }
-            catch (TargetInvocationException ex)
-            {
-                throw new SailfishException(ex.InnerException?.Message ?? $"Unhandled unknown exception has occurred: {ex.Message}");
-            }
     }
 
     internal static int GetSampleSize(this Type type)
@@ -185,11 +123,13 @@ public static class ReflectionExtensionMethods
             .Disabled;
     }
 
-    public static List<MethodInfo> FindMethodsDecoratedWithAttribute<TAttribute>(this object obj) where TAttribute : Attribute
+    public static List<MethodInfo> FindMethodsDecoratedWithAttribute<TAttribute>(this object obj)
+        where TAttribute : Attribute
     {
         var type = obj.GetType();
 
-        var methods = type.GetMethods(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.DeclaredOnly)
+        var methods = type.GetMethods(
+            BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.DeclaredOnly)
             .Where(method => method.GetCustomAttributes(typeof(TAttribute), true).Length > 0)
             .OrderBy(m => m.Name)
             .ToArray();

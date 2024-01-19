@@ -1,5 +1,7 @@
 using Sailfish.Attributes;
 using System;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace PerformanceTests.ExamplePerformanceTests;
 
@@ -10,5 +12,14 @@ public class ExceptionExample
     public void ThrowException()
     {
         throw new Exception();
+    }
+
+
+    [SailfishMethod]
+    public Task DoesNotThrowException(CancellationToken ct)
+    {
+        // do nothing
+        Console.WriteLine(ct.ToString());
+        return Task.CompletedTask;
     }
 }
