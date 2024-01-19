@@ -62,10 +62,7 @@ internal class CoreInvoker(object instance, MethodInfo method, PerformanceTimer 
 
     public async Task ExecutionMethod(CancellationToken cancellationToken, bool timed = true)
     {
-        if (timed)
-            await mainMethod.TryInvokeWithTimer(instance, testCasePerformanceTimer, cancellationToken).ConfigureAwait(false);
-        else
-            await mainMethod.TryInvoke(instance, cancellationToken).ConfigureAwait(false);
+        await mainMethod.TryInvoke(instance, cancellationToken, timed ? testCasePerformanceTimer : null).ConfigureAwait(false);
     }
 
     public async Task IterationTearDown(CancellationToken cancellationToken)
