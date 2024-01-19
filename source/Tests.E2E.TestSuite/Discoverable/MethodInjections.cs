@@ -1,19 +1,10 @@
-using Sailfish.Attributes;
-using System;
-using System.Threading;
-using System.Threading.Tasks;
+﻿using Sailfish.Attributes;
 
-namespace PerformanceTests.ExamplePerformanceTests;
+namespace Tests.E2E.TestSuite.Discoverable;
 
-[Sailfish(SampleSize = 4, DisableOverheadEstimation = true)]
-public class ExceptionExample
+[Sailfish(SampleSize = 1, NumWarmupIterations = 1, Disabled = Constants.Disabled)]
+internal class MethodInjections
 {
-    [SailfishMethod]
-    public void ThrowException()
-    {
-        throw new Exception();
-    }
-
     [SailfishMethod]
     public Task DoesNotThrowException(CancellationToken ct)
     {
@@ -37,12 +28,13 @@ public class ExceptionExample
     [SailfishMethod]
     public async ValueTask FinallyDoesNotThrowException(CancellationToken ct)
     {
-        Console.WriteLine(ct.ToString());
+        await ValueTask.CompletedTask;
     }
 
     [SailfishMethod]
     public async ValueTask FinallyDoesNotThrowException()
     {
+        await ValueTask.CompletedTask.ConfigureAwait(false);
     }
 
     [SailfishMethod]
