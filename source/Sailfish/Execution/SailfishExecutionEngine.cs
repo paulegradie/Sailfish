@@ -177,7 +177,7 @@ internal class SailfishExecutionEngine(
                     continue;
                 }
 
-                var executionResult = await IterateOverVariableCombos(testCase, cancellationToken);
+                var executionResult = await IterateOverVariableCombos(testCase, testCaseGroup, cancellationToken);
 
                 if (!executionResult.IsSuccess) return [executionResult];
 
@@ -244,7 +244,7 @@ internal class SailfishExecutionEngine(
         return new List<TestCaseExecutionResult> { new(ex) };
     }
 
-    private async Task<TestCaseExecutionResult> IterateOverVariableCombos(TestInstanceContainer testInstanceContainer, CancellationToken cancellationToken = default)
+    private async Task<TestCaseExecutionResult> IterateOverVariableCombos(TestInstanceContainer testInstanceContainer, IEnumerable<dynamic> testCaseGroup, CancellationToken cancellationToken = default)
     {
         try
         {
@@ -260,6 +260,7 @@ internal class SailfishExecutionEngine(
         catch (Exception exception)
         {
             if (exception is TestDisabledException) throw;
+            await mediator.Publish(new ExceptionNotification(testInstanceContainer, testCaseGroup), cancellationToken);
             return new TestCaseExecutionResult(testInstanceContainer, exception.InnerException ?? exception);
         }
     }

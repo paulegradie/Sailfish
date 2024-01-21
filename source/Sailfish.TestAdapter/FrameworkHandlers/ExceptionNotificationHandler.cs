@@ -1,5 +1,6 @@
 ﻿using MediatR;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel;
+using Perfolizer.Mathematics.SignificanceTesting;
 using Sailfish.Contracts.Private.ExecutionCallbackHandlers;
 using Sailfish.TestAdapter.Execution;
 using System;
@@ -8,6 +9,7 @@ using System.Threading;
 using System.Threading.Tasks;
 
 namespace Sailfish.TestAdapter.FrameworkHandlers;
+
 internal class ExceptionNotificationHandler(IAdapterConsoleWriter consoleWriter) : INotificationHandler<ExceptionNotification>
 {
     private readonly IAdapterConsoleWriter consoleWriter = consoleWriter;
@@ -24,6 +26,7 @@ internal class ExceptionNotificationHandler(IAdapterConsoleWriter consoleWriter)
         {
             var currentTestCase = notification.TestInstanceContainer.GetTestCaseFromTestCaseGroupMatchingCurrentContainer(notification.TestCaseGroup.Cast<TestCase>());
             consoleWriter.RecordEnd(currentTestCase, TestOutcome.Failed);
+            consoleWriter.RecordResult(new TestResult(currentTestCase));
         }
     }
 }

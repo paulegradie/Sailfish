@@ -20,26 +20,18 @@ internal interface ITestAdapterExecutionEngine
         CancellationToken cancellationToken);
 }
 
-internal class TestAdapterExecutionEngine : ITestAdapterExecutionEngine
+internal class TestAdapterExecutionEngine(
+    ITestInstanceContainerCreator testInstanceContainerCreator,
+    IClassExecutionSummaryCompiler classExecutionSummaryCompiler,
+    ISailfishExecutionEngine engine,
+    IAdapterConsoleWriter consoleWriter
+    ) : ITestAdapterExecutionEngine
 {
     private const string MemoryCacheName = "GlobalStateMemoryCache";
-    private readonly IClassExecutionSummaryCompiler classExecutionSummaryCompiler;
-    private readonly IAdapterConsoleWriter consoleWriter;
-    private readonly ISailfishExecutionEngine engine;
-    private readonly ITestInstanceContainerCreator testInstanceContainerCreator;
-
-    public TestAdapterExecutionEngine(
-        ITestInstanceContainerCreator testInstanceContainerCreator,
-        IClassExecutionSummaryCompiler classExecutionSummaryCompiler,
-        ISailfishExecutionEngine engine,
-        IAdapterConsoleWriter consoleWriter
-    )
-    {
-        this.testInstanceContainerCreator = testInstanceContainerCreator;
-        this.classExecutionSummaryCompiler = classExecutionSummaryCompiler;
-        this.engine = engine;
-        this.consoleWriter = consoleWriter;
-    }
+    private readonly IClassExecutionSummaryCompiler classExecutionSummaryCompiler = classExecutionSummaryCompiler;
+    private readonly IAdapterConsoleWriter consoleWriter = consoleWriter;
+    private readonly ISailfishExecutionEngine engine = engine;
+    private readonly ITestInstanceContainerCreator testInstanceContainerCreator = testInstanceContainerCreator;
 
     public async Task<List<IClassExecutionSummary>> Execute(List<TestCase> testCases, CancellationToken cancellationToken)
     {

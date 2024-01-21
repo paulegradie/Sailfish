@@ -15,6 +15,7 @@ using System.Threading;
 using System.Threading.Tasks;
 
 namespace Sailfish.TestAdapter.FrameworkHandlers;
+
 internal class ExecutionCompletedNotificationHandler(IClassExecutionSummaryCompiler classExecutionSummaryCompiler, IAdapterConsoleWriter consoleWriter, IRunSettings runSettings, IMediator mediator, IAdapterSailDiff sailDiff) : INotificationHandler<ExecutionCompletedNotification>
 {
     private readonly IClassExecutionSummaryCompiler classExecutionSummaryCompiler = classExecutionSummaryCompiler;
@@ -54,7 +55,7 @@ internal class ExecutionCompletedNotificationHandler(IClassExecutionSummaryCompi
         }
         else
         {
-            HandleFailureTestCase(
+            HandleFailureTestCase( // TODO: Is this used anymore?
                 notification.TestCaseExecutionResult,
                 currentTestCase,
                 new TestClassResultGroup(
@@ -98,7 +99,6 @@ internal class ExecutionCompletedNotificationHandler(IClassExecutionSummaryCompi
         var preloadedLastRunsIfAvailable = await GetLastRun(cancellationToken);
         if (preloadedLastRunsIfAvailable.Count > 0)
         {
-
             // preloadedLastRun represents an entire tracking file
             foreach (var preloadedLastRun in preloadedLastRunsIfAvailable)
             {
@@ -117,7 +117,6 @@ internal class ExecutionCompletedNotificationHandler(IClassExecutionSummaryCompi
                 formattedExecutionSummary += "\n" + testCaseResults;
                 break;
             }
-
         }
         testResult.Messages.Add(new TestResultMessage(TestResultMessage.StandardOutCategory, formattedExecutionSummary));
 

@@ -1,4 +1,5 @@
 using Sailfish.Attributes;
+using System;
 using System.Threading;
 
 namespace PerformanceTests.ExamplePerformanceTests;
@@ -8,21 +9,21 @@ namespace PerformanceTests.ExamplePerformanceTests;
 [Sailfish(SampleSize = 1, DisableOverheadEstimation = true, NumWarmupIterations = 0)]
 public class OrderingExample
 {
-    [SailfishMethod(Order = 3)]
+    [SailfishMethod(Order = 2)]
     public void Second()
     {
-        Thread.Sleep(50);
+        throw new Exception();
     }
 
-    [SailfishMethod(Order = 2)]
+    [SailfishMethod(Order = 1)]
     public void First()
     {
-        Thread.Sleep(50);
+        Thread.Sleep(8000);
     }
 
-    [SailfishMethod]
+    [SailfishMethod(Order = 3)]
     public void Last()
     {
-        Thread.Sleep(50);
+        Thread.Sleep(8000);
     }
 }
