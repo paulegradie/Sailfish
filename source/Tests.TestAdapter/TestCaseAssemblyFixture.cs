@@ -28,8 +28,8 @@ public class TestCaseAssemblyFixture
         var sourceCache = DiscoveryAnalysisMethods.CompilePreRenderedSourceMap(
                 new[] { testResourceRelativePath },
                 new[] { typeof(SimplePerfTest) },
-                nameof(SailfishAttribute).Replace("Attribute", ""),
-                nameof(SailfishMethodAttribute).Replace("Attribute", ""))
+                nameof(SailfishAttribute).Replace("Attribute", string.Empty),
+                nameof(SailfishMethodAttribute).Replace("Attribute", string.Empty))
             .ToList();
 
         var classMetaData = sourceCache.Single();
