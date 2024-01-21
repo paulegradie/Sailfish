@@ -17,7 +17,7 @@ internal class ExecutionDisabledNotificationHandler(IAdapterConsoleWriter consol
     {
         await Task.CompletedTask;
         if (notification.TestCaseGroup is null) return; // no idea why this would happen, but exceptions are not the way
-        if (notification.TestInstanceContainer is null) // then we've disabled the class - return all the results for the group
+        if (notification.TestInstanceContainer is null || notification.DisableTheGroup) // then we've disabled the class - return all the results for the group
         {
             foreach (var testCase in notification.TestCaseGroup) CreateDisabledResult(testCase);
         }

@@ -129,7 +129,7 @@ internal class SailfishExecutionEngine(
 
         if (testProvider.IsDisabled())
         {
-            await mediator.Publish(new ExecutionDisabledNotification(testCaseEnumerator.Current, testCaseGroup), cancellationToken);
+            await mediator.Publish(new ExecutionDisabledNotification(testCaseEnumerator.Current, testCaseGroup, true), cancellationToken);   
             testCaseEnumerator.Dispose();
             return results;
         }
@@ -170,7 +170,7 @@ internal class SailfishExecutionEngine(
 
                 if (testCase.Disabled)
                 {
-                    await mediator.Publish(new ExecutionDisabledNotification(testCase, testCaseGroup), cancellationToken);
+                    await mediator.Publish(new ExecutionDisabledNotification(testCase, testCaseGroup, false), cancellationToken);
 
                     currentPropertyTensorIndex += 1;
                     await TryMoveNextOrThrow(testCaseEnumerator, testCaseGroup, cancellationToken);
