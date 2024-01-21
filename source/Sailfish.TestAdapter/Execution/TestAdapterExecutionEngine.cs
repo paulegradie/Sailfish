@@ -17,42 +17,37 @@ internal interface ITestAdapterExecutionEngine
 {
     Task<List<IClassExecutionSummary>> Execute(
         List<TestCase> testCases,
-        TrackingFileDataList preloadedLastRunIfAvailable,
         CancellationToken cancellationToken);
 }
 
 internal class TestAdapterExecutionEngine : ITestAdapterExecutionEngine
 {
     private const string MemoryCacheName = "GlobalStateMemoryCache";
-    private readonly IActivatorCallbacks activatorCallbacks;
     private readonly IClassExecutionSummaryCompiler classExecutionSummaryCompiler;
     private readonly IAdapterConsoleWriter consoleWriter;
     private readonly ISailfishExecutionEngine engine;
     private readonly ITestInstanceContainerCreator testInstanceContainerCreator;
 
     public TestAdapterExecutionEngine(
-        IActivatorCallbacks activatorCallbacks,
         ITestInstanceContainerCreator testInstanceContainerCreator,
         IClassExecutionSummaryCompiler classExecutionSummaryCompiler,
         ISailfishExecutionEngine engine,
         IAdapterConsoleWriter consoleWriter
     )
     {
-        this.activatorCallbacks = activatorCallbacks;
         this.testInstanceContainerCreator = testInstanceContainerCreator;
         this.classExecutionSummaryCompiler = classExecutionSummaryCompiler;
         this.engine = engine;
         this.consoleWriter = consoleWriter;
     }
 
-    public async Task<List<IClassExecutionSummary>> Execute(List<TestCase> testCases, TrackingFileDataList preloadedLastRunIfAvailable, CancellationToken cancellationToken)
+    public async Task<List<IClassExecutionSummary>> Execute(List<TestCase> testCases, CancellationToken cancellationToken)
     {
         var rawExecutionResults = new List<(string, TestClassResultGroup)>();
         var testCaseGroups = testCases.GroupBy(testCase => testCase.GetPropertyHelper(SailfishManagedProperty.SailfishTypeProperty));
 
         foreach (var unsortedTestCaseGroup in testCaseGroups)
         {
-            var groupKey = unsortedTestCaseGroup.Key;
             if (GetTypeTypeForGroup(unsortedTestCaseGroup, out var testType)) continue;
             if (testType is null) continue;
 
@@ -65,7 +60,7 @@ internal class TestAdapterExecutionEngine : ITestAdapterExecutionEngine
 
             var totalTestProviderCount = providerForCurrentTestCases.Count - 1;
 
-            // new up / reset a memory cache to hold class property values when transferring them between instances
+            // reset a memory cache to hold class property values when transferring them between instances
             var memoryCache = new MemoryCache(MemoryCacheName);
 
             var groupResults = new List<TestCaseExecutionResult>();
@@ -79,10 +74,7 @@ internal class TestAdapterExecutionEngine : ITestAdapterExecutionEngine
                     testProvider,
                     memoryCache,
                     providerPropertiesCacheKey,
-                    activatorCallbacks.PreBenchmarkResultCallback(unsortedTestCaseGroup),
-                    activatorCallbacks.PostBenchmarkResultCallback(unsortedTestCaseGroup, preloadedLastRunIfAvailable, cancellationToken),
-                    activatorCallbacks.BenchmarkExceptionCallback(unsortedTestCaseGroup),
-                    activatorCallbacks.BenchmarkDisabledCallback(unsortedTestCaseGroup),
+                    unsortedTestCaseGroup,
                     cancellationToken);
                 groupResults.AddRange(results);
 
@@ -90,7 +82,7 @@ internal class TestAdapterExecutionEngine : ITestAdapterExecutionEngine
                 providerForCurrentTestCases[i] = null!;
             }
 
-            rawExecutionResults.Add((groupKey, new TestClassResultGroup(testType, groupResults)));
+            rawExecutionResults.Add((unsortedTestCaseGroup.Key, new TestClassResultGroup(testType, groupResults)));
         }
 
         return classExecutionSummaryCompiler.CompileToSummaries(rawExecutionResults.Select(x => x.Item2)).ToList();

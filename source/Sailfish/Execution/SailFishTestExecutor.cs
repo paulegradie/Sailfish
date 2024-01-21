@@ -89,7 +89,7 @@ internal class SailFishTestExecutor(
                 testProvider,
                 memoryCache,
                 providerPropertiesCacheKey,
-                cancellationToken: cancellationToken);
+                cancellationToken);
             results.AddRange(executionResults);
             testProviderIndex += 1;
         }
