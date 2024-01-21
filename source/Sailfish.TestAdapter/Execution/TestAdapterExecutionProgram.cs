@@ -54,19 +54,7 @@ internal class TestAdapterExecutionProgram : ITestAdapterExecutionProgram
             return;
         }
 
-        var preloadedLastRunsIfAvailable = new TrackingFileDataList();
-        if (!runSettings.DisableAnalysisGlobally && (runSettings.RunScaleFish || runSettings.RunSailDiff))
-            try
-            {
-                var response = await mediator.Send(new GetAllTrackingDataOrderedChronologicallyRequest(), cancellationToken);
-                preloadedLastRunsIfAvailable.AddRange(response.TrackingData);
-            }
-            catch (Exception ex)
-            {
-                consoleWriter.WriteString(ex.Message);
-            }
-
-        var executionSummaries = await testAdapterExecutionEngine.Execute(testCases, preloadedLastRunsIfAvailable, cancellationToken);
+        var executionSummaries = await testAdapterExecutionEngine.Execute(testCases, cancellationToken);
 
         // Something weird is going on here when there is an exception - all of the testcases runs get logged into the test output window for the errored case
         consoleWriter.WriteToConsole(executionSummaries, []);

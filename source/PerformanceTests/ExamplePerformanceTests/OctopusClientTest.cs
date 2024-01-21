@@ -12,7 +12,7 @@ namespace PerformanceTests.ExamplePerformanceTests;
 /// <summary>
 ///     If you'd like to run a test against server running in your ide - use this format
 /// </summary>
-[Sailfish(SampleSize = 3)]
+[Sailfish(SampleSize = 3, Disabled = true)]
 public class ExampleUsingAClient
 {
     public IOctopusAsyncClient Client { get; set; } = null!;

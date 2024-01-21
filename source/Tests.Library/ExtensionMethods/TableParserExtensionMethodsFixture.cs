@@ -35,7 +35,14 @@ public class TableParserExtensionMethodsFixture
 
         var colSuffixes = new[]
         {
-            "", "ms", "ms", "ms", "ms", "", "", ""
+            string.Empty,
+            "ms",
+            "ms",
+            "ms",
+            "ms",
+            string.Empty,
+            string.Empty,
+            string.Empty
         };
 
         var preprocessor = new TestPreprocessor(new SailfishOutlierDetector());

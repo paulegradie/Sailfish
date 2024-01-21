@@ -72,7 +72,17 @@ internal class AdapterConsoleWriter : IAdapterConsoleWriter
         if (summaryResults.Count > 1 || summaryResults.Single().CompiledTestCaseResults.Count() > 1)
             ideOutputContent = CreateFullTable(summaryResults);
         else
-            ideOutputContent = CreateIdeTestOutputWindowContent(summaryResults.Single().CompiledTestCaseResults.Single());
+        {
+            var compiledResults = summaryResults.SingleOrDefault()?.CompiledTestCaseResults.SingleOrDefault();
+            if (compiledResults != null)
+            {
+                ideOutputContent = CreateIdeTestOutputWindowContent(compiledResults);
+            }
+            else
+            {
+                ideOutputContent = string.Empty;
+            }
+        }
 
         WriteMessage(ideOutputContent, TestMessageLevel.Informational);
         consoleLogger.Log(LogLevel.Information, "{MarkdownTable}", ideOutputContent);

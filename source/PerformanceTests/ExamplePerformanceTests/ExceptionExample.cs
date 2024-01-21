@@ -37,12 +37,14 @@ public class ExceptionExample
     [SailfishMethod]
     public async ValueTask FinallyDoesNotThrowException(CancellationToken ct)
     {
+        await Task.Yield();
         Console.WriteLine(ct.ToString());
     }
 
     [SailfishMethod]
-    public async ValueTask FinallyDoesNotThrowException()
+    public async ValueTask AlsoDoesNotThrowExceptionWithNoCt()
     {
+        await Task.Yield();
     }
 
     [SailfishMethod]

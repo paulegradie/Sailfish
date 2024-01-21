@@ -1,11 +1,14 @@
 using MediatR;
 using Sailfish.Attributes;
+using Sailfish.Contracts.Private.ExecutionCallbackHandlers;
 using Sailfish.Contracts.Public.Models;
 using Sailfish.Contracts.Public.Notifications;
 using Sailfish.Contracts.Public.Serialization.Tracking.V1;
 using Sailfish.Exceptions;
+using Sailfish.Extensions.Methods;
 using Sailfish.Logging;
 using Sailfish.Presentation;
+using Sailfish.Presentation.Console;
 using Sailfish.Utils;
 using System;
 using System.Collections.Generic;
@@ -26,15 +29,23 @@ internal interface ISailfishExecutionEngine
         TestInstanceContainerProvider testProvider,
         MemoryCache memoryCache,
         string providerPropertiesCacheKey,
-        Action<TestInstanceContainer>? preTestCallback = null,
-        Action<TestCaseExecutionResult, TestInstanceContainer>? postTestCallback = null,
-        Action<TestInstanceContainer?>? exceptionCallback = null,
-        Action<TestInstanceContainer?>? testDisabledCallback = null,
         CancellationToken cancellationToken = default);
+
+    Task<List<TestCaseExecutionResult>> ActivateContainer(
+        int testProviderIndex,
+        int totalTestProviderCount,
+        TestInstanceContainerProvider testProvider,
+        MemoryCache memoryCache,
+        string providerPropertiesCacheKey,
+        IEnumerable<dynamic> testCaseGroup,
+        CancellationToken cancellationToken = default);
+
+
 }
 
 internal class SailfishExecutionEngine(
     ILogger logger,
+    IConsoleWriter consoleWriter,
     ITestCaseIterator testCaseIterator,
     ITestCaseCountPrinter testCaseCountPrinter,
     IMediator mediator,
@@ -43,10 +54,27 @@ internal class SailfishExecutionEngine(
 {
     private readonly IClassExecutionSummaryCompiler classExecutionSummaryCompiler = classExecutionSummaryCompiler;
     private readonly ILogger logger = logger;
+    private readonly IConsoleWriter consoleWriter = consoleWriter;
     private readonly IMediator mediator = mediator;
     private readonly IRunSettings runSettings = runSettings;
     private readonly ITestCaseCountPrinter testCaseCountPrinter = testCaseCountPrinter;
     private readonly ITestCaseIterator testCaseIterator = testCaseIterator;
+
+    public async Task<List<TestCaseExecutionResult>> ActivateContainer(
+        [Range(1, int.MaxValue)] int testProviderIndex,
+        [Range(1, int.MaxValue)] int totalTestProviderCount,
+        TestInstanceContainerProvider testProvider,
+        MemoryCache memoryCache,
+        string providerPropertiesCacheKey,
+        CancellationToken cancellationToken = default) 
+        => await ActivateContainer(
+            testProviderIndex, 
+            totalTestProviderCount, 
+            testProvider, 
+            memoryCache, 
+            providerPropertiesCacheKey, 
+            new List<object>(), 
+            cancellationToken);
 
     /// <summary>
     ///     This method is the main entry point for execution in both the main library, as well as the test adapter
@@ -71,10 +99,7 @@ internal class SailfishExecutionEngine(
         TestInstanceContainerProvider testProvider,
         MemoryCache memoryCache,
         string providerPropertiesCacheKey,
-        Action<TestInstanceContainer>? preTestCallback = null,
-        Action<TestCaseExecutionResult, TestInstanceContainer>? postTestCallback = null,
-        Action<TestInstanceContainer?>? exceptionCallback = null,
-        Action<TestInstanceContainer?>? testDisabledCallback = null,
+        IEnumerable<dynamic> testCaseGroup,
         CancellationToken cancellationToken = default)
     {
         if (testProviderIndex > totalTestProviderCount)
@@ -90,23 +115,21 @@ internal class SailfishExecutionEngine(
         }
         catch (Exception ex)
         {
-            exceptionCallback?.Invoke(testCaseEnumerator.Current);
-
+            await mediator.Publish(new ExceptionNotification(testCaseEnumerator.Current, testCaseGroup), cancellationToken);
             await DisposeOfTestInstance(testCaseEnumerator.Current);
             testCaseEnumerator.Dispose();
             var msg = $"Error resolving test from {testProvider.Test.FullName}";
             logger.Log(LogLevel.Fatal, ex, msg);
-            if (exceptionCallback is null) throw;
 
             var testCaseEnumerationException = new TestCaseEnumerationException(ex, $"Failed to create test cases for {testProvider.Test.FullName}");
-            return new List<TestCaseExecutionResult> { new(testCaseEnumerationException) };
+            return [new(testCaseEnumerationException)];
         }
 
         var results = new List<TestCaseExecutionResult>();
 
-        if (testProvider.Test.GetCustomAttributes<SailfishAttribute>().Single().Disabled)
+        if (testProvider.IsDisabled())
         {
-            testDisabledCallback?.Invoke(null);
+            await mediator.Publish(new ExecutionDisabledNotification(testCaseEnumerator.Current, testCaseGroup, true), cancellationToken);   
             testCaseEnumerator.Dispose();
             return results;
         }
@@ -122,7 +145,7 @@ internal class SailfishExecutionEngine(
                     savedState?.ApplyPropertiesAndFieldsTo(testCase.Instance);
                 }
 
-                preTestCallback?.Invoke(testCase);
+                await mediator.Publish(new ExecutionStartingNotification(testCase, testCaseGroup), cancellationToken);
                 testCaseCountPrinter.PrintCaseUpdate(testCase.TestCaseId.DisplayName);
 
                 if (ShouldCallGlobalSetup(testProviderIndex, currentPropertyTensorIndex))
@@ -147,15 +170,16 @@ internal class SailfishExecutionEngine(
 
                 if (testCase.Disabled)
                 {
-                    testDisabledCallback?.Invoke(testCase);
+                    await mediator.Publish(new ExecutionDisabledNotification(testCase, testCaseGroup, false), cancellationToken);
+
                     currentPropertyTensorIndex += 1;
-                    await TryMoveNextOrThrow(exceptionCallback, testCaseEnumerator);
+                    await TryMoveNextOrThrow(testCaseEnumerator, testCaseGroup, cancellationToken);
                     continue;
                 }
 
-                var executionResult = await IterateOverVariableCombos(testCase, cancellationToken);
+                var executionResult = await IterateOverVariableCombos(testCase, testCaseGroup, cancellationToken);
 
-                if (!executionResult.IsSuccess) return new List<TestCaseExecutionResult> { executionResult };
+                if (!executionResult.IsSuccess) return [executionResult];
 
                 try
                 {
@@ -177,7 +201,8 @@ internal class SailfishExecutionEngine(
                         return CatchAndReturn(ex);
                     }
 
-                postTestCallback?.Invoke(executionResult, testCase);
+                await mediator.Publish(new ExecutionCompletedNotification(executionResult, testCase, testCaseGroup), cancellationToken);
+
                 results.Add(executionResult);
 
                 if (ShouldDisposeOfInstance(currentPropertyTensorIndex, totalPropertyTensorElements)) await DisposeOfTestInstance(testCase);
@@ -189,14 +214,14 @@ internal class SailfishExecutionEngine(
                 var errorResult = new TestCaseExecutionResult(testCase, ex);
                 results.Add(errorResult);
             }
-        } while (await TryMoveNextOrThrow(exceptionCallback, testCaseEnumerator));
+        } while (await TryMoveNextOrThrow(testCaseEnumerator, testCaseGroup, cancellationToken));
 
         testCaseEnumerator.Dispose();
 
         return results;
     }
 
-    private static async Task<bool> TryMoveNextOrThrow(Action<TestInstanceContainer?>? exceptionCallback, IEnumerator<TestInstanceContainer> instanceContainerEnumerator)
+    private async Task<bool> TryMoveNextOrThrow(IEnumerator<TestInstanceContainer> instanceContainerEnumerator, IEnumerable<dynamic> testCaseGroup, CancellationToken ct)
     {
         bool continueIterating;
         try
@@ -205,17 +230,10 @@ internal class SailfishExecutionEngine(
         }
         catch (Exception ex)
         {
-            if (exceptionCallback is not null)
-            {
-                exceptionCallback.Invoke(instanceContainerEnumerator.Current);
-                await DisposeOfTestInstance(instanceContainerEnumerator.Current);
-                continueIterating = true;
-            }
-            else
-            {
-                await DisposeOfTestInstance(instanceContainerEnumerator.Current);
-                throw new SailfishIterationException(ex.Message);
-            }
+            await mediator.Publish(new ExceptionNotification(instanceContainerEnumerator.Current, testCaseGroup), ct);
+            await DisposeOfTestInstance(instanceContainerEnumerator.Current);
+            continueIterating = true;
+            consoleWriter.WriteString(ex.Message);
         }
 
         return continueIterating;
@@ -226,7 +244,7 @@ internal class SailfishExecutionEngine(
         return new List<TestCaseExecutionResult> { new(ex) };
     }
 
-    private async Task<TestCaseExecutionResult> IterateOverVariableCombos(TestInstanceContainer testInstanceContainer, CancellationToken cancellationToken = default)
+    private async Task<TestCaseExecutionResult> IterateOverVariableCombos(TestInstanceContainer testInstanceContainer, IEnumerable<dynamic> testCaseGroup, CancellationToken cancellationToken = default)
     {
         try
         {
@@ -242,6 +260,7 @@ internal class SailfishExecutionEngine(
         catch (Exception exception)
         {
             if (exception is TestDisabledException) throw;
+            await mediator.Publish(new ExceptionNotification(testInstanceContainer, testCaseGroup), cancellationToken);
             return new TestCaseExecutionResult(testInstanceContainer, exception.InnerException ?? exception);
         }
     }

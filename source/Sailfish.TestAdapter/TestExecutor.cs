@@ -29,8 +29,7 @@ public class TestExecutor : ITestExecutor
     public void RunTests(IEnumerable<TestCase>? testCases, IRunContext? runContext, IFrameworkHandle? frameworkHandle)
     {
         Debug.Assert(frameworkHandle is not null);
-        var tests = testCases?.ToList();
-        if (tests is null) throw new Exception("Tests was null in the test case list!");
+        var tests = (testCases?.ToList()) ?? throw new Exception("Tests was null in the test case list!");
         if (runContext is null || frameworkHandle is null) throw new Exception("Wow more nulls");
 
         ExecuteTests(tests, frameworkHandle);
