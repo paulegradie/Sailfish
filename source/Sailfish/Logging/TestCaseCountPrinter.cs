@@ -68,7 +68,7 @@ internal class TestCaseCountPrinter(ILogger logger) : ITestCaseCountPrinter
 
     public void PrintCaseUpdate(string displayName)
     {
-        WriteUpdate("     --- test case {CurrentTestCase} of {TotalTestCases}: {TestCase}", currentTestCase, testCaseTotal, displayName);
+        WriteUpdate("    --- test case {CurrentTestCase} of {TotalTestCases}: {TestCase}", currentTestCase, testCaseTotal, displayName);
         IncrementCase();
     }
 
