@@ -2,6 +2,7 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
+using Sailfish.Logging;
 
 namespace Sailfish.Execution;
 
@@ -10,7 +11,7 @@ internal interface ITestCaseIterator
     Task<TestCaseExecutionResult> Iterate(TestInstanceContainer testInstanceContainer, bool DisableOverheadEstimation, CancellationToken cancellationToken);
 }
 
-internal class TestCaseIterator(IRunSettings runSettings) : ITestCaseIterator
+internal class TestCaseIterator(IRunSettings runSettings, ILogger logger) : ITestCaseIterator
 {
     private readonly IRunSettings runSettings = runSettings;
 
@@ -27,6 +28,8 @@ internal class TestCaseIterator(IRunSettings runSettings) : ITestCaseIterator
         testInstanceContainer.CoreInvoker.SetTestCaseStart();
         for (var i = 0; i < iterations; i++)
         {
+            logger.Log(LogLevel.Information, "      ---- iteration {CurrentIteration} of {TotalIterations}", i, iterations);
+            
             cancellationToken.ThrowIfCancellationRequested();
 
             try
@@ -66,10 +69,12 @@ internal class TestCaseIterator(IRunSettings runSettings) : ITestCaseIterator
         return new TestCaseExecutionResult(testInstanceContainer);
     }
 
-    private static async Task<TestCaseExecutionResult> WarmupIterations(TestInstanceContainer testInstanceContainer, CancellationToken cancellationToken)
+    private async Task<TestCaseExecutionResult> WarmupIterations(TestInstanceContainer testInstanceContainer, CancellationToken cancellationToken)
     {
         for (var i = 0; i < testInstanceContainer.NumWarmupIterations; i++)
         {
+            logger.Log(LogLevel.Information, "      ---- warmup iteration {CurrentIteration} of {TotalIterations}", i, testInstanceContainer.NumWarmupIterations);
+
             cancellationToken.ThrowIfCancellationRequested();
 
             try
