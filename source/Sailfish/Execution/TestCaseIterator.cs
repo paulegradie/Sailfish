@@ -112,8 +112,9 @@ internal class TestCaseIterator(IRunSettings runSettings, ILogger logger) : ITes
         return new TestCaseExecutionResult(testInstanceContainer);
     }
 
-    private static TestCaseExecutionResult CatchAndReturn(TestInstanceContainer testProvider, Exception ex)
+    private TestCaseExecutionResult CatchAndReturn(TestInstanceContainer testProvider, Exception ex)
     {
+        logger.Log(LogLevel.Error, ex, "An exception occured during test execution");
         return new TestCaseExecutionResult(testProvider, ex);
     }
 }
