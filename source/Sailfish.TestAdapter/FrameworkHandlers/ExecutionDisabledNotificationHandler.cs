@@ -1,6 +1,6 @@
 ﻿using MediatR;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel;
-using Sailfish.Contracts.Private.ExecutionCallbackHandlers;
+using Sailfish.Contracts.Private.ExecutionCallbackNotifications;
 using Sailfish.TestAdapter.Execution;
 using System;
 using System.Linq;

@@ -2,10 +2,8 @@
 using Microsoft.VisualStudio.TestPlatform.ObjectModel;
 using Sailfish.Contracts.Public.Models;
 using Sailfish.Contracts.Public.Notifications;
-using Sailfish.Contracts.Public.Requests;
-using Sailfish.Extensions.Types;
+using Sailfish.Logging;
 using Sailfish.Presentation;
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -26,6 +24,7 @@ internal class TestAdapterExecutionProgram : ITestAdapterExecutionProgram
     private readonly IRunSettings runSettings;
     private readonly IAdapterSailDiff sailDiff;
     private readonly IAdapterScaleFish scaleFish;
+    private readonly ITestCaseCountPrinter testCaseCountPrinter;
     private readonly ITestAdapterExecutionEngine testAdapterExecutionEngine;
 
     public TestAdapterExecutionProgram(
@@ -35,7 +34,8 @@ internal class TestAdapterExecutionProgram : ITestAdapterExecutionProgram
         IMediator mediator,
         IAdapterConsoleWriter consoleWriter,
         IAdapterSailDiff sailDiff,
-        IAdapterScaleFish scaleFish)
+        IAdapterScaleFish scaleFish,
+        ITestCaseCountPrinter testCaseCountPrinter)
     {
         this.runSettings = runSettings;
         this.testAdapterExecutionEngine = testAdapterExecutionEngine;
@@ -44,6 +44,7 @@ internal class TestAdapterExecutionProgram : ITestAdapterExecutionProgram
         this.consoleWriter = consoleWriter;
         this.sailDiff = sailDiff;
         this.scaleFish = scaleFish;
+        this.testCaseCountPrinter = testCaseCountPrinter;
     }
 
     public async Task Run(List<TestCase> testCases, CancellationToken cancellationToken)
@@ -54,6 +55,9 @@ internal class TestAdapterExecutionProgram : ITestAdapterExecutionProgram
             return;
         }
 
+        testCaseCountPrinter.SetTestCaseTotal(testCases.Count);
+        testCaseCountPrinter.PrintDiscoveredTotal();
+        
         var executionSummaries = await testAdapterExecutionEngine.Execute(testCases, cancellationToken);
 
         // Something weird is going on here when there is an exception - all of the testcases runs get logged into the test output window for the errored case

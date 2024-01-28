@@ -1,11 +1,8 @@
 ﻿using Microsoft.VisualStudio.TestPlatform.ObjectModel;
 using Sailfish.Execution;
 using Sailfish.TestAdapter.TestProperties;
-using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Sailfish.TestAdapter.FrameworkHandlers;
 internal static class TestInstanceContainerExtensionMethods

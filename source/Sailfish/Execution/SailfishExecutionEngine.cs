@@ -1,6 +1,6 @@
 using MediatR;
 using Sailfish.Attributes;
-using Sailfish.Contracts.Private.ExecutionCallbackHandlers;
+using Sailfish.Contracts.Private.ExecutionCallbackNotifications;
 using Sailfish.Contracts.Public.Models;
 using Sailfish.Contracts.Public.Notifications;
 using Sailfish.Contracts.Public.Serialization.Tracking.V1;
@@ -66,14 +66,14 @@ internal class SailfishExecutionEngine(
         TestInstanceContainerProvider testProvider,
         MemoryCache memoryCache,
         string providerPropertiesCacheKey,
-        CancellationToken cancellationToken = default) 
+        CancellationToken cancellationToken = default)
         => await ActivateContainer(
-            testProviderIndex, 
-            totalTestProviderCount, 
-            testProvider, 
-            memoryCache, 
-            providerPropertiesCacheKey, 
-            new List<object>(), 
+            testProviderIndex,
+            totalTestProviderCount,
+            testProvider,
+            memoryCache,
+            providerPropertiesCacheKey,
+            new List<object>(),
             cancellationToken);
 
     /// <summary>
@@ -129,7 +129,7 @@ internal class SailfishExecutionEngine(
 
         if (testProvider.IsDisabled())
         {
-            await mediator.Publish(new ExecutionDisabledNotification(testCaseEnumerator.Current, testCaseGroup, true), cancellationToken);   
+            await mediator.Publish(new ExecutionDisabledNotification(testCaseEnumerator.Current, testCaseGroup, true), cancellationToken);
             testCaseEnumerator.Dispose();
             return results;
         }
@@ -149,6 +149,7 @@ internal class SailfishExecutionEngine(
                 testCaseCountPrinter.PrintCaseUpdate(testCase.TestCaseId.DisplayName);
 
                 if (ShouldCallGlobalSetup(testProviderIndex, currentPropertyTensorIndex))
+                {
                     try
                     {
                         await testCase.CoreInvoker.GlobalSetup(cancellationToken);
@@ -156,16 +157,8 @@ internal class SailfishExecutionEngine(
                     }
                     catch (Exception ex)
                     {
-                        return CatchAndReturn(ex);
+                        return await CatchAndReturn(ex, testCase, testCaseGroup, cancellationToken);
                     }
-
-                try
-                {
-                    await testCase.CoreInvoker.MethodSetup(cancellationToken);
-                }
-                catch (Exception ex)
-                {
-                    return CatchAndReturn(ex);
                 }
 
                 if (testCase.Disabled)
@@ -177,8 +170,19 @@ internal class SailfishExecutionEngine(
                     continue;
                 }
 
+                try
+                {
+                    await testCase.CoreInvoker.MethodSetup(cancellationToken);
+                }
+                catch (Exception ex)
+                {
+                    return await CatchAndReturn(ex, testCase, testCaseGroup, cancellationToken);
+                }
+
+
                 var executionResult = await IterateOverVariableCombos(testCase, testCaseGroup, cancellationToken);
 
+                // TODO: Allow users to force method teardown on failure
                 if (!executionResult.IsSuccess) return [executionResult];
 
                 try
@@ -187,10 +191,11 @@ internal class SailfishExecutionEngine(
                 }
                 catch (Exception ex)
                 {
-                    return CatchAndReturn(ex);
+                    return await CatchAndReturn(ex, testCase, testCaseGroup, cancellationToken);
                 }
 
                 if (ShouldCallGlobalTeardown(testProviderIndex, totalTestProviderCount, currentPropertyTensorIndex, totalPropertyTensorElements))
+                {
                     try
                     {
                         await testCase.CoreInvoker.GlobalTeardown(cancellationToken);
@@ -198,8 +203,9 @@ internal class SailfishExecutionEngine(
                     }
                     catch (Exception ex)
                     {
-                        return CatchAndReturn(ex);
+                        return await CatchAndReturn(ex, testCase, testCaseGroup, cancellationToken);
                     }
+                }
 
                 await mediator.Publish(new ExecutionCompletedNotification(executionResult, testCase, testCaseGroup), cancellationToken);
 
@@ -239,35 +245,34 @@ internal class SailfishExecutionEngine(
         return continueIterating;
     }
 
-    private static List<TestCaseExecutionResult> CatchAndReturn(Exception ex)
+    private async Task<List<TestCaseExecutionResult>> CatchAndReturn(Exception ex, TestInstanceContainer testCase, IEnumerable<dynamic> testCaseGroup, CancellationToken cancellationToken)
     {
-        return new List<TestCaseExecutionResult> { new(ex) };
+        await mediator.Publish(new ExceptionNotification(testCase, testCaseGroup), cancellationToken);
+        return [new(ex)];
     }
 
     private async Task<TestCaseExecutionResult> IterateOverVariableCombos(TestInstanceContainer testInstanceContainer, IEnumerable<dynamic> testCaseGroup, CancellationToken cancellationToken = default)
     {
-        try
-        {
-            var testExecutionResult = await testCaseIterator.Iterate(
-                testInstanceContainer,
-                runSettings.DisableOverheadEstimation || ShouldDisableOverheadEstimationFromTypeOrMethod(testInstanceContainer),
-                cancellationToken).ConfigureAwait(false);
 
-            await mediator.Publish(new TestCaseCompletedNotification(MapResultToTrackingFormat(testInstanceContainer.Type, testExecutionResult)), cancellationToken);
+        var testCaseExecutionResult = await testCaseIterator.Iterate(
+            testInstanceContainer,
+            runSettings.DisableOverheadEstimation || ShouldDisableOverheadEstimationFromTypeOrMethod(testInstanceContainer),
+            cancellationToken);
 
-            return testExecutionResult;
-        }
-        catch (Exception exception)
+        if (!testCaseExecutionResult.IsSuccess)
         {
-            if (exception is TestDisabledException) throw;
             await mediator.Publish(new ExceptionNotification(testInstanceContainer, testCaseGroup), cancellationToken);
-            return new TestCaseExecutionResult(testInstanceContainer, exception.InnerException ?? exception);
+            return new TestCaseExecutionResult(testInstanceContainer, testCaseExecutionResult.Exception!.InnerException ?? testCaseExecutionResult.Exception);
         }
+
+        await mediator.Publish(new TestCaseCompletedNotification(MapResultToTrackingFormat(testInstanceContainer.Type, testCaseExecutionResult)), cancellationToken);
+
+        return testCaseExecutionResult;
     }
 
     private ClassExecutionSummaryTrackingFormat MapResultToTrackingFormat(Type testClass, TestCaseExecutionResult testExecutionResult)
     {
-        var group = new TestClassResultGroup(testClass, new List<TestCaseExecutionResult> { testExecutionResult });
+        var group = new TestClassResultGroup(testClass, [testExecutionResult]);
         return classExecutionSummaryCompiler.CompileToSummaries(new[] { group }).ToTrackingFormat().Single();
     }
 

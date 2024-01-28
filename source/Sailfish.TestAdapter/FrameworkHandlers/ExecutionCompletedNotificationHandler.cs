@@ -1,7 +1,7 @@
 ﻿using MediatR;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.Logging;
-using Sailfish.Contracts.Private.ExecutionCallbackHandlers;
+using Sailfish.Contracts.Private.ExecutionCallbackNotifications;
 using Sailfish.Contracts.Public.Models;
 using Sailfish.Contracts.Public.Requests;
 using Sailfish.Exceptions;

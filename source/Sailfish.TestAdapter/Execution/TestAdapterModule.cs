@@ -3,7 +3,8 @@ using MediatR;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.Adapter;
 using Sailfish.Analysis.SailDiff;
 using Sailfish.Analysis.ScaleFish;
-using Sailfish.Contracts.Private.ExecutionCallbackHandlers;
+using Sailfish.Contracts.Private.ExecutionCallbackNotifications;
+using Sailfish.Logging;
 using Sailfish.TestAdapter.FrameworkHandlers;
 
 namespace Sailfish.TestAdapter.Execution;
@@ -23,6 +24,7 @@ internal class TestAdapterModule(IFrameworkHandle? frameworkHandle) : Module
         builder.RegisterType<AdapterSailDiff>().As<IAdapterSailDiff>();
         builder.RegisterType<AdapterScaleFish>().As<IScaleFishInternal>();
         builder.RegisterType<AdapterScaleFish>().As<IAdapterScaleFish>();
+        builder.RegisterType<TestCaseCountPrinter>().As<ITestCaseCountPrinter>().SingleInstance();
 
         builder.RegisterType<ExecutionStartingNotificationHandler>().As<INotificationHandler<ExecutionStartingNotification>>();
         builder.RegisterType<ExecutionCompletedNotificationHandler>().As<INotificationHandler<ExecutionCompletedNotification>>();

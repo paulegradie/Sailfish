@@ -8,14 +8,16 @@ namespace Sailfish.Execution;
 
 internal interface ITestCaseIterator
 {
-    Task<TestCaseExecutionResult> Iterate(TestInstanceContainer testInstanceContainer, bool DisableOverheadEstimation, CancellationToken cancellationToken);
+    Task<TestCaseExecutionResult> Iterate(TestInstanceContainer testInstanceContainer, bool DisableOverheadEstimation,
+        CancellationToken cancellationToken);
 }
 
 internal class TestCaseIterator(IRunSettings runSettings, ILogger logger) : ITestCaseIterator
 {
     private readonly IRunSettings runSettings = runSettings;
 
-    public async Task<TestCaseExecutionResult> Iterate(TestInstanceContainer testInstanceContainer, bool disableOverheadEstimation, CancellationToken cancellationToken)
+    public async Task<TestCaseExecutionResult> Iterate(TestInstanceContainer testInstanceContainer,
+        bool disableOverheadEstimation, CancellationToken cancellationToken)
     {
         var overheadEstimator = new OverheadEstimator();
         var warmupResult = await WarmupIterations(testInstanceContainer, cancellationToken);
@@ -23,13 +25,15 @@ internal class TestCaseIterator(IRunSettings runSettings, ILogger logger) : ITes
 
         if (!disableOverheadEstimation) await overheadEstimator.Estimate();
 
-        var iterations = runSettings.SampleSizeOverride is not null ? Math.Max(runSettings.SampleSizeOverride.Value, 1) : testInstanceContainer.SampleSize;
+        var iterations = runSettings.SampleSizeOverride is not null
+            ? Math.Max(runSettings.SampleSizeOverride.Value, 1)
+            : testInstanceContainer.SampleSize;
 
         testInstanceContainer.CoreInvoker.SetTestCaseStart();
         for (var i = 0; i < iterations; i++)
         {
-            logger.Log(LogLevel.Information, "      ---- iteration {CurrentIteration} of {TotalIterations}", i, iterations);
-            
+            logger.Log(LogLevel.Information, "      ---- iteration {CurrentIteration} of {TotalIterations}", i + 1,
+                iterations);
             cancellationToken.ThrowIfCancellationRequested();
 
             try
@@ -69,11 +73,13 @@ internal class TestCaseIterator(IRunSettings runSettings, ILogger logger) : ITes
         return new TestCaseExecutionResult(testInstanceContainer);
     }
 
-    private async Task<TestCaseExecutionResult> WarmupIterations(TestInstanceContainer testInstanceContainer, CancellationToken cancellationToken)
+    private async Task<TestCaseExecutionResult> WarmupIterations(TestInstanceContainer testInstanceContainer,
+        CancellationToken cancellationToken)
     {
         for (var i = 0; i < testInstanceContainer.NumWarmupIterations; i++)
         {
-            logger.Log(LogLevel.Information, "      ---- warmup iteration {CurrentIteration} of {TotalIterations}", i, testInstanceContainer.NumWarmupIterations);
+            logger.Log(LogLevel.Information, "      ---- warmup iteration {CurrentIteration} of {TotalIterations}", i + 1,
+                testInstanceContainer.NumWarmupIterations);
 
             cancellationToken.ThrowIfCancellationRequested();
 

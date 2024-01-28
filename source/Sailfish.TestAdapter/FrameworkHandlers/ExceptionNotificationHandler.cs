@@ -1,9 +1,7 @@
 ﻿using MediatR;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel;
-using Perfolizer.Mathematics.SignificanceTesting;
-using Sailfish.Contracts.Private.ExecutionCallbackHandlers;
+using Sailfish.Contracts.Private.ExecutionCallbackNotifications;
 using Sailfish.TestAdapter.Execution;
-using System;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;

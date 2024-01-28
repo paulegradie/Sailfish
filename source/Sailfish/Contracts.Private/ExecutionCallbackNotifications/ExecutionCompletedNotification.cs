@@ -1,10 +1,8 @@
 ﻿using MediatR;
 using Sailfish.Execution;
-using System;
 using System.Collections.Generic;
-using System.Linq;
 
-namespace Sailfish.Contracts.Private.ExecutionCallbackHandlers;
+namespace Sailfish.Contracts.Private.ExecutionCallbackNotifications;
 internal class ExecutionCompletedNotification(TestCaseExecutionResult testCaseExecutionResult, TestInstanceContainer testInstanceContainer, IEnumerable<dynamic> testCaseGroup) : INotification
 {
     public TestCaseExecutionResult TestCaseExecutionResult { get; set; } = testCaseExecutionResult;

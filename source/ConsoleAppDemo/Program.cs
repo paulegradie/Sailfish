@@ -8,7 +8,7 @@ var settings = RunSettingsBuilder
     .CreateBuilder()
     .TestsFromAssembliesContaining(typeof(PerformanceTestProjectDiscoveryAnchor))
     .ProvidersFromAssembliesContaining(typeof(AppRegistrationProvider))
-    // .WithTestNames(typeof(ExceptionExample).FullName!, typeof(MinimalTestExample).FullName)
+    // .WithTestNames(typeof(TestsRunIfException).FullName!)
     .WithSailDiff()
     .WithScaleFish()
     .WithGlobalSampleSize(5)
