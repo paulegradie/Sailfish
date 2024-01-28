@@ -1,7 +1,6 @@
 using Microsoft.VisualStudio.TestPlatform.ObjectModel;
 using Sailfish.Exceptions;
 using Sailfish.Execution;
-using Sailfish.Extensions.Types;
 using Sailfish.TestAdapter.TestProperties;
 using System;
 using System.Collections.Generic;

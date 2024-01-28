@@ -1,12 +1,8 @@
 ﻿using MediatR;
 using Sailfish.Execution;
-using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace Sailfish.Contracts.Private.ExecutionCallbackHandlers;
+namespace Sailfish.Contracts.Private.ExecutionCallbackNotifications;
 
 
 internal class ExecutionStartingNotification(TestInstanceContainer testInstanceContainer, IEnumerable<dynamic> testCaseGroup) : INotification
