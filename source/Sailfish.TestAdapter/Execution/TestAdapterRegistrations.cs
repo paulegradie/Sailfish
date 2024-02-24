@@ -5,15 +5,21 @@ using Sailfish.Analysis.SailDiff;
 using Sailfish.Analysis.ScaleFish;
 using Sailfish.Contracts.Private.ExecutionCallbackNotifications;
 using Sailfish.Logging;
+using Sailfish.Registration;
 using Sailfish.TestAdapter.FrameworkHandlers;
 
 namespace Sailfish.TestAdapter.Execution;
 
-internal class TestAdapterModule(IFrameworkHandle? frameworkHandle) : Module
+internal class TestAdapterRegistrations : IProvideAdditionalRegistrations
 {
-    private readonly IFrameworkHandle? frameworkHandle = frameworkHandle;
+    private readonly IFrameworkHandle? frameworkHandle;
 
-    protected override void Load(ContainerBuilder builder)
+    public TestAdapterRegistrations(IFrameworkHandle? frameworkHandle)
+    {
+        this.frameworkHandle = frameworkHandle;
+    }
+
+    public void Load(ContainerBuilder builder)
     {
         if (frameworkHandle is not null) builder.RegisterInstance(frameworkHandle).As<IFrameworkHandle>();
 
@@ -26,11 +32,12 @@ internal class TestAdapterModule(IFrameworkHandle? frameworkHandle) : Module
         builder.RegisterType<AdapterScaleFish>().As<IAdapterScaleFish>();
         builder.RegisterType<TestCaseCountPrinter>().As<ITestCaseCountPrinter>().SingleInstance();
 
-        builder.RegisterType<ExecutionStartingNotificationHandler>().As<INotificationHandler<ExecutionStartingNotification>>();
-        builder.RegisterType<ExecutionCompletedNotificationHandler>().As<INotificationHandler<ExecutionCompletedNotification>>();
-        builder.RegisterType<ExecutionDisabledNotificationHandler>().As<INotificationHandler<ExecutionDisabledNotification>>();
+        builder.RegisterType<ExecutionStartingNotificationHandler>()
+            .As<INotificationHandler<ExecutionStartingNotification>>();
+        builder.RegisterType<ExecutionCompletedNotificationHandler>()
+            .As<INotificationHandler<ExecutionCompletedNotification>>();
+        builder.RegisterType<ExecutionDisabledNotificationHandler>()
+            .As<INotificationHandler<ExecutionDisabledNotification>>();
         builder.RegisterType<ExceptionNotificationHandler>().As<INotificationHandler<ExceptionNotification>>();
-
-
     }
 }

@@ -23,23 +23,26 @@ using Sailfish.Presentation.Markdown;
 
 namespace Sailfish.Registration;
 
-public class SailfishModule(IRunSettings runSettings) : Module
+internal class SailfishModuleRegistrations : IProvideAdditionalRegistrations
 {
-    private readonly IRunSettings runSettings = runSettings;
+    private readonly IRunSettings runSettings;
 
-    protected override void Load(ContainerBuilder builder)
+    public SailfishModuleRegistrations(IRunSettings runSettings)
     {
-        base.Load(builder);
+        this.runSettings = runSettings;
+    }
 
+    public void Load(ContainerBuilder builder)
+    {
         builder.RegisterInstance(
             runSettings.DisableLogging
                 ? new SilentLogger()
                 : runSettings.CustomLogger ?? new DefaultLogger(runSettings.MinimumLogLevel)).As<ILogger>();
-        builder.RegisterMediatR(MediatRConfigurationBuilder.Create(typeof(SailfishModule).Assembly).Build());
-        builder.RegisterAssemblyTypes(typeof(SailfishModule).Assembly)
+        builder.RegisterMediatR(MediatRConfigurationBuilder.Create(typeof(SailfishModuleRegistrations).Assembly).Build());
+        builder.RegisterAssemblyTypes(typeof(SailfishModuleRegistrations).Assembly)
             .AsClosedTypesOf(typeof(INotificationHandler<>))
             .AsImplementedInterfaces();
-        builder.RegisterAssemblyTypes(typeof(SailfishModule).Assembly)
+        builder.RegisterAssemblyTypes(typeof(SailfishModuleRegistrations).Assembly)
             .AsClosedTypesOf(typeof(IRequestHandler<,>))
             .AsImplementedInterfaces();
 

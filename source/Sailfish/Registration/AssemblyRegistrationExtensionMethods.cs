@@ -5,9 +5,20 @@ namespace Sailfish.Registration;
 
 public static class AssemblyRegistrationExtensionMethods
 {
-    public static void RegisterSailfishTypes(this ContainerBuilder builder, IRunSettings runSettings, params Module[] additionalModules)
+    public static void RegisterSailfishTypes(this ContainerBuilder builder, IRunSettings runSettings)
     {
-        builder.RegisterModule(new SailfishModule(runSettings));
-        foreach (var additionalModule in additionalModules) builder.RegisterModule(additionalModule);
+        new SailfishModuleRegistrations(runSettings).Load(builder);
+    }
+
+    internal static void RegisterSailfishTypes(
+        this ContainerBuilder builder,
+        IRunSettings runSettings,
+        params IProvideAdditionalRegistrations[] additionalModules)
+    {
+        builder.RegisterSailfishTypes(runSettings);
+        foreach (var additionalModule in additionalModules)
+        {
+            additionalModule.Load(builder);
+        }
     }
 }
