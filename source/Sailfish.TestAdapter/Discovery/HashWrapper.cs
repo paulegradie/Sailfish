@@ -6,12 +6,7 @@ namespace Sailfish.TestAdapter.Discovery;
 
 internal class HashWrapper : IHashAlgorithm
 {
-    private readonly HashAlgorithm hashAlgorithm;
-
-    public HashWrapper()
-    {
-        hashAlgorithm = SHA1.Create();
-    }
+    private readonly HashAlgorithm hashAlgorithm = SHA1.Create();
 
     public Guid GuidFromString(string data)
     {

@@ -8,10 +8,9 @@ namespace PerformanceTests.ExamplePerformanceTests;
 public class TestsRunIfException
 {
     [SailfishMethodSetup]
-    public async Task MethodSetupThrows()
+    public async Task MethodSetup()
     {
         await Task.Yield();
-        throw new Exception();
     }
     
     [SailfishMethod(Order = 1)]

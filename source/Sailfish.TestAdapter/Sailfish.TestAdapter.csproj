@@ -34,7 +34,7 @@
 
         <PackageReference Include="System.ComponentModel.Composition" Version="8.0.0" />
         <PackageReference Include="Microsoft.TestPlatform.ObjectModel" Version="17.8.0" PrivateAssets="All" />
-        <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.8.0" />
+        <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.5.0" />
     </ItemGroup>
     <ItemGroup>
         <ProjectReference Include="..\Sailfish\Sailfish.csproj" />
