@@ -13,11 +13,18 @@ using System.Threading.Tasks;
 
 namespace Sailfish.DefaultHandlers.Sailfish;
 
-public class SailfishUpdateTrackingDataNotificationHandler(ITrackingFileSerialization trackingFileSerialization, IRunSettings runSettings, ILogger logger) : INotificationHandler<TestCaseCompletedNotification>
+public class TestCaseCompletedNotificationHandler : INotificationHandler<TestCaseCompletedNotification>
 {
-    private readonly ILogger logger = logger;
-    private readonly IRunSettings runSettings = runSettings;
-    private readonly ITrackingFileSerialization trackingFileSerialization = trackingFileSerialization;
+    private readonly ILogger logger;
+    private readonly IRunSettings runSettings;
+    private readonly ITrackingFileSerialization trackingFileSerialization;
+
+    public TestCaseCompletedNotificationHandler(ITrackingFileSerialization trackingFileSerialization, IRunSettings runSettings, ILogger logger)
+    {
+        this.logger = logger;
+        this.runSettings = runSettings;
+        this.trackingFileSerialization = trackingFileSerialization;
+    }
 
     public async Task Handle(TestCaseCompletedNotification notification, CancellationToken cancellationToken)
     {
