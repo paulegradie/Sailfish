@@ -88,7 +88,7 @@ public class TestExecutor : ITestExecutor
                 };
                 result.Messages.Add(new TestResultMessage(TestResultMessage.StandardErrorCategory, ex.Message));
                 frameworkHandle.RecordResult(result);
-                frameworkHandle.RecordEnd(testCase, TestOutcome.None);
+                frameworkHandle.RecordEnd(testCase, TestOutcome.Skipped);
             }
         }
     }

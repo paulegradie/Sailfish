@@ -64,11 +64,13 @@ internal class TestCaseIterator(IRunSettings runSettings, ILogger logger) : ITes
 
         testInstanceContainer.CoreInvoker.SetTestCaseStop();
 
-        if (!disableOverheadEstimation)
+        if (disableOverheadEstimation)
         {
-            await overheadEstimator.Estimate();
-            testInstanceContainer.ApplyOverheadEstimates(overheadEstimator.GetAverageEstimate());
+            return new TestCaseExecutionResult(testInstanceContainer);
         }
+
+        await overheadEstimator.Estimate();
+        testInstanceContainer.ApplyOverheadEstimates(overheadEstimator.GetAverageEstimate());
 
         return new TestCaseExecutionResult(testInstanceContainer);
     }
@@ -78,7 +80,8 @@ internal class TestCaseIterator(IRunSettings runSettings, ILogger logger) : ITes
     {
         for (var i = 0; i < testInstanceContainer.NumWarmupIterations; i++)
         {
-            logger.Log(LogLevel.Information, "      ---- warmup iteration {CurrentIteration} of {TotalIterations}", i + 1,
+            logger.Log(LogLevel.Information, "      ---- warmup iteration {CurrentIteration} of {TotalIterations}",
+                i + 1,
                 testInstanceContainer.NumWarmupIterations);
 
             cancellationToken.ThrowIfCancellationRequested();
@@ -86,27 +89,7 @@ internal class TestCaseIterator(IRunSettings runSettings, ILogger logger) : ITes
             try
             {
                 await testInstanceContainer.CoreInvoker.IterationSetup(cancellationToken).ConfigureAwait(false);
-            }
-            catch (Exception ex)
-            {
-                return CatchAndReturn(testInstanceContainer, ex);
-            }
-
-            cancellationToken.ThrowIfCancellationRequested();
-
-            try
-            {
                 await testInstanceContainer.CoreInvoker.ExecutionMethod(cancellationToken, false).ConfigureAwait(false);
-            }
-            catch (Exception ex)
-            {
-                return CatchAndReturn(testInstanceContainer, ex);
-            }
-
-            cancellationToken.ThrowIfCancellationRequested();
-
-            try
-            {
                 await testInstanceContainer.CoreInvoker.IterationTearDown(cancellationToken).ConfigureAwait(false);
             }
             catch (Exception ex)
@@ -120,6 +103,11 @@ internal class TestCaseIterator(IRunSettings runSettings, ILogger logger) : ITes
 
     private TestCaseExecutionResult CatchAndReturn(TestInstanceContainer testProvider, Exception ex)
     {
+        if (ex is NullReferenceException)
+        {
+            ex = new NullReferenceException(ex.Message + Environment.NewLine + $"Null variable or property encountered in method: {testProvider.ExecutionMethod.Name}");
+        }
+        
         logger.Log(LogLevel.Error, ex, "An exception occured during test execution");
         return new TestCaseExecutionResult(testProvider, ex);
     }
