@@ -28,7 +28,7 @@ public class TestExecutionFixture
     {
         frameworkHandle = Substitute.For<IFrameworkHandle>();
         builder = new ContainerBuilder();
-        builder.RegisterSailfishTypes(Substitute.For<IRunSettings>(), new TestAdapterModule(frameworkHandle));
+        builder.RegisterSailfishTypes(Substitute.For<IRunSettings>(), new TestAdapterRegistrations(frameworkHandle));
         builder.RegisterInstance(RunSettingsBuilder.CreateBuilder().DisableOverheadEstimation().Build());
         var projectDll = DllFinder.FindThisProjectsDllRecursively();
         testCases = TestDiscovery.DiscoverTests(new[] { projectDll }, Substitute.For<IMessageLogger>()).ToList();
