@@ -23,20 +23,29 @@ public interface ISailDiff
     void Analyze(TestData beforeData, TestData afterData, SailDiffSettings settings);
 }
 
-internal class SailDiff(
-    IMediator mediator,
-    IRunSettings runSettings,
-    ILogger logger,
-    IStatisticalTestComputer statisticalTestComputer,
-    ISailDiffResultMarkdownConverter sailDiffResultMarkdownConverter,
-    IConsoleWriter consoleWriter) : ISailDiffInternal, ISailDiff
+internal class SailDiff : ISailDiffInternal, ISailDiff
 {
-    private readonly IConsoleWriter consoleWriter = consoleWriter;
-    private readonly ILogger logger = logger;
-    private readonly IMediator mediator = mediator;
-    private readonly IRunSettings runSettings = runSettings;
-    private readonly ISailDiffResultMarkdownConverter sailDiffResultMarkdownConverter = sailDiffResultMarkdownConverter;
-    private readonly IStatisticalTestComputer statisticalTestComputer = statisticalTestComputer;
+    private readonly IConsoleWriter consoleWriter;
+    private readonly ILogger logger;
+    private readonly IMediator mediator;
+    private readonly IRunSettings runSettings;
+    private readonly ISailDiffConsoleWindowMessageFormatter sailDiffConsoleWindowMessageFormatter;
+    private readonly IStatisticalTestComputer statisticalTestComputer;
+
+    public SailDiff(IMediator mediator,
+        IRunSettings runSettings,
+        ILogger logger,
+        IStatisticalTestComputer statisticalTestComputer,
+        ISailDiffConsoleWindowMessageFormatter sailDiffConsoleWindowMessageFormatter,
+        IConsoleWriter consoleWriter)
+    {
+        this.consoleWriter = consoleWriter;
+        this.logger = logger;
+        this.mediator = mediator;
+        this.runSettings = runSettings;
+        this.sailDiffConsoleWindowMessageFormatter = sailDiffConsoleWindowMessageFormatter;
+        this.statisticalTestComputer = statisticalTestComputer;
+    }
 
     public void Analyze(TestData beforeData, TestData afterData, SailDiffSettings settings)
     {
@@ -84,9 +93,11 @@ internal class SailDiff(
         }
 
         var testIds = new TestIds(beforeAndAfterData.BeforeData.TestIds, beforeAndAfterData.AfterData.TestIds);
-        var resultsAsMarkdown = sailDiffResultMarkdownConverter.ConvertToMarkdownTable(testResults, testIds, cancellationToken);
 
-        consoleWriter.WriteStatTestResultsToConsole(resultsAsMarkdown, testIds, runSettings.SailDiffSettings);
+        var resultsAsMarkdown = sailDiffConsoleWindowMessageFormatter.FormConsoleWindowMessageForSailDiff(testResults, testIds, runSettings.SailDiffSettings, cancellationToken);
+        logger.Log(LogLevel.Information, resultsAsMarkdown);
+
+
         await mediator.Publish(new SailDiffAnalysisCompleteNotification(testResults, resultsAsMarkdown), cancellationToken).ConfigureAwait(false);
     }
 }

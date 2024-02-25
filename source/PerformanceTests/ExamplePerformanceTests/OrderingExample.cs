@@ -6,7 +6,7 @@ namespace PerformanceTests.ExamplePerformanceTests;
 
 [WriteToCsv]
 [WriteToMarkdown]
-[Sailfish(SampleSize = 1, DisableOverheadEstimation = true, NumWarmupIterations = 0)]
+[Sailfish(SampleSize = 3, DisableOverheadEstimation = true, NumWarmupIterations = 0)]
 public class OrderingExample
 {
     [SailfishMethod(Order = 2)]
@@ -18,12 +18,12 @@ public class OrderingExample
     [SailfishMethod(Order = 1)]
     public void First()
     {
-        Thread.Sleep(8000);
+        Thread.Sleep(100);
     }
 
     [SailfishMethod(Order = 3)]
     public void Last()
     {
-        Thread.Sleep(8000);
+        Thread.Sleep(200);
     }
 }

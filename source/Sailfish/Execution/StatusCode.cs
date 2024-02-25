@@ -1,6 +1,6 @@
 namespace Sailfish.Execution;
 
-internal enum StatusCode
+public enum StatusCode
 {
     Success = 0,
     Failure = 1

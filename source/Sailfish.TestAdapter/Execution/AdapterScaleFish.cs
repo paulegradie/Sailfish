@@ -4,6 +4,7 @@ using Sailfish.Contracts.Public.Models;
 using Sailfish.Contracts.Public.Notifications;
 using Sailfish.Contracts.Public.Requests;
 using Sailfish.Presentation;
+using Sailfish.Presentation.Console;
 using System;
 using System.Linq;
 using System.Threading;
@@ -18,7 +19,7 @@ internal interface IAdapterScaleFish : IScaleFishInternal
 internal class AdapterScaleFish : IAdapterScaleFish
 {
     private readonly IComplexityComputer complexityComputer;
-    private readonly IAdapterConsoleWriter consoleWriter;
+    private readonly IConsoleWriter consoleWriter;
     private readonly IMarkdownTableConverter markdownTableConverter;
     private readonly IMediator mediator;
     private readonly IRunSettings runSettings;
@@ -28,7 +29,7 @@ internal class AdapterScaleFish : IAdapterScaleFish
         IRunSettings runSettings,
         IComplexityComputer complexityComputer,
         IMarkdownTableConverter markdownTableConverter,
-        IAdapterConsoleWriter consoleWriter)
+        IConsoleWriter consoleWriter)
     {
         this.mediator = mediator;
         this.runSettings = runSettings;

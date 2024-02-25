@@ -6,6 +6,7 @@ using Sailfish.Exceptions;
 using Sailfish.Registration;
 using Sailfish.TestAdapter.Discovery;
 using Sailfish.TestAdapter.Execution;
+using Sailfish.TestAdapter.Registrations;
 using Sailfish.TestAdapter.TestProperties;
 using System;
 using System.Collections.Generic;
@@ -39,11 +40,13 @@ public class TestExecutor : ITestExecutor
     {
         if (sources is null) throw new SailfishException("No sources provided to run method. Sources was null");
         var enumeratedSources = sources.ToList();
-        if (runContext is null || frameworkHandle is null) throw new SailfishException($"Nulls encountered. runContext: {runContext}, frameworkHandle: {frameworkHandle}");
+        if (runContext is null || frameworkHandle is null)
+            throw new SailfishException(
+                $"Nulls encountered. runContext: {runContext}, frameworkHandle: {frameworkHandle}");
 
         var testCases = TestDiscovery.DiscoverTests(enumeratedSources, frameworkHandle).ToList();
 
-        ExecuteTests(testCases, frameworkHandle);
+        RunTests(testCases, runContext, frameworkHandle);
     }
 
     public void Cancel()
@@ -57,10 +60,10 @@ public class TestExecutor : ITestExecutor
 
     private void ExecuteTests(List<TestCase> testCases, IFrameworkHandle frameworkHandle)
     {
+        var builder = new ContainerBuilder();
         try
         {
             var runSettings = AdapterRunSettingsLoader.LoadAdapterRunSettings();
-            var builder = new ContainerBuilder();
             builder.RegisterSailfishTypes(runSettings, new TestAdapterRegistrations(frameworkHandle));
 
             var refTestType = RetrieveReferenceTypeForTestProject(testCases);
@@ -70,30 +73,48 @@ public class TestExecutor : ITestExecutor
                     new[] { refTestType },
                     cancellationTokenSource.Token)
                 .Wait(cancellationTokenSource.Token);
+        }
+        catch (Exception ex)
+        {
+            HandleStartupException(frameworkHandle, testCases, ex);
+            return;
+        }
 
-            using var container = builder.Build();
+        var container = builder.Build();
+
+        try
+        {
             TestExecution.ExecuteTests(testCases, container, frameworkHandle, cancellationTokenSource.Token);
         }
         catch (Exception ex)
         {
-            frameworkHandle.EnableShutdownAfterTestRun = true;
-            frameworkHandle.SendMessage(TestMessageLevel.Informational, $"Encountered exception while executing tests: {ex.Message}");
-            foreach (var testCase in testCases)
-            {
-                var result = new TestResult(testCase)
-                {
-                    Outcome = TestOutcome.Skipped,
-                    ErrorMessage = ex.Message,
-                    ErrorStackTrace = ex.StackTrace
-                };
-                result.Messages.Add(new TestResultMessage(TestResultMessage.StandardErrorCategory, ex.Message));
-                frameworkHandle.RecordResult(result);
-                frameworkHandle.RecordEnd(testCase, TestOutcome.Skipped);
-            }
+            HandleStartupException(frameworkHandle, testCases, ex);
+        }
+        finally
+        {
+            container.Dispose();
         }
     }
 
-    public static Type RetrieveReferenceTypeForTestProject(IReadOnlyCollection<TestCase> testCases)
+    private static void HandleStartupException(IFrameworkHandle frameworkHandle, List<TestCase> testCases, Exception ex)
+    {
+        frameworkHandle.EnableShutdownAfterTestRun = true;
+        frameworkHandle.SendMessage(
+            TestMessageLevel.Error,
+            $"Encountered exception while executing tests: {ex.Message}");
+        foreach (var testCase in testCases)
+        {
+            var result = new TestResult(testCase)
+            {
+                Outcome = TestOutcome.Skipped, ErrorMessage = ex.Message, ErrorStackTrace = ex.StackTrace
+            };
+            result.Messages.Add(new TestResultMessage(TestResultMessage.StandardErrorCategory, ex.Message));
+            frameworkHandle.RecordResult(result);
+            frameworkHandle.RecordEnd(testCase, TestOutcome.Skipped);
+        }
+    }
+
+    internal static Type RetrieveReferenceTypeForTestProject(IReadOnlyCollection<TestCase> testCases)
     {
         var assembly = Assembly.LoadFile(testCases.First().Source);
         AppDomain.CurrentDomain.Load(assembly.GetName()); // is this necessary?

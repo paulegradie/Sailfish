@@ -70,4 +70,9 @@ internal class TestInstanceContainer
     {
         CoreInvoker.AssignOverheadEstimate(overheadEstimate);
     }
+
+    public TestInstanceContainerExternal ToExternal()
+    {
+        return new TestInstanceContainerExternal(Type, Instance, ExecutionMethod, TestCaseId, ExecutionSettings, CoreInvoker.GetPerformanceResults(), Disabled);
+    }
 }

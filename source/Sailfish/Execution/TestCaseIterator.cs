@@ -12,12 +12,21 @@ internal interface ITestCaseIterator
         CancellationToken cancellationToken);
 }
 
-internal class TestCaseIterator(IRunSettings runSettings, ILogger logger) : ITestCaseIterator
+internal class TestCaseIterator : ITestCaseIterator
 {
-    private readonly IRunSettings runSettings = runSettings;
+    private readonly IRunSettings runSettings;
+    private readonly ILogger logger;
 
-    public async Task<TestCaseExecutionResult> Iterate(TestInstanceContainer testInstanceContainer,
-        bool disableOverheadEstimation, CancellationToken cancellationToken)
+    public TestCaseIterator(IRunSettings runSettings, ILogger logger)
+    {
+        this.logger = logger;
+        this.runSettings = runSettings;
+    }
+
+    public async Task<TestCaseExecutionResult> Iterate(
+        TestInstanceContainer testInstanceContainer,
+        bool disableOverheadEstimation,
+        CancellationToken cancellationToken)
     {
         var overheadEstimator = new OverheadEstimator();
         var warmupResult = await WarmupIterations(testInstanceContainer, cancellationToken);

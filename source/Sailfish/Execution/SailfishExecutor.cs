@@ -13,29 +13,41 @@ using System.Threading.Tasks;
 
 namespace Sailfish.Execution;
 
-internal class SailfishExecutor(
-    IMediator mediator,
-    ISailFishTestExecutor sailFishTestExecutor,
-    ITestCollector testCollector,
-    ITestFilter testFilter,
-    IClassExecutionSummaryCompiler classExecutionSummaryCompiler,
-    IExecutionSummaryWriter executionSummaryWriter,
-    ISailDiffInternal sailDiff,
-    IScaleFishInternal scaleFish,
-    IRunSettings runSettings,
-    ILogger logger
-    )
+internal class SailfishExecutor
 {
-    private readonly IClassExecutionSummaryCompiler classExecutionSummaryCompiler = classExecutionSummaryCompiler;
-    private readonly IExecutionSummaryWriter executionSummaryWriter = executionSummaryWriter;
-    private readonly ILogger logger = logger;
-    private readonly IMediator mediator = mediator;
-    private readonly IRunSettings runSettings = runSettings;
-    private readonly ISailDiffInternal sailDiff = sailDiff;
-    private readonly ISailFishTestExecutor sailFishTestExecutor = sailFishTestExecutor;
-    private readonly IScaleFishInternal scaleFish = scaleFish;
-    private readonly ITestCollector testCollector = testCollector;
-    private readonly ITestFilter testFilter = testFilter;
+    private readonly IClassExecutionSummaryCompiler classExecutionSummaryCompiler;
+    private readonly IExecutionSummaryWriter executionSummaryWriter;
+    private readonly ILogger logger;
+    private readonly IMediator mediator;
+    private readonly IRunSettings runSettings;
+    private readonly ISailDiffInternal sailDiff;
+    private readonly ISailFishTestExecutor sailFishTestExecutor;
+    private readonly IScaleFishInternal scaleFish;
+    private readonly ITestCollector testCollector;
+    private readonly ITestFilter testFilter;
+
+    public SailfishExecutor(IMediator mediator,
+        ISailFishTestExecutor sailFishTestExecutor,
+        ITestCollector testCollector,
+        ITestFilter testFilter,
+        IClassExecutionSummaryCompiler classExecutionSummaryCompiler,
+        IExecutionSummaryWriter executionSummaryWriter,
+        ISailDiffInternal sailDiff,
+        IScaleFishInternal scaleFish,
+        IRunSettings runSettings,
+        ILogger logger)
+    {
+        this.classExecutionSummaryCompiler = classExecutionSummaryCompiler;
+        this.executionSummaryWriter = executionSummaryWriter;
+        this.logger = logger;
+        this.mediator = mediator;
+        this.runSettings = runSettings;
+        this.sailDiff = sailDiff;
+        this.sailFishTestExecutor = sailFishTestExecutor;
+        this.scaleFish = scaleFish;
+        this.testCollector = testCollector;
+        this.testFilter = testFilter;
+    }
 
     public async Task<SailfishRunResult> Run(CancellationToken cancellationToken)
     {
