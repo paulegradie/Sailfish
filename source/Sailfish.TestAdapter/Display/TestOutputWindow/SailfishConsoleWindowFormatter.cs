@@ -18,12 +18,10 @@ internal interface ISailfishConsoleWindowFormatter
 
 internal class SailfishConsoleWindowFormatter : ISailfishConsoleWindowFormatter
 {
-    private readonly IMarkdownTableConverter markdownTableConverter;
     private readonly ILogger logger;
 
-    public SailfishConsoleWindowFormatter(IMarkdownTableConverter markdownTableConverter, ILogger logger)
+    public SailfishConsoleWindowFormatter(ILogger logger)
     {
-        this.markdownTableConverter = markdownTableConverter;
         this.logger = logger;
     }
 
@@ -36,8 +34,18 @@ internal class SailfishConsoleWindowFormatter : ISailfishConsoleWindowFormatter
         if (compiledResults.Exception is not null)
         {
             var exceptionBuilder = new StringBuilder();
-            exceptionBuilder.AppendLine("____ Exceptions ____");
-            exceptionBuilder.AppendLine(string.Join("\n\n", compiledResults.Exception.Message));
+            exceptionBuilder.AppendLine("____ Exception Encountered ____");
+            if (compiledResults.Exception.InnerException is not null)
+            {
+                exceptionBuilder.AppendLine("Inner Stack Trace");
+                exceptionBuilder.AppendLine(compiledResults.Exception.InnerException.Message);
+                exceptionBuilder.AppendLine(compiledResults.Exception.InnerException.StackTrace);
+            }
+
+            exceptionBuilder.AppendLine("StackTrace:");
+            exceptionBuilder.AppendLine(compiledResults.Exception.Message);
+            exceptionBuilder.AppendLine(compiledResults.Exception.StackTrace);
+
             var exceptionString = exceptionBuilder.ToString();
             logger.Log(LogLevel.Error, exceptionString);
             return exceptionString;
