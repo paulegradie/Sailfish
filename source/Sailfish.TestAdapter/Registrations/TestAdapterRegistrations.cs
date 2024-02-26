@@ -5,14 +5,12 @@ using Sailfish.Analysis.SailDiff;
 using Sailfish.Analysis.ScaleFish;
 using Sailfish.Contracts.Public.Notifications;
 using Sailfish.Logging;
-using Sailfish.Presentation.Console;
 using Sailfish.Registration;
 using Sailfish.TestAdapter.Display.TestOutputWindow;
 using Sailfish.TestAdapter.Display.VSTestFramework;
 using Sailfish.TestAdapter.Execution;
 using Sailfish.TestAdapter.Handlers.FrameworkHandlers;
 using Sailfish.TestAdapter.Handlers.TestCaseEvents;
-using ConsoleWriter = Sailfish.TestAdapter.Display.TestOutputWindow.ConsoleWriter;
 
 namespace Sailfish.TestAdapter.Registrations;
 
@@ -31,7 +29,6 @@ internal class TestAdapterRegistrations : IProvideAdditionalRegistrations
 
         builder.RegisterType<TestAdapterExecutionProgram>().As<ITestAdapterExecutionProgram>();
         builder.RegisterType<TestAdapterExecutionEngine>().As<ITestAdapterExecutionEngine>();
-        builder.RegisterType<ConsoleWriter>().As<IConsoleWriter>();
         builder.RegisterType<AdapterSailDiff>().As<ISailDiffInternal>().InstancePerDependency();
         builder.RegisterType<AdapterSailDiff>().As<IAdapterSailDiff>();
         builder.RegisterType<AdapterScaleFish>().As<IScaleFishInternal>();
@@ -47,7 +44,5 @@ internal class TestAdapterRegistrations : IProvideAdditionalRegistrations
         builder.RegisterType<TestCaseExceptionNotificationHandler>().As<INotificationHandler<TestCaseExceptionNotification>>();
 
         builder.RegisterType<FrameworkTestCaseEndNotificationHandler>().As<INotificationHandler<FrameworkTestCaseEndNotification>>();
-        
-        
     }
 }

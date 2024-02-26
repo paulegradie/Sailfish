@@ -12,7 +12,7 @@ var settings = RunSettingsBuilder
     .WithTestNames(typeof(ReadmeExample).FullName!)
     .WithSailDiff()
     .WithScaleFish()
-    .WithGlobalSampleSize(30)
+    // .WithGlobalSampleSize(30)
     .WithMinimumLogLevel(LogLevel.Information)
     // .WithCustomLogger(new CustomLogger(new LoggerConfiguration().WriteTo.Console().CreateLogger()))
     // .DisableStreamingTrackingUpdates()

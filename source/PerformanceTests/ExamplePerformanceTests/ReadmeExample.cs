@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 namespace PerformanceTests.ExamplePerformanceTests;
 
 [WriteToMarkdown]
-[Sailfish(SampleSize = 30, Disabled = false)]
+[Sailfish(SampleSize = 3, Disabled = false)]
 public class ReadmeExample
 {
     private Random random = new();
