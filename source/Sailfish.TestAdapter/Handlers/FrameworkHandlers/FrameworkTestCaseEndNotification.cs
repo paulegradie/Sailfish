@@ -67,19 +67,26 @@ internal class FrameworkTestCaseEndNotificationHandler : INotificationHandler<Fr
             Duration = TimeSpan.FromMilliseconds(double.IsNaN(duration) ? 0 : duration)
         };
 
-        testResult.Messages.Add(new TestResultMessage(TestResultMessage.StandardOutCategory, testOutputWindowMessage));
-
         if (exception is null)
         {
+            testResult.Messages.Add(new TestResultMessage(TestResultMessage.StandardOutCategory, testOutputWindowMessage));
             return testResult;
         }
 
-        testResult.ErrorMessage = exception.Message;
-        testResult.ErrorStackTrace = exception.StackTrace;
-        testResult.Messages.Add(
-            new TestResultMessage(TestResultMessage.StandardErrorCategory,
-                exception.Message));
+        var exMessage = exception.Message;
+        if (exception.StackTrace?.Contains("InvocationReflectionExtensionMethods.TryInvoke") ?? false)
+        {
+            exMessage = $"An unhandled exception was thrown in your SailfishMethod:\n[{currentTestCase.FullyQualifiedName}] ";
+        }
 
+        var stackTrace = "\nStackTrace:\n\n" + exception.StackTrace;
+        if (exception.InnerException is not null)
+        {
+            stackTrace = "\nInner StackTrace:\n\n" + exception.InnerException + "\n" + stackTrace;
+        }
+
+        testResult.ErrorStackTrace = stackTrace;
+        testResult.ErrorMessage = exMessage;
         return testResult;
     }
 }

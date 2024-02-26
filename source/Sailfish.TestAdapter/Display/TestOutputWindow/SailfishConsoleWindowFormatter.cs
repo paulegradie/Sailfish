@@ -30,54 +30,26 @@ internal class SailfishConsoleWindowFormatter : ISailfishConsoleWindowFormatter
     public string FormConsoleWindowMessageForSailfish(IEnumerable<IClassExecutionSummary> results, OrderedDictionary? tags = null)
     {
         var summaryResults = results.ToList();
-        foreach (var result in summaryResults)
-        foreach (var compiledResult in result.CompiledTestCaseResults)
-        {
-            if (compiledResult.Exception is null) continue;
+        var compiledResults = summaryResults.SingleOrDefault()?.CompiledTestCaseResults.SingleOrDefault();
 
-            logger.Log(LogLevel.Error, "{Error}", compiledResult.Exception.Message);
-
-            if (compiledResult.Exception.StackTrace == null) continue;
-            logger.Log(LogLevel.Error, "{StackTrace}", compiledResult.Exception.StackTrace);
-
-            if (compiledResult.Exception.InnerException is null) continue;
-            logger.Log(LogLevel.Error, "{InnerError}", compiledResult.Exception.InnerException.Message);
-
-            if (compiledResult.Exception.InnerException.StackTrace == null) continue;
-            logger.Log(LogLevel.Error, "{InnerStackTrace}", compiledResult.Exception.InnerException.StackTrace);
-        }
-
-        string ideOutputContent;
-        if (summaryResults.Count > 1 || summaryResults.Single().CompiledTestCaseResults.Count() > 1)
-            ideOutputContent = CreateFullTable(summaryResults);
-        else
-        {
-            var compiledResults = summaryResults.SingleOrDefault()?.CompiledTestCaseResults.SingleOrDefault();
-            if (compiledResults != null)
-            {
-                ideOutputContent = CreateIdeTestOutputWindowContent(compiledResults);
-            }
-            else
-            {
-                ideOutputContent = string.Empty;
-            }
-        }
-
-        logger.Log(LogLevel.Information, "{MarkdownTable}", ideOutputContent);
-
-        return ideOutputContent;
-    }
-
-    private static string CreateIdeTestOutputWindowContent(ICompiledTestCaseResult testCaseResult)
-    {
-        if (testCaseResult.Exception is not null)
+        if (compiledResults is null) return "No results to report";
+        if (compiledResults.Exception is not null)
         {
             var exceptionBuilder = new StringBuilder();
             exceptionBuilder.AppendLine("____ Exceptions ____");
-            exceptionBuilder.AppendLine(string.Join("\n\n", testCaseResult.Exception.Message));
-            return exceptionBuilder.ToString();
+            exceptionBuilder.AppendLine(string.Join("\n\n", compiledResults.Exception.Message));
+            var exceptionString = exceptionBuilder.ToString();
+            logger.Log(LogLevel.Error, exceptionString);
+            return exceptionString;
         }
 
+        var consoleOutputString = FormOutputTable(compiledResults);
+        logger.Log(LogLevel.Information, "{MarkdownTable}", consoleOutputString);
+        return consoleOutputString;
+    }
+
+    private static string FormOutputTable(ICompiledTestCaseResult testCaseResult)
+    {
         if (testCaseResult.PerformanceRunResult == null || testCaseResult.PerformanceRunResult.SampleSize == 0)
             return string.Empty;
         var testCaseName = testCaseResult.TestCaseId;
@@ -132,19 +104,4 @@ internal class SailfishConsoleWindowFormatter : ISailfishConsoleWindowFormatter
 
         return stringBuilder.ToString();
     }
-    
-    
-    private string CreateFullTable(IReadOnlyCollection<IClassExecutionSummary> summaryResults)
-    {
-        var rawData = summaryResults
-            .SelectMany(x =>
-                x.CompiledTestCaseResults.SelectMany(y =>
-                    y.PerformanceRunResult?.RawExecutionResults ?? []))
-            .ToArray();
-
-        return markdownTableConverter.ConvertToMarkdownTableString(summaryResults)
-               + "Raw results: \n"
-               + string.Join(", ", rawData);
-    }
-
 }
