@@ -4,8 +4,4 @@ using System.Collections.Generic;
 
 namespace Sailfish.Contracts.Public.Notifications;
 
-public class SailDiffAnalysisCompleteNotification(IEnumerable<SailDiffResult> testCaseResults, string resultsAsMarkdown) : INotification
-{
-    public IEnumerable<SailDiffResult> TestCaseResults { get; } = testCaseResults;
-    public string ResultsAsMarkdown { get; } = resultsAsMarkdown;
-}
+public record SailDiffAnalysisCompleteNotification(IEnumerable<SailDiffResult> TestCaseResults, string ResultsAsMarkdown) : INotification;

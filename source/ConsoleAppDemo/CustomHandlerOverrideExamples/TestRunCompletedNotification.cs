@@ -5,12 +5,12 @@ using Sailfish.Presentation;
 
 namespace PerformanceTestingUserInvokedConsoleApp.CustomHandlerOverrideExamples;
 
-public class CustomWriteToCloudHandler : INotificationHandler<TestRunCompletedNotification>
+public class TestRunCompletedNotificationHandler : INotificationHandler<TestRunCompletedNotification>
 {
     private readonly ICloudWriter cloudWriter;
     private readonly IRunSettings runSettings;
 
-    public CustomWriteToCloudHandler(ICloudWriter cloudWriter, IRunSettings runSettings)
+    public TestRunCompletedNotificationHandler(ICloudWriter cloudWriter, IRunSettings runSettings)
     {
         this.cloudWriter = cloudWriter;
         this.runSettings = runSettings;

@@ -10,18 +10,31 @@ using System.Threading.Tasks;
 
 namespace Sailfish.Execution;
 
-internal class CoreInvoker(object instance, MethodInfo method, PerformanceTimer testCasePerformanceTimer)
+internal class CoreInvoker
 {
-    private readonly List<MethodInfo> globalSetup = instance.FindMethodsDecoratedWithAttribute<SailfishGlobalSetupAttribute>();
-    private readonly List<MethodInfo> globalTeardown = instance.FindMethodsDecoratedWithAttribute<SailfishGlobalTeardownAttribute>();
-    private readonly object instance = instance;
-    private readonly List<MethodInfo> iterationSetup = instance.FindMethodsDecoratedWithAttribute<SailfishIterationSetupAttribute>();
-    private readonly List<MethodInfo> iterationTeardown = instance.FindMethodsDecoratedWithAttribute<SailfishIterationTeardownAttribute>();
+    private readonly List<MethodInfo> globalSetup;
+    private readonly List<MethodInfo> globalTeardown;
+    private readonly object instance;
+    private readonly List<MethodInfo> iterationSetup;
+    private readonly List<MethodInfo> iterationTeardown;
 
-    private readonly MethodInfo mainMethod = method;
-    private readonly List<MethodInfo> methodSetup = instance.FindMethodsDecoratedWithAttribute<SailfishMethodSetupAttribute>();
-    private readonly List<MethodInfo> methodTeardown = instance.FindMethodsDecoratedWithAttribute<SailfishMethodTeardownAttribute>();
-    private readonly PerformanceTimer testCasePerformanceTimer = testCasePerformanceTimer;
+    private readonly MethodInfo mainMethod;
+    private readonly List<MethodInfo> methodSetup;
+    private readonly List<MethodInfo> methodTeardown;
+    private readonly PerformanceTimer testCasePerformanceTimer;
+
+    public CoreInvoker(object instance, MethodInfo method, PerformanceTimer testCasePerformanceTimer)
+    {
+        globalSetup = instance.FindMethodsDecoratedWithAttribute<SailfishGlobalSetupAttribute>();
+        globalTeardown = instance.FindMethodsDecoratedWithAttribute<SailfishGlobalTeardownAttribute>();
+        this.instance = instance;
+        iterationSetup = instance.FindMethodsDecoratedWithAttribute<SailfishIterationSetupAttribute>();
+        iterationTeardown = instance.FindMethodsDecoratedWithAttribute<SailfishIterationTeardownAttribute>();
+        mainMethod = method;
+        methodSetup = instance.FindMethodsDecoratedWithAttribute<SailfishMethodSetupAttribute>();
+        methodTeardown = instance.FindMethodsDecoratedWithAttribute<SailfishMethodTeardownAttribute>();
+        this.testCasePerformanceTimer = testCasePerformanceTimer;
+    }
 
     public int OverheadEstimate { get; set; }
     private string MainMethodName => mainMethod.Name;

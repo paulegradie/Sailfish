@@ -4,7 +4,4 @@ using System.Collections.Generic;
 
 namespace Sailfish.Contracts.Public.Notifications;
 
-public class TestRunCompletedNotification(IEnumerable<ClassExecutionSummaryTrackingFormat> classExecutionSummaries) : INotification
-{
-    public IEnumerable<ClassExecutionSummaryTrackingFormat> ClassExecutionSummaries { get; } = classExecutionSummaries;
-}
+public record TestRunCompletedNotification(IEnumerable<ClassExecutionSummaryTrackingFormat> ClassExecutionSummaries) : INotification;

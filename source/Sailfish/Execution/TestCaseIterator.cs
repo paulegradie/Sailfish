@@ -8,7 +8,9 @@ namespace Sailfish.Execution;
 
 internal interface ITestCaseIterator
 {
-    Task<TestCaseExecutionResult> Iterate(TestInstanceContainer testInstanceContainer, bool DisableOverheadEstimation,
+    Task<TestCaseExecutionResult> Iterate(
+        TestInstanceContainer testInstanceContainer,
+        bool disableOverheadEstimation,
         CancellationToken cancellationToken);
 }
 
@@ -41,9 +43,7 @@ internal class TestCaseIterator : ITestCaseIterator
         testInstanceContainer.CoreInvoker.SetTestCaseStart();
         for (var i = 0; i < iterations; i++)
         {
-            logger.Log(LogLevel.Information, "      ---- iteration {CurrentIteration} of {TotalIterations}", i + 1,
-                iterations);
-            cancellationToken.ThrowIfCancellationRequested();
+            logger.Log(LogLevel.Information, "      ---- iteration {CurrentIteration} of {TotalIterations}", i + 1, iterations);
 
             try
             {
@@ -54,11 +54,9 @@ internal class TestCaseIterator : ITestCaseIterator
                 return CatchAndReturn(testInstanceContainer, ex);
             }
 
-            cancellationToken.ThrowIfCancellationRequested();
 
             await testInstanceContainer.CoreInvoker.ExecutionMethod(cancellationToken).ConfigureAwait(false);
 
-            cancellationToken.ThrowIfCancellationRequested();
 
             try
             {
@@ -84,21 +82,27 @@ internal class TestCaseIterator : ITestCaseIterator
         return new TestCaseExecutionResult(testInstanceContainer);
     }
 
-    private async Task<TestCaseExecutionResult> WarmupIterations(TestInstanceContainer testInstanceContainer,
+    private async Task<TestCaseExecutionResult> WarmupIterations(
+        TestInstanceContainer testInstanceContainer,
         CancellationToken cancellationToken)
     {
         for (var i = 0; i < testInstanceContainer.NumWarmupIterations; i++)
         {
-            logger.Log(LogLevel.Information, "      ---- warmup iteration {CurrentIteration} of {TotalIterations}",
-                i + 1,
-                testInstanceContainer.NumWarmupIterations);
-
-            cancellationToken.ThrowIfCancellationRequested();
+            logger.Log(LogLevel.Information, "      ---- warmup iteration {CurrentIteration} of {TotalIterations}", i + 1, testInstanceContainer.NumWarmupIterations);
 
             try
             {
                 await testInstanceContainer.CoreInvoker.IterationSetup(cancellationToken).ConfigureAwait(false);
-                await testInstanceContainer.CoreInvoker.ExecutionMethod(cancellationToken, false).ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                return CatchAndReturn(testInstanceContainer, ex);
+            }
+
+            await testInstanceContainer.CoreInvoker.ExecutionMethod(cancellationToken, false).ConfigureAwait(false);
+
+            try
+            {
                 await testInstanceContainer.CoreInvoker.IterationTearDown(cancellationToken).ConfigureAwait(false);
             }
             catch (Exception ex)
@@ -110,13 +114,14 @@ internal class TestCaseIterator : ITestCaseIterator
         return new TestCaseExecutionResult(testInstanceContainer);
     }
 
+
     private TestCaseExecutionResult CatchAndReturn(TestInstanceContainer testProvider, Exception ex)
     {
         if (ex is NullReferenceException)
         {
             ex = new NullReferenceException(ex.Message + Environment.NewLine + $"Null variable or property encountered in method: {testProvider.ExecutionMethod.Name}");
         }
-        
+
         logger.Log(LogLevel.Error, ex, "An exception occured during test execution");
         return new TestCaseExecutionResult(testProvider, ex);
     }

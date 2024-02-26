@@ -43,8 +43,7 @@ internal class TestAdapterExecutionEngine : ITestAdapterExecutionEngine
         CancellationToken cancellationToken)
     {
         var rawExecutionResults = new List<(string, TestClassResultGroup)>();
-        var testCaseGroups = testCases.GroupBy(testCase =>
-            testCase.GetPropertyHelper(SailfishManagedProperty.SailfishTypeProperty));
+        var testCaseGroups = testCases.GroupBy(testCase => testCase.GetPropertyHelper(SailfishManagedProperty.SailfishTypeProperty));
 
         foreach (var unsortedTestCaseGroup in testCaseGroups)
         {
@@ -78,7 +77,7 @@ internal class TestAdapterExecutionEngine : ITestAdapterExecutionEngine
                     testProvider,
                     memoryCache,
                     providerPropertiesCacheKey,
-                    unsortedTestCaseGroup,
+                    unsortedTestCaseGroup.Cast<dynamic>().ToList(), // gross, but we need to send the object model testcase through the core lib. hmm
                     cancellationToken);
                 groupResults.AddRange(results);
 

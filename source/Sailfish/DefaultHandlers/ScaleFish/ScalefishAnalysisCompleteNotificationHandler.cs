@@ -11,15 +11,20 @@ using System.Threading.Tasks;
 
 namespace Sailfish.DefaultHandlers.ScaleFish;
 
-internal class ScalefishAnalysisCompleteNotificationHandler(IRunSettings runSettings) : INotificationHandler<ScalefishAnalysisCompleteNotification>
+internal class ScaleFishAnalysisCompleteNotificationHandler : INotificationHandler<ScaleFishAnalysisCompleteNotification>
 {
-    private readonly IRunSettings runSettings = runSettings;
+    private readonly IRunSettings runSettings;
 
-    public async Task Handle(ScalefishAnalysisCompleteNotification notification, CancellationToken cancellationToken)
+    public ScaleFishAnalysisCompleteNotificationHandler(IRunSettings runSettings)
+    {
+        this.runSettings = runSettings;
+    }
+
+    public async Task Handle(ScaleFishAnalysisCompleteNotification notification, CancellationToken cancellationToken)
     {
         if (!Directory.Exists(runSettings.LocalOutputDirectory)) Directory.CreateDirectory(runSettings.LocalOutputDirectory);
 
-        await WriteResults(DefaultFileSettings.DefaultScalefishFileName(runSettings.TimeStamp), notification.ScalefishResultMarkdown, cancellationToken);
+        await WriteResults(DefaultFileSettings.DefaultScalefishFileName(runSettings.TimeStamp), notification.ScaleFishResultMarkdown, cancellationToken);
         await WriteModels(DefaultFileSettings.DefaultScalefishModelFileName(runSettings.TimeStamp), notification.TestClassComplexityResults, cancellationToken);
     }
 

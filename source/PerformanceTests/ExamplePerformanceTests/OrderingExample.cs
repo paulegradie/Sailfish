@@ -18,12 +18,12 @@ public class OrderingExample
     [SailfishMethod(Order = 1)]
     public void First()
     {
-        Thread.Sleep(100);
+        Thread.Sleep(1_000);
     }
 
     [SailfishMethod(Order = 3)]
     public void Last()
     {
-        Thread.Sleep(200);
+        Thread.Sleep(1_000);
     }
 }

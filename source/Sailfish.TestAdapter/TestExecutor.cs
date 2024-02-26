@@ -27,15 +27,6 @@ public class TestExecutor : ITestExecutor
     private readonly object lockObject = new();
     public bool Cancelled;
 
-    public void RunTests(IEnumerable<TestCase>? testCases, IRunContext? runContext, IFrameworkHandle? frameworkHandle)
-    {
-        Debug.Assert(frameworkHandle is not null);
-        var tests = (testCases?.ToList()) ?? throw new Exception("Tests was null in the test case list!");
-        if (runContext is null || frameworkHandle is null) throw new Exception("Wow more nulls");
-
-        ExecuteTests(tests, frameworkHandle);
-    }
-
     public void RunTests(IEnumerable<string>? sources, IRunContext? runContext, IFrameworkHandle? frameworkHandle)
     {
         if (sources is null) throw new SailfishException("No sources provided to run method. Sources was null");
@@ -47,6 +38,15 @@ public class TestExecutor : ITestExecutor
         var testCases = TestDiscovery.DiscoverTests(enumeratedSources, frameworkHandle).ToList();
 
         RunTests(testCases, runContext, frameworkHandle);
+    }
+
+    public void RunTests(IEnumerable<TestCase>? testCases, IRunContext? runContext, IFrameworkHandle? frameworkHandle)
+    {
+        Debug.Assert(frameworkHandle is not null);
+        var tests = (testCases?.ToList()) ?? throw new Exception("Tests was null in the test case list!");
+        if (runContext is null || frameworkHandle is null) throw new Exception("Wow more nulls");
+
+        ExecuteTests(tests, frameworkHandle);
     }
 
     public void Cancel()

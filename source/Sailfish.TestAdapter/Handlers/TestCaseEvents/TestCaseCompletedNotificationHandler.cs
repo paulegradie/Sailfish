@@ -71,15 +71,28 @@ internal class TestCaseCompletedNotificationHandler : INotificationHandler<TestC
         var classExecutionSummaries = notification.ClassExecutionSummaryTrackingFormat.ToSummaryFormat();
         var testOutputWindowMessage = sailfishConsoleWindowFormatter.FormConsoleWindowMessageForSailfish([classExecutionSummaries]);
 
-        var medianTestRuntime = classExecutionSummaries
-                                    .CompiledTestCaseResults
-                                    .Single().PerformanceRunResult?.Median ??
-                                throw new SailfishException("Error computing compiled results");
+        var currentTestCase = notification
+            .TestCaseGroup
+            .Select(x => (TestCase)x)
+            .Single(x => x.FullyQualifiedName.EndsWith(notification.TestInstanceContainerExternal.TestCaseId.DisplayName));
 
-        var currentTestCase = notification.TestCaseGroup.Where(x => MatchCurrentTestCase(x, notification.TestInstanceContainerExternal.TestCaseId.DisplayName))
-                .ToList()
-                .Single()
-            as TestCase ?? throw new SailfishException($"Failed to resolve the test case {notification.TestInstanceContainerExternal.TestCaseId.DisplayName}");
+
+        var compiledTestCaseResult = classExecutionSummaries.CompiledTestCaseResults.Single();
+        if (compiledTestCaseResult.Exception is not null)
+        {
+            await mediator.Publish(new FrameworkTestCaseEndNotification(
+                testOutputWindowMessage,
+                notification.TestInstanceContainerExternal.PerformanceTimer.GetIterationStartTime(),
+                notification.TestInstanceContainerExternal.PerformanceTimer.GetIterationStopTime(),
+                0,
+                currentTestCase,
+                StatusCode.Failure,
+                compiledTestCaseResult.Exception
+            ), cancellationToken);
+            return;
+        }
+
+        var medianTestRuntime = compiledTestCaseResult.PerformanceRunResult?.Median ?? throw new SailfishException("Error computing compiled results");
 
         var preloadedPreviousRuns = await GetLastRun(cancellationToken);
         if (preloadedPreviousRuns.Count > 0 && !runSettings.DisableAnalysisGlobally)
@@ -108,7 +121,7 @@ internal class TestCaseCompletedNotificationHandler : INotificationHandler<TestC
         ), cancellationToken);
     }
 
-    bool MatchCurrentTestCase(dynamic dynamicTestCase, string currentTestCaseDisplayName)
+    private static bool MatchCurrentTestCase(dynamic dynamicTestCase, string currentTestCaseDisplayName)
     {
         if (dynamicTestCase is not TestCase testCase) throw new SailfishException($"Failed to resolve the test case {currentTestCaseDisplayName}");
         return testCase.DisplayName == currentTestCaseDisplayName;
