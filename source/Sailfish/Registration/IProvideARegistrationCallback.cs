@@ -6,5 +6,7 @@ namespace Sailfish.Registration;
 
 public interface IProvideARegistrationCallback
 {
-    Task RegisterAsync(ContainerBuilder builder, CancellationToken cancellationToken = default);
+    Task RegisterAsync(
+        ContainerBuilder builder,
+        CancellationToken cancellationToken = default);
 }
