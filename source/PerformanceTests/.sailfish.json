@@ -5,7 +5,7 @@
     "SampleSizeOverride": null
   },
   "SailDiffSettings": {
-    "TestType": "TTest",
+    "TestType": "TwoSampleWilcoxonSignedRankTest",
     "Alpha": 0.005,
     "Disabled": false
   },

@@ -53,7 +53,7 @@ internal class DefaultLogger : ILogger
     {
         var lines = new List<string> { template, ex.Message };
         if (ex.StackTrace is not null)
-            lines.AddRange(ex.StackTrace.Split());
+            lines.Add(ex.StackTrace);
 
         if (ex.InnerException is not null)
         {
@@ -61,7 +61,7 @@ internal class DefaultLogger : ILogger
             if (innerExceptionMessage is not null) lines.Add(innerExceptionMessage);
 
             var innerStackTrace = ex.InnerException?.StackTrace;
-            if (innerStackTrace is not null) lines.AddRange(innerStackTrace.Split(Environment.NewLine));
+            if (innerStackTrace is not null) lines.Add(innerStackTrace);
         }
 
         JoinAndWriteLines(level, lines);

@@ -13,9 +13,14 @@ using System.Threading.Tasks;
 
 namespace Sailfish.DefaultHandlers.SailDiff;
 
-internal class SailDiffAnalysisCompleteNotificationHandler(IRunSettings runSettings) : INotificationHandler<SailDiffAnalysisCompleteNotification>
+internal class SailDiffAnalysisCompleteNotificationHandler : INotificationHandler<SailDiffAnalysisCompleteNotification>
 {
-    private readonly IRunSettings runSettings = runSettings;
+    private readonly IRunSettings runSettings;
+
+    public SailDiffAnalysisCompleteNotificationHandler(IRunSettings runSettings)
+    {
+        this.runSettings = runSettings;
+    }
 
     public async Task Handle(SailDiffAnalysisCompleteNotification notification, CancellationToken cancellationToken)
     {

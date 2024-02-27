@@ -5,8 +5,7 @@ using System.Collections.Generic;
 
 namespace Sailfish.Contracts.Public.Notifications;
 
-public record TestCaseCompletedNotification(
+public record TestClassCompletedNotification(
     ClassExecutionSummaryTrackingFormat ClassExecutionSummaryTrackingFormat,
     TestInstanceContainerExternal TestInstanceContainerExternal,
-    IEnumerable<dynamic> TestCaseGroup
-) : INotification;
+    IEnumerable<dynamic> TestCaseGroup) : INotification;

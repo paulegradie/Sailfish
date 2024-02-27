@@ -1,6 +1,7 @@
 using Microsoft.VisualStudio.TestPlatform.ObjectModel;
 using Sailfish.Exceptions;
 using Sailfish.Execution;
+using Sailfish.Logging;
 using Sailfish.TestAdapter.TestProperties;
 using System;
 using System.Collections.Generic;
@@ -19,20 +20,27 @@ internal interface ITestAdapterExecutionEngine
         CancellationToken cancellationToken);
 }
 
-internal class TestAdapterExecutionEngine(
-    ITestInstanceContainerCreator testInstanceContainerCreator,
-    IClassExecutionSummaryCompiler classExecutionSummaryCompiler,
-    ISailfishExecutionEngine engine,
-    IAdapterConsoleWriter consoleWriter
-    ) : ITestAdapterExecutionEngine
+internal class TestAdapterExecutionEngine : ITestAdapterExecutionEngine
 {
     private const string MemoryCacheName = "GlobalStateMemoryCache";
-    private readonly IClassExecutionSummaryCompiler classExecutionSummaryCompiler = classExecutionSummaryCompiler;
-    private readonly IAdapterConsoleWriter consoleWriter = consoleWriter;
-    private readonly ISailfishExecutionEngine engine = engine;
-    private readonly ITestInstanceContainerCreator testInstanceContainerCreator = testInstanceContainerCreator;
+    private readonly IClassExecutionSummaryCompiler classExecutionSummaryCompiler;
+    private readonly ISailfishExecutionEngine engine;
+    private readonly ILogger logger;
+    private readonly ITestInstanceContainerCreator testInstanceContainerCreator;
 
-    public async Task<List<IClassExecutionSummary>> Execute(List<TestCase> testCases, CancellationToken cancellationToken)
+    public TestAdapterExecutionEngine(ITestInstanceContainerCreator testInstanceContainerCreator,
+        IClassExecutionSummaryCompiler classExecutionSummaryCompiler,
+        ISailfishExecutionEngine engine,
+        ILogger logger)
+    {
+        this.classExecutionSummaryCompiler = classExecutionSummaryCompiler;
+        this.engine = engine;
+        this.logger = logger;
+        this.testInstanceContainerCreator = testInstanceContainerCreator;
+    }
+
+    public async Task<List<IClassExecutionSummary>> Execute(List<TestCase> testCases,
+        CancellationToken cancellationToken)
     {
         var rawExecutionResults = new List<(string, TestClassResultGroup)>();
         var testCaseGroups = testCases.GroupBy(testCase => testCase.GetPropertyHelper(SailfishManagedProperty.SailfishTypeProperty));
@@ -46,8 +54,10 @@ internal class TestAdapterExecutionEngine(
             var providerForCurrentTestCases = testInstanceContainerCreator
                 .CreateTestContainerInstanceProviders(
                     testType,
-                    CreatePropertyFilter(GetTestCaseProperties(SailfishManagedProperty.SailfishFormedVariableSectionDefinitionProperty, testCases)),
-                    CreateMethodFilter(GetTestCaseProperties(SailfishManagedProperty.SailfishMethodFilterProperty, testCases)));
+                    CreatePropertyFilter(GetTestCaseProperties(
+                        SailfishManagedProperty.SailfishFormedVariableSectionDefinitionProperty, testCases)),
+                    CreateMethodFilter(GetTestCaseProperties(SailfishManagedProperty.SailfishMethodFilterProperty,
+                        testCases)));
 
             var totalTestProviderCount = providerForCurrentTestCases.Count - 1;
 
@@ -58,14 +68,16 @@ internal class TestAdapterExecutionEngine(
             for (var i = 0; i < providerForCurrentTestCases.Count; i++)
             {
                 var testProvider = providerForCurrentTestCases[i];
-                var providerPropertiesCacheKey = testProvider.Test.FullName ?? throw new SailfishException($"Failed to read the FullName of {testProvider.Test.Name}");
+                var providerPropertiesCacheKey = testProvider.Test.FullName ??
+                                                 throw new SailfishException(
+                                                     $"Failed to read the FullName of {testProvider.Test.Name}");
                 var results = await engine.ActivateContainer(
                     i,
                     totalTestProviderCount,
                     testProvider,
                     memoryCache,
                     providerPropertiesCacheKey,
-                    unsortedTestCaseGroup,
+                    unsortedTestCaseGroup.Cast<dynamic>().ToList(), // gross, but we need to send the object model testcase through the core lib. hmm
                     cancellationToken);
                 groupResults.AddRange(results);
 
@@ -76,7 +88,8 @@ internal class TestAdapterExecutionEngine(
             rawExecutionResults.Add((unsortedTestCaseGroup.Key, new TestClassResultGroup(testType, groupResults)));
         }
 
-        return classExecutionSummaryCompiler.CompileToSummaries(rawExecutionResults.Select(x => x.Item2)).ToList();
+        var summaries = classExecutionSummaryCompiler.CompileToSummaries(rawExecutionResults.Select(x => x.Item2)).ToList();
+        return summaries;
     }
 
     private static IEnumerable<string> GetTestCaseProperties(TestProperty testProperty, IEnumerable<TestCase> testCases)
@@ -91,7 +104,7 @@ internal class TestAdapterExecutionEngine(
         var assembly = LoadAssemblyFromDll(aTestCase.Source);
         testType = assembly.GetType(testTypeFullName, true, true);
         if (testType is not null) return false;
-        consoleWriter.WriteString($"Unable to find the following testType: {testTypeFullName}");
+        logger.Log(LogLevel.Information, $"Unable to find the following testType: {testTypeFullName}");
         return true;
     }
 
@@ -109,6 +122,7 @@ internal class TestAdapterExecutionEngine(
 
     private static Func<PropertySet, bool> CreatePropertyFilter(IEnumerable<string> availableVariableSections)
     {
-        return currentPropertySet => availableVariableSections.Contains(currentPropertySet.FormTestCaseVariableSection());
+        return currentPropertySet =>
+            availableVariableSections.Contains(currentPropertySet.FormTestCaseVariableSection());
     }
 }

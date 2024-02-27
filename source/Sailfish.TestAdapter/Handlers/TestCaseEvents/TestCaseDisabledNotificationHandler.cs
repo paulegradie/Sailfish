@@ -1,19 +1,24 @@
 ﻿using MediatR;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel;
-using Sailfish.Contracts.Private.ExecutionCallbackNotifications;
-using Sailfish.TestAdapter.Execution;
+using Sailfish.Contracts.Public.Notifications;
+using Sailfish.TestAdapter.Display.VSTestFramework;
 using System;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Sailfish.TestAdapter.FrameworkHandlers;
+namespace Sailfish.TestAdapter.Handlers.TestCaseEvents;
 
-internal class ExecutionDisabledNotificationHandler(IAdapterConsoleWriter consoleWriter) : INotificationHandler<ExecutionDisabledNotification>
+internal class TestCaseDisabledNotificationHandler : INotificationHandler<TestCaseDisabledNotification>
 {
-    private readonly IAdapterConsoleWriter consoleWriter = consoleWriter;
+    private readonly ITestFrameworkWriter testFrameworkWriter;
 
-    public async Task Handle(ExecutionDisabledNotification notification, CancellationToken cancellationToken)
+    public TestCaseDisabledNotificationHandler(ITestFrameworkWriter testFrameworkWriter)
+    {
+        this.testFrameworkWriter = testFrameworkWriter;
+    }
+
+    public async Task Handle(TestCaseDisabledNotification notification, CancellationToken cancellationToken)
     {
         await Task.CompletedTask;
         if (notification.TestCaseGroup is null) return; // no idea why this would happen, but exceptions are not the way
@@ -42,7 +47,7 @@ internal class ExecutionDisabledNotificationHandler(IAdapterConsoleWriter consol
             EndTime = default
         };
 
-        consoleWriter.RecordEnd(testCase, testResult.Outcome);
-        consoleWriter.RecordResult(testResult);
+        testFrameworkWriter.RecordEnd(testCase, testResult.Outcome);
+        testFrameworkWriter.RecordResult(testResult);
     }
 }

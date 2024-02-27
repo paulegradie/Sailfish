@@ -37,18 +37,20 @@ internal static class InvocationReflectionExtensionMethods
         var parameters = method.GetParameters().ToList();
         var arguments = new List<object> { };
         var errorMsg = $"The '{method.Name}' method in class '{instance.GetType().Name}' may only receive a single '{nameof(CancellationToken)}' parameter";
-        if (parameters.Count > 1)
+        switch (parameters.Count)
         {
-            throw new TestFormatException(errorMsg);
-        }
-        if (parameters.Count == 1)
-        {
-            var paramIsCancellationToken = parameters.Single().ParameterType == typeof(CancellationToken);
-            if (!paramIsCancellationToken)
-            {
+            case > 1:
                 throw new TestFormatException(errorMsg);
-            }
-            arguments.Add(cancellationToken);
+            case 1:
+                {
+                    var paramIsCancellationToken = parameters.Single().ParameterType == typeof(CancellationToken);
+                    if (!paramIsCancellationToken)
+                    {
+                        throw new TestFormatException(errorMsg);
+                    }
+                    arguments.Add(cancellationToken);
+                    break;
+                }
         }
 
         if (method.IsAsyncMethod())

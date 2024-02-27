@@ -13,9 +13,14 @@ internal interface IExecutionSummaryWriter
     Task Write(List<IClassExecutionSummary> executionSummaries, CancellationToken cancellationToken);
 }
 
-internal class ExecutionSummaryWriter(IMediator mediator, IRunSettings runSettings) : IExecutionSummaryWriter
+internal class ExecutionSummaryWriter : IExecutionSummaryWriter
 {
-    private readonly IMediator mediator = mediator;
+    private readonly IMediator mediator;
+
+    public ExecutionSummaryWriter(IMediator mediator, IRunSettings runSettings)
+    {
+        this.mediator = mediator;
+    }
 
     public async Task Write(
         List<IClassExecutionSummary> executionSummaries,

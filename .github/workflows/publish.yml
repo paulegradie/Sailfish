@@ -36,7 +36,7 @@ jobs:
         env:
           NUM: ${{ github.run_number }}
           ACTIONS_ALLOW_UNSECURE_COMMANDS: true
-        run: echo ::set-env name=VERSION::1.6.$(($NUM-267))  # to reset, get latest build number from master and add 1
+        run: echo ::set-env name=VERSION::2.0.$(($NUM-278))  # to reset, get latest build number from master and add 1
 
       - name: Test version (write)
         run: echo ${VERSION}

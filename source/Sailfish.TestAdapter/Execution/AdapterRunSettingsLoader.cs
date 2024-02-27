@@ -9,12 +9,7 @@ namespace Sailfish.TestAdapter.Execution;
 
 public static class AdapterRunSettingsLoader
 {
-    public static IRunSettings LoadAdapterRunSettings()
-    {
-        return RetrieveRunSettings();
-    }
-
-    private static IRunSettings RetrieveRunSettings()
+    public static IRunSettings RetrieveAndLoadAdapterRunSettings()
     {
         var parsedSettings = ParseSettings();
 
