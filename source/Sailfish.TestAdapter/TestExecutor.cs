@@ -60,10 +60,12 @@ public class TestExecutor : ITestExecutor
 
     private void ExecuteTests(List<TestCase> testCases, IFrameworkHandle frameworkHandle)
     {
+        frameworkHandle.EnableShutdownAfterTestRun = true;
+
         var builder = new ContainerBuilder();
         try
         {
-            var runSettings = AdapterRunSettingsLoader.LoadAdapterRunSettings();
+            var runSettings = AdapterRunSettingsLoader.RetrieveAndLoadAdapterRunSettings();
             builder.RegisterSailfishTypes(runSettings, new TestAdapterRegistrations(frameworkHandle));
 
             var refTestType = RetrieveReferenceTypeForTestProject(testCases);
@@ -96,11 +98,10 @@ public class TestExecutor : ITestExecutor
         }
     }
 
-    private static void HandleStartupException(IFrameworkHandle frameworkHandle, List<TestCase> testCases, Exception ex)
+    private static void HandleStartupException(ITestExecutionRecorder frameworkHandle, List<TestCase> testCases, Exception ex)
     {
-        frameworkHandle.EnableShutdownAfterTestRun = true;
         frameworkHandle.SendMessage(
-            TestMessageLevel.Error,
+            TestMessageLevel.Warning, // error level will fail the test suite
             $"Encountered exception while executing tests: {ex.Message}");
         foreach (var testCase in testCases)
         {
