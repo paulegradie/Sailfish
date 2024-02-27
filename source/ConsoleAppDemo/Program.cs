@@ -1,5 +1,6 @@
 ﻿using PerformanceTestingUserInvokedConsoleApp;
 using PerformanceTests;
+using PerformanceTests.ExamplePerformanceTests;
 using Sailfish;
 using Sailfish.Logging;
 using Serilog.Events;
@@ -8,13 +9,13 @@ var settings = RunSettingsBuilder
     .CreateBuilder()
     .TestsFromAssembliesContaining(typeof(PerformanceTestProjectDiscoveryAnchor))
     .ProvidersFromAssembliesContaining(typeof(AppRegistrationProvider))
-    // .WithTestNames(typeof(TestsRunIfException).FullName!)
+    .WithTestNames(typeof(ReadmeExample).FullName!)
     .WithSailDiff()
     .WithScaleFish()
-    .WithGlobalSampleSize(5)
+    // .WithGlobalSampleSize(30)
     .WithMinimumLogLevel(LogLevel.Information)
     // .WithCustomLogger(new CustomLogger(new LoggerConfiguration().WriteTo.Console().CreateLogger()))
-    .DisableStreamingTrackingUpdates()
+    // .DisableStreamingTrackingUpdates()
     .WithLocalOutputDirectory("my_custom_directory")
     .Build();
 

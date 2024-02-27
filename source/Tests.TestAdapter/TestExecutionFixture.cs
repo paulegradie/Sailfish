@@ -8,6 +8,7 @@ using Sailfish.Registration;
 using Sailfish.TestAdapter;
 using Sailfish.TestAdapter.Discovery;
 using Sailfish.TestAdapter.Execution;
+using Sailfish.TestAdapter.Registrations;
 using Shouldly;
 using System.Collections.Generic;
 using System.Linq;

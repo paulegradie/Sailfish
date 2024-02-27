@@ -3,7 +3,9 @@ using Sailfish.Analysis.ScaleFish;
 using Sailfish.Contracts.Public.Models;
 using Sailfish.Contracts.Public.Notifications;
 using Sailfish.Contracts.Public.Requests;
+using Sailfish.Logging;
 using Sailfish.Presentation;
+using Sailfish.Presentation.Console;
 using System;
 using System.Linq;
 using System.Threading;
@@ -18,7 +20,7 @@ internal interface IAdapterScaleFish : IScaleFishInternal
 internal class AdapterScaleFish : IAdapterScaleFish
 {
     private readonly IComplexityComputer complexityComputer;
-    private readonly IAdapterConsoleWriter consoleWriter;
+    private readonly ILogger logger;
     private readonly IMarkdownTableConverter markdownTableConverter;
     private readonly IMediator mediator;
     private readonly IRunSettings runSettings;
@@ -28,13 +30,13 @@ internal class AdapterScaleFish : IAdapterScaleFish
         IRunSettings runSettings,
         IComplexityComputer complexityComputer,
         IMarkdownTableConverter markdownTableConverter,
-        IAdapterConsoleWriter consoleWriter)
+        ILogger logger)
     {
         this.mediator = mediator;
         this.runSettings = runSettings;
         this.complexityComputer = complexityComputer;
         this.markdownTableConverter = markdownTableConverter;
-        this.consoleWriter = consoleWriter;
+        this.logger = logger;
     }
 
     public async Task Analyze(CancellationToken cancellationToken)
@@ -51,12 +53,12 @@ internal class AdapterScaleFish : IAdapterScaleFish
             if (!complexityResults.Any()) return;
 
             var complexityMarkdown = markdownTableConverter.ConvertScaleFishResultToMarkdown(complexityResults);
-            consoleWriter.WriteString(complexityMarkdown);
-            await mediator.Publish(new ScalefishAnalysisCompleteNotification(complexityMarkdown, complexityResults), cancellationToken).ConfigureAwait(false);
+            logger.Log(LogLevel.Information, complexityMarkdown);
+            await mediator.Publish(new ScaleFishAnalysisCompleteNotification(complexityMarkdown, complexityResults), cancellationToken).ConfigureAwait(false);
         }
         catch (Exception ex)
         {
-            consoleWriter.WriteString(ex.Message);
+            logger.Log(LogLevel.Error, ex.Message);
         }
     }
 }

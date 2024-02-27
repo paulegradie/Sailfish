@@ -4,7 +4,6 @@ using Sailfish.Contracts.Public.Notifications;
 using Sailfish.Contracts.Public.Serialization.Tracking.V1;
 using Sailfish.Logging;
 using Sailfish.Presentation;
-using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -13,20 +12,20 @@ using System.Threading.Tasks;
 
 namespace Sailfish.DefaultHandlers.Sailfish;
 
-public class TestCaseCompletedNotificationHandler : INotificationHandler<TestCaseCompletedNotification>
+public class TestClassCompletedNotificationHandler : INotificationHandler<TestClassCompletedNotification>
 {
     private readonly ILogger logger;
     private readonly IRunSettings runSettings;
     private readonly ITrackingFileSerialization trackingFileSerialization;
 
-    public TestCaseCompletedNotificationHandler(ITrackingFileSerialization trackingFileSerialization, IRunSettings runSettings, ILogger logger)
+    public TestClassCompletedNotificationHandler(ITrackingFileSerialization trackingFileSerialization, IRunSettings runSettings, ILogger logger)
     {
         this.logger = logger;
         this.runSettings = runSettings;
         this.trackingFileSerialization = trackingFileSerialization;
     }
 
-    public async Task Handle(TestCaseCompletedNotification notification, CancellationToken cancellationToken)
+    public async Task Handle(TestClassCompletedNotification notification, CancellationToken cancellationToken)
     {
         if (runSettings.StreamTrackingUpdates is false) return;
         if (runSettings.CreateTrackingFiles is false) return;
@@ -44,13 +43,13 @@ public class TestCaseCompletedNotificationHandler : INotificationHandler<TestCas
         streamReader.Close();
 
         var classExecutionSummaryTrackingFormats = string.IsNullOrEmpty(fileContents)
-            ? new List<ClassExecutionSummaryTrackingFormat>()
-            : trackingFileSerialization.Deserialize(fileContents)?.ToList() ?? new List<ClassExecutionSummaryTrackingFormat>();
+            ? []
+            : trackingFileSerialization.Deserialize(fileContents)?.ToList() ?? [];
 
-        foreach (var failedSummary in notification.TestCaseExecutionResult.GetFailedTestCases())
+        foreach (var failedSummary in notification.ClassExecutionSummaryTrackingFormat.GetFailedTestCases())
             logger.Log(LogLevel.Warning, failedSummary.Exception!, "Test case exception encountered");
 
-        var success = notification.TestCaseExecutionResult.FilterForSuccessfulTestCases();
+        var success = notification.ClassExecutionSummaryTrackingFormat.FilterForSuccessfulTestCases();
         if (!success.GetSuccessfulTestCases().Any()) return;
         var preExistingSummary = classExecutionSummaryTrackingFormats.FirstOrDefault(x => x.TestClass.FullName == success.TestClass.FullName);
         if (preExistingSummary is not null)

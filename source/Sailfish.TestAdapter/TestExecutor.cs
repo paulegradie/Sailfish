@@ -6,6 +6,7 @@ using Sailfish.Exceptions;
 using Sailfish.Registration;
 using Sailfish.TestAdapter.Discovery;
 using Sailfish.TestAdapter.Execution;
+using Sailfish.TestAdapter.Registrations;
 using Sailfish.TestAdapter.TestProperties;
 using System;
 using System.Collections.Generic;
@@ -26,6 +27,19 @@ public class TestExecutor : ITestExecutor
     private readonly object lockObject = new();
     public bool Cancelled;
 
+    public void RunTests(IEnumerable<string>? sources, IRunContext? runContext, IFrameworkHandle? frameworkHandle)
+    {
+        if (sources is null) throw new SailfishException("No sources provided to run method. Sources was null");
+        var enumeratedSources = sources.ToList();
+        if (runContext is null || frameworkHandle is null)
+            throw new SailfishException(
+                $"Nulls encountered. runContext: {runContext}, frameworkHandle: {frameworkHandle}");
+
+        var testCases = TestDiscovery.DiscoverTests(enumeratedSources, frameworkHandle).ToList();
+
+        RunTests(testCases, runContext, frameworkHandle);
+    }
+
     public void RunTests(IEnumerable<TestCase>? testCases, IRunContext? runContext, IFrameworkHandle? frameworkHandle)
     {
         Debug.Assert(frameworkHandle is not null);
@@ -33,17 +47,6 @@ public class TestExecutor : ITestExecutor
         if (runContext is null || frameworkHandle is null) throw new Exception("Wow more nulls");
 
         ExecuteTests(tests, frameworkHandle);
-    }
-
-    public void RunTests(IEnumerable<string>? sources, IRunContext? runContext, IFrameworkHandle? frameworkHandle)
-    {
-        if (sources is null) throw new SailfishException("No sources provided to run method. Sources was null");
-        var enumeratedSources = sources.ToList();
-        if (runContext is null || frameworkHandle is null) throw new SailfishException($"Nulls encountered. runContext: {runContext}, frameworkHandle: {frameworkHandle}");
-
-        var testCases = TestDiscovery.DiscoverTests(enumeratedSources, frameworkHandle).ToList();
-
-        ExecuteTests(testCases, frameworkHandle);
     }
 
     public void Cancel()
@@ -57,10 +60,12 @@ public class TestExecutor : ITestExecutor
 
     private void ExecuteTests(List<TestCase> testCases, IFrameworkHandle frameworkHandle)
     {
+        frameworkHandle.EnableShutdownAfterTestRun = true;
+
+        var builder = new ContainerBuilder();
         try
         {
-            var runSettings = AdapterRunSettingsLoader.LoadAdapterRunSettings();
-            var builder = new ContainerBuilder();
+            var runSettings = AdapterRunSettingsLoader.RetrieveAndLoadAdapterRunSettings();
             builder.RegisterSailfishTypes(runSettings, new TestAdapterRegistrations(frameworkHandle));
 
             var refTestType = RetrieveReferenceTypeForTestProject(testCases);
@@ -70,30 +75,47 @@ public class TestExecutor : ITestExecutor
                     new[] { refTestType },
                     cancellationTokenSource.Token)
                 .Wait(cancellationTokenSource.Token);
+        }
+        catch (Exception ex)
+        {
+            HandleStartupException(frameworkHandle, testCases, ex);
+            return;
+        }
 
-            using var container = builder.Build();
+        var container = builder.Build();
+
+        try
+        {
             TestExecution.ExecuteTests(testCases, container, frameworkHandle, cancellationTokenSource.Token);
         }
         catch (Exception ex)
         {
-            frameworkHandle.EnableShutdownAfterTestRun = true;
-            frameworkHandle.SendMessage(TestMessageLevel.Informational, $"Encountered exception while executing tests: {ex.Message}");
-            foreach (var testCase in testCases)
-            {
-                var result = new TestResult(testCase)
-                {
-                    Outcome = TestOutcome.Skipped,
-                    ErrorMessage = ex.Message,
-                    ErrorStackTrace = ex.StackTrace
-                };
-                result.Messages.Add(new TestResultMessage(TestResultMessage.StandardErrorCategory, ex.Message));
-                frameworkHandle.RecordResult(result);
-                frameworkHandle.RecordEnd(testCase, TestOutcome.None);
-            }
+            HandleStartupException(frameworkHandle, testCases, ex);
+        }
+        finally
+        {
+            container.Dispose();
         }
     }
 
-    public static Type RetrieveReferenceTypeForTestProject(IReadOnlyCollection<TestCase> testCases)
+    private static void HandleStartupException(ITestExecutionRecorder frameworkHandle, List<TestCase> testCases, Exception ex)
+    {
+        frameworkHandle.SendMessage(
+            TestMessageLevel.Warning, // error level will fail the test suite
+            $"Encountered exception while executing tests: {ex.Message}");
+        foreach (var testCase in testCases)
+        {
+            var result = new TestResult(testCase)
+            {
+                Outcome = TestOutcome.Skipped, ErrorMessage = ex.Message, ErrorStackTrace = ex.StackTrace
+            };
+            result.Messages.Add(new TestResultMessage(TestResultMessage.StandardErrorCategory, ex.Message));
+            frameworkHandle.RecordResult(result);
+            frameworkHandle.RecordEnd(testCase, TestOutcome.Skipped);
+        }
+    }
+
+    internal static Type RetrieveReferenceTypeForTestProject(IReadOnlyCollection<TestCase> testCases)
     {
         var assembly = Assembly.LoadFile(testCases.First().Source);
         AppDomain.CurrentDomain.Load(assembly.GetName()); // is this necessary?

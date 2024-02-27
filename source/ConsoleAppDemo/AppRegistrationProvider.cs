@@ -13,7 +13,7 @@ public class AppRegistrationProvider : IProvideARegistrationCallback
     public async Task RegisterAsync(ContainerBuilder builder, CancellationToken cancellationToken)
     {
         builder.RegisterType<WebApplicationFactory<DemoApp>>();
-        builder.RegisterType<CustomWriteToCloudHandler>().As<INotificationHandler<TestRunCompletedNotification>>();
+        builder.RegisterType<TestRunCompletedNotificationHandler>().As<INotificationHandler<TestRunCompletedNotification>>();
         builder.RegisterType<CloudWriter>().As<ICloudWriter>();
         await Task.Yield();
     }

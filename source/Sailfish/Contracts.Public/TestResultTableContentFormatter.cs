@@ -4,18 +4,17 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
-using System.Threading;
 
 namespace Sailfish.Contracts.Public;
 
 public interface ISailDiffResultMarkdownConverter
 {
-    string ConvertToMarkdownTable(IEnumerable<SailDiffResult> testCaseResults, TestIds testIds, CancellationToken cancellationToken);
+    string ConvertToMarkdownTable(IEnumerable<SailDiffResult> testCaseResults, TestIds testIds);
 }
 
 public class SailDiffResultMarkdownConverter : ISailDiffResultMarkdownConverter
 {
-    public string ConvertToMarkdownTable(IEnumerable<SailDiffResult> testCaseResults, TestIds testIds, CancellationToken cancellationToken)
+    public string ConvertToMarkdownTable(IEnumerable<SailDiffResult> testCaseResults, TestIds testIds)
     {
         var enumeratedResults = testCaseResults.ToList();
         var nBefore = enumeratedResults.Select(x => x.TestResultsWithOutlierAnalysis.StatisticalTestResult.SampleSizeBefore).Distinct().Single();
