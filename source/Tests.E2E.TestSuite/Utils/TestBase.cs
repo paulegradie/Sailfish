@@ -1,6 +1,7 @@
 ﻿using Demo.API;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
+using Sailfish.Attributes;
 using Sailfish.Registration;
 
 namespace Tests.E2E.TestSuite.Utils;
@@ -17,6 +18,7 @@ public class TestBase : ISailfishFixture<SailfishDependencies>
     public WebApplicationFactory<DemoApp> WebHostFactory { get; set; }
     protected HttpClient Client { get; }
 
+    [SailfishGlobalTeardown]
     public virtual async Task GlobalTeardown(CancellationToken cancellationToken)
     {
         await Client.GetAsync("api", cancellationToken);

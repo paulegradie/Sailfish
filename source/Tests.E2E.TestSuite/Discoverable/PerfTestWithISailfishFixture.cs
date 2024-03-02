@@ -19,14 +19,14 @@ public class PerfTestWithISailfishFixture : ISailfishFixture<SailfishDependencie
     [SailfishMethod]
     public async Task TestA(CancellationToken cancellationToken)
     {
-        var testDependency = sailfishDependencies.ResolveType<ExampleDep>();
+        sailfishDependencies.ResolveType<ExampleDep>();
         await Task.Delay(10, cancellationToken);
     }
 
     [SailfishMethod]
     public async Task TestB(CancellationToken cancellationToken)
     {
-        var testDependency = sailfishDependencies.ResolveType<ExampleDep>();
+        sailfishDependencies.ResolveType<ExampleDep>();
         await Task.Delay(14, cancellationToken);
     }
 }

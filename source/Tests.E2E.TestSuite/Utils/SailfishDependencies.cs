@@ -29,11 +29,6 @@ public class SailfishDependencies : IDisposable
         builder.RegisterType<WebApplicationFactory<DemoApp>>();
     }
 
-    public object ResolveType(Type type)
-    {
-        return Container.Resolve(type);
-    }
-
     public T ResolveType<T>() where T : notnull
     {
         return Container.Resolve<T>();
