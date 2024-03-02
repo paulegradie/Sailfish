@@ -9,7 +9,6 @@ using Sailfish.Extensions.Types;
 using Sailfish.Logging;
 using Sailfish.Presentation;
 using Sailfish.TestAdapter.Display.TestOutputWindow;
-using Sailfish.TestAdapter.Display.VSTestFramework;
 using Sailfish.TestAdapter.Execution;
 using Sailfish.TestAdapter.Handlers.FrameworkHandlers;
 using System;
@@ -21,8 +20,6 @@ namespace Sailfish.TestAdapter.Handlers.TestCaseEvents;
 
 internal class TestCaseCompletedNotificationHandler : INotificationHandler<TestCaseCompletedNotification>
 {
-    private readonly IClassExecutionSummaryCompiler classExecutionSummaryCompiler;
-    private readonly ITestFrameworkWriter testFrameworkWriter;
     private readonly ISailfishConsoleWindowFormatter sailfishConsoleWindowFormatter;
     private readonly ISailDiffTestOutputWindowMessageFormatter sailDiffTestOutputWindowMessageFormatter;
     private readonly IRunSettings runSettings;
@@ -31,8 +28,6 @@ internal class TestCaseCompletedNotificationHandler : INotificationHandler<TestC
     private readonly ILogger logger;
 
     public TestCaseCompletedNotificationHandler(
-        IClassExecutionSummaryCompiler classExecutionSummaryCompiler,
-        ITestFrameworkWriter testFrameworkWriter,
         ISailfishConsoleWindowFormatter sailfishConsoleWindowFormatter,
         ISailDiffTestOutputWindowMessageFormatter sailDiffTestOutputWindowMessageFormatter,
         IRunSettings runSettings,
@@ -40,8 +35,6 @@ internal class TestCaseCompletedNotificationHandler : INotificationHandler<TestC
         IAdapterSailDiff sailDiff,
         ILogger logger)
     {
-        this.classExecutionSummaryCompiler = classExecutionSummaryCompiler;
-        this.testFrameworkWriter = testFrameworkWriter;
         this.sailfishConsoleWindowFormatter = sailfishConsoleWindowFormatter;
         this.sailDiffTestOutputWindowMessageFormatter = sailDiffTestOutputWindowMessageFormatter;
         this.runSettings = runSettings;

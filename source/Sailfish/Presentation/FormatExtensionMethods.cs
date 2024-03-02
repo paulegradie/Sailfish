@@ -56,25 +56,31 @@ public static class FormatExtensionMethods
                 classSummary.ExecutionSettings.SampleSize,
                 classSummary.ExecutionSettings.DisableOverheadEstimation
             ),
-            classSummary.CompiledTestCaseResults.Select(testCaseResult => new CompiledTestCaseResultTrackingFormat(
+            classSummary.CompiledTestCaseResults.Select(testCaseResult
+                => new CompiledTestCaseResultTrackingFormat(
                     testCaseResult.GroupingId,
-                    testCaseResult.PerformanceRunResult is null
-                        ? null
-                        : new PerformanceRunResultTrackingFormat(
-                            testCaseResult.PerformanceRunResult.DisplayName,
-                            testCaseResult.PerformanceRunResult.Mean, testCaseResult.PerformanceRunResult.Median, testCaseResult.PerformanceRunResult.StdDev,
-                            testCaseResult.PerformanceRunResult.Variance,
-                            testCaseResult.PerformanceRunResult.RawExecutionResults, testCaseResult.PerformanceRunResult.SampleSize,
-                            testCaseResult.PerformanceRunResult.NumWarmupIterations,
-                            testCaseResult.PerformanceRunResult.DataWithOutliersRemoved, testCaseResult.PerformanceRunResult.UpperOutliers,
-                            testCaseResult.PerformanceRunResult.LowerOutliers,
-                            testCaseResult.PerformanceRunResult.TotalNumOutliers
-                        ),
+                    testCaseResult.PerformanceRunResult?.ToTrackingFormat(),
                     testCaseResult.Exception,
-                    testCaseResult.TestCaseId
-                )
+                    testCaseResult.TestCaseId)
             )
         );
+    }
+
+    public static PerformanceRunResultTrackingFormat ToTrackingFormat(this PerformanceRunResult runResult)
+    {
+        return new PerformanceRunResultTrackingFormat(
+            runResult.DisplayName,
+            runResult.Mean,
+            runResult.Median,
+            runResult.StdDev,
+            runResult.Variance,
+            runResult.RawExecutionResults,
+            runResult.SampleSize,
+            runResult.NumWarmupIterations,
+            runResult.DataWithOutliersRemoved,
+            runResult.UpperOutliers,
+            runResult.LowerOutliers,
+            runResult.TotalNumOutliers);
     }
 
     public static IEnumerable<ClassExecutionSummaryTrackingFormat> ToTrackingFormat(this IEnumerable<IClassExecutionSummary> summaries)

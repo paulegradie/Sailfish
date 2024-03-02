@@ -39,7 +39,7 @@ public class TestClassCompletedNotificationHandler : INotificationHandler<TestCl
 
         await using var fileStream = new FileStream(filePath, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.ReadWrite);
         using var streamReader = new StreamReader(fileStream);
-        var fileContents = await streamReader.ReadToEndAsync();
+        var fileContents = await streamReader.ReadToEndAsync(); // ct overload not available in .net6
         streamReader.Close();
 
         var classExecutionSummaryTrackingFormats = string.IsNullOrEmpty(fileContents)
