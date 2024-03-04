@@ -22,6 +22,7 @@ public class TestSuiteIsCovered
             new TestCaseId($"{nameof(ResolveTestCaseIdTestMultipleCtorArgs)}.{nameof(ResolveTestCaseIdTestMultipleCtorArgs.MainMethod)}()")).MainMethod();
         new ScenariosExample().TestMethod(new CancellationToken());
         new MinimalTest().Minimal();
+        new Tests.E2E.TestSuite.Discoverable.InnerNamespace.MinimalTest().Minimal();
         await new IterationSetupExceptionComesFirst().LifeCycleExceptionTests(new CancellationToken());
         await new IterationSetupExceptionIsHandled().LifeCycleExceptionTests(new CancellationToken());
         await new MethodSetupExceptionIsHandled().LifeCycleExceptionTests(new CancellationToken());
