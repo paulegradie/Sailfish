@@ -17,11 +17,11 @@ internal class SailDiffReadInBeforeAndAfterDataHandler(ITrackingFileParser track
     public async Task<ReadInBeforeAndAfterDataResponse> Handle(ReadInBeforeAndAfterDataRequest request, CancellationToken cancellationToken)
     {
         var beforeData = new TrackingFileDataList();
-        if (!await trackingFileParser.TryParse(request.BeforeFilePaths, beforeData, cancellationToken).ConfigureAwait(false))
+        if (!await trackingFileParser.TryParseMany(request.BeforeFilePaths, beforeData, cancellationToken).ConfigureAwait(false))
             return new ReadInBeforeAndAfterDataResponse(null, null);
 
         var afterData = new TrackingFileDataList();
-        if (!await trackingFileParser.TryParse(request.AfterFilePaths, afterData, cancellationToken).ConfigureAwait(false)) return new ReadInBeforeAndAfterDataResponse(null, null);
+        if (!await trackingFileParser.TryParseMany(request.AfterFilePaths, afterData, cancellationToken).ConfigureAwait(false)) return new ReadInBeforeAndAfterDataResponse(null, null);
 
         if (!beforeData.Any() || !afterData.Any()) return new ReadInBeforeAndAfterDataResponse(null, null);
 

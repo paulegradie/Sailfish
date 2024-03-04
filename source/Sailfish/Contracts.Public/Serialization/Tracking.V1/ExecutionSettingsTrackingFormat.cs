@@ -24,11 +24,11 @@ public class ExecutionSettingsTrackingFormat
         DisableOverheadEstimation = disableOverheadEstimation;
     }
 
-    public bool AsCsv { get; set; }
-    public bool AsConsole { get; set; }
-    public bool AsMarkdown { get; set; }
+    public bool AsCsv { get; private set; }
+    public bool AsConsole { get; private set; }
+    public bool AsMarkdown { get; private set; }
 
-    public int NumWarmupIterations { get; set; }
+    public int NumWarmupIterations { get; private set; }
     public int SampleSize { get; set; }
-    public bool DisableOverheadEstimation { get; set; }
+    public bool DisableOverheadEstimation { get; private set; }
 }

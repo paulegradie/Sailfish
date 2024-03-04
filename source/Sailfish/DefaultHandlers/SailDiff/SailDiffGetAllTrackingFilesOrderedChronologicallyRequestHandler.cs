@@ -27,7 +27,7 @@ internal class SailDiffGetAllTrackingFilesOrderedChronologicallyRequestHandler(
             .FindTrackingFilesInDirectoryOrderedByLastModified(runSettings.GetRunSettingsTrackingDirectoryPath(), request.Ascending);
 
         var data = new TrackingFileDataList();
-        await trackingFileParser.TryParse(trackingFiles, data, cancellationToken);
+        await trackingFileParser.TryParseMany(trackingFiles, data, cancellationToken);
 
         return new GetAllTrackingDataOrderedChronologicallyResponse(data);
     }
