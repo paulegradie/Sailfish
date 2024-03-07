@@ -95,7 +95,7 @@ public class PerformanceRunResultTrackingFormatBuilder
     public PerformanceRunResultTrackingFormat Build()
     {
         return new PerformanceRunResultTrackingFormat(
-            displayName ?? "My.Test()",
+            displayName ?? TestCaseIdBuilder.Create().Build().DisplayName,
             mean ?? 5.0,
             median ?? 4.0,
             stdDev ?? 2.0,
