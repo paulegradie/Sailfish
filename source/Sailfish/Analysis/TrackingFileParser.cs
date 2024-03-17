@@ -16,17 +16,26 @@ internal interface ITrackingFileParser
 {
     Task<bool> TryParse(string trackingFile, TrackingFileDataList data, CancellationToken cancellationToken);
 
-    Task<bool> TryParse(IEnumerable<string> trackingFiles, TrackingFileDataList data, CancellationToken cancellationToken);
+    Task<bool> TryParseMany(IEnumerable<string> trackingFiles, TrackingFileDataList data, CancellationToken cancellationToken);
 }
 
-internal class TrackingFileParser(ITrackingFileSerialization trackingFileSerialization, ILogger logger) : ITrackingFileParser
+internal class TrackingFileParser : ITrackingFileParser
 {
-    private readonly ILogger logger = logger;
-    private readonly ITrackingFileSerialization trackingFileSerialization = trackingFileSerialization;
+    private readonly ILogger logger;
+    private readonly ITrackingFileSerialization trackingFileSerialization;
+
+    public TrackingFileParser(ITrackingFileSerialization trackingFileSerialization, ILogger logger)
+    {
+        this.logger = logger;
+        this.trackingFileSerialization = trackingFileSerialization;
+    }
 
     public async Task<bool> TryParse(string trackingFile, TrackingFileDataList data, CancellationToken cancellationToken)
     {
-        return await TryParse(new List<string> { trackingFile }, data, cancellationToken).ConfigureAwait(false);
+        return await TryParseMany(new List<string>
+        {
+            trackingFile
+        }, data, cancellationToken).ConfigureAwait(false);
     }
 
     /// <summary>
@@ -38,7 +47,7 @@ internal class TrackingFileParser(ITrackingFileSerialization trackingFileSeriali
     /// <param name="cancellationToken"></param>
     /// <returns></returns>
     /// <exception cref="SerializationException"></exception>
-    public async Task<bool> TryParse(IEnumerable<string> trackingFiles, TrackingFileDataList data, CancellationToken cancellationToken)
+    public async Task<bool> TryParseMany(IEnumerable<string> trackingFiles, TrackingFileDataList data, CancellationToken cancellationToken)
     {
         var trackingFormatData = new TrackingFileDataList();
         try
@@ -51,11 +60,11 @@ internal class TrackingFileParser(ITrackingFileSerialization trackingFileSeriali
                 if (!deserializedFile.Any()) continue;
                 try
                 {
-                    trackingFormatData.Add(deserializedFile.ToSummaryFormat().ToList()); // only add if all files present succeed
+                    trackingFormatData.Add(deserializedFile.ToSummaryFormat().ToList());
                 }
                 catch (ArgumentException)
                 {
-                    // failed to deserialize the file, but continue trying files
+                    // failed to convert all test cases to summary format
                 }
             }
 

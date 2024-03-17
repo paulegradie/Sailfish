@@ -31,7 +31,7 @@ public class AggregatedPerformanceResult
         return new AggregatedPerformanceResult(
             allRawData,
             testCaseId.DisplayName,
-            data.First().SampleSize,
+            data.Select(x => x.SampleSize).Sum(),
             data.First().NumWarmupIterations);
     }
 }

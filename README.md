@@ -19,3 +19,6 @@ Available on [Nuget](https://www.nuget.org/packages/Sailfish/)
 [Documentation](https://paulgradie.com/Sailfish/)
 
 </h1>
+
+### Used by:
+<img src="./assets/OctopusDeploy-logo-RGB.png" alt="Octopus Deploy" style='background: white; border-radius: 10px' />
