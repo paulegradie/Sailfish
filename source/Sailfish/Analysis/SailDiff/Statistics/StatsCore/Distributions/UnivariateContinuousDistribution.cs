@@ -80,12 +80,10 @@ public abstract class UnivariateContinuousDistribution :
         {
             if (!mode.HasValue)
             {
-                var function = ProbabilityDensityFunction;
-                var quartiles = Quartiles;
-                var min = quartiles.Min;
+                var min = Quartiles.Min;
                 quartiles = Quartiles;
-                var max = quartiles.Max;
-                mode = BrentSearch.Maximize(function, min, max, 1E-10);
+                var max = quartiles.Value.Max;
+                mode = BrentSearch.Maximize(ProbabilityDensityFunction, min, max, 1E-10);
             }
 
             return mode.Value;
@@ -96,15 +94,14 @@ public abstract class UnivariateContinuousDistribution :
     {
         get
         {
-            if (!quartiles.HasValue)
-                quartiles = new DoubleRange(InverseDistributionFunction(0.25), InverseDistributionFunction(0.75));
+            quartiles ??= new DoubleRange(InverseDistributionFunction(0.25), InverseDistributionFunction(0.75));
             return quartiles.Value;
         }
     }
 
     public virtual DoubleRange GetRange(double percentile)
     {
-        var num1 = percentile > 0.0 && percentile <= 1.0
+        var num1 = percentile is > 0.0 and <= 1.0
             ? InverseDistributionFunction(1.0 - percentile)
             : throw new ArgumentOutOfRangeException(nameof(percentile), "The percentile must be between 0 and 1.");
         var num2 = InverseDistributionFunction(percentile);

@@ -65,7 +65,7 @@ public class TDistribution : UnivariateContinuousDistribution, IFormattable
             return double.NegativeInfinity;
         if (p == 1.0)
             return double.PositiveInfinity;
-        if (p > 0.25 && p < 0.75)
+        if (p is > 0.25 and < 0.75)
         {
             if (p == 0.5)
                 return 0.0;

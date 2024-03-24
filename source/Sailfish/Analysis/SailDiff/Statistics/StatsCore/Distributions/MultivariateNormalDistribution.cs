@@ -103,7 +103,7 @@ public class MultivariateNormalDistribution :
             }
         }
 
-        if (options != null && options.Shared)
+        if (options is { Shared: true })
         {
             options.Postprocessing = (components, pi) =>
             {

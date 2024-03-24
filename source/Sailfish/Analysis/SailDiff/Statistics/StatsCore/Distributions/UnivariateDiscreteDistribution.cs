@@ -62,7 +62,7 @@ public abstract class UnivariateDiscreteDistribution : DistributionBase,
     public virtual IntRange GetRange(double percentile)
     {
         if (percentile is <= 0 or > 1)
-            throw new ArgumentOutOfRangeException("percentile", "The percentile must be between 0 and 1.");
+            throw new ArgumentOutOfRangeException(nameof(percentile), "The percentile must be between 0 and 1.");
 
         var a = InverseDistributionFunction(1.0 - percentile);
         var b = InverseDistributionFunction(percentile);
@@ -231,30 +231,22 @@ public abstract class UnivariateDiscreteDistribution : DistributionBase,
         return DistributionFunction(k) - ProbabilityMassFunction(k);
     }
 
-    public
-#if COMPATIBILITY
-        virtual
-#endif
-        double DistributionFunction(int a, int b)
+    public double DistributionFunction(int a, int b)
     {
         if (a >= b)
-            throw new ArgumentOutOfRangeException("b",
+            throw new ArgumentOutOfRangeException(nameof(b),
                 "The start of the interval a must be smaller than b.");
 
         return DistributionFunction(b, true) - DistributionFunction(a);
     }
 
-    public int InverseDistributionFunction(
-#if !NET35
-        [Range(0, 1)]
-#endif
-        double p)
+    public int InverseDistributionFunction([Range(0, 1)] double p)
     {
         if (p is < 0.0 or > 1.0)
-            throw new ArgumentOutOfRangeException("p", "Value must be between 0 and 1.");
+            throw new ArgumentOutOfRangeException(nameof(p), "Value must be between 0 and 1.");
 
         if (double.IsNaN(p))
-            throw new ArgumentOutOfRangeException("p", "Value is Not-a-Number (NaN).");
+            throw new ArgumentOutOfRangeException(nameof(p), "Value is Not-a-Number (NaN).");
 
         if (p == 0)
         {

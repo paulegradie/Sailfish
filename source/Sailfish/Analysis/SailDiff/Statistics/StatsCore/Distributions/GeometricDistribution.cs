@@ -12,7 +12,7 @@ public class GeometricDistribution([Unit] double probabilityOfSuccess) :
     ISampleableDistribution<int>,
     IRandomNumberGenerator<int>
 {
-    public double ProbabilityOfSuccess { get; private set; } = probabilityOfSuccess >= 0.0 && probabilityOfSuccess <= 1.0
+    public double ProbabilityOfSuccess { get; private set; } = probabilityOfSuccess is >= 0.0 and <= 1.0
             ? probabilityOfSuccess
             : throw new ArgumentOutOfRangeException(nameof(probabilityOfSuccess), "A probability must be between 0 and 1.");
 

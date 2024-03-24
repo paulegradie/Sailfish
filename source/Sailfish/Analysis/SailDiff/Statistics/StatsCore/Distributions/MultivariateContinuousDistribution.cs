@@ -101,7 +101,6 @@ public abstract class MultivariateContinuousDistribution :
 
     public virtual double[][] Generate(int samples, double[][] result, Random source)
     {
-        generator ??= new MetropolisHasting(Dimension, LogProbabilityDensityFunction);
         if (generator.RandomSource != source)
             generator.RandomSource = source;
         return Generate(samples).Round(result);

@@ -93,14 +93,7 @@ public class Independent<TDist> :
         }
     }
 
-    public override double[,] Covariance
-    {
-        get
-        {
-            covariance ??= InternalOps.Diagonal(Variance);
-            return covariance;
-        }
-    }
+    public override double[,] Covariance => covariance;
 
     public override double[][] Generate(int samples, double[][] result, Random source)
     {
