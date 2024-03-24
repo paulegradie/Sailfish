@@ -1,8 +1,8 @@
+using System;
+using System.ComponentModel.DataAnnotations;
 using Sailfish.Analysis.SailDiff.Statistics.StatsCore.Distributions.Options;
 using Sailfish.Analysis.SailDiff.Statistics.StatsCore.Ops;
 using Sailfish.Analysis.SailDiff.Statistics.StatsCore.Search;
-using System;
-using System.ComponentModel.DataAnnotations;
 
 namespace Sailfish.Analysis.SailDiff.Statistics.StatsCore.Distributions;
 
@@ -12,14 +12,11 @@ public abstract class UnivariateDiscreteDistribution : DistributionBase,
     IUnivariateDistribution,
     IUnivariateDistribution<double>,
     IDistribution<double[]>,
-    IDistribution<double>,
     ISampleableDistribution<double>,
     ISampleableDistribution<int>,
-    IFormattable,
     IRandomNumberGenerator<double>
 {
     private double? median;
-    private double? stdDev;
     private DoubleRange? quartiles;
 
     public abstract double Mean { get; }
@@ -48,16 +45,6 @@ public abstract class UnivariateDiscreteDistribution : DistributionBase,
         }
     }
 
-    public virtual double StandardDeviation
-    {
-        get
-        {
-            if (!stdDev.HasValue)
-                stdDev = Math.Sqrt(Variance);
-            return stdDev.Value;
-        }
-    }
-
     public virtual DoubleRange Quartiles
     {
         get
@@ -75,7 +62,7 @@ public abstract class UnivariateDiscreteDistribution : DistributionBase,
 
     public virtual IntRange GetRange(double percentile)
     {
-        if (percentile <= 0 || percentile > 1)
+        if (percentile is <= 0 or > 1)
             throw new ArgumentOutOfRangeException("percentile", "The percentile must be between 0 and 1.");
 
         var a = InverseDistributionFunction(1.0 - percentile);
@@ -199,94 +186,6 @@ public abstract class UnivariateDiscreteDistribution : DistributionBase,
         return LogCumulativeHazardFunction((int)x);
     }
 
-    void IDistribution.Fit(Array observations)
-    {
-        (this as IDistribution).Fit(observations, (IFittingOptions)null);
-    }
-
-    void IDistribution.Fit(Array observations, double[] weights)
-    {
-        (this as IDistribution).Fit(observations, weights, null);
-    }
-
-    void IDistribution.Fit(Array observations, int[] weights)
-    {
-        (this as IDistribution).Fit(observations, weights, null);
-    }
-
-    void IDistribution.Fit(Array observations, IFittingOptions options)
-    {
-        (this as IDistribution).Fit(observations, (double[])null, options);
-    }
-
-    void IDistribution.Fit(Array observations, double[] weights, IFittingOptions options)
-    {
-        var univariate = observations as double[];
-        if (univariate != null)
-        {
-            Fit(univariate, weights, options);
-            return;
-        }
-
-        var multivariate = observations as double[][];
-        if (multivariate != null)
-        {
-            var concat = multivariate.Concatenate();
-            Fit(concat, weights, options);
-            return;
-        }
-
-        var iunivariate = observations as int[];
-        if (iunivariate != null)
-        {
-            Fit(iunivariate, weights, options);
-            return;
-        }
-
-        var imultivariate = observations as int[][];
-        if (imultivariate != null)
-        {
-            var concat = imultivariate.Concatenate();
-            Fit(concat, weights, options);
-            return;
-        }
-
-        throw new ArgumentException("Invalid input type.", "observations");
-    }
-
-    void IDistribution.Fit(Array observations, int[] weights, IFittingOptions options)
-    {
-        var univariate = observations as double[];
-        if (univariate != null)
-        {
-            Fit(univariate, weights, options);
-            return;
-        }
-
-        var multivariate = observations as double[][];
-        if (multivariate != null)
-        {
-            Fit(multivariate.Concatenate(), weights, options);
-            return;
-        }
-
-        var iunivariate = observations as int[];
-        if (iunivariate != null)
-        {
-            Fit(iunivariate, weights, options);
-            return;
-        }
-
-        var imultivariate = observations as int[][];
-        if (imultivariate != null)
-        {
-            Fit(imultivariate.Concatenate(), weights, options);
-            return;
-        }
-
-        throw new ArgumentException("Invalid input type.", "observations");
-    }
-
     #endregion IDistribution explicit members
 
     public
@@ -305,7 +204,7 @@ public abstract class UnivariateDiscreteDistribution : DistributionBase,
 
         if (double.IsNaN(result))
             throw new InvalidOperationException("CDF computation generated NaN values.");
-        if (result < 0 || result > 1)
+        if (result is < 0 or > 1)
             new InvalidOperationException("CDF computation generated values out of the [0,1] range.");
 
         return result;
@@ -352,7 +251,7 @@ public abstract class UnivariateDiscreteDistribution : DistributionBase,
 #endif
         double p)
     {
-        if (p < 0.0 || p > 1.0)
+        if (p is < 0.0 or > 1.0)
             throw new ArgumentOutOfRangeException("p", "Value must be between 0 and 1.");
 
         if (double.IsNaN(p))
@@ -492,7 +391,7 @@ public abstract class UnivariateDiscreteDistribution : DistributionBase,
 
         if (double.IsNaN(result))
             throw new InvalidOperationException("CCDF computation generated NaN values.");
-        if (result < 0 || result > 1)
+        if (result is < 0 or > 1)
             new InvalidOperationException("CCDF computation generated values out of the [0,1] range.");
 
         return result;
@@ -575,7 +474,7 @@ public abstract class UnivariateDiscreteDistribution : DistributionBase,
         Fit(observations, (IFittingOptions)null);
     }
 
-    public virtual void Fit(double[] observations, double[] weights)
+    public virtual void Fit(double[] observations, double[]? weights)
     {
         Fit(observations, weights, null);
     }
@@ -590,12 +489,12 @@ public abstract class UnivariateDiscreteDistribution : DistributionBase,
         Fit(observations, (double[])null, options);
     }
 
-    public virtual void Fit(double[] observations, double[] weights, IFittingOptions options)
+    public virtual void Fit(double[] observations, double[]? weights, IFittingOptions options)
     {
         throw new NotSupportedException();
     }
 
-    public virtual void Fit(double[] observations, int[] weights, IFittingOptions options)
+    public virtual void Fit(double[] observations, int[]? weights, IFittingOptions options)
     {
         if (weights == null)
             Fit(observations, (double[])null, options);
@@ -613,7 +512,7 @@ public abstract class UnivariateDiscreteDistribution : DistributionBase,
         Fit(observations, (double[])null, options);
     }
 
-    public virtual void Fit(int[] observations, double[] weights, IFittingOptions options)
+    public virtual void Fit(int[] observations, double[]? weights, IFittingOptions options)
     {
         throw new NotSupportedException();
     }

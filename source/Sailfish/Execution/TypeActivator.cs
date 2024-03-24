@@ -1,10 +1,10 @@
+using System;
+using System.Linq;
+using System.Reflection;
 using Autofac;
 using Sailfish.Contracts.Public.Models;
 using Sailfish.Exceptions;
 using Sailfish.Extensions.Methods;
-using System;
-using System.Linq;
-using System.Reflection;
 
 namespace Sailfish.Execution;
 

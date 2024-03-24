@@ -1,24 +1,16 @@
+using System;
+using System.Runtime.CompilerServices;
 using Sailfish.Analysis.SailDiff.Statistics.StatsCore.Decompositions;
 using Sailfish.Analysis.SailDiff.Statistics.StatsCore.Distributions.Options;
 using Sailfish.Analysis.SailDiff.Statistics.StatsCore.Exceptions;
 using Sailfish.Analysis.SailDiff.Statistics.StatsCore.Ops;
-using System;
-using System.Runtime.CompilerServices;
 
 namespace Sailfish.Analysis.SailDiff.Statistics.StatsCore.Distributions;
 
 [Serializable]
 public class MultivariateNormalDistribution :
     MultivariateContinuousDistribution,
-    IFittableDistribution<double[], NormalOptions>,
-    IFittable<double[], NormalOptions>,
-    IFittable<double[]>,
-    IFittableDistribution<double[]>,
-    IDistribution<double[]>,
-    IDistribution,
-    ICloneable,
-    ISampleableDistribution<double[]>,
-    IRandomNumberGenerator<double[]>
+    IFittableDistribution<double[], NormalOptions>
 {
     private CholeskyDecomposition chol;
     private double[,] covariance;
@@ -38,7 +30,7 @@ public class MultivariateNormalDistribution :
         if (!init)
             return;
         var m = new double[dimension];
-        var cov = Ops.InternalOps.Identity(dimension);
+        var cov = InternalOps.Identity(dimension);
         var cd = new CholeskyDecomposition(cov);
         Initialize(m, cov, cd, null);
     }
@@ -49,7 +41,7 @@ public class MultivariateNormalDistribution :
     }
 
     public MultivariateNormalDistribution(double[] mean)
-        : this(mean, Ops.InternalOps.Identity(mean.Length))
+        : this(mean, InternalOps.Identity(mean.Length))
     {
     }
 
@@ -82,7 +74,7 @@ public class MultivariateNormalDistribution :
 
     public override double[,] Covariance => covariance;
 
-    public void Fit(double[][] observations, double[] weights, NormalOptions options)
+    public void Fit(double[][] observations, double[]? weights, NormalOptions? options)
     {
         double[] numArray;
         double[,] cov1;
@@ -95,7 +87,7 @@ public class MultivariateNormalDistribution :
             }
             else
             {
-                cov1 = Ops.InternalOps.Diagonal(observations.WeightedVariance(weights, numArray));
+                cov1 = InternalOps.Diagonal(observations.WeightedVariance(weights, numArray));
             }
         }
         else
@@ -103,11 +95,11 @@ public class MultivariateNormalDistribution :
             numArray = observations.Mean(0);
             if (options == null || !options.Diagonal)
             {
-                cov1 = Ops.InternalOps.ToMatrix<double>(Ops.InternalOps.Covariance(observations, numArray));
+                cov1 = observations.Covariance(numArray).ToMatrix();
             }
             else
             {
-                cov1 = Ops.InternalOps.Diagonal((double[])Ops.InternalOps.Variance(observations, numArray));
+                cov1 = InternalOps.Diagonal(observations.Variance(numArray));
             }
         }
 
@@ -116,8 +108,8 @@ public class MultivariateNormalDistribution :
             options.Postprocessing = (components, pi) =>
             {
                 var vector = components.To<MultivariateNormalDistribution[]>();
-                var cov2 = Ops.InternalOps.PooledCovariance(
-                    Ops.InternalOps.Apply(vector, x => x.covariance), pi);
+                var cov2 = InternalOps.PooledCovariance(
+                    vector.Apply(x => x.covariance), pi);
                 Decompose(options, cov2, out chol, out svd);
                 foreach (var normalDistribution in vector)
                     normalDistribution.Initialize(normalDistribution.mean, cov2, chol, svd);
@@ -238,7 +230,7 @@ public class MultivariateNormalDistribution :
         return num;
     }
 
-    public override void Fit(double[][] observations, double[] weights, IFittingOptions options)
+    public override void Fit(double[][] observations, double[]? weights, IFittingOptions options)
     {
         var options1 = options as NormalOptions;
         if (options != null && options1 == null)
@@ -247,7 +239,7 @@ public class MultivariateNormalDistribution :
     }
 
     private static void Decompose(
-        NormalOptions options,
+        NormalOptions? options,
         double[,] cov,
         out CholeskyDecomposition chol,
         out SingularValueDecomposition svd)

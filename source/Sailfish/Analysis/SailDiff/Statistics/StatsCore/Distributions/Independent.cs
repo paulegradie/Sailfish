@@ -1,22 +1,14 @@
-using Sailfish.Analysis.SailDiff.Statistics.StatsCore.Distributions.Options;
-using Sailfish.Analysis.SailDiff.Statistics.StatsCore.Ops;
 using System;
 using System.Text;
+using Sailfish.Analysis.SailDiff.Statistics.StatsCore.Distributions.Options;
+using Sailfish.Analysis.SailDiff.Statistics.StatsCore.Ops;
 
 namespace Sailfish.Analysis.SailDiff.Statistics.StatsCore.Distributions;
 
 [Serializable]
 public class Independent<TDist> :
     MultivariateContinuousDistribution,
-    ISampleableDistribution<double[]>,
-    IDistribution<double[]>,
-    IDistribution,
-    ICloneable,
-    IRandomNumberGenerator<double[]>,
-    IFittableDistribution<double[], IndependentOptions>,
-    IFittable<double[], IndependentOptions>,
-    IFittable<double[]>,
-    IFittableDistribution<double[]>
+    IFittableDistribution<double[], IndependentOptions>
     where TDist : IUnivariateDistribution
 {
     private double[,] covariance;
@@ -105,32 +97,9 @@ public class Independent<TDist> :
     {
         get
         {
-            covariance ??= Ops.InternalOps.Diagonal(Variance);
+            covariance ??= InternalOps.Diagonal(Variance);
             return covariance;
         }
-    }
-
-    public void Fit(double[][] observations, double[] weights, IndependentOptions options)
-    {
-        if (options != null)
-        {
-            if (!options.Transposed)
-                observations = observations.Transpose();
-            if (options.InnerOptions != null)
-                for (var index = 0; index < Components.Length; ++index)
-                    Components[index].Fit(observations[index], weights, options.InnerOptions[index]);
-            else
-                for (var index = 0; index < Components.Length; ++index)
-                    Components[index].Fit(observations[index], weights, options.InnerOption);
-        }
-        else
-        {
-            observations = observations.Transpose();
-            for (var index = 0; index < Components.Length; ++index)
-                Components[index].Fit(observations[index], weights, null);
-        }
-
-        Reset();
     }
 
     public override double[][] Generate(int samples, double[][] result, Random source)
@@ -171,7 +140,7 @@ public class Independent<TDist> :
         return num;
     }
 
-    public override void Fit(double[][] observations, double[] weights, IFittingOptions options)
+    public override void Fit(double[][] observations, double[]? weights, IFittingOptions options)
     {
         var options1 = options as IndependentOptions;
         if (options != null && options1 == null)

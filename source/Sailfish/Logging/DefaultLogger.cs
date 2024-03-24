@@ -91,7 +91,7 @@ internal class DefaultLogger : ILogger
 
         var pairs = matches.Zip(values).ToArray();
 
-        foreach ((var original, var replacement) in pairs) populatedTemplate = populatedTemplate.Replace(original, replacement.ToString());
+        foreach (var (original, replacement) in pairs) populatedTemplate = populatedTemplate.Replace(original, replacement.ToString());
         return populatedTemplate;
     }
 }

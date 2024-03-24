@@ -1,8 +1,6 @@
-using Sailfish.Analysis.SailDiff.Statistics.StatsCore.Distributions.Options;
-using Sailfish.Analysis.SailDiff.Statistics.StatsCore.Ops;
-using Sailfish.Analysis.SailDiff.Statistics.StatsCore.Search;
 using System;
 using System.ComponentModel.DataAnnotations;
+using Sailfish.Analysis.SailDiff.Statistics.StatsCore.Search;
 
 namespace Sailfish.Analysis.SailDiff.Statistics.StatsCore.Distributions;
 
@@ -153,60 +151,6 @@ public abstract class UnivariateContinuousDistribution :
         return LogProbabilityDensityFunction(x);
     }
 
-    void IDistribution.Fit(Array observations)
-    {
-        ((IDistribution)this).Fit(observations, (IFittingOptions)null);
-    }
-
-    void IDistribution.Fit(Array observations, double[] weights)
-    {
-        ((IDistribution)this).Fit(observations, weights, null);
-    }
-
-    void IDistribution.Fit(Array observations, int[] weights)
-    {
-        ((IDistribution)this).Fit(observations, weights, null);
-    }
-
-    void IDistribution.Fit(Array observations, IFittingOptions options)
-    {
-        ((IDistribution)this).Fit(observations, (double[])null, options);
-    }
-
-    void IDistribution.Fit(Array observations, double[] weights, IFittingOptions options)
-    {
-        switch (observations)
-        {
-            case double[] observations1:
-                Fit(observations1, weights, options);
-                break;
-
-            case double[][] vectors:
-                Fit(vectors.Concatenate(), weights, options);
-                break;
-
-            default:
-                throw new ArgumentException("Invalid input type.", nameof(observations));
-        }
-    }
-
-    void IDistribution.Fit(Array observations, int[] weights, IFittingOptions options)
-    {
-        switch (observations)
-        {
-            case double[] observations1:
-                Fit(observations1, weights, options);
-                break;
-
-            case double[][] vectors:
-                Fit(vectors.Concatenate(), weights, options);
-                break;
-
-            default:
-                throw new ArgumentException("Invalid input type.", nameof(observations));
-        }
-    }
-
     public virtual double DistributionFunction(double x)
     {
         if (double.IsNaN(x))
@@ -218,7 +162,7 @@ public abstract class UnivariateContinuousDistribution :
         var d = InnerDistributionFunction(x);
         if (double.IsNaN(d))
             throw new InvalidOperationException("CDF computation generated NaN values.");
-        if (d < 0.0 || d > 1.0) throw new InvalidOperationException("CDF computation generated values out of the [0,1] range.");
+        if (d is < 0.0 or > 1.0) throw new InvalidOperationException("CDF computation generated values out of the [0,1] range.");
         return d;
     }
 
@@ -240,14 +184,14 @@ public abstract class UnivariateContinuousDistribution :
         var d = InnerComplementaryDistributionFunction(x);
         if (double.IsNaN(d))
             throw new InvalidOperationException("CCDF computation generated NaN values.");
-        if (d < 0.0 || d > 1.0) throw new InvalidOperationException("CCDF computation generated values out of the [0,1] range.");
+        if (d is < 0.0 or > 1.0) throw new InvalidOperationException("CCDF computation generated values out of the [0,1] range.");
 
         return d;
     }
 
     public double InverseDistributionFunction([Range(0, 1)] double p)
     {
-        if (p < 0.0 || p > 1.0)
+        if (p is < 0.0 or > 1.0)
             throw new ArgumentOutOfRangeException(nameof(p), "Value must be between 0 and 1.");
         if (double.IsNaN(p))
             throw new ArgumentOutOfRangeException(nameof(p), "Value is Not-a-Number (NaN).");
@@ -388,7 +332,7 @@ public abstract class UnivariateContinuousDistribution :
         return BrentSearch.Find(DistributionFunction, p, num1, num2);
     }
 
-    public virtual double ProbabilityDensityFunction(double x)
+    public double ProbabilityDensityFunction(double x)
     {
         if (double.IsNaN(x))
             throw new ArgumentOutOfRangeException(nameof(x), "The input argument is NaN.");
@@ -403,7 +347,7 @@ public abstract class UnivariateContinuousDistribution :
         throw new NotImplementedException();
     }
 
-    public virtual double LogProbabilityDensityFunction(double x)
+    public double LogProbabilityDensityFunction(double x)
     {
         if (double.IsNaN(x))
             throw new ArgumentOutOfRangeException(nameof(x), "The input argument is NaN.");
@@ -416,22 +360,5 @@ public abstract class UnivariateContinuousDistribution :
     protected internal virtual double InnerLogProbabilityDensityFunction(double x)
     {
         return Math.Log(ProbabilityDensityFunction(x));
-    }
-
-    public void Fit(double[] observations, double[] weights)
-    {
-        Fit(observations, weights, null);
-    }
-
-    public virtual void Fit(double[] observations, double[] weights, IFittingOptions options)
-    {
-        throw new NotSupportedException();
-    }
-
-    public virtual void Fit(double[] observations, int[] weights, IFittingOptions options)
-    {
-        if (weights != null)
-            throw new NotSupportedException();
-        Fit(observations, (double[])null, options);
     }
 }

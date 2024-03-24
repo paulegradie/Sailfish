@@ -1,6 +1,6 @@
+using System;
 using Sailfish.Analysis.SailDiff.Statistics.StatsCore.Distributions;
 using Sailfish.Analysis.SailDiff.Statistics.StatsCore.Ops;
-using System;
 
 namespace Sailfish.Analysis.SailDiff.Statistics.StatsCore.Analysers;
 
@@ -56,8 +56,8 @@ public class WilcoxonTest : HypothesisTest<WilcoxonDistribution>
             if (!exact.HasValue)
                 exact = false;
             var nullable = exact;
-            var flag = true;
-            if ((nullable.GetValueOrDefault() == flag ? nullable.HasValue ? 1 : 0 : 0) != 0)
+            const bool flag = true;
+            if ((nullable.GetValueOrDefault() == flag ? 1 : 0) != 0)
                 throw new ArgumentException("An exact test cannot be computed when there are zeros in the samples (or when paired samples are the same in a paired test).");
         }
 
@@ -88,7 +88,7 @@ public class WilcoxonTest : HypothesisTest<WilcoxonDistribution>
         switch (Tail)
         {
             case DistributionTailSailfish.TwoTail:
-                return Math.Min(2.0 * Math.Min((double)StatisticDistribution.DistributionFunction(x), StatisticDistribution.ComplementaryDistributionFunction(x)), 1.0);
+                return Math.Min(2.0 * Math.Min(StatisticDistribution.DistributionFunction(x), StatisticDistribution.ComplementaryDistributionFunction(x)), 1.0);
 
             case DistributionTailSailfish.OneUpper:
                 return StatisticDistribution.ComplementaryDistributionFunction(x);

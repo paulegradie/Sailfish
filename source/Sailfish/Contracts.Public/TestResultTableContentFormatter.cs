@@ -1,20 +1,20 @@
-﻿using Sailfish.Contracts.Public.Models;
-using Sailfish.Extensions.Methods;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
+using Sailfish.Contracts.Public.Models;
+using Sailfish.Extensions.Methods;
 
 namespace Sailfish.Contracts.Public;
 
 public interface ISailDiffResultMarkdownConverter
 {
-    string ConvertToMarkdownTable(IEnumerable<SailDiffResult> testCaseResults, TestIds testIds);
+    string ConvertToMarkdownTable(IEnumerable<SailDiffResult> testCaseResults);
 }
 
 public class SailDiffResultMarkdownConverter : ISailDiffResultMarkdownConverter
 {
-    public string ConvertToMarkdownTable(IEnumerable<SailDiffResult> testCaseResults, TestIds testIds)
+    public string ConvertToMarkdownTable(IEnumerable<SailDiffResult> testCaseResults)
     {
         var enumeratedResults = testCaseResults.ToList();
         var nBefore = enumeratedResults.Select(x => x.TestResultsWithOutlierAnalysis.StatisticalTestResult.SampleSizeBefore).Distinct().Single();

@@ -1,5 +1,5 @@
-using Sailfish.Analysis.SailDiff.Statistics.StatsCore.Ops;
 using System;
+using Sailfish.Analysis.SailDiff.Statistics.StatsCore.Ops;
 
 namespace Sailfish.Analysis.SailDiff.Statistics.StatsCore.Decompositions;
 
@@ -35,13 +35,13 @@ internal sealed class SingularValueDecomposition : ICloneable, ISolverMatrixDeco
     }
 
     public SingularValueDecomposition(
-        double[,] value,
+        double[,]? value,
         bool computeLeftSingularVectors,
         bool computeRightSingularVectors,
         bool autoTranspose,
         bool inPlace)
     {
-        m = value != null ? value.Rows() : throw new ArgumentNullException(nameof(value), "Matrix cannot be null.");
+        m = value?.Rows() ?? throw new ArgumentNullException(nameof(value), "Matrix cannot be null.");
         if (m == 0)
             throw new ArgumentException("Matrix does not have any rows.", nameof(value));
         n = value.Columns();
@@ -222,8 +222,7 @@ internal sealed class SingularValueDecomposition : ICloneable, ISolverMatrixDeco
             }
 
         var num10 = num5 - 1;
-        var num11 = 0;
-        var num12 = 1.1102230246251565E-16;
+        const double num12 = 1.1102230246251565E-16;
         while (num5 > 0)
         {
             int index30;
@@ -376,7 +375,6 @@ internal sealed class SingularValueDecomposition : ICloneable, ISolverMatrixDeco
                     }
 
                     vector1[num5 - 2] = a1;
-                    ++num11;
                     continue;
                 case 4:
                     if (Diagonal[index32] <= 0.0)
@@ -409,7 +407,6 @@ internal sealed class SingularValueDecomposition : ICloneable, ISolverMatrixDeco
                             }
                     }
 
-                    num11 = 0;
                     --num5;
                     continue;
                 default:
@@ -434,7 +431,7 @@ internal sealed class SingularValueDecomposition : ICloneable, ISolverMatrixDeco
 
     public double[,] DiagonalMatrix => diagonalMatrix != null
         ? diagonalMatrix
-        : diagonalMatrix = Ops.InternalOps.Diagonal(Ops.InternalOps.Columns<double>(LeftSingularVectors), Ops.InternalOps.Columns<double>(RightSingularVectors), Diagonal);
+        : diagonalMatrix = InternalOps.Diagonal(LeftSingularVectors.Columns(), RightSingularVectors.Columns(), Diagonal);
 
     public double[,] RightSingularVectors { get; private set; }
 

@@ -10,7 +10,7 @@ public static class Beta
             throw new ArgumentOutOfRangeException(nameof(a), "Lower limit must be greater than zero.");
         if (b <= 0.0)
             throw new ArgumentOutOfRangeException(nameof(b), "Upper limit must be greater than zero.");
-        if (x <= 0.0 || x >= 1.0)
+        if (x is <= 0.0 or >= 1.0)
         {
             if (x == 0.0)
                 return 0.0;

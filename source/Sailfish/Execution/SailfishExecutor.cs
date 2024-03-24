@@ -1,3 +1,8 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using MediatR;
 using Sailfish.Analysis.SailDiff;
 using Sailfish.Analysis.ScaleFish;
@@ -5,11 +10,6 @@ using Sailfish.Contracts.Public.Models;
 using Sailfish.Contracts.Public.Notifications;
 using Sailfish.Logging;
 using Sailfish.Presentation;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace Sailfish.Execution;
 
@@ -80,7 +80,7 @@ internal class SailfishExecutor
             testInitializationResult.Errors.Count);
 
         var testDiscoveryExceptions = new List<Exception>();
-        foreach ((var reason, var names) in testInitializationResult.Errors)
+        foreach (var (reason, names) in testInitializationResult.Errors)
         {
             logger.Log(LogLevel.Error, "{Reason}", reason);
             foreach (var testName in names)

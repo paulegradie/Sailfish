@@ -1,6 +1,6 @@
-﻿using Sailfish.Contracts.Public.Models;
-using System;
+﻿using System;
 using System.Linq;
+using Sailfish.Contracts.Public.Models;
 
 namespace Sailfish.Utils;
 

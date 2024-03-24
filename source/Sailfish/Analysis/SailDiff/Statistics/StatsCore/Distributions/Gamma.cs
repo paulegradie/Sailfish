@@ -1,5 +1,5 @@
-using Sailfish.Analysis.SailDiff.Statistics.StatsCore.Ops;
 using System;
+using Sailfish.Analysis.SailDiff.Statistics.StatsCore.Ops;
 
 namespace Sailfish.Analysis.SailDiff.Statistics.StatsCore.Distributions;
 
@@ -114,7 +114,7 @@ public static class Gamma
             num6 /= x;
         }
 
-        if (x == 2.0 || x == 3.0)
+        if (x is 2.0 or 3.0)
             return num6;
         x -= 2.0;
         var num7 = Specials.Polevl(x, gamma_P, 6);

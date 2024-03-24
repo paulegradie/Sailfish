@@ -1,8 +1,8 @@
-using Sailfish.Analysis.SailDiff.Statistics.StatsCore.Attributes;
-using Sailfish.Analysis.SailDiff.Statistics.StatsCore.Ops;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
+using Sailfish.Analysis.SailDiff.Statistics.StatsCore.Attributes;
+using Sailfish.Analysis.SailDiff.Statistics.StatsCore.Ops;
 
 namespace Sailfish.Analysis.SailDiff.Statistics.StatsCore.Distributions;
 
@@ -39,7 +39,7 @@ public class WilcoxonDistribution : UnivariateContinuousDistribution
 
     public override double Entropy => approximation.Entropy;
 
-    private void Init(int n, double[] ranks, bool? exact)
+    private void Init(int n, double[]? ranks, bool? exact)
     {
         NumberOfSamples = n > 0 ? n : throw new ArgumentOutOfRangeException(nameof(n), "The number of samples must be positive.");
         var mean = n * (n + 1.0) / 4.0;
@@ -63,7 +63,7 @@ public class WilcoxonDistribution : UnivariateContinuousDistribution
         ranks = ranks.Get(ranks.Find(x => x != 0.0));
         var n = (long)Math.Pow(2.0, ranks.Length);
         var source = Combinatorics.Sequences(ranks.Length)
-            .Zip(Ops.InternalOps.EnumerableRange(n), (Func<int[], long, Tuple<int[], long>>)((c, i) => new Tuple<int[], long>(c, i)));
+            .Zip(InternalOps.EnumerableRange(n), (Func<int[], long, Tuple<int[], long>>)((c, i) => new Tuple<int[], long>(c, i)));
         Table = new double[n];
         var body = (Action<Tuple<int[], long>>)(item =>
         {

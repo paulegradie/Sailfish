@@ -1,13 +1,13 @@
-﻿using MediatR;
-using Sailfish.Analysis.SailDiff;
-using Sailfish.Contracts.Public.Models;
-using Sailfish.Contracts.Public.Requests;
-using Sailfish.Exceptions;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using MediatR;
+using Sailfish.Analysis.SailDiff;
+using Sailfish.Contracts.Public.Models;
+using Sailfish.Contracts.Public.Requests;
+using Sailfish.Exceptions;
 
 namespace Sailfish.DefaultHandlers.SailDiff;
 
@@ -21,7 +21,7 @@ internal class SailDiffBeforeAndAfterFileLocationHandler(IRunSettings runSetting
         CancellationToken cancellationToken)
     {
         await Task.Yield();
-        var trackingFiles = trackingFileDirectoryReader.FindTrackingFilesInDirectoryOrderedByLastModified(runSettings.GetRunSettingsTrackingDirectoryPath(), false);
+        var trackingFiles = trackingFileDirectoryReader.FindTrackingFilesInDirectoryOrderedByLastModified(runSettings.GetRunSettingsTrackingDirectoryPath());
         if (trackingFiles.Count == 0) return new BeforeAndAfterFileLocationResponse(new List<string>(), new List<string>());
 
         if (request.ProvidedBeforeTrackingFiles.Any())

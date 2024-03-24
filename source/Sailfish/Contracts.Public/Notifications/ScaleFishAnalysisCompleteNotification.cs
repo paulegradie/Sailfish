@@ -1,6 +1,6 @@
+using System.Collections.Generic;
 using MediatR;
 using Sailfish.Analysis.ScaleFish;
-using System.Collections.Generic;
 
 namespace Sailfish.Contracts.Public.Notifications;
 

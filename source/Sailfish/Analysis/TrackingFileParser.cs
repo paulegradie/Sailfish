@@ -1,7 +1,3 @@
-using Sailfish.Contracts.Public.Serialization.Tracking.V1;
-using Sailfish.Extensions.Types;
-using Sailfish.Logging;
-using Sailfish.Presentation;
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -9,6 +5,10 @@ using System.Linq;
 using System.Runtime.Serialization;
 using System.Threading;
 using System.Threading.Tasks;
+using Sailfish.Contracts.Public.Serialization.Tracking.V1;
+using Sailfish.Extensions.Types;
+using Sailfish.Logging;
+using Sailfish.Presentation;
 
 namespace Sailfish.Analysis;
 

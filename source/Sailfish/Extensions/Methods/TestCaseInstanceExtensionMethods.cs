@@ -1,7 +1,7 @@
-﻿using Sailfish.Attributes;
-using Sailfish.Execution;
-using System.Linq;
+﻿using System.Linq;
 using System.Reflection;
+using Sailfish.Attributes;
+using Sailfish.Execution;
 
 namespace Sailfish.Extensions.Methods;
 internal static class TestCaseInstanceExtensionMethods

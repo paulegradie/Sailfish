@@ -3,7 +3,7 @@ using System;
 namespace Sailfish.Analysis.SailDiff.Statistics.StatsCore.Distributions.Options;
 
 [Serializable]
-public class EmpiricalOptions : IFittingOptions, ICloneable
+public class EmpiricalOptions : IFittingOptions
 {
     public EmpiricalOptions()
     {

@@ -1,6 +1,6 @@
+using System;
 using MathNet.Numerics.LinearAlgebra;
 using MathNet.Numerics.LinearAlgebra.Factorization;
-using System;
 
 namespace Sailfish.Analysis.SailDiff.Statistics.StatsCore.Decompositions;
 

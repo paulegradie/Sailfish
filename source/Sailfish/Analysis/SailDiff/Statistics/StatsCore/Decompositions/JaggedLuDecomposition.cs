@@ -1,6 +1,6 @@
+using System;
 using Sailfish.Analysis.SailDiff.Statistics.StatsCore.Exceptions;
 using Sailfish.Analysis.SailDiff.Statistics.StatsCore.Ops;
-using System;
 
 namespace Sailfish.Analysis.SailDiff.Statistics.StatsCore.Decompositions;
 
@@ -268,7 +268,7 @@ internal sealed class JaggedLuDecomposition : ICloneable, ISolverArrayDecomposit
     {
         if (values.Length == 0)
         {
-            var mat = Ops.InternalOps.Zeros<T>(rows, columns);
+            var mat = InternalOps.Zeros<T>(rows, columns);
             return mat;
         }
 

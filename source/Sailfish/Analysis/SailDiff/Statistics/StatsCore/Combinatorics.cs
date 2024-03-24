@@ -57,7 +57,6 @@ public static class Combinatorics
             int x;
             if (j > 0)
             {
-                x = j;
             }
             else if (c[1] + 1 < c[2])
             {

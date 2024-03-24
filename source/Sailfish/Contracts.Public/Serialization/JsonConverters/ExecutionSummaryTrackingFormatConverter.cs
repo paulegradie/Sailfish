@@ -1,9 +1,9 @@
-using Sailfish.Contracts.Public.Serialization.Tracking.V1;
-using Sailfish.Exceptions;
 using System;
 using System.Collections.Generic;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Sailfish.Contracts.Public.Serialization.Tracking.V1;
+using Sailfish.Exceptions;
 
 namespace Sailfish.Contracts.Public.Serialization.JsonConverters;
 

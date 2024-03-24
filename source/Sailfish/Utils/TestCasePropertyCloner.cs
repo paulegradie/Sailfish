@@ -1,8 +1,8 @@
-﻿using Sailfish.Attributes;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using Sailfish.Attributes;
 
 namespace Sailfish.Utils;
 
@@ -10,9 +10,9 @@ internal static class TestCasePropertyCloner
 {
     public static void ApplyPropertiesAndFieldsTo(this PropertiesAndFields propertiesAndFields, object destination)
     {
-        foreach ((var key, var value) in propertiesAndFields.Properties) key.SetValue(destination, value);
+        foreach (var (key, value) in propertiesAndFields.Properties) key.SetValue(destination, value);
 
-        foreach ((var key, var value) in propertiesAndFields.Fields) key.SetValue(destination, value);
+        foreach (var (key, value) in propertiesAndFields.Fields) key.SetValue(destination, value);
     }
 
     public static PropertiesAndFields RetrievePropertiesAndFields(this object source)

@@ -1,7 +1,7 @@
-using MathNet.Numerics;
-using Sailfish.Exceptions;
 using System;
 using System.Linq;
+using MathNet.Numerics;
+using Sailfish.Exceptions;
 
 namespace Sailfish.Analysis.ScaleFish.CurveFitting;
 
@@ -21,7 +21,7 @@ public class FitnessCalculator : IFitnessCalculator
         var xValues = observations.Select(x => x.X).ToArray();
         var yValues = observations.Select(x => x.Y).ToArray();
 
-        (var bias, var scale) = Fit.Curve(
+        var (bias, scale) = Fit.Curve(
             xValues,
             yValues,
             aFunc,

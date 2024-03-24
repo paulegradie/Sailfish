@@ -1,6 +1,6 @@
+using System;
 using Sailfish.Analysis.SailDiff.Statistics.StatsCore.Attributes;
 using Sailfish.Analysis.SailDiff.Statistics.StatsCore.Distributions.Options;
-using System;
 
 namespace Sailfish.Analysis.SailDiff.Statistics.StatsCore.Distributions;
 
@@ -58,10 +58,6 @@ public class TDistribution : UnivariateContinuousDistribution, IFormattable
         return inverseDistributionLeftTail(DegreesOfFreedom, p);
     }
 
-    public override void Fit(double[] observations, double[] weights, IFittingOptions options)
-    {
-        throw new NotSupportedException();
-    }
 
     public override object Clone()
     {

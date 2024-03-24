@@ -1,11 +1,11 @@
-﻿using Sailfish.Analysis.SailDiff;
+﻿using System;
+using System.Collections.Generic;
+using System.IO;
+using Sailfish.Analysis.SailDiff;
 using Sailfish.Contracts.Public.Models;
 using Sailfish.Extensions.Types;
 using Sailfish.Logging;
 using Sailfish.Presentation;
-using System;
-using System.Collections.Generic;
-using System.IO;
 
 namespace Sailfish;
 

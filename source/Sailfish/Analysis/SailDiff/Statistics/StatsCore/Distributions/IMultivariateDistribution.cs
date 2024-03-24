@@ -17,10 +17,7 @@ public interface IMultivariateDistribution : IDistribution, ICloneable
     double[,] Covariance { get; }
 }
 
-public interface IMultivariateDistribution<in TObservation> :
-    IDistribution<TObservation>,
-    IDistribution,
-    ICloneable
+public interface IMultivariateDistribution<in TObservation> : IDistribution<TObservation>
 {
     int Dimension { get; }
 

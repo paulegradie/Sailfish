@@ -1,8 +1,8 @@
+using System;
+using System.Threading.Tasks;
 using Sailfish.Analysis.SailDiff.Statistics.StatsCore.Distributions;
 using Sailfish.Analysis.SailDiff.Statistics.StatsCore.Exceptions;
 using Sailfish.Analysis.SailDiff.Statistics.StatsCore.Ops;
-using System;
-using System.Threading.Tasks;
 
 namespace Sailfish.Analysis.SailDiff.Statistics.StatsCore.Decompositions;
 
@@ -66,7 +66,7 @@ internal sealed class CholeskyDecomposition : ICloneable, ISolverMatrixDecomposi
             {
                 if (destroyed)
                     throw new InvalidOperationException("The decomposition has been destroyed.");
-                diagonalMatrix = Ops.InternalOps.Diagonal(Diagonal);
+                diagonalMatrix = InternalOps.Diagonal(Diagonal);
             }
 
             return diagonalMatrix;
@@ -126,7 +126,7 @@ internal sealed class CholeskyDecomposition : ICloneable, ISolverMatrixDecomposi
 
     public double[,] Inverse()
     {
-        return Solve(Ops.InternalOps.Identity(n));
+        return Solve(InternalOps.Identity(n));
     }
 
     public double[,] Reverse()

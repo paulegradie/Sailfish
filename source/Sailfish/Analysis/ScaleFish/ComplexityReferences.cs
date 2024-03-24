@@ -1,5 +1,5 @@
-﻿using Sailfish.Analysis.ScaleFish.ComplexityFunctions;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+using Sailfish.Analysis.ScaleFish.ComplexityFunctions;
 
 namespace Sailfish.Analysis.ScaleFish;
 

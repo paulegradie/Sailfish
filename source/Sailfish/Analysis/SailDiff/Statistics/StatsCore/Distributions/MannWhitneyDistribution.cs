@@ -1,9 +1,9 @@
-using Sailfish.Analysis.SailDiff.Statistics.StatsCore.Attributes;
-using Sailfish.Analysis.SailDiff.Statistics.StatsCore.Ops;
-using Sailfish.Analysis.SailDiff.Statistics.StatsCore.Search;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
+using Sailfish.Analysis.SailDiff.Statistics.StatsCore.Attributes;
+using Sailfish.Analysis.SailDiff.Statistics.StatsCore.Ops;
+using Sailfish.Analysis.SailDiff.Statistics.StatsCore.Search;
 
 namespace Sailfish.Analysis.SailDiff.Statistics.StatsCore.Distributions;
 
@@ -47,7 +47,7 @@ public class MannWhitneyDistribution : UnivariateContinuousDistribution
 
     public override DoubleRange Support => new(double.NegativeInfinity, double.PositiveInfinity);
 
-    private void init(int n1, int n2, double[] ranks, bool? exact)
+    private void init(int n1, int n2, double[]? ranks, bool? exact)
     {
         if (n1 <= 0)
             throw new ArgumentOutOfRangeException(nameof(n1), "The number of observations in the first sample (n1) must be higher than zero.");

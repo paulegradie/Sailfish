@@ -1,7 +1,7 @@
+using System;
 using Sailfish.Analysis.SailDiff.Statistics.StatsCore.Distributions;
 using Sailfish.Analysis.SailDiff.Statistics.StatsCore.Distributions.Options;
 using Sailfish.Analysis.SailDiff.Statistics.StatsCore.Ops;
-using System;
 
 namespace Sailfish.Analysis.SailDiff.Statistics.StatsCore.Sampling;
 
@@ -9,13 +9,7 @@ namespace Sailfish.Analysis.SailDiff.Statistics.StatsCore.Sampling;
 public class Independent<TDistribution, TObservation> :
     Independent<TDistribution>,
     IMultivariateDistribution<TObservation[]>,
-    IDistribution<TObservation[]>,
-    IDistribution,
-    ICloneable,
     IFittableDistribution<TObservation[], IndependentOptions>,
-    IFittable<TObservation[], IndependentOptions>,
-    IFittable<TObservation[]>,
-    IFittableDistribution<TObservation[]>,
     ISampleableDistribution<TObservation[]>, Distributions.IRandomNumberGenerator<TObservation[]> where TDistribution : IUnivariateDistribution<TObservation>, IUnivariateDistribution
 {
     public Independent(int dimensions, Func<int, TDistribution> initializer)
@@ -36,34 +30,6 @@ public class Independent<TDistribution, TObservation> :
     public Independent(params TDistribution[] components)
         : base(components)
     {
-    }
-
-    public void Fit(TObservation[][] observations, double[] weights)
-    {
-        Fit(observations, weights, null);
-    }
-
-    public void Fit(TObservation[][] observations, double[] weights, IndependentOptions options)
-    {
-        if (options != null)
-        {
-            if (!options.Transposed)
-                observations = observations.Transpose();
-            if (options.InnerOptions != null)
-                for (var index = 0; index < Components.Length; ++index)
-                    Components[index].Fit(observations[index], weights, options.InnerOptions[index]);
-            else
-                for (var index = 0; index < Components.Length; ++index)
-                    Components[index].Fit(observations[index], weights, options.InnerOption);
-        }
-        else
-        {
-            observations = observations.Transpose();
-            for (var index = 0; index < Components.Length; ++index)
-                ((IFittable<TObservation>)Components[index]).Fit(observations[index], weights);
-        }
-
-        Reset();
     }
 
     public double ProbabilityFunction(TObservation[] x)
@@ -108,7 +74,7 @@ public class Independent<TDistribution, TObservation> :
 
     TObservation[][] Distributions.IRandomNumberGenerator<TObservation[]>.Generate(int samples)
     {
-        return Generate(samples, Ops.InternalOps.Zeros<TObservation>(samples, Components.Length));
+        return Generate(samples, InternalOps.Zeros<TObservation>(samples, Components.Length));
     }
 
     TObservation[] Distributions.IRandomNumberGenerator<TObservation[]>.Generate()
@@ -152,7 +118,7 @@ public class Independent<TDistribution, TObservation> :
 
     TObservation[][] ISampleableDistribution<TObservation[]>.Generate(int samples, Random source)
     {
-        return Generate(samples, Ops.InternalOps.Zeros<TObservation>(samples, Components.Length), source);
+        return Generate(samples, InternalOps.Zeros<TObservation>(samples, Components.Length), source);
     }
 
     TObservation[] ISampleableDistribution<TObservation[]>.Generate(Random source)

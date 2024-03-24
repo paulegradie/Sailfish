@@ -1,7 +1,7 @@
-﻿using Sailfish.Presentation;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using Sailfish.Presentation;
 
 namespace Sailfish.Analysis.SailDiff;
 

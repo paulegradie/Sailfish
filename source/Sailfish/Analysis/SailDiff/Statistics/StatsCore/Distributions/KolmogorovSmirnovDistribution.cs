@@ -1,7 +1,7 @@
+using System;
 using Sailfish.Analysis.SailDiff.Statistics.StatsCore.Attributes;
 using Sailfish.Analysis.SailDiff.Statistics.StatsCore.Distributions.Options;
 using Sailfish.Analysis.SailDiff.Statistics.StatsCore.Ops;
-using System;
 
 namespace Sailfish.Analysis.SailDiff.Statistics.StatsCore.Distributions;
 
@@ -43,11 +43,6 @@ public class KolmogorovSmirnovDistribution([Positive] double samples) : Univaria
     public double OneSideDistributionFunction(double x)
     {
         return OneSideUpperTail(NumberOfSamples, x);
-    }
-
-    public override void Fit(double[] observations, double[] weights, IFittingOptions options)
-    {
-        throw new NotSupportedException();
     }
 
     public override object Clone()

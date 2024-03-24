@@ -1,7 +1,7 @@
-using Sailfish.Attributes;
-using Sailfish.Execution;
 using System.Collections.Generic;
 using System.Linq;
+using Sailfish.Attributes;
+using Sailfish.Execution;
 
 namespace Sailfish.Analysis.ScaleFish;
 
@@ -37,7 +37,7 @@ internal class ScalefishObservationCompiler : IScalefishObservationCompiler
 
         var observations = new List<ScaleFishObservation>();
         foreach (var testCaseGroup in testCaseGroups)
-            foreach ((var complexityCase, var caseIndex) in complexityCases.Zip(Enumerable.Range(0, complexityCases.Count)))
+            foreach (var (complexityCase, caseIndex) in complexityCases.Zip(Enumerable.Range(0, complexityCases.Count)))
             {
                 var complexityMeasurements = ComputeComplexityMeasurements(caseIndex, complexityCase, complexityCases, testCaseGroup);
                 observations.Add(new ScaleFishObservation(testCaseGroup.TestCaseMethodName, complexityCase.ComplexityPropertyName, [.. complexityMeasurements]));

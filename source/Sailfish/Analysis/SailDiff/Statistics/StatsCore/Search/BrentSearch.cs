@@ -1,5 +1,5 @@
-using Sailfish.Analysis.SailDiff.Statistics.StatsCore.Exceptions;
 using System;
+using Sailfish.Analysis.SailDiff.Statistics.StatsCore.Exceptions;
 
 namespace Sailfish.Analysis.SailDiff.Statistics.StatsCore.Search;
 
@@ -8,7 +8,7 @@ public sealed class BrentSearch(
     double lowerBound,
     double upperBound,
     double tol = 1E-06,
-    int maxIterations = 500) : IOptimizationMethod<double, double>
+    int maxIterations = 500)
 {
     public double Tolerance { get; set; } = tol;
 
@@ -48,7 +48,7 @@ public sealed class BrentSearch(
     public bool Maximize()
     {
         var brentSearchResult =
-            MinimizeInternal((Func<double, double>)(x => -Function(x)), LowerBound, UpperBound, Tolerance, MaxIterations);
+            MinimizeInternal(x => -Function(x), LowerBound, UpperBound, Tolerance, MaxIterations);
         Solution = brentSearchResult.Solution;
         Value = -brentSearchResult.Value;
         Status = brentSearchResult.Status;

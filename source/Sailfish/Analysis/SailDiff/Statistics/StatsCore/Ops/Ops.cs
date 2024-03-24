@@ -1,32 +1,32 @@
-using MathNet.Numerics.LinearAlgebra;
-using Sailfish.Analysis.SailDiff.Statistics.StatsCore.Exceptions;
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using MathNet.Numerics.LinearAlgebra;
+using Sailfish.Analysis.SailDiff.Statistics.StatsCore.Exceptions;
 
 namespace Sailfish.Analysis.SailDiff.Statistics.StatsCore.Ops;
 
 public static partial class InternalOps
 {
-    public static double WeightedStandardDeviation(this double[] values, double[] weights)
+    public static double WeightedStandardDeviation(this double[] values, double[]? weights)
     {
         return Math.Sqrt(values.WeightedVariance(weights));
     }
 
-    public static double WeightedVariance(this double[] values, double[] weights)
+    public static double WeightedVariance(this double[] values, double[]? weights)
     {
         return values.WeightedVariance(weights, values.WeightedMean(weights), true);
     }
 
-    public static double WeightedVariance(this double[] values, double[] weights, double mean)
+    public static double WeightedVariance(this double[] values, double[]? weights, double mean)
     {
         return values.WeightedVariance(weights, mean, true);
     }
 
     public static double WeightedVariance(
         this double[] values,
-        double[] weights,
+        double[]? weights,
         double mean,
         bool unbiased,
         WeightType weightType = WeightType.Fraction)
@@ -81,7 +81,7 @@ public static partial class InternalOps
 
     public static T WeightedMode<T>(
         this T[] values,
-        double[] weights,
+        double[]? weights,
         bool inPlace = false,
         bool alreadySorted = false)
     {
@@ -101,7 +101,7 @@ public static partial class InternalOps
         return (object)values[0] is IComparable ? weighted_mode_sort(values, weights, inPlace, alreadySorted) : weighted_mode_bag(values, weights);
     }
 
-    private static T weighted_mode_bag<T>(T[] values, double[] weights)
+    private static T weighted_mode_bag<T>(T[] values, double[]? weights)
     {
         var obj = values[0];
         var num = 1.0;
@@ -127,7 +127,7 @@ public static partial class InternalOps
 
     private static T weighted_mode_sort<T>(
         T[] values,
-        double[] weights,
+        double[]? weights,
         bool inPlace,
         bool alreadySorted)
     {
@@ -276,12 +276,12 @@ public static partial class InternalOps
     }
 
     private static T[,] GetInner<T>(
-        this T[,] source,
-        T[,] destination,
-        int[] rowIndexes,
-        int[] columnIndexes)
+        this T[,]? source,
+        T[,]? destination,
+        int[]? rowIndexes,
+        int[]? columnIndexes)
     {
-        var num = source != null ? source.GetLength(0) : throw new ArgumentNullException(nameof(source));
+        var num = source?.GetLength(0) ?? throw new ArgumentNullException(nameof(source));
         var length1 = source.GetLength(1);
         var length2 = num;
         var length3 = length1;
@@ -331,9 +331,9 @@ public static partial class InternalOps
 
     private static T[][] GetInner<T>(
         this T[][] source,
-        T[][] destination,
-        int[] rowIndexes,
-        int[] columnIndexes,
+        T[][]? destination,
+        int[]? rowIndexes,
+        int[]? columnIndexes,
         bool reuseMemory)
     {
         ArgumentNullException.ThrowIfNull(source);
@@ -401,7 +401,7 @@ public static partial class InternalOps
 
     public static double[,] WeightedScatter(
         this double[][] matrix,
-        double[] weights,
+        double[]? weights,
         double[] means,
         double factor,
         int dimension)
@@ -464,7 +464,7 @@ public static partial class InternalOps
             return array.GetValue(indices);
         var array1 = array.GetValue(indices[0]) as Array;
         if (indices.Length == 1)
-            return (object)array1;
+            return array1;
         var indices1 = indices.Get(1, 0);
         return array1.GetValue(true, indices1);
     }
@@ -648,16 +648,12 @@ public static partial class InternalOps
         return true;
     }
 
-    static InternalOps()
-    {
-    }
-
-    public static double[] WeightedMean(this double[][] matrix, double[] weights)
+    public static double[] WeightedMean(this double[][] matrix, double[]? weights)
     {
         return matrix.WeightedMean(weights, 0);
     }
 
-    public static double[] WeightedMean(this double[][] matrix, double[] weights, int dimension = 0)
+    public static double[] WeightedMean(this double[][] matrix, double[]? weights, int dimension = 0)
     {
         var length1 = matrix.Length;
         if (length1 == 0)
@@ -845,7 +841,7 @@ public static partial class InternalOps
         return (T[])a.Clone();
     }
 
-    public static double WeightedMean(this double[] values, double[] weights)
+    public static double WeightedMean(this double[] values, double[]? weights)
     {
         if (values.Length != weights.Length)
             throw new DimensionMismatchException(nameof(weights), "The values and weight vectors must have the same length");
@@ -867,12 +863,11 @@ public static partial class InternalOps
         return num1 / num2;
     }
 
-    public static T[][] SetColumn<T>(this T[][] m, int index, T[] column)
+    public static void SetColumn<T>(this T[][] m, int index, T[] column)
     {
         index = TheIndex(index, m.Columns());
         for (var index1 = 0; index1 < column.Length; ++index1)
             m[index1][index] = column[index1];
-        return m;
     }
 
     public static double Correct(
@@ -1048,7 +1043,7 @@ public static partial class InternalOps
         return [.. intList];
     }
 
-    public static T[] GetColumn<T>(this T[,] m, int index, T[] result = null)
+    public static T[] GetColumn<T>(this T[,] m, int index, T[]? result = null)
     {
         result ??= new T[m.Rows()];
         index = TheIndex(index, m.Columns());
@@ -1057,7 +1052,7 @@ public static partial class InternalOps
         return result;
     }
 
-    public static T[] GetRow<T>(this T[,] m, int index, T[] result = null)
+    public static T[] GetRow<T>(this T[,] m, int index, T[]? result = null)
     {
         result ??= new T[m.GetLength(1)];
         index = TheIndex(index, m.Rows());
@@ -1264,7 +1259,7 @@ public static partial class InternalOps
 
     public static double[] WeightedVariance(
         this double[][] matrix,
-        double[] weights,
+        double[]? weights,
         double[] means)
     {
         return matrix.WeightedVariance(weights, means, true);
@@ -1272,7 +1267,7 @@ public static partial class InternalOps
 
     public static double[] WeightedVariance(
         this double[][] matrix,
-        double[] weights,
+        double[]? weights,
         double[] means,
         bool unbiased,
         WeightType weightType = WeightType.Fraction)
@@ -1305,7 +1300,7 @@ public static partial class InternalOps
 
     public static double[,] WeightedCovariance(
         this double[][] matrix,
-        double[] weights,
+        double[]? weights,
         double[] means)
     {
         return matrix.WeightedCovariance(weights, means, 0);

@@ -1,8 +1,8 @@
+using System;
 using Sailfish.Analysis.SailDiff.Statistics.StatsCore.Attributes;
 using Sailfish.Analysis.SailDiff.Statistics.StatsCore.Distributions.Options;
 using Sailfish.Analysis.SailDiff.Statistics.StatsCore.Exceptions;
 using Sailfish.Analysis.SailDiff.Statistics.StatsCore.Search;
-using System;
 
 namespace Sailfish.Analysis.SailDiff.Statistics.StatsCore.Distributions;
 
@@ -97,11 +97,6 @@ public class NonCentralTDistribution([Positive] double degreesOfFreedom, [Real] 
         var num5 = Math.Exp(-(noncentrality * noncentrality) / 2.0);
         var num6 = num4;
         return num3 / num6 * num5;
-    }
-
-    public override void Fit(double[] observations, double[] weights, IFittingOptions options)
-    {
-        throw new NotSupportedException();
     }
 
     public override object Clone()

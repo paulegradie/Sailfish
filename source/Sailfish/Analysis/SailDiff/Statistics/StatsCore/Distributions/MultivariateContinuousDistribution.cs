@@ -1,7 +1,7 @@
+using System;
 using Sailfish.Analysis.SailDiff.Statistics.StatsCore.Distributions.Options;
 using Sailfish.Analysis.SailDiff.Statistics.StatsCore.Ops;
 using Sailfish.Analysis.SailDiff.Statistics.StatsCore.Sampling;
-using System;
 
 namespace Sailfish.Analysis.SailDiff.Statistics.StatsCore.Distributions;
 
@@ -9,17 +9,13 @@ namespace Sailfish.Analysis.SailDiff.Statistics.StatsCore.Distributions;
 public abstract class MultivariateContinuousDistribution :
     DistributionBase,
     IMultivariateDistribution,
-    IDistribution,
-    ICloneable,
     IMultivariateDistribution<double[]>,
-    IDistribution<double[]>,
     IFittableDistribution<double[]>,
-    IFittable<double[]>,
     ISampleableDistribution<double[]>,
-    IRandomNumberGenerator<double[]>,
-    IFormattable
+    IRandomNumberGenerator<double[]>
 {
-    [NonSerialized] private MetropolisHasting<double> generator;
+    [NonSerialized]
+    private MetropolisHasting<double> generator;
 
     protected MultivariateContinuousDistribution(int dimension)
     {
@@ -31,7 +27,7 @@ public abstract class MultivariateContinuousDistribution :
         Fit(observations, (IFittingOptions)null);
     }
 
-    public virtual void Fit(double[][] observations, double[] weights)
+    public virtual void Fit(double[][] observations, double[]? weights)
     {
         Fit(observations, weights, null);
     }
@@ -56,60 +52,6 @@ public abstract class MultivariateContinuousDistribution :
     double IDistribution.LogProbabilityFunction(double[] x)
     {
         return LogProbabilityDensityFunction(x);
-    }
-
-    void IDistribution.Fit(Array observations)
-    {
-        ((IDistribution)this).Fit(observations, (IFittingOptions)null);
-    }
-
-    void IDistribution.Fit(Array observations, double[] weights)
-    {
-        ((IDistribution)this).Fit(observations, weights, null);
-    }
-
-    void IDistribution.Fit(Array observations, int[] weights)
-    {
-        ((IDistribution)this).Fit(observations, weights, null);
-    }
-
-    void IDistribution.Fit(Array observations, IFittingOptions options)
-    {
-        ((IDistribution)this).Fit(observations, (double[])null, options);
-    }
-
-    void IDistribution.Fit(Array observations, double[] weights, IFittingOptions options)
-    {
-        switch (observations)
-        {
-            case double[][] observations1:
-                Fit(observations1, weights, options);
-                break;
-
-            case double[] vector:
-                Fit(vector.Split(Dimension), weights, options);
-                break;
-
-            default:
-                throw new ArgumentException("Unsupported parameter type.", nameof(observations));
-        }
-    }
-
-    void IDistribution.Fit(Array observations, int[] weights, IFittingOptions options)
-    {
-        switch (observations)
-        {
-            case double[][] observations1:
-                Fit(observations1, weights, options);
-                break;
-
-            case double[] vector:
-                Fit(vector.Split(Dimension), weights, options);
-                break;
-
-            default:
-                throw new ArgumentException("Unsupported parameter type.", nameof(observations));
-        }
     }
 
     public virtual double DistributionFunction(params double[] x)
@@ -154,7 +96,7 @@ public abstract class MultivariateContinuousDistribution :
 
     public double[][] Generate(int samples, Random source)
     {
-        return Generate(samples, Ops.InternalOps.Create<double>(samples, Dimension), source);
+        return Generate(samples, InternalOps.Create<double>(samples, Dimension), source);
     }
 
     public virtual double[][] Generate(int samples, double[][] result, Random source)
@@ -218,7 +160,7 @@ public abstract class MultivariateContinuousDistribution :
         Fit(observations, (double[])null, options);
     }
 
-    public virtual void Fit(double[][] observations, double[] weights, IFittingOptions options)
+    public virtual void Fit(double[][] observations, double[]? weights, IFittingOptions options)
     {
         throw new NotSupportedException();
     }

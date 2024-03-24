@@ -1,8 +1,8 @@
+using System.Globalization;
+using System.Linq;
 using CsvHelper;
 using CsvHelper.Configuration;
 using CsvHelper.TypeConversion;
-using System.Globalization;
-using System.Linq;
 
 namespace Sailfish.Contracts.Private.CsvMaps.Converters;
 

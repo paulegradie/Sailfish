@@ -33,7 +33,7 @@ public static partial class InternalOps
 
     public static double[,] WeightedCovariance(
         this double[][] matrix,
-        double[] weights,
+        double[]? weights,
         double[] means,
         int dimension)
     {
@@ -182,7 +182,7 @@ public static partial class InternalOps
 
     public static double WeightedEntropy(
         this double[] values,
-        double[] weights,
+        double[]? weights,
         Func<double, double> pdf)
     {
         var num = 0.0;

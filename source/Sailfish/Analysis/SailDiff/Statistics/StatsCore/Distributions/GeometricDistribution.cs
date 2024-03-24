@@ -1,7 +1,7 @@
+using System;
 using Sailfish.Analysis.SailDiff.Statistics.StatsCore.Attributes;
 using Sailfish.Analysis.SailDiff.Statistics.StatsCore.Distributions.Options;
 using Sailfish.Analysis.SailDiff.Statistics.StatsCore.Ops;
-using System;
 
 namespace Sailfish.Analysis.SailDiff.Statistics.StatsCore.Distributions;
 
@@ -9,14 +9,7 @@ namespace Sailfish.Analysis.SailDiff.Statistics.StatsCore.Distributions;
 public class GeometricDistribution([Unit] double probabilityOfSuccess) :
     UnivariateDiscreteDistribution,
     IFittableDistribution<double, IFittingOptions>,
-    IFittable<double, IFittingOptions>,
-    IFittable<double>,
-    IFittableDistribution<double>,
-    IDistribution<double>,
-    IDistribution,
-    ICloneable,
     ISampleableDistribution<int>,
-    IDistribution<int>,
     IRandomNumberGenerator<int>
 {
     public double ProbabilityOfSuccess { get; private set; } = probabilityOfSuccess >= 0.0 && probabilityOfSuccess <= 1.0
@@ -36,7 +29,7 @@ public class GeometricDistribution([Unit] double probabilityOfSuccess) :
 
     public override IntRange Support => new(0, int.MaxValue);
 
-    public override void Fit(double[] observations, double[] weights, IFittingOptions options)
+    public override void Fit(double[] observations, double[]? weights, IFittingOptions options)
     {
         if (options != null)
             throw new ArgumentException("No options may be specified.");
