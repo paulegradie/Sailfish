@@ -483,17 +483,17 @@ public abstract class UnivariateDiscreteDistribution : DistributionBase,
         Fit(observations, weights, null);
     }
 
-    public virtual void Fit(double[] observations, IFittingOptions options)
+    public virtual void Fit(double[] observations, IFittingOptions? options)
     {
         Fit(observations, (double[])null, options);
     }
 
-    public virtual void Fit(double[] observations, double[]? weights, IFittingOptions options)
+    public virtual void Fit(double[] observations, double[]? weights, IFittingOptions? options)
     {
         throw new NotSupportedException();
     }
 
-    public virtual void Fit(double[] observations, int[]? weights, IFittingOptions options)
+    public virtual void Fit(double[] observations, int[]? weights, IFittingOptions? options)
     {
         if (weights == null)
             Fit(observations, (double[])null, options);

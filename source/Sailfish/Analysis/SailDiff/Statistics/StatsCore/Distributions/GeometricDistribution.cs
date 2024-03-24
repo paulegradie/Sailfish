@@ -29,7 +29,7 @@ public class GeometricDistribution([Unit] double probabilityOfSuccess) :
 
     public override IntRange Support => new(0, int.MaxValue);
 
-    public override void Fit(double[] observations, double[]? weights, IFittingOptions options)
+    public override void Fit(double[] observations, double[]? weights, IFittingOptions? options)
     {
         if (options != null)
             throw new ArgumentException("No options may be specified.");

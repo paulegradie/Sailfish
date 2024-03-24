@@ -87,7 +87,7 @@ public static partial class InternalOps
         return (object)values[0] is IComparable ? mode_sort(values, inPlace, alreadySorted, out count) : mode_bag(values, out count);
     }
 
-    private static T mode_bag<T>(T[] values, out int bestCount)
+    private static T mode_bag<T>(T[] values, out int bestCount) where T : notnull
     {
         var obj = values[0];
         bestCount = 1;

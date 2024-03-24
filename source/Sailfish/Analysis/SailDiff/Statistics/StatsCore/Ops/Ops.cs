@@ -98,28 +98,25 @@ public static partial class InternalOps
     {
         if (values.Length == 0)
             throw new ArgumentException("The values vector cannot be empty.", nameof(values));
-        return (object)values[0] is IComparable ? weighted_mode_sort(values, weights, inPlace, alreadySorted) : weighted_mode_bag(values, weights);
+        return (object)values[0]! is IComparable ? weighted_mode_sort(values, weights, inPlace, alreadySorted) : weighted_mode_bag(values, weights);
     }
 
-    private static T weighted_mode_bag<T>(T[] values, double[]? weights)
+    private static T weighted_mode_bag<T>(IReadOnlyList<T> values, IReadOnlyList<double>? weights) where T : notnull
     {
         var obj = values[0];
         var num = 1.0;
         var dictionary = new Dictionary<T, double>();
-        for (var index = 0; index < values.Length; ++index)
+        for (var index = 0; index < values.Count; ++index)
         {
             var key = values[index];
-            double weight;
-            if (!dictionary.TryGetValue(key, out weight))
+            if (!dictionary.TryGetValue(key, out var weight))
                 weight = weights[index];
             else
                 weight += weights[index];
             dictionary[key] = weight;
-            if (weight > num)
-            {
-                num = weight;
-                obj = key;
-            }
+            if (!(weight > num)) continue;
+            num = weight;
+            obj = key;
         }
 
         return obj;
@@ -451,14 +448,14 @@ public static partial class InternalOps
         return numArray;
     }
 
-    public static TOutput To<TOutput>(this Array array) where TOutput : class, ICloneable, IList, ICollection, IEnumerable, IStructuralComparable, IStructuralEquatable => array.To(typeof(TOutput)) as TOutput;
+    public static TOutput? To<TOutput>(this Array array) where TOutput : class, ICloneable, IList, ICollection, IEnumerable, IStructuralComparable, IStructuralEquatable => array.To(typeof(TOutput)) as TOutput;
 
-    public static bool IsVector(this Array array)
+    private static bool IsVector(this Array array)
     {
         return array.Rank == 1 && !array.IsJagged();
     }
 
-    public static object GetValue(this Array array, bool deep, int[] indices)
+    private static object GetValue(this Array array, bool deep, int[] indices)
     {
         if (array.IsVector() || !deep || !array.IsJagged())
             return array.GetValue(indices);
@@ -475,9 +472,7 @@ public static partial class InternalOps
         {
             var array1 = array.GetValue(indices[0]) as Array;
             var numArray = indices.Get(1, 0);
-            var obj = value;
-            var indices1 = numArray;
-            array1.SetValue(obj, true, indices1);
+            array1.SetValue(value, true, numArray);
         }
         else
         {
@@ -485,7 +480,7 @@ public static partial class InternalOps
         }
     }
 
-    public static object To(this Array array, Type outputType)
+    private static object To(this Array array, Type outputType)
     {
         var elementType1 = array.GetType().GetElementType();
         var elementType2 = outputType.GetElementType();
@@ -547,7 +542,7 @@ public static partial class InternalOps
         return numArray;
     }
 
-    public static T[,] CreateAs<T>(T[,] matrix)
+    private static T[,] CreateAs<T>(T[,] matrix)
     {
         return new T[matrix.GetLength(0), matrix.GetLength(1)];
     }
