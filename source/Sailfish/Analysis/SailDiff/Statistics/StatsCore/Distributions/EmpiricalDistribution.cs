@@ -109,26 +109,6 @@ public class EmpiricalDistribution :
 
     public override DoubleRange Support => new(double.NegativeInfinity, double.PositiveInfinity);
 
-    public void Fit(double[] observations, double[]? weights, EmpiricalOptions? options)
-    {
-        var smoothing = new double?();
-        var flag = false;
-        if (options != null)
-        {
-            smoothing = options.SmoothingRule(observations, weights);
-            flag = options.InPlace;
-        }
-
-        if (!flag)
-        {
-            observations = (double[])observations.Clone();
-            if (weights != null)
-                weights = (double[])weights.Clone();
-        }
-
-        Initialize(observations, weights, null, smoothing);
-    }
-
     public override object Clone()
     {
         var empiricalDistribution = new EmpiricalDistribution();
