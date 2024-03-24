@@ -43,7 +43,7 @@ internal class ScaleFishAnalysisCompleteNotificationHandler : INotificationHandl
 
     private static async Task WriteStringToFile(string contents, string filePath, CancellationToken cancellationToken)
     {
-        if (Directory.Exists(filePath)) throw new IOException("Cannot write to a directory");
+        if (Directory.Exists(filePath)) throw new IOException("Cannot write to the provided directory");
 
         await File.WriteAllTextAsync(filePath, contents, cancellationToken).ConfigureAwait(false);
         File.SetAttributes(filePath, FileAttributes.ReadOnly);
