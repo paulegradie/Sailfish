@@ -11,7 +11,5 @@ public interface IPowerAnalysis : ICloneable, IFormattable
 
     double Size { get; }
 
-    double Samples { get; }
-
     double Effect { get; }
 }

@@ -5,13 +5,9 @@ namespace Sailfish.Analysis.SailDiff.Statistics.StatsCore.Distributions;
 
 public class TDistribution : UnivariateContinuousDistribution, IFormattable
 {
-    private readonly double lnconstant;
-
     public TDistribution([Positive(1.0)] double degreesOfFreedom)
     {
         DegreesOfFreedom = degreesOfFreedom >= 1.0 ? degreesOfFreedom : throw new ArgumentOutOfRangeException(nameof(degreesOfFreedom));
-        var num = degreesOfFreedom;
-        lnconstant = Gamma.Log((num + 1.0) / 2.0) - (0.5 * Math.Log(num * Math.PI) + Gamma.Log(num / 2.0));
     }
 
     public double DegreesOfFreedom { get; }

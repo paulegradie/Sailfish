@@ -10,16 +10,6 @@ public class TwoSampleTTestPowerAnalysis : BaseTwoSamplePowerAnalysis
     {
     }
 
-    public TwoSampleTTestPowerAnalysis(TwoSampleT test)
-        : base(test.Tail)
-    {
-        Power = test.Analysis.Power;
-        Size = test.Analysis.Size;
-        Effect = test.Analysis.Effect;
-        Samples1 = test.Analysis.Samples1;
-        Samples2 = test.Analysis.Samples2;
-    }
-
     public override void ComputePower()
     {
         var noncentrality = Effect / Math.Sqrt(1.0 / Samples1 + 1.0 / Samples2);

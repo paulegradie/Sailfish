@@ -11,7 +11,6 @@ After:
 public static partial class OpsExtensionMethods {
     public static int Sum(this int[] vector) {
 */
-
 /* Unmerged change from project 'Sailfish (net6.0)'
 Before:
 public static partial class OpsExtensionMethods {
@@ -74,28 +73,6 @@ public static partial class InternalOps
         }
 
         return unbiased ? num1 / (values.Length - 1) : num1 / values.Length;
-
-        /* Unmerged change from project 'Sailfish (net7.0)'
-        Before:
-            }
-
-            public static T Mode<T>(this T[] values) {
-        After:
-            }
-
-            public static T Mode<T>(this T[] values) {
-        */
-
-        /* Unmerged change from project 'Sailfish (net6.0)'
-        Before:
-            }
-
-            public static T Mode<T>(this T[] values) {
-        After:
-            }
-
-            public static T Mode<T>(this T[] values) {
-        */
     }
 
     public static T Mode<T>(this T[] values)
@@ -103,7 +80,7 @@ public static partial class InternalOps
         return values.Mode(out _, false);
     }
 
-    public static T Mode<T>(this T[] values, out int count, bool inPlace, bool alreadySorted = false)
+    private static T Mode<T>(this T[] values, out int count, bool inPlace, bool alreadySorted = false)
     {
         if (values.Length == 0)
             throw new ArgumentException("The values vector cannot be empty.", nameof(values));

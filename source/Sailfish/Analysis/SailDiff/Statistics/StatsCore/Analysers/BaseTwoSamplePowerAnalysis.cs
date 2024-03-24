@@ -30,7 +30,7 @@ public abstract class BaseTwoSamplePowerAnalysis :
 
     public double Samples2 { get; set; }
 
-    double IPowerAnalysis.Samples => TotalSamples;
+    public double Samples => TotalSamples;
 
     public double Effect { get; set; }
 

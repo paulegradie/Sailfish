@@ -17,7 +17,7 @@ public class MetropolisHasting<TObservation, TProposalDistribution> :
         Initialize(dimensions, logDensity, proposal);
     }
 
-    protected void Initialize(
+    private void Initialize(
         int dimensions,
         Func<TObservation[], double> logDensity,
         TProposalDistribution proposal)
@@ -34,7 +34,6 @@ public class MetropolisHasting<TObservation, TProposalDistribution> :
 
 public class MetropolisHasting<T> : Distributions.IRandomNumberGenerator<T[]>
 {
-    private long accepts;
     private bool initialized;
     private T[] next;
 
@@ -112,11 +111,8 @@ public class MetropolisHasting<T> : Distributions.IRandomNumberGenerator<T[]>
         var num2 = num1 - CurrentValue;
         if (Math.Log(randomSource.NextDouble()) >= num2)
             return false;
-        var current = Current;
-        Current = next;
-        next = current;
+        (Current, next) = (next, Current);
         CurrentValue = num1;
-        ++accepts;
         return true;
     }
 

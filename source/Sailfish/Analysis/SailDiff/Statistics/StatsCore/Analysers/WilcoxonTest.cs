@@ -8,11 +8,6 @@ public class WilcoxonTest : HypothesisTest<WilcoxonDistribution>
 {
     private bool hasTies;
 
-    public WilcoxonTest(int[] signs, double[] diffs, DistributionTailSailfish tail)
-    {
-        Compute(signs, diffs, tail, new bool?(), true);
-    }
-
     protected WilcoxonTest()
     {
     }
