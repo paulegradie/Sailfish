@@ -6,10 +6,7 @@ using Sailfish.Analysis.SailDiff.Statistics.StatsCore.Ops;
 namespace Sailfish.Analysis.SailDiff.Statistics.StatsCore.Distributions;
 
 [Serializable]
-public class Independent<TDist> :
-    MultivariateContinuousDistribution,
-    IFittableDistribution<double[], IndependentOptions>
-    where TDist : IUnivariateDistribution
+public class Independent<TDist> : MultivariateContinuousDistribution where TDist : IUnivariateDistribution
 {
     private double[,] covariance;
     private double[] mean;
@@ -168,7 +165,7 @@ public class Independent<TDist> :
                 stringBuilder.Append(" + ");
         }
 
-        stringBuilder.Append(")");
+        stringBuilder.Append(')');
         return stringBuilder.ToString();
     }
 }

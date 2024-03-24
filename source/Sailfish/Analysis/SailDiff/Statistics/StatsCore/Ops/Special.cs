@@ -68,7 +68,7 @@ public static class Specials
         49267.39426086359
     ];
 
-    private static double[] _lnfcache;
+    private static double[]? _lnfcache;
 
     public static double Erfc(double value)
     {
@@ -146,6 +146,7 @@ public static class Specials
 
     public static double LogFactorial(int n)
     {
+        _lnfcache ??= new double[101];
         if (n < 0)
             throw new ArgumentException("Argument cannot be negative.", nameof(n));
         if (n <= 1)

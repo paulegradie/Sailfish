@@ -1,13 +1,12 @@
 using System;
 using System.Linq;
-using Sailfish.Analysis.SailDiff.Statistics.StatsCore.Distributions.Options;
 using Sailfish.Analysis.SailDiff.Statistics.StatsCore.Ops;
 
 namespace Sailfish.Analysis.SailDiff.Statistics.StatsCore.Distributions;
 
 public class EmpiricalDistribution :
     UnivariateContinuousDistribution,
-    IFittableDistribution<double, EmpiricalOptions>,
+    IFittableDistribution<double>,
     IRandomNumberGenerator<double>
 {
     private double constant;

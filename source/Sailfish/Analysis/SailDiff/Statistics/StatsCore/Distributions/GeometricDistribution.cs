@@ -8,7 +8,7 @@ namespace Sailfish.Analysis.SailDiff.Statistics.StatsCore.Distributions;
 [Serializable]
 public class GeometricDistribution([Unit] double probabilityOfSuccess) :
     UnivariateDiscreteDistribution,
-    IFittableDistribution<double, IFittingOptions>,
+    IFittableDistribution<double>,
     ISampleableDistribution<int>,
     IRandomNumberGenerator<int>
 {

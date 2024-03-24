@@ -8,7 +8,7 @@ namespace Sailfish.Analysis.SailDiff.Statistics.StatsCore.Distributions;
 [Serializable]
 public class NormalDistribution :
     UnivariateContinuousDistribution,
-    IFittableDistribution<double, NormalOptions>,
+    IFittableDistribution<double>,
     IRandomNumberGenerator<double>,
     IFormattable
 {

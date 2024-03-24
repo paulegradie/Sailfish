@@ -9,7 +9,6 @@ namespace Sailfish.Analysis.SailDiff.Statistics.StatsCore.Sampling;
 public class Independent<TDistribution, TObservation> :
     Independent<TDistribution>,
     IMultivariateDistribution<TObservation[]>,
-    IFittableDistribution<TObservation[], IndependentOptions>,
     ISampleableDistribution<TObservation[]>, Distributions.IRandomNumberGenerator<TObservation[]> where TDistribution : IUnivariateDistribution<TObservation>, IUnivariateDistribution
 {
     public Independent(int dimensions, Func<int, TDistribution> initializer)

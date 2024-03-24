@@ -8,9 +8,7 @@ using Sailfish.Analysis.SailDiff.Statistics.StatsCore.Ops;
 namespace Sailfish.Analysis.SailDiff.Statistics.StatsCore.Distributions;
 
 [Serializable]
-public class MultivariateNormalDistribution :
-    MultivariateContinuousDistribution,
-    IFittableDistribution<double[], NormalOptions>
+public class MultivariateNormalDistribution : MultivariateContinuousDistribution
 {
     private CholeskyDecomposition chol;
     private double[,] covariance;
