@@ -5,7 +5,7 @@ namespace Sailfish.Analysis.SailDiff.Statistics.StatsCore.Distributions;
 
 public static class Normal
 {
-    private static readonly double[] inverse_P0 =
+    private static readonly double[] InverseP0 =
     [
         -59.96335010141079,
         98.00107541859997,
@@ -14,7 +14,7 @@ public static class Normal
         -1.2391658386738125
     ];
 
-    private static readonly double[] inverse_Q0 =
+    private static readonly double[] InverseQ0 =
     [
         1.9544885833814176,
         4.676279128988815,
@@ -26,7 +26,7 @@ public static class Normal
         -1.1833162112133
     ];
 
-    private static readonly double[] inverse_P1 =
+    private static readonly double[] InverseP1 =
     [
         4.0554489230596245,
         31.525109459989388,
@@ -39,7 +39,7 @@ public static class Normal
         -0.0008574567851546854
     ];
 
-    private static readonly double[] inverse_Q1 =
+    private static readonly double[] InverseQ1 =
     [
         15.779988325646675,
         45.39076351288792,
@@ -51,7 +51,7 @@ public static class Normal
         -0.0009332594808954574
     ];
 
-    private static readonly double[] inverse_P2 =
+    private static readonly double[] InverseP2 =
     [
         3.2377489177694603,
         6.915228890689842,
@@ -64,7 +64,7 @@ public static class Normal
         6.239745391849833E-09
     ];
 
-    private static readonly double[] inverse_Q2 =
+    private static readonly double[] InverseQ2 =
     [
         6.02427039364742,
         3.6798356385616087,
@@ -76,7 +76,7 @@ public static class Normal
         6.790194080099813E-09
     ];
 
-    private static readonly double[] BVND_WN20 =
+    private static readonly double[] BvndWn20 =
     [
         0.01761400713915212,
         0.04060142980038694,
@@ -90,7 +90,7 @@ public static class Normal
         0.1527533871307259
     ];
 
-    private static readonly double[] BVND_XN20 =
+    private static readonly double[] BvndXn20 =
     [
         -0.9931285991850949,
         -0.9639719272779138,
@@ -104,7 +104,7 @@ public static class Normal
         -0.07652652113349732
     ];
 
-    private static readonly double[] BVND_WN12 =
+    private static readonly double[] BvndWn12 =
     [
         0.04717533638651177,
         0.1069393259953183,
@@ -114,7 +114,7 @@ public static class Normal
         0.2491470458134029
     ];
 
-    private static readonly double[] BVND_XN12 =
+    private static readonly double[] BvndXn12 =
     [
         -0.9815606342467191,
         -0.904117256370475,
@@ -124,14 +124,14 @@ public static class Normal
         -0.1252334085114692
     ];
 
-    private static readonly double[] BVND_WN6 =
+    private static readonly double[] BvndWn6 =
     [
         0.1713244923791705,
         0.3607615730481384,
         0.4679139345726904
     ];
 
-    private static readonly double[] BVND_XN6 =
+    private static readonly double[] BvndXn6 =
     [
         -0.9324695142031522,
         -0.6612093864662647,
@@ -177,15 +177,15 @@ public static class Normal
         {
             var num3 = d1 - 0.5;
             var x = num3 * num3;
-            return (num3 + num3 * (x * Specials.Polevl(x, inverse_P0, 4) / Specials.P1evl(x, inverse_Q0, 8))) * num1;
+            return (num3 + num3 * (x * Specials.Polevl(x, InverseP0, 4) / Specials.P1Evl(x, InverseQ0, 8))) * num1;
         }
 
         var d2 = Math.Sqrt(-2.0 * Math.Log(d1));
         var num4 = d2 - Math.Log(d2) / d2;
         var x1 = 1.0 / d2;
         var num5 = d2 >= 8.0
-            ? x1 * Specials.Polevl(x1, inverse_P2, 8) / Specials.P1evl(x1, inverse_Q2, 8)
-            : x1 * Specials.Polevl(x1, inverse_P1, 8) / Specials.P1evl(x1, inverse_Q1, 8);
+            ? x1 * Specials.Polevl(x1, InverseP2, 8) / Specials.P1Evl(x1, InverseQ2, 8)
+            : x1 * Specials.Polevl(x1, InverseP1, 8) / Specials.P1Evl(x1, InverseQ1, 8);
         var num6 = num4 - num5;
         if (num2 != 0)
             num6 = -num6;
@@ -194,32 +194,32 @@ public static class Normal
 
     public static double Bivariate(double x, double y, double rho)
     {
-        return BVND(-x, -y, rho);
+        return Bvnd(-x, -y, rho);
     }
 
     public static double BivariateComplemented(double x, double y, double rho)
     {
-        return BVND(x, y, rho);
+        return Bvnd(x, y, rho);
     }
 
-    private static double BVND(double dh, double dk, double r)
+    private static double Bvnd(double dh, double dk, double r)
     {
         double[] numArray1;
         double[] numArray2;
         if (Math.Abs(r) < 0.3)
         {
-            numArray1 = BVND_XN6;
-            numArray2 = BVND_WN6;
+            numArray1 = BvndXn6;
+            numArray2 = BvndWn6;
         }
         else if (Math.Abs(r) < 0.75)
         {
-            numArray1 = BVND_XN12;
-            numArray2 = BVND_WN12;
+            numArray1 = BvndXn12;
+            numArray2 = BvndWn12;
         }
         else
         {
-            numArray1 = BVND_XN20;
-            numArray2 = BVND_WN20;
+            numArray1 = BvndXn20;
+            numArray2 = BvndWn20;
         }
 
         var val1 = dh;

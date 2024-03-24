@@ -3,9 +3,9 @@ using Sailfish.Analysis.SailDiff.Statistics.StatsCore.Attributes;
 
 namespace Sailfish.Analysis.SailDiff.Statistics.StatsCore.Distributions;
 
-public class TDistribution : UnivariateContinuousDistribution, IFormattable
+public class Distribution : UnivariateContinuousDistribution, IFormattable
 {
-    public TDistribution([Positive(1.0)] double degreesOfFreedom)
+    public Distribution([Positive(1.0)] double degreesOfFreedom)
     {
         DegreesOfFreedom = degreesOfFreedom >= 1.0 ? degreesOfFreedom : throw new ArgumentOutOfRangeException(nameof(degreesOfFreedom));
     }
@@ -50,16 +50,16 @@ public class TDistribution : UnivariateContinuousDistribution, IFormattable
 
     protected internal override double InnerInverseDistributionFunction(double p)
     {
-        return inverseDistributionLeftTail(DegreesOfFreedom, p);
+        return InverseDistributionLeftTail(DegreesOfFreedom, p);
     }
 
 
     public override object Clone()
     {
-        return new TDistribution(DegreesOfFreedom);
+        return new Distribution(DegreesOfFreedom);
     }
 
-    private static double inverseDistributionLeftTail(double df, double p)
+    private static double InverseDistributionLeftTail(double df, double p)
     {
         if (p == 0.0)
             return double.NegativeInfinity;

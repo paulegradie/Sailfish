@@ -42,7 +42,7 @@ public class NormalDistribution :
         Initialize(mean, stdDev, stdDev * stdDev);
     }
 
-    public override double StandardDeviation => stdDev;
+    public virtual double StandardDeviation => stdDev;
 
     public void Fit(double[] observations, double[]? weights, NormalOptions? options)
     {

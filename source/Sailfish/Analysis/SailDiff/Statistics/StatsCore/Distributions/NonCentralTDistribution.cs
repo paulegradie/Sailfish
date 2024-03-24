@@ -37,23 +37,21 @@ public class NonCentralTDistribution([Positive] double degreesOfFreedom, [Real] 
     {
         get
         {
-            if (!mode.HasValue)
+            if (mode.HasValue) return mode.Value;
+            if (NonCentrality == 0.0)
             {
-                if (NonCentrality == 0.0)
-                {
-                    var num = Gamma.Function((DegreesOfFreedom + 2.0) / 2.0) / Gamma.Function((DegreesOfFreedom + 3.0) / 3.0);
-                    mode = Math.Sqrt(2.0 / DegreesOfFreedom) * num * NonCentrality;
-                }
-                else if (double.IsInfinity(NonCentrality))
-                {
-                    mode = Math.Sqrt(DegreesOfFreedom / (DegreesOfFreedom + 1.0)) * NonCentrality;
-                }
-                else
-                {
-                    var num1 = Math.Sqrt(2.0 * DegreesOfFreedom / (2.0 * DegreesOfFreedom + 5.0)) * NonCentrality;
-                    var num2 = Math.Sqrt(DegreesOfFreedom / (DegreesOfFreedom + 1.0)) * NonCentrality;
-                    mode = num1 <= num2 ? BrentSearch.Maximize(ProbabilityDensityFunction, num1, num2) : BrentSearch.Maximize(ProbabilityDensityFunction, num2, num1);
-                }
+                var num = Gamma.Function((DegreesOfFreedom + 2.0) / 2.0) / Gamma.Function((DegreesOfFreedom + 3.0) / 3.0);
+                mode = Math.Sqrt(2.0 / DegreesOfFreedom) * num * NonCentrality;
+            }
+            else if (double.IsInfinity(NonCentrality))
+            {
+                mode = Math.Sqrt(DegreesOfFreedom / (DegreesOfFreedom + 1.0)) * NonCentrality;
+            }
+            else
+            {
+                var num1 = Math.Sqrt(2.0 * DegreesOfFreedom / (2.0 * DegreesOfFreedom + 5.0)) * NonCentrality;
+                var num2 = Math.Sqrt(DegreesOfFreedom / (DegreesOfFreedom + 1.0)) * NonCentrality;
+                mode = num1 <= num2 ? BrentSearch.Maximize(ProbabilityDensityFunction, num1, num2) : BrentSearch.Maximize(ProbabilityDensityFunction, num2, num1);
             }
 
             return mode.Value;
@@ -76,14 +74,14 @@ public class NonCentralTDistribution([Positive] double degreesOfFreedom, [Real] 
 
     protected internal override double InnerDistributionFunction(double x)
     {
-        return distributionFunctionLowerTail(x, DegreesOfFreedom, NonCentrality);
+        return DistributionFunctionLowerTail(x, DegreesOfFreedom, NonCentrality);
     }
 
     protected internal override double InnerProbabilityDensityFunction(double x)
     {
         var noncentrality = NonCentrality;
         var degreesOfFreedom = DegreesOfFreedom;
-        var func = distributionFunctionLowerTail;
+        var func = DistributionFunctionLowerTail;
         if (x != 0.0)
         {
             var num1 = func(x * Math.Sqrt(1.0 + 2.0 / degreesOfFreedom), degreesOfFreedom + 2.0, noncentrality);
@@ -94,8 +92,7 @@ public class NonCentralTDistribution([Positive] double degreesOfFreedom, [Real] 
         var num3 = Gamma.Function((degreesOfFreedom + 1.0) / 2.0);
         var num4 = Math.Sqrt(Math.PI * degreesOfFreedom) * Gamma.Function(degreesOfFreedom / 2.0);
         var num5 = Math.Exp(-(noncentrality * noncentrality) / 2.0);
-        var num6 = num4;
-        return num3 / num6 * num5;
+        return num3 / num4 * num5;
     }
 
     public override object Clone()
@@ -103,12 +100,12 @@ public class NonCentralTDistribution([Positive] double degreesOfFreedom, [Real] 
         return new NonCentralTDistribution(DegreesOfFreedom, NonCentrality);
     }
 
-    private static double distributionFunctionLowerTail(double t, double df, double delta)
+    private static double DistributionFunctionLowerTail(double t, double df, double delta)
     {
-        var num1 = 0.5723649429247001;
-        var num2 = 1E-10;
-        var num3 = 100;
-        var num4 = 0.7978845608028654;
+        const double num1 = 0.5723649429247001;
+        const double num2 = 1E-10;
+        const int num3 = 100;
+        const double num4 = 0.7978845608028654;
         if (df <= 0.0)
             throw new ArgumentOutOfRangeException(nameof(df), "Degrees of freedom must be positive.");
         double num5;
@@ -128,7 +125,7 @@ public class NonCentralTDistribution([Positive] double degreesOfFreedom, [Real] 
         var num7 = t * t / (t * t + df);
         if (double.IsNaN(num7))
             num7 = 1.0;
-        var num8 = 0.0;
+        const double num8 = 0.0;
         if (num7 <= 0.0)
         {
             var num9 = num8 + Normal.Complemented(num5);
@@ -163,7 +160,7 @@ public class NonCentralTDistribution([Positive] double degreesOfFreedom, [Real] 
             ++num6;
             num21 = num21 + num11 * num17 + num12 * num19;
             var d = 2.0 * num13 * (num17 - num18);
-            if (d <= num2 || double.IsNaN(d))
+            if (d is <= num2 or double.NaN)
                 goto label_15;
         } while (num3 >= num6);
 

@@ -68,7 +68,7 @@ public class GeometricDistribution([Unit] double probabilityOfSuccess) :
 
     protected override int InnerInverseDistributionFunction(double p)
     {
-        return (int)Math.Ceiling(Specials.Log1m(p) / Specials.Log1m(ProbabilityOfSuccess)) - 1;
+        return (int)Math.Ceiling(Specials.Log1M(p) / Specials.Log1M(ProbabilityOfSuccess)) - 1;
     }
 
     public override double[] Generate(int samples, double[] result, Random source)
@@ -78,20 +78,20 @@ public class GeometricDistribution([Unit] double probabilityOfSuccess) :
 
     public static double Random(double p, Random source)
     {
-        return Math.Floor(Specials.Log1m(source.NextDouble()) / Specials.Log1m(p));
+        return Math.Floor(Specials.Log1M(source.NextDouble()) / Specials.Log1M(p));
     }
 
     public static double[] Random(double p, int samples, double[] result, Random source)
     {
         for (var index = 0; index < samples; ++index)
-            result[index] = Math.Floor(Specials.Log1m(source.NextDouble()) / Specials.Log1m(p));
+            result[index] = Math.Floor(Specials.Log1M(source.NextDouble()) / Specials.Log1M(p));
         return result;
     }
 
     public static int[] Random(double p, int samples, int[] result, Random source)
     {
         for (var index = 0; index < samples; ++index)
-            result[index] = (int)Math.Floor(Specials.Log1m(source.NextDouble()) / Specials.Log1m(p));
+            result[index] = (int)Math.Floor(Specials.Log1M(source.NextDouble()) / Specials.Log1M(p));
         return result;
     }
 

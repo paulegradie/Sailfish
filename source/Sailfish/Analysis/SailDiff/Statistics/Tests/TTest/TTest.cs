@@ -7,11 +7,9 @@ using Sailfish.Contracts.Public.Models;
 
 namespace Sailfish.Analysis.SailDiff.Statistics.Tests.TTest;
 
-public interface ITTest : ITest
-{
-}
+public interface ITTest : ITest;
 
-public class TTest(ITestPreprocessor preprocessor) : ITTest
+public class Test(ITestPreprocessor preprocessor) : ITTest
 {
     private readonly ITestPreprocessor preprocessor = preprocessor;
 

@@ -14,7 +14,7 @@ public class TwoSampleTTestPowerAnalysis : BaseTwoSamplePowerAnalysis
     {
         var noncentrality = Effect / Math.Sqrt(1.0 / Samples1 + 1.0 / Samples2);
         var degreesOfFreedom = Samples1 + Samples2 - 2.0;
-        var tdistribution = new TDistribution(degreesOfFreedom);
+        var tdistribution = new Distribution(degreesOfFreedom);
         var noncentralTdistribution = new NonCentralTDistribution(degreesOfFreedom, noncentrality);
         switch (Tail)
         {

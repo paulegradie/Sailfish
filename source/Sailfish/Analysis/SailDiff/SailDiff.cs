@@ -14,9 +14,7 @@ using Sailfish.Presentation.Console;
 
 namespace Sailfish.Analysis.SailDiff;
 
-public interface ISailDiffInternal : IAnalyzeFromFile
-{
-}
+public interface ISailDiffInternal : IAnalyzeFromFile;
 
 public interface ISailDiff
 {

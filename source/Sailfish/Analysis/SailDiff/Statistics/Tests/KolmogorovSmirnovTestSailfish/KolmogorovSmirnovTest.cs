@@ -7,9 +7,7 @@ using Sailfish.Contracts.Public.Models;
 
 namespace Sailfish.Analysis.SailDiff.Statistics.Tests.KolmogorovSmirnovTestSailfish;
 
-public interface IKolmogorovSmirnovTest : ITest
-{
-}
+public interface IKolmogorovSmirnovTest : ITest;
 
 public class KolmogorovSmirnovTest(ITestPreprocessor preprocessor) : IKolmogorovSmirnovTest
 {

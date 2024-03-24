@@ -13,16 +13,6 @@ public abstract class UnivariateContinuousDistribution :
     private double? median;
     private double? mode;
     private DoubleRange? quartiles;
-    private double? stdDev;
-
-    public virtual double StandardDeviation
-    {
-        get
-        {
-            stdDev ??= Math.Sqrt(Variance);
-            return stdDev.Value;
-        }
-    }
 
     public double[] Generate(int samples)
     {
@@ -112,8 +102,7 @@ public abstract class UnivariateContinuousDistribution :
     {
         get
         {
-            if (!median.HasValue)
-                median = InverseDistributionFunction(0.5);
+            median ??= InverseDistributionFunction(0.5);
             return median.Value;
         }
     }

@@ -4,7 +4,7 @@ using MathNet.Numerics.LinearAlgebra.Factorization;
 
 namespace Sailfish.Analysis.SailDiff.Statistics.StatsCore.Decompositions;
 
-internal sealed class LuDecomposition : ICloneable, ISolverMatrixDecomposition<double>
+internal sealed class LuDecomposition : ICloneable
 {
     private readonly LU<double> decomposition;
     private readonly Matrix<double> matrix;

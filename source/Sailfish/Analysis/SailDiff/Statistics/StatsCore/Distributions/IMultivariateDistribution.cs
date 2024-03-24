@@ -1,5 +1,3 @@
-using System;
-
 namespace Sailfish.Analysis.SailDiff.Statistics.StatsCore.Distributions;
 
 public interface IMultivariateDistribution : IDistribution

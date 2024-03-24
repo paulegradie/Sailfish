@@ -10,9 +10,7 @@ using Sailfish.Contracts.Public.Models;
 
 namespace Sailfish.Analysis.SailDiff.Statistics.Tests.MWWilcoxonTestSailfish;
 
-public interface IMannWhitneyWilcoxonTest : ITest
-{
-}
+public interface IMannWhitneyWilcoxonTest : ITest;
 
 public class MannWhitneyWilcoxonTest(ITestPreprocessor preprocessor) : IMannWhitneyWilcoxonTest
 {

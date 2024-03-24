@@ -36,7 +36,7 @@ public class StatisticalTestFixture
     [Fact]
     public void WhenStdDevIsZeroTestSailfishDoesNotThrow()
     {
-        var test = new TTest(new TestPreprocessor(new SailfishOutlierDetector()));
+        var test = new Test(new TestPreprocessor(new SailfishOutlierDetector()));
 
         var before = new[] { 0.0, 0, 0, 0, 0 };
         var after = new[] { 0.0, 0, 0, 0, 0 };

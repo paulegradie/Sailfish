@@ -7,7 +7,7 @@ using Sailfish.Analysis.SailDiff.Statistics.StatsCore.Ops;
 namespace Sailfish.Analysis.SailDiff.Statistics.StatsCore.Decompositions;
 
 [Serializable]
-internal sealed class CholeskyDecomposition : ICloneable, ISolverMatrixDecomposition<double>
+internal sealed class CholeskyDecomposition : ICloneable
 {
     private bool destroyed;
 
@@ -41,22 +41,7 @@ internal sealed class CholeskyDecomposition : ICloneable, ISolverMatrixDecomposi
 
     public bool IsUndefined { get; private set; }
 
-    public double[,] LeftTriangularFactor
-    {
-        get
-        {
-            if (leftTriangularFactor == null)
-            {
-                if (destroyed)
-                    throw new InvalidOperationException("The decomposition has been destroyed.");
-                if (IsUndefined)
-                    throw new InvalidOperationException("The decomposition is undefined (zero in diagonal).");
-                leftTriangularFactor = l.GetLowerTriangle();
-            }
-
-            return leftTriangularFactor;
-        }
-    }
+    public double[,] LeftTriangularFactor => leftTriangularFactor;
 
     public double[,] DiagonalMatrix
     {

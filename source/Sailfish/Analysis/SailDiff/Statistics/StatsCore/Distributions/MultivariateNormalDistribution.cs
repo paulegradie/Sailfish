@@ -63,14 +63,7 @@ public class MultivariateNormalDistribution :
 
     public override double[] Mean => mean;
 
-    public override double[] Variance
-    {
-        get
-        {
-            variance ??= covariance.Diagonal();
-            return variance;
-        }
-    }
+    public override double[] Variance => variance;
 
     public override double[,] Covariance => covariance;
 

@@ -5,7 +5,7 @@ namespace Sailfish.Analysis.SailDiff.Statistics.StatsCore.Distributions;
 
 public static class Gamma
 {
-    private static readonly double[] gamma_P =
+    private static readonly double[] GammaP =
     [
         0.00016011952247675185,
         0.0011913514700658638,
@@ -16,7 +16,7 @@ public static class Gamma
         1.0
     ];
 
-    private static readonly double[] gamma_Q =
+    private static readonly double[] GammaQ =
     [
         -2.3158187332412014E-05,
         0.0005396055804933034,
@@ -28,7 +28,7 @@ public static class Gamma
         1.0
     ];
 
-    private static readonly double[] STIR =
+    private static readonly double[] Stir =
     [
         0.0007873113957930937,
         -0.00022954996161337813,
@@ -37,7 +37,7 @@ public static class Gamma
         1.0 / 12.0
     ];
 
-    private static readonly double[] log_A =
+    private static readonly double[] LogA =
     [
         0.0008116141674705085,
         -0.0005950619042843014,
@@ -46,7 +46,7 @@ public static class Gamma
         1.0 / 12.0
     ];
 
-    private static readonly double[] log_B =
+    private static readonly double[] LogB =
     [
         -1378.2515256912086,
         -38801.631513463784,
@@ -56,7 +56,7 @@ public static class Gamma
         -853555.6642457654
     ];
 
-    private static readonly double[] log_C =
+    private static readonly double[] LogC =
     [
         -351.81570143652345,
         -17064.210665188115,
@@ -117,8 +117,8 @@ public static class Gamma
         if (x is 2.0 or 3.0)
             return num6;
         x -= 2.0;
-        var num7 = Specials.Polevl(x, gamma_P, 6);
-        var num8 = Specials.Polevl(x, gamma_Q, 7);
+        var num7 = Specials.Polevl(x, GammaP, 6);
+        var num8 = Specials.Polevl(x, GammaQ, 7);
         return num6 * num7 / num8;
     }
 
@@ -127,7 +127,7 @@ public static class Gamma
         var num1 = 143.01608;
         var x1 = 1.0 / x;
         var d1 = Math.Exp(x);
-        var num2 = 1.0 + x1 * Specials.Polevl(x1, STIR, 4);
+        var num2 = 1.0 + x1 * Specials.Polevl(x1, Stir, 4);
         double num3;
         if (x > num1)
         {
@@ -142,7 +142,7 @@ public static class Gamma
         return 2.5066282746310007 * num3 * num2;
     }
 
-    public static double UpperIncomplete(double a, double x)
+    private static double UpperIncomplete(double a, double x)
     {
         if (x <= 0.0 || a <= 0.0)
             return 1.0;
@@ -264,7 +264,7 @@ public static class Gamma
             if (x == 2.0)
                 return Math.Log(d);
             x -= 2.0;
-            var num = x * Specials.Polevl(x, log_B, 5) / Specials.P1evl(x, log_C, 6);
+            var num = x * Specials.Polevl(x, LogB, 5) / Specials.P1Evl(x, LogC, 6);
             return Math.Log(d) + num;
         }
 
@@ -274,6 +274,6 @@ public static class Gamma
         if (x > 100000000.0)
             return num5;
         var x1 = 1.0 / (x * x);
-        return x < 1000.0 ? num5 + Specials.Polevl(x1, log_A, 4) / x : num5 + ((0.0007936507936507937 * x1 - 1.0 / 360.0) * x1 + 1.0 / 12.0) / x;
+        return x < 1000.0 ? num5 + Specials.Polevl(x1, LogA, 4) / x : num5 + ((0.0007936507936507937 * x1 - 1.0 / 360.0) * x1 + 1.0 / 12.0) / x;
     }
 }

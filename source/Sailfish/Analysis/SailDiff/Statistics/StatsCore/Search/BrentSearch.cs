@@ -3,59 +3,9 @@ using Sailfish.Analysis.SailDiff.Statistics.StatsCore.Exceptions;
 
 namespace Sailfish.Analysis.SailDiff.Statistics.StatsCore.Search;
 
-public sealed class BrentSearch(
-    Func<double, double> function,
-    double lowerBound,
-    double upperBound,
-    double tol = 1E-06,
-    int maxIterations = 500)
+public abstract class BrentSearch
 {
-    public double Tolerance { get; set; } = tol;
-
-    public double LowerBound { get; set; } = lowerBound;
-
-    public double UpperBound { get; set; } = upperBound;
-
-    public int MaxIterations { get; set; } = maxIterations;
-
-    public BrentSearchStatus Status { get; private set; }
-
-    public Func<double, double> Function { get; } = function;
-
-    public int NumberOfVariables
-    {
-        get => 1;
-        set
-        {
-            if (value != 1)
-                throw new InvalidOperationException("Brent Search supports only one variable.");
-        }
-    }
-
-    public double Solution { get; set; }
-
-    public double Value { get; private set; }
-
-    public bool Minimize()
-    {
-        var brentSearchResult = MinimizeInternal(Function, LowerBound, UpperBound, Tolerance, MaxIterations);
-        Solution = brentSearchResult.Solution;
-        Value = brentSearchResult.Value;
-        Status = brentSearchResult.Status;
-        return Status == BrentSearchStatus.Success;
-    }
-
-    public bool Maximize()
-    {
-        var brentSearchResult =
-            MinimizeInternal(x => -Function(x), LowerBound, UpperBound, Tolerance, MaxIterations);
-        Solution = brentSearchResult.Solution;
-        Value = -brentSearchResult.Value;
-        Status = brentSearchResult.Status;
-        return Status == BrentSearchStatus.Success;
-    }
-
-    public static double Minimize(
+    private static double Minimize(
         Func<double, double> function,
         double lowerBound,
         double upperBound,
@@ -128,7 +78,7 @@ public sealed class BrentSearch(
             var num7 = lowerBound / 2.0 + upperBound / 2.0;
             var num8 = Math.Sqrt(1.1102230246251565E-16) * Math.Abs(solution) + tol / 3.0;
             if (Math.Abs(solution - num7) + num6 / 2.0 <= 2.0 * num8)
-                return new BrentSearchResult(solution, num3, BrentSearchStatus.Success);
+                return new BrentSearchResult(solution, BrentSearchStatus.Success);
             var num9 = 0.831966011250105 * (solution < num7 ? upperBound - solution : lowerBound - solution);
             if (Math.Abs(solution - num4) >= num8)
             {
@@ -150,7 +100,7 @@ public sealed class BrentSearch(
             var num14 = solution + num9;
             var d = function(num14);
             if (double.IsNaN(d) || double.IsInfinity(d))
-                return new BrentSearchResult(solution, num3, BrentSearchStatus.FunctionNotFinite);
+                return new BrentSearchResult(solution, BrentSearchStatus.FunctionNotFinite);
             if (d <= num3)
             {
                 if (num14 < solution)
@@ -185,7 +135,7 @@ public sealed class BrentSearch(
             }
         }
 
-        return new BrentSearchResult(solution, num3, BrentSearchStatus.MaxIterationsReached);
+        return new BrentSearchResult(solution, BrentSearchStatus.MaxIterationsReached);
     }
 
     private static BrentSearchResult FindRootInternal(
@@ -206,7 +156,7 @@ public sealed class BrentSearch(
         var num2 = lowerBound;
         var num3 = num1;
         if (Math.Sign(num1) == Math.Sign(d))
-            return new BrentSearchResult(upperBound, d, BrentSearchStatus.RootNotBracketed);
+            return new BrentSearchResult(upperBound, BrentSearchStatus.RootNotBracketed);
         for (var index = 0; index < maxIterations; ++index)
         {
             var num4 = upperBound - lowerBound;
@@ -223,7 +173,7 @@ public sealed class BrentSearch(
             var num5 = 2.220446049250313E-16 * Math.Abs(upperBound) + tol / 2.0;
             var num6 = (num2 - upperBound) / 2.0;
             if (Math.Abs(num6) <= num5 || d == 0.0)
-                return new BrentSearchResult(upperBound, d, BrentSearchStatus.Success);
+                return new BrentSearchResult(upperBound, BrentSearchStatus.Success);
             if (Math.Abs(num4) >= num5 && Math.Abs(num1) > Math.Abs(d))
             {
                 var num7 = num2 - upperBound;
@@ -259,7 +209,7 @@ public sealed class BrentSearch(
             upperBound += num6;
             d = function(upperBound);
             if (double.IsNaN(d) || double.IsInfinity(d))
-                return new BrentSearchResult(upperBound, d, BrentSearchStatus.FunctionNotFinite);
+                return new BrentSearchResult(upperBound, BrentSearchStatus.FunctionNotFinite);
             if ((d > 0.0 && num3 > 0.0) || (d < 0.0 && num3 < 0.0))
             {
                 num2 = lowerBound;
@@ -267,7 +217,7 @@ public sealed class BrentSearch(
             }
         }
 
-        return new BrentSearchResult(upperBound, d, BrentSearchStatus.MaxIterationsReached);
+        return new BrentSearchResult(upperBound, BrentSearchStatus.MaxIterationsReached);
     }
 
     private static double HandleResult(BrentSearchResult result) => result.Status switch
@@ -279,20 +229,10 @@ public sealed class BrentSearch(
         _ => throw new ArgumentOutOfRangeException(nameof(result), "Argument type error")
     };
 
-    private readonly struct BrentSearchResult
+    private readonly struct BrentSearchResult(double solution, BrentSearchStatus status)
     {
-        public BrentSearchResult(double solution, double value, BrentSearchStatus status)
-            : this()
-        {
-            Solution = solution;
-            Value = value;
-            Status = status;
-        }
+        public double Solution { get; } = solution;
 
-        public double Solution { get; }
-
-        public double Value { get; }
-
-        public BrentSearchStatus Status { get; }
+        public BrentSearchStatus Status { get; } = status;
     }
 }

@@ -8,8 +8,6 @@ namespace Sailfish.Analysis.SailDiff.Statistics.StatsCore.Analysers;
 [Serializable]
 public sealed class MannWhitneyWilcoxon : HypothesisTest<MannWhitneyDistribution>
 {
-    private readonly bool hasTies;
-
     public MannWhitneyWilcoxon(
         double[] sample1,
         double[] sample2,
@@ -19,7 +17,7 @@ public sealed class MannWhitneyWilcoxon : HypothesisTest<MannWhitneyDistribution
     {
         NumberOfSamples1 = sample1.Length;
         NumberOfSamples2 = sample2.Length;
-        var source = sample1.Concatenate(sample2).Rank(out hasTies, adjustForTies: adjustForTies);
+        var source = sample1.Concatenate(sample2).Rank(out var hasTies, adjustForTies: adjustForTies);
         Rank1 = source.Get(0, NumberOfSamples1);
         Rank2 = source.Get(NumberOfSamples1, 0);
         RankSum1 = Rank1.Sum();
@@ -27,7 +25,7 @@ public sealed class MannWhitneyWilcoxon : HypothesisTest<MannWhitneyDistribution
         if (hasTies)
         {
             var nullable = exact;
-            var flag = true;
+            const bool flag = true;
             if ((nullable.GetValueOrDefault() == flag ? nullable.HasValue ? 1 : 0 : 0) != 0)
                 exact = false;
         }

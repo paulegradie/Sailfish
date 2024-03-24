@@ -6,6 +6,4 @@ namespace Sailfish.Attributes;
 ///     Specifies that no console outputs are desired for the test class.
 /// </summary>
 [AttributeUsage(AttributeTargets.Class)]
-public sealed class SuppressConsoleAttribute : Attribute
-{
-}
+public sealed class SuppressConsoleAttribute : Attribute;

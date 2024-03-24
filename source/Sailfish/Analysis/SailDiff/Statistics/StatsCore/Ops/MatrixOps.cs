@@ -217,7 +217,7 @@ public static partial class InternalOps
         return objArray;
     }
 
-    public static double[,] Inverse(this double[,] matrix, bool inPlace)
+    private static double[,] Inverse(this double[,] matrix, bool inPlace)
     {
         var length1 = matrix.GetLength(0);
         var length2 = matrix.GetLength(1);

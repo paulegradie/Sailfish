@@ -5,6 +5,4 @@ namespace Sailfish.Registration;
 ///     This is provided for the adapter
 /// </summary>
 /// <typeparam name="T"></typeparam>
-public interface ISailfishFixture<T> where T : class
-{
-}
+public interface ISailfishFixture<T> where T : class;

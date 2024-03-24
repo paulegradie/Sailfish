@@ -83,7 +83,7 @@ internal class SailfishModuleRegistrations : IProvideAdditionalRegistrations
         builder.RegisterType<ComplexityComputer>().As<IComplexityComputer>();
         builder.RegisterType<ComplexityEstimator>().As<IComplexityEstimator>();
         builder.RegisterType<SailfishOutlierDetector>().As<ISailfishOutlierDetector>();
-        builder.RegisterType<TTest>().As<ITTest>();
+        builder.RegisterType<Test>().As<ITTest>();
         builder.RegisterType<MannWhitneyWilcoxonTest>().As<IMannWhitneyWilcoxonTest>();
         builder.RegisterType<TwoSampleWilcoxonSignedRankTest>().As<ITwoSampleWilcoxonSignedRankTest>();
         builder.RegisterType<KolmogorovSmirnovTest>().As<IKolmogorovSmirnovTest>();

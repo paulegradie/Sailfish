@@ -9,7 +9,7 @@ public class MetropolisHasting<TObservation, TProposalDistribution> :
 {
     private TProposalDistribution proposal;
 
-    public MetropolisHasting(
+    protected MetropolisHasting(
         int dimensions,
         Func<TObservation[], double> logDensity,
         TProposalDistribution proposal)
@@ -23,10 +23,10 @@ public class MetropolisHasting<TObservation, TProposalDistribution> :
         TProposalDistribution proposal)
     {
         this.proposal = proposal;
-        Initialize(dimensions, logDensity, generate);
+        Initialize(dimensions, logDensity, Generate);
     }
 
-    private TObservation[] generate(TObservation[] current, TObservation[] next)
+    private TObservation[] Generate(TObservation[] current, TObservation[] next)
     {
         return proposal.Generate(next);
     }
@@ -37,23 +37,17 @@ public class MetropolisHasting<T> : Distributions.IRandomNumberGenerator<T[]>
     private bool initialized;
     private T[] next;
 
-    protected MetropolisHasting()
-    {
-    }
-
-    public T[] Current { get; private set; }
+    private T[] Current { get; set; }
 
     public Random RandomSource { get; set; }
 
-    public double CurrentValue { get; private set; }
+    private double CurrentValue { get; set; }
 
-    public Func<T[], double> LogProbabilityDensityFunction { get; private set; }
+    private Func<T[], double> LogProbabilityDensityFunction { get; set; }
 
-    public Func<T[], T[], T[]> Proposal { get; private set; }
+    private Func<T[], T[], T[]> Proposal { get; set; }
 
-    public int NumberOfInputs { get; private set; }
-
-    public int Discard { get; set; }
+    public int Discard { get; }
 
     public T[][] Generate(int samples)
     {
@@ -95,7 +89,6 @@ public class MetropolisHasting<T> : Distributions.IRandomNumberGenerator<T[]>
         Func<T[], double> logDensity,
         Func<T[], T[], T[]> proposal)
     {
-        NumberOfInputs = dimensions;
         Current = new T[dimensions];
         next = new T[dimensions];
         LogProbabilityDensityFunction = logDensity;
@@ -103,7 +96,7 @@ public class MetropolisHasting<T> : Distributions.IRandomNumberGenerator<T[]>
         RandomSource = Generator.Random;
     }
 
-    public bool TryGenerate()
+    private bool TryGenerate()
     {
         var randomSource = RandomSource;
         next = Proposal(Current, next);
@@ -116,18 +109,10 @@ public class MetropolisHasting<T> : Distributions.IRandomNumberGenerator<T[]>
         return true;
     }
 
-    public void WarmUp()
+    private void WarmUp()
     {
         for (var index = 0; index < Discard; ++index)
             TryGenerate();
         initialized = true;
-    }
-}
-
-public class MetropolisHasting : MetropolisHasting<double, Independent<NormalDistribution>>
-{
-    public MetropolisHasting(int dimensions, Func<double[], double> logDensity)
-        : base(dimensions, logDensity, new Independent<NormalDistribution>(dimensions, () => new NormalDistribution()))
-    {
     }
 }

@@ -31,7 +31,7 @@ public class StatisticalTestExecutor(
     {
         var testMap = new Dictionary<TestType, ITest>
         {
-            { TestType.TTest, ttest },
+            { TestType.Test, ttest },
             { TestType.WilcoxonRankSumTest, mannWhitneyWilcoxonTestSailfish },
             { TestType.TwoSampleWilcoxonSignedRankTest, twoSampWilcoxonSignedRankTestSailfish },
             { TestType.KolmogorovSmirnovTest, kolmogorovSmirnovTestSailfish }

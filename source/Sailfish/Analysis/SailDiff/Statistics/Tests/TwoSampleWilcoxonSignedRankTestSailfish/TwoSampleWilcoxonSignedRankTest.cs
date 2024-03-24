@@ -7,9 +7,7 @@ using Sailfish.Contracts.Public.Models;
 
 namespace Sailfish.Analysis.SailDiff.Statistics.Tests.TwoSampleWilcoxonSignedRankTestSailfish;
 
-public interface ITwoSampleWilcoxonSignedRankTest : ITest
-{
-}
+public interface ITwoSampleWilcoxonSignedRankTest : ITest;
 
 public class TwoSampleWilcoxonSignedRankTest(ITestPreprocessor preprocessor) : ITwoSampleWilcoxonSignedRankTest
 {
