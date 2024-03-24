@@ -56,6 +56,7 @@ public class TestExecutor : ITestExecutor
             cancellationTokenSource.Cancel();
             Cancelled = true;
         }
+        cancellationTokenSource.Dispose();
     }
 
     private void ExecuteTests(List<TestCase> testCases, IFrameworkHandle frameworkHandle)
