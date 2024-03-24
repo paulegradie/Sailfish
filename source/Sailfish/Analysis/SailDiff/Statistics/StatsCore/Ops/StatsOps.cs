@@ -100,7 +100,7 @@ public static partial class InternalOps
 
     public static T Mode<T>(this T[] values)
     {
-        return values.Mode(out var _, false);
+        return values.Mode(out _, false);
     }
 
     public static T Mode<T>(this T[] values, out int count, bool inPlace, bool alreadySorted = false)

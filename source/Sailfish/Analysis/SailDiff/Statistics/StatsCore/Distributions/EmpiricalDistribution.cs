@@ -20,34 +20,9 @@ public class EmpiricalDistribution :
     private double? variance;
     private double[]? weights;
 
-    public EmpiricalDistribution(double[] samples)
-    {
-        Initialize(samples, null, null, new double?());
-    }
-
     public EmpiricalDistribution(double[] samples, double smoothing)
     {
         Initialize(samples, null, null, smoothing);
-    }
-
-    public EmpiricalDistribution(double[] samples, double[]? weights)
-    {
-        Initialize(samples, weights, null, new double?());
-    }
-
-    public EmpiricalDistribution(double[] samples, int[] weights)
-    {
-        Initialize(samples, null, weights, new double?());
-    }
-
-    public EmpiricalDistribution(double[] samples, double[]? weights, double smoothing)
-    {
-        Initialize(samples, weights, null, smoothing);
-    }
-
-    public EmpiricalDistribution(double[] samples, int[] weights, double smoothing)
-    {
-        Initialize(samples, null, weights, smoothing);
     }
 
     private EmpiricalDistribution()

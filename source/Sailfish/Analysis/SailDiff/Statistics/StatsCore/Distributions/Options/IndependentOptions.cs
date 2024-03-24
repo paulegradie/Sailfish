@@ -2,7 +2,7 @@ using System;
 
 namespace Sailfish.Analysis.SailDiff.Statistics.StatsCore.Distributions.Options;
 
-public class IndependentOptions : IFittingOptions, ICloneable
+public class IndependentOptions : IFittingOptions
 {
     public IFittingOptions InnerOption { get; set; }
 

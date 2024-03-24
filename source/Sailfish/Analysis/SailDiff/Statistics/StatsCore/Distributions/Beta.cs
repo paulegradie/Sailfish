@@ -284,7 +284,7 @@ public static class Beta
                 goto label_39;
         }
 
-    label_12:
+        label_12:
         num6 = 0.0;
         var num9 = 0.0;
         var num10 = 1.0;
@@ -401,7 +401,7 @@ public static class Beta
             }
         }
 
-    label_52:
+        label_52:
         if (flag2)
             num6 = num6 > double.Epsilon ? 1.0 - num6 : 1.0;
         return num6;

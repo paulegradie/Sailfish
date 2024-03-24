@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics.Contracts;
 using Sailfish.Analysis.SailDiff;
 using Sailfish.Contracts.Public.Models;
 using Sailfish.Extensions.Types;

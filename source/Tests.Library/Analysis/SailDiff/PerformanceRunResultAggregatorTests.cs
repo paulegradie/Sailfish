@@ -2,7 +2,6 @@
 using Sailfish.Contracts.Public.Models;
 using Shouldly;
 using System.Collections.Generic;
-using Tests.Library.Execution;
 using Tests.Library.Utils;
 using Tests.Library.Utils.Builders;
 using Xunit;

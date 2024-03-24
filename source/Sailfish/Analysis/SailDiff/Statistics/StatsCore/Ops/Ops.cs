@@ -776,22 +776,6 @@ public static partial class InternalOps
         return end;
     }
 
-    public static int GetTotalLength(this Array array, bool deep = true, bool rectangular = true)
-    {
-        if (!deep || !array.IsJagged())
-            return array.Length;
-        if (rectangular)
-        {
-            var totalLength = (array.GetValue(0) as Array).GetTotalLength(deep);
-            return array.Length * totalLength;
-        }
-
-        var totalLength1 = 0;
-        for (var index = 0; index < array.Length; ++index)
-            totalLength1 += (array.GetValue(index) as Array).GetTotalLength(deep);
-        return totalLength1;
-    }
-
     public static double[] Mean(this double[][] matrix, int dimension)
     {
         var length1 = matrix.Length;

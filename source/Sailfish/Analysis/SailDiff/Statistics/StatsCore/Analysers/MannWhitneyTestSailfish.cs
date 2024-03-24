@@ -88,7 +88,7 @@ public sealed class MannWhitneyWilcoxon : HypothesisTest<MannWhitneyDistribution
             DistributionTailSailfish.TwoTail => Math.Min(2.0 * Math.Min(StatisticDistribution.DistributionFunction(x), StatisticDistribution.ComplementaryDistributionFunction(x)), 1.0),
             DistributionTailSailfish.OneUpper => NumberOfSamples1 < NumberOfSamples2 ? StatisticDistribution.ComplementaryDistributionFunction(x) : StatisticDistribution.DistributionFunction(x),
             DistributionTailSailfish.OneLower => NumberOfSamples1 < NumberOfSamples2 ? StatisticDistribution.DistributionFunction(x) : StatisticDistribution.ComplementaryDistributionFunction(x),
-            _ => throw new InvalidOperationException(),
+            _ => throw new InvalidOperationException()
         };
     }
 

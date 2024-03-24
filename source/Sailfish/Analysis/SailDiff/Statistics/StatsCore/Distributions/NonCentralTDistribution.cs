@@ -1,6 +1,5 @@
 using System;
 using Sailfish.Analysis.SailDiff.Statistics.StatsCore.Attributes;
-using Sailfish.Analysis.SailDiff.Statistics.StatsCore.Distributions.Options;
 using Sailfish.Analysis.SailDiff.Statistics.StatsCore.Exceptions;
 using Sailfish.Analysis.SailDiff.Statistics.StatsCore.Search;
 
@@ -84,7 +83,7 @@ public class NonCentralTDistribution([Positive] double degreesOfFreedom, [Real] 
     {
         var noncentrality = NonCentrality;
         var degreesOfFreedom = DegreesOfFreedom;
-        Func<double, double, double, double> func = distributionFunctionLowerTail;
+        var func = distributionFunctionLowerTail;
         if (x != 0.0)
         {
             var num1 = func(x * Math.Sqrt(1.0 + 2.0 / degreesOfFreedom), degreesOfFreedom + 2.0, noncentrality);

@@ -276,7 +276,7 @@ public sealed class BrentSearch(
         BrentSearchStatus.RootNotBracketed => throw new ConvergenceException("Root must be enclosed between bounds once and only once."),
         BrentSearchStatus.FunctionNotFinite => throw new ConvergenceException("Function evaluation didn't return a finite number."),
         BrentSearchStatus.MaxIterationsReached => throw new ConvergenceException("The maximum number of iterations was reached."),
-        _ => throw new ArgumentOutOfRangeException(nameof(result), "Argument type error"),
+        _ => throw new ArgumentOutOfRangeException(nameof(result), "Argument type error")
     };
 
     private readonly struct BrentSearchResult

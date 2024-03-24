@@ -2,7 +2,7 @@ using System;
 
 namespace Sailfish.Analysis.SailDiff.Statistics.StatsCore.Distributions.Options;
 
-public class NormalOptions : IFittingOptions, IComponentOptions
+public class NormalOptions : IComponentOptions
 {
     public NormalOptions()
     {

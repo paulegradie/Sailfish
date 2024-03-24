@@ -80,7 +80,7 @@ public abstract class UnivariateContinuousDistribution :
         {
             if (!mode.HasValue)
             {
-                Func<double, double> function = ProbabilityDensityFunction;
+                var function = ProbabilityDensityFunction;
                 var quartiles = Quartiles;
                 var min = quartiles.Min;
                 quartiles = Quartiles;

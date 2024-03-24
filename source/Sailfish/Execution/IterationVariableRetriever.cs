@@ -29,7 +29,6 @@ internal class IterationVariableRetriever : IIterationVariableRetriever
                                 .GetVariables()
                                 .Distinct() // Duplicate values are currently allowed until we have an analyzer that prevents folks from providing duplicate values
                                 .OrderBy(x => x)
-,
                         ],
                         prop
                             .GetCustomAttributes()

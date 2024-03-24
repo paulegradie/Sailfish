@@ -82,7 +82,6 @@ public class StatisticalTestComputer(IStatisticalTestExecutor statisticalTestExe
             [
                 .. results
                                 .OrderByDescending(x => x.TestCaseId.DisplayName)
-,
             ];
         }
     }
