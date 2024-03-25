@@ -16,16 +16,6 @@ public class Distribution : UnivariateContinuousDistribution, IFormattable
 
     public override double Mode => 0.0;
 
-    public override double Variance
-    {
-        get
-        {
-            if (DegreesOfFreedom > 2.0)
-                return DegreesOfFreedom / (DegreesOfFreedom - 2.0);
-            return DegreesOfFreedom > 1.0 ? double.PositiveInfinity : double.NaN;
-        }
-    }
-
     public override DoubleRange Support => new(double.NegativeInfinity, double.PositiveInfinity);
 
     public override double Entropy => throw new NotSupportedException();

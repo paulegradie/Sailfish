@@ -56,47 +56,6 @@ public static class Vector
         return objArray;
     }
 
-    private static int[] Range(int n)
-    {
-        var numArray = new int[n];
-        for (var index = 0; index < numArray.Length; ++index)
-            numArray[index] = index;
-        return numArray;
-    }
-
-    public static void Sort<T>(
-        this T[] values,
-        out int[] order,
-        bool stable = false,
-        ComparerDirection direction = ComparerDirection.Ascending)
-        where T : IComparable<T>
-    {
-        if (!stable)
-        {
-            order = Range(values.Length);
-            Array.Sort(values, order);
-            if (direction != ComparerDirection.Descending)
-                return;
-            Array.Reverse((Array)values);
-            Array.Reverse((Array)order);
-        }
-        else
-        {
-            var keys = new KeyValuePair<int, T>[values.Length];
-            for (var key = 0; key < values.Length; ++key)
-                keys[key] = new KeyValuePair<int, T>(key, values[key]);
-            Array.Sort(
-                keys,
-                values,
-                direction == ComparerDirection.Ascending
-                    ? new StableComparer<T>((a, b) => a.CompareTo(b))
-                    : new StableComparer<T>((a, b) => -a.CompareTo(b)));
-            order = new int[values.Length];
-            for (var index = 0; index < keys.Length; ++index)
-                order[index] = keys[index].Key;
-        }
-    }
-
     private static void Sort<T>(this T[] values, bool stable = false, bool asc = true) where T : IComparable<T>
     {
         if (!stable)

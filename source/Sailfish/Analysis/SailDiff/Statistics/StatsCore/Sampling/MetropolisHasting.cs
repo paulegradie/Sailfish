@@ -1,38 +1,8 @@
 using System;
-using Sailfish.Analysis.SailDiff.Statistics.StatsCore.Distributions;
 
 namespace Sailfish.Analysis.SailDiff.Statistics.StatsCore.Sampling;
 
-public class MetropolisHasting<TObservation, TProposalDistribution> :
-    MetropolisHasting<TObservation>
-    where TProposalDistribution : ISampleableDistribution<TObservation[]>
-{
-    private TProposalDistribution proposal;
-
-    protected MetropolisHasting(
-        int dimensions,
-        Func<TObservation[], double> logDensity,
-        TProposalDistribution proposal)
-    {
-        Initialize(dimensions, logDensity, proposal);
-    }
-
-    private void Initialize(
-        int dimensions,
-        Func<TObservation[], double> logDensity,
-        TProposalDistribution proposal)
-    {
-        this.proposal = proposal;
-        Initialize(dimensions, logDensity, Generate);
-    }
-
-    private TObservation[] Generate(TObservation[] current, TObservation[] next)
-    {
-        return proposal.Generate(next);
-    }
-}
-
-public class MetropolisHasting<T> : Distributions.IRandomNumberGenerator<T[]>
+public abstract class MetropolisHasting<T>
 {
     private bool initialized;
     private T[] next;
@@ -82,18 +52,6 @@ public class MetropolisHasting<T> : Distributions.IRandomNumberGenerator<T[]>
         } while (!TryGenerate());
 
         return Current;
-    }
-
-    protected void Initialize(
-        int dimensions,
-        Func<T[], double> logDensity,
-        Func<T[], T[], T[]> proposal)
-    {
-        Current = new T[dimensions];
-        next = new T[dimensions];
-        LogProbabilityDensityFunction = logDensity;
-        Proposal = proposal;
-        RandomSource = Generator.Random;
     }
 
     private bool TryGenerate()

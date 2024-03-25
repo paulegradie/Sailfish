@@ -10,8 +10,8 @@ public class NonCentralTDistribution([Positive] double degreesOfFreedom, [Real] 
     private double? mode;
 
     public double DegreesOfFreedom { get; } = degreesOfFreedom > 0.0
-            ? degreesOfFreedom
-            : throw new ArgumentOutOfRangeException(nameof(degreesOfFreedom), "The number of degrees of freedom must be positive.");
+        ? degreesOfFreedom
+        : throw new ArgumentOutOfRangeException(nameof(degreesOfFreedom), "The number of degrees of freedom must be positive.");
 
     public double NonCentrality { get; } = nonCentrality;
 
@@ -19,19 +19,6 @@ public class NonCentralTDistribution([Positive] double degreesOfFreedom, [Real] 
         ? NonCentrality * Math.Sqrt(DegreesOfFreedom / 2.0) * Gamma.Function((DegreesOfFreedom - 1.0) / 2.0) / Gamma.Function(DegreesOfFreedom / 2.0)
         : double.NaN;
 
-    public override double Variance
-    {
-        get
-        {
-            if (DegreesOfFreedom <= 2.0)
-                return double.NaN;
-            var num1 = DegreesOfFreedom * (1.0 + NonCentrality * NonCentrality) / (DegreesOfFreedom - 2.0);
-            var num2 = NonCentrality * NonCentrality * DegreesOfFreedom / 2.0;
-            var num3 = Gamma.Function((DegreesOfFreedom - 1.0) / 2.0) / Gamma.Function(DegreesOfFreedom / 2.0);
-            var num4 = num2 * num3 * num3;
-            return num1 - num4;
-        }
-    }
 
     public override double Mode
     {
@@ -165,7 +152,7 @@ public class NonCentralTDistribution([Positive] double degreesOfFreedom, [Real] 
         } while (num3 >= num6);
 
         throw new ConvergenceException("Maximum number of iterations reached.");
-    label_15:
+        label_15:
         var num22 = num21 + Normal.Complemented(num5);
         if (flag)
             num22 = 1.0 - num22;

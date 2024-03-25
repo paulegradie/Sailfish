@@ -31,7 +31,6 @@ public class WilcoxonDistribution : UnivariateContinuousDistribution
 
     public override double Mean => approximation.Mean;
 
-    public override double Variance => approximation.Variance;
 
     public override double Mode => approximation.Mode;
 

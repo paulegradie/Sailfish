@@ -443,12 +443,3 @@ public static class Beta
         return num11;
     }
 }
-
-public interface IRandomNumberGenerator<T>
-{
-    T[] Generate(int samples);
-
-    T[] Generate(int samples, T[] result);
-
-    T Generate();
-}

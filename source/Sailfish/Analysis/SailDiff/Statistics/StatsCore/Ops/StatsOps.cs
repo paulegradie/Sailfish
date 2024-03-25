@@ -6,29 +6,6 @@ namespace Sailfish.Analysis.SailDiff.Statistics.StatsCore.Ops;
 
 public static partial class InternalOps
 {
-    public static int Sum(this int[] vector)
-    {
-        return Enumerable.Sum(vector);
-    }
-
-    private static double[,] WeightedCovariance(
-        this double[][] matrix,
-        double[]? weights,
-        double[] means,
-        int dimension)
-    {
-        var num1 = 0.0;
-        var num2 = 0.0;
-        foreach (var t in weights!)
-        {
-            num1 += t;
-            num2 += t * t;
-        }
-
-        var factor = num1 / (num1 * num1 - num2);
-        return matrix.WeightedScatter(weights, means, factor, dimension);
-    }
-
     private static double StandardDeviation(this double[] values, double mean, bool unbiased = true)
     {
         return Math.Sqrt(values.Variance(mean, unbiased));
@@ -114,26 +91,5 @@ public static partial class InternalOps
         }
 
         return obj2;
-    }
-
-    public static double Entropy(this IEnumerable<double> values, Func<double, double> pdf)
-    {
-        return values.Select(pdf).Select(d => d * Math.Log(d)).Sum();
-    }
-
-    public static double WeightedEntropy(
-        this IEnumerable<double> values,
-        double[]? weights,
-        Func<double, double> pdf)
-    {
-        return values.Select((t, index) => pdf(t) * weights[index]).Sum(d => d * Math.Log(d));
-    }
-
-    public static double WeightedEntropy(
-        this IEnumerable<double> values,
-        int[] weights,
-        Func<double, double> pdf)
-    {
-        return values.Select(pdf).Select((d, index) => d * Math.Log(d) * weights[index]).Sum();
     }
 }

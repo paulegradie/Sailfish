@@ -6,18 +6,8 @@ using Sailfish.Analysis.SailDiff.Statistics.StatsCore.Ops;
 namespace Sailfish.Analysis.SailDiff.Statistics.StatsCore.Distributions;
 
 [Serializable]
-public class NormalDistribution :
-    UnivariateContinuousDistribution,
-    IFittableDistribution<double>,
-    IRandomNumberGenerator<double>,
-    IFormattable
+public class NormalDistribution : UnivariateContinuousDistribution, IFormattable
 {
-    [ThreadStatic]
-    private static bool _useSecond;
-
-    [ThreadStatic]
-    private static double _secondValue;
-
     private double? entropy;
     private readonly bool immutable;
     private double lnconstant;
@@ -89,21 +79,9 @@ public class NormalDistribution :
         return string.Format(formatProvider, "N(x; μ = {0}, σ\u00B2 = {1})", mean.ToString(format, formatProvider), variance.ToString(format, formatProvider));
     }
 
-    public override double[] Generate(int samples, double[] result, Random source)
-    {
-        return Random(mean, stdDev, samples, result, source);
-    }
-
-    public override double Generate(Random source)
-    {
-        return Random(mean, stdDev, source);
-    }
-
     public override double Mean => mean;
 
     public override double Median => mean;
-
-    public override double Variance => variance;
 
     public override double Mode => mean;
 
@@ -152,82 +130,5 @@ public class NormalDistribution :
         stdDev = dev;
         variance = var;
         lnconstant = -Math.Log(2.5066282746310007 * dev);
-    }
-
-    public static double Random(double mean, double stdDev, Random source)
-    {
-        return Random(source) * stdDev + mean;
-    }
-
-    public static double[] Random(
-        double mean,
-        double stdDev,
-        int samples,
-        double[] result,
-        Random source)
-    {
-        Random(samples, result, source);
-        for (var index = 0; index < samples; ++index)
-            result[index] = result[index] * stdDev + mean;
-        return result;
-    }
-
-    public static double[] Random(int samples, double[] result, Random source)
-    {
-        var flag = _useSecond;
-        var num1 = _secondValue;
-        for (var index = 0; index < samples; ++index)
-            if (flag)
-            {
-                flag = false;
-                result[index] = num1;
-            }
-            else
-            {
-                double num2;
-                double num3;
-                double d;
-                do
-                {
-                    num2 = source.NextDouble() * 2.0 - 1.0;
-                    num3 = source.NextDouble() * 2.0 - 1.0;
-                    d = num2 * num2 + num3 * num3;
-                } while (d >= 1.0);
-
-                var num4 = Math.Sqrt(-2.0 * Math.Log(d) / d);
-                var num5 = num2 * num4;
-                num1 = num3 * num4;
-                flag = true;
-                result[index] = num5;
-            }
-
-        _useSecond = flag;
-        _secondValue = num1;
-        return result;
-    }
-
-    public static double Random(Random source)
-    {
-        if (_useSecond)
-        {
-            _useSecond = false;
-            return _secondValue;
-        }
-
-        double num1;
-        double num2;
-        double d;
-        do
-        {
-            num1 = source.NextDouble() * 2.0 - 1.0;
-            num2 = source.NextDouble() * 2.0 - 1.0;
-            d = num1 * num1 + num2 * num2;
-        } while (d >= 1.0);
-
-        var num3 = Math.Sqrt(-2.0 * Math.Log(d) / d);
-        var num4 = num1 * num3;
-        _secondValue = num2 * num3;
-        _useSecond = true;
-        return num4;
     }
 }
