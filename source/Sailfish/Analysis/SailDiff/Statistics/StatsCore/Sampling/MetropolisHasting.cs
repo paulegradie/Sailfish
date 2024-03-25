@@ -2,7 +2,7 @@ using System;
 
 namespace Sailfish.Analysis.SailDiff.Statistics.StatsCore.Sampling;
 
-public class MetropolisHasting<T>
+public abstract class MetropolisHasting<T>
 {
     private bool initialized;
     private T[] next;
@@ -52,18 +52,6 @@ public class MetropolisHasting<T>
         } while (!TryGenerate());
 
         return Current;
-    }
-
-    protected void Initialize(
-        int dimensions,
-        Func<T[], double> logDensity,
-        Func<T[], T[], T[]> proposal)
-    {
-        Current = new T[dimensions];
-        next = new T[dimensions];
-        LogProbabilityDensityFunction = logDensity;
-        Proposal = proposal;
-        RandomSource = Generator.Random;
     }
 
     private bool TryGenerate()
