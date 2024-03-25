@@ -40,12 +40,12 @@ jobs:
     steps:
       - name: Set Pull Request Version
         id: set_version_number
-        if: github.ref != 'refs/heads/main'
         run: |
+          version=2.0.${{ github.run_number }}
           if [ "${{ github.ref }}" == "refs/heads/main" ]; then
-            echo "version=2.0.${{ github.run_number }}" >> "$GITHUB_OUTPUT"
+            echo "version=${version}" >> "$GITHUB_OUTPUT"
           else
-            echo "version=2.0.${{ github.run_number }}-pull-request" >> "$GITHUB_OUTPUT"
+            echo "version=${version}-pull-request" >> "$GITHUB_OUTPUT"
           fi
 
   build:

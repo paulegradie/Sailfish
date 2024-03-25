@@ -232,8 +232,8 @@ public class MultivariateNormalDistribution : MultivariateContinuousDistribution
     private static void Decompose(
         NormalOptions? options,
         double[,] cov,
-        out CholeskyDecomposition chol,
-        out SingularValueDecomposition svd)
+        out CholeskyDecomposition? chol,
+        out SingularValueDecomposition? svd)
     {
         svd = null;
         chol = null;
