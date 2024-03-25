@@ -27,8 +27,7 @@ internal class DefaultTrackingFileDirectoryReader : ITrackingFileDirectoryReader
 
         return
         [
-            .. files
-                        .OrderByDescending(file => new FileInfo(file).LastWriteTimeUtc)
+            .. files.OrderByDescending(file => new FileInfo(file).LastWriteTimeUtc)
         ];
     }
 }
