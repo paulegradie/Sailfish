@@ -15,9 +15,6 @@ public class KolmogorovSmirnovDistribution([Positive] double samples) : Univaria
     public override double Mean => 0.8687311606361592 / Math.Sqrt(NumberOfSamples);
 
     public override double Mode => throw new NotSupportedException();
-
-    public override double Variance => (0.8224670334241132 - Mean * Mean) / NumberOfSamples;
-
     public override double Entropy => throw new NotSupportedException();
 
     public override string ToString(string? format, IFormatProvider? formatProvider)

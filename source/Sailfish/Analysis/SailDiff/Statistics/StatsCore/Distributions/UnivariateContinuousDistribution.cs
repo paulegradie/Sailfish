@@ -7,58 +7,22 @@ namespace Sailfish.Analysis.SailDiff.Statistics.StatsCore.Distributions;
 public abstract class UnivariateContinuousDistribution :
     DistributionBase,
     IUnivariateDistribution,
-    IUnivariateDistribution<double>,
     ISampleableDistribution<double>
 {
     private double? median;
     private double? mode;
     private DoubleRange? quartiles;
 
-    public double[] Generate(int samples)
-    {
-        return Generate(samples, new double[samples], Generator.Random);
-    }
-
-    public double[] Generate(int samples, double[] result)
-    {
-        return Generate(samples, result, Generator.Random);
-    }
-
-    public double Generate()
-    {
-        return Generate(Generator.Random);
-    }
 
     public double[] Generate(int samples, Random source)
     {
-        return Generate(samples, new double[samples], source);
-    }
-
-    public virtual double[] Generate(int samples, double[] result, Random source)
-    {
+        var result = new double[samples];
         for (var index = 0; index < samples; ++index)
             result[index] = InverseDistributionFunction(source.NextDouble());
         return result;
     }
 
-    public virtual double Generate(Random source)
-    {
-        return InverseDistributionFunction(source.NextDouble());
-    }
-
-    double ISampleableDistribution<double>.Generate(double result)
-    {
-        return Generate();
-    }
-
-    double ISampleableDistribution<double>.Generate(double result, Random source)
-    {
-        return Generate(source);
-    }
-
     public abstract double Mean { get; }
-
-    public abstract double Variance { get; }
 
     public abstract double Entropy { get; }
 
@@ -105,31 +69,6 @@ public abstract class UnivariateContinuousDistribution :
             median ??= InverseDistributionFunction(0.5);
             return median.Value;
         }
-    }
-
-    double IDistribution.DistributionFunction(double[] x)
-    {
-        return DistributionFunction(x[0]);
-    }
-
-    double IDistribution.ComplementaryDistributionFunction(double[] x)
-    {
-        return ComplementaryDistributionFunction(x[0]);
-    }
-
-    double IDistribution.ProbabilityFunction(double[] x)
-    {
-        return ProbabilityDensityFunction(x[0]);
-    }
-
-    double IUnivariateDistribution.ProbabilityFunction(double x)
-    {
-        return ProbabilityDensityFunction(x);
-    }
-
-    double IDistribution.LogProbabilityFunction(double[] x)
-    {
-        return LogProbabilityDensityFunction(x[0]);
     }
 
     double IUnivariateDistribution.LogProbabilityFunction(double x)
@@ -217,15 +156,6 @@ public abstract class UnivariateContinuousDistribution :
         return Math.Log(-Math.Log(ComplementaryDistributionFunction(x)));
     }
 
-    double IDistribution<double>.ProbabilityFunction(double x)
-    {
-        return ProbabilityDensityFunction(x);
-    }
-
-    double IDistribution<double>.LogProbabilityFunction(double x)
-    {
-        return LogProbabilityDensityFunction(x);
-    }
 
     protected internal virtual double InnerDistributionFunction(double x)
     {

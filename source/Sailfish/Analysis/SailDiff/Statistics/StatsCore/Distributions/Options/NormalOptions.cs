@@ -2,7 +2,7 @@ using System;
 
 namespace Sailfish.Analysis.SailDiff.Statistics.StatsCore.Distributions.Options;
 
-public class NormalOptions : IComponentOptions
+public class NormalOptions : ICloneable
 {
     public NormalOptions()
     {
@@ -17,8 +17,6 @@ public class NormalOptions : IComponentOptions
     public bool Robust { get; }
 
     public bool Shared { get; }
-
-    public Action<IDistribution[], double[]> Postprocessing { get; set; }
 
     public object Clone()
     {

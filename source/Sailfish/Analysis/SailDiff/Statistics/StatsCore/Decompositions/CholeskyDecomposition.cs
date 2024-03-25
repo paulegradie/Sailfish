@@ -125,13 +125,6 @@ internal sealed class CholeskyDecomposition : ICloneable
             : LeftTriangularFactor.DotWithTransposed(LeftTriangularFactor);
     }
 
-    public double[,] GetInformationMatrix()
-    {
-        var numArray = Reverse();
-        var res = numArray.TransposeAndDotAlt(numArray);
-        return res.Inverse();
-    }
-
     private void LLt()
     {
         Diagonal = Vector.Ones<double>(n);

@@ -55,7 +55,7 @@ public struct IntRange(int min, int max) :
         return $"[{(object)min}, {(object)max}]";
     }
 
-    public readonly string ToString(string format, IFormatProvider formatProvider) => string.Format("[{0}, {1}]", min.ToString(format, formatProvider), max.ToString(format, formatProvider));
+    public readonly string ToString(string format, IFormatProvider formatProvider) => $"[{min.ToString(format, formatProvider)}, {max.ToString(format, formatProvider)}]";
 
     public static implicit operator DoubleRange(IntRange range)
     {

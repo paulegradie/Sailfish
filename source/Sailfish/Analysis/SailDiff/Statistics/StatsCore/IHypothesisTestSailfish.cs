@@ -4,7 +4,6 @@ using Sailfish.Analysis.SailDiff.Statistics.StatsCore.Distributions;
 
 namespace Sailfish.Analysis.SailDiff.Statistics.StatsCore;
 
-
 public interface IHypothesisTest
 {
     DistributionTailSailfish Tail { get; }
@@ -16,7 +15,7 @@ public interface IHypothesisTest
     double PValueToStatistic(double p);
 }
 
-public interface IHypothesisTestSailfish<out TDist> : IHypothesisTest where TDist : IDistribution
+public interface IHypothesisTestSailfish<out TDist> : IHypothesisTest
 {
     TDist StatisticDistribution { get; }
 }

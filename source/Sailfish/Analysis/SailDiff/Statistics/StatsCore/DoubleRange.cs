@@ -35,11 +35,11 @@ public struct DoubleRange(double min, double max) : IRange<double>, IEquatable<D
 
     public readonly override string ToString()
     {
-        return string.Format("[{0}, {1}]", Min, Max);
+        return $"[{Min}, {Max}]";
     }
 
     public readonly string ToString(string format, IFormatProvider formatProvider)
     {
-        return string.Format("[{0}, {1}]", Min.ToString(format, formatProvider), Max.ToString(format, formatProvider));
+        return $"[{Min.ToString(format, formatProvider)}, {Max.ToString(format, formatProvider)}]";
     }
 }

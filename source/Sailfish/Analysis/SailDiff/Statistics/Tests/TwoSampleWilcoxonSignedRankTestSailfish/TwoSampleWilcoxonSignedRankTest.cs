@@ -11,8 +11,6 @@ public interface ITwoSampleWilcoxonSignedRankTest : ITest;
 
 public class TwoSampleWilcoxonSignedRankTest(ITestPreprocessor preprocessor) : ITwoSampleWilcoxonSignedRankTest
 {
-    private readonly ITestPreprocessor preprocessor = preprocessor;
-
     public TestResultWithOutlierAnalysis ExecuteTest(double[] before, double[] after, SailDiffSettings settings)
     {
         var sigDig = settings.Round;

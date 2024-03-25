@@ -156,13 +156,6 @@ public static class Specials
         return _lnfcache[n] <= 0.0 ? _lnfcache[n] = Gamma.Log(n + 1.0) : _lnfcache[n];
     }
 
-    public static double Log1M(double x)
-    {
-        if (x >= 1.0)
-            return double.NaN;
-        return Math.Abs(x) > 0.0001 ? Math.Log(1.0 - x) : -(0.5 * x + 1.0) * x;
-    }
-
     public static double Log1P(double x)
     {
         if (x <= -1.0)

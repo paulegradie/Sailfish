@@ -35,12 +35,12 @@ public struct Range(float min, float max) : IRange<float>, IEquatable<Range>
 
     public readonly override string ToString()
     {
-        return string.Format("[{0}, {1}]", Min, Max);
+        return $"[{Min}, {Max}]";
     }
 
     public readonly string ToString(string format, IFormatProvider formatProvider)
     {
-        return string.Format("[{0}, {1}]", Min.ToString(format, formatProvider), Max.ToString(format, formatProvider));
+        return $"[{Min.ToString(format, formatProvider)}, {Max.ToString(format, formatProvider)}]";
     }
 
     public static implicit operator DoubleRange(Range range)
