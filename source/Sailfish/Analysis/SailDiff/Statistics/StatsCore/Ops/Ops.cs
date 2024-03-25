@@ -1,32 +1,32 @@
-using MathNet.Numerics.LinearAlgebra;
-using Sailfish.Analysis.SailDiff.Statistics.StatsCore.Exceptions;
 using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
+using MathNet.Numerics.LinearAlgebra;
+using Sailfish.Analysis.SailDiff.Statistics.StatsCore.Exceptions;
 
 namespace Sailfish.Analysis.SailDiff.Statistics.StatsCore.Ops;
 
 public static partial class InternalOps
 {
-    public static double WeightedStandardDeviation(this double[] values, double[] weights)
+    public static double WeightedStandardDeviation(this double[] values, double[]? weights)
     {
         return Math.Sqrt(values.WeightedVariance(weights));
     }
 
-    public static double WeightedVariance(this double[] values, double[] weights)
+    public static double WeightedVariance(this double[] values, double[]? weights)
     {
         return values.WeightedVariance(weights, values.WeightedMean(weights), true);
     }
 
-    public static double WeightedVariance(this double[] values, double[] weights, double mean)
+    public static double WeightedVariance(this double[] values, double[]? weights, double mean)
     {
         return values.WeightedVariance(weights, mean, true);
     }
 
-    public static double WeightedVariance(
+    private static double WeightedVariance(
         this double[] values,
-        double[] weights,
+        double[]? weights,
         double mean,
         bool unbiased,
         WeightType weightType = WeightType.Fraction)
@@ -58,17 +58,17 @@ public static partial class InternalOps
         return values.WeightedVariance(weights, values.WeightedMean(weights), true);
     }
 
-    public static double WeightedVariance(
-        this double[] values,
+    private static double WeightedVariance(
+        this IReadOnlyList<double> values,
         int[] weights,
         double mean,
         bool unbiased)
     {
-        if (values.Length != weights.Length)
+        if (values.Count != weights.Length)
             throw new DimensionMismatchException(nameof(weights), "The values and weight vectors must have the same length");
         var num1 = 0.0;
         var num2 = 0;
-        for (var index = 0; index < values.Length; ++index)
+        for (var index = 0; index < values.Count; ++index)
         {
             var num3 = values[index] - mean;
             var weight = weights[index];
@@ -81,7 +81,7 @@ public static partial class InternalOps
 
     public static T WeightedMode<T>(
         this T[] values,
-        double[] weights,
+        double[]? weights,
         bool inPlace = false,
         bool alreadySorted = false)
     {
@@ -98,28 +98,25 @@ public static partial class InternalOps
     {
         if (values.Length == 0)
             throw new ArgumentException("The values vector cannot be empty.", nameof(values));
-        return (object)values[0] is IComparable ? weighted_mode_sort(values, weights, inPlace, alreadySorted) : weighted_mode_bag(values, weights);
+        return (object)values[0]! is IComparable ? weighted_mode_sort(values, weights, inPlace, alreadySorted) : weighted_mode_bag(values, weights);
     }
 
-    private static T weighted_mode_bag<T>(T[] values, double[] weights)
+    private static T weighted_mode_bag<T>(IReadOnlyList<T> values, IReadOnlyList<double>? weights) where T : notnull
     {
         var obj = values[0];
         var num = 1.0;
         var dictionary = new Dictionary<T, double>();
-        for (var index = 0; index < values.Length; ++index)
+        for (var index = 0; index < values.Count; ++index)
         {
             var key = values[index];
-            double weight;
-            if (!dictionary.TryGetValue(key, out weight))
+            if (!dictionary.TryGetValue(key, out var weight))
                 weight = weights[index];
             else
                 weight += weights[index];
             dictionary[key] = weight;
-            if (weight > num)
-            {
-                num = weight;
-                obj = key;
-            }
+            if (!(weight > num)) continue;
+            num = weight;
+            obj = key;
         }
 
         return obj;
@@ -127,7 +124,7 @@ public static partial class InternalOps
 
     private static T weighted_mode_sort<T>(
         T[] values,
-        double[] weights,
+        IReadOnlyList<double>? weights,
         bool inPlace,
         bool alreadySorted)
     {
@@ -154,35 +151,30 @@ public static partial class InternalOps
                 weight = weights[index];
             }
 
-            if (weight > num)
-            {
-                num = weight;
-                obj2 = obj1;
-            }
+            if (!(weight > num)) continue;
+            num = weight;
+            obj2 = obj1;
         }
 
         return obj2;
     }
 
-    private static T weighted_mode_bag<T>(T[] values, int[] weights)
+    private static T weighted_mode_bag<T>(IReadOnlyList<T> values, IReadOnlyList<int> weights)
     {
         var obj = values[0];
         var num = 1;
         var dictionary = new Dictionary<T, int>();
-        for (var index = 0; index < values.Length; ++index)
+        for (var index = 0; index < values.Count; ++index)
         {
             var key = values[index];
-            int weight;
-            if (!dictionary.TryGetValue(key, out weight))
+            if (!dictionary.TryGetValue(key, out var weight))
                 weight = weights[index];
             else
                 weight += weights[index];
             dictionary[key] = weight;
-            if (weight > num)
-            {
-                num = weight;
-                obj = key;
-            }
+            if (weight <= num) continue;
+            num = weight;
+            obj = key;
         }
 
         return obj;
@@ -190,7 +182,7 @@ public static partial class InternalOps
 
     private static T weighted_mode_sort<T>(
         T[] values,
-        int[] weights,
+        IReadOnlyList<int> weights,
         bool inPlace,
         bool alreadySorted)
     {
@@ -217,11 +209,9 @@ public static partial class InternalOps
                 weight = weights[index];
             }
 
-            if (weight > num)
-            {
-                num = weight;
-                obj2 = obj1;
-            }
+            if (weight <= num) continue;
+            num = weight;
+            obj2 = obj1;
         }
 
         return obj2;
@@ -276,12 +266,12 @@ public static partial class InternalOps
     }
 
     private static T[,] GetInner<T>(
-        this T[,] source,
-        T[,] destination,
-        int[] rowIndexes,
-        int[] columnIndexes)
+        this T[,]? source,
+        T[,]? destination,
+        int[]? rowIndexes,
+        int[]? columnIndexes)
     {
-        var num = source != null ? source.GetLength(0) : throw new ArgumentNullException(nameof(source));
+        var num = source?.GetLength(0) ?? throw new ArgumentNullException(nameof(source));
         var length1 = source.GetLength(1);
         var length2 = num;
         var length3 = length1;
@@ -331,9 +321,9 @@ public static partial class InternalOps
 
     private static T[][] GetInner<T>(
         this T[][] source,
-        T[][] destination,
-        int[] rowIndexes,
-        int[] columnIndexes,
+        T[][]? destination,
+        int[]? rowIndexes,
+        int[]? columnIndexes,
         bool reuseMemory)
     {
         ArgumentNullException.ThrowIfNull(source);
@@ -399,9 +389,9 @@ public static partial class InternalOps
         return destination;
     }
 
-    public static double[,] WeightedScatter(
+    private static double[,] WeightedScatter(
         this double[][] matrix,
-        double[] weights,
+        double[]? weights,
         double[] means,
         double factor,
         int dimension)
@@ -451,33 +441,31 @@ public static partial class InternalOps
         return numArray;
     }
 
-    public static TOutput To<TOutput>(this Array array) where TOutput : class, ICloneable, IList, ICollection, IEnumerable, IStructuralComparable, IStructuralEquatable => array.To(typeof(TOutput)) as TOutput;
+    public static TOutput? To<TOutput>(this Array array) where TOutput : class, ICloneable, IList, ICollection, IEnumerable, IStructuralComparable, IStructuralEquatable => array.To(typeof(TOutput)) as TOutput;
 
-    public static bool IsVector(this Array array)
+    private static bool IsVector(this Array array)
     {
         return array.Rank == 1 && !array.IsJagged();
     }
 
-    public static object GetValue(this Array array, bool deep, int[] indices)
+    private static object GetValue(this Array array, bool deep, int[] indices)
     {
         if (array.IsVector() || !deep || !array.IsJagged())
             return array.GetValue(indices);
         var array1 = array.GetValue(indices[0]) as Array;
         if (indices.Length == 1)
-            return (object)array1;
+            return array1;
         var indices1 = indices.Get(1, 0);
         return array1.GetValue(true, indices1);
     }
 
-    public static void SetValue(this Array array, object value, bool deep, int[] indices)
+    private static void SetValue(this Array array, object value, bool deep, int[] indices)
     {
         if (deep && array.IsJagged())
         {
             var array1 = array.GetValue(indices[0]) as Array;
             var numArray = indices.Get(1, 0);
-            var obj = value;
-            var indices1 = numArray;
-            array1.SetValue(obj, true, indices1);
+            array1.SetValue(value, true, numArray);
         }
         else
         {
@@ -485,7 +473,7 @@ public static partial class InternalOps
         }
     }
 
-    public static object To(this Array array, Type outputType)
+    private static object To(this Array array, Type outputType)
     {
         var elementType1 = array.GetType().GetElementType();
         var elementType2 = outputType.GetElementType();
@@ -547,7 +535,7 @@ public static partial class InternalOps
         return numArray;
     }
 
-    public static T[,] CreateAs<T>(T[,] matrix)
+    private static T[,] CreateAs<T>(T[,] matrix)
     {
         return new T[matrix.GetLength(0), matrix.GetLength(1)];
     }
@@ -595,36 +583,35 @@ public static partial class InternalOps
         var length2 = b.GetLength();
         if (length1.Length != length2.Length)
             return false;
-        for (var index = 0; index < length1.Length; ++index)
-            if (length1[index] != length2[index])
-                return false;
+        if (length1.Where((t, index) => t != length2[index]).Any())
+        {
+            return false;
+        }
 
         if (rtol > 0.0)
             for (var index = 0; index < a.Length; ++index)
             {
                 var d1 = a[index];
                 var d2 = b[index];
-                if (d1 != d2 && (!double.IsNaN(d1) || !double.IsNaN(d2)))
+                if (d1 == d2 || (double.IsNaN(d1) && double.IsNaN(d2))) continue;
+                if (double.IsNaN(d1) ^ double.IsNaN(d2) || double.IsPositiveInfinity(d1) ^ double.IsPositiveInfinity(d2) ||
+                    double.IsNegativeInfinity(d1) ^ double.IsNegativeInfinity(d2))
+                    return false;
+                var num1 = d1;
+                var num2 = d2;
+                var num3 = Math.Abs(num1 - num2);
+                if (num1 == 0.0)
                 {
-                    if (double.IsNaN(d1) ^ double.IsNaN(d2) || double.IsPositiveInfinity(d1) ^ double.IsPositiveInfinity(d2) ||
-                        double.IsNegativeInfinity(d1) ^ double.IsNegativeInfinity(d2))
-                        return false;
-                    var num1 = d1;
-                    var num2 = d2;
-                    var num3 = Math.Abs(num1 - num2);
-                    if (num1 == 0.0)
-                    {
-                        if (num3 <= rtol)
-                            continue;
-                    }
-                    else if (num2 == 0.0 && num3 <= rtol)
-                    {
+                    if (num3 <= rtol)
                         continue;
-                    }
-
-                    if (num3 > Math.Abs(num1) * rtol)
-                        return false;
                 }
+                else if (num2 == 0.0 && num3 <= rtol)
+                {
+                    continue;
+                }
+
+                if (num3 > Math.Abs(num1) * rtol)
+                    return false;
             }
         else if (atol > 0.0)
             for (var index = 0; index < a.Length; ++index)
@@ -648,18 +635,14 @@ public static partial class InternalOps
         return true;
     }
 
-    static InternalOps()
-    {
-    }
-
-    public static double[] WeightedMean(this double[][] matrix, double[] weights)
+    public static double[] WeightedMean(this double[][] matrix, double[]? weights)
     {
         return matrix.WeightedMean(weights, 0);
     }
 
-    public static double[] WeightedMean(this double[][] matrix, double[] weights, int dimension = 0)
+    private static double[] WeightedMean(this IReadOnlyList<double[]> matrix, double[]? weights, int dimension = 0)
     {
-        var length1 = matrix.Length;
+        var length1 = matrix.Count;
         if (length1 == 0)
             return [];
         var length2 = matrix[0].Length;
@@ -694,26 +677,26 @@ public static partial class InternalOps
         }
 
         var num = weights.Sum();
-        if (num != 0.0)
-            for (var index = 0; index < numArray1.Length; ++index)
-                numArray1[index] /= num;
+        if (num == 0.0) return numArray1;
+        for (var index = 0; index < numArray1.Length; ++index)
+            numArray1[index] /= num;
 
         return numArray1;
     }
 
-    public static IEnumerable<int[]> GetIndices(this Array array, bool inPlace = false)
+    private static IEnumerable<int[]> GetIndices(this Array array, bool inPlace = false)
     {
         return ((int[])array).Sequences(inPlace);
     }
 
-    public static bool IsJagged(this Array array)
+    private static bool IsJagged(this Array array)
     {
         if (array.Length == 0)
             return array.Rank == 1;
         return array.Rank == 1 && array.GetValue(0) is Array;
     }
 
-    public static int[] GetLength(this Array array, bool deep = true, bool max = false)
+    private static int[] GetLength(this Array array, bool deep = true, bool max = false)
     {
         if (array.Rank == 0)
             return [];
@@ -780,22 +763,6 @@ public static partial class InternalOps
         return end;
     }
 
-    public static int GetTotalLength(this Array array, bool deep = true, bool rectangular = true)
-    {
-        if (!deep || !array.IsJagged())
-            return array.Length;
-        if (rectangular)
-        {
-            var totalLength = (array.GetValue(0) as Array).GetTotalLength(deep);
-            return array.Length * totalLength;
-        }
-
-        var totalLength1 = 0;
-        for (var index = 0; index < array.Length; ++index)
-            totalLength1 += (array.GetValue(index) as Array).GetTotalLength(deep);
-        return totalLength1;
-    }
-
     public static double[] Mean(this double[][] matrix, int dimension)
     {
         var length1 = matrix.Length;
@@ -845,7 +812,7 @@ public static partial class InternalOps
         return (T[])a.Clone();
     }
 
-    public static double WeightedMean(this double[] values, double[] weights)
+    public static double WeightedMean(this double[] values, double[]? weights)
     {
         if (values.Length != weights.Length)
             throw new DimensionMismatchException(nameof(weights), "The values and weight vectors must have the same length");
@@ -867,44 +834,43 @@ public static partial class InternalOps
         return num1 / num2;
     }
 
-    public static T[][] SetColumn<T>(this T[][] m, int index, T[] column)
+    public static void SetColumn<T>(this T[][] m, int index, T[] column)
     {
         index = TheIndex(index, m.Columns());
         for (var index1 = 0; index1 < column.Length; ++index1)
             m[index1][index] = column[index1];
-        return m;
     }
 
-    public static double Correct(
+    private static double Correct(
         bool unbiased,
         WeightType weightType,
         double sum,
         double weightSum,
         double squareSum)
     {
-        if (unbiased)
-            switch (weightType)
-            {
-                case WeightType.Repetition:
-                    return sum / (weightSum - squareSum / weightSum);
+        if (!unbiased) return sum / weightSum;
+        switch (weightType)
+        {
+            case WeightType.Repetition:
+                return sum / (weightSum - squareSum / weightSum);
 
-                case WeightType.Fraction:
-                    return sum / (weightSum - squareSum / weightSum);
+            case WeightType.Fraction:
+                return sum / (weightSum - squareSum / weightSum);
 
-                case WeightType.Automatic:
-                    return weightSum > 1.0 && 1E-08.IsInteger() ? sum / (weightSum - 1.0) : sum / (weightSum - squareSum / weightSum);
+            case WeightType.Automatic:
+                return weightSum > 1.0 && 1E-08.IsInteger() ? sum / (weightSum - 1.0) : sum / (weightSum - squareSum / weightSum);
 
-                case WeightType.None:
-                    break;
+            case WeightType.None:
+                break;
 
-                default:
-                    throw new ArgumentOutOfRangeException(nameof(weightType), weightType, null);
-            }
+            default:
+                throw new ArgumentOutOfRangeException(nameof(weightType), weightType, null);
+        }
 
         return sum / weightSum;
     }
 
-    public static bool IsInteger(this double x, double threshold = 1.49322178960515E-300)
+    private static bool IsInteger(this double x, double threshold = 1.49322178960515E-300)
     {
         var num1 = Math.Round(x);
         var num2 = x;
@@ -927,12 +893,6 @@ public static partial class InternalOps
         return values.StandardDeviation(values.Mean(), unbiased);
     }
 
-    public static double[,] TransposeAndDot(this double[,] a, double[,] b)
-    {
-        var result = Create<double>(a.Columns(), b.Columns()).ToMultidimensionalArray();
-        return a.TransposeAndDot(b, result);
-    }
-
     public static double[,] TransposeAndDotAlt(this double[,] a, double[,] b)
     {
         return a.TransposeAndDot(b, Create<double>(a.Columns(), b.Columns()).ToMultidimensionalArray());
@@ -943,17 +903,12 @@ public static partial class InternalOps
         return a.Dot(b, new double[a.Rows(), b.Columns()]);
     }
 
-    public static double[] Dot(this double[] rowVector, double[,] b)
-    {
-        return rowVector.Dot(b);
-    }
-
     public static int Columns<T>(this T[,] matrix)
     {
         return matrix.GetLength(1);
     }
 
-    public static double[,] TransposeAndDot(this double[,] a, double[,] b, double[,] result)
+    private static double[,] TransposeAndDot(this double[,] a, double[,] b, double[,] result)
     {
         var matrixA = Matrix<double>.Build.DenseOfArray(a);
         var matrixB = Matrix<double>.Build.DenseOfArray(b);
@@ -995,7 +950,7 @@ public static partial class InternalOps
 
     public static double[] Dot(
         this double[,] matrix,
-        double[] columnVector,
+        IEnumerable<double> columnVector,
         double[] result)
     {
         var matrixA = Matrix<double>.Build.DenseOfArray(matrix);
@@ -1048,7 +1003,7 @@ public static partial class InternalOps
         return [.. intList];
     }
 
-    public static T[] GetColumn<T>(this T[,] m, int index, T[] result = null)
+    private static T[] GetColumn<T>(this T[,] m, int index, T[]? result = null)
     {
         result ??= new T[m.Rows()];
         index = TheIndex(index, m.Columns());
@@ -1057,7 +1012,7 @@ public static partial class InternalOps
         return result;
     }
 
-    public static T[] GetRow<T>(this T[,] m, int index, T[] result = null)
+    private static T[] GetRow<T>(this T[,] m, int index, T[]? result = null)
     {
         result ??= new T[m.GetLength(1)];
         index = TheIndex(index, m.Rows());
@@ -1092,7 +1047,7 @@ public static partial class InternalOps
         return matrix.Transpose(false);
     }
 
-    public static bool IsRectangular<T>(T[][] matrix)
+    private static bool IsRectangular<T>(T[][] matrix)
     {
         var length = matrix[0].Length;
         for (var index = 1; index < matrix.Length; ++index)
@@ -1137,7 +1092,7 @@ public static partial class InternalOps
         return vector.Apply(func, new TResult[vector.Length]);
     }
 
-    public static TResult[] Apply<TInput, TResult>(
+    private static TResult[] Apply<TInput, TResult>(
         this TInput[] vector,
         Func<TInput, TResult> func,
         TResult[] result)
@@ -1264,15 +1219,15 @@ public static partial class InternalOps
 
     public static double[] WeightedVariance(
         this double[][] matrix,
-        double[] weights,
+        double[]? weights,
         double[] means)
     {
         return matrix.WeightedVariance(weights, means, true);
     }
 
-    public static double[] WeightedVariance(
+    private static double[] WeightedVariance(
         this double[][] matrix,
-        double[] weights,
+        double[]? weights,
         double[] means,
         bool unbiased,
         WeightType weightType = WeightType.Fraction)
@@ -1305,7 +1260,7 @@ public static partial class InternalOps
 
     public static double[,] WeightedCovariance(
         this double[][] matrix,
-        double[] weights,
+        double[]? weights,
         double[] means)
     {
         return matrix.WeightedCovariance(weights, means, 0);

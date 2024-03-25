@@ -1,17 +1,15 @@
-﻿using MathNet.Numerics.Statistics;
+﻿using System;
+using System.Collections.Generic;
+using MathNet.Numerics.Statistics;
 using Sailfish.Analysis.SailDiff.Statistics.StatsCore.Analysers;
 using Sailfish.Contracts.Public;
 using Sailfish.Contracts.Public.Models;
-using System;
-using System.Collections.Generic;
 
 namespace Sailfish.Analysis.SailDiff.Statistics.Tests.TTest;
 
-public interface ITTest : ITest
-{
-}
+public interface ITTest : ITest;
 
-public class TTest(ITestPreprocessor preprocessor) : ITTest
+public class Test(ITestPreprocessor preprocessor) : ITTest
 {
     private readonly ITestPreprocessor preprocessor = preprocessor;
 

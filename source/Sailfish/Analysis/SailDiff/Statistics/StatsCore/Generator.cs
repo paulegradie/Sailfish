@@ -5,15 +5,15 @@ namespace Sailfish.Analysis.SailDiff.Statistics.StatsCore;
 
 public static class Generator
 {
-    private static readonly Random sourceRandom = new();
-    private static readonly object sourceRandomLock = new();
-    private static readonly int? sourceSeed;
-    private static readonly int sourceLastUpdateTicks;
-    private static readonly object sourceSeedLock = new();
-    [ThreadStatic] private static int threadLastUpdateTicks;
-    [ThreadStatic] private static bool threadOverriden;
-    [ThreadStatic] private static int? threadSeed;
-    [ThreadStatic] private static Random threadRandom;
+    private static readonly Random SourceRandom = new();
+    private static readonly object SourceRandomLock = new();
+    public static readonly int? SourceSeed;
+    private static readonly int SourceLastUpdateTicks;
+    private static readonly object SourceSeedLock = new();
+    [ThreadStatic] private static int _threadLastUpdateTicks;
+    [ThreadStatic] private static bool _threadOverriden;
+    [ThreadStatic] private static int? _threadSeed;
+    [ThreadStatic] private static Random _threadRandom;
 
     public static bool HasBeenAccessed { get; set; }
 
@@ -22,26 +22,26 @@ public static class Generator
         get
         {
             HasBeenAccessed = true;
-            if (threadOverriden || (threadRandom != null && threadLastUpdateTicks >= sourceLastUpdateTicks))
-                return threadRandom;
-            threadSeed = GetRandomSeed();
-            threadLastUpdateTicks = sourceLastUpdateTicks;
-            threadRandom = threadSeed.HasValue ? new Random(threadSeed.Value) : new Random();
-            return threadRandom;
+            if (_threadOverriden || (_threadRandom != null && _threadLastUpdateTicks >= SourceLastUpdateTicks))
+                return _threadRandom;
+            _threadSeed = GetRandomSeed();
+            _threadLastUpdateTicks = SourceLastUpdateTicks;
+            _threadRandom = _threadSeed.HasValue ? new Random(_threadSeed.Value) : new Random();
+            return _threadRandom;
         }
     }
 
     private static int GetRandomSeed()
     {
-        lock (sourceRandomLock)
+        lock (SourceRandomLock)
         {
-            lock (sourceSeedLock)
+            lock (SourceSeedLock)
             {
-                if (sourceRandom != null)
-                    return sourceRandom.Next();
-                if (!sourceSeed.HasValue)
+                if (SourceRandom != null)
+                    return SourceRandom.Next();
+                if (!SourceSeed.HasValue)
                     return (int)((13 * Thread.CurrentThread.ManagedThreadId) ^ DateTime.Now.Ticks);
-                return sourceSeed.Value > 0 ? (13 * Thread.CurrentThread.ManagedThreadId) ^ sourceSeed.Value : sourceSeed.Value;
+                return SourceSeed.Value > 0 ? (13 * Thread.CurrentThread.ManagedThreadId) ^ SourceSeed.Value : SourceSeed.Value;
             }
         }
     }

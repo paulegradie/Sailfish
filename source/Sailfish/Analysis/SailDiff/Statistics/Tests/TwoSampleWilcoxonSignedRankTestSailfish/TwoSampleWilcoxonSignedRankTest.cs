@@ -1,15 +1,13 @@
-﻿using MathNet.Numerics.Statistics;
+﻿using System;
+using System.Collections.Generic;
+using MathNet.Numerics.Statistics;
 using Sailfish.Analysis.SailDiff.Statistics.StatsCore.Analysers;
 using Sailfish.Contracts.Public;
 using Sailfish.Contracts.Public.Models;
-using System;
-using System.Collections.Generic;
 
 namespace Sailfish.Analysis.SailDiff.Statistics.Tests.TwoSampleWilcoxonSignedRankTestSailfish;
 
-public interface ITwoSampleWilcoxonSignedRankTest : ITest
-{
-}
+public interface ITwoSampleWilcoxonSignedRankTest : ITest;
 
 public class TwoSampleWilcoxonSignedRankTest(ITestPreprocessor preprocessor) : ITwoSampleWilcoxonSignedRankTest
 {
@@ -21,7 +19,7 @@ public class TwoSampleWilcoxonSignedRankTest(ITestPreprocessor preprocessor) : I
 
         try
         {
-            (var preprocessed1, var preprocessed2) = preprocessor.PreprocessJointlyWithDownSample(before, after, settings.UseOutlierDetection, 3, int.MaxValue);
+            var (preprocessed1, preprocessed2) = preprocessor.PreprocessJointlyWithDownSample(before, after, settings.UseOutlierDetection, 3, int.MaxValue);
             var sample1 = preprocessed1.OutlierAnalysis?.DataWithOutliersRemoved ?? preprocessed1.RawData;
             var sample2 = preprocessed2.OutlierAnalysis?.DataWithOutliersRemoved ?? preprocessed2.RawData;
 

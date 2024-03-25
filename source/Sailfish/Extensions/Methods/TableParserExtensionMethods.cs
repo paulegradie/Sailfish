@@ -1,11 +1,11 @@
-﻿using Sailfish.Exceptions;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Reflection;
 using System.Text;
+using Sailfish.Exceptions;
 
 namespace Sailfish.Extensions.Methods;
 
@@ -81,7 +81,7 @@ public static class TableParserExtensionMethods
         IReadOnlyList<Func<T, object>> valueSelectors)
     {
         var internalMatrix = PopulateMatrix(values, columnHeaders, columnSuffixes, valueSelectors, valueSelectors.Count, values.Count);
-        var maxColumnsWidth = ComputeColumnWidths<T>(internalMatrix.GetLength(1), internalMatrix.GetLength(0), internalMatrix);
+        var maxColumnsWidth = ComputeColumnWidths(internalMatrix.GetLength(1), internalMatrix.GetLength(0), internalMatrix);
 
         var sb = new StringBuilder();
         if (!string.IsNullOrEmpty(title)) sb.AppendLine(title + "\n");
@@ -91,7 +91,7 @@ public static class TableParserExtensionMethods
         return sb.ToString();
     }
 
-    private static int[] ComputeColumnWidths<T>(int numCols, int numRows, string[,] internalMatrix)
+    private static int[] ComputeColumnWidths(int numCols, int numRows, string[,] internalMatrix)
     {
         var maxColumnsWidth = new int[numCols];
         foreach (var colIndex in Enumerable.Range(0, numCols))

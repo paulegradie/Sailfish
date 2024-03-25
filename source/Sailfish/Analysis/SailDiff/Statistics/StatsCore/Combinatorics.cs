@@ -19,7 +19,7 @@ public static class Combinatorics
             if (symbols[index] == 0)
                 yield break;
 
-            label_5:
+        label_5:
         yield return inPlace ? current : (int[])current.Clone();
         for (var index = symbols.Length - 1; index >= 0; --index)
         {
@@ -57,7 +57,6 @@ public static class Combinatorics
             int x;
             if (j > 0)
             {
-                x = j;
             }
             else if (c[1] + 1 < c[2])
             {

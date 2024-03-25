@@ -1,8 +1,8 @@
-using MathNet.Numerics.Statistics;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Threading.Tasks;
+using MathNet.Numerics.Statistics;
 
 namespace Sailfish.Execution;
 

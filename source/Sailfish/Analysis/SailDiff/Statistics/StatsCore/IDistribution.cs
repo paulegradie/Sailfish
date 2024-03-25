@@ -1,4 +1,3 @@
-using Sailfish.Analysis.SailDiff.Statistics.StatsCore.Distributions.Options;
 using System;
 
 namespace Sailfish.Analysis.SailDiff.Statistics.StatsCore;
@@ -23,16 +22,4 @@ public interface IDistribution : ICloneable
     double LogProbabilityFunction(params double[] x);
 
     double ComplementaryDistributionFunction(params double[] x);
-
-    void Fit(Array observations);
-
-    void Fit(Array observations, double[] weights);
-
-    void Fit(Array observations, int[] weights);
-
-    void Fit(Array observations, IFittingOptions options);
-
-    void Fit(Array observations, double[] weights, IFittingOptions options);
-
-    void Fit(Array observations, int[] weights, IFittingOptions options);
 }

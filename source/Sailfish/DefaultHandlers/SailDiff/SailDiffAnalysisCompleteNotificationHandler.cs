@@ -1,15 +1,15 @@
-﻿using CsvHelper;
-using MediatR;
-using Sailfish.Contracts.Private.CsvMaps;
-using Sailfish.Contracts.Public.Models;
-using Sailfish.Contracts.Public.Notifications;
-using Sailfish.Presentation;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using CsvHelper;
+using MediatR;
+using Sailfish.Contracts.Private.CsvMaps;
+using Sailfish.Contracts.Public.Models;
+using Sailfish.Contracts.Public.Notifications;
+using Sailfish.Presentation;
 
 namespace Sailfish.DefaultHandlers.SailDiff;
 

@@ -1,10 +1,10 @@
-﻿using Sailfish.Contracts.Public;
-using Sailfish.Contracts.Public.Models;
-using Sailfish.Extensions.Methods;
-using System.Collections.Concurrent;
+﻿using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Sailfish.Contracts.Public;
+using Sailfish.Contracts.Public.Models;
+using Sailfish.Extensions.Methods;
 
 namespace Sailfish.Analysis.SailDiff;
 
@@ -82,7 +82,6 @@ public class StatisticalTestComputer(IStatisticalTestExecutor statisticalTestExe
             [
                 .. results
                                 .OrderByDescending(x => x.TestCaseId.DisplayName)
-,
             ];
         }
     }

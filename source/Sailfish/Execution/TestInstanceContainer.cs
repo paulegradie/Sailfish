@@ -1,7 +1,7 @@
-﻿using Sailfish.Contracts.Public.Models;
-using Sailfish.Utils;
-using System;
+﻿using System;
 using System.Reflection;
+using Sailfish.Contracts.Public.Models;
+using Sailfish.Utils;
 
 namespace Sailfish.Execution;
 

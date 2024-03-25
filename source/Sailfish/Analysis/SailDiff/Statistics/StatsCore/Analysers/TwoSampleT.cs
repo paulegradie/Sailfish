@@ -1,11 +1,11 @@
+using System;
 using Sailfish.Analysis.SailDiff.Statistics.StatsCore.Distributions;
 using Sailfish.Analysis.SailDiff.Statistics.StatsCore.Ops;
-using System;
 
 namespace Sailfish.Analysis.SailDiff.Statistics.StatsCore.Analysers;
 
 [Serializable]
-public class TwoSampleT : HypothesisTest<TDistribution>
+public class TwoSampleT : HypothesisTest<Distribution>
 {
     private readonly TwoSampleTTestPowerAnalysis powerAnalysis;
 
@@ -54,7 +54,7 @@ public class TwoSampleT : HypothesisTest<TDistribution>
         ObservedDifference = mean1 - mean2;
         HypothesizedDifference = hypothesizedDifference;
         Statistic = (ObservedDifference - HypothesizedDifference) / StandardError;
-        StatisticDistribution = new TDistribution(degreesOfFreedom);
+        StatisticDistribution = new Distribution(degreesOfFreedom);
         Hypothesis = alternate;
         Tail = (DistributionTailSailfish)alternate;
         PValue = StatisticToPValue(Statistic);
@@ -93,7 +93,7 @@ public class TwoSampleT : HypothesisTest<TDistribution>
     public double DegreesOfFreedom => StatisticDistribution.DegreesOfFreedom;
 
     public DoubleRange Confidence { get; protected set; }
-    public override TDistribution StatisticDistribution { get; set; }
+    public override Distribution StatisticDistribution { get; set; }
 
     public DoubleRange GetConfidenceInterval(double percent = 0.95)
     {
@@ -112,11 +112,11 @@ public class TwoSampleT : HypothesisTest<TDistribution>
 
     public override double PValueToStatistic(double p)
     {
-        return TTestExtensionMethods.PValueToStatistic(p, StatisticDistribution, Tail);
+        return TestExtensionMethods.PValueToStatistic(p, StatisticDistribution, Tail);
     }
 
     public override double StatisticToPValue(double x)
     {
-        return TTestExtensionMethods.StatisticToPValue(x, StatisticDistribution, Tail);
+        return TestExtensionMethods.StatisticToPValue(x, StatisticDistribution, Tail);
     }
 }

@@ -13,6 +13,4 @@ namespace Sailfish.Attributes;
 ///     Attributes
 /// </seealso>
 [AttributeUsage(AttributeTargets.Method)]
-public sealed class SailfishGlobalTeardownAttribute : Attribute
-{
-}
+public sealed class SailfishGlobalTeardownAttribute : Attribute;

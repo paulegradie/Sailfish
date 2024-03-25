@@ -1,9 +1,9 @@
-using Sailfish.Contracts.Public;
-using Sailfish.Contracts.Public.Models;
-using Sailfish.Logging;
 using System.Collections.Generic;
 using System.Text;
 using System.Threading;
+using Sailfish.Contracts.Public;
+using Sailfish.Contracts.Public.Models;
+using Sailfish.Logging;
 
 namespace Sailfish.Analysis.SailDiff;
 
@@ -35,7 +35,7 @@ public class SailDiffConsoleWindowMessageFormatter : ISailDiffConsoleWindowMessa
         SailDiffSettings sailDiffSettings,
         CancellationToken cancellationToken)
     {
-        var resultsAsMarkdown = sailDiffResultMarkdownConverter.ConvertToMarkdownTable(sailDiffResult, testIds);
+        var resultsAsMarkdown = sailDiffResultMarkdownConverter.ConvertToMarkdownTable(sailDiffResult);
         var stringBuilder = new StringBuilder();
         BuildHeader(stringBuilder, testIds.BeforeTestIds, testIds.AfterTestIds, sailDiffSettings);
         stringBuilder.AppendLine(resultsAsMarkdown);

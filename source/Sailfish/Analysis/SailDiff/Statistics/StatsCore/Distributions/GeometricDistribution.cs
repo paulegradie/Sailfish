@@ -1,25 +1,18 @@
+using System;
 using Sailfish.Analysis.SailDiff.Statistics.StatsCore.Attributes;
 using Sailfish.Analysis.SailDiff.Statistics.StatsCore.Distributions.Options;
 using Sailfish.Analysis.SailDiff.Statistics.StatsCore.Ops;
-using System;
 
 namespace Sailfish.Analysis.SailDiff.Statistics.StatsCore.Distributions;
 
 [Serializable]
 public class GeometricDistribution([Unit] double probabilityOfSuccess) :
     UnivariateDiscreteDistribution,
-    IFittableDistribution<double, IFittingOptions>,
-    IFittable<double, IFittingOptions>,
-    IFittable<double>,
     IFittableDistribution<double>,
-    IDistribution<double>,
-    IDistribution,
-    ICloneable,
     ISampleableDistribution<int>,
-    IDistribution<int>,
     IRandomNumberGenerator<int>
 {
-    public double ProbabilityOfSuccess { get; private set; } = probabilityOfSuccess >= 0.0 && probabilityOfSuccess <= 1.0
+    public double ProbabilityOfSuccess { get; private set; } = probabilityOfSuccess is >= 0.0 and <= 1.0
             ? probabilityOfSuccess
             : throw new ArgumentOutOfRangeException(nameof(probabilityOfSuccess), "A probability must be between 0 and 1.");
 
@@ -36,7 +29,7 @@ public class GeometricDistribution([Unit] double probabilityOfSuccess) :
 
     public override IntRange Support => new(0, int.MaxValue);
 
-    public override void Fit(double[] observations, double[] weights, IFittingOptions options)
+    public override void Fit(double[] observations, double[]? weights, IFittingOptions? options)
     {
         if (options != null)
             throw new ArgumentException("No options may be specified.");
@@ -75,7 +68,7 @@ public class GeometricDistribution([Unit] double probabilityOfSuccess) :
 
     protected override int InnerInverseDistributionFunction(double p)
     {
-        return (int)Math.Ceiling(Specials.Log1m(p) / Specials.Log1m(ProbabilityOfSuccess)) - 1;
+        return (int)Math.Ceiling(Specials.Log1M(p) / Specials.Log1M(ProbabilityOfSuccess)) - 1;
     }
 
     public override double[] Generate(int samples, double[] result, Random source)
@@ -85,20 +78,20 @@ public class GeometricDistribution([Unit] double probabilityOfSuccess) :
 
     public static double Random(double p, Random source)
     {
-        return Math.Floor(Specials.Log1m(source.NextDouble()) / Specials.Log1m(p));
+        return Math.Floor(Specials.Log1M(source.NextDouble()) / Specials.Log1M(p));
     }
 
     public static double[] Random(double p, int samples, double[] result, Random source)
     {
         for (var index = 0; index < samples; ++index)
-            result[index] = Math.Floor(Specials.Log1m(source.NextDouble()) / Specials.Log1m(p));
+            result[index] = Math.Floor(Specials.Log1M(source.NextDouble()) / Specials.Log1M(p));
         return result;
     }
 
     public static int[] Random(double p, int samples, int[] result, Random source)
     {
         for (var index = 0; index < samples; ++index)
-            result[index] = (int)Math.Floor(Specials.Log1m(source.NextDouble()) / Specials.Log1m(p));
+            result[index] = (int)Math.Floor(Specials.Log1M(source.NextDouble()) / Specials.Log1M(p));
         return result;
     }
 

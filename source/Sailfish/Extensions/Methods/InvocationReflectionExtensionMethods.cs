@@ -1,56 +1,58 @@
-﻿using Sailfish.Attributes;
-using Sailfish.Exceptions;
-using Sailfish.Execution;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
+using Sailfish.Attributes;
+using Sailfish.Exceptions;
+using Sailfish.Execution;
 
 namespace Sailfish.Extensions.Methods;
 
-internal static class InvocationReflectionExtensionMethods 
+internal static class InvocationReflectionExtensionMethods
 {
-
     internal static bool IsAsyncMethod(this MethodInfo method)
-    { return method.HasAttribute<AsyncStateMachineAttribute>(); }
+    {
+        return method.HasAttribute<AsyncStateMachineAttribute>();
+    }
 
     internal static bool ReturnTypeIsTask(Type returnType)
     {
         return returnType == typeof(Task) ||
-            returnType.IsGenericType &&
-            returnType.GetGenericTypeDefinition() == typeof(Task<>);
+               returnType.IsGenericType &&
+               returnType.GetGenericTypeDefinition() == typeof(Task<>);
     }
 
     internal static bool ReturnTypeIsValueTask(Type returnType)
     {
         return returnType == typeof(ValueTask) ||
-            returnType.IsGenericType &&
-            returnType.GetGenericTypeDefinition() == typeof(ValueTask<>);
+               returnType.IsGenericType &&
+               returnType.GetGenericTypeDefinition() == typeof(ValueTask<>);
     }
 
     internal static async Task TryInvoke(this MethodInfo? method, object instance, CancellationToken cancellationToken, PerformanceTimer? performanceTimer = null)
     {
         if (method is null) return;
         var parameters = method.GetParameters().ToList();
-        var arguments = new List<object> { };
+        var arguments = new List<object>();
         var errorMsg = $"The '{method.Name}' method in class '{instance.GetType().Name}' may only receive a single '{nameof(CancellationToken)}' parameter";
         switch (parameters.Count)
         {
             case > 1:
                 throw new TestFormatException(errorMsg);
             case 1:
+            {
+                var paramIsCancellationToken = parameters.Single().ParameterType == typeof(CancellationToken);
+                if (!paramIsCancellationToken)
                 {
-                    var paramIsCancellationToken = parameters.Single().ParameterType == typeof(CancellationToken);
-                    if (!paramIsCancellationToken)
-                    {
-                        throw new TestFormatException(errorMsg);
-                    }
-                    arguments.Add(cancellationToken);
-                    break;
+                    throw new TestFormatException(errorMsg);
                 }
+
+                arguments.Add(cancellationToken);
+                break;
+            }
         }
 
         if (method.IsAsyncMethod())
@@ -106,5 +108,4 @@ internal static class InvocationReflectionExtensionMethods
             .Single()
             .Disabled;
     }
-
 }

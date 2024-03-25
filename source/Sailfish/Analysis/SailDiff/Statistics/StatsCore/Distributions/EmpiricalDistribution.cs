@@ -1,13 +1,12 @@
-using Sailfish.Analysis.SailDiff.Statistics.StatsCore.Distributions.Options;
-using Sailfish.Analysis.SailDiff.Statistics.StatsCore.Ops;
 using System;
 using System.Linq;
+using Sailfish.Analysis.SailDiff.Statistics.StatsCore.Ops;
 
 namespace Sailfish.Analysis.SailDiff.Statistics.StatsCore.Distributions;
 
 public class EmpiricalDistribution :
     UnivariateContinuousDistribution,
-    IFittableDistribution<double, EmpiricalOptions>,
+    IFittableDistribution<double>,
     IRandomNumberGenerator<double>
 {
     private double constant;
@@ -18,36 +17,11 @@ public class EmpiricalDistribution :
     private double sumOfWeights;
     private WeightType type;
     private double? variance;
-    private double[] weights;
-
-    public EmpiricalDistribution(double[] samples)
-    {
-        Initialize(samples, null, null, new double?());
-    }
+    private double[]? weights;
 
     public EmpiricalDistribution(double[] samples, double smoothing)
     {
         Initialize(samples, null, null, smoothing);
-    }
-
-    public EmpiricalDistribution(double[] samples, double[] weights)
-    {
-        Initialize(samples, weights, null, new double?());
-    }
-
-    public EmpiricalDistribution(double[] samples, int[] weights)
-    {
-        Initialize(samples, null, weights, new double?());
-    }
-
-    public EmpiricalDistribution(double[] samples, double[] weights, double smoothing)
-    {
-        Initialize(samples, weights, null, smoothing);
-    }
-
-    public EmpiricalDistribution(double[] samples, int[] weights, double smoothing)
-    {
-        Initialize(samples, null, weights, smoothing);
     }
 
     private EmpiricalDistribution()
@@ -133,26 +107,6 @@ public class EmpiricalDistribution :
     }
 
     public override DoubleRange Support => new(double.NegativeInfinity, double.PositiveInfinity);
-
-    public void Fit(double[] observations, double[] weights, EmpiricalOptions options)
-    {
-        var smoothing = new double?();
-        var flag = false;
-        if (options != null)
-        {
-            smoothing = options.SmoothingRule(observations, weights);
-            flag = options.InPlace;
-        }
-
-        if (!flag)
-        {
-            observations = (double[])observations.Clone();
-            if (weights != null)
-                weights = (double[])weights.Clone();
-        }
-
-        Initialize(observations, weights, null, smoothing);
-    }
 
     public override object Clone()
     {
@@ -270,14 +224,10 @@ public class EmpiricalDistribution :
         return num1 * constant;
     }
 
-    public override void Fit(double[] observations, double[] weights, IFittingOptions options)
-    {
-        Fit(observations, weights, options as EmpiricalOptions);
-    }
 
     private void Initialize(
         double[] observations,
-        double[] weights,
+        double[]? weights,
         int[] repeats,
         double? smoothing)
     {
@@ -323,7 +273,7 @@ public class EmpiricalDistribution :
         return observations.StandardDeviation() * Math.Pow(4.0 / (3.0 * observations.Length), 0.2);
     }
 
-    public static double SmoothingRule(double[] observations, double[] weights)
+    public static double SmoothingRule(double[] observations, double[]? weights)
     {
         var num = weights.Sum();
         return observations.WeightedStandardDeviation(weights) * Math.Pow(4.0 / (3.0 * num), 0.2);
@@ -335,7 +285,7 @@ public class EmpiricalDistribution :
         return observations.WeightedStandardDeviation(repeats) * Math.Pow(4.0 / (3.0 * num), 0.2);
     }
 
-    public static double SmoothingRule(double[] observations, double[] weights, int[] repeats)
+    public static double SmoothingRule(double[] observations, double[]? weights, int[] repeats)
     {
         if (weights != null)
         {

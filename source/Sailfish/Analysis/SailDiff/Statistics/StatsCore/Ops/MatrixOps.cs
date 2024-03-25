@@ -1,7 +1,7 @@
+using System;
 using Sailfish.Analysis.SailDiff.Statistics.StatsCore.Decompositions;
 using Sailfish.Analysis.SailDiff.Statistics.StatsCore.Distributions;
 using Sailfish.Analysis.SailDiff.Statistics.StatsCore.Exceptions;
-using System;
 
 namespace Sailfish.Analysis.SailDiff.Statistics.StatsCore.Ops;
 
@@ -97,7 +97,7 @@ public static partial class InternalOps
         return matrix[0].Length;
     }
 
-    public static T[,] ToUpperTriangular<T>(this T[,] matrix, MatrixType from, T[,] result = null)
+    public static T[,] ToUpperTriangular<T>(this T[,] matrix, MatrixType from, T[,]? result = null)
     {
         result ??= CreateAs(matrix);
         matrix.CopyTo(result);
@@ -217,7 +217,7 @@ public static partial class InternalOps
         return objArray;
     }
 
-    public static double[,] Inverse(this double[,] matrix, bool inPlace)
+    private static double[,] Inverse(this double[,] matrix, bool inPlace)
     {
         var length1 = matrix.GetLength(0);
         var length2 = matrix.GetLength(1);

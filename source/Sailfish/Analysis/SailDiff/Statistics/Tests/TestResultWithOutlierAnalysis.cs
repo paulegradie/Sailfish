@@ -1,6 +1,6 @@
-using Sailfish.Contracts.Public.Models;
 using System;
 using System.Collections.Generic;
+using Sailfish.Contracts.Public.Models;
 
 namespace Sailfish.Analysis.SailDiff.Statistics.Tests;
 

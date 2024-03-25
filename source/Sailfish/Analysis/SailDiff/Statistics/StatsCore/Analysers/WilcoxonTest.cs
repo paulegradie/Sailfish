@@ -1,31 +1,19 @@
+using System;
 using Sailfish.Analysis.SailDiff.Statistics.StatsCore.Distributions;
 using Sailfish.Analysis.SailDiff.Statistics.StatsCore.Ops;
-using System;
 
 namespace Sailfish.Analysis.SailDiff.Statistics.StatsCore.Analysers;
 
 public class WilcoxonTest : HypothesisTest<WilcoxonDistribution>
 {
-    private bool hasTies;
+    private int[] Signs { get; set; }
 
-    public WilcoxonTest(int[] signs, double[] diffs, DistributionTailSailfish tail)
-    {
-        Compute(signs, diffs, tail, new bool?(), true);
-    }
+    private double[] Delta { get; set; }
 
-    protected WilcoxonTest()
-    {
-    }
+    private double[] Ranks { get; set; }
 
-    public int[] Signs { get; protected set; }
+    private bool HasZeros { get; set; }
 
-    public double[] Delta { get; protected set; }
-
-    public double[] Ranks { get; protected set; }
-
-    public bool HasZeros { get; private set; }
-
-    public bool IsExact { get; private set; }
     public override WilcoxonDistribution StatisticDistribution { get; set; }
 
     protected void Compute(
@@ -45,19 +33,18 @@ public class WilcoxonTest : HypothesisTest<WilcoxonDistribution>
 
         Signs = signs;
         Delta = diffs;
-        Ranks = Delta.Rank(out hasTies, adjustForTies: adjustForTies);
+        Ranks = Delta.Rank(out var hasTies, adjustForTies: adjustForTies);
         Compute(WilcoxonDistribution.WPositive(Signs, Ranks), Ranks, tail, exact);
     }
 
-    protected void Compute(double statistic, double[] ranks, DistributionTailSailfish tail, bool? exact)
+    private void Compute(double statistic, double[] ranks, DistributionTailSailfish tail, bool? exact)
     {
         if (HasZeros)
         {
-            if (!exact.HasValue)
-                exact = false;
+            exact ??= false;
             var nullable = exact;
-            var flag = true;
-            if ((nullable.GetValueOrDefault() == flag ? nullable.HasValue ? 1 : 0 : 0) != 0)
+            const bool flag = true;
+            if ((nullable.GetValueOrDefault() == flag ? 1 : 0) != 0)
                 throw new ArgumentException("An exact test cannot be computed when there are zeros in the samples (or when paired samples are the same in a paired test).");
         }
 
@@ -69,12 +56,11 @@ public class WilcoxonTest : HypothesisTest<WilcoxonDistribution>
             {
                 Correction = Tail == DistributionTailSailfish.TwoTail ? ContinuityCorrection.Midpoint : ContinuityCorrection.KeepInside
             };
-            IsExact = StatisticDistribution.Exact;
         }
         else
         {
             StatisticDistribution = null;
-            IsExact = exact.GetValueOrDefault(false);
+            exact.GetValueOrDefault(false);
         }
 
         PValue = StatisticToPValue(Statistic);
@@ -85,37 +71,23 @@ public class WilcoxonTest : HypothesisTest<WilcoxonDistribution>
     {
         if (StatisticDistribution == null)
             return double.NaN;
-        switch (Tail)
+        return Tail switch
         {
-            case DistributionTailSailfish.TwoTail:
-                return Math.Min(2.0 * Math.Min((double)StatisticDistribution.DistributionFunction(x), StatisticDistribution.ComplementaryDistributionFunction(x)), 1.0);
-
-            case DistributionTailSailfish.OneUpper:
-                return StatisticDistribution.ComplementaryDistributionFunction(x);
-
-            case DistributionTailSailfish.OneLower:
-                return StatisticDistribution.DistributionFunction(x);
-
-            default:
-                throw new InvalidOperationException();
-        }
+            DistributionTailSailfish.TwoTail => Math.Min(2.0 * Math.Min(StatisticDistribution.DistributionFunction(x), StatisticDistribution.ComplementaryDistributionFunction(x)), 1.0),
+            DistributionTailSailfish.OneUpper => StatisticDistribution.ComplementaryDistributionFunction(x),
+            DistributionTailSailfish.OneLower => StatisticDistribution.DistributionFunction(x),
+            _ => throw new InvalidOperationException()
+        };
     }
 
     public override double PValueToStatistic(double p)
     {
-        switch (Tail)
+        return Tail switch
         {
-            case DistributionTailSailfish.TwoTail:
-                return StatisticDistribution.InverseDistributionFunction(1.0 - p / 2.0);
-
-            case DistributionTailSailfish.OneUpper:
-                return StatisticDistribution.InverseDistributionFunction(1.0 - p);
-
-            case DistributionTailSailfish.OneLower:
-                return StatisticDistribution.InverseDistributionFunction(p);
-
-            default:
-                throw new InvalidOperationException();
-        }
+            DistributionTailSailfish.TwoTail => StatisticDistribution.InverseDistributionFunction(1.0 - p / 2.0),
+            DistributionTailSailfish.OneUpper => StatisticDistribution.InverseDistributionFunction(1.0 - p),
+            DistributionTailSailfish.OneLower => StatisticDistribution.InverseDistributionFunction(p),
+            _ => throw new InvalidOperationException()
+        };
     }
 }

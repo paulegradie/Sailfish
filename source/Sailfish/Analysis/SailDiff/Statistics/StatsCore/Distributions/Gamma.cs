@@ -1,11 +1,11 @@
-using Sailfish.Analysis.SailDiff.Statistics.StatsCore.Ops;
 using System;
+using Sailfish.Analysis.SailDiff.Statistics.StatsCore.Ops;
 
 namespace Sailfish.Analysis.SailDiff.Statistics.StatsCore.Distributions;
 
 public static class Gamma
 {
-    private static readonly double[] gamma_P =
+    private static readonly double[] GammaP =
     [
         0.00016011952247675185,
         0.0011913514700658638,
@@ -16,7 +16,7 @@ public static class Gamma
         1.0
     ];
 
-    private static readonly double[] gamma_Q =
+    private static readonly double[] GammaQ =
     [
         -2.3158187332412014E-05,
         0.0005396055804933034,
@@ -28,7 +28,7 @@ public static class Gamma
         1.0
     ];
 
-    private static readonly double[] STIR =
+    private static readonly double[] Stir =
     [
         0.0007873113957930937,
         -0.00022954996161337813,
@@ -37,7 +37,7 @@ public static class Gamma
         1.0 / 12.0
     ];
 
-    private static readonly double[] log_A =
+    private static readonly double[] LogA =
     [
         0.0008116141674705085,
         -0.0005950619042843014,
@@ -46,7 +46,7 @@ public static class Gamma
         1.0 / 12.0
     ];
 
-    private static readonly double[] log_B =
+    private static readonly double[] LogB =
     [
         -1378.2515256912086,
         -38801.631513463784,
@@ -56,7 +56,7 @@ public static class Gamma
         -853555.6642457654
     ];
 
-    private static readonly double[] log_C =
+    private static readonly double[] LogC =
     [
         -351.81570143652345,
         -17064.210665188115,
@@ -114,110 +114,12 @@ public static class Gamma
             num6 /= x;
         }
 
-        if (x == 2.0 || x == 3.0)
+        if (x is 2.0 or 3.0)
             return num6;
         x -= 2.0;
-        var num7 = Specials.Polevl(x, gamma_P, 6);
-        var num8 = Specials.Polevl(x, gamma_Q, 7);
+        var num7 = Specials.Polevl(x, GammaP, 6);
+        var num8 = Specials.Polevl(x, GammaQ, 7);
         return num6 * num7 / num8;
-    }
-
-    public static double Digamma(double x)
-    {
-        if (x == 0.0)
-            return double.NegativeInfinity;
-        if (x < 0.0)
-            return Digamma(1.0 - x) + Math.PI / Math.Tan(-1.0 * Math.PI * x);
-        var num1 = 0.0;
-        var flag = false;
-        if (x <= 0.0)
-        {
-            flag = true;
-            var d = x;
-            double num2 = (int)Math.Floor(d);
-            if (num2 == d)
-                throw new OverflowException("Function computation resulted in arithmetic overflow.");
-            var num3 = d - num2;
-            if (num3 != 0.5)
-            {
-                if (num3 > 0.5)
-                {
-                    var num4 = num2 + 1.0;
-                    num3 = d - num4;
-                }
-
-                num1 = Math.PI / Math.Tan(Math.PI * num3);
-            }
-            else
-            {
-                num1 = 0.0;
-            }
-
-            x = 1.0 - x;
-        }
-
-        double num5;
-        if ((x <= 10.0) & (x == Math.Floor(x)))
-        {
-            var num6 = 0.0;
-            var num7 = (int)Math.Floor(x);
-            for (var index = 1; index <= num7 - 1; ++index)
-            {
-                double num8 = index;
-                num6 += 1.0 / num8;
-            }
-
-            num5 = num6 - 0.5772156649015329;
-        }
-        else
-        {
-            var d = x;
-            var num9 = 0.0;
-            for (; d < 10.0; ++d)
-                num9 += 1.0 / d;
-            double num10;
-            if (d < 1E+17)
-            {
-                var num11 = 1.0 / (d * d);
-                var num12 = (((((1.0 / 12.0 * num11 - 0.021092796092796094) * num11 + 1.0 / 132.0) * num11 - 1.0 / 240.0) * num11 + 1.0 / 252.0) * num11 - 1.0 / 120.0) * num11 +
-                            1.0 / 12.0;
-                num10 = num11 * num12;
-            }
-            else
-            {
-                num10 = 0.0;
-            }
-
-            num5 = Math.Log(d) - 0.5 / d - num10 - num9;
-        }
-
-        if (flag)
-            num5 -= num1;
-        return num5;
-    }
-
-    public static double Trigamma(double x)
-    {
-        if (x < 0.0)
-        {
-            var num = Math.PI / Math.Sin(-1.0 * Math.PI * x);
-            return -Trigamma(1.0 - x) + num * num;
-        }
-
-        var num1 = 0.0001;
-        var num2 = 5.0;
-        var num3 = 1.0 / 6.0;
-        var num4 = -1.0 / 30.0;
-        var num5 = 1.0 / 42.0;
-        var num6 = -1.0 / 30.0;
-        var num7 = x > 0.0 ? x : throw new ArgumentException("The input parameter x must be positive.", nameof(x));
-        if (x <= num1)
-            return 1.0 / x / x;
-        var num8 = 0.0;
-        for (; num7 < num2; ++num7)
-            num8 += 1.0 / num7 / num7;
-        var num9 = 1.0 / num7 / num7;
-        return num8 + 0.5 * num9 + (1.0 + num9 * (num3 + num9 * (num4 + num9 * (num5 + num9 * num6)))) / num7;
     }
 
     public static double Stirling(double x)
@@ -225,7 +127,7 @@ public static class Gamma
         var num1 = 143.01608;
         var x1 = 1.0 / x;
         var d1 = Math.Exp(x);
-        var num2 = 1.0 + x1 * Specials.Polevl(x1, STIR, 4);
+        var num2 = 1.0 + x1 * Specials.Polevl(x1, Stir, 4);
         double num3;
         if (x > num1)
         {
@@ -240,7 +142,7 @@ public static class Gamma
         return 2.5066282746310007 * num3 * num2;
     }
 
-    public static double UpperIncomplete(double a, double x)
+    private static double UpperIncomplete(double a, double x)
     {
         if (x <= 0.0 || a <= 0.0)
             return 1.0;
@@ -362,7 +264,7 @@ public static class Gamma
             if (x == 2.0)
                 return Math.Log(d);
             x -= 2.0;
-            var num = x * Specials.Polevl(x, log_B, 5) / Specials.P1evl(x, log_C, 6);
+            var num = x * Specials.Polevl(x, LogB, 5) / Specials.P1Evl(x, LogC, 6);
             return Math.Log(d) + num;
         }
 
@@ -372,6 +274,6 @@ public static class Gamma
         if (x > 100000000.0)
             return num5;
         var x1 = 1.0 / (x * x);
-        return x < 1000.0 ? num5 + Specials.Polevl(x1, log_A, 4) / x : num5 + ((0.0007936507936507937 * x1 - 1.0 / 360.0) * x1 + 1.0 / 12.0) / x;
+        return x < 1000.0 ? num5 + Specials.Polevl(x1, LogA, 4) / x : num5 + ((0.0007936507936507937 * x1 - 1.0 / 360.0) * x1 + 1.0 / 12.0) / x;
     }
 }

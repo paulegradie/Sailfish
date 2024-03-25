@@ -1,11 +1,11 @@
-using Sailfish.Analysis.SailDiff.Statistics.StatsCore.Distributions;
 using System;
+using Sailfish.Analysis.SailDiff.Statistics.StatsCore.Distributions;
 
 namespace Sailfish.Analysis.SailDiff.Statistics.StatsCore.Ops;
 
 public static class Specials
 {
-    private static readonly double[] erfc_P =
+    private static readonly double[] ErfcP =
     [
         2.461969814735305E-10,
         0.5641895648310689,
@@ -18,7 +18,7 @@ public static class Specials
         557.5353353693994
     ];
 
-    private static readonly double[] erfc_Q =
+    private static readonly double[] ErfcQ =
     [
         13.228195115474499,
         86.70721408859897,
@@ -30,7 +30,7 @@ public static class Specials
         557.5353408177277
     ];
 
-    private static readonly double[] erfc_R =
+    private static readonly double[] ErfcR =
     [
         0.5641895835477551,
         1.275366707599781,
@@ -40,7 +40,7 @@ public static class Specials
         2.9788666537210022
     ];
 
-    private static readonly double[] erfc_S =
+    private static readonly double[] ErfcS =
     [
         2.2605286322011726,
         9.396035249380015,
@@ -50,7 +50,7 @@ public static class Specials
         3.369076451000815
     ];
 
-    private static readonly double[] erfc_T =
+    private static readonly double[] ErfcT =
     [
         9.604973739870516,
         90.02601972038427,
@@ -59,7 +59,7 @@ public static class Specials
         55592.30130103949
     ];
 
-    private static readonly double[] erfc_U =
+    private static readonly double[] ErfcU =
     [
         33.56171416475031,
         521.3579497801527,
@@ -68,7 +68,7 @@ public static class Specials
         49267.39426086359
     ];
 
-    private static double[] lnfcache;
+    private static double[]? _lnfcache;
 
     public static double Erfc(double value)
     {
@@ -83,13 +83,13 @@ public static class Specials
         double num3;
         if (x < 8.0)
         {
-            num2 = Polevl(x, erfc_P, 8);
-            num3 = P1evl(x, erfc_Q, 8);
+            num2 = Polevl(x, ErfcP, 8);
+            num3 = P1Evl(x, ErfcQ, 8);
         }
         else
         {
-            num2 = Polevl(x, erfc_R, 5);
-            num3 = P1evl(x, erfc_S, 6);
+            num2 = Polevl(x, ErfcR, 5);
+            num3 = P1Evl(x, ErfcS, 6);
         }
 
         var num4 = num1 * num2 / num3;
@@ -105,7 +105,7 @@ public static class Specials
         if (Math.Abs(x) > 1.0)
             return 1.0 - Erfc(x);
         var x1 = x * x;
-        return x * Polevl(x1, erfc_T, 4) / P1evl(x1, erfc_U, 5);
+        return x * Polevl(x1, ErfcT, 4) / P1Evl(x1, ErfcU, 5);
     }
 
     public static double Polevl(double x, double[] coef, int n)
@@ -116,7 +116,7 @@ public static class Specials
         return num;
     }
 
-    public static double P1evl(double x, double[] coef, int n)
+    public static double P1Evl(double x, double[] coef, int n)
     {
         var num = x + coef[0];
         for (var index = 1; index < n; ++index)
@@ -146,24 +146,24 @@ public static class Specials
 
     public static double LogFactorial(int n)
     {
-        lnfcache ??= new double[101];
+        _lnfcache ??= new double[101];
         if (n < 0)
             throw new ArgumentException("Argument cannot be negative.", nameof(n));
         if (n <= 1)
             return 0.0;
         if (n > 100)
             return Gamma.Log(n + 1.0);
-        return lnfcache[n] <= 0.0 ? lnfcache[n] = Gamma.Log(n + 1.0) : lnfcache[n];
+        return _lnfcache[n] <= 0.0 ? _lnfcache[n] = Gamma.Log(n + 1.0) : _lnfcache[n];
     }
 
-    public static double Log1m(double x)
+    public static double Log1M(double x)
     {
         if (x >= 1.0)
             return double.NaN;
         return Math.Abs(x) > 0.0001 ? Math.Log(1.0 - x) : -(0.5 * x + 1.0) * x;
     }
 
-    public static double Log1p(double x)
+    public static double Log1P(double x)
     {
         if (x <= -1.0)
             return double.NaN;

@@ -1,6 +1,6 @@
-﻿using Sailfish.Analysis.ScaleFish.CurveFitting;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
+using Sailfish.Analysis.ScaleFish.CurveFitting;
 
 namespace Sailfish.Analysis.ScaleFish;
 

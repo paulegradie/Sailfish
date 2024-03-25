@@ -23,17 +23,17 @@ public struct Range(float min, float max) : IRange<float>, IEquatable<Range>
         return this == other;
     }
 
-    public override readonly bool Equals(object obj)
+    public readonly override bool Equals(object obj)
     {
         return obj is Range range && this == range;
     }
 
-    public override readonly int GetHashCode()
+    public readonly override int GetHashCode()
     {
         return (17 * 31 + Min.GetHashCode()) * 31 + Max.GetHashCode();
     }
 
-    public override readonly string ToString()
+    public readonly override string ToString()
     {
         return string.Format("[{0}, {1}]", Min, Max);
     }

@@ -1,30 +1,22 @@
+using System;
 using Sailfish.Analysis.SailDiff.Statistics.StatsCore.Attributes;
 using Sailfish.Analysis.SailDiff.Statistics.StatsCore.Distributions.Options;
 using Sailfish.Analysis.SailDiff.Statistics.StatsCore.Ops;
-using System;
 
 namespace Sailfish.Analysis.SailDiff.Statistics.StatsCore.Distributions;
 
 [Serializable]
 public class NormalDistribution :
     UnivariateContinuousDistribution,
-    IFittableDistribution<double, NormalOptions>,
-    IFittable<double, NormalOptions>,
-    //IFittable<double>,
     IFittableDistribution<double>,
-    IDistribution<double>,
-    IDistribution,
-    ICloneable,
-    ISampleableDistribution<double>,
     IRandomNumberGenerator<double>,
-    IFormattable,
-    IUnivariateFittableDistribution,
-    IUnivariateDistribution<double>,
-    IUnivariateDistribution
+    IFormattable
 {
-    [ThreadStatic] private static bool useSecond;
+    [ThreadStatic]
+    private static bool _useSecond;
 
-    [ThreadStatic] private static double secondValue;
+    [ThreadStatic]
+    private static double _secondValue;
 
     private double? entropy;
     private readonly bool immutable;
@@ -50,9 +42,9 @@ public class NormalDistribution :
         Initialize(mean, stdDev, stdDev * stdDev);
     }
 
-    public override double StandardDeviation => stdDev;
+    public virtual double StandardDeviation => stdDev;
 
-    public void Fit(double[] observations, double[] weights, NormalOptions options)
+    public void Fit(double[] observations, double[]? weights, NormalOptions? options)
     {
         if (immutable)
             throw new InvalidOperationException("NormalDistribution.Standard is immutable.");
@@ -154,14 +146,6 @@ public class NormalDistribution :
         return lnconstant - num * num * 0.5;
     }
 
-    public override void Fit(double[] observations, double[] weights, IFittingOptions options)
-    {
-        var options1 = options as NormalOptions;
-        if (options != null && options1 == null)
-            throw new ArgumentException("The specified options' type is invalid.", nameof(options));
-        Fit(observations, weights, options1);
-    }
-
     private void Initialize(double mu, double dev, double var)
     {
         mean = mu;
@@ -190,8 +174,8 @@ public class NormalDistribution :
 
     public static double[] Random(int samples, double[] result, Random source)
     {
-        var flag = useSecond;
-        var num1 = secondValue;
+        var flag = _useSecond;
+        var num1 = _secondValue;
         for (var index = 0; index < samples; ++index)
             if (flag)
             {
@@ -217,17 +201,17 @@ public class NormalDistribution :
                 result[index] = num5;
             }
 
-        useSecond = flag;
-        secondValue = num1;
+        _useSecond = flag;
+        _secondValue = num1;
         return result;
     }
 
     public static double Random(Random source)
     {
-        if (useSecond)
+        if (_useSecond)
         {
-            useSecond = false;
-            return secondValue;
+            _useSecond = false;
+            return _secondValue;
         }
 
         double num1;
@@ -242,8 +226,8 @@ public class NormalDistribution :
 
         var num3 = Math.Sqrt(-2.0 * Math.Log(d) / d);
         var num4 = num1 * num3;
-        secondValue = num2 * num3;
-        useSecond = true;
+        _secondValue = num2 * num3;
+        _useSecond = true;
         return num4;
     }
 }

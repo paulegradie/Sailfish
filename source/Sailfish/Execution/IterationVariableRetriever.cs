@@ -1,8 +1,8 @@
-﻿using Sailfish.Attributes;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using Sailfish.Attributes;
 
 namespace Sailfish.Execution;
 
@@ -29,7 +29,6 @@ internal class IterationVariableRetriever : IIterationVariableRetriever
                                 .GetVariables()
                                 .Distinct() // Duplicate values are currently allowed until we have an analyzer that prevents folks from providing duplicate values
                                 .OrderBy(x => x)
-,
                         ],
                         prop
                             .GetCustomAttributes()

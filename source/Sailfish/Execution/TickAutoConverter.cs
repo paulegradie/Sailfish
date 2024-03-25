@@ -28,11 +28,7 @@ public static class TickAutoConverter
         return new DurationConversion(result, DurationConversion.TimeScaleUnit.S);
     }
 
-    private static DurationConversion ConvertToSeconds(double elapsedTicks)
-    {
-        var result = elapsedTicks / Stopwatch.Frequency;
-        return new DurationConversion(result, DurationConversion.TimeScaleUnit.S);
-    }
+
 
     private static DurationConversion ConvertToMinutes(long elapsedTicks)
     {

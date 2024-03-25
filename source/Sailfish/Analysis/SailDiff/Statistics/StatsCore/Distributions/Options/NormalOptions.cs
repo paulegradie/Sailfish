@@ -2,7 +2,7 @@ using System;
 
 namespace Sailfish.Analysis.SailDiff.Statistics.StatsCore.Distributions.Options;
 
-public class NormalOptions : IFittingOptions, IComponentOptions
+public class NormalOptions : IComponentOptions
 {
     public NormalOptions()
     {
@@ -10,13 +10,13 @@ public class NormalOptions : IFittingOptions, IComponentOptions
         Diagonal = false;
     }
 
-    public double Regularization { get; set; }
+    public double Regularization { get; }
 
-    public bool Diagonal { get; set; }
+    public bool Diagonal { get; }
 
-    public bool Robust { get; set; }
+    public bool Robust { get; }
 
-    public bool Shared { get; set; }
+    public bool Shared { get; }
 
     public Action<IDistribution[], double[]> Postprocessing { get; set; }
 

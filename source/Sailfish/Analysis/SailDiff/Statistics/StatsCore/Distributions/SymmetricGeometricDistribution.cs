@@ -1,5 +1,5 @@
-using Sailfish.Analysis.SailDiff.Statistics.StatsCore.Attributes;
 using System;
+using Sailfish.Analysis.SailDiff.Statistics.StatsCore.Attributes;
 
 namespace Sailfish.Analysis.SailDiff.Statistics.StatsCore.Distributions;
 
@@ -10,7 +10,7 @@ public class SymmetricGeometricDistribution : UnivariateDiscreteDistribution
 
     public SymmetricGeometricDistribution([Unit] double probabilityOfSuccess)
     {
-        ProbabilityOfSuccess = probabilityOfSuccess >= 0.0 && probabilityOfSuccess <= 1.0
+        ProbabilityOfSuccess = probabilityOfSuccess is >= 0.0 and <= 1.0
             ? probabilityOfSuccess
             : throw new ArgumentOutOfRangeException(nameof(probabilityOfSuccess), "A probability must be between 0 and 1.");
         lnconstant = Math.Log(ProbabilityOfSuccess) - Math.Log(2.0 * (1.0 - ProbabilityOfSuccess));

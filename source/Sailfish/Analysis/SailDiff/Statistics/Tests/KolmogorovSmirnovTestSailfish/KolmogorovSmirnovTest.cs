@@ -1,15 +1,13 @@
-﻿using MathNet.Numerics.Statistics;
+﻿using System;
+using System.Collections.Generic;
+using MathNet.Numerics.Statistics;
 using Sailfish.Analysis.SailDiff.Statistics.StatsCore.Analysers;
 using Sailfish.Contracts.Public;
 using Sailfish.Contracts.Public.Models;
-using System;
-using System.Collections.Generic;
 
 namespace Sailfish.Analysis.SailDiff.Statistics.Tests.KolmogorovSmirnovTestSailfish;
 
-public interface IKolmogorovSmirnovTest : ITest
-{
-}
+public interface IKolmogorovSmirnovTest : ITest;
 
 public class KolmogorovSmirnovTest(ITestPreprocessor preprocessor) : IKolmogorovSmirnovTest
 {

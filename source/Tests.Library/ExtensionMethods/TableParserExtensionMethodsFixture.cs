@@ -49,13 +49,13 @@ public class TableParserExtensionMethodsFixture
 
         var result = new StatisticalTestExecutor(
             new MannWhitneyWilcoxonTest(preprocessor),
-            new TTest(preprocessor),
+            new Test(preprocessor),
             new TwoSampleWilcoxonSignedRankTest(preprocessor),
             new KolmogorovSmirnovTest(preprocessor)
         ).ExecuteStatisticalTest(
             new double[] { 2, 2, 4, 4, 5, 5, 6, 7, 6 },
             new double[] { 9, 8, 7, 6, 4, 4, 1, 2, 3, 2 },
-            new SailDiffSettings(0.01, 0, false, TestType.TTest));
+            new SailDiffSettings(0.01, 0, false, TestType.Test));
 
         TestCaseId testCaseId = new("MyClass.MySampleTest(N: 2, X: 4)");
         var testCaseResults = new List<SailDiffResult> { new(testCaseId, result) };

@@ -5,7 +5,7 @@ namespace Sailfish.Analysis.SailDiff.Statistics.StatsCore.Ops;
 
 public static class Vector
 {
-    public static T[] Create<T>(int size, T value)
+    private static T[] Create<T>(int size, T value)
     {
         var objArray = new T[size];
         for (var index = 0; index < objArray.Length; ++index)
@@ -19,7 +19,7 @@ public static class Vector
         return Create(size, obj);
     }
 
-    public static long[] Range(long n)
+    public static IEnumerable<long> Range(long n)
     {
         var numArray = new long[(int)n];
         for (var index = 0; index < numArray.Length; ++index)
@@ -56,7 +56,7 @@ public static class Vector
         return objArray;
     }
 
-    public static int[] Range(int n)
+    private static int[] Range(int n)
     {
         var numArray = new int[n];
         for (var index = 0; index < numArray.Length; ++index)
@@ -85,17 +85,19 @@ public static class Vector
             var keys = new KeyValuePair<int, T>[values.Length];
             for (var key = 0; key < values.Length; ++key)
                 keys[key] = new KeyValuePair<int, T>(key, values[key]);
-            if (direction == ComparerDirection.Ascending)
-                Array.Sort(keys, values, new StableComparer<T>((a, b) => a.CompareTo(b)));
-            else
-                Array.Sort(keys, values, new StableComparer<T>((a, b) => -a.CompareTo(b)));
+            Array.Sort(
+                keys,
+                values,
+                direction == ComparerDirection.Ascending
+                    ? new StableComparer<T>((a, b) => a.CompareTo(b))
+                    : new StableComparer<T>((a, b) => -a.CompareTo(b)));
             order = new int[values.Length];
             for (var index = 0; index < keys.Length; ++index)
                 order[index] = keys[index].Key;
         }
     }
 
-    public static void Sort<T>(this T[] values, bool stable = false, bool asc = true) where T : IComparable<T>
+    private static void Sort<T>(this T[] values, bool stable = false, bool asc = true) where T : IComparable<T>
     {
         if (!stable)
         {

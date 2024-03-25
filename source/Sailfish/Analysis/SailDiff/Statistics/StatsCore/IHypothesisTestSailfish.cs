@@ -1,18 +1,9 @@
-using Sailfish.Analysis.SailDiff.Statistics.StatsCore.Distributions;
 using System;
 using System.Globalization;
+using Sailfish.Analysis.SailDiff.Statistics.StatsCore.Distributions;
 
 namespace Sailfish.Analysis.SailDiff.Statistics.StatsCore;
 
-public interface IHypothesisTestSailfish
-{
-    DistributionTailSailfish Tail { get; }
-    bool Significant { get; }
-
-    double StatisticToPValue(double x);
-
-    double PValueToStatistic(double p);
-}
 
 public interface IHypothesisTest
 {
@@ -30,7 +21,7 @@ public interface IHypothesisTestSailfish<out TDist> : IHypothesisTest where TDis
     TDist StatisticDistribution { get; }
 }
 
-public abstract class HypothesisTest<TDist> : IFormattable, IHypothesisTestSailfish<TDist>, IHypothesisTestSailfish
+public abstract class HypothesisTest<TDist> : IFormattable, IHypothesisTestSailfish<TDist>
     where TDist : IUnivariateDistribution
 {
     private double alpha = 0.05;
@@ -48,8 +39,6 @@ public abstract class HypothesisTest<TDist> : IFormattable, IHypothesisTestSailf
             OnSizeChanged();
         }
     }
-
-    public virtual double CriticalValue => PValueToStatistic(alpha);
 
     public string ToString(string? format, IFormatProvider? formatProvider) => PValue.ToString(format, formatProvider);
 

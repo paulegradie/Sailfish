@@ -1,18 +1,13 @@
-using Sailfish.Analysis.SailDiff.Statistics.StatsCore.Attributes;
-using Sailfish.Analysis.SailDiff.Statistics.StatsCore.Distributions.Options;
 using System;
+using Sailfish.Analysis.SailDiff.Statistics.StatsCore.Attributes;
 
 namespace Sailfish.Analysis.SailDiff.Statistics.StatsCore.Distributions;
 
-public class TDistribution : UnivariateContinuousDistribution, IFormattable
+public class Distribution : UnivariateContinuousDistribution, IFormattable
 {
-    private readonly double lnconstant;
-
-    public TDistribution([Positive(1.0)] double degreesOfFreedom)
+    public Distribution([Positive(1.0)] double degreesOfFreedom)
     {
         DegreesOfFreedom = degreesOfFreedom >= 1.0 ? degreesOfFreedom : throw new ArgumentOutOfRangeException(nameof(degreesOfFreedom));
-        var num = degreesOfFreedom;
-        lnconstant = Gamma.Log((num + 1.0) / 2.0) - (0.5 * Math.Log(num * Math.PI) + Gamma.Log(num / 2.0));
     }
 
     public double DegreesOfFreedom { get; }
@@ -55,26 +50,22 @@ public class TDistribution : UnivariateContinuousDistribution, IFormattable
 
     protected internal override double InnerInverseDistributionFunction(double p)
     {
-        return inverseDistributionLeftTail(DegreesOfFreedom, p);
+        return InverseDistributionLeftTail(DegreesOfFreedom, p);
     }
 
-    public override void Fit(double[] observations, double[] weights, IFittingOptions options)
-    {
-        throw new NotSupportedException();
-    }
 
     public override object Clone()
     {
-        return new TDistribution(DegreesOfFreedom);
+        return new Distribution(DegreesOfFreedom);
     }
 
-    private static double inverseDistributionLeftTail(double df, double p)
+    private static double InverseDistributionLeftTail(double df, double p)
     {
         if (p == 0.0)
             return double.NegativeInfinity;
         if (p == 1.0)
             return double.PositiveInfinity;
-        if (p > 0.25 && p < 0.75)
+        if (p is > 0.25 and < 0.75)
         {
             if (p == 0.5)
                 return 0.0;

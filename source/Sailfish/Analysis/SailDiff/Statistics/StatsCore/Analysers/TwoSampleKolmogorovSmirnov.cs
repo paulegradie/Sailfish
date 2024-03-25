@@ -1,6 +1,6 @@
-using Sailfish.Analysis.SailDiff.Statistics.StatsCore.Distributions;
 using System;
 using System.Linq;
+using Sailfish.Analysis.SailDiff.Statistics.StatsCore.Distributions;
 
 namespace Sailfish.Analysis.SailDiff.Statistics.StatsCore.Analysers;
 
