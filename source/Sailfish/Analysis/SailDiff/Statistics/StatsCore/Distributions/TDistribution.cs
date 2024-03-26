@@ -14,11 +14,7 @@ public class Distribution : UnivariateContinuousDistribution, IFormattable
 
     public override double Mean => DegreesOfFreedom <= 1.0 ? double.NaN : 0.0;
 
-    public override double Mode => 0.0;
-
     public override DoubleRange Support => new(double.NegativeInfinity, double.PositiveInfinity);
-
-    public override double Entropy => throw new NotSupportedException();
 
     public override string ToString(string format, IFormatProvider formatProvider)
     {
@@ -27,10 +23,9 @@ public class Distribution : UnivariateContinuousDistribution, IFormattable
 
     protected internal override double InnerDistributionFunction(double x)
     {
-        var degreesOfFreedom = DegreesOfFreedom;
-        var num = Math.Sqrt(x * x + degreesOfFreedom);
+        var num = Math.Sqrt(x * x + DegreesOfFreedom);
         var x1 = (x + num) / (2.0 * num);
-        return Beta.Incomplete(degreesOfFreedom / 2.0, degreesOfFreedom / 2.0, x1);
+        return Beta.Incomplete(DegreesOfFreedom / 2.0, DegreesOfFreedom / 2.0, x1);
     }
 
     protected internal override double InnerProbabilityDensityFunction(double x)

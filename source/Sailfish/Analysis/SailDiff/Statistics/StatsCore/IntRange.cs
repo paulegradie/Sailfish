@@ -6,7 +6,7 @@ namespace Sailfish.Analysis.SailDiff.Statistics.StatsCore;
 
 [Serializable]
 public struct IntRange(int min, int max) :
-    IRange<int>,
+    IFormattable,
     IEquatable<IntRange>,
     IEnumerable<int>
 {

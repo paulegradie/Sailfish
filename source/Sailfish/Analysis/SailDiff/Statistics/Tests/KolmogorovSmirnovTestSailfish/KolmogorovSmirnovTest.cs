@@ -9,9 +9,14 @@ namespace Sailfish.Analysis.SailDiff.Statistics.Tests.KolmogorovSmirnovTestSailf
 
 public interface IKolmogorovSmirnovTest : ITest;
 
-public class KolmogorovSmirnovTest(ITestPreprocessor preprocessor) : IKolmogorovSmirnovTest
+public class KolmogorovSmirnovTest : IKolmogorovSmirnovTest
 {
-    private readonly ITestPreprocessor preprocessor = preprocessor;
+    private readonly ITestPreprocessor preprocessor;
+
+    public KolmogorovSmirnovTest(ITestPreprocessor preprocessor)
+    {
+        this.preprocessor = preprocessor;
+    }
 
     public TestResultWithOutlierAnalysis ExecuteTest(double[] before, double[] after, SailDiffSettings settings)
     {
@@ -25,10 +30,7 @@ public class KolmogorovSmirnovTest(ITestPreprocessor preprocessor) : IKolmogorov
             var sample1 = preprocessed1.OutlierAnalysis?.DataWithOutliersRemoved ?? preprocessed1.RawData;
             var sample2 = preprocessed2.OutlierAnalysis?.DataWithOutliersRemoved ?? preprocessed2.RawData;
 
-            var test = new TwoSampleKolmogorovSmirnov(
-                sample1,
-                sample2,
-                TwoSampleKolmogorovSmirnovTestHypothesis.SamplesDistributionsAreUnequal);
+            var test = new TwoSampleKolmogorovSmirnov(sample1, sample2);
 
             var meanBefore = Math.Round(sample1.Mean(), sigDig);
             var meanAfter = Math.Round(sample2.Mean(), sigDig);
@@ -48,7 +50,6 @@ public class KolmogorovSmirnovTest(ITestPreprocessor preprocessor) : IKolmogorov
             {
                 { AdditionalResults.EmpiricalDistribution1, test.EmpiricalDistribution1 },
                 { AdditionalResults.EmpiricalDistribution2, test.EmpiricalDistribution2 },
-                { AdditionalResults.Significant, test.Significant },
                 { AdditionalResults.Size, test.Size },
                 { AdditionalResults.Tail, test.Tail }
             };

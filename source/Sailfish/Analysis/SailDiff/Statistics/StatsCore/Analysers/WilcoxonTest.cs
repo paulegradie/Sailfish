@@ -33,7 +33,7 @@ public class WilcoxonTest : HypothesisTest<WilcoxonDistribution>
 
         Signs = signs;
         Delta = diffs;
-        Ranks = Delta.Rank(out var hasTies, adjustForTies: adjustForTies);
+        Ranks = Delta.Rank(out var _, adjustForTies: adjustForTies);
         Compute(WilcoxonDistribution.WPositive(Signs, Ranks), Ranks, tail, exact);
     }
 
@@ -64,7 +64,6 @@ public class WilcoxonTest : HypothesisTest<WilcoxonDistribution>
         }
 
         PValue = StatisticToPValue(Statistic);
-        OnSizeChanged();
     }
 
     public override double StatisticToPValue(double x)

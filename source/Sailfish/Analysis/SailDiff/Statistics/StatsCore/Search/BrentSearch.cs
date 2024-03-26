@@ -5,26 +5,6 @@ namespace Sailfish.Analysis.SailDiff.Statistics.StatsCore.Search;
 
 public abstract class BrentSearch
 {
-    private static double Minimize(
-        Func<double, double> function,
-        double lowerBound,
-        double upperBound,
-        double tol = 1E-06,
-        int maxIterations = 500)
-    {
-        return HandleResult(MinimizeInternal(function, lowerBound, upperBound, tol, maxIterations));
-    }
-
-    public static double Maximize(
-        Func<double, double> function,
-        double lowerBound,
-        double upperBound,
-        double tol = 1E-06,
-        int maxIterations = 500)
-    {
-        return Minimize(x => -function(x), lowerBound, upperBound, tol, maxIterations);
-    }
-
     public static double FindRoot(
         Func<double, double> function,
         double lowerBound,
@@ -44,98 +24,6 @@ public abstract class BrentSearch
         int maxIterations = 500)
     {
         return FindRoot(x => function(x) - value, lowerBound, upperBound, tol, maxIterations);
-    }
-
-    private static BrentSearchResult MinimizeInternal(
-        Func<double, double> function,
-        double lowerBound,
-        double upperBound,
-        double tol,
-        int maxIterations)
-    {
-        if (double.IsInfinity(lowerBound))
-            throw new ArgumentOutOfRangeException(nameof(lowerBound), "Bounds must be finite");
-        if (double.IsInfinity(upperBound))
-            throw new ArgumentOutOfRangeException(nameof(upperBound), "Bounds must be finite");
-        if (tol < 0.0)
-            throw new ArgumentOutOfRangeException(nameof(tol), "Tolerance must be positive.");
-        if (maxIterations == 0)
-            maxIterations = int.MaxValue;
-        if (upperBound < lowerBound)
-        {
-            (lowerBound, upperBound) = (upperBound, lowerBound);
-        }
-
-        var num1 = lowerBound + 0.831966011250105 * (upperBound - lowerBound);
-        var num2 = function(num1);
-        var solution = num1;
-        var num3 = num2;
-        var num4 = num1;
-        var num5 = num2;
-        for (var index = 0; index < maxIterations; ++index)
-        {
-            var num6 = upperBound - lowerBound;
-            var num7 = lowerBound / 2.0 + upperBound / 2.0;
-            var num8 = Math.Sqrt(1.1102230246251565E-16) * Math.Abs(solution) + tol / 3.0;
-            if (Math.Abs(solution - num7) + num6 / 2.0 <= 2.0 * num8)
-                return new BrentSearchResult(solution, BrentSearchStatus.Success);
-            var num9 = 0.831966011250105 * (solution < num7 ? upperBound - solution : lowerBound - solution);
-            if (Math.Abs(solution - num4) >= num8)
-            {
-                var num10 = (solution - num4) * (num3 - num2);
-                var num11 = (solution - num1) * (num3 - num5);
-                var num12 = (solution - num1) * num11 - (solution - num4) * num10;
-                var num13 = 2.0 * (num11 - num10);
-                if (num13 > 0.0)
-                    num12 = -num12;
-                else
-                    num13 = -num13;
-                if (Math.Abs(num12) < Math.Abs(num9 * num13) && num12 > num13 * (lowerBound - solution + 2.0 * num8) &&
-                    num12 < num13 * (upperBound - solution - 2.0 * num8))
-                    num9 = num12 / num13;
-            }
-
-            if (Math.Abs(num9) < num8)
-                num9 = num9 > 0.0 ? num8 : -num8;
-            var num14 = solution + num9;
-            var d = function(num14);
-            if (double.IsNaN(d) || double.IsInfinity(d))
-                return new BrentSearchResult(solution, BrentSearchStatus.FunctionNotFinite);
-            if (d <= num3)
-            {
-                if (num14 < solution)
-                    upperBound = solution;
-                else
-                    lowerBound = solution;
-                num1 = num4;
-                num2 = num5;
-                num4 = solution;
-                num5 = num3;
-                solution = num14;
-                num3 = d;
-            }
-            else
-            {
-                if (num14 < solution)
-                    lowerBound = num14;
-                else
-                    upperBound = num14;
-                if (d <= num5 || num4 == solution)
-                {
-                    num1 = num4;
-                    num2 = num5;
-                    num4 = num14;
-                    num5 = d;
-                }
-                else if (d <= num2 || num1 == solution || num1 == num4)
-                {
-                    num1 = num14;
-                    num2 = d;
-                }
-            }
-        }
-
-        return new BrentSearchResult(solution, BrentSearchStatus.MaxIterationsReached);
     }
 
     private static BrentSearchResult FindRootInternal(

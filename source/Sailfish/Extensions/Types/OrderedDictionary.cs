@@ -60,7 +60,10 @@ public class OrderedDictionary : IDictionary<string, string>
 
     public IEnumerator<KeyValuePair<string, string>> GetEnumerator()
     {
-        foreach (DictionaryEntry entry in orderedDictionary) yield return new KeyValuePair<string, string?>((string)entry.Key, (string)entry.Value!)!;
+        return (
+            from DictionaryEntry entry in orderedDictionary
+            select new KeyValuePair<string, string?>((string)entry.Key, (string)entry.Value!)!
+        ).GetEnumerator();
     }
 
     IEnumerator IEnumerable.GetEnumerator()

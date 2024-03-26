@@ -60,31 +60,6 @@ internal sealed class CholeskyDecomposition : ICloneable
 
     public double[] Diagonal { get; private set; }
 
-    public double LogDeterminant
-    {
-        get
-        {
-            if (!lndeterminant.HasValue)
-            {
-                if (destroyed)
-                    throw new InvalidOperationException("The decomposition has been destroyed.");
-                if (IsUndefined)
-                    throw new InvalidOperationException("The decomposition is undefined (zero in diagonal).");
-                var num1 = 0.0;
-                var num2 = 0.0;
-                for (var index = 0; index < n; ++index)
-                    num1 += Math.Log(l[index, index]);
-                if (Diagonal != null)
-                    for (var index = 0; index < Diagonal.Length; ++index)
-                        num2 += Math.Log(Diagonal[index]);
-
-                lndeterminant = num1 + num1 + num2;
-            }
-
-            return lndeterminant.Value;
-        }
-    }
-
     public object Clone()
     {
         return new CholeskyDecomposition

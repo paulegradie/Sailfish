@@ -16,11 +16,6 @@ public class MannWhitneyDistribution : UnivariateContinuousDistribution
         Init(n1, n2, null, new bool?());
     }
 
-    public MannWhitneyDistribution(double[] ranks, [PositiveInteger] int n1, [PositiveInteger] int n2, bool? exact = null)
-    {
-        Init(n1, n2, ranks, exact);
-    }
-
     public MannWhitneyDistribution(double[] ranks1, double[] ranks2, bool? exact = null)
     {
         var ranks = ranks1.Concatenate(ranks2);
@@ -39,10 +34,6 @@ public class MannWhitneyDistribution : UnivariateContinuousDistribution
 
     public override double Mean => approximation.Mean;
 
-
-    public override double Mode => approximation.Mode;
-
-    public override double Entropy => approximation.Entropy;
 
     public override DoubleRange Support => new(double.NegativeInfinity, double.PositiveInfinity);
 
@@ -77,7 +68,7 @@ public class MannWhitneyDistribution : UnivariateContinuousDistribution
 
         if (flag)
         {
-            var num2 = Correctionx(ranks);
+            var num2 = Corrections(ranks);
             stdDev = Math.Sqrt(n1 * n2 / 12.0 * (num1 + 1.0 - num2));
             if (Exact)
                 InitExactMethod(ranks);
@@ -86,18 +77,13 @@ public class MannWhitneyDistribution : UnivariateContinuousDistribution
         approximation = new NormalDistribution(mean, stdDev);
     }
 
-    private static double Correctionx(double[] ranks)
+    private static double Corrections(double[] ranks)
     {
         var length = ranks.Length;
         if (length <= 1)
             throw new ArgumentOutOfRangeException(nameof(ranks));
         var numArray = ranks.Ties();
-        var num1 = 0.0;
-        for (var index = 0; index < numArray.Length; ++index)
-        {
-            double num2 = numArray[index] * numArray[index] * numArray[index];
-            num1 += num2 - numArray[index];
-        }
+        var num1 = (from t in numArray let num2 = t * t * t select (double)num2 - t).Sum();
 
         return num1 / (length * (length - 1));
     }
@@ -122,7 +108,7 @@ public class MannWhitneyDistribution : UnivariateContinuousDistribution
         return NumberOfSamples1 <= NumberOfSamples2 ? ComplementaryDistributionFunction(x) : DistributionFunction(x);
     }
 
-    private double DistributionFunction(double x)
+    public override double DistributionFunction(double x)
     {
         if (Exact)
             return WilcoxonDistribution.ExactMethod(x, Table);
@@ -160,7 +146,7 @@ public class MannWhitneyDistribution : UnivariateContinuousDistribution
         return approximation.ComplementaryDistributionFunction(x);
     }
 
-    public static double MannWhitneyU(double[] ranks)
+    private static double MannWhitneyU(double[] ranks)
     {
         var length = ranks.Length;
         return ranks.Sum() - length * (length + 1.0) / 2.0;
@@ -226,11 +212,10 @@ public class MannWhitneyDistribution : UnivariateContinuousDistribution
 
     public override string ToString(string format, IFormatProvider formatProvider)
     {
-        var provider = formatProvider;
         var num = NumberOfSamples1;
         var str1 = num.ToString(format, formatProvider);
         num = NumberOfSamples2;
         var str2 = num.ToString(format, formatProvider);
-        return string.Format(provider, "MannWhitney(u; n1 = {0}, n2 = {1})", str1, str2);
+        return string.Format(formatProvider, "MannWhitney(u; n1 = {0}, n2 = {1})", str1, str2);
     }
 }

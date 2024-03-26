@@ -12,18 +12,6 @@ internal sealed class SingularValueDecomposition : ICloneable
     private int n;
     private bool swapped;
 
-    public SingularValueDecomposition(double[,] value)
-        : this(value, true, true)
-    {
-    }
-
-    public SingularValueDecomposition(
-        double[,] value,
-        bool computeLeftSingularVectors,
-        bool computeRightSingularVectors)
-        : this(value, computeLeftSingularVectors, computeRightSingularVectors, false)
-    {
-    }
 
     public SingularValueDecomposition(
         double[,] value,
@@ -425,26 +413,11 @@ internal sealed class SingularValueDecomposition : ICloneable
         ? diagonalMatrix
         : diagonalMatrix = InternalOps.Diagonal(LeftSingularVectors.Columns(), RightSingularVectors.Columns(), Diagonal);
 
-    public double[,] RightSingularVectors { get; private set; }
+    public double[,]? RightSingularVectors { get; private set; }
 
-    public double[,] LeftSingularVectors { get; private set; }
+    public double[,]? LeftSingularVectors { get; private set; }
 
     public int[] Ordering { get; private set; }
-
-    public double LogPseudoDeterminant
-    {
-        get
-        {
-            if (lnpseudoDeterminant.HasValue) return lnpseudoDeterminant.Value;
-            var num = 0.0;
-            for (var index = 0; index < Diagonal.Rows(); ++index)
-                if (Diagonal[index] != 0.0)
-                    num += Math.Log(Diagonal[index]);
-            lnpseudoDeterminant = num;
-
-            return lnpseudoDeterminant.Value;
-        }
-    }
 
     public object Clone()
     {

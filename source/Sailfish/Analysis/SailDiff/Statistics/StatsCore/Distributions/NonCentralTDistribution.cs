@@ -1,14 +1,11 @@
 using System;
 using Sailfish.Analysis.SailDiff.Statistics.StatsCore.Attributes;
 using Sailfish.Analysis.SailDiff.Statistics.StatsCore.Exceptions;
-using Sailfish.Analysis.SailDiff.Statistics.StatsCore.Search;
 
 namespace Sailfish.Analysis.SailDiff.Statistics.StatsCore.Distributions;
 
 public class NonCentralTDistribution([Positive] double degreesOfFreedom, [Real] double nonCentrality) : UnivariateContinuousDistribution, IFormattable
 {
-    private double? mode;
-
     public double DegreesOfFreedom { get; } = degreesOfFreedom > 0.0
         ? degreesOfFreedom
         : throw new ArgumentOutOfRangeException(nameof(degreesOfFreedom), "The number of degrees of freedom must be positive.");
@@ -20,43 +17,15 @@ public class NonCentralTDistribution([Positive] double degreesOfFreedom, [Real] 
         : double.NaN;
 
 
-    public override double Mode
-    {
-        get
-        {
-            if (mode.HasValue) return mode.Value;
-            if (NonCentrality == 0.0)
-            {
-                var num = Gamma.Function((DegreesOfFreedom + 2.0) / 2.0) / Gamma.Function((DegreesOfFreedom + 3.0) / 3.0);
-                mode = Math.Sqrt(2.0 / DegreesOfFreedom) * num * NonCentrality;
-            }
-            else if (double.IsInfinity(NonCentrality))
-            {
-                mode = Math.Sqrt(DegreesOfFreedom / (DegreesOfFreedom + 1.0)) * NonCentrality;
-            }
-            else
-            {
-                var num1 = Math.Sqrt(2.0 * DegreesOfFreedom / (2.0 * DegreesOfFreedom + 5.0)) * NonCentrality;
-                var num2 = Math.Sqrt(DegreesOfFreedom / (DegreesOfFreedom + 1.0)) * NonCentrality;
-                mode = num1 <= num2 ? BrentSearch.Maximize(ProbabilityDensityFunction, num1, num2) : BrentSearch.Maximize(ProbabilityDensityFunction, num2, num1);
-            }
-
-            return mode.Value;
-        }
-    }
-
-    public override double Entropy => throw new NotSupportedException();
-
     public override DoubleRange Support => new(double.NegativeInfinity, double.PositiveInfinity);
 
     public override string ToString(string format, IFormatProvider formatProvider)
     {
-        var provider = formatProvider;
         var num = DegreesOfFreedom;
         var str1 = num.ToString(format, formatProvider);
         num = NonCentrality;
         var str2 = num.ToString(format, formatProvider);
-        return string.Format(provider, "T(x; df = {0}, μ = {1})", str1, str2);
+        return string.Format(formatProvider, "T(x; df = {0}, μ = {1})", str1, str2);
     }
 
     protected internal override double InnerDistributionFunction(double x)
@@ -66,19 +35,17 @@ public class NonCentralTDistribution([Positive] double degreesOfFreedom, [Real] 
 
     protected internal override double InnerProbabilityDensityFunction(double x)
     {
-        var noncentrality = NonCentrality;
-        var degreesOfFreedom = DegreesOfFreedom;
         var func = DistributionFunctionLowerTail;
         if (x != 0.0)
         {
-            var num1 = func(x * Math.Sqrt(1.0 + 2.0 / degreesOfFreedom), degreesOfFreedom + 2.0, noncentrality);
-            var num2 = func(x, degreesOfFreedom, noncentrality);
-            return degreesOfFreedom / x * (num1 - num2);
+            var num1 = func(x * Math.Sqrt(1.0 + 2.0 / DegreesOfFreedom), DegreesOfFreedom + 2.0, NonCentrality);
+            var num2 = func(x, DegreesOfFreedom, NonCentrality);
+            return DegreesOfFreedom / x * (num1 - num2);
         }
 
-        var num3 = Gamma.Function((degreesOfFreedom + 1.0) / 2.0);
-        var num4 = Math.Sqrt(Math.PI * degreesOfFreedom) * Gamma.Function(degreesOfFreedom / 2.0);
-        var num5 = Math.Exp(-(noncentrality * noncentrality) / 2.0);
+        var num3 = Gamma.Function((DegreesOfFreedom + 1.0) / 2.0);
+        var num4 = Math.Sqrt(Math.PI * DegreesOfFreedom) * Gamma.Function(DegreesOfFreedom / 2.0);
+        var num5 = Math.Exp(-(NonCentrality * NonCentrality) / 2.0);
         return num3 / num4 * num5;
     }
 
