@@ -6,8 +6,6 @@ namespace Sailfish.Analysis.SailDiff.Statistics.StatsCore.Distributions;
 
 public class NonCentralTDistribution([Positive] double degreesOfFreedom, [Real] double nonCentrality) : UnivariateContinuousDistribution, IFormattable
 {
-    private double? mode;
-
     public double DegreesOfFreedom { get; } = degreesOfFreedom > 0.0
         ? degreesOfFreedom
         : throw new ArgumentOutOfRangeException(nameof(degreesOfFreedom), "The number of degrees of freedom must be positive.");

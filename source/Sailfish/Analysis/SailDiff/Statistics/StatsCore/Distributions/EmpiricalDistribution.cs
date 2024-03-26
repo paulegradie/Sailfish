@@ -8,7 +8,6 @@ public class EmpiricalDistribution : UnivariateContinuousDistribution
 {
     private double constant;
     private double? mean;
-    private double? mode;
     private int[] repeats;
     private double sumOfWeights;
     private WeightType type;

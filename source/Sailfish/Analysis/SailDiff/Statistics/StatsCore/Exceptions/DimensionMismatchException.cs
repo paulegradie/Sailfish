@@ -25,6 +25,7 @@ public class DimensionMismatchException : ArgumentException
     {
     }
 
+    [Obsolete("Obsolete")]
     protected DimensionMismatchException(SerializationInfo info, StreamingContext context)
         : base(info, context)
     {
