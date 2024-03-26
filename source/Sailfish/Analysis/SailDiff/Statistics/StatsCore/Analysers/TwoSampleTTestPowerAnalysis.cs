@@ -3,7 +3,7 @@ using Sailfish.Analysis.SailDiff.Statistics.StatsCore.Distributions;
 
 namespace Sailfish.Analysis.SailDiff.Statistics.StatsCore.Analysers;
 
-public class TwoSampleTTestPowerAnalysis : BaseTwoSamplePowerAnalysis
+public class TwoSampleTTestPowerAnalysis : BaseTwoSamplePowerAnalysis, ITwoSamplePowerAnalysis
 {
     public TwoSampleTTestPowerAnalysis(TwoSampleHypothesis hypothesis)
         : base((DistributionTailSailfish)hypothesis)

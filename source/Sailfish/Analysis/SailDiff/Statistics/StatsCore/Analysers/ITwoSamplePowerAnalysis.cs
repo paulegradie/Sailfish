@@ -1,4 +1,4 @@
-namespace Sailfish.Analysis.SailDiff.Statistics.StatsCore.Analysers;
+﻿namespace Sailfish.Analysis.SailDiff.Statistics.StatsCore.Analysers;
 
 public interface ITwoSamplePowerAnalysis : IPowerAnalysis
 {

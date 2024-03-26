@@ -32,8 +32,6 @@ public class NormalDistribution : UnivariateContinuousDistribution, IFormattable
         Initialize(mean, stdDev, stdDev * stdDev);
     }
 
-    public virtual double StandardDeviation => stdDev;
-
     public void Fit(double[] observations, double[]? weights, NormalOptions? options)
     {
         if (immutable)
@@ -81,13 +79,11 @@ public class NormalDistribution : UnivariateContinuousDistribution, IFormattable
 
     public override double Mean => mean;
 
-    public override double Median => mean;
-
-    public override double Mode => mean;
+    public virtual double Mode => mean;
 
     public override DoubleRange Support => new(double.NegativeInfinity, double.PositiveInfinity);
 
-    public override double Entropy
+    public virtual double Entropy
     {
         get
         {

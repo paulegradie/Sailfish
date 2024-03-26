@@ -4,40 +4,13 @@ using Sailfish.Analysis.SailDiff.Statistics.StatsCore.Distributions;
 
 namespace Sailfish.Analysis.SailDiff.Statistics.StatsCore;
 
-public interface IHypothesisTest
+public abstract class HypothesisTest<TDist> : IFormattable
 {
-    DistributionTailSailfish Tail { get; }
-
-    bool Significant { get; }
-
-    double StatisticToPValue(double x);
-
-    double PValueToStatistic(double p);
-}
-
-public interface IHypothesisTestSailfish<out TDist> : IHypothesisTest
-{
-    TDist StatisticDistribution { get; }
-}
-
-public abstract class HypothesisTest<TDist> : IFormattable, IHypothesisTestSailfish<TDist>
-    where TDist : IUnivariateDistribution
-{
-    private double alpha = 0.05;
-
     public double PValue { get; protected set; }
 
     public double Statistic { get; protected set; }
 
-    public double Size
-    {
-        get => alpha;
-        set
-        {
-            alpha = value;
-            OnSizeChanged();
-        }
-    }
+    public double Size => 0.05;
 
     public string ToString(string? format, IFormatProvider? formatProvider) => PValue.ToString(format, formatProvider);
 
@@ -49,10 +22,6 @@ public abstract class HypothesisTest<TDist> : IFormattable, IHypothesisTestSailf
     public abstract double PValueToStatistic(double p);
 
     public abstract TDist StatisticDistribution { get; set; }
-
-    protected virtual void OnSizeChanged()
-    {
-    }
 
     public override string ToString()
     {

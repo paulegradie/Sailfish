@@ -54,8 +54,6 @@ public sealed class MannWhitneyWilcoxon : HypothesisTest<MannWhitneyDistribution
 
         IsExact = StatisticDistribution.Exact;
         PValue = StatisticToPValue(Statistic);
-        OnSizeChanged();
-        StatisticDistribution = null!;
     }
 
     public TwoSampleHypothesis Hypothesis { get; protected set; }
@@ -84,8 +82,12 @@ public sealed class MannWhitneyWilcoxon : HypothesisTest<MannWhitneyDistribution
         return Tail switch
         {
             DistributionTailSailfish.TwoTail => Math.Min(2.0 * Math.Min(StatisticDistribution.DistributionFunction(x), StatisticDistribution.ComplementaryDistributionFunction(x)), 1.0),
-            DistributionTailSailfish.OneUpper => NumberOfSamples1 < NumberOfSamples2 ? StatisticDistribution.ComplementaryDistributionFunction(x) : StatisticDistribution.DistributionFunction(x),
-            DistributionTailSailfish.OneLower => NumberOfSamples1 < NumberOfSamples2 ? StatisticDistribution.DistributionFunction(x) : StatisticDistribution.ComplementaryDistributionFunction(x),
+            DistributionTailSailfish.OneUpper => NumberOfSamples1 < NumberOfSamples2
+                ? StatisticDistribution.ComplementaryDistributionFunction(x)
+                : StatisticDistribution.DistributionFunction(x),
+            DistributionTailSailfish.OneLower => NumberOfSamples1 < NumberOfSamples2
+                ? StatisticDistribution.DistributionFunction(x)
+                : StatisticDistribution.ComplementaryDistributionFunction(x),
             _ => throw new InvalidOperationException()
         };
     }

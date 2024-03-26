@@ -64,7 +64,6 @@ public class WilcoxonTest : HypothesisTest<WilcoxonDistribution>
         }
 
         PValue = StatisticToPValue(Statistic);
-        OnSizeChanged();
     }
 
     public override double StatisticToPValue(double x)

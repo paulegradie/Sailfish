@@ -93,15 +93,13 @@ public static class Beta
             var num20 = num13 + num11 * num19;
             var num21 = num14 + num12 * num19;
             var num22 = num13;
-            var num23 = num20;
             var num24 = num14;
-            var num25 = num21;
             var num26 = x * num7 * num8 / (num9 * num10);
-            var num27 = num23 + num22 * num26;
-            var num28 = num25 + num24 * num26;
-            num11 = num23;
+            var num27 = num20 + num22 * num26;
+            var num28 = num21 + num24 * num26;
+            num11 = num20;
             num13 = num27;
-            num12 = num25;
+            num12 = num21;
             num14 = num28;
             if (num28 != 0.0)
                 num16 = num27 / num28;
@@ -173,15 +171,13 @@ public static class Beta
             var num21 = num13 + num11 * num20;
             var num22 = num14 + num12 * num20;
             var num23 = num13;
-            var num24 = num21;
             var num25 = num14;
-            var num26 = num22;
             var num27 = num15 * num7 * num8 / (num9 * num10);
-            var num28 = num24 + num23 * num27;
-            var num29 = num26 + num25 * num27;
-            num11 = num24;
+            var num28 = num21 + num23 * num27;
+            var num29 = num22 + num25 * num27;
+            num11 = num21;
             num13 = num28;
-            num12 = num26;
+            num12 = num22;
             num14 = num29;
             if (num29 != 0.0)
                 num17 = num28 / num29;
@@ -407,7 +403,7 @@ public static class Beta
         return num6;
     }
 
-    public static double PowerSeries(double a, double b, double x)
+    private static double PowerSeries(double a, double b, double x)
     {
         var num1 = 1.0 / a;
         var num2 = (1.0 - b) * x;

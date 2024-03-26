@@ -16,8 +16,6 @@ public class NormalOptions : ICloneable
 
     public bool Robust { get; }
 
-    public bool Shared { get; }
-
     public object Clone()
     {
         return MemberwiseClone();

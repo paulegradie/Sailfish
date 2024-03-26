@@ -24,11 +24,11 @@ public class EmpiricalDistribution : UnivariateContinuousDistribution
     {
     }
 
-    public double[] Samples { get; private set; }
+    private double[] Samples { get; set; }
 
-    public int Length { get; private set; }
+    private int Length { get; set; }
 
-    public double Smoothing { get; private set; }
+    private double Smoothing { get; set; }
 
     public override double Mean
     {
@@ -47,27 +47,6 @@ public class EmpiricalDistribution : UnivariateContinuousDistribution
             return mean.Value;
         }
     }
-
-    public override double Entropy { get; }
-
-    public override double Mode
-    {
-        get
-        {
-            if (!mode.HasValue)
-            {
-                if (type == WeightType.None)
-                    mode = Samples.Mode();
-                else if (type == WeightType.Repetition)
-                    mode = Samples.WeightedMode(repeats);
-                else if (type == WeightType.Fraction)
-                    mode = Samples.WeightedMode(weights);
-            }
-
-            return mode.Value;
-        }
-    }
-
 
     public override DoubleRange Support => new(double.NegativeInfinity, double.PositiveInfinity);
 
@@ -91,24 +70,26 @@ public class EmpiricalDistribution : UnivariateContinuousDistribution
 
     protected internal override double InnerDistributionFunction(double x)
     {
-        if (type == WeightType.None)
+        switch (type)
         {
-            var num = 0;
-            for (var index = 0; index < Samples.Length; ++index)
-                if (Samples[index] <= x)
-                    ++num;
+            case WeightType.None:
+            {
+                var num = 0;
+                for (var index = 0; index < Samples.Length; ++index)
+                    if (Samples[index] <= x)
+                        ++num;
 
-            return num / (double)Length;
-        }
+                return num / (double)Length;
+            }
+            case WeightType.Repetition:
+            {
+                var num = 0;
+                for (var index = 0; index < Samples.Length; ++index)
+                    if (Samples[index] <= x)
+                        num += repeats[index];
 
-        if (type == WeightType.Repetition)
-        {
-            var num = 0;
-            for (var index = 0; index < Samples.Length; ++index)
-                if (Samples[index] <= x)
-                    num += repeats[index];
-
-            return num / (double)Length;
+                return num / (double)Length;
+            }
         }
 
         if (type != WeightType.Fraction)
@@ -116,7 +97,7 @@ public class EmpiricalDistribution : UnivariateContinuousDistribution
         var num1 = 0.0;
         for (var index = 0; index < Samples.Length; ++index)
             if (Samples[index] <= x)
-                num1 += weights[index];
+                num1 += weights![index];
 
         return num1 / sumOfWeights;
     }

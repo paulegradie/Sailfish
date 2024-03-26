@@ -2,7 +2,7 @@ using System;
 
 namespace Sailfish.Analysis.SailDiff.Statistics.StatsCore;
 
-public struct Range(float min, float max) : IRange<float>, IEquatable<Range>
+public struct Range(float min, float max) : IFormattable, IEquatable<Range>
 {
     public float Min { get; set; } = min;
 
@@ -38,7 +38,7 @@ public struct Range(float min, float max) : IRange<float>, IEquatable<Range>
         return $"[{Min}, {Max}]";
     }
 
-    public readonly string ToString(string format, IFormatProvider formatProvider)
+    public readonly string ToString(string? format, IFormatProvider? formatProvider)
     {
         return $"[{Min.ToString(format, formatProvider)}, {Max.ToString(format, formatProvider)}]";
     }

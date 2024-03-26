@@ -4,16 +4,8 @@ using Sailfish.Analysis.SailDiff.Statistics.StatsCore.Search;
 
 namespace Sailfish.Analysis.SailDiff.Statistics.StatsCore.Distributions;
 
-public abstract class UnivariateContinuousDistribution :
-    DistributionBase,
-    IUnivariateDistribution,
-    ISampleableDistribution<double>
+public abstract class UnivariateContinuousDistribution : DistributionBase, ISampleableDistribution<double>
 {
-    private double? median;
-    private double? mode;
-    private DoubleRange? quartiles;
-
-
     public double[] Generate(int samples, Random source)
     {
         var result = new double[samples];
@@ -24,57 +16,7 @@ public abstract class UnivariateContinuousDistribution :
 
     public abstract double Mean { get; }
 
-    public abstract double Entropy { get; }
-
     public abstract DoubleRange Support { get; }
-
-    public virtual double Mode
-    {
-        get
-        {
-            if (!mode.HasValue)
-            {
-                var min = Quartiles.Min;
-                quartiles = Quartiles;
-                var max = quartiles.Value.Max;
-                mode = BrentSearch.Maximize(ProbabilityDensityFunction, min, max, 1E-10);
-            }
-
-            return mode.Value;
-        }
-    }
-
-    public virtual DoubleRange Quartiles
-    {
-        get
-        {
-            quartiles ??= new DoubleRange(InverseDistributionFunction(0.25), InverseDistributionFunction(0.75));
-            return quartiles.Value;
-        }
-    }
-
-    public virtual DoubleRange GetRange(double percentile)
-    {
-        var num1 = percentile is > 0.0 and <= 1.0
-            ? InverseDistributionFunction(1.0 - percentile)
-            : throw new ArgumentOutOfRangeException(nameof(percentile), "The percentile must be between 0 and 1.");
-        var num2 = InverseDistributionFunction(percentile);
-        return num2 > num1 ? new DoubleRange(num1, num2) : new DoubleRange(num2, num1);
-    }
-
-    public virtual double Median
-    {
-        get
-        {
-            median ??= InverseDistributionFunction(0.5);
-            return median.Value;
-        }
-    }
-
-    double IUnivariateDistribution.LogProbabilityFunction(double x)
-    {
-        return LogProbabilityDensityFunction(x);
-    }
 
     public virtual double DistributionFunction(double x)
     {
@@ -91,14 +33,7 @@ public abstract class UnivariateContinuousDistribution :
         return d;
     }
 
-    public virtual double DistributionFunction(double a, double b)
-    {
-        if (a > b)
-            throw new ArgumentOutOfRangeException(nameof(b), "The start of the interval a must be smaller than b.");
-        return a == b ? 0.0 : DistributionFunction(b) - DistributionFunction(a);
-    }
-
-    public virtual double ComplementaryDistributionFunction(double x)
+    public double ComplementaryDistributionFunction(double x)
     {
         if (double.IsNaN(x))
             throw new ArgumentOutOfRangeException(nameof(x), "The input argument is NaN.");
@@ -131,31 +66,6 @@ public abstract class UnivariateContinuousDistribution :
 
         return d;
     }
-
-    public virtual double QuantileDensityFunction(double p)
-    {
-        return 1.0 / ProbabilityDensityFunction(InverseDistributionFunction(p));
-    }
-
-    public virtual double HazardFunction(double x)
-    {
-        var num1 = ProbabilityDensityFunction(x);
-        if (num1 == 0.0)
-            return 0.0;
-        var num2 = ComplementaryDistributionFunction(x);
-        return num1 / num2;
-    }
-
-    public virtual double CumulativeHazardFunction(double x)
-    {
-        return -Math.Log(ComplementaryDistributionFunction(x));
-    }
-
-    public virtual double LogCumulativeHazardFunction(double x)
-    {
-        return Math.Log(-Math.Log(ComplementaryDistributionFunction(x)));
-    }
-
 
     protected internal virtual double InnerDistributionFunction(double x)
     {

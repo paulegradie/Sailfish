@@ -6,8 +6,7 @@ using Sailfish.Analysis.SailDiff.Statistics.StatsCore.Search;
 namespace Sailfish.Analysis.SailDiff.Statistics.StatsCore.Analysers;
 
 [Serializable]
-public abstract class BaseTwoSamplePowerAnalysis :
-    ITwoSamplePowerAnalysis
+public abstract class BaseTwoSamplePowerAnalysis
 {
     protected BaseTwoSamplePowerAnalysis(DistributionTailSailfish tail)
     {
@@ -18,8 +17,6 @@ public abstract class BaseTwoSamplePowerAnalysis :
         Samples2 = 2.0;
     }
 
-    public double TotalSamples => Samples1 + Samples2;
-
     public DistributionTailSailfish Tail { get; set; }
 
     public double Power { get; set; }
@@ -29,8 +26,6 @@ public abstract class BaseTwoSamplePowerAnalysis :
     public double Samples1 { get; set; }
 
     public double Samples2 { get; set; }
-
-    public double Samples => TotalSamples;
 
     public double Effect { get; set; }
 

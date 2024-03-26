@@ -2,7 +2,7 @@ using System;
 
 namespace Sailfish.Analysis.SailDiff.Statistics.StatsCore;
 
-public struct DoubleRange(double min, double max) : IRange<double>, IEquatable<DoubleRange>
+public struct DoubleRange(double min, double max) : IFormattable, IEquatable<DoubleRange>
 {
     public double Min { get; set; } = min;
 

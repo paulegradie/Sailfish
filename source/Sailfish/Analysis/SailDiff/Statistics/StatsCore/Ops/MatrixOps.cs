@@ -7,19 +7,6 @@ namespace Sailfish.Analysis.SailDiff.Statistics.StatsCore.Ops;
 
 public static partial class InternalOps
 {
-    private static double[][] Zeros(int rows, int columns)
-    {
-        return Zeros<double>(rows, columns);
-    }
-
-    private static T[][] Zeros<T>(int rows, int columns)
-    {
-        var objArray = new T[rows][];
-        for (var index = 0; index < objArray.Length; ++index)
-            objArray[index] = new T[columns];
-        return objArray;
-    }
-
     public static int Rows<T>(this T[,] matrix)
     {
         return matrix.GetLength(0);
@@ -90,11 +77,6 @@ public static partial class InternalOps
         }
     }
 
-    private static int Columns<T>(this T[][] matrix)
-    {
-        return matrix.Length == 0 ? 0 : matrix[0].Length;
-    }
-
     public static T[,] ToUpperTriangular<T>(this T[,] matrix, MatrixType from, T[,]? result = null)
     {
         result ??= CreateAs(matrix);
@@ -153,27 +135,6 @@ public static partial class InternalOps
         for (var index = 0; index < num; ++index)
             result[index, index] = values[index];
         return result;
-    }
-
-    private static T[][] Create<T>(int rows, int columns, params T[] values)
-    {
-        return values.Length == 0 ? Zeros<T>(rows, columns) : values.Reshape(rows, columns);
-    }
-
-    private static T[][] Reshape<T>(this T[] values, int rows, int columns)
-    {
-        ArgumentNullException.ThrowIfNull(values);
-
-        if (rows * columns != values.Length) throw new ArgumentException("The total size of the new dimensions must match the size of the array.");
-
-        var reshapedArray = new T[rows][];
-        for (var i = 0; i < rows; i++)
-        {
-            reshapedArray[i] = new T[columns];
-            for (var j = 0; j < columns; j++) reshapedArray[i][j] = values[i * columns + j];
-        }
-
-        return reshapedArray;
     }
 
     public static T[] Get<T>(this T[] source, int[] indexes, bool inPlace = false)

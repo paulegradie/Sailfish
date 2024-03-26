@@ -101,7 +101,7 @@ public class TwoSampleT : HypothesisTest<Distribution>
         return new DoubleRange(ObservedDifference - statistic * StandardError, ObservedDifference + statistic * StandardError);
     }
 
-    protected override void OnSizeChanged()
+    protected void OnSizeChanged()
     {
         Confidence = GetConfidenceInterval(1.0 - Size);
         if (Analysis == null)
