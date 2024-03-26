@@ -413,9 +413,9 @@ internal sealed class SingularValueDecomposition : ICloneable
         ? diagonalMatrix
         : diagonalMatrix = InternalOps.Diagonal(LeftSingularVectors.Columns(), RightSingularVectors.Columns(), Diagonal);
 
-    public double[,] RightSingularVectors { get; private set; }
+    public double[,]? RightSingularVectors { get; private set; }
 
-    public double[,] LeftSingularVectors { get; private set; }
+    public double[,]? LeftSingularVectors { get; private set; }
 
     public int[] Ordering { get; private set; }
 

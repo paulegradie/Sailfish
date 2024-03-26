@@ -9,7 +9,5 @@ public enum MatrixType
 
     UpperTriangular = 2,
 
-    Diagonal = UpperTriangular | LowerTriangular,
-
-    Rectangular = 4
+    Diagonal = UpperTriangular | LowerTriangular
 }

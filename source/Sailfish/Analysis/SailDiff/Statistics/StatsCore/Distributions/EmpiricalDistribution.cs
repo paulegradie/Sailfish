@@ -188,7 +188,7 @@ public class EmpiricalDistribution : UnivariateContinuousDistribution
         return observations.WeightedStandardDeviation(repeats) * Math.Pow(4.0 / (3.0 * num), 0.2);
     }
 
-    private static double SmoothingRule(double[] observations, double[]? weights, int[] repeats)
+    private static double SmoothingRule(double[] observations, double[]? weights, int[]? repeats)
     {
         if (weights != null)
         {

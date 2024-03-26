@@ -4,9 +4,9 @@ namespace Sailfish.Analysis.SailDiff.Statistics.StatsCore;
 
 public struct Range(float min, float max) : IFormattable, IEquatable<Range>
 {
-    public float Min { get; set; } = min;
+    public float Min { get; } = min;
 
-    public float Max { get; set; } = max;
+    public float Max { get; } = max;
 
     public static bool operator ==(Range range1, Range range2)
     {

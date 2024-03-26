@@ -32,8 +32,6 @@ public class WilcoxonDistribution : UnivariateContinuousDistribution
     public override double Mean => approximation.Mean;
 
 
-    public virtual double Mode => approximation.Mode;
-
     public override DoubleRange Support => Exact ? new DoubleRange(0.0, double.PositiveInfinity) : approximation.Support;
 
     private void Init(int n, double[]? ranks, bool? exact)

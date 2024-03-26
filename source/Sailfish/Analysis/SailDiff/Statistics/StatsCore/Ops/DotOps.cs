@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using MathNet.Numerics.LinearAlgebra;
 
 namespace Sailfish.Analysis.SailDiff.Statistics.StatsCore.Ops;
@@ -13,7 +14,7 @@ public static class DotOps
         return result.ToArray();
     }
 
-    public static double[] Dot(this double[,] a, double[] columnVector)
+    public static double[] Dot(this double[,] a, IEnumerable<double> columnVector)
     {
         return a.Dot(columnVector, new double[a.Rows()]);
     }

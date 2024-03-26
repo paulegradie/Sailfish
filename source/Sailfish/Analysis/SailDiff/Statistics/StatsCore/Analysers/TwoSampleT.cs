@@ -16,8 +16,8 @@ public class TwoSampleT : HypothesisTest<Distribution>
         double hypothesizedDifference = 0.0,
         TwoSampleHypothesis alternate = TwoSampleHypothesis.ValuesAreDifferent)
         : this(sample1.Mean(), sample1.Variance(), sample1.Length,
-               sample2.Mean(), sample2.Variance(), sample2.Length,
-               assumeEqualVariances, hypothesizedDifference, alternate)
+            sample2.Mean(), sample2.Variance(), sample2.Length,
+            assumeEqualVariances, hypothesizedDifference, alternate)
     {
     }
 

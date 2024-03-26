@@ -83,16 +83,6 @@ public class NormalDistribution : UnivariateContinuousDistribution, IFormattable
 
     public override DoubleRange Support => new(double.NegativeInfinity, double.PositiveInfinity);
 
-    public virtual double Entropy
-    {
-        get
-        {
-            if (!entropy.HasValue)
-                entropy = 0.5 * (Math.Log(2.0 * Math.PI * variance) + 1.0);
-            return entropy.Value;
-        }
-    }
-
     protected internal override double InnerDistributionFunction(double x)
     {
         return Normal.Function((x - mean) / stdDev);
