@@ -1,3 +1,7 @@
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using MediatR;
 using Sailfish.Analysis;
 using Sailfish.Analysis.SailDiff;
@@ -5,10 +9,6 @@ using Sailfish.Contracts.Public.Models;
 using Sailfish.Contracts.Public.Requests;
 using Sailfish.Execution;
 using Sailfish.Extensions.Types;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace Sailfish.DefaultHandlers.SailDiff;
 
@@ -20,7 +20,7 @@ internal class SailDiffGetLatestExecutionSummariesHandler(ITrackingFileDirectory
 
     public async Task<GetLatestExecutionSummaryResponse> Handle(GetLatestExecutionSummaryRequest request, CancellationToken cancellationToken)
     {
-        var trackingFiles = trackingFileDirectoryReader.FindTrackingFilesInDirectoryOrderedByLastModified(runSettings.GetRunSettingsTrackingDirectoryPath(), false);
+        var trackingFiles = trackingFileDirectoryReader.FindTrackingFilesInDirectoryOrderedByLastModified(runSettings.GetRunSettingsTrackingDirectoryPath());
         if (trackingFiles.Count == 0) return new GetLatestExecutionSummaryResponse(new List<IClassExecutionSummary>());
 
         var executionSummaries = new TrackingFileDataList();

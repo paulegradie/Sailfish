@@ -1,8 +1,9 @@
-using Sailfish.Analysis.ScaleFish;
-using Sailfish.Contracts.Public.Serialization.JsonConverters;
+using System;
 using System.Collections.Generic;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Sailfish.Analysis.ScaleFish;
+using Sailfish.Contracts.Public.Serialization.JsonConverters;
 
 namespace Sailfish.Contracts.Public.Serialization;
 
@@ -18,12 +19,12 @@ public static class SailfishSerializer
 
     public static string Serialize<T>(T data, IEnumerable<JsonConverter>? converters = null)
     {
-        return JsonSerializer.Serialize(data, GetOptions(converters ?? System.Array.Empty<JsonConverter>()));
+        return JsonSerializer.Serialize(data, GetOptions(converters ?? Array.Empty<JsonConverter>()));
     }
 
     public static T? Deserialize<T>(string serializedData, IEnumerable<JsonConverter>? converters = null)
     {
-        return JsonSerializer.Deserialize<T>(serializedData, GetOptions(converters ?? System.Array.Empty<JsonConverter>()));
+        return JsonSerializer.Deserialize<T>(serializedData, GetOptions(converters ?? Array.Empty<JsonConverter>()));
     }
 
     public static IList<JsonConverter> GetDefaultConverters()

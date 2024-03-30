@@ -1,11 +1,11 @@
+using System;
 using Sailfish.Analysis.SailDiff.Statistics.StatsCore.Distributions;
 using Sailfish.Analysis.SailDiff.Statistics.StatsCore.Ops;
-using System;
 
 namespace Sailfish.Analysis.SailDiff.Statistics.StatsCore.Analysers;
 
 [Serializable]
-public class TwoSampleT : HypothesisTest<TDistribution>
+public class TwoSampleT : HypothesisTest<Distribution>
 {
     private readonly TwoSampleTTestPowerAnalysis powerAnalysis;
 
@@ -16,8 +16,8 @@ public class TwoSampleT : HypothesisTest<TDistribution>
         double hypothesizedDifference = 0.0,
         TwoSampleHypothesis alternate = TwoSampleHypothesis.ValuesAreDifferent)
         : this(sample1.Mean(), sample1.Variance(), sample1.Length,
-               sample2.Mean(), sample2.Variance(), sample2.Length,
-               assumeEqualVariances, hypothesizedDifference, alternate)
+            sample2.Mean(), sample2.Variance(), sample2.Length,
+            assumeEqualVariances, hypothesizedDifference, alternate)
     {
     }
 
@@ -54,7 +54,7 @@ public class TwoSampleT : HypothesisTest<TDistribution>
         ObservedDifference = mean1 - mean2;
         HypothesizedDifference = hypothesizedDifference;
         Statistic = (ObservedDifference - HypothesizedDifference) / StandardError;
-        StatisticDistribution = new TDistribution(degreesOfFreedom);
+        StatisticDistribution = new Distribution(degreesOfFreedom);
         Hypothesis = alternate;
         Tail = (DistributionTailSailfish)alternate;
         PValue = StatisticToPValue(Statistic);
@@ -93,7 +93,7 @@ public class TwoSampleT : HypothesisTest<TDistribution>
     public double DegreesOfFreedom => StatisticDistribution.DegreesOfFreedom;
 
     public DoubleRange Confidence { get; protected set; }
-    public override TDistribution StatisticDistribution { get; set; }
+    public override Distribution StatisticDistribution { get; set; }
 
     public DoubleRange GetConfidenceInterval(double percent = 0.95)
     {
@@ -101,7 +101,7 @@ public class TwoSampleT : HypothesisTest<TDistribution>
         return new DoubleRange(ObservedDifference - statistic * StandardError, ObservedDifference + statistic * StandardError);
     }
 
-    protected override void OnSizeChanged()
+    protected void OnSizeChanged()
     {
         Confidence = GetConfidenceInterval(1.0 - Size);
         if (Analysis == null)
@@ -112,11 +112,11 @@ public class TwoSampleT : HypothesisTest<TDistribution>
 
     public override double PValueToStatistic(double p)
     {
-        return TTestExtensionMethods.PValueToStatistic(p, StatisticDistribution, Tail);
+        return TestExtensionMethods.PValueToStatistic(p, StatisticDistribution, Tail);
     }
 
     public override double StatisticToPValue(double x)
     {
-        return TTestExtensionMethods.StatisticToPValue(x, StatisticDistribution, Tail);
+        return TestExtensionMethods.StatisticToPValue(x, StatisticDistribution, Tail);
     }
 }

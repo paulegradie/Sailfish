@@ -1,12 +1,12 @@
-﻿using Sailfish.Attributes;
-using Sailfish.Exceptions;
-using Sailfish.Extensions.Methods;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
+using Sailfish.Attributes;
+using Sailfish.Exceptions;
+using Sailfish.Extensions.Methods;
 
 namespace Sailfish.Execution;
 

@@ -6,6 +6,4 @@ namespace Sailfish.Registration;
 ///     Note: This will be overriden by any types registered by the RegistrationCallback
 ///     when using the Sailfish.Run method
 /// </summary>
-public interface ISailfishDependency
-{
-}
+public interface ISailfishDependency;

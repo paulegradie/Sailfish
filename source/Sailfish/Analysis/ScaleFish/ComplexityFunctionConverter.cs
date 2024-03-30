@@ -1,11 +1,11 @@
-using Sailfish.Analysis.ScaleFish.ComplexityFunctions;
-using Sailfish.Contracts.Public.Serialization.JsonConverters;
-using Sailfish.Exceptions;
 using System;
 using System.Collections.Generic;
 using System.Runtime.Serialization;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using Sailfish.Analysis.ScaleFish.ComplexityFunctions;
+using Sailfish.Contracts.Public.Serialization.JsonConverters;
+using Sailfish.Exceptions;
 
 namespace Sailfish.Analysis.ScaleFish;
 

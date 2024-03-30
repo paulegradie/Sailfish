@@ -1,7 +1,7 @@
-using MathNet.Numerics;
-using Sailfish.Exceptions;
 using System;
 using System.Linq;
+using MathNet.Numerics;
+using Sailfish.Exceptions;
 
 namespace Sailfish.Analysis.ScaleFish.CurveFitting;
 
@@ -21,7 +21,7 @@ public class FitnessCalculator : IFitnessCalculator
         var xValues = observations.Select(x => x.X).ToArray();
         var yValues = observations.Select(x => x.Y).ToArray();
 
-        (var bias, var scale) = Fit.Curve(
+        var (bias, scale) = Fit.Curve(
             xValues,
             yValues,
             aFunc,
@@ -43,7 +43,7 @@ public class FitnessCalculator : IFitnessCalculator
         if (modeledValues.Length != n) throw new ArgumentException("The length of the fittedValues array must match the length of the original data array.");
 
         var rSquared = RSquared(modeledValues, observedValues);
-        var rmse = RMSE(modeledValues, observedValues);
+        var rmse = Rmse(modeledValues, observedValues);
         var meanAbsoluteError = Distance.MAE(modeledValues, observedValues);
         var sumOfAbsoluteDistance = Distance.SAD(modeledValues, observedValues);
         var sumOfSquaredDistance = Distance.SSD(modeledValues, observedValues);
@@ -63,7 +63,7 @@ public class FitnessCalculator : IFitnessCalculator
         return GoodnessOfFit.RSquared(modeledValues, observedValues);
     }
 
-    private static double RMSE(double[] modeledValues, double[] observedValues)
+    private static double Rmse(double[] modeledValues, double[] observedValues)
     {
         return Math.Sqrt(observedValues.Zip(modeledValues, (y, yFit) => Math.Pow(y - yFit, 2)).Sum() / observedValues.Length);
     }

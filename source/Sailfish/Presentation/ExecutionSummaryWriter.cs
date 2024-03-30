@@ -1,10 +1,9 @@
-﻿using MediatR;
-using Sailfish.Contracts.Private;
-using Sailfish.Contracts.Public.Models;
-using Sailfish.Execution;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using MediatR;
+using Sailfish.Contracts.Private;
+using Sailfish.Execution;
 
 namespace Sailfish.Presentation;
 
@@ -17,7 +16,7 @@ internal class ExecutionSummaryWriter : IExecutionSummaryWriter
 {
     private readonly IMediator mediator;
 
-    public ExecutionSummaryWriter(IMediator mediator, IRunSettings runSettings)
+    public ExecutionSummaryWriter(IMediator mediator)
     {
         this.mediator = mediator;
     }

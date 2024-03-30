@@ -38,9 +38,15 @@ jobs:
     outputs:
       version: ${{ steps.set_version_number.outputs.version }}
     steps:
-      - name: Set Version
+      - name: Set Pull Request Version
         id: set_version_number
-        run: echo "version=2.0.$((${{ github.run_number }}))-pull-request" >> "$GITHUB_OUTPUT"
+        run: |
+          version=2.0.${{ github.run_number }}
+          if [ "${{ github.ref }}" == "refs/heads/main" ]; then
+            echo "version=${version}" >> "$GITHUB_OUTPUT"
+          else
+            echo "version=${version}-pull-request" >> "$GITHUB_OUTPUT"
+          fi
 
   build:
     name: Build
@@ -132,7 +138,7 @@ jobs:
         run: dotnet pack ./source/${{matrix.project}}/${{matrix.project}}.csproj --configuration Release /p:Version=${{ needs.set_version.outputs.version }} --no-build --output .
 
       - name: Push Packages to Nuget
-        if: github.ref == 'refs/heads/main'
+        if: github.ref == 'refs/heads/main' && github.event_name != 'schedule'
         run: dotnet nuget push ${{matrix.project}}.${{ needs.set_version.outputs.version }}.nupkg --source https://www.nuget.org --api-key ${{secrets.NUGET_API_KEY}}
 
   sonar:

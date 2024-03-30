@@ -1,7 +1,7 @@
-﻿using Sailfish.Contracts.Public.Models;
-using Sailfish.Exceptions;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
+using Sailfish.Contracts.Public.Models;
+using Sailfish.Exceptions;
 
 namespace Sailfish.Execution;
 

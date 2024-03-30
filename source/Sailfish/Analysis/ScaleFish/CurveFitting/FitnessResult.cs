@@ -11,7 +11,7 @@ public class FitnessResult
         double mse)
     {
         RSquared = rSquared;
-        RMSE = rmse;
+        Rmse = rmse;
         Mae = mae;
         Sad = sad;
         Ssd = ssd;
@@ -24,7 +24,7 @@ public class FitnessResult
     }
 
     public double RSquared { get; }
-    public double RMSE { get; }
+    public double Rmse { get; }
     public double Mae { get; }
     public double Sad { get; }
     public double Ssd { get; }

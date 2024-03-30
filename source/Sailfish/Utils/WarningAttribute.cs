@@ -14,28 +14,7 @@ namespace Sailfish.Utils;
     | AttributeTargets.Event
     | AttributeTargets.Delegate,
     Inherited = false)]
-internal sealed class WarningAttribute : Attribute
+internal sealed class WarningAttribute(string? message) : Attribute
 {
-    public WarningAttribute()
-    {
-    }
-
-    public WarningAttribute(string? message)
-    {
-        Message = message;
-    }
-
-    public WarningAttribute(string? message, bool error)
-    {
-        Message = message;
-        IsError = error;
-    }
-
-    public string? Message { get; }
-
-    public bool IsError { get; }
-
-    public string? DiagnosticId { get; set; }
-
-    public string? UrlFormat { get; set; }
+    public string? Message { get; } = message;
 }

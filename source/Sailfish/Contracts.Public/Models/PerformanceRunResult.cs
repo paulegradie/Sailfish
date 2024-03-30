@@ -1,8 +1,8 @@
-﻿using MathNet.Numerics.Statistics;
+﻿using System.Collections.Generic;
+using System.Linq;
+using MathNet.Numerics.Statistics;
 using Sailfish.Analysis;
 using Sailfish.Execution;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace Sailfish.Contracts.Public.Models;
 
@@ -43,7 +43,7 @@ public class PerformanceRunResult(string displayName, double mean, double stdDev
     {
         var detector = new SailfishOutlierDetector();
 
-        (var rawExecutionResults, var cleanData, var lowerOutliers, var upperOutliers, var totalNumOutliers) = detector.DetectOutliers(executionIterations);
+        var (rawExecutionResults, cleanData, lowerOutliers, upperOutliers, totalNumOutliers) = detector.DetectOutliers(executionIterations);
 
         var mean = cleanData.Mean();
         var median = cleanData.Median();

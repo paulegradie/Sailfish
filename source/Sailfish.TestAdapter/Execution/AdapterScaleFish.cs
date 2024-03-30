@@ -5,7 +5,6 @@ using Sailfish.Contracts.Public.Notifications;
 using Sailfish.Contracts.Public.Requests;
 using Sailfish.Logging;
 using Sailfish.Presentation;
-using Sailfish.Presentation.Console;
 using System;
 using System.Linq;
 using System.Threading;

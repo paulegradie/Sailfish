@@ -1,13 +1,13 @@
+using System.Collections.Generic;
+using System.IO;
+using System.Threading;
+using System.Threading.Tasks;
 using MediatR;
 using Sailfish.Analysis.ScaleFish;
 using Sailfish.Contracts.Public.Models;
 using Sailfish.Contracts.Public.Notifications;
 using Sailfish.Contracts.Public.Serialization;
 using Sailfish.Presentation;
-using System.Collections.Generic;
-using System.IO;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace Sailfish.DefaultHandlers.ScaleFish;
 
@@ -43,7 +43,7 @@ internal class ScaleFishAnalysisCompleteNotificationHandler : INotificationHandl
 
     private static async Task WriteStringToFile(string contents, string filePath, CancellationToken cancellationToken)
     {
-        if (Directory.Exists(filePath)) throw new IOException("Cannot write to a directory");
+        if (Directory.Exists(filePath)) throw new IOException("Cannot write to the provided directory");
 
         await File.WriteAllTextAsync(filePath, contents, cancellationToken).ConfigureAwait(false);
         File.SetAttributes(filePath, FileAttributes.ReadOnly);

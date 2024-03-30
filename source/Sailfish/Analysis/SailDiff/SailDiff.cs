@@ -1,4 +1,9 @@
-﻿using MediatR;
+﻿using System;
+using System.Linq;
+using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
+using MediatR;
 using Sailfish.Contracts.Public;
 using Sailfish.Contracts.Public.Models;
 using Sailfish.Contracts.Public.Notifications;
@@ -6,17 +11,10 @@ using Sailfish.Contracts.Public.Requests;
 using Sailfish.Logging;
 using Sailfish.Presentation;
 using Sailfish.Presentation.Console;
-using System;
-using System.Linq;
-using System.Text;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace Sailfish.Analysis.SailDiff;
 
-public interface ISailDiffInternal : IAnalyzeFromFile
-{
-}
+public interface ISailDiffInternal : IAnalyzeFromFile;
 
 public interface ISailDiff
 {

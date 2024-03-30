@@ -1,11 +1,11 @@
-using Sailfish.Analysis.ScaleFish;
-using Sailfish.Contracts.Public.Models;
-using Sailfish.Execution;
-using Sailfish.Extensions.Methods;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using Sailfish.Analysis.ScaleFish;
+using Sailfish.Contracts.Public.Models;
+using Sailfish.Execution;
+using Sailfish.Extensions.Methods;
 
 namespace Sailfish.Presentation;
 
@@ -88,7 +88,7 @@ public class MarkdownTableConverter : IMarkdownTableConverter
                 typeName,
                 new List<string> { "", "ms", "ms", "ms", "" },
                 new List<string> { "Display Name", "Mean", "Median", $"StdDev (N={n})", "Variance" },
-                u => u.TestCaseId!.DisplayName!,
+                u => u.TestCaseId!.DisplayName,
                 u => u.PerformanceRunResult!.Mean,
                 u => u.PerformanceRunResult!.Median,
                 u => u.PerformanceRunResult!.StdDev,

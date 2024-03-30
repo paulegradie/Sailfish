@@ -97,17 +97,12 @@ public static class Tools
 
     public static int[] Ties(this double[] ranks)
     {
-        return ranks.Ties(out var _);
-    }
-
-    public static int[] Ties(this double[] ranks, out SortedDictionary<double, int> counts)
-    {
+        SortedDictionary<double, int> counts;
         counts = [];
         for (var index = 0; index < ranks.Length; ++index)
         {
             var rank = ranks[index];
-            if (!counts.TryGetValue(rank, out var num))
-                num = 0;
+            var num = counts.GetValueOrDefault(rank, 0);
             counts[rank] = num + 1;
         }
 

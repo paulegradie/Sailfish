@@ -1,15 +1,13 @@
-using Sailfish.Analysis.SailDiff.Statistics.StatsCore.Distributions;
-using Sailfish.Analysis.SailDiff.Statistics.StatsCore.Ops;
 using System;
 using System.Linq;
+using Sailfish.Analysis.SailDiff.Statistics.StatsCore.Distributions;
+using Sailfish.Analysis.SailDiff.Statistics.StatsCore.Ops;
 
 namespace Sailfish.Analysis.SailDiff.Statistics.StatsCore.Analysers;
 
 [Serializable]
 public sealed class MannWhitneyWilcoxon : HypothesisTest<MannWhitneyDistribution>
 {
-    private readonly bool hasTies;
-
     public MannWhitneyWilcoxon(
         double[] sample1,
         double[] sample2,
@@ -19,7 +17,7 @@ public sealed class MannWhitneyWilcoxon : HypothesisTest<MannWhitneyDistribution
     {
         NumberOfSamples1 = sample1.Length;
         NumberOfSamples2 = sample2.Length;
-        var source = sample1.Concatenate(sample2).Rank(out hasTies, adjustForTies: adjustForTies);
+        var source = sample1.Concatenate(sample2).Rank(out var hasTies, adjustForTies: adjustForTies);
         Rank1 = source.Get(0, NumberOfSamples1);
         Rank2 = source.Get(NumberOfSamples1, 0);
         RankSum1 = Rank1.Sum();
@@ -27,7 +25,7 @@ public sealed class MannWhitneyWilcoxon : HypothesisTest<MannWhitneyDistribution
         if (hasTies)
         {
             var nullable = exact;
-            var flag = true;
+            const bool flag = true;
             if ((nullable.GetValueOrDefault() == flag ? nullable.HasValue ? 1 : 0 : 0) != 0)
                 exact = false;
         }
@@ -56,8 +54,6 @@ public sealed class MannWhitneyWilcoxon : HypothesisTest<MannWhitneyDistribution
 
         IsExact = StatisticDistribution.Exact;
         PValue = StatisticToPValue(Statistic);
-        OnSizeChanged();
-        StatisticDistribution = null!;
     }
 
     public TwoSampleHypothesis Hypothesis { get; protected set; }
@@ -86,9 +82,13 @@ public sealed class MannWhitneyWilcoxon : HypothesisTest<MannWhitneyDistribution
         return Tail switch
         {
             DistributionTailSailfish.TwoTail => Math.Min(2.0 * Math.Min(StatisticDistribution.DistributionFunction(x), StatisticDistribution.ComplementaryDistributionFunction(x)), 1.0),
-            DistributionTailSailfish.OneUpper => NumberOfSamples1 < NumberOfSamples2 ? StatisticDistribution.ComplementaryDistributionFunction(x) : StatisticDistribution.DistributionFunction(x),
-            DistributionTailSailfish.OneLower => NumberOfSamples1 < NumberOfSamples2 ? StatisticDistribution.DistributionFunction(x) : StatisticDistribution.ComplementaryDistributionFunction(x),
-            _ => throw new InvalidOperationException(),
+            DistributionTailSailfish.OneUpper => NumberOfSamples1 < NumberOfSamples2
+                ? StatisticDistribution.ComplementaryDistributionFunction(x)
+                : StatisticDistribution.DistributionFunction(x),
+            DistributionTailSailfish.OneLower => NumberOfSamples1 < NumberOfSamples2
+                ? StatisticDistribution.DistributionFunction(x)
+                : StatisticDistribution.ComplementaryDistributionFunction(x),
+            _ => throw new InvalidOperationException()
         };
     }
 

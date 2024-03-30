@@ -2,11 +2,11 @@ using System;
 
 namespace Sailfish.Analysis.SailDiff.Statistics.StatsCore;
 
-public struct Range(float min, float max) : IRange<float>, IEquatable<Range>
+public struct Range(float min, float max) : IFormattable, IEquatable<Range>
 {
-    public float Min { get; set; } = min;
+    public float Min { get; } = min;
 
-    public float Max { get; set; } = max;
+    public float Max { get; } = max;
 
     public static bool operator ==(Range range1, Range range2)
     {
@@ -23,24 +23,24 @@ public struct Range(float min, float max) : IRange<float>, IEquatable<Range>
         return this == other;
     }
 
-    public override readonly bool Equals(object obj)
+    public readonly override bool Equals(object obj)
     {
         return obj is Range range && this == range;
     }
 
-    public override readonly int GetHashCode()
+    public readonly override int GetHashCode()
     {
         return (17 * 31 + Min.GetHashCode()) * 31 + Max.GetHashCode();
     }
 
-    public override readonly string ToString()
+    public readonly override string ToString()
     {
-        return string.Format("[{0}, {1}]", Min, Max);
+        return $"[{Min}, {Max}]";
     }
 
-    public readonly string ToString(string format, IFormatProvider formatProvider)
+    public readonly string ToString(string? format, IFormatProvider? formatProvider)
     {
-        return string.Format("[{0}, {1}]", Min.ToString(format, formatProvider), Max.ToString(format, formatProvider));
+        return $"[{Min.ToString(format, formatProvider)}, {Max.ToString(format, formatProvider)}]";
     }
 
     public static implicit operator DoubleRange(Range range)

@@ -1,8 +1,8 @@
+using System;
+using System.Collections.Generic;
 using Sailfish.Analysis.SailDiff;
 using Sailfish.Extensions.Types;
 using Sailfish.Logging;
-using System;
-using System.Collections.Generic;
 
 namespace Sailfish.Contracts.Public.Models;
 

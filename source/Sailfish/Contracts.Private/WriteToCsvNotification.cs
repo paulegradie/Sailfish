@@ -1,6 +1,6 @@
-﻿using MediatR;
+﻿using System.Collections.Generic;
+using MediatR;
 using Sailfish.Execution;
-using System.Collections.Generic;
 
 namespace Sailfish.Contracts.Private;
 

@@ -1,6 +1,6 @@
-using Autofac.Core.Activators.Reflection;
 using System;
 using System.Reflection;
+using Autofac.Core.Activators.Reflection;
 
 namespace Sailfish.Registration;
 

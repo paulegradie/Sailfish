@@ -1,13 +1,13 @@
-using Sailfish.Analysis.SailDiff.Statistics.StatsCore.Distributions;
 using System;
+using Sailfish.Analysis.SailDiff.Statistics.StatsCore.Distributions;
 
 namespace Sailfish.Analysis.SailDiff.Statistics.StatsCore.Analysers;
 
-public static class TTestExtensionMethods
+public static class TestExtensionMethods
 {
     public static double StatisticToPValue(
         double t,
-        TDistribution distribution,
+        Distribution distribution,
         DistributionTailSailfish type)
     {
         switch (type)
@@ -28,7 +28,7 @@ public static class TTestExtensionMethods
 
     public static double PValueToStatistic(
         double p,
-        TDistribution distribution,
+        Distribution distribution,
         DistributionTailSailfish type)
     {
         switch (type)

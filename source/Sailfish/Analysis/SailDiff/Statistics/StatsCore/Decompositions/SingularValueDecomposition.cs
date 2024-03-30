@@ -1,10 +1,10 @@
-using Sailfish.Analysis.SailDiff.Statistics.StatsCore.Ops;
 using System;
+using Sailfish.Analysis.SailDiff.Statistics.StatsCore.Ops;
 
 namespace Sailfish.Analysis.SailDiff.Statistics.StatsCore.Decompositions;
 
 [Serializable]
-internal sealed class SingularValueDecomposition : ICloneable, ISolverMatrixDecomposition<double>
+internal sealed class SingularValueDecomposition : ICloneable
 {
     private double[,] diagonalMatrix;
     private double? lnpseudoDeterminant;
@@ -12,18 +12,6 @@ internal sealed class SingularValueDecomposition : ICloneable, ISolverMatrixDeco
     private int n;
     private bool swapped;
 
-    public SingularValueDecomposition(double[,] value)
-        : this(value, true, true)
-    {
-    }
-
-    public SingularValueDecomposition(
-        double[,] value,
-        bool computeLeftSingularVectors,
-        bool computeRightSingularVectors)
-        : this(value, computeLeftSingularVectors, computeRightSingularVectors, false)
-    {
-    }
 
     public SingularValueDecomposition(
         double[,] value,
@@ -35,13 +23,13 @@ internal sealed class SingularValueDecomposition : ICloneable, ISolverMatrixDeco
     }
 
     public SingularValueDecomposition(
-        double[,] value,
+        double[,]? value,
         bool computeLeftSingularVectors,
         bool computeRightSingularVectors,
         bool autoTranspose,
         bool inPlace)
     {
-        m = value != null ? value.Rows() : throw new ArgumentNullException(nameof(value), "Matrix cannot be null.");
+        m = value?.Rows() ?? throw new ArgumentNullException(nameof(value), "Matrix cannot be null.");
         if (m == 0)
             throw new ArgumentException("Matrix does not have any rows.", nameof(value));
         n = value.Columns();
@@ -222,8 +210,7 @@ internal sealed class SingularValueDecomposition : ICloneable, ISolverMatrixDeco
             }
 
         var num10 = num5 - 1;
-        var num11 = 0;
-        var num12 = 1.1102230246251565E-16;
+        const double num12 = 1.1102230246251565E-16;
         while (num5 > 0)
         {
             int index30;
@@ -366,17 +353,16 @@ internal sealed class SingularValueDecomposition : ICloneable, ISolverMatrixDeco
                         Diagonal[index37 + 1] = -num40 * vector1[index37] + num39 * Diagonal[index37 + 1];
                         b3 = num40 * vector1[index37 + 1];
                         vector1[index37 + 1] = num39 * vector1[index37 + 1];
-                        if (flag1 && index37 < m - 1)
-                            for (var index39 = 0; index39 < LeftSingularVectors.Rows(); ++index39)
-                            {
-                                var num41 = num39 * LeftSingularVectors[index39, index37] + num40 * LeftSingularVectors[index39, index37 + 1];
-                                LeftSingularVectors[index39, index37 + 1] = -num40 * LeftSingularVectors[index39, index37] + num39 * LeftSingularVectors[index39, index37 + 1];
-                                LeftSingularVectors[index39, index37] = num41;
-                            }
+                        if (!flag1 || index37 >= m - 1) continue;
+                        for (var index39 = 0; index39 < LeftSingularVectors.Rows(); ++index39)
+                        {
+                            var num41 = num39 * LeftSingularVectors[index39, index37] + num40 * LeftSingularVectors[index39, index37 + 1];
+                            LeftSingularVectors[index39, index37 + 1] = -num40 * LeftSingularVectors[index39, index37] + num39 * LeftSingularVectors[index39, index37 + 1];
+                            LeftSingularVectors[index39, index37] = num41;
+                        }
                     }
 
                     vector1[num5 - 2] = a1;
-                    ++num11;
                     continue;
                 case 4:
                     if (Diagonal[index32] <= 0.0)
@@ -389,27 +375,20 @@ internal sealed class SingularValueDecomposition : ICloneable, ISolverMatrixDeco
 
                     for (; index32 < num10 && Diagonal[index32] < Diagonal[index32 + 1]; ++index32)
                     {
-                        var num42 = Diagonal[index32];
-                        Diagonal[index32] = Diagonal[index32 + 1];
-                        Diagonal[index32 + 1] = num42;
+                        (Diagonal[index32], Diagonal[index32 + 1]) = (Diagonal[index32 + 1], Diagonal[index32]);
                         if (flag2 && index32 < n - 1)
                             for (var index41 = 0; index41 < n; ++index41)
                             {
-                                var num43 = RightSingularVectors[index41, index32 + 1];
-                                RightSingularVectors[index41, index32 + 1] = RightSingularVectors[index41, index32];
-                                RightSingularVectors[index41, index32] = num43;
+                                (RightSingularVectors[index41, index32 + 1], RightSingularVectors[index41, index32]) = (RightSingularVectors[index41, index32], RightSingularVectors[index41, index32 + 1]);
                             }
 
-                        if (flag1 && index32 < m - 1)
-                            for (var index42 = 0; index42 < LeftSingularVectors.Rows(); ++index42)
-                            {
-                                var num44 = LeftSingularVectors[index42, index32 + 1];
-                                LeftSingularVectors[index42, index32 + 1] = LeftSingularVectors[index42, index32];
-                                LeftSingularVectors[index42, index32] = num44;
-                            }
+                        if (!flag1 || index32 >= m - 1) continue;
+                        for (var index42 = 0; index42 < LeftSingularVectors.Rows(); ++index42)
+                        {
+                            (LeftSingularVectors[index42, index32 + 1], LeftSingularVectors[index42, index32]) = (LeftSingularVectors[index42, index32], LeftSingularVectors[index42, index32 + 1]);
+                        }
                     }
 
-                    num11 = 0;
                     --num5;
                     continue;
                 default:
@@ -419,9 +398,7 @@ internal sealed class SingularValueDecomposition : ICloneable, ISolverMatrixDeco
 
         if (!swapped)
             return;
-        var u = LeftSingularVectors;
-        LeftSingularVectors = RightSingularVectors;
-        RightSingularVectors = u;
+        (LeftSingularVectors, RightSingularVectors) = (RightSingularVectors, LeftSingularVectors);
     }
 
     private SingularValueDecomposition()
@@ -434,30 +411,13 @@ internal sealed class SingularValueDecomposition : ICloneable, ISolverMatrixDeco
 
     public double[,] DiagonalMatrix => diagonalMatrix != null
         ? diagonalMatrix
-        : diagonalMatrix = Ops.InternalOps.Diagonal(Ops.InternalOps.Columns<double>(LeftSingularVectors), Ops.InternalOps.Columns<double>(RightSingularVectors), Diagonal);
+        : diagonalMatrix = InternalOps.Diagonal(LeftSingularVectors.Columns(), RightSingularVectors.Columns(), Diagonal);
 
-    public double[,] RightSingularVectors { get; private set; }
+    public double[,]? RightSingularVectors { get; private set; }
 
-    public double[,] LeftSingularVectors { get; private set; }
+    public double[,]? LeftSingularVectors { get; private set; }
 
     public int[] Ordering { get; private set; }
-
-    public double LogPseudoDeterminant
-    {
-        get
-        {
-            if (!lnpseudoDeterminant.HasValue)
-            {
-                var num = 0.0;
-                for (var index = 0; index < Diagonal.Rows(); ++index)
-                    if (Diagonal[index] != 0.0)
-                        num += Math.Log(Diagonal[index]);
-                lnpseudoDeterminant = num;
-            }
-
-            return lnpseudoDeterminant.Value;
-        }
-    }
 
     public object Clone()
     {

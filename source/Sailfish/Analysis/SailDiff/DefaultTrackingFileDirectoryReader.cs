@@ -1,7 +1,7 @@
-﻿using Sailfish.Presentation;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using Sailfish.Presentation;
 
 namespace Sailfish.Analysis.SailDiff;
 
@@ -23,14 +23,11 @@ internal class DefaultTrackingFileDirectoryReader : ITrackingFileDirectoryReader
                     var fileInfo = new FileInfo(file);
                     return fileInfo.LastWriteTimeUtc;
                 })
-,
             ];
 
         return
         [
-            .. files
-                        .OrderByDescending(file => new FileInfo(file).LastWriteTimeUtc)
-,
+            .. files.OrderByDescending(file => new FileInfo(file).LastWriteTimeUtc)
         ];
     }
 }

@@ -1,8 +1,8 @@
-using Sailfish.Contracts.Public.Serialization.JsonConverters;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json.Serialization;
+using Sailfish.Contracts.Public.Serialization.JsonConverters;
 
 namespace Sailfish.Contracts.Public.Serialization.Tracking.V1;
 

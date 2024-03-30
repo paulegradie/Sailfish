@@ -1,18 +1,16 @@
-﻿using MathNet.Numerics.Statistics;
-using Sailfish.Analysis.SailDiff.Statistics.StatsCore.Analysers;
-using Sailfish.Contracts.Public;
-using Sailfish.Contracts.Public.Models;
-using System;
+﻿using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using MathNet.Numerics.Statistics;
+using Sailfish.Analysis.SailDiff.Statistics.StatsCore.Analysers;
+using Sailfish.Contracts.Public;
+using Sailfish.Contracts.Public.Models;
 
 namespace Sailfish.Analysis.SailDiff.Statistics.Tests.MWWilcoxonTestSailfish;
 
-public interface IMannWhitneyWilcoxonTest : ITest
-{
-}
+public interface IMannWhitneyWilcoxonTest : ITest;
 
 public class MannWhitneyWilcoxonTest(ITestPreprocessor preprocessor) : IMannWhitneyWilcoxonTest
 {
@@ -36,7 +34,7 @@ public class MannWhitneyWilcoxonTest(ITestPreprocessor preprocessor) : IMannWhit
                 },
                 _ =>
                 {
-                    (var p1, var p2) = preprocessor.PreprocessJointlyWithDownSample(before, after, settings.UseOutlierDetection, maxArraySize: maxArraySize);
+                    var (p1, p2) = preprocessor.PreprocessJointlyWithDownSample(before, after, settings.UseOutlierDetection, maxArraySize: maxArraySize);
 
                     var sample1 = p1.OutlierAnalysis?.DataWithOutliersRemoved ?? p1.RawData;
                     var sample2 = p2.OutlierAnalysis?.DataWithOutliersRemoved ?? p2.RawData;
@@ -82,7 +80,7 @@ public class MannWhitneyWilcoxonTest(ITestPreprocessor preprocessor) : IMannWhit
                 after,
                 additionalResults);
 
-            (var rep1, var rep2) = preprocessor.PreprocessJointlyWithDownSample(before, after, settings.UseOutlierDetection, maxArraySize: maxArraySize);
+            var (rep1, rep2) = preprocessor.PreprocessJointlyWithDownSample(before, after, settings.UseOutlierDetection, maxArraySize: maxArraySize);
             return new TestResultWithOutlierAnalysis(testResults, rep1.OutlierAnalysis, rep2.OutlierAnalysis);
         }
         catch (Exception ex)

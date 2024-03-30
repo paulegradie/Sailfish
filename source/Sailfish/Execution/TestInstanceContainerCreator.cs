@@ -1,10 +1,10 @@
-﻿using Sailfish.Attributes;
-using Sailfish.Contracts.Public.Models;
-using Sailfish.Extensions.Methods;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using Sailfish.Attributes;
+using Sailfish.Contracts.Public.Models;
+using Sailfish.Extensions.Methods;
 
 namespace Sailfish.Execution;
 
@@ -30,7 +30,7 @@ internal class TestInstanceContainerCreator(
         Func<PropertySet, bool>? propertyTensorFilter = null,
         Func<MethodInfo, bool>? instanceContainerFilter = null)
     {
-        var sailfishVariableSets = propertySetGenerator.GenerateSailfishVariableSets(testType, out var variableProperties);
+        var sailfishVariableSets = propertySetGenerator.GenerateSailfishVariableSets(testType, out _);
 
         if (propertyTensorFilter is not null) sailfishVariableSets = sailfishVariableSets.Where(propertyTensorFilter);
 

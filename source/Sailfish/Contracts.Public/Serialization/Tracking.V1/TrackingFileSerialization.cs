@@ -1,6 +1,6 @@
-using Sailfish.Logging;
 using System.Collections.Generic;
 using System.Text.Json;
+using Sailfish.Logging;
 
 namespace Sailfish.Contracts.Public.Serialization.Tracking.V1;
 

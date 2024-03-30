@@ -1,9 +1,9 @@
-﻿using Sailfish.Analysis.SailDiff.Statistics;
+﻿using System.Collections.Generic;
+using System.Linq;
+using Sailfish.Analysis.SailDiff.Statistics;
 using Sailfish.Contracts.Public.Models;
 using Sailfish.Exceptions;
 using Sailfish.Extensions.Methods;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace Sailfish.Execution;
 

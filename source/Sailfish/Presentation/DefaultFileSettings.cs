@@ -1,11 +1,11 @@
-using Sailfish.Analysis.SailDiff;
-using Sailfish.Exceptions;
-using Sailfish.Extensions.Types;
 using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Text;
+using Sailfish.Analysis.SailDiff;
+using Sailfish.Exceptions;
+using Sailfish.Extensions.Types;
 
 namespace Sailfish.Presentation;
 

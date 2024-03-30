@@ -1,10 +1,10 @@
-﻿using Sailfish.Contracts.Public;
-using Sailfish.Contracts.Public.Models;
-using Sailfish.Extensions.Methods;
-using System.Collections.Concurrent;
+﻿using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Sailfish.Contracts.Public;
+using Sailfish.Contracts.Public.Models;
+using Sailfish.Extensions.Methods;
 
 namespace Sailfish.Analysis.SailDiff;
 
@@ -36,7 +36,7 @@ public class StatisticalTestComputer(IStatisticalTestExecutor statisticalTestExe
             .Select(x => new TestCaseId(x.DisplayName))
             .GroupBy(x => x.DisplayName)
             .Select(x => x.First());
-        var results = new ConcurrentBag<SailDiffResult>();
+        var results = new List<SailDiffResult>();
         Parallel.ForEach(
             testCaseIdGroups,
             new ParallelOptions
@@ -67,7 +67,11 @@ public class StatisticalTestComputer(IStatisticalTestExecutor statisticalTestExe
                     beforeCompiled.AggregatedRawExecutionResults,
                     afterCompiled.AggregatedRawExecutionResults,
                     settings);
-                results.Add(new SailDiffResult(testCaseId, result));
+
+                lock (result)
+                {
+                    results.Add(new SailDiffResult(testCaseId, result));
+                }
             });
 
         if (settings.DisableOrdering || results.Count > 60) return [.. results];
@@ -81,8 +85,7 @@ public class StatisticalTestComputer(IStatisticalTestExecutor statisticalTestExe
             return
             [
                 .. results
-                                .OrderByDescending(x => x.TestCaseId.DisplayName)
-,
+                    .OrderByDescending(x => x.TestCaseId.DisplayName)
             ];
         }
     }

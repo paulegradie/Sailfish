@@ -1,6 +1,6 @@
+using System;
 using Sailfish.Analysis.SailDiff.Statistics.StatsCore.Distributions;
 using Sailfish.Analysis.SailDiff.Statistics.StatsCore.Exceptions;
-using System;
 
 namespace Sailfish.Analysis.SailDiff.Statistics.StatsCore.Analysers;
 

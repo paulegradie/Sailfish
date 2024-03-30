@@ -68,8 +68,8 @@ public class TestShouldCompleteSuccessfullyFixture : IAsyncLifetime
     [Fact]
     public void TTEst()
     {
-        var test = new TTest(new TestPreprocessor(new SailfishOutlierDetector()));
-        Should.NotThrow(() => test.ExecuteTest(before, after, new SailDiffSettings(0.0001, 4, false, TestType.TTest)));
+        var test = new Test(new TestPreprocessor(new SailfishOutlierDetector()));
+        Should.NotThrow(() => test.ExecuteTest(before, after, new SailDiffSettings(0.0001, 4, false, TestType.Test)));
     }
 
     [Fact]

@@ -1,10 +1,10 @@
-﻿using Sailfish.Analysis.SailDiff.Statistics.Tests;
+﻿using System.Collections.Generic;
+using Sailfish.Analysis.SailDiff.Statistics.Tests;
 using Sailfish.Analysis.SailDiff.Statistics.Tests.KolmogorovSmirnovTestSailfish;
 using Sailfish.Analysis.SailDiff.Statistics.Tests.MWWilcoxonTestSailfish;
 using Sailfish.Analysis.SailDiff.Statistics.Tests.TTest;
 using Sailfish.Analysis.SailDiff.Statistics.Tests.TwoSampleWilcoxonSignedRankTestSailfish;
 using Sailfish.Exceptions;
-using System.Collections.Generic;
 
 namespace Sailfish.Analysis.SailDiff;
 
@@ -31,7 +31,7 @@ public class StatisticalTestExecutor(
     {
         var testMap = new Dictionary<TestType, ITest>
         {
-            { TestType.TTest, ttest },
+            { TestType.Test, ttest },
             { TestType.WilcoxonRankSumTest, mannWhitneyWilcoxonTestSailfish },
             { TestType.TwoSampleWilcoxonSignedRankTest, twoSampWilcoxonSignedRankTestSailfish },
             { TestType.KolmogorovSmirnovTest, kolmogorovSmirnovTestSailfish }

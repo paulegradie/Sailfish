@@ -1,21 +1,16 @@
-using Sailfish.Analysis.SailDiff.Statistics.StatsCore.Distributions;
 using System;
 using System.Linq;
+using Sailfish.Analysis.SailDiff.Statistics.StatsCore.Distributions;
 
 namespace Sailfish.Analysis.SailDiff.Statistics.StatsCore.Analysers;
 
 [Serializable]
 public class TwoSampleKolmogorovSmirnov : HypothesisTest<KolmogorovSmirnovDistribution>
 {
-    public TwoSampleKolmogorovSmirnov(double[] sample1, double[] sample2)
-        : this(sample1, sample2, TwoSampleKolmogorovSmirnovTestHypothesis.SamplesDistributionsAreUnequal)
-    {
-    }
-
     public TwoSampleKolmogorovSmirnov(
         double[] sample1,
         double[] sample2,
-        TwoSampleKolmogorovSmirnovTestHypothesis alternate)
+        TwoSampleKolmogorovSmirnovTestHypothesis alternate = TwoSampleKolmogorovSmirnovTestHypothesis.SamplesDistributionsAreUnequal)
     {
         Hypothesis = alternate;
         var length1 = sample1.Length;
@@ -31,8 +26,8 @@ public class TwoSampleKolmogorovSmirnov : HypothesisTest<KolmogorovSmirnovDistri
         for (var index = 0; index < sample2.Length; ++index)
             array[index + length1 + 1] = sample2[index];
         Array.Sort(array);
-        Func<double, double> func1 = EmpiricalDistribution1.DistributionFunction;
-        Func<double, double> func2 = EmpiricalDistribution2.DistributionFunction;
+        var func1 = EmpiricalDistribution1.DistributionFunction;
+        var func2 = EmpiricalDistribution2.DistributionFunction;
         switch (alternate)
         {
             case TwoSampleKolmogorovSmirnovTestHypothesis.SamplesDistributionsAreUnequal:
@@ -49,6 +44,7 @@ public class TwoSampleKolmogorovSmirnov : HypothesisTest<KolmogorovSmirnovDistri
                 PValue = StatisticDistribution.OneSideDistributionFunction(Statistic);
                 break;
 
+            case TwoSampleKolmogorovSmirnovTestHypothesis.FirstSampleIsSmallerThanSecond:
             default:
                 for (var index = 0; index < array.Length - 1; ++index)
                     values[index] = Math.Max(func2(array[index + 1]) - func1(array[index]), func2(array[index]) - func1(array[index]));
@@ -65,7 +61,7 @@ public class TwoSampleKolmogorovSmirnov : HypothesisTest<KolmogorovSmirnovDistri
     public EmpiricalDistribution EmpiricalDistribution1 { get; private set; }
 
     public EmpiricalDistribution EmpiricalDistribution2 { get; private set; }
-    public override KolmogorovSmirnovDistribution StatisticDistribution { get; set; }
+    public sealed override KolmogorovSmirnovDistribution StatisticDistribution { get; set; }
 
     public override double PValueToStatistic(double p)
     {

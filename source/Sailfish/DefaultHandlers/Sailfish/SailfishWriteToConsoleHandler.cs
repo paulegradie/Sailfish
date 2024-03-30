@@ -1,9 +1,9 @@
-﻿using MediatR;
+﻿using System.Threading;
+using System.Threading.Tasks;
+using MediatR;
 using Sailfish.Contracts.Private;
 using Sailfish.Contracts.Public.Models;
 using Sailfish.Presentation.Console;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace Sailfish.DefaultHandlers.Sailfish;
 

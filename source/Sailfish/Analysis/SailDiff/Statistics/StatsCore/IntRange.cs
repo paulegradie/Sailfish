@@ -6,7 +6,7 @@ namespace Sailfish.Analysis.SailDiff.Statistics.StatsCore;
 
 [Serializable]
 public struct IntRange(int min, int max) :
-    IRange<int>,
+    IFormattable,
     IEquatable<IntRange>,
     IEnumerable<int>
 {
@@ -40,22 +40,22 @@ public struct IntRange(int min, int max) :
         return this == other;
     }
 
-    public override readonly bool Equals(object? obj)
+    public readonly override bool Equals(object? obj)
     {
         return obj is IntRange intRange && this == intRange;
     }
 
-    public override readonly int GetHashCode()
+    public readonly override int GetHashCode()
     {
         return (17 * 31 + min.GetHashCode()) * 31 + max.GetHashCode();
     }
 
-    public override readonly string ToString()
+    public readonly override string ToString()
     {
         return $"[{(object)min}, {(object)max}]";
     }
 
-    public readonly string ToString(string format, IFormatProvider formatProvider) => string.Format("[{0}, {1}]", min.ToString(format, formatProvider), max.ToString(format, formatProvider));
+    public readonly string ToString(string format, IFormatProvider formatProvider) => $"[{min.ToString(format, formatProvider)}, {max.ToString(format, formatProvider)}]";
 
     public static implicit operator DoubleRange(IntRange range)
     {

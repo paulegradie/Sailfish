@@ -2,6 +2,4 @@ using MediatR;
 
 namespace Sailfish.Contracts.Public.Requests;
 
-public class GetLatestExecutionSummaryRequest : IRequest<GetLatestExecutionSummaryResponse>
-{
-}
+public class GetLatestExecutionSummaryRequest : IRequest<GetLatestExecutionSummaryResponse>;

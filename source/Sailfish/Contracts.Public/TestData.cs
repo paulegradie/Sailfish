@@ -1,5 +1,5 @@
-﻿using Sailfish.Contracts.Public.Models;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+using Sailfish.Contracts.Public.Models;
 
 namespace Sailfish.Contracts.Public;
 

@@ -1,3 +1,11 @@
+using System;
+using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
+using System.Linq;
+using System.Reflection;
+using System.Runtime.Caching;
+using System.Threading;
+using System.Threading.Tasks;
 using MediatR;
 using Sailfish.Attributes;
 using Sailfish.Contracts.Public.Models;
@@ -9,14 +17,6 @@ using Sailfish.Logging;
 using Sailfish.Presentation;
 using Sailfish.Presentation.Console;
 using Sailfish.Utils;
-using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using System.Linq;
-using System.Reflection;
-using System.Runtime.Caching;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace Sailfish.Execution;
 

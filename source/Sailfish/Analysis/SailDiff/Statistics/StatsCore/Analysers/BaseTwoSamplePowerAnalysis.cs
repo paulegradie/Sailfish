@@ -1,13 +1,12 @@
-using Sailfish.Analysis.SailDiff.Statistics.StatsCore.Distributions;
-using Sailfish.Analysis.SailDiff.Statistics.StatsCore.Search;
 using System;
 using System.Globalization;
+using Sailfish.Analysis.SailDiff.Statistics.StatsCore.Distributions;
+using Sailfish.Analysis.SailDiff.Statistics.StatsCore.Search;
 
 namespace Sailfish.Analysis.SailDiff.Statistics.StatsCore.Analysers;
 
 [Serializable]
-public abstract class BaseTwoSamplePowerAnalysis :
-    ITwoSamplePowerAnalysis
+public abstract class BaseTwoSamplePowerAnalysis
 {
     protected BaseTwoSamplePowerAnalysis(DistributionTailSailfish tail)
     {
@@ -18,8 +17,6 @@ public abstract class BaseTwoSamplePowerAnalysis :
         Samples2 = 2.0;
     }
 
-    public double TotalSamples => Samples1 + Samples2;
-
     public DistributionTailSailfish Tail { get; set; }
 
     public double Power { get; set; }
@@ -29,8 +26,6 @@ public abstract class BaseTwoSamplePowerAnalysis :
     public double Samples1 { get; set; }
 
     public double Samples2 { get; set; }
-
-    double IPowerAnalysis.Samples => TotalSamples;
 
     public double Effect { get; set; }
 
@@ -77,13 +72,13 @@ public abstract class BaseTwoSamplePowerAnalysis :
     public virtual void ComputeSamples(double proportion = 1.0)
     {
         var requiredPower = Power;
-        var root = BrentSearch.FindRoot((Func<double, double>)(n =>
+        var root = BrentSearch.FindRoot(n =>
         {
             Samples1 = n;
             Samples2 = n * proportion;
             ComputePower();
             return requiredPower - Power;
-        }), 2.0, 10000.0);
+        }, 2.0, 10000.0);
         Samples1 = root;
         Samples2 = root * proportion;
         ComputePower();

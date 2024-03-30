@@ -19,7 +19,7 @@ public static class Combinatorics
             if (symbols[index] == 0)
                 yield break;
 
-            label_5:
+        label_5:
         yield return inPlace ? current : (int[])current.Clone();
         for (var index = symbols.Length - 1; index >= 0; --index)
         {
@@ -40,15 +40,14 @@ public static class Combinatorics
     public static IEnumerable<T[]> Combinations<T>(this T[] values, int k, bool inPlace = false)
     {
         var length = values.Length;
-        var t = k;
-        var c = new int[t + 3];
-        var current = new T[t];
+        var c = new int[k + 3];
+        var current = new T[k];
         int j;
-        for (j = 1; j <= t; ++j)
+        for (j = 1; j <= k; ++j)
             c[j] = j - 1;
-        c[t + 1] = length;
-        c[t + 2] = 0;
-        j = t;
+        c[k + 1] = length;
+        c[k + 2] = 0;
+        j = k;
         do
         {
             for (var index = 0; index < current.Length; ++index)
@@ -57,7 +56,6 @@ public static class Combinatorics
             int x;
             if (j > 0)
             {
-                x = j;
             }
             else if (c[1] + 1 < c[2])
             {
@@ -82,6 +80,6 @@ public static class Combinatorics
             c[j] = x;
             --j;
         label_16:;
-        } while (j < t);
+        } while (j < k);
     }
 }
