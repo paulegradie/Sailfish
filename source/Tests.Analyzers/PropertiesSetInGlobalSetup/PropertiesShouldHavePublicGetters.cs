@@ -33,8 +33,8 @@ public class PrivateSettersShouldError
 ";
         await AnalyzerVerifier<ShouldHavePublicGettersAnalyzer>.VerifyAnalyzerAsync(
             source.AddSailfishAttributeDependencies(),
-            new DiagnosticResult(Descriptors.PropertiesAssignedInGlobalSetupShouldHavePublicGettersDescriptor).WithLocation(0).WithArguments("PrivateGetter"),
-            new DiagnosticResult(Descriptors.PropertiesAssignedInGlobalSetupShouldHavePublicGettersDescriptor).WithLocation(1).WithArguments("PrivateGetter")
+            new DiagnosticResult(ShouldHavePublicGettersAnalyzer.Descriptor).WithLocation(0).WithArguments("PrivateGetter"),
+            new DiagnosticResult(ShouldHavePublicGettersAnalyzer.Descriptor).WithLocation(1).WithArguments("PrivateGetter")
         );
     }
 
