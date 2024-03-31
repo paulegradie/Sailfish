@@ -3,7 +3,6 @@ using Microsoft.VisualStudio.TestPlatform.ObjectModel;
 using Sailfish.Contracts.Public.Notifications;
 using Sailfish.Logging;
 using Sailfish.TestAdapter.Display.VSTestFramework;
-using System;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
