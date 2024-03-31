@@ -14,8 +14,8 @@ public class WilcoxonTest : HypothesisTest
         bool adjustForTies)
     {
         var indexes = diffs.Find(x => x != 0.0);
-        HasZeros = indexes.Length != diffs.Length;
-        if (HasZeros)
+        var hasZeros = indexes.Length != diffs.Length;
+        if (hasZeros)
         {
             signs = signs.Get(indexes);
             diffs = diffs.Get(indexes);
@@ -23,14 +23,13 @@ public class WilcoxonTest : HypothesisTest
 
         Signs = signs;
         Delta = diffs;
-        Ranks = Delta.Rank(out _, adjustForTies: adjustForTies);
+        Ranks = Delta.Rank(adjustForTies: adjustForTies);
         if (Ranks.Length == 0)
         {
-            throw new Exception();
+            throw new ArgumentException($"The {nameof(WilcoxonTest)} must be provided valid samples");
         }
 
-
-        if (HasZeros)
+        if (hasZeros)
         {
             exact ??= false;
             var nullable = exact;
@@ -49,7 +48,8 @@ public class WilcoxonTest : HypothesisTest
 
         PValue = Tail switch
         {
-            DistributionTailSailfish.TwoTail => Math.Min(2.0 * Math.Min(StatisticDistribution.DistributionFunction(Statistic), StatisticDistribution.ComplementaryDistributionFunction(Statistic)), 1.0),
+            DistributionTailSailfish.TwoTail => Math.Min(
+                2.0 * Math.Min(StatisticDistribution.DistributionFunction(Statistic), StatisticDistribution.ComplementaryDistributionFunction(Statistic)), 1.0),
             DistributionTailSailfish.OneUpper => StatisticDistribution.ComplementaryDistributionFunction(Statistic),
             DistributionTailSailfish.OneLower => StatisticDistribution.DistributionFunction(Statistic),
             _ => throw new InvalidOperationException()

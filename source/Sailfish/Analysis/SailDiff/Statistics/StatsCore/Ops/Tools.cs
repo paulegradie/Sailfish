@@ -7,7 +7,6 @@ public static class Tools
 {
     public static double[] Rank(
         this double[] samples,
-        out bool hasTies,
         bool alreadySorted = false,
         bool adjustForTies = true)
     {
@@ -21,7 +20,6 @@ public static class Tools
         var items = new double[samples.Length];
         var num1 = 0.0;
         var num2 = 0;
-        hasTies = false;
         if (samples.Length == 0)
             return [];
         items[0] = 1.0;
@@ -49,7 +47,6 @@ public static class Tools
                 {
                     ++num2;
                     num1 += num3++;
-                    hasTies = true;
                 }
 
             if (num2 > 0)
@@ -65,8 +62,6 @@ public static class Tools
             var num4 = 1;
             for (; index < items.Length; ++index)
             {
-                if (samples[index] == samples[index - 1])
-                    hasTies = true;
                 items[index] = ++num4;
             }
         }
@@ -76,32 +71,12 @@ public static class Tools
         return items;
     }
 
-    public static double Hypotenuse(double a, double b)
-    {
-        var num1 = 0.0;
-        var num2 = Math.Abs(a);
-        var num3 = Math.Abs(b);
-        if (num2 > num3)
-        {
-            var num4 = b / a;
-            num1 = num2 * Math.Sqrt(1.0 + num4 * num4);
-        }
-        else if (b != 0.0)
-        {
-            var num5 = a / b;
-            num1 = num3 * Math.Sqrt(1.0 + num5 * num5);
-        }
-
-        return num1;
-    }
-
-    public static int[] Ties(this double[] ranks)
+    public static IEnumerable<int> Ties(this double[] ranks)
     {
         SortedDictionary<double, int> counts;
         counts = [];
-        for (var index = 0; index < ranks.Length; ++index)
+        foreach (var rank in ranks)
         {
-            var rank = ranks[index];
             var num = counts.GetValueOrDefault(rank, 0);
             counts[rank] = num + 1;
         }

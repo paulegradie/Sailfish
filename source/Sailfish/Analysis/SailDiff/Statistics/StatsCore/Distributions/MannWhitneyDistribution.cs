@@ -6,14 +6,26 @@ using Sailfish.Analysis.SailDiff.Statistics.StatsCore.Search;
 
 namespace Sailfish.Analysis.SailDiff.Statistics.StatsCore.Distributions;
 
-public class MannWhitneyDistribution : UnivariateContinuousDistribution
+internal class MannWhitneyDistribution : UnivariateContinuousDistribution
 {
-    private NormalDistribution approximation;
+    private readonly NormalDistribution approximation;
 
-    public MannWhitneyDistribution(double[] ranks1, double[] ranks2, bool? exact = null)
+    internal MannWhitneyDistribution(double[] ranks, int rank1Length, int rank2Length, ContinuityCorrection continuityCorrection)
     {
-        var ranks = ranks1.Concatenate(ranks2);
-        Init(ranks1.Length, ranks2.Length, ranks, exact);
+        var num1 = rank1Length + rank2Length;
+        NumberOfSamples1 = rank1Length;
+        NumberOfSamples2 = rank2Length;
+        var mean = rank1Length * rank2Length / 2.0;
+        var stdDev = Math.Sqrt(rank1Length * rank2Length * (num1 + 1) / 12.0);
+        Exact = rank1Length <= 30 && rank2Length <= 30;
+
+        var num2 = Corrections(ranks ?? []);
+        stdDev = Math.Sqrt(rank1Length * rank2Length / 12.0 * (num1 + 1.0 - num2));
+        if (Exact)
+            InitExactMethod(ranks);
+
+        approximation = new NormalDistribution(mean, stdDev);
+        Correction = continuityCorrection;
     }
 
     public int NumberOfSamples1 { get; private set; }
@@ -30,46 +42,6 @@ public class MannWhitneyDistribution : UnivariateContinuousDistribution
 
 
     public override DoubleRange Support => new(double.NegativeInfinity, double.PositiveInfinity);
-
-    private void Init(int n1, int n2, double[]? ranks, bool? exact)
-    {
-        if (n1 <= 0)
-            throw new ArgumentOutOfRangeException(nameof(n1), "The number of observations in the first sample (n1) must be higher than zero.");
-        if (n2 <= 0)
-            throw new ArgumentOutOfRangeException(nameof(n2), "The number of observations in the second sample (n2) must be higher than zero.");
-        if (ranks != null)
-        {
-            if (ranks.Length <= 1)
-                throw new ArgumentOutOfRangeException(nameof(ranks), "The rank vector must contain a minimum of 2 elements.");
-            for (var index = 0; index < ranks.Length; ++index)
-                if (ranks[index] < 0.0)
-                    throw new ArgumentOutOfRangeException(nameof(index), "The rank values cannot be negative.");
-        }
-
-        var num1 = n1 + n2;
-        NumberOfSamples1 = n1;
-        NumberOfSamples2 = n2;
-        var mean = n1 * n2 / 2.0;
-        var stdDev = Math.Sqrt(n1 * n2 * (num1 + 1) / 12.0);
-        var flag = ranks != null;
-        Exact = flag && n1 <= 30 && n2 <= 30;
-        if (exact.HasValue)
-        {
-            if (exact.Value && !flag)
-                throw new ArgumentException("Cannot use exact method if rank vectors are not specified.", nameof(exact));
-            Exact = exact.Value;
-        }
-
-        if (flag)
-        {
-            var num2 = Corrections(ranks ?? []);
-            stdDev = Math.Sqrt(n1 * n2 / 12.0 * (num1 + 1.0 - num2));
-            if (Exact)
-                InitExactMethod(ranks);
-        }
-
-        approximation = new NormalDistribution(mean, stdDev);
-    }
 
     private static double Corrections(double[] ranks)
     {

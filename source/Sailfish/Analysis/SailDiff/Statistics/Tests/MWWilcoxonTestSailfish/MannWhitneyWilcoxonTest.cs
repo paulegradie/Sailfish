@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using MathNet.Numerics.Statistics;
 using Sailfish.Analysis.SailDiff.Statistics.StatsCore.Analysers;
+using Sailfish.Analysis.SailDiff.Statistics.StatsCore.Analysers.Factories;
 using Sailfish.Contracts.Public;
 using Sailfish.Contracts.Public.Models;
 
@@ -12,9 +13,14 @@ namespace Sailfish.Analysis.SailDiff.Statistics.Tests.MWWilcoxonTestSailfish;
 
 public interface IMannWhitneyWilcoxonTest : ITest;
 
-public class MannWhitneyWilcoxonTest(ITestPreprocessor preprocessor) : IMannWhitneyWilcoxonTest
+public class MannWhitneyWilcoxonTest : IMannWhitneyWilcoxonTest
 {
-    private readonly ITestPreprocessor preprocessor = preprocessor;
+    private readonly ITestPreprocessor preprocessor;
+
+    public MannWhitneyWilcoxonTest(ITestPreprocessor preprocessor)
+    {
+        this.preprocessor = preprocessor;
+    }
 
     public TestResultWithOutlierAnalysis ExecuteTest(double[] before, double[] after, SailDiffSettings settings)
     {
@@ -28,10 +34,7 @@ public class MannWhitneyWilcoxonTest(ITestPreprocessor preprocessor) : IMannWhit
         {
             Parallel.ForEach(
                 Enumerable.Range(0, iterations),
-                new ParallelOptions
-                {
-                    MaxDegreeOfParallelism = 5
-                },
+                new ParallelOptions { MaxDegreeOfParallelism = 5 },
                 _ =>
                 {
                     var (p1, p2) = preprocessor.PreprocessJointlyWithDownSample(before, after, settings.UseOutlierDetection, maxArraySize: maxArraySize);
@@ -39,7 +42,7 @@ public class MannWhitneyWilcoxonTest(ITestPreprocessor preprocessor) : IMannWhit
                     var sample1 = p1.OutlierAnalysis?.DataWithOutliersRemoved ?? p1.RawData;
                     var sample2 = p2.OutlierAnalysis?.DataWithOutliersRemoved ?? p2.RawData;
 
-                    var test = new MannWhitneyWilcoxon(sample1, sample2);
+                    var test = MannWhitneyWilcoxonFactory.Create(sample1, sample2, alternate: TwoSampleHypothesis.ValuesAreDifferent, adjustForTies: true);
                     tests.Add(test);
                 });
             var meanBefore = Math.Round(before.Mean(), sigDig);
@@ -62,8 +65,7 @@ public class MannWhitneyWilcoxonTest(ITestPreprocessor preprocessor) : IMannWhit
                 : SailfishChangeDirection.NoChange;
             var additionalResults = new Dictionary<string, object>
             {
-                { AdditionalResults.Statistic1, tests.Select(x => x.Statistic1).Mean() },
-                { AdditionalResults.Statistic2, tests.Select(x => x.Statistic2).Mean() }
+                { AdditionalResults.Statistic1, tests.Select(x => x.Statistic1).Mean() }, { AdditionalResults.Statistic2, tests.Select(x => x.Statistic2).Mean() }
             };
 
             var testResults = new StatisticalTestResult(
