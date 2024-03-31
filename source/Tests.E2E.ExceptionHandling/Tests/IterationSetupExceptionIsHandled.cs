@@ -9,7 +9,7 @@ public class IterationSetupExceptionIsHandled
     public async Task IterationSetup(CancellationToken cancellationToken)
     {
         await Task.Delay(10, cancellationToken);
-        throw new Exception("Iteration Setup Exception");
+        throw new TestException("Iteration Setup Exception");
     }
 
     [SailfishMethod]

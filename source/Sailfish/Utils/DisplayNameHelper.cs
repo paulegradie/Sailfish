@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Linq;
 using Sailfish.Contracts.Public.Models;
+using Sailfish.Exceptions;
 
 namespace Sailfish.Utils;
 
@@ -11,7 +12,7 @@ internal static class DisplayNameHelper
         var nameParts = new[] { testType.Name, methodName };
         var testCaseName = new TestCaseName(nameParts);
 
-        if (variableNames.Length != paramSet.Length) throw new Exception("Number of variables and number of params does not match");
+        if (variableNames.Length != paramSet.Length) throw new SailfishException("Number of variables and number of params does not match");
         var namedParams = variableNames.Zip(paramSet);
 
         var variables = namedParams.OrderBy(x => x.First).Select(x => new TestCaseVariable(x.First, x.Second));
@@ -22,9 +23,9 @@ internal static class DisplayNameHelper
     public static string FullyQualifiedName(Type type, string methodName)
     {
         var methodInfo = type.GetMethod(methodName);
-        if (methodInfo is null) throw new Exception($"Method name: {methodName} was not found on type {type.Name}");
+        if (methodInfo is null) throw new SailfishException($"Method name: {methodName} was not found on type {type.Name}");
 
-        if (methodInfo is null) throw new Exception($"Method name: {methodName} was not found on type {type.Name}");
+        if (methodInfo is null) throw new SailfishException($"Method name: {methodName} was not found on type {type.Name}");
 
         var names = $"{type.Namespace}.{type.Name}.{methodName}";
 

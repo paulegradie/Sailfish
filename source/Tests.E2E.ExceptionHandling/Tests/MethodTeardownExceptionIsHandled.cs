@@ -15,6 +15,6 @@ public class MethodTeardownExceptionIsHandled
     public async Task MethodTeardown(CancellationToken cancellationToken)
     {
         await Task.Delay(10, cancellationToken);
-        throw new Exception("Method Teardown Exception");
+        throw new TestException("Method Teardown Exception");
     }
 }

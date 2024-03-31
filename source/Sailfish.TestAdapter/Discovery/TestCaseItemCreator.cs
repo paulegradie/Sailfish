@@ -59,7 +59,7 @@ internal static class TestCaseItemCreator
         if (testType.FullName is null)
         {
             var msg = $"Error: testType fullname not defined - fullname: {testType.FullName}";
-            throw new Exception(msg);
+            throw new TestAdapterException(msg);
         }
 
         // custom properties

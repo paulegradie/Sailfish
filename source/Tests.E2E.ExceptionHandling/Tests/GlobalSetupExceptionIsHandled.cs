@@ -9,7 +9,7 @@ public class GlobalSetupExceptionIsHandled
     public async Task GlobalSetup(CancellationToken cancellationToken)
     {
         await Task.Delay(10, cancellationToken);
-        throw new Exception("Global Setup Exception");
+        throw new TestException("Global Setup Exception");
     }
 
     [SailfishMethod]

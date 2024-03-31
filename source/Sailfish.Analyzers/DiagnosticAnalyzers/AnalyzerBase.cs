@@ -10,13 +10,13 @@ namespace Sailfish.Analyzers.DiagnosticAnalyzers;
 [DiagnosticAnalyzer(LanguageNames.CSharp)]
 public abstract class AnalyzerBase<TSyntax> : DiagnosticAnalyzer where TSyntax : TypeDeclarationSyntax
 {
-    public override void Initialize(AnalysisContext analysisContext)
+    public override void Initialize(AnalysisContext context)
     {
         try
         {
-            analysisContext.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.Analyze | GeneratedCodeAnalysisFlags.ReportDiagnostics);
-            if (!Debugger.IsAttached) analysisContext.EnableConcurrentExecution();
-            analysisContext.RegisterSyntaxNodeAction(
+            context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.Analyze | GeneratedCodeAnalysisFlags.ReportDiagnostics);
+            if (!Debugger.IsAttached) context.EnableConcurrentExecution();
+            context.RegisterSyntaxNodeAction(
                 analyzeContext =>
                     AnalyzeNode((TSyntax)analyzeContext.Node,
                         analyzeContext.SemanticModel,

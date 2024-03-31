@@ -15,13 +15,13 @@ public class MethodTeardownExceptionComesFirst
     public async Task GlobalTeardown(CancellationToken cancellationToken)
     {
         await Task.Delay(10, cancellationToken);
-        throw new Exception("Global Teardown Exception");
+        throw new TestException("Global Teardown Exception");
     }
 
     [SailfishMethodTeardown]
     public async Task MethodTeardown(CancellationToken cancellationToken)
     {
         await Task.Delay(10, cancellationToken);
-        throw new Exception("Method Teardown Exception");
+        throw new TestException("Method Teardown Exception");
     }
 }

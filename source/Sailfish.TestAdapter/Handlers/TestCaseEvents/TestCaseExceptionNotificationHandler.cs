@@ -25,9 +25,7 @@ internal class TestCaseExceptionNotificationHandler : INotificationHandler<TestC
     {
         await Task.CompletedTask;
 
-        logger.Log(LogLevel.Error, notification.Exception ?? new Exception(
-                "Undefined Exception"),
-            "Encountered exception during test case execution");
+        logger.Log(LogLevel.Error, notification.Exception ?? new TestAdapterException("Undefined Exception"), "Encountered exception during test case execution");
         if (notification.TestInstanceContainer is null)
         {
             foreach (var testCase in notification.TestCaseGroup)

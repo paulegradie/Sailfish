@@ -70,7 +70,7 @@ public static class TableParserExtensionMethods
 
     private static void AssertColumnHeadersMatchColumnsOrThrow(IReadOnlyCollection<string> columnHeaders, IReadOnlyCollection<string> columnSuffixes)
     {
-        if (columnSuffixes.Count > 0 && columnSuffixes.Count != columnHeaders.Count) throw new Exception("Header suffix array length must match num columns");
+        if (columnSuffixes.Count > 0 && columnSuffixes.Count != columnHeaders.Count) throw new SailfishException("Header suffix array length must match num columns");
     }
 
     private static string WriteTable<T>(

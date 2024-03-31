@@ -1,0 +1,1 @@
+public class TestException(string? message) : Exception(message);

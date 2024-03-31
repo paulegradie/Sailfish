@@ -8,6 +8,7 @@ using Sailfish.Analysis.SailDiff;
 using Sailfish.Analysis.ScaleFish;
 using Sailfish.Contracts.Public.Models;
 using Sailfish.Contracts.Public.Notifications;
+using Sailfish.Exceptions;
 using Sailfish.Logging;
 using Sailfish.Presentation;
 
@@ -86,7 +87,7 @@ internal class SailfishExecutor
             foreach (var testName in names)
             {
                 logger.Log(LogLevel.Error, "--- {TestName}", testName);
-                testDiscoveryExceptions.Add(new Exception($"Test: {testName} - Error: {reason}"));
+                testDiscoveryExceptions.Add(new SailfishException($"Test: {testName} - Error: {reason}"));
             }
         }
 

@@ -24,7 +24,7 @@ public class TestsRunIfException
     public async Task ThisWillThrow()
     {
         await Task.Yield();
-        throw new Exception("OH No");
+        throw new TestException("OH No");
     }
 
     [SailfishMethod(Order = 3)]
