@@ -145,7 +145,7 @@ public class WilcoxonDistribution : UnivariateContinuousDistribution
         return Exact ? Math.Log(Count(x, Table)) - Math.Log(Table.Length) : approximation.LogProbabilityDensityFunction(x);
     }
 
-    public override string ToString(string format, IFormatProvider formatProvider)
+    public override string ToString(string? format, IFormatProvider? formatProvider)
     {
         return string.Format(formatProvider, "W+(x; R)");
     }

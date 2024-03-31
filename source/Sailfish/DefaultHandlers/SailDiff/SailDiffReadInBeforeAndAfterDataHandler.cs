@@ -10,9 +10,16 @@ using Sailfish.Logging;
 
 namespace Sailfish.DefaultHandlers.SailDiff;
 
-internal class SailDiffReadInBeforeAndAfterDataHandler(ITrackingFileParser trackingFileParser, ILogger logger) : IRequestHandler<ReadInBeforeAndAfterDataRequest, ReadInBeforeAndAfterDataResponse>
+internal class SailDiffReadInBeforeAndAfterDataHandler : IRequestHandler<ReadInBeforeAndAfterDataRequest, ReadInBeforeAndAfterDataResponse>
 {
-    private readonly ITrackingFileParser trackingFileParser = trackingFileParser;
+    private readonly ITrackingFileParser trackingFileParser;
+    private readonly ILogger logger;
+
+    public SailDiffReadInBeforeAndAfterDataHandler(ITrackingFileParser trackingFileParser, ILogger logger)
+    {
+        this.trackingFileParser = trackingFileParser;
+        this.logger = logger;
+    }
 
     public async Task<ReadInBeforeAndAfterDataResponse> Handle(ReadInBeforeAndAfterDataRequest request, CancellationToken cancellationToken)
     {

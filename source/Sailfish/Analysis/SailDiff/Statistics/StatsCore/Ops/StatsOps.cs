@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace Sailfish.Analysis.SailDiff.Statistics.StatsCore.Ops;
@@ -20,10 +21,9 @@ public static partial class InternalOps
         return values.Variance(mean, true);
     }
 
-    private static double Variance(this double[] values, double mean, bool unbiased = true)
+    private static double Variance(this IReadOnlyCollection<double> values, double mean, bool unbiased)
     {
-        var num1 = values.Select(t => t - mean).Select(num2 => num2 * num2).Sum();
-
-        return unbiased ? num1 / (values.Length - 1) : num1 / values.Length;
+        var a = values.Select(t => t - mean).Select(b => b * b).Sum();
+        return unbiased ? a / (values.Count - 1) : a / values.Count;
     }
 }

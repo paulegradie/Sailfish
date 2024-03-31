@@ -23,7 +23,7 @@ public readonly struct DoubleRange(double min, double max) : IFormattable, IEqua
         return this == other;
     }
 
-    public override bool Equals(object obj)
+    public override bool Equals(object? obj)
     {
         return obj is DoubleRange doubleRange && this == doubleRange;
     }
@@ -38,7 +38,7 @@ public readonly struct DoubleRange(double min, double max) : IFormattable, IEqua
         return $"[{Min}, {Max}]";
     }
 
-    public string ToString(string format, IFormatProvider formatProvider)
+    public string ToString(string? format, IFormatProvider formatProvider)
     {
         return $"[{Min.ToString(format, formatProvider)}, {Max.ToString(format, formatProvider)}]";
     }

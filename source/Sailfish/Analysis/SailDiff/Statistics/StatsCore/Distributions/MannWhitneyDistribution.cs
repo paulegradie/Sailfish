@@ -26,7 +26,7 @@ public class MannWhitneyDistribution : UnivariateContinuousDistribution
 
     public int NumberOfSamples2 { get; private set; }
 
-    public ContinuityCorrection Correction { get; set; }
+    public ContinuityCorrection Correction { get; init; }
 
     public bool Exact { get; private set; }
 
@@ -49,7 +49,7 @@ public class MannWhitneyDistribution : UnivariateContinuousDistribution
                 throw new ArgumentOutOfRangeException(nameof(ranks), "The rank vector must contain a minimum of 2 elements.");
             for (var index = 0; index < ranks.Length; ++index)
                 if (ranks[index] < 0.0)
-                    throw new ArgumentOutOfRangeException("The rank values cannot be negative.");
+                    throw new ArgumentOutOfRangeException(nameof(index), "The rank values cannot be negative.");
         }
 
         var num1 = n1 + n2;
@@ -62,13 +62,13 @@ public class MannWhitneyDistribution : UnivariateContinuousDistribution
         if (exact.HasValue)
         {
             if (exact.Value && !flag)
-                throw new ArgumentException(nameof(exact), "Cannot use exact method if rank vectors are not specified.");
+                throw new ArgumentException("Cannot use exact method if rank vectors are not specified.", nameof(exact));
             Exact = exact.Value;
         }
 
         if (flag)
         {
-            var num2 = Corrections(ranks);
+            var num2 = Corrections(ranks ?? []);
             stdDev = Math.Sqrt(n1 * n2 / 12.0 * (num1 + 1.0 - num2));
             if (Exact)
                 InitExactMethod(ranks);
@@ -131,16 +131,19 @@ public class MannWhitneyDistribution : UnivariateContinuousDistribution
     {
         if (Exact)
             return WilcoxonDistribution.ExactComplement(x, Table);
-        if (Correction == ContinuityCorrection.Midpoint)
+        switch (Correction)
         {
-            if (x > Mean)
+            case ContinuityCorrection.Midpoint when x > Mean:
                 x -= 0.5;
-            else
+                break;
+            case ContinuityCorrection.Midpoint:
                 x += 0.5;
-        }
-        else if (Correction == ContinuityCorrection.KeepInside)
-        {
-            x -= 0.5;
+                break;
+            case ContinuityCorrection.KeepInside:
+                x -= 0.5;
+                break;
+            default:
+                throw new ArgumentOutOfRangeException();
         }
 
         return approximation.ComplementaryDistributionFunction(x);
@@ -210,7 +213,7 @@ public class MannWhitneyDistribution : UnivariateContinuousDistribution
         return BrentSearch.Find(base.DistributionFunction, p, num1, num2);
     }
 
-    public override string ToString(string format, IFormatProvider formatProvider)
+    public override string ToString(string? format, IFormatProvider? formatProvider)
     {
         var num = NumberOfSamples1;
         var str1 = num.ToString(format, formatProvider);

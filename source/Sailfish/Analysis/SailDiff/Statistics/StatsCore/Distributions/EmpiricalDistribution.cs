@@ -165,7 +165,7 @@ public class EmpiricalDistribution : UnivariateContinuousDistribution
         variance = new double?();
     }
 
-    public override string ToString(string format, IFormatProvider formatProvider)
+    public override string ToString(string? format, IFormatProvider? formatProvider)
     {
         return string.Format(formatProvider, "Fn(x; S)");
     }

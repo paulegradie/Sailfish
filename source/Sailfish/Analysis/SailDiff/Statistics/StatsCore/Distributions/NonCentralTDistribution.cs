@@ -19,7 +19,7 @@ public class NonCentralTDistribution([Positive] double degreesOfFreedom, [Real] 
 
     public override DoubleRange Support => new(double.NegativeInfinity, double.PositiveInfinity);
 
-    public override string ToString(string format, IFormatProvider formatProvider)
+    public override string ToString(string? format, IFormatProvider? formatProvider)
     {
         var num = DegreesOfFreedom;
         var str1 = num.ToString(format, formatProvider);

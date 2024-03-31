@@ -60,7 +60,6 @@ public class WilcoxonTest : HypothesisTest<WilcoxonDistribution>
         else
         {
             StatisticDistribution = null;
-            exact.GetValueOrDefault(false);
         }
 
         PValue = StatisticToPValue(Statistic);

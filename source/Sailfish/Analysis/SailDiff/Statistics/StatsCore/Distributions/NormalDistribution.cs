@@ -72,7 +72,7 @@ public class NormalDistribution : UnivariateContinuousDistribution, IFormattable
         return new NormalDistribution(mean, stdDev);
     }
 
-    public override string ToString(string format, IFormatProvider formatProvider)
+    public override string ToString(string? format, IFormatProvider? formatProvider)
     {
         return string.Format(formatProvider, "N(x; μ = {0}, σ\u00B2 = {1})", mean.ToString(format, formatProvider), variance.ToString(format, formatProvider));
     }

@@ -16,7 +16,7 @@ public class Distribution : UnivariateContinuousDistribution, IFormattable
 
     public override DoubleRange Support => new(double.NegativeInfinity, double.PositiveInfinity);
 
-    public override string ToString(string format, IFormatProvider formatProvider)
+    public override string ToString(string? format, IFormatProvider? formatProvider)
     {
         return $"T(x; df = {(object)DegreesOfFreedom.ToString(format, formatProvider)})";
     }
