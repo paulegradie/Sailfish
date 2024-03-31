@@ -35,7 +35,7 @@ public class TestCode
 }";
         await AnalyzerVerifier<OnlyOneLifecycleAttributePerMethod>.VerifyAnalyzerAsync(
             source.AddSailfishAttributeDependencies(),
-            new DiagnosticResult(Descriptors.OnlyOneLifecycleAttributePerMethod).WithLocation(0).WithArguments("GlobalSetup")
+            new DiagnosticResult(OnlyOneLifecycleAttributePerMethod.Descriptor).WithLocation(0).WithArguments("GlobalSetup")
         );
     }
 }

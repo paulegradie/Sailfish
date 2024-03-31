@@ -1,6 +1,6 @@
 namespace Sailfish.Analyzers.DiagnosticAnalyzers.LifecycleMethods;
 
-public class LifecycleAttributes
+public static class LifecycleAttributes
 {
     public static readonly string[] Names =
     [

@@ -130,14 +130,14 @@ public class MethodSpecificLifecycles
 
         await AnalyzerVerifier<LifecycleMethodsShouldBePublicAnalyzer>.VerifyAnalyzerAsync(
             source.AddSailfishAttributeDependencies(),
-            new DiagnosticResult(Descriptors.LifecycleMethodsShouldBePublic).WithLocation(0).WithArguments("GlobalSetup"),
-            new DiagnosticResult(Descriptors.LifecycleMethodsShouldBePublic).WithLocation(1).WithArguments("ExecutionMethodSetup"),
-            new DiagnosticResult(Descriptors.LifecycleMethodsShouldBePublic).WithLocation(2).WithArguments("IterationSetup"),
-            new DiagnosticResult(Descriptors.LifecycleMethodsShouldBePublic).WithLocation(3).WithArguments("TestOne"),
-            new DiagnosticResult(Descriptors.LifecycleMethodsShouldBePublic).WithLocation(4).WithArguments("TestTwo"),
-            new DiagnosticResult(Descriptors.LifecycleMethodsShouldBePublic).WithLocation(5).WithArguments("IterationTeardown"),
-            new DiagnosticResult(Descriptors.LifecycleMethodsShouldBePublic).WithLocation(6).WithArguments("ExecutionMethodTeardown"),
-            new DiagnosticResult(Descriptors.LifecycleMethodsShouldBePublic).WithLocation(7).WithArguments("GlobalTeardown")
+            new DiagnosticResult(LifecycleMethodsShouldBePublicAnalyzer.Descriptor).WithLocation(0).WithArguments("GlobalSetup"),
+            new DiagnosticResult(LifecycleMethodsShouldBePublicAnalyzer.Descriptor).WithLocation(1).WithArguments("ExecutionMethodSetup"),
+            new DiagnosticResult(LifecycleMethodsShouldBePublicAnalyzer.Descriptor).WithLocation(2).WithArguments("IterationSetup"),
+            new DiagnosticResult(LifecycleMethodsShouldBePublicAnalyzer.Descriptor).WithLocation(3).WithArguments("TestOne"),
+            new DiagnosticResult(LifecycleMethodsShouldBePublicAnalyzer.Descriptor).WithLocation(4).WithArguments("TestTwo"),
+            new DiagnosticResult(LifecycleMethodsShouldBePublicAnalyzer.Descriptor).WithLocation(5).WithArguments("IterationTeardown"),
+            new DiagnosticResult(LifecycleMethodsShouldBePublicAnalyzer.Descriptor).WithLocation(6).WithArguments("ExecutionMethodTeardown"),
+            new DiagnosticResult(LifecycleMethodsShouldBePublicAnalyzer.Descriptor).WithLocation(7).WithArguments("GlobalTeardown")
         );
     }
 }

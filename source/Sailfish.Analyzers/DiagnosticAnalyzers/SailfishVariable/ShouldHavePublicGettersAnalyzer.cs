@@ -5,37 +5,24 @@ using Microsoft.CodeAnalysis.Diagnostics;
 using Sailfish.Analyzers.Utils;
 using Sailfish.Analyzers.Utils.TreeParsingExtensionMethods;
 using System.Collections.Immutable;
-using System.Diagnostics;
 
 namespace Sailfish.Analyzers.DiagnosticAnalyzers.SailfishVariable;
 
-[DiagnosticAnalyzer(LanguageNames.CSharp)]
-public class ShouldHavePublicGettersAnalyzer : DiagnosticAnalyzer
+public class ShouldHavePublicGettersAnalyzer : AnalyzerBase<ClassDeclarationSyntax>
 {
-    private static readonly DiagnosticDescriptor Descriptor = Descriptors.SailfishVariablesShouldHavePublicGettersDescriptor;
+    public static readonly DiagnosticDescriptor Descriptor = new(
+        id: "SF1011",
+        title: "Properties decorated with the SailfishVariableAttribute must have public getters",
+        messageFormat: "Property '{0}' getter must be public",
+        category: AnalyzerGroups.EssentialAnalyzers.Category,
+        isEnabledByDefault: AnalyzerGroups.EssentialAnalyzers.IsEnabledByDefault,
+        defaultSeverity: DiagnosticSeverity.Error,
+        description: "Properties decorated with the SailfishVariableAttribute must have public getters.",
+        helpLinkUri: AnalyzerGroups.EssentialAnalyzers.HelpLink);
+
     public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(Descriptor);
 
-    public override void Initialize(AnalysisContext context)
-    {
-        try
-        {
-            context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.Analyze | GeneratedCodeAnalysisFlags.ReportDiagnostics);
-            if (!Debugger.IsAttached) context.EnableConcurrentExecution();
-            context.RegisterSyntaxNodeAction(
-                analyzeContext =>
-                    AnalyzeSyntaxNode((ClassDeclarationSyntax)analyzeContext.Node,
-                        analyzeContext.SemanticModel,
-                        analyzeContext),
-                SyntaxKind.ClassDeclaration);
-        }
-        catch (Exception ex)
-        {
-            var trace = string.Join("\n", ex.StackTrace);
-            throw new SailfishAnalyzerException($"Unexpected exception ~ {ex.Message} - {trace}");
-        }
-    }
-
-    private static void AnalyzeSyntaxNode(TypeDeclarationSyntax classDeclaration, SemanticModel semanticModel, SyntaxNodeAnalysisContext context)
+    protected override void AnalyzeNode(TypeDeclarationSyntax classDeclaration, SemanticModel semanticModel, SyntaxNodeAnalysisContext context)
     {
         if (!classDeclaration.IsASailfishTestType(semanticModel)) return;
 
