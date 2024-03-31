@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using MathNet.Numerics.Statistics;
 using Sailfish.Analysis.SailDiff.Statistics.StatsCore.Analysers;
+using Sailfish.Analysis.SailDiff.Statistics.StatsCore.Analysers.Factories;
 using Sailfish.Contracts.Public;
 using Sailfish.Contracts.Public.Models;
 
@@ -30,7 +31,7 @@ public class KolmogorovSmirnovTest : IKolmogorovSmirnovTest
             var sample1 = preprocessed1.OutlierAnalysis?.DataWithOutliersRemoved ?? preprocessed1.RawData;
             var sample2 = preprocessed2.OutlierAnalysis?.DataWithOutliersRemoved ?? preprocessed2.RawData;
 
-            var test = new TwoSampleKolmogorovSmirnov(sample1, sample2);
+            var test = TwoSampleKolmogorovSmirnovFactory.Create(sample1, sample2);
 
             var meanBefore = Math.Round(sample1.Mean(), sigDig);
             var meanAfter = Math.Round(sample2.Mean(), sigDig);
@@ -75,7 +76,7 @@ public class KolmogorovSmirnovTest : IKolmogorovSmirnovTest
         }
     }
 
-    public class AdditionalResults
+    public record AdditionalResults
     {
         public const string EmpiricalDistribution1 = "EmpiricalDistribution1";
         public const string EmpiricalDistribution2 = "EmpiricalDistribution2";

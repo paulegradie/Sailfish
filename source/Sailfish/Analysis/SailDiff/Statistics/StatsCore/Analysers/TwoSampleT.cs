@@ -1,26 +1,10 @@
 using System;
 using Sailfish.Analysis.SailDiff.Statistics.StatsCore.Distributions;
-using Sailfish.Analysis.SailDiff.Statistics.StatsCore.Ops;
 
 namespace Sailfish.Analysis.SailDiff.Statistics.StatsCore.Analysers;
 
-[Serializable]
-public class TwoSampleT : HypothesisTest
+public sealed class TwoSampleT : HypothesisTest
 {
-    private readonly TwoSampleTTestPowerAnalysis powerAnalysis;
-
-    public TwoSampleT(
-        double[] sample1,
-        double[] sample2,
-        bool assumeEqualVariances = true,
-        double hypothesizedDifference = 0.0,
-        TwoSampleHypothesis alternate = TwoSampleHypothesis.ValuesAreDifferent)
-        : this(sample1.Mean(), sample1.Variance(), sample1.Length,
-            sample2.Mean(), sample2.Variance(), sample2.Length,
-            assumeEqualVariances, hypothesizedDifference, alternate)
-    {
-    }
-
     public TwoSampleT(
         double mean1,
         double var1,
@@ -57,66 +41,34 @@ public class TwoSampleT : HypothesisTest
         StatisticDistribution = new Distribution(degreesOfFreedom);
         Hypothesis = alternate;
         Tail = (DistributionTailSailfish)alternate;
-        PValue = StatisticToPValue(Statistic);
-        OnSizeChanged();
-
-        var num = Math.Sqrt((var1 + var2) / 2.0);
-        var ttestPowerAnalysis = new TwoSampleTTestPowerAnalysis(Hypothesis)
-        {
-            Samples1 = samples1,
-            Samples2 = samples2,
-            Effect = (ObservedDifference - HypothesizedDifference) / num,
-            Size = Size
-        };
-        powerAnalysis = ttestPowerAnalysis;
-        powerAnalysis.ComputePower();
+        PValue = TestExtensionMethods.StatisticToPValue(Statistic, StatisticDistribution, Tail);
+        Confidence = GetConfidenceInterval(1.0 - Size);
     }
-
-    public ITwoSamplePowerAnalysis Analysis => powerAnalysis;
 
     public TwoSampleHypothesis Hypothesis { get; private set; }
 
     public bool AssumeEqualVariance { get; private set; }
 
-    public double StandardError { get; protected set; }
+    public double StandardError { get; }
 
-    public double Variance { get; protected set; }
+    public double Variance { get; }
 
-    public double EstimatedValue1 { get; protected set; }
+    public double EstimatedValue1 { get; }
 
-    public double EstimatedValue2 { get; protected set; }
+    public double EstimatedValue2 { get; }
 
-    public double HypothesizedDifference { get; protected set; }
+    public double HypothesizedDifference { get; }
 
-    public double ObservedDifference { get; protected set; }
+    public double ObservedDifference { get; }
 
     public double DegreesOfFreedom => StatisticDistribution.DegreesOfFreedom;
 
-    public DoubleRange Confidence { get; protected set; }
-    public virtual Distribution StatisticDistribution { get; set; }
+    public DoubleRange Confidence { get; set; }
+    private Distribution StatisticDistribution { get; }
 
     public DoubleRange GetConfidenceInterval(double percent = 0.95)
     {
-        var statistic = PValueToStatistic(1.0 - percent);
+        var statistic = TestExtensionMethods.PValueToStatistic(1.0 - percent, StatisticDistribution, Tail);
         return new DoubleRange(ObservedDifference - statistic * StandardError, ObservedDifference + statistic * StandardError);
-    }
-
-    protected void OnSizeChanged()
-    {
-        Confidence = GetConfidenceInterval(1.0 - Size);
-        if (Analysis == null)
-            return;
-        powerAnalysis.Size = Size;
-        powerAnalysis.ComputePower();
-    }
-
-    public virtual double PValueToStatistic(double p)
-    {
-        return TestExtensionMethods.PValueToStatistic(p, StatisticDistribution, Tail);
-    }
-
-    public virtual double StatisticToPValue(double x)
-    {
-        return TestExtensionMethods.StatisticToPValue(x, StatisticDistribution, Tail);
     }
 }

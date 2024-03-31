@@ -91,7 +91,7 @@ public class MannWhitneyWilcoxonTest : IMannWhitneyWilcoxonTest
         }
     }
 
-    public class AdditionalResults
+    public record AdditionalResults
     {
         public const string Statistic1 = "Statistic1";
         public const string Statistic2 = "Statistic2";
