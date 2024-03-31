@@ -5,37 +5,25 @@ using Microsoft.CodeAnalysis.Diagnostics;
 using Sailfish.Analyzers.Utils;
 using Sailfish.Analyzers.Utils.TreeParsingExtensionMethods;
 using System.Collections.Immutable;
-using System.Diagnostics;
 
 namespace Sailfish.Analyzers.DiagnosticAnalyzers;
 
-[DiagnosticAnalyzer(LanguageNames.CSharp)]
-public class SuppressNonNullablePropertiesWarningWhenSetInGlobalSetupMethod : DiagnosticAnalyzer
+public class SuppressNonNullablePropertiesWarningWhenSetInGlobalSetupMethod : AnalyzerBase<ClassDeclarationSyntax>
 {
-    private static readonly DiagnosticDescriptor Descriptor = Descriptors.SuppressNonNullablePropertiesNotSetRule;
+    private static readonly DiagnosticDescriptor Descriptor = new(
+        id: "SF7000",
+        title: "Suppresses warnings when a non nullable property is set in the global setup method",
+        messageFormat: "'{0}' should be suppressed",
+        category: AnalyzerGroups.SuppressionAnalyzers.Category,
+        isEnabledByDefault: AnalyzerGroups.SuppressionAnalyzers.IsEnabledByDefault,
+        defaultSeverity: DiagnosticSeverity.Hidden,
+        description: "",
+        helpLinkUri: AnalyzerGroups.SuppressionAnalyzers.HelpLink
+    );
+
     public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(Descriptor);
 
-    public override void Initialize(AnalysisContext context)
-    {
-        try
-        {
-            context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.Analyze | GeneratedCodeAnalysisFlags.ReportDiagnostics);
-            if (!Debugger.IsAttached) context.EnableConcurrentExecution();
-            context.RegisterSyntaxNodeAction(
-                analyzeContext =>
-                    AnalyzeSyntaxNode((ClassDeclarationSyntax)analyzeContext.Node,
-                        analyzeContext.SemanticModel,
-                        analyzeContext),
-                SyntaxKind.ClassDeclaration);
-        }
-        catch (Exception ex)
-        {
-            var trace = string.Join("\n", ex.StackTrace);
-            throw new SailfishAnalyzerException($"Unexpected exception ~ {ex.Message} - {trace}");
-        }
-    }
-
-    private static void AnalyzeSyntaxNode(TypeDeclarationSyntax classDeclaration, SemanticModel semanticModel, SyntaxNodeAnalysisContext context)
+    protected override void AnalyzeNode(TypeDeclarationSyntax classDeclaration, SemanticModel semanticModel, SyntaxNodeAnalysisContext context)
     {
         if (!classDeclaration.IsASailfishTestType(semanticModel)) return;
 
@@ -76,14 +64,8 @@ public class SuppressNonNullablePropertiesWarningWhenSetInGlobalSetupMethod : Di
 
     private static bool IsWarningSuppressed(SemanticModel semanticModel, string warningId)
     {
-        // Get the compilation associated with the semantic model
         var compilation = semanticModel.Compilation;
-
-        // Get the compilation options
         var compilationOptions = compilation.Options;
-
-        // Check if the specific warning is suppressed in the compilation options
-        return compilationOptions.SpecificDiagnosticOptions.TryGetValue(warningId, out var reportDiagnostic)
-               && reportDiagnostic == ReportDiagnostic.Suppress;
+        return compilationOptions.SpecificDiagnosticOptions.TryGetValue(warningId, out var reportDiagnostic) && reportDiagnostic == ReportDiagnostic.Suppress;
     }
 }

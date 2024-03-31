@@ -32,8 +32,8 @@ public class TestCode
 }";
         await AnalyzerVerifier<ShouldBePublicAnalyzer>.VerifyAnalyzerAsync(
             source.AddSailfishAttributeDependencies(),
-            new DiagnosticResult(Descriptors.PropertiesAssignedInGlobalSetupShouldBePublicDescriptor).WithLocation(0).WithArguments("NonPublicModifier"),
-            new DiagnosticResult(Descriptors.PropertiesAssignedInGlobalSetupShouldBePublicDescriptor).WithLocation(1).WithArguments("NonPublicModifier")
+            new DiagnosticResult(ShouldBePublicAnalyzer.Descriptor).WithLocation(0).WithArguments("NonPublicModifier"),
+            new DiagnosticResult(ShouldBePublicAnalyzer.Descriptor).WithLocation(1).WithArguments("NonPublicModifier")
         );
     }
 

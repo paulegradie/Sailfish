@@ -5,37 +5,26 @@ using Microsoft.CodeAnalysis.Diagnostics;
 using Sailfish.Analyzers.Utils;
 using Sailfish.Analyzers.Utils.TreeParsingExtensionMethods;
 using System.Collections.Immutable;
-using System.Diagnostics;
 
 namespace Sailfish.Analyzers.DiagnosticAnalyzers.PropertiesSetInAnySailfishGlobalSetup;
 
-[DiagnosticAnalyzer(LanguageNames.CSharp)]
-public class ShouldBePublicAnalyzer : DiagnosticAnalyzer
+public class ShouldBePublicAnalyzer : AnalyzerBase<ClassDeclarationSyntax>
 {
-    private static readonly DiagnosticDescriptor Descriptor = Descriptors.PropertiesAssignedInGlobalSetupShouldBePublicDescriptor;
+    public static readonly DiagnosticDescriptor Descriptor = new(
+        id: "SF1000",
+        title: "Properties initialized in the global setup must be public",
+        messageFormat: "Property '{0}' must be public when assigned within a method decorated with the SailfishGlobalSetup attribute",
+        category: AnalyzerGroups.EssentialAnalyzers.Category,
+        defaultSeverity: DiagnosticSeverity.Error,
+        isEnabledByDefault: true,
+        description: "Properties that are assigned in the SailfishGlobalSetup must be public.",
+        helpLinkUri: $"{AnalyzerGroups.EssentialAnalyzers.HelpLink}",
+        customTags: []
+    );
+
     public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(Descriptor);
 
-    public override void Initialize(AnalysisContext context)
-    {
-        try
-        {
-            context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.Analyze | GeneratedCodeAnalysisFlags.ReportDiagnostics);
-            if (!Debugger.IsAttached) context.EnableConcurrentExecution();
-            context.RegisterSyntaxNodeAction(
-                analyzeContext =>
-                    AnalyzeSyntaxNode((ClassDeclarationSyntax)analyzeContext.Node,
-                        analyzeContext.SemanticModel,
-                        analyzeContext),
-                SyntaxKind.ClassDeclaration);
-        }
-        catch (Exception ex)
-        {
-            var trace = string.Join("\n", ex.StackTrace);
-            throw new SailfishAnalyzerException($"Unexpected exception ~ {ex.Message} - {trace}");
-        }
-    }
-
-    private static void AnalyzeSyntaxNode(TypeDeclarationSyntax classDeclaration, SemanticModel semanticModel, SyntaxNodeAnalysisContext context)
+    protected override void AnalyzeNode(TypeDeclarationSyntax classDeclaration, SemanticModel semanticModel, SyntaxNodeAnalysisContext context)
     {
         if (!classDeclaration.IsASailfishTestType(semanticModel)) return;
 
@@ -49,21 +38,23 @@ public class ShouldBePublicAnalyzer : DiagnosticAnalyzer
             .SelectMany(m => m.DescendantNodes().OfType<IdentifierNameSyntax>())
             .ToList();
 
-        foreach (var propertyInsideOfSetupMethod in thingsAssignedInsideOfTheGlobalSetupMethods)
+        foreach (var propertyInsideOfSetupMethod in thingsAssignedInsideOfTheGlobalSetupMethods
+                     .Where(propertyInsideOfSetupMethod => propertyInsideOfSetupMethod.IsClassPropertyOrField()))
         {
-            if (!propertyInsideOfSetupMethod.IsClassPropertyOrField()) continue;
             if (propertyInsideOfSetupMethod.Parent is not AssignmentExpressionSyntax) continue;
 
             var symbol = context.SemanticModel.GetSymbolInfo(propertyInsideOfSetupMethod).Symbol;
 
-            // No Non Public
+            // No Non-Public
             if (symbol is not IPropertySymbol publicPropertySymbol || publicPropertySymbol.DeclaredAccessibility.HasFlag(Accessibility.Public)) continue;
 
             context.ReportDiagnostic(Diagnostic.Create(Descriptor, propertyInsideOfSetupMethod.Identifier.GetLocation(), propertyInsideOfSetupMethod.Identifier.Text));
 
             var propertyDeclaration = classDeclaration.Members.OfType<PropertyDeclarationSyntax>().SingleOrDefault(p => p.Identifier.Text == symbol.Name);
             if (propertyDeclaration is not null)
+            {
                 context.ReportDiagnostic(Diagnostic.Create(Descriptor, propertyDeclaration.Identifier.GetLocation(), propertyDeclaration.Identifier.Text));
+            }
         }
     }
 }

@@ -33,8 +33,8 @@ public class PrivateSettersShouldError
 ";
         await AnalyzerVerifier<ShouldHavePublicSettersAnalyzer>.VerifyAnalyzerAsync(
             source.AddSailfishAttributeDependencies(),
-            new DiagnosticResult(Descriptors.PropertiesAssignedInGlobalSetupShouldHavePublicSettersDescriptor).WithLocation(0).WithArguments("PrivateSetter"),
-            new DiagnosticResult(Descriptors.PropertiesAssignedInGlobalSetupShouldHavePublicSettersDescriptor).WithLocation(1).WithArguments("PrivateSetter")
+            new DiagnosticResult(ShouldHavePublicSettersAnalyzer.Descriptor).WithLocation(0).WithArguments("PrivateSetter"),
+            new DiagnosticResult(ShouldHavePublicSettersAnalyzer.Descriptor).WithLocation(1).WithArguments("PrivateSetter")
         );
     }
 
@@ -103,8 +103,8 @@ abstract class BaseClass
 ";
         await AnalyzerVerifier<ShouldHavePublicSettersAnalyzer>.VerifyAnalyzerAsync(
             source.AddSailfishAttributeDependencies(),
-            new DiagnosticResult(Descriptors.PropertiesAssignedInGlobalSetupShouldHavePublicSettersDescriptor).WithLocation(0).WithArguments("PrivateSetter"),
-            new DiagnosticResult(Descriptors.PropertiesAssignedInGlobalSetupShouldHavePublicSettersDescriptor).WithLocation(1).WithArguments("PrivateSetter")
+            new DiagnosticResult(ShouldHavePublicSettersAnalyzer.Descriptor).WithLocation(0).WithArguments("PrivateSetter"),
+            new DiagnosticResult(ShouldHavePublicSettersAnalyzer.Descriptor).WithLocation(1).WithArguments("PrivateSetter")
         );
     }
 }
