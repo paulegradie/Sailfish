@@ -12,6 +12,7 @@ namespace Sailfish.Analyzers.DiagnosticAnalyzers.LifecycleMethods;
 [DiagnosticAnalyzer(LanguageNames.CSharp)]
 public class OnlyOneLifecycleAttributePerMethod : DiagnosticAnalyzer
 {
+    
     private static readonly DiagnosticDescriptor Descriptor = Descriptors.OnlyOneLifecycleAttributePerMethod;
     public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(Descriptor);
 
