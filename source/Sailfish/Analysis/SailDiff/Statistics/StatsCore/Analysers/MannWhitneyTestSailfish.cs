@@ -6,7 +6,7 @@ using Sailfish.Analysis.SailDiff.Statistics.StatsCore.Ops;
 namespace Sailfish.Analysis.SailDiff.Statistics.StatsCore.Analysers;
 
 [Serializable]
-public sealed class MannWhitneyWilcoxon : HypothesisTest<MannWhitneyDistribution>
+public sealed class MannWhitneyWilcoxon : HypothesisTest
 {
     public MannWhitneyWilcoxon(
         double[] sample1,
@@ -75,9 +75,9 @@ public sealed class MannWhitneyWilcoxon : HypothesisTest<MannWhitneyDistribution
     public double Statistic2 { get; protected set; }
 
     public bool IsExact { get; private set; }
-    public override MannWhitneyDistribution StatisticDistribution { get; set; }
+    public MannWhitneyDistribution StatisticDistribution { get; set; }
 
-    public override double StatisticToPValue(double x)
+    public double StatisticToPValue(double x)
     {
         return Tail switch
         {
@@ -92,7 +92,7 @@ public sealed class MannWhitneyWilcoxon : HypothesisTest<MannWhitneyDistribution
         };
     }
 
-    public override double PValueToStatistic(double p)
+    public double PValueToStatistic(double p)
     {
         throw new NotImplementedException("This method has not been implemented yet. Please open an issue in the project issue tracker if you are interested in this feature.");
     }

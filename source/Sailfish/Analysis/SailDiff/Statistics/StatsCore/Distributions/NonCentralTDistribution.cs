@@ -49,11 +49,6 @@ public class NonCentralTDistribution([Positive] double degreesOfFreedom, [Real] 
         return num3 / num4 * num5;
     }
 
-    public override object Clone()
-    {
-        return new NonCentralTDistribution(DegreesOfFreedom, NonCentrality);
-    }
-
     private static double DistributionFunctionLowerTail(double t, double df, double delta)
     {
         const double num1 = 0.5723649429247001;

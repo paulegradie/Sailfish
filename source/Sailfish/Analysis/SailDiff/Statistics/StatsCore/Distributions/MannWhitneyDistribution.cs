@@ -1,7 +1,6 @@
 using System;
 using System.Linq;
 using System.Threading.Tasks;
-using Sailfish.Analysis.SailDiff.Statistics.StatsCore.Attributes;
 using Sailfish.Analysis.SailDiff.Statistics.StatsCore.Ops;
 using Sailfish.Analysis.SailDiff.Statistics.StatsCore.Search;
 
@@ -10,11 +9,6 @@ namespace Sailfish.Analysis.SailDiff.Statistics.StatsCore.Distributions;
 public class MannWhitneyDistribution : UnivariateContinuousDistribution
 {
     private NormalDistribution approximation;
-
-    public MannWhitneyDistribution([PositiveInteger] int n1, [PositiveInteger] int n2)
-    {
-        Init(n1, n2, null, new bool?());
-    }
 
     public MannWhitneyDistribution(double[] ranks1, double[] ranks2, bool? exact = null)
     {
@@ -153,19 +147,6 @@ public class MannWhitneyDistribution : UnivariateContinuousDistribution
     {
         var length = ranks.Length;
         return ranks.Sum() - length * (length + 1.0) / 2.0;
-    }
-
-    public override object Clone()
-    {
-        return new MannWhitneyDistribution(NumberOfSamples1, NumberOfSamples2)
-        {
-            Exact = Exact,
-            Table = Table,
-            NumberOfSamples1 = NumberOfSamples1,
-            NumberOfSamples2 = NumberOfSamples2,
-            Correction = Correction,
-            approximation = (NormalDistribution)approximation.Clone()
-        };
     }
 
     protected internal override double InnerProbabilityDensityFunction(double x)

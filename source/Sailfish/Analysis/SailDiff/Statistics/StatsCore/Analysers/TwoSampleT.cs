@@ -5,7 +5,7 @@ using Sailfish.Analysis.SailDiff.Statistics.StatsCore.Ops;
 namespace Sailfish.Analysis.SailDiff.Statistics.StatsCore.Analysers;
 
 [Serializable]
-public class TwoSampleT : HypothesisTest<Distribution>
+public class TwoSampleT : HypothesisTest
 {
     private readonly TwoSampleTTestPowerAnalysis powerAnalysis;
 
@@ -93,7 +93,7 @@ public class TwoSampleT : HypothesisTest<Distribution>
     public double DegreesOfFreedom => StatisticDistribution.DegreesOfFreedom;
 
     public DoubleRange Confidence { get; protected set; }
-    public override Distribution StatisticDistribution { get; set; }
+    public virtual Distribution StatisticDistribution { get; set; }
 
     public DoubleRange GetConfidenceInterval(double percent = 0.95)
     {
@@ -110,12 +110,12 @@ public class TwoSampleT : HypothesisTest<Distribution>
         powerAnalysis.ComputePower();
     }
 
-    public override double PValueToStatistic(double p)
+    public virtual double PValueToStatistic(double p)
     {
         return TestExtensionMethods.PValueToStatistic(p, StatisticDistribution, Tail);
     }
 
-    public override double StatisticToPValue(double x)
+    public virtual double StatisticToPValue(double x)
     {
         return TestExtensionMethods.StatisticToPValue(x, StatisticDistribution, Tail);
     }

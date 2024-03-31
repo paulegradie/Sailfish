@@ -39,11 +39,6 @@ public class KolmogorovSmirnovDistribution([Positive] double samples) : Univaria
         return OneSideUpperTail(NumberOfSamples, x);
     }
 
-    public override object Clone()
-    {
-        return new KolmogorovSmirnovDistribution(NumberOfSamples);
-    }
-
     public static double CumulativeFunction(double n, double x)
     {
         if (double.IsNaN(x))

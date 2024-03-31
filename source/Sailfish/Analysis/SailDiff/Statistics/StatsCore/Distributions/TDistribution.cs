@@ -38,12 +38,6 @@ public class Distribution : UnivariateContinuousDistribution, IFormattable
         return InverseDistributionLeftTail(DegreesOfFreedom, p);
     }
 
-
-    public override object Clone()
-    {
-        return new Distribution(DegreesOfFreedom);
-    }
-
     private static double InverseDistributionLeftTail(double df, double p)
     {
         if (p == 0.0)

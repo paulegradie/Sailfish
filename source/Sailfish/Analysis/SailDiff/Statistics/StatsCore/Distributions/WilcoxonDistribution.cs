@@ -1,7 +1,6 @@
 using System;
 using System.Linq;
 using System.Threading.Tasks;
-using Sailfish.Analysis.SailDiff.Statistics.StatsCore.Attributes;
 using Sailfish.Analysis.SailDiff.Statistics.StatsCore.Ops;
 
 namespace Sailfish.Analysis.SailDiff.Statistics.StatsCore.Distributions;
@@ -10,11 +9,6 @@ namespace Sailfish.Analysis.SailDiff.Statistics.StatsCore.Distributions;
 public class WilcoxonDistribution : UnivariateContinuousDistribution
 {
     private NormalDistribution approximation;
-
-    public WilcoxonDistribution([PositiveInteger] int n)
-    {
-        Init(n, null, new bool?());
-    }
 
     public WilcoxonDistribution(double[] ranks, bool? exact = null)
     {
@@ -79,17 +73,6 @@ public class WilcoxonDistribution : UnivariateContinuousDistribution
             if (signs[index] > 0)
                 num += ranks[index];
         return num;
-    }
-
-    public override object Clone()
-    {
-        return new WilcoxonDistribution(NumberOfSamples)
-        {
-            Exact = Exact,
-            Table = Table,
-            NumberOfSamples = NumberOfSamples,
-            approximation = (NormalDistribution)approximation.Clone()
-        };
     }
 
     protected internal override double InnerDistributionFunction(double x)

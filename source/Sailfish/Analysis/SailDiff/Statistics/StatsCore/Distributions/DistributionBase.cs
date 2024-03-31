@@ -11,6 +11,4 @@ public abstract class DistributionBase : IFormattable
     {
         return ToString(null, null);
     }
-
-    public abstract object Clone();
 }

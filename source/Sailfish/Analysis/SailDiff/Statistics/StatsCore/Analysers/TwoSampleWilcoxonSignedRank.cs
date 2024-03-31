@@ -1,13 +1,11 @@
-using System;
 using Sailfish.Analysis.SailDiff.Statistics.StatsCore.Distributions;
-using Sailfish.Analysis.SailDiff.Statistics.StatsCore.Exceptions;
 
 namespace Sailfish.Analysis.SailDiff.Statistics.StatsCore.Analysers;
 
 /// <summary>Wilcoxon signed-rank test for paired samples.</summary>
 /// <seealso cref="T:Accord.Statistics.Testing.WilcoxonSignedRankTest" />
 /// <seealso cref="T:Accord.Statistics.Distributions.Univariate.WilcoxonDistribution" />
-public class TwoSampleWilcoxonSignedRank : WilcoxonTest
+internal class TwoSampleWilcoxonSignedRank : WilcoxonTest
 {
     /// <summary>
     ///     Tests whether the medians of two paired samples are different.
@@ -26,25 +24,13 @@ public class TwoSampleWilcoxonSignedRank : WilcoxonTest
     ///     rank statistics or not. Default is true.
     /// </param>
     public TwoSampleWilcoxonSignedRank(
-        double[] sample1,
-        double[] sample2,
+        int[] signs,
+        double[] diffs,
         TwoSampleHypothesis alternate = TwoSampleHypothesis.ValuesAreDifferent,
         bool? exact = null,
-        bool adjustForTies = true)
+        bool adjustForTies = true) : base(signs, diffs, (DistributionTailSailfish)alternate, exact, adjustForTies)
     {
-        if (sample1.Length != sample2.Length)
-            throw new DimensionMismatchException(nameof(sample2), "Both samples should be of the same size.");
-        var signs = new int[sample1.Length];
-        var diffs = new double[sample1.Length];
-        for (var index = 0; index < sample1.Length; ++index)
-        {
-            var num = sample1[index] - sample2[index];
-            signs[index] = Math.Sign(num);
-            diffs[index] = Math.Abs(num);
-        }
-
         Hypothesis = alternate;
-        Compute(signs, diffs, (DistributionTailSailfish)alternate, exact, adjustForTies);
     }
 
     /// <summary>

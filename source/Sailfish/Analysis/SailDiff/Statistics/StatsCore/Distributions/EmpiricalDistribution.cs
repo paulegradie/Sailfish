@@ -11,7 +11,6 @@ public class EmpiricalDistribution : UnivariateContinuousDistribution
     private int[] repeats;
     private double sumOfWeights;
     private WeightType type;
-    private double? variance;
     private double[]? weights;
 
     public EmpiricalDistribution(double[] samples, double smoothing)
@@ -48,24 +47,6 @@ public class EmpiricalDistribution : UnivariateContinuousDistribution
     }
 
     public override DoubleRange Support => new(double.NegativeInfinity, double.PositiveInfinity);
-
-    public override object Clone()
-    {
-        var empiricalDistribution = new EmpiricalDistribution
-        {
-            type = type,
-            sumOfWeights = sumOfWeights,
-            Length = Length,
-            Smoothing = Smoothing,
-            constant = constant,
-            Samples = (double[])Samples.Clone()
-        };
-        if (weights != null)
-            empiricalDistribution.weights = (double[])weights.Clone();
-        if (repeats != null)
-            empiricalDistribution.repeats = (int[])repeats.Clone();
-        return empiricalDistribution;
-    }
 
     protected internal override double InnerDistributionFunction(double x)
     {
@@ -162,7 +143,6 @@ public class EmpiricalDistribution : UnivariateContinuousDistribution
         }
 
         mean = new double?();
-        variance = new double?();
     }
 
     public override string ToString(string? format, IFormatProvider? formatProvider)

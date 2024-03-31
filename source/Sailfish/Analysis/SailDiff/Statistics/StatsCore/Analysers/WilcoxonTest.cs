@@ -4,19 +4,9 @@ using Sailfish.Analysis.SailDiff.Statistics.StatsCore.Ops;
 
 namespace Sailfish.Analysis.SailDiff.Statistics.StatsCore.Analysers;
 
-public class WilcoxonTest : HypothesisTest<WilcoxonDistribution>
+public class WilcoxonTest : HypothesisTest
 {
-    private int[] Signs { get; set; }
-
-    private double[] Delta { get; set; }
-
-    private double[] Ranks { get; set; }
-
-    private bool HasZeros { get; set; }
-
-    public override WilcoxonDistribution StatisticDistribution { get; set; }
-
-    protected void Compute(
+    protected WilcoxonTest(
         int[] signs,
         double[] diffs,
         DistributionTailSailfish tail,
@@ -33,12 +23,13 @@ public class WilcoxonTest : HypothesisTest<WilcoxonDistribution>
 
         Signs = signs;
         Delta = diffs;
-        Ranks = Delta.Rank(out var _, adjustForTies: adjustForTies);
-        Compute(WilcoxonDistribution.WPositive(Signs, Ranks), Ranks, tail, exact);
-    }
+        Ranks = Delta.Rank(out _, adjustForTies: adjustForTies);
+        if (Ranks.Length == 0)
+        {
+            throw new Exception();
+        }
 
-    private void Compute(double statistic, double[] ranks, DistributionTailSailfish tail, bool? exact)
-    {
+
         if (HasZeros)
         {
             exact ??= false;
@@ -48,44 +39,30 @@ public class WilcoxonTest : HypothesisTest<WilcoxonDistribution>
                 throw new ArgumentException("An exact test cannot be computed when there are zeros in the samples (or when paired samples are the same in a paired test).");
         }
 
-        Statistic = statistic;
+        Statistic = WilcoxonDistribution.WPositive(Signs, Ranks);
         Tail = tail;
-        if (ranks.Length != 0)
+        StatisticDistribution = new WilcoxonDistribution(Ranks, exact)
         {
-            StatisticDistribution = new WilcoxonDistribution(ranks, exact)
-            {
-                Correction = Tail == DistributionTailSailfish.TwoTail ? ContinuityCorrection.Midpoint : ContinuityCorrection.KeepInside
-            };
-        }
-        else
-        {
-            StatisticDistribution = null;
-        }
+            Correction = Tail == DistributionTailSailfish.TwoTail ? ContinuityCorrection.Midpoint : ContinuityCorrection.KeepInside
+        };
 
-        PValue = StatisticToPValue(Statistic);
-    }
 
-    public override double StatisticToPValue(double x)
-    {
-        if (StatisticDistribution == null)
-            return double.NaN;
-        return Tail switch
+        PValue = Tail switch
         {
-            DistributionTailSailfish.TwoTail => Math.Min(2.0 * Math.Min(StatisticDistribution.DistributionFunction(x), StatisticDistribution.ComplementaryDistributionFunction(x)), 1.0),
-            DistributionTailSailfish.OneUpper => StatisticDistribution.ComplementaryDistributionFunction(x),
-            DistributionTailSailfish.OneLower => StatisticDistribution.DistributionFunction(x),
+            DistributionTailSailfish.TwoTail => Math.Min(2.0 * Math.Min(StatisticDistribution.DistributionFunction(Statistic), StatisticDistribution.ComplementaryDistributionFunction(Statistic)), 1.0),
+            DistributionTailSailfish.OneUpper => StatisticDistribution.ComplementaryDistributionFunction(Statistic),
+            DistributionTailSailfish.OneLower => StatisticDistribution.DistributionFunction(Statistic),
             _ => throw new InvalidOperationException()
         };
     }
 
-    public override double PValueToStatistic(double p)
-    {
-        return Tail switch
-        {
-            DistributionTailSailfish.TwoTail => StatisticDistribution.InverseDistributionFunction(1.0 - p / 2.0),
-            DistributionTailSailfish.OneUpper => StatisticDistribution.InverseDistributionFunction(1.0 - p),
-            DistributionTailSailfish.OneLower => StatisticDistribution.InverseDistributionFunction(p),
-            _ => throw new InvalidOperationException()
-        };
-    }
+    private int[] Signs { get; set; }
+
+    private double[] Delta { get; set; }
+
+    private double[] Ranks { get; set; }
+
+    private bool HasZeros { get; set; }
+
+    public WilcoxonDistribution StatisticDistribution { get; set; }
 }

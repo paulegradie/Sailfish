@@ -8,8 +8,6 @@ namespace Sailfish.Analysis.SailDiff.Statistics.StatsCore.Distributions;
 [Serializable]
 public class NormalDistribution : UnivariateContinuousDistribution, IFormattable
 {
-    private double? entropy;
-    private readonly bool immutable;
     private double lnconstant;
     private double mean;
     private double stdDev = 1.0;
@@ -34,8 +32,6 @@ public class NormalDistribution : UnivariateContinuousDistribution, IFormattable
 
     public void Fit(double[] observations, double[]? weights, NormalOptions? options)
     {
-        if (immutable)
-            throw new InvalidOperationException("NormalDistribution.Standard is immutable.");
         double num1;
         double num2;
         if (weights != null)
@@ -65,11 +61,6 @@ public class NormalDistribution : UnivariateContinuousDistribution, IFormattable
         if (double.IsNaN(num2) || num2 <= 0.0)
             throw new ArgumentException("Variance is zero. Try specifying a regularization constant in the fitting options.");
         Initialize(num1, Math.Sqrt(num2), num2);
-    }
-
-    public override object Clone()
-    {
-        return new NormalDistribution(mean, stdDev);
     }
 
     public override string ToString(string? format, IFormatProvider? formatProvider)
