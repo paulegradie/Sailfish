@@ -19,7 +19,7 @@ internal sealed class WilcoxonDistribution : UnivariateContinuousDistribution
         var mean = ranks.Length * (ranks.Length + 1.0) / 4.0;
         var stdDev = Math.Sqrt(ranks.Length * (ranks.Length + 1.0) * (2.0 * ranks.Length + 1.0) / 24.0);
         approximation = NormalDistributionFactory.Create(mean, stdDev);
-
+        Table = null;
         if (!exact) return;
 
         ranks = ranks.Get(ranks.Find(x => x != 0.0));
@@ -33,7 +33,10 @@ internal sealed class WilcoxonDistribution : UnivariateContinuousDistribution
             var signs = item.Item1;
             var index1 = item.Item2;
             for (var index2 = 0; index2 < signs.Length; ++index2)
+            {
                 signs[index2] = Math.Sign(signs[index2] * 2 - 1);
+            }
+
             Table[index1] = WPositive(signs, ranks);
         });
         Parallel.ForEach(source, body);
@@ -42,7 +45,7 @@ internal sealed class WilcoxonDistribution : UnivariateContinuousDistribution
 
     public bool Exact { get; }
 
-    public double[] Table { get; }
+    public double[]? Table { get; }
 
     public ContinuityCorrection Correction { get; set; }
 
@@ -64,7 +67,7 @@ internal sealed class WilcoxonDistribution : UnivariateContinuousDistribution
     protected override double InnerDistributionFunction(double x)
     {
         if (Exact)
-            return ExactMethod(x, Table);
+            return ExactMethod(x, Table!);
         if (x > Mean)
             x -= 0.5;
         else
@@ -76,7 +79,7 @@ internal sealed class WilcoxonDistribution : UnivariateContinuousDistribution
     protected override double InnerComplementaryDistributionFunction(double x)
     {
         if (Exact)
-            return ExactComplement(x, Table);
+            return ExactComplement(x, Table!);
         if (x > Mean)
             x -= 0.5;
         else
@@ -92,12 +95,12 @@ internal sealed class WilcoxonDistribution : UnivariateContinuousDistribution
 
     protected override double InnerProbabilityDensityFunction(double x)
     {
-        return Exact ? Count(x, Table) / (double)Table.Length : approximation.ProbabilityDensityFunction(x);
+        return Exact ? Count(x, Table!) / (double)Table!.Length : approximation.ProbabilityDensityFunction(x);
     }
 
     protected override double InnerLogProbabilityDensityFunction(double x)
     {
-        return Exact ? Math.Log(Count(x, Table)) - Math.Log(Table.Length) : approximation.LogProbabilityDensityFunction(x);
+        return Exact ? Math.Log(Count(x, Table!)) - Math.Log(Table!.Length) : approximation.LogProbabilityDensityFunction(x);
     }
 
     public override string ToString(string? format, IFormatProvider? formatProvider)

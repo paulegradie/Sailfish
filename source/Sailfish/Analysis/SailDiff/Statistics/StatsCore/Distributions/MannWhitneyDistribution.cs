@@ -37,15 +37,15 @@ internal sealed class MannWhitneyDistribution : UnivariateContinuousDistribution
         Correction = ContinuityCorrection.Midpoint;
     }
 
-    public int NumberOfSamples1 { get; private set; }
+    public int NumberOfSamples1 { get; }
 
-    public int NumberOfSamples2 { get; private set; }
+    public int NumberOfSamples2 { get; }
 
     public ContinuityCorrection Correction { get; init; }
 
-    public bool Exact { get; private set; }
+    public bool Exact { get; }
 
-    public double[] Table { get; private set; }
+    public double[]? Table { get; }
 
     public override double Mean => approximation.Mean;
 
@@ -71,7 +71,7 @@ internal sealed class MannWhitneyDistribution : UnivariateContinuousDistribution
 
     public override double DistributionFunction(double x)
     {
-        if (Exact) return WilcoxonDistribution.ExactMethod(x, Table);
+        if (Exact) return WilcoxonDistribution.ExactMethod(x, Table!);
         if (x > Mean)
             x -= 0.5;
         else
@@ -80,10 +80,10 @@ internal sealed class MannWhitneyDistribution : UnivariateContinuousDistribution
         return approximation.DistributionFunction(x);
     }
 
-    private double ComplementaryDistributionFunction(double x)
+    private new double ComplementaryDistributionFunction(double x)
     {
         if (Exact)
-            return WilcoxonDistribution.ExactComplement(x, Table);
+            return WilcoxonDistribution.ExactComplement(x, Table!);
 
         switch (Correction)
         {
@@ -108,18 +108,17 @@ internal sealed class MannWhitneyDistribution : UnivariateContinuousDistribution
 
     protected override double InnerProbabilityDensityFunction(double x)
     {
-        return Exact ? WilcoxonDistribution.Count(x, Table) / (double)Table.Length : approximation.ProbabilityDensityFunction(x);
+        return Exact ? WilcoxonDistribution.Count(x, Table!) / (double)Table!.Length : approximation.ProbabilityDensityFunction(x);
     }
 
     protected override double InnerLogProbabilityDensityFunction(double x)
     {
-        return Exact ? Math.Log(WilcoxonDistribution.Count(x, Table)) - Math.Log(Table.Length) : approximation.ProbabilityDensityFunction(x);
+        return Exact ? Math.Log(WilcoxonDistribution.Count(x, Table!)) - Math.Log(Table!.Length) : approximation.ProbabilityDensityFunction(x);
     }
 
     protected override double InnerInverseDistributionFunction(double p)
     {
-        if (!Exact)
-            return approximation.InverseDistributionFunction(p);
+        if (!Exact) return approximation.InverseDistributionFunction(p);
         if (NumberOfSamples1 <= NumberOfSamples2)
             return base.InnerInverseDistributionFunction(p);
         var num1 = 0.0;
