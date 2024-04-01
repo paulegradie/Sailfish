@@ -10,81 +10,80 @@ public static class Tools
         bool alreadySorted = false,
         bool adjustForTies = true)
     {
-        var numArray = Vector.Range(0, samples.Length);
+        var numberArray = Vector.Range(0, samples.Length);
         if (!alreadySorted)
         {
             samples = (double[])samples.Clone();
-            Array.Sort(samples, numArray);
+            Array.Sort(samples, numberArray);
         }
 
         var items = new double[samples.Length];
-        var num1 = 0.0;
-        var num2 = 0;
-        if (samples.Length == 0)
-            return [];
+        var doubleCounter = 0.0;
+        var altCounter = 0;
+        if (samples.Length == 0) return [];
+
         items[0] = 1.0;
         if (adjustForTies)
         {
-            var num3 = 1;
+            var counter = 1;
             for (var index1 = 1; index1 < items.Length; ++index1)
-                if (samples[index1] != samples[index1 - 1])
+                if (Math.Abs(samples[index1] - samples[index1 - 1]) > 0.000000000001)
                 {
-                    if (num2 > 0)
+                    if (altCounter > 0)
                     {
-                        for (var index2 = 0; index2 < num2 + 1; ++index2)
+                        for (var index2 = 0; index2 < altCounter + 1; ++index2)
                         {
                             var index3 = index1 - index2 - 1;
-                            items[index3] = (num3 + num1) / (num2 + 1.0);
+                            items[index3] = (counter + doubleCounter) / (altCounter + 1.0);
                         }
 
-                        num2 = 0;
-                        num1 = 0.0;
+                        altCounter = 0;
+                        doubleCounter = 0.0;
                     }
 
-                    items[index1] = ++num3;
+                    items[index1] = ++counter;
                 }
                 else
                 {
-                    ++num2;
-                    num1 += num3++;
+                    ++altCounter;
+                    doubleCounter += counter++;
                 }
 
-            if (num2 > 0)
-                for (var index4 = 0; index4 < num2 + 1; ++index4)
+            if (altCounter > 0)
+                for (var index4 = 0; index4 < altCounter + 1; ++index4)
                 {
                     var index5 = samples.Length - index4 - 1;
-                    items[index5] = (num3 + num1) / (num2 + 1.0);
+                    items[index5] = (counter + doubleCounter) / (altCounter + 1.0);
                 }
         }
         else
         {
             var index = 1;
-            var num4 = 1;
+            var i = 1;
             for (; index < items.Length; ++index)
             {
-                items[index] = ++num4;
+                items[index] = ++i;
             }
         }
 
         if (!alreadySorted)
-            Array.Sort((Array)numArray, items);
+            Array.Sort((Array)numberArray, items);
         return items;
     }
 
-    public static IEnumerable<int> Ties(this double[] ranks)
+    public static IEnumerable<int> Ties(this IEnumerable<double> ranks)
     {
-        SortedDictionary<double, int> counts;
-        counts = [];
+        SortedDictionary<double, int> counts = [];
         foreach (var rank in ranks)
         {
-            var num = counts.GetValueOrDefault(rank, 0);
-            counts[rank] = num + 1;
+            var countNumber = counts.GetValueOrDefault(rank, 0);
+            counts[rank] = countNumber + 1;
         }
 
-        var numArray1 = new int[counts.Count];
-        var numArray2 = counts.Keys.Sorted();
-        for (var index = 0; index < numArray2.Length; ++index)
-            numArray1[index] = counts[numArray2[index]];
-        return numArray1;
+        var numberArray1 = new int[counts.Count];
+        var numberArray2 = counts.Keys.Sorted();
+        for (var index = 0; index < numberArray2.Length; ++index)
+            numberArray1[index] = counts[numberArray2[index]];
+        return numberArray1;
     }
 }

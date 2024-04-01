@@ -12,7 +12,7 @@ internal sealed class MannWhitneyDistribution : UnivariateContinuousDistribution
 {
     private readonly NormalDistribution approximation;
 
-    internal MannWhitneyDistribution(double[] ranks, int rank1Length, int rank2Length, ContinuityCorrection continuityCorrection)
+    internal MannWhitneyDistribution(double[] ranks, int rank1Length, int rank2Length)
     {
         var num1 = rank1Length + rank2Length;
         NumberOfSamples1 = rank1Length;
@@ -27,7 +27,7 @@ internal sealed class MannWhitneyDistribution : UnivariateContinuousDistribution
             InitExactMethod(ranks);
 
         approximation = NormalDistributionFactory.Create(mean, stdDev);
-        Correction = continuityCorrection;
+        Correction = ContinuityCorrection.Midpoint;
     }
 
     public int NumberOfSamples1 { get; private set; }
@@ -99,6 +99,7 @@ internal sealed class MannWhitneyDistribution : UnivariateContinuousDistribution
     {
         if (Exact)
             return WilcoxonDistribution.ExactComplement(x, Table);
+
         switch (Correction)
         {
             case ContinuityCorrection.Midpoint when x > Mean:
@@ -106,9 +107,6 @@ internal sealed class MannWhitneyDistribution : UnivariateContinuousDistribution
                 break;
             case ContinuityCorrection.Midpoint:
                 x += 0.5;
-                break;
-            case ContinuityCorrection.KeepInside:
-                x -= 0.5;
                 break;
             default:
                 throw new ArgumentOutOfRangeException();

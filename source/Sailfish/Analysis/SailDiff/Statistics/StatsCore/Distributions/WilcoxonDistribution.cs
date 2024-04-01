@@ -11,10 +11,10 @@ internal sealed class WilcoxonDistribution : UnivariateContinuousDistribution
 {
     private readonly NormalDistribution approximation;
 
-    internal WilcoxonDistribution(double[] ranks, bool exact, ContinuityCorrection continuityCorrection)
+    internal WilcoxonDistribution(double[] ranks, bool exact)
     {
         Exact = exact;
-        Correction = continuityCorrection;
+        Correction = ContinuityCorrection.Midpoint;
 
         var mean = ranks.Length * (ranks.Length + 1.0) / 4.0;
         var stdDev = Math.Sqrt(ranks.Length * (ranks.Length + 1.0) * (2.0 * ranks.Length + 1.0) / 24.0);
@@ -24,7 +24,8 @@ internal sealed class WilcoxonDistribution : UnivariateContinuousDistribution
         {
             ranks = ranks.Get(ranks.Find(x => x != 0.0));
             var exactN = (long)Math.Pow(2.0, ranks.Length);
-            var source = Combinatorics.Sequences(ranks.Length)
+            var source = Combinatorics
+                .Sequences(ranks.Length)
                 .Zip(exactN.EnumerableRange(), (Func<int[], long, Tuple<int[], long>>)((c, i) => new Tuple<int[], long>(c, i)));
             Table = new double[exactN];
             var body = (Action<Tuple<int[], long>>)(item =>
@@ -65,17 +66,10 @@ internal sealed class WilcoxonDistribution : UnivariateContinuousDistribution
     {
         if (Exact)
             return ExactMethod(x, Table);
-        if (Correction == ContinuityCorrection.Midpoint)
-        {
-            if (x > Mean)
-                x -= 0.5;
-            else
-                x += 0.5;
-        }
-        else if (Correction == ContinuityCorrection.KeepInside)
-        {
+        if (x > Mean)
+            x -= 0.5;
+        else
             x += 0.5;
-        }
 
         return approximation.DistributionFunction(x);
     }
@@ -84,17 +78,10 @@ internal sealed class WilcoxonDistribution : UnivariateContinuousDistribution
     {
         if (Exact)
             return ExactComplement(x, Table);
-        if (Correction == ContinuityCorrection.Midpoint)
-        {
-            if (x > Mean)
-                x -= 0.5;
-            else
-                x += 0.5;
-        }
-        else if (Correction == ContinuityCorrection.KeepInside)
-        {
+        if (x > Mean)
             x -= 0.5;
-        }
+        else
+            x += 0.5;
 
         return approximation.ComplementaryDistributionFunction(x);
     }
