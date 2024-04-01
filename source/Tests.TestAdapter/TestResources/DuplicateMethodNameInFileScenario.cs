@@ -3,7 +3,7 @@ using System.Text;
 
 namespace Tests.TestAdapter.TestResources;
 
-[Sailfish(Disabled = false)]
+[Sailfish(Disabled = false, SampleSize = 2)]
 public class ExampleComponentTest
 {
     public const string A = "Wow";

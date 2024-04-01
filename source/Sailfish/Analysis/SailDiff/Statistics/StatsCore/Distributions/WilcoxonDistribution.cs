@@ -20,25 +20,24 @@ internal sealed class WilcoxonDistribution : UnivariateContinuousDistribution
         var stdDev = Math.Sqrt(ranks.Length * (ranks.Length + 1.0) * (2.0 * ranks.Length + 1.0) / 24.0);
         approximation = NormalDistributionFactory.Create(mean, stdDev);
 
-        if (exact)
+        if (!exact) return;
+
+        ranks = ranks.Get(ranks.Find(x => x != 0.0));
+        var exactN = (long)Math.Pow(2.0, ranks.Length);
+        var source = Combinatorics
+            .Sequences(ranks.Length)
+            .Zip(exactN.EnumerableRange(), (Func<int[], long, Tuple<int[], long>>)((c, i) => new Tuple<int[], long>(c, i)));
+        Table = new double[exactN];
+        var body = (Action<Tuple<int[], long>>)(item =>
         {
-            ranks = ranks.Get(ranks.Find(x => x != 0.0));
-            var exactN = (long)Math.Pow(2.0, ranks.Length);
-            var source = Combinatorics
-                .Sequences(ranks.Length)
-                .Zip(exactN.EnumerableRange(), (Func<int[], long, Tuple<int[], long>>)((c, i) => new Tuple<int[], long>(c, i)));
-            Table = new double[exactN];
-            var body = (Action<Tuple<int[], long>>)(item =>
-            {
-                var signs = item.Item1;
-                var index1 = item.Item2;
-                for (var index2 = 0; index2 < signs.Length; ++index2)
-                    signs[index2] = Math.Sign(signs[index2] * 2 - 1);
-                Table[index1] = WPositive(signs, ranks);
-            });
-            Parallel.ForEach(source, body);
-            Array.Sort(Table);
-        }
+            var signs = item.Item1;
+            var index1 = item.Item2;
+            for (var index2 = 0; index2 < signs.Length; ++index2)
+                signs[index2] = Math.Sign(signs[index2] * 2 - 1);
+            Table[index1] = WPositive(signs, ranks);
+        });
+        Parallel.ForEach(source, body);
+        Array.Sort(Table);
     }
 
     public bool Exact { get; }
