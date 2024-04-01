@@ -12,22 +12,18 @@ public class ScenariosExample
     [SailfishVariable("wow", "ok")] public string N { get; set; } = null!;
 
     [SailfishVariable(ScenarioA, ScenarioB)]
-    public string Scenario { get; set; }
+    public string? Scenario { get; set; }
 
     [SailfishGlobalSetup]
     public void GlobalSetup()
     {
-        scenarioMap = new Dictionary<string, string>
-        {
-            { ScenarioA, "OK" },
-            { ScenarioB, "wow" }
-        };
+        scenarioMap = new Dictionary<string, string> { { ScenarioA, "OK" }, { ScenarioB, "wow" } };
     }
 
     [SailfishMethod]
     public async Task TestMethod(CancellationToken cancellationToken) // token is injected when requested
     {
-        Console.WriteLine(scenarioMap[Scenario]);
+        Console.WriteLine(scenarioMap[Scenario!]);
         await Task.Delay(18, cancellationToken);
     }
 }

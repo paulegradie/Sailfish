@@ -75,9 +75,15 @@ public static class Vector
             objArray[index1] = index2 < 0 ? source[source.Length + index2] : source[index2];
         }
 
-        if (inPlace)
-            for (var index = 0; index < objArray.Length; ++index)
-                source[index] = objArray[index];
+        if (!inPlace)
+        {
+            return objArray;
+        }
+
+        for (var index = 0; index < objArray.Length; ++index)
+        {
+            source[index] = objArray[index];
+        }
 
         return objArray;
     }

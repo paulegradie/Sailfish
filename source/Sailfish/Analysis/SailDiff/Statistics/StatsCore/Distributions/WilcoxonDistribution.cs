@@ -11,33 +11,33 @@ internal sealed class WilcoxonDistribution : UnivariateContinuousDistribution
 {
     private readonly NormalDistribution approximation;
 
-    internal WilcoxonDistribution(double[] ranks, bool exact, ContinuityCorrection continuityCorrection)
+    internal WilcoxonDistribution(double[] ranks, bool exact)
     {
         Exact = exact;
-        Correction = continuityCorrection;
+        Correction = ContinuityCorrection.Midpoint;
 
         var mean = ranks.Length * (ranks.Length + 1.0) / 4.0;
         var stdDev = Math.Sqrt(ranks.Length * (ranks.Length + 1.0) * (2.0 * ranks.Length + 1.0) / 24.0);
         approximation = NormalDistributionFactory.Create(mean, stdDev);
 
-        if (exact)
+        if (!exact) return;
+
+        ranks = ranks.Get(ranks.Find(x => x != 0.0));
+        var exactN = (long)Math.Pow(2.0, ranks.Length);
+        var source = Combinatorics
+            .Sequences(ranks.Length)
+            .Zip(exactN.EnumerableRange(), (Func<int[], long, Tuple<int[], long>>)((c, i) => new Tuple<int[], long>(c, i)));
+        Table = new double[exactN];
+        var body = (Action<Tuple<int[], long>>)(item =>
         {
-            ranks = ranks.Get(ranks.Find(x => x != 0.0));
-            var exactN = (long)Math.Pow(2.0, ranks.Length);
-            var source = Combinatorics.Sequences(ranks.Length)
-                .Zip(exactN.EnumerableRange(), (Func<int[], long, Tuple<int[], long>>)((c, i) => new Tuple<int[], long>(c, i)));
-            Table = new double[exactN];
-            var body = (Action<Tuple<int[], long>>)(item =>
-            {
-                var signs = item.Item1;
-                var index1 = item.Item2;
-                for (var index2 = 0; index2 < signs.Length; ++index2)
-                    signs[index2] = Math.Sign(signs[index2] * 2 - 1);
-                Table[index1] = WPositive(signs, ranks);
-            });
-            Parallel.ForEach(source, body);
-            Array.Sort(Table);
-        }
+            var signs = item.Item1;
+            var index1 = item.Item2;
+            for (var index2 = 0; index2 < signs.Length; ++index2)
+                signs[index2] = Math.Sign(signs[index2] * 2 - 1);
+            Table[index1] = WPositive(signs, ranks);
+        });
+        Parallel.ForEach(source, body);
+        Array.Sort(Table);
     }
 
     public bool Exact { get; }
@@ -61,55 +61,41 @@ internal sealed class WilcoxonDistribution : UnivariateContinuousDistribution
         return num;
     }
 
-    protected internal override double InnerDistributionFunction(double x)
+    protected override double InnerDistributionFunction(double x)
     {
         if (Exact)
             return ExactMethod(x, Table);
-        if (Correction == ContinuityCorrection.Midpoint)
-        {
-            if (x > Mean)
-                x -= 0.5;
-            else
-                x += 0.5;
-        }
-        else if (Correction == ContinuityCorrection.KeepInside)
-        {
+        if (x > Mean)
+            x -= 0.5;
+        else
             x += 0.5;
-        }
 
         return approximation.DistributionFunction(x);
     }
 
-    protected internal override double InnerComplementaryDistributionFunction(double x)
+    protected override double InnerComplementaryDistributionFunction(double x)
     {
         if (Exact)
             return ExactComplement(x, Table);
-        if (Correction == ContinuityCorrection.Midpoint)
-        {
-            if (x > Mean)
-                x -= 0.5;
-            else
-                x += 0.5;
-        }
-        else if (Correction == ContinuityCorrection.KeepInside)
-        {
+        if (x > Mean)
             x -= 0.5;
-        }
+        else
+            x += 0.5;
 
         return approximation.ComplementaryDistributionFunction(x);
     }
 
-    protected internal override double InnerInverseDistributionFunction(double p)
+    protected override double InnerInverseDistributionFunction(double p)
     {
         return Exact ? base.InnerInverseDistributionFunction(p) : approximation.InverseDistributionFunction(p);
     }
 
-    protected internal override double InnerProbabilityDensityFunction(double x)
+    protected override double InnerProbabilityDensityFunction(double x)
     {
         return Exact ? Count(x, Table) / (double)Table.Length : approximation.ProbabilityDensityFunction(x);
     }
 
-    protected internal override double InnerLogProbabilityDensityFunction(double x)
+    protected override double InnerLogProbabilityDensityFunction(double x)
     {
         return Exact ? Math.Log(Count(x, Table)) - Math.Log(Table.Length) : approximation.LogProbabilityDensityFunction(x);
     }

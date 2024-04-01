@@ -25,7 +25,8 @@ public class TestSuiteIsCovered
         new Tests.E2E.TestSuite.Discoverable.InnerNamespace.MinimalTest().Minimal();
         var scenarios = new ScenariosExample();
         scenarios.GlobalSetup();
-        scenarios.TestMethod(CancellationToken.None);
+        scenarios.Scenario = "ScenarioA";
+        await scenarios.TestMethod(CancellationToken.None);
         await new IterationSetupExceptionComesFirst().LifeCycleExceptionTests(CancellationToken.None);
         await new IterationSetupExceptionIsHandled().LifeCycleExceptionTests(CancellationToken.None);
         await new MethodSetupExceptionIsHandled().LifeCycleExceptionTests(CancellationToken.None);

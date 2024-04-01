@@ -1,4 +1,3 @@
-using Sailfish.Analysis.SailDiff.Statistics.StatsCore.Distributions;
 using Sailfish.Analysis.SailDiff.Statistics.StatsCore.Distributions.DistributionBase;
 using System;
 using System.Globalization;
@@ -11,7 +10,7 @@ internal abstract class HypothesisTest : IFormattable
 
     public double Statistic { get; protected init; }
 
-    public double Size => 0.05;
+    public static double Size => 0.05;
 
     public string ToString(string? format, IFormatProvider? formatProvider) => PValue.ToString(format, formatProvider);
 

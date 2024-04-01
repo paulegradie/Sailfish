@@ -5,7 +5,6 @@ using System.Linq;
 using System.Threading.Tasks;
 using MathNet.Numerics.Statistics;
 using Sailfish.Analysis.SailDiff.Statistics.StatsCore.Analysers;
-using Sailfish.Analysis.SailDiff.Statistics.StatsCore.Analysers.AnalysersBase;
 using Sailfish.Analysis.SailDiff.Statistics.StatsCore.Analysers.Factories;
 using Sailfish.Contracts.Public;
 using Sailfish.Contracts.Public.Models;
@@ -17,6 +16,7 @@ public interface IMannWhitneyWilcoxonTest : ITest;
 public class MannWhitneyWilcoxonTest : IMannWhitneyWilcoxonTest
 {
     private readonly ITestPreprocessor preprocessor;
+    private const int MaxArraySize = 10;
 
     public MannWhitneyWilcoxonTest(ITestPreprocessor preprocessor)
     {
@@ -26,7 +26,6 @@ public class MannWhitneyWilcoxonTest : IMannWhitneyWilcoxonTest
     public TestResultWithOutlierAnalysis ExecuteTest(double[] before, double[] after, SailDiffSettings settings)
     {
         var sigDig = settings.Round;
-        const int maxArraySize = 10;
 
         var iterations = before.Length + after.Length > 20 ? 25 : 1;
         var tests = new ConcurrentBag<MannWhitneyWilcoxon>();
@@ -38,12 +37,12 @@ public class MannWhitneyWilcoxonTest : IMannWhitneyWilcoxonTest
                 new ParallelOptions { MaxDegreeOfParallelism = 5 },
                 _ =>
                 {
-                    var (p1, p2) = preprocessor.PreprocessJointlyWithDownSample(before, after, settings.UseOutlierDetection, maxArraySize: maxArraySize);
+                    var (p1, p2) = preprocessor.PreprocessJointlyWithDownSample(before, after, settings.UseOutlierDetection, maxArraySize: MaxArraySize);
 
                     var sample1 = p1.OutlierAnalysis?.DataWithOutliersRemoved ?? p1.RawData;
                     var sample2 = p2.OutlierAnalysis?.DataWithOutliersRemoved ?? p2.RawData;
 
-                    var test = MannWhitneyWilcoxonFactory.Create(sample1, sample2, alternate: TwoSampleHypothesis.ValuesAreDifferent, adjustForTies: true);
+                    var test = MannWhitneyWilcoxonFactory.Create(sample1, sample2);
                     tests.Add(test);
                 });
             var meanBefore = Math.Round(before.Mean(), sigDig);
@@ -83,7 +82,7 @@ public class MannWhitneyWilcoxonTest : IMannWhitneyWilcoxonTest
                 after,
                 additionalResults);
 
-            var (rep1, rep2) = preprocessor.PreprocessJointlyWithDownSample(before, after, settings.UseOutlierDetection, maxArraySize: maxArraySize);
+            var (rep1, rep2) = preprocessor.PreprocessJointlyWithDownSample(before, after, settings.UseOutlierDetection, maxArraySize: MaxArraySize);
             return new TestResultWithOutlierAnalysis(testResults, rep1.OutlierAnalysis, rep2.OutlierAnalysis);
         }
         catch (Exception ex)

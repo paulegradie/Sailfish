@@ -91,7 +91,10 @@ public class ConvergenceChecks
         List<TestResultWithOutlierAnalysis> results = new();
 
         var test = new MannWhitneyWilcoxonTest(new TestPreprocessor(new SailfishOutlierDetector()));
-        for (var i = 0; i < 20; i++) results.Add(test.ExecuteTest(bf, af, new SailDiffSettings(0.0001, 4, false, TestType.WilcoxonRankSumTest)));
+        for (var i = 0; i < 20; i++)
+        {
+            results.Add(test.ExecuteTest(bf, af, new SailDiffSettings(0.0001, 4, false, TestType.WilcoxonRankSumTest)));
+        }
 
         var converged = results.All(x => x.StatisticalTestResult.ChangeDescription == SailfishChangeDirection.NoChange);
         converged.ShouldBeTrue();

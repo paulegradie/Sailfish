@@ -22,19 +22,19 @@ internal sealed class Distribution : UnivariateContinuousDistribution, IFormatta
         return $"T(x; df = {(object)DegreesOfFreedom.ToString(format, formatProvider)})";
     }
 
-    protected internal override double InnerDistributionFunction(double x)
+    protected override double InnerDistributionFunction(double x)
     {
         var num = Math.Sqrt(x * x + DegreesOfFreedom);
         var x1 = (x + num) / (2.0 * num);
         return Beta.Incomplete(DegreesOfFreedom / 2.0, DegreesOfFreedom / 2.0, x1);
     }
 
-    protected internal override double InnerProbabilityDensityFunction(double x)
+    protected override double InnerProbabilityDensityFunction(double x)
     {
         return Math.Exp(LogProbabilityDensityFunction(x));
     }
 
-    protected internal override double InnerInverseDistributionFunction(double p)
+    protected override double InnerInverseDistributionFunction(double p)
     {
         return InverseDistributionLeftTail(DegreesOfFreedom, p);
     }

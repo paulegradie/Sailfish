@@ -12,22 +12,29 @@ internal sealed class MannWhitneyDistribution : UnivariateContinuousDistribution
 {
     private readonly NormalDistribution approximation;
 
-    internal MannWhitneyDistribution(double[] ranks, int rank1Length, int rank2Length, ContinuityCorrection continuityCorrection)
+    internal MannWhitneyDistribution(double[] ranks, int rank1Length, int rank2Length)
     {
         var num1 = rank1Length + rank2Length;
         NumberOfSamples1 = rank1Length;
         NumberOfSamples2 = rank2Length;
         var mean = rank1Length * rank2Length / 2.0;
-        var stdDev = Math.Sqrt(rank1Length * rank2Length * (num1 + 1) / 12.0);
         Exact = rank1Length <= 30 && rank2Length <= 30;
 
-        var num2 = Corrections(ranks ?? []);
-        stdDev = Math.Sqrt(rank1Length * rank2Length / 12.0 * (num1 + 1.0 - num2));
+        var corrections = Corrections(ranks);
+        var stdDev = Math.Sqrt(rank1Length * rank2Length / 12.0 * (num1 + 1.0 - corrections));
         if (Exact)
-            InitExactMethod(ranks);
+        {
+            var k = Math.Min(NumberOfSamples1, NumberOfSamples2);
+            var n = (long)Specials.Binomial(NumberOfSamples1 + NumberOfSamples2, k);
+            Table = new double[n];
+            Parallel
+                .ForEach(ranks.Combinations(k).Zip(Vector.Range(n), (Func<double[], long, Tuple<double[], long>>)((c, i) => new Tuple<double[], long>(c, i))),
+                    (Action<Tuple<double[], long>>)(i => Table[i.Item2] = MannWhitneyU(i.Item1)));
+            Array.Sort(Table);
+        }
 
         approximation = NormalDistributionFactory.Create(mean, stdDev);
-        Correction = continuityCorrection;
+        Correction = ContinuityCorrection.Midpoint;
     }
 
     public int NumberOfSamples1 { get; private set; }
@@ -56,41 +63,19 @@ internal sealed class MannWhitneyDistribution : UnivariateContinuousDistribution
         return num1 / (length * (length - 1));
     }
 
-    private void InitExactMethod(double[] ranks)
-    {
-        var k = Math.Min(NumberOfSamples1, NumberOfSamples2);
-        var n = (long)Specials.Binomial(NumberOfSamples1 + NumberOfSamples2, k);
-        Table = new double[n];
-        Parallel.ForEach(ranks.Combinations(k).Zip(Vector.Range(n), (Func<double[], long, Tuple<double[], long>>)((c, i) => new Tuple<double[], long>(c, i))),
-            (Action<Tuple<double[], long>>)(i => Table[i.Item2] = MannWhitneyU(i.Item1)));
-        Array.Sort(Table);
-    }
 
-    protected internal override double InnerDistributionFunction(double x)
-    {
-        return NumberOfSamples1 <= NumberOfSamples2 ? DistributionFunction(x) : ComplementaryDistributionFunction(x);
-    }
-
-    protected internal override double InnerComplementaryDistributionFunction(double x)
+    protected override double InnerComplementaryDistributionFunction(double x)
     {
         return NumberOfSamples1 <= NumberOfSamples2 ? ComplementaryDistributionFunction(x) : DistributionFunction(x);
     }
 
     public override double DistributionFunction(double x)
     {
-        if (Exact)
-            return WilcoxonDistribution.ExactMethod(x, Table);
-        if (Correction == ContinuityCorrection.Midpoint)
-        {
-            if (x > Mean)
-                x -= 0.5;
-            else
-                x += 0.5;
-        }
-        else if (Correction == ContinuityCorrection.KeepInside)
-        {
+        if (Exact) return WilcoxonDistribution.ExactMethod(x, Table);
+        if (x > Mean)
+            x -= 0.5;
+        else
             x += 0.5;
-        }
 
         return approximation.DistributionFunction(x);
     }
@@ -99,6 +84,7 @@ internal sealed class MannWhitneyDistribution : UnivariateContinuousDistribution
     {
         if (Exact)
             return WilcoxonDistribution.ExactComplement(x, Table);
+
         switch (Correction)
         {
             case ContinuityCorrection.Midpoint when x > Mean:
@@ -106,9 +92,6 @@ internal sealed class MannWhitneyDistribution : UnivariateContinuousDistribution
                 break;
             case ContinuityCorrection.Midpoint:
                 x += 0.5;
-                break;
-            case ContinuityCorrection.KeepInside:
-                x -= 0.5;
                 break;
             default:
                 throw new ArgumentOutOfRangeException();
@@ -123,17 +106,17 @@ internal sealed class MannWhitneyDistribution : UnivariateContinuousDistribution
         return ranks.Sum() - length * (length + 1.0) / 2.0;
     }
 
-    protected internal override double InnerProbabilityDensityFunction(double x)
+    protected override double InnerProbabilityDensityFunction(double x)
     {
         return Exact ? WilcoxonDistribution.Count(x, Table) / (double)Table.Length : approximation.ProbabilityDensityFunction(x);
     }
 
-    protected internal override double InnerLogProbabilityDensityFunction(double x)
+    protected override double InnerLogProbabilityDensityFunction(double x)
     {
         return Exact ? Math.Log(WilcoxonDistribution.Count(x, Table)) - Math.Log(Table.Length) : approximation.ProbabilityDensityFunction(x);
     }
 
-    protected internal override double InnerInverseDistributionFunction(double p)
+    protected override double InnerInverseDistributionFunction(double p)
     {
         if (!Exact)
             return approximation.InverseDistributionFunction(p);
