@@ -27,28 +27,28 @@ internal sealed class NormalDistribution : UnivariateContinuousDistribution, IFo
 
     public override DoubleRange Support => new(double.NegativeInfinity, double.PositiveInfinity);
 
-    protected internal override double InnerDistributionFunction(double x)
+    protected override double InnerDistributionFunction(double x)
     {
         return Normal.Function((x - mean) / stdDev);
     }
 
-    protected internal override double InnerComplementaryDistributionFunction(double x)
+    protected override double InnerComplementaryDistributionFunction(double x)
     {
         return Normal.Complemented((x - mean) / stdDev);
     }
 
-    protected internal override double InnerInverseDistributionFunction(double p)
+    protected override double InnerInverseDistributionFunction(double p)
     {
         return mean + stdDev * Normal.Inverse(p);
     }
 
-    protected internal override double InnerProbabilityDensityFunction(double x)
+    protected override double InnerProbabilityDensityFunction(double x)
     {
         var zScore = (x - mean) / stdDev;
         return Math.Exp(lnconstant - zScore * zScore * 0.5);
     }
 
-    protected internal override double InnerLogProbabilityDensityFunction(double x)
+    protected override double InnerLogProbabilityDensityFunction(double x)
     {
         var zScore = (x - mean) / stdDev;
         return lnconstant - zScore * zScore * 0.5;

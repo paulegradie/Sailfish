@@ -26,12 +26,12 @@ internal sealed class EmpiricalDistribution : UnivariateContinuousDistribution
 
     public override DoubleRange Support => new(double.NegativeInfinity, double.PositiveInfinity);
 
-    protected internal override double InnerDistributionFunction(double x)
+    protected override double InnerDistributionFunction(double x)
     {
         return Samples.Count(t => t <= x) / (double)Length;
     }
 
-    protected internal override double InnerProbabilityDensityFunction(double x)
+    protected override double InnerProbabilityDensityFunction(double x)
     {
         return Samples.Select(t => (x - t) / Smoothing).Select(i => Math.Exp(-i * i * 0.5)).Sum() * DistributionConstant;
     }

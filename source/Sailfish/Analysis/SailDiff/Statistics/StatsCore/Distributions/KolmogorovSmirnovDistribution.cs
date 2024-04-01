@@ -23,17 +23,17 @@ internal sealed class KolmogorovSmirnovDistribution : UnivariateContinuousDistri
         return string.Format(formatProvider, "KS(x; n = {0})", NumberOfSamples.ToString(format, formatProvider));
     }
 
-    protected internal override double InnerDistributionFunction(double x)
+    protected override double InnerDistributionFunction(double x)
     {
         return CumulativeFunction(NumberOfSamples, x);
     }
 
-    protected internal override double InnerProbabilityDensityFunction(double x)
+    protected override double InnerProbabilityDensityFunction(double x)
     {
         throw new NotSupportedException();
     }
 
-    protected internal override double InnerComplementaryDistributionFunction(double x)
+    protected override double InnerComplementaryDistributionFunction(double x)
     {
         return ComplementaryDistributionFunction(NumberOfSamples, x);
     }

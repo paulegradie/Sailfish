@@ -32,19 +32,26 @@ public class MannWhitneyWilcoxonTest : IMannWhitneyWilcoxonTest
 
         try
         {
-            Parallel.ForEach(
-                Enumerable.Range(0, iterations),
-                new ParallelOptions { MaxDegreeOfParallelism = 5 },
-                _ =>
-                {
-                    var (p1, p2) = preprocessor.PreprocessJointlyWithDownSample(before, after, settings.UseOutlierDetection, maxArraySize: maxArraySize);
+            var (p1, p2) = preprocessor.PreprocessJointlyWithDownSample(before, after, settings.UseOutlierDetection, maxArraySize: maxArraySize);
 
-                    var sample1 = p1.OutlierAnalysis?.DataWithOutliersRemoved ?? p1.RawData;
-                    var sample2 = p2.OutlierAnalysis?.DataWithOutliersRemoved ?? p2.RawData;
+            var sample1 = p1.OutlierAnalysis?.DataWithOutliersRemoved ?? p1.RawData;
+            var sample2 = p2.OutlierAnalysis?.DataWithOutliersRemoved ?? p2.RawData;
 
-                    var test = MannWhitneyWilcoxonFactory.Create(sample1, sample2);
-                    tests.Add(test);
-                });
+            var test = MannWhitneyWilcoxonFactory.Create(sample1, sample2);
+            tests.Add(test);
+            // Parallel.ForEach(
+            //     Enumerable.Range(0, iterations),
+            //     new ParallelOptions { MaxDegreeOfParallelism = 5 },
+            //     _ =>
+            //     {
+            //         var (p1, p2) = preprocessor.PreprocessJointlyWithDownSample(before, after, settings.UseOutlierDetection, maxArraySize: maxArraySize);
+            //
+            //         var sample1 = p1.OutlierAnalysis?.DataWithOutliersRemoved ?? p1.RawData;
+            //         var sample2 = p2.OutlierAnalysis?.DataWithOutliersRemoved ?? p2.RawData;
+            //
+            //         var test = MannWhitneyWilcoxonFactory.Create(sample1, sample2);
+            //         tests.Add(test);
+            //     });
             var meanBefore = Math.Round(before.Mean(), sigDig);
             var meanAfter = Math.Round(after.Mean(), sigDig);
             var medianBefore = Math.Round(before.Median(), sigDig);

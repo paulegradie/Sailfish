@@ -62,7 +62,7 @@ internal sealed class WilcoxonDistribution : UnivariateContinuousDistribution
         return num;
     }
 
-    protected internal override double InnerDistributionFunction(double x)
+    protected override double InnerDistributionFunction(double x)
     {
         if (Exact)
             return ExactMethod(x, Table);
@@ -74,7 +74,7 @@ internal sealed class WilcoxonDistribution : UnivariateContinuousDistribution
         return approximation.DistributionFunction(x);
     }
 
-    protected internal override double InnerComplementaryDistributionFunction(double x)
+    protected override double InnerComplementaryDistributionFunction(double x)
     {
         if (Exact)
             return ExactComplement(x, Table);
@@ -86,17 +86,17 @@ internal sealed class WilcoxonDistribution : UnivariateContinuousDistribution
         return approximation.ComplementaryDistributionFunction(x);
     }
 
-    protected internal override double InnerInverseDistributionFunction(double p)
+    protected override double InnerInverseDistributionFunction(double p)
     {
         return Exact ? base.InnerInverseDistributionFunction(p) : approximation.InverseDistributionFunction(p);
     }
 
-    protected internal override double InnerProbabilityDensityFunction(double x)
+    protected override double InnerProbabilityDensityFunction(double x)
     {
         return Exact ? Count(x, Table) / (double)Table.Length : approximation.ProbabilityDensityFunction(x);
     }
 
-    protected internal override double InnerLogProbabilityDensityFunction(double x)
+    protected override double InnerLogProbabilityDensityFunction(double x)
     {
         return Exact ? Math.Log(Count(x, Table)) - Math.Log(Table.Length) : approximation.LogProbabilityDensityFunction(x);
     }

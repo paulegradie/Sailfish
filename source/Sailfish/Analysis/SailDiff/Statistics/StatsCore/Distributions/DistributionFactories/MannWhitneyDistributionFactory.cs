@@ -8,16 +8,16 @@ internal static class MannWhitneyDistributionFactory
     public static MannWhitneyDistribution Create(double[] ranks1, double[] ranks2)
     {
         var ranks = ranks1.Concatenate(ranks2);
-        var n1 = ranks1.Length;
-        var n2 = ranks.Length;
-        if (n1 <= 0)
+        var rank1Length = ranks1.Length;
+        var rank2Length = ranks2.Length;
+        if (rank1Length <= 0)
         {
-            throw new ArgumentOutOfRangeException(nameof(n1), "The number of observations in the first sample (n1) must be higher than zero.");
+            throw new ArgumentOutOfRangeException(nameof(rank1Length), "The number of observations in the first sample (n1) must be higher than zero.");
         }
 
-        if (n2 <= 0)
+        if (rank2Length <= 0)
         {
-            throw new ArgumentOutOfRangeException(nameof(n2), "The number of observations in the second sample (n2) must be higher than zero.");
+            throw new ArgumentOutOfRangeException(nameof(rank2Length), "The number of observations in the second sample (n2) must be higher than zero.");
         }
 
         if (ranks.Length <= 1)
@@ -34,6 +34,6 @@ internal static class MannWhitneyDistributionFactory
         }
 
 
-        return new MannWhitneyDistribution(ranks, n1, n2);
+        return new MannWhitneyDistribution(ranks, rank1Length, rank2Length);
     }
 }

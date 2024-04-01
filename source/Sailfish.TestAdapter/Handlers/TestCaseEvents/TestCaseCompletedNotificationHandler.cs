@@ -114,12 +114,6 @@ internal class TestCaseCompletedNotificationHandler : INotificationHandler<TestC
         ), cancellationToken);
     }
 
-    private static bool MatchCurrentTestCase(dynamic dynamicTestCase, string currentTestCaseDisplayName)
-    {
-        if (dynamicTestCase is not TestCase testCase) throw new SailfishException($"Failed to resolve the test case {currentTestCaseDisplayName}");
-        return testCase.DisplayName == currentTestCaseDisplayName;
-    }
-
     private string RunSailDiff(
         string testCaseDisplayName,
         IClassExecutionSummary classExecutionSummary,
@@ -139,8 +133,8 @@ internal class TestCaseCompletedNotificationHandler : INotificationHandler<TestC
 
             // if we eventually find a previous run (we don't discriminate by age of run -- perhaps we should
             var testCaseResults = sailDiff.ComputeTestCaseDiff(
-                [testCaseDisplayName ?? string.Empty],
-                [testCaseDisplayName ?? string.Empty],
+                [testCaseDisplayName],
+                [testCaseDisplayName],
                 testCaseDisplayName,
                 classExecutionSummary,
                 preloadedSummaryMatchingCurrentSummary.PerformanceRunResult);
