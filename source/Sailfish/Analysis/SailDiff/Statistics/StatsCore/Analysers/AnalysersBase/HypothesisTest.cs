@@ -1,10 +1,11 @@
+using Sailfish.Analysis.SailDiff.Statistics.StatsCore.Distributions;
+using Sailfish.Analysis.SailDiff.Statistics.StatsCore.Distributions.DistributionBase;
 using System;
 using System.Globalization;
-using Sailfish.Analysis.SailDiff.Statistics.StatsCore.Distributions;
 
-namespace Sailfish.Analysis.SailDiff.Statistics.StatsCore;
+namespace Sailfish.Analysis.SailDiff.Statistics.StatsCore.Analysers.AnalysersBase;
 
-public abstract class HypothesisTest : IFormattable
+internal abstract class HypothesisTest : IFormattable
 {
     public double PValue { get; protected init; }
 

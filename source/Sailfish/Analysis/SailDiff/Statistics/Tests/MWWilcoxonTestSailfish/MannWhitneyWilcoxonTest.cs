@@ -5,6 +5,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using MathNet.Numerics.Statistics;
 using Sailfish.Analysis.SailDiff.Statistics.StatsCore.Analysers;
+using Sailfish.Analysis.SailDiff.Statistics.StatsCore.Analysers.AnalysersBase;
 using Sailfish.Analysis.SailDiff.Statistics.StatsCore.Analysers.Factories;
 using Sailfish.Contracts.Public;
 using Sailfish.Contracts.Public.Models;

@@ -3,7 +3,7 @@ using Sailfish.Analysis.SailDiff.Statistics.StatsCore.Exceptions;
 
 namespace Sailfish.Analysis.SailDiff.Statistics.StatsCore.Search;
 
-public abstract class BrentSearch
+internal static class BrentSearch
 {
     public static double FindRoot(
         Func<double, double> function,

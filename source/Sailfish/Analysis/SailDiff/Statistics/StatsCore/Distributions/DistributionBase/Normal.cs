@@ -1,9 +1,9 @@
+using Sailfish.Analysis.SailDiff.Statistics.StatsCore.MathOps;
 using System;
-using Sailfish.Analysis.SailDiff.Statistics.StatsCore.Ops;
 
-namespace Sailfish.Analysis.SailDiff.Statistics.StatsCore.Distributions;
+namespace Sailfish.Analysis.SailDiff.Statistics.StatsCore.Distributions.DistributionBase;
 
-public static class Normal
+internal static class Normal
 {
     private static readonly double[] InverseP0 =
     [

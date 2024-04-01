@@ -1,8 +1,8 @@
 using System.Collections.Generic;
 
-namespace Sailfish.Analysis.SailDiff.Statistics.StatsCore;
+namespace Sailfish.Analysis.SailDiff.Statistics.StatsCore.MathOps;
 
-public static class Combinatorics
+internal static class Combinatorics
 {
     public static IEnumerable<int[]> Sequences(int length, bool inPlace = false)
     {

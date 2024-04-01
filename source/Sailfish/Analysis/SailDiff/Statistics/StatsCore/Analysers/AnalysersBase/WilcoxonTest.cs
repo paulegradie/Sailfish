@@ -1,10 +1,12 @@
-using System;
 using Sailfish.Analysis.SailDiff.Statistics.StatsCore.Distributions;
-using Sailfish.Analysis.SailDiff.Statistics.StatsCore.Ops;
+using Sailfish.Analysis.SailDiff.Statistics.StatsCore.Distributions.DistributionBase;
+using Sailfish.Analysis.SailDiff.Statistics.StatsCore.Distributions.DistributionFactories;
+using Sailfish.Analysis.SailDiff.Statistics.StatsCore.MathOps;
+using System;
 
-namespace Sailfish.Analysis.SailDiff.Statistics.StatsCore.Analysers;
+namespace Sailfish.Analysis.SailDiff.Statistics.StatsCore.Analysers.AnalysersBase;
 
-public class WilcoxonTest : HypothesisTest
+internal abstract class WilcoxonTest : HypothesisTest
 {
     protected WilcoxonTest(
         int[] signs,
@@ -40,12 +42,7 @@ public class WilcoxonTest : HypothesisTest
 
         Statistic = WilcoxonDistribution.WPositive(Signs, Ranks);
         Tail = tail;
-        StatisticDistribution = new WilcoxonDistribution(Ranks, exact)
-        {
-            Correction = Tail == DistributionTailSailfish.TwoTail ? ContinuityCorrection.Midpoint : ContinuityCorrection.KeepInside
-        };
-
-
+        StatisticDistribution = WilcoxonDistributionFactory.Create(Ranks, Tail == DistributionTailSailfish.TwoTail ? ContinuityCorrection.Midpoint : ContinuityCorrection.KeepInside);
         PValue = Tail switch
         {
             DistributionTailSailfish.TwoTail => Math.Min(

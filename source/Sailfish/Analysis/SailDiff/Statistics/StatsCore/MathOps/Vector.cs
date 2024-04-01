@@ -1,24 +1,11 @@
+using Sailfish.Analysis.SailDiff.Statistics.StatsCore.Exceptions;
 using System;
 using System.Collections.Generic;
 
-namespace Sailfish.Analysis.SailDiff.Statistics.StatsCore.Ops;
+namespace Sailfish.Analysis.SailDiff.Statistics.StatsCore.MathOps;
 
 public static class Vector
 {
-    private static T[] Create<T>(int size, T value)
-    {
-        var objArray = new T[size];
-        for (var index = 0; index < objArray.Length; ++index)
-            objArray[index] = value;
-        return objArray;
-    }
-
-    public static T[] Ones<T>(int size) where T : struct
-    {
-        var obj = (T)Convert.ChangeType(1, typeof(T));
-        return Create(size, obj);
-    }
-
     public static IEnumerable<long> Range(long n)
     {
         var numArray = new long[(int)n];
@@ -73,5 +60,25 @@ public static class Vector
         if (asc)
             return;
         Array.Reverse((Array)values);
+    }
+
+    public static T[] Get<T>(this T[] source, int[] indexes, bool inPlace = false)
+    {
+        ArgumentNullException.ThrowIfNull(source);
+        ArgumentNullException.ThrowIfNull(indexes);
+        if (inPlace && source.Length != indexes.Length)
+            throw new DimensionMismatchException("Source and indexes arrays must have the same dimension for in-place operations.");
+        var objArray = new T[indexes.Length];
+        for (var index1 = 0; index1 < indexes.Length; ++index1)
+        {
+            var index2 = indexes[index1];
+            objArray[index1] = index2 < 0 ? source[source.Length + index2] : source[index2];
+        }
+
+        if (inPlace)
+            for (var index = 0; index < objArray.Length; ++index)
+                source[index] = objArray[index];
+
+        return objArray;
     }
 }

@@ -1,9 +1,9 @@
 using System;
 using System.Collections.Generic;
 
-namespace Sailfish.Analysis.SailDiff.Statistics.StatsCore;
+namespace Sailfish.Analysis.SailDiff.Statistics.StatsCore.MathOps;
 
-public class StableComparer<T>(Comparison<T> comparison) : IComparer<KeyValuePair<int, T>>
+internal class StableComparer<T>(Comparison<T> comparison) : IComparer<KeyValuePair<int, T>>
 {
     public int Compare(KeyValuePair<int, T> x, KeyValuePair<int, T> y)
     {

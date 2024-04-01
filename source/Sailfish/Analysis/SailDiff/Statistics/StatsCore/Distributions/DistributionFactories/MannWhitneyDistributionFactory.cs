@@ -1,4 +1,4 @@
-using Sailfish.Analysis.SailDiff.Statistics.StatsCore.Ops;
+using Sailfish.Analysis.SailDiff.Statistics.StatsCore.MathOps;
 using System;
 
 namespace Sailfish.Analysis.SailDiff.Statistics.StatsCore.Distributions.DistributionFactories;

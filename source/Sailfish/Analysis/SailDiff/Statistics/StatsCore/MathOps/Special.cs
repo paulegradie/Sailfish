@@ -1,7 +1,7 @@
+using Sailfish.Analysis.SailDiff.Statistics.StatsCore.Distributions.DistributionBase;
 using System;
-using Sailfish.Analysis.SailDiff.Statistics.StatsCore.Distributions;
 
-namespace Sailfish.Analysis.SailDiff.Statistics.StatsCore.Ops;
+namespace Sailfish.Analysis.SailDiff.Statistics.StatsCore.MathOps;
 
 public static class Specials
 {
@@ -108,20 +108,20 @@ public static class Specials
         return x * Polevl(x1, ErfcT, 4) / P1Evl(x1, ErfcU, 5);
     }
 
-    public static double Polevl(double x, double[] coef, int n)
+    public static double Polevl(double x, double[] coefficient, int n)
     {
-        var num = coef[0];
+        var firstCoefficient = coefficient[0];
         for (var index = 1; index <= n; ++index)
-            num = num * x + coef[index];
-        return num;
+            firstCoefficient = firstCoefficient * x + coefficient[index];
+        return firstCoefficient;
     }
 
-    public static double P1Evl(double x, double[] coef, int n)
+    public static double P1Evl(double x, double[] coefficient, int n)
     {
-        var num = x + coef[0];
+        var firstCoefficient = x + coefficient[0];
         for (var index = 1; index < n; ++index)
-            num = num * x + coef[index];
-        return num;
+            firstCoefficient = firstCoefficient * x + coefficient[index];
+        return firstCoefficient;
     }
 
     public static double Binomial(int n, int k)

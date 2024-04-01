@@ -1,10 +1,10 @@
+using Sailfish.Analysis.SailDiff.Statistics.StatsCore.Search;
 using System;
 using System.ComponentModel.DataAnnotations;
-using Sailfish.Analysis.SailDiff.Statistics.StatsCore.Search;
 
-namespace Sailfish.Analysis.SailDiff.Statistics.StatsCore.Distributions;
+namespace Sailfish.Analysis.SailDiff.Statistics.StatsCore.Distributions.DistributionBase;
 
-public abstract class UnivariateContinuousDistribution : DistributionBase, ISampleableDistribution<double>
+internal abstract class UnivariateContinuousDistribution : DistributionBase
 {
     public double[] Generate(int samples, Random source)
     {

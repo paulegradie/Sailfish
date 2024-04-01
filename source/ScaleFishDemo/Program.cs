@@ -1,4 +1,5 @@
-﻿using PerformanceTests.ExamplePerformanceTests;
+﻿using ModelPredictions;
+using PerformanceTests.ExamplePerformanceTests;
 using Sailfish;
 using Sailfish.Analysis.SailDiff;
 using Sailfish.Analysis.ScaleFish;

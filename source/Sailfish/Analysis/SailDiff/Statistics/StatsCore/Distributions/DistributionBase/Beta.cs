@@ -1,8 +1,8 @@
 using System;
 
-namespace Sailfish.Analysis.SailDiff.Statistics.StatsCore.Distributions;
+namespace Sailfish.Analysis.SailDiff.Statistics.StatsCore.Distributions.DistributionBase;
 
-public static class Beta
+internal static class Beta
 {
     public static double Incomplete(double a, double b, double x)
     {

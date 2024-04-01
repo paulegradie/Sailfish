@@ -1,6 +1,8 @@
+using Sailfish.Analysis.SailDiff.Statistics.StatsCore.Analysers.AnalysersBase;
+
 namespace Sailfish.Analysis.SailDiff.Statistics.StatsCore.Analysers.Factories;
 
-public static class TwoSampleKolmogorovSmirnovFactory
+internal static class TwoSampleKolmogorovSmirnovFactory
 {
     public static TwoSampleKolmogorovSmirnov Create(
         double[] sample1,

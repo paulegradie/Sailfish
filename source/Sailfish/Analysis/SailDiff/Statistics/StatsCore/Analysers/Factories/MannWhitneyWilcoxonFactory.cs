@@ -1,3 +1,5 @@
+using Sailfish.Analysis.SailDiff.Statistics.StatsCore.Analysers.AnalysersBase;
+
 namespace Sailfish.Analysis.SailDiff.Statistics.StatsCore.Analysers.Factories;
 
 internal static class MannWhitneyWilcoxonFactory

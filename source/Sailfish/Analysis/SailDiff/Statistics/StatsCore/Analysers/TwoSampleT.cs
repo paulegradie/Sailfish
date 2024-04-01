@@ -1,9 +1,11 @@
+using Sailfish.Analysis.SailDiff.Statistics.StatsCore.Analysers.AnalysersBase;
 using System;
 using Sailfish.Analysis.SailDiff.Statistics.StatsCore.Distributions;
+using Sailfish.Analysis.SailDiff.Statistics.StatsCore.Distributions.DistributionBase;
 
 namespace Sailfish.Analysis.SailDiff.Statistics.StatsCore.Analysers;
 
-public sealed class TwoSampleT : HypothesisTest
+internal sealed class TwoSampleT : HypothesisTest
 {
     public TwoSampleT(
         double mean1,
@@ -41,7 +43,7 @@ public sealed class TwoSampleT : HypothesisTest
         StatisticDistribution = new Distribution(degreesOfFreedom);
         Hypothesis = alternate;
         Tail = (DistributionTailSailfish)alternate;
-        PValue = TestExtensionMethods.StatisticToPValue(Statistic, StatisticDistribution, Tail);
+        PValue = StatisticToPValue(Statistic, StatisticDistribution, Tail);
         Confidence = GetConfidenceInterval(1.0 - Size);
     }
 
@@ -68,7 +70,29 @@ public sealed class TwoSampleT : HypothesisTest
 
     public DoubleRange GetConfidenceInterval(double percent = 0.95)
     {
-        var statistic = TestExtensionMethods.PValueToStatistic(1.0 - percent, StatisticDistribution, Tail);
+        var statistic = PValueToStatistic(1.0 - percent, StatisticDistribution, Tail);
         return new DoubleRange(ObservedDifference - statistic * StandardError, ObservedDifference + statistic * StandardError);
+    }
+
+    public static double StatisticToPValue(double t, Distribution distribution, DistributionTailSailfish type)
+    {
+        return type switch
+        {
+            DistributionTailSailfish.TwoTail => 2.0 * distribution.ComplementaryDistributionFunction(Math.Abs(t)),
+            DistributionTailSailfish.OneUpper => distribution.ComplementaryDistributionFunction(t),
+            DistributionTailSailfish.OneLower => distribution.DistributionFunction(t),
+            _ => throw new InvalidOperationException()
+        };
+    }
+
+    public static double PValueToStatistic(double p, Distribution distribution, DistributionTailSailfish type)
+    {
+        return type switch
+        {
+            DistributionTailSailfish.TwoTail => distribution.InverseDistributionFunction(1.0 - p / 2.0),
+            DistributionTailSailfish.OneUpper => distribution.InverseDistributionFunction(1.0 - p),
+            DistributionTailSailfish.OneLower => distribution.InverseDistributionFunction(p),
+            _ => throw new InvalidOperationException()
+        };
     }
 }

@@ -1,25 +1,48 @@
+using Sailfish.Analysis.SailDiff.Statistics.StatsCore.Distributions.DistributionBase;
+using Sailfish.Analysis.SailDiff.Statistics.StatsCore.Distributions.DistributionFactories;
+using Sailfish.Analysis.SailDiff.Statistics.StatsCore.MathOps;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
-using Sailfish.Analysis.SailDiff.Statistics.StatsCore.Ops;
 
 namespace Sailfish.Analysis.SailDiff.Statistics.StatsCore.Distributions;
 
-[Serializable]
-public class WilcoxonDistribution : UnivariateContinuousDistribution
+internal sealed class WilcoxonDistribution : UnivariateContinuousDistribution
 {
-    private NormalDistribution approximation;
+    private readonly NormalDistribution approximation;
 
-    public WilcoxonDistribution(double[] ranks, bool? exact = null)
+    internal WilcoxonDistribution(double[] ranks, bool exact, ContinuityCorrection continuityCorrection)
     {
-        Init(ranks.Length, ranks, exact);
+        Exact = exact;
+        Correction = continuityCorrection;
+
+        var mean = ranks.Length * (ranks.Length + 1.0) / 4.0;
+        var stdDev = Math.Sqrt(ranks.Length * (ranks.Length + 1.0) * (2.0 * ranks.Length + 1.0) / 24.0);
+        approximation = NormalDistributionFactory.Create(mean, stdDev);
+
+        if (exact)
+        {
+            ranks = ranks.Get(ranks.Find(x => x != 0.0));
+            var exactN = (long)Math.Pow(2.0, ranks.Length);
+            var source = Combinatorics.Sequences(ranks.Length)
+                .Zip(exactN.EnumerableRange(), (Func<int[], long, Tuple<int[], long>>)((c, i) => new Tuple<int[], long>(c, i)));
+            Table = new double[exactN];
+            var body = (Action<Tuple<int[], long>>)(item =>
+            {
+                var signs = item.Item1;
+                var index1 = item.Item2;
+                for (var index2 = 0; index2 < signs.Length; ++index2)
+                    signs[index2] = Math.Sign(signs[index2] * 2 - 1);
+                Table[index1] = WPositive(signs, ranks);
+            });
+            Parallel.ForEach(source, body);
+            Array.Sort(Table);
+        }
     }
 
-    public int NumberOfSamples { get; private set; }
+    public bool Exact { get; }
 
-    public bool Exact { get; private set; }
-
-    public double[] Table { get; private set; }
+    public double[] Table { get; }
 
     public ContinuityCorrection Correction { get; set; }
 
@@ -28,43 +51,6 @@ public class WilcoxonDistribution : UnivariateContinuousDistribution
 
     public override DoubleRange Support => Exact ? new DoubleRange(0.0, double.PositiveInfinity) : approximation.Support;
 
-    private void Init(int n, double[]? ranks, bool? exact)
-    {
-        NumberOfSamples = n > 0 ? n : throw new ArgumentOutOfRangeException(nameof(n), "The number of samples must be positive.");
-        var mean = n * (n + 1.0) / 4.0;
-        var stdDev = Math.Sqrt(n * (n + 1.0) * (2.0 * n + 1.0) / 24.0);
-        var flag = ranks != null;
-        Exact = flag && n <= 12;
-        if (exact.HasValue)
-        {
-            if (exact.Value && !flag)
-                throw new ArgumentException(nameof(exact), "Cannot use exact method if rank vectors are not specified.");
-            Exact = exact.Value;
-        }
-
-        if (flag && Exact)
-            InitExactMethod(ranks);
-        approximation = new NormalDistribution(mean, stdDev);
-    }
-
-    private void InitExactMethod(double[] ranks)
-    {
-        ranks = ranks.Get(ranks.Find(x => x != 0.0));
-        var n = (long)Math.Pow(2.0, ranks.Length);
-        var source = Combinatorics.Sequences(ranks.Length)
-            .Zip(InternalOps.EnumerableRange(n), (Func<int[], long, Tuple<int[], long>>)((c, i) => new Tuple<int[], long>(c, i)));
-        Table = new double[n];
-        var body = (Action<Tuple<int[], long>>)(item =>
-        {
-            var signs = item.Item1;
-            var index1 = item.Item2;
-            for (var index2 = 0; index2 < signs.Length; ++index2)
-                signs[index2] = Math.Sign(signs[index2] * 2 - 1);
-            Table[index1] = WPositive(signs, ranks);
-        });
-        Parallel.ForEach(source, body);
-        Array.Sort(Table);
-    }
 
     public static double WPositive(int[] signs, double[] ranks)
     {

@@ -1,12 +1,14 @@
+using Sailfish.Analysis.SailDiff.Statistics.StatsCore.Analysers.AnalysersBase;
 using System;
 using System.Linq;
 using Sailfish.Analysis.SailDiff.Statistics.StatsCore.Distributions;
+using Sailfish.Analysis.SailDiff.Statistics.StatsCore.Distributions.DistributionBase;
 using Sailfish.Analysis.SailDiff.Statistics.StatsCore.Distributions.DistributionFactories;
-using Sailfish.Analysis.SailDiff.Statistics.StatsCore.Ops;
+using Sailfish.Analysis.SailDiff.Statistics.StatsCore.MathOps;
 
 namespace Sailfish.Analysis.SailDiff.Statistics.StatsCore.Analysers;
 
-internal class MannWhitneyWilcoxon : HypothesisTest
+internal sealed class MannWhitneyWilcoxon : HypothesisTest
 {
     public MannWhitneyWilcoxon(
         double[] sample1,

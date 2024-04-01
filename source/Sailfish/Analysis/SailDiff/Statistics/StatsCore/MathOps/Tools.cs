@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace Sailfish.Analysis.SailDiff.Statistics.StatsCore.Ops;
+namespace Sailfish.Analysis.SailDiff.Statistics.StatsCore.MathOps;
 
 public static class Tools
 {

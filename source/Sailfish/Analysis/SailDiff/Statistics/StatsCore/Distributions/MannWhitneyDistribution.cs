@@ -1,12 +1,14 @@
+using Sailfish.Analysis.SailDiff.Statistics.StatsCore.Distributions.DistributionBase;
+using Sailfish.Analysis.SailDiff.Statistics.StatsCore.Distributions.DistributionFactories;
+using Sailfish.Analysis.SailDiff.Statistics.StatsCore.MathOps;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
-using Sailfish.Analysis.SailDiff.Statistics.StatsCore.Ops;
 using Sailfish.Analysis.SailDiff.Statistics.StatsCore.Search;
 
 namespace Sailfish.Analysis.SailDiff.Statistics.StatsCore.Distributions;
 
-internal class MannWhitneyDistribution : UnivariateContinuousDistribution
+internal sealed class MannWhitneyDistribution : UnivariateContinuousDistribution
 {
     private readonly NormalDistribution approximation;
 
@@ -24,7 +26,7 @@ internal class MannWhitneyDistribution : UnivariateContinuousDistribution
         if (Exact)
             InitExactMethod(ranks);
 
-        approximation = new NormalDistribution(mean, stdDev);
+        approximation = NormalDistributionFactory.Create(mean, stdDev);
         Correction = continuityCorrection;
     }
 

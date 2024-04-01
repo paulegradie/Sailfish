@@ -1,8 +1,9 @@
-using Sailfish.Analysis.SailDiff.Statistics.StatsCore.Ops;
+using Sailfish.Analysis.SailDiff.Statistics.StatsCore.Analysers.AnalysersBase;
+using Sailfish.Analysis.SailDiff.Statistics.StatsCore.MathOps;
 
-namespace Sailfish.Analysis.SailDiff.Statistics.StatsCore.Analysers;
+namespace Sailfish.Analysis.SailDiff.Statistics.StatsCore.Analysers.Factories;
 
-public static class TwoSampleTFactory
+internal static class TwoSampleTFactory
 {
     public static TwoSampleT Create(
         double[] sample1,

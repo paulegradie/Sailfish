@@ -1,14 +1,18 @@
+using Sailfish.Analysis.SailDiff.Statistics.StatsCore.Distributions.DistributionBase;
+using Sailfish.Analysis.SailDiff.Statistics.StatsCore.MathOps;
 using System;
 using System.Collections.Generic;
-using Sailfish.Analysis.SailDiff.Statistics.StatsCore.Attributes;
-using Sailfish.Analysis.SailDiff.Statistics.StatsCore.Ops;
 
 namespace Sailfish.Analysis.SailDiff.Statistics.StatsCore.Distributions;
 
-[Serializable]
-public class KolmogorovSmirnovDistribution([Positive] double samples) : UnivariateContinuousDistribution, IFormattable
+internal sealed class KolmogorovSmirnovDistribution : UnivariateContinuousDistribution, IFormattable
 {
-    public double NumberOfSamples { get; private set; } = samples > 0.0 ? samples : throw new ArgumentOutOfRangeException(nameof(samples), "The number of samples must be positive.");
+    public KolmogorovSmirnovDistribution(double samples)
+    {
+        NumberOfSamples = samples > 0.0 ? samples : throw new ArgumentOutOfRangeException(nameof(samples), "The number of samples must be positive.");
+    }
+
+    public double NumberOfSamples { get; }
 
     public override DoubleRange Support => new(0.5 / NumberOfSamples, 1.0);
 
@@ -58,7 +62,6 @@ public class KolmogorovSmirnovDistribution([Positive] double samples) : Univaria
         if (!(n <= 140.0)) return n <= 100000.0 && n * num * x <= 1.96 ? Durbin(n1, x) : PelzGood(n, x);
         if (num < 0.754693) return Durbin(n1, x);
         return num < 4.0 ? Pomeranz(n1, x) : 1.0 - ComplementaryDistributionFunction(n, x);
-
     }
 
     public static double ComplementaryDistributionFunction(double n, double x)
@@ -281,9 +284,9 @@ public class KolmogorovSmirnovDistribution([Positive] double samples) : Univaria
         var v = new double[length, length];
         var b = new double[length, length];
         for (var index1 = 0; index1 < length; ++index1)
-            for (var index2 = 0; index2 < length; ++index2)
-                if (index1 - index2 + 1 >= 0)
-                    a[index1, index2] = 1.0;
+        for (var index2 = 0; index2 < length; ++index2)
+            if (index1 - index2 + 1 >= 0)
+                a[index1, index2] = 1.0;
         for (var index = 0; index < length; ++index)
         {
             a[index, 0] -= Math.Pow(x, index + 1);
@@ -292,10 +295,10 @@ public class KolmogorovSmirnovDistribution([Positive] double samples) : Univaria
 
         a[length - 1, 0] += 2.0 * x - 1.0 > 0.0 ? Math.Pow(2.0 * x - 1.0, length) : 0.0;
         for (var index3 = 0; index3 < length; ++index3)
-            for (var index4 = 0; index4 < length; ++index4)
-                if (index3 - index4 + 1 > 0)
-                    for (var index5 = 1; index5 <= index3 - index4 + 1; ++index5)
-                        a[index3, index4] /= index5;
+        for (var index4 = 0; index4 < length; ++index4)
+            if (index3 - index4 + 1 > 0)
+                for (var index5 = 1; index5 <= index3 - index4 + 1; ++index5)
+                    a[index3, index4] /= index5;
         var eV = 0;
         MatrixPower(a, 0, v, ref eV, length, n, b);
         var num2 = v[num1 - 1, num1 - 1];
@@ -322,8 +325,8 @@ public class KolmogorovSmirnovDistribution([Positive] double samples) : Univaria
         if (n == 1)
         {
             for (var index1 = 0; index1 < m; ++index1)
-                for (var index2 = 0; index2 < m; ++index2)
-                    v[index1, index2] = a[index1, index2];
+            for (var index2 = 0; index2 < m; ++index2)
+                v[index1, index2] = a[index1, index2];
             eV = eA;
         }
         else
@@ -334,16 +337,16 @@ public class KolmogorovSmirnovDistribution([Positive] double samples) : Univaria
             if (b[m / 2, m / 2] > 1E+140)
             {
                 for (var index3 = 0; index3 < m; ++index3)
-                    for (var index4 = 0; index4 < m; ++index4)
-                        b[index3, index4] *= 1E-140;
+                for (var index4 = 0; index4 < m; ++index4)
+                    b[index3, index4] *= 1E-140;
                 num += 140;
             }
 
             if (n % 2 == 0)
             {
                 for (var index5 = 0; index5 < m; ++index5)
-                    for (var index6 = 0; index6 < m; ++index6)
-                        v[index5, index6] = b[index5, index6];
+                for (var index6 = 0; index6 < m; ++index6)
+                    v[index5, index6] = b[index5, index6];
                 eV = num;
             }
             else
@@ -355,8 +358,8 @@ public class KolmogorovSmirnovDistribution([Positive] double samples) : Univaria
             if (v[m / 2, m / 2] <= 1E+140)
                 return;
             for (var index7 = 0; index7 < m; ++index7)
-                for (var index8 = 0; index8 < m; ++index8)
-                    v[index7, index8] *= 1E-140;
+            for (var index8 = 0; index8 < m; ++index8)
+                v[index7, index8] *= 1E-140;
             eV += 140;
         }
     }
@@ -370,38 +373,38 @@ public class KolmogorovSmirnovDistribution([Positive] double samples) : Univaria
         switch (limits)
         {
             case > 0.5:
-            {
-                for (var index = 1; index < floors.Count; index += 2)
-                    floors[index] = index / 2 - 1 - num1;
-                for (var index = 2; index < floors.Count; index += 2)
-                    floors[index] = index / 2 - 2 - num1;
-                for (var index = 1; index < ceilings.Count; index += 2)
-                    ceilings[index] = index / 2 + 1 + num1;
-                for (var index = 2; index < ceilings.Count; index += 2)
-                    ceilings[index] = index / 2 + num1;
-                break;
-            }
+                {
+                    for (var index = 1; index < floors.Count; index += 2)
+                        floors[index] = index / 2 - 1 - num1;
+                    for (var index = 2; index < floors.Count; index += 2)
+                        floors[index] = index / 2 - 2 - num1;
+                    for (var index = 1; index < ceilings.Count; index += 2)
+                        ceilings[index] = index / 2 + 1 + num1;
+                    for (var index = 2; index < ceilings.Count; index += 2)
+                        ceilings[index] = index / 2 + num1;
+                    break;
+                }
             case > 0.0:
-            {
-                ceilings[1] = 1.0 + num1;
-                for (var index = 1; index < floors.Count; ++index)
-                    floors[index] = index / 2 - 1 - num1;
-                for (var index = 2; index < ceilings.Count; ++index)
-                    ceilings[index] = index / 2 + num1;
-                break;
-            }
+                {
+                    ceilings[1] = 1.0 + num1;
+                    for (var index = 1; index < floors.Count; ++index)
+                        floors[index] = index / 2 - 1 - num1;
+                    for (var index = 2; index < ceilings.Count; ++index)
+                        ceilings[index] = index / 2 + num1;
+                    break;
+                }
             default:
-            {
-                for (var index = 1; index < floors.Count; index += 2)
-                    floors[index] = index / 2 - num1;
-                for (var index = 2; index < floors.Count; index += 2)
-                    floors[index] = index / 2 - 1 - num1;
-                for (var index = 1; index < ceilings.Count; index += 2)
-                    ceilings[index] = index / 2 + num1;
-                for (var index = 2; index < ceilings.Count; index += 2)
-                    ceilings[index] = index / 2 - 1 + num1;
-                break;
-            }
+                {
+                    for (var index = 1; index < floors.Count; index += 2)
+                        floors[index] = index / 2 - num1;
+                    for (var index = 2; index < floors.Count; index += 2)
+                        floors[index] = index / 2 - 1 - num1;
+                    for (var index = 1; index < ceilings.Count; index += 2)
+                        ceilings[index] = index / 2 + num1;
+                    for (var index = 2; index < ceilings.Count; index += 2)
+                        ceilings[index] = index / 2 - 1 + num1;
+                    break;
+                }
         }
 
         if (num4 < limits)

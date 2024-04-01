@@ -1,9 +1,8 @@
 using System;
 
-namespace Sailfish.Analysis.SailDiff.Statistics.StatsCore.Distributions;
+namespace Sailfish.Analysis.SailDiff.Statistics.StatsCore.Distributions.DistributionBase;
 
-[Serializable]
-public abstract class DistributionBase : IFormattable
+internal abstract class DistributionBase : IFormattable
 {
     public abstract string ToString(string? format, IFormatProvider? formatProvider);
 

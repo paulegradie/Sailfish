@@ -1,3 +1,4 @@
+using Sailfish.Analysis.SailDiff.Statistics.StatsCore.Analysers.AnalysersBase;
 using Sailfish.Analysis.SailDiff.Statistics.StatsCore.Exceptions;
 using System;
 using System.Collections.Generic;

@@ -1,10 +1,12 @@
+using Sailfish.Analysis.SailDiff.Statistics.StatsCore.Analysers.AnalysersBase;
 using System;
 using System.Linq;
 using Sailfish.Analysis.SailDiff.Statistics.StatsCore.Distributions;
+using Sailfish.Analysis.SailDiff.Statistics.StatsCore.Distributions.DistributionBase;
 
 namespace Sailfish.Analysis.SailDiff.Statistics.StatsCore.Analysers;
 
-public class TwoSampleKolmogorovSmirnov : HypothesisTest
+internal sealed class TwoSampleKolmogorovSmirnov : HypothesisTest
 {
     public TwoSampleKolmogorovSmirnov(
         double[] sample1,

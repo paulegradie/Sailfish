@@ -1,9 +1,10 @@
 using System;
 using Sailfish.Analysis.SailDiff.Statistics.StatsCore.Attributes;
+using Sailfish.Analysis.SailDiff.Statistics.StatsCore.Distributions.DistributionBase;
 
 namespace Sailfish.Analysis.SailDiff.Statistics.StatsCore.Distributions;
 
-public class Distribution : UnivariateContinuousDistribution, IFormattable
+internal sealed class Distribution : UnivariateContinuousDistribution, IFormattable
 {
     public Distribution([Positive(1.0)] double degreesOfFreedom)
     {
