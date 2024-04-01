@@ -41,11 +41,13 @@ internal class ClassExecutionSummaryCompiler(IStatisticsCompiler statsCompiler, 
     private CompiledTestCaseResult CompileTestResult(TestCaseExecutionResult testCaseExecutionResult)
     {
         if (!testCaseExecutionResult.IsSuccess)
+        {
             return new CompiledTestCaseResult(
-                testCaseExecutionResult.TestInstanceContainer?.TestCaseId,
+                testCaseExecutionResult.TestInstanceContainer?.TestCaseId!,
                 testCaseExecutionResult.TestInstanceContainer?.GroupingId,
                 testCaseExecutionResult.Exception ?? new SailfishException("Encountered test failure but could not find an exception")
             );
+        }
 
         if (testCaseExecutionResult is { PerformanceTimerResults.IsValid: false, IsSuccess: true })
         {
