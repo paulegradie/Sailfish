@@ -8,7 +8,7 @@ public class MethodSetupExceptionIsHandled
     [SailfishMethodSetup]
     public void MethodSetup()
     {
-        throw new Exception("Method Setup Exception");
+        throw new TestException("Method Setup Exception");
     }
 
     [SailfishMethod]

@@ -43,8 +43,8 @@ public class TestExecutor : ITestExecutor
     public void RunTests(IEnumerable<TestCase>? testCases, IRunContext? runContext, IFrameworkHandle? frameworkHandle)
     {
         Debug.Assert(frameworkHandle is not null);
-        var tests = (testCases?.ToList()) ?? throw new Exception("Tests was null in the test case list!");
-        if (runContext is null || frameworkHandle is null) throw new Exception("Wow more nulls");
+        var tests = (testCases?.ToList()) ?? throw new TestAdapterException("Tests was null in the test case list!");
+        if (runContext is null || frameworkHandle is null) throw new TestAdapterException("Wow more nulls");
 
         ExecuteTests(tests, frameworkHandle);
     }
@@ -126,7 +126,7 @@ public class TestExecutor : ITestExecutor
             .GetPropertyHelper(SailfishManagedProperty.SailfishTypeProperty);
 
         var refTestType = assembly.GetType(testTypeFullName, true, true);
-        if (refTestType is null) throw new Exception("First test type was null when starting test execution");
+        if (refTestType is null) throw new TestAdapterException("First test type was null when starting test execution");
         return refTestType;
     }
 }

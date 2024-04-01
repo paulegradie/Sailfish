@@ -15,6 +15,6 @@ public class IterationTeardownExceptionIsHandled
     public async Task IterationTeardown(CancellationToken cancellationToken)
     {
         await Task.Delay(10, cancellationToken);
-        throw new Exception("Iteration Teardown Exception");
+        throw new TestException("Iteration Teardown Exception");
     }
 }

@@ -1,26 +1,12 @@
+using Sailfish.Analysis.SailDiff.Statistics.StatsCore.Analysers.AnalysersBase;
 using System;
 using Sailfish.Analysis.SailDiff.Statistics.StatsCore.Distributions;
-using Sailfish.Analysis.SailDiff.Statistics.StatsCore.Ops;
+using Sailfish.Analysis.SailDiff.Statistics.StatsCore.Distributions.DistributionBase;
 
 namespace Sailfish.Analysis.SailDiff.Statistics.StatsCore.Analysers;
 
-[Serializable]
-public class TwoSampleT : HypothesisTest<Distribution>
+internal sealed class TwoSampleT : HypothesisTest
 {
-    private readonly TwoSampleTTestPowerAnalysis powerAnalysis;
-
-    public TwoSampleT(
-        double[] sample1,
-        double[] sample2,
-        bool assumeEqualVariances = true,
-        double hypothesizedDifference = 0.0,
-        TwoSampleHypothesis alternate = TwoSampleHypothesis.ValuesAreDifferent)
-        : this(sample1.Mean(), sample1.Variance(), sample1.Length,
-            sample2.Mean(), sample2.Variance(), sample2.Length,
-            assumeEqualVariances, hypothesizedDifference, alternate)
-    {
-    }
-
     public TwoSampleT(
         double mean1,
         double var1,
@@ -57,66 +43,56 @@ public class TwoSampleT : HypothesisTest<Distribution>
         StatisticDistribution = new Distribution(degreesOfFreedom);
         Hypothesis = alternate;
         Tail = (DistributionTailSailfish)alternate;
-        PValue = StatisticToPValue(Statistic);
-        OnSizeChanged();
-
-        var num = Math.Sqrt((var1 + var2) / 2.0);
-        var ttestPowerAnalysis = new TwoSampleTTestPowerAnalysis(Hypothesis)
-        {
-            Samples1 = samples1,
-            Samples2 = samples2,
-            Effect = (ObservedDifference - HypothesizedDifference) / num,
-            Size = Size
-        };
-        powerAnalysis = ttestPowerAnalysis;
-        powerAnalysis.ComputePower();
+        PValue = StatisticToPValue(Statistic, StatisticDistribution, Tail);
+        Confidence = GetConfidenceInterval(1.0 - Size);
     }
-
-    public ITwoSamplePowerAnalysis Analysis => powerAnalysis;
 
     public TwoSampleHypothesis Hypothesis { get; private set; }
 
     public bool AssumeEqualVariance { get; private set; }
 
-    public double StandardError { get; protected set; }
+    public double StandardError { get; }
 
-    public double Variance { get; protected set; }
+    public double Variance { get; }
 
-    public double EstimatedValue1 { get; protected set; }
+    public double EstimatedValue1 { get; }
 
-    public double EstimatedValue2 { get; protected set; }
+    public double EstimatedValue2 { get; }
 
-    public double HypothesizedDifference { get; protected set; }
+    public double HypothesizedDifference { get; }
 
-    public double ObservedDifference { get; protected set; }
+    public double ObservedDifference { get; }
 
     public double DegreesOfFreedom => StatisticDistribution.DegreesOfFreedom;
 
-    public DoubleRange Confidence { get; protected set; }
-    public override Distribution StatisticDistribution { get; set; }
+    public DoubleRange Confidence { get; set; }
+    private Distribution StatisticDistribution { get; }
 
     public DoubleRange GetConfidenceInterval(double percent = 0.95)
     {
-        var statistic = PValueToStatistic(1.0 - percent);
+        var statistic = PValueToStatistic(1.0 - percent, StatisticDistribution, Tail);
         return new DoubleRange(ObservedDifference - statistic * StandardError, ObservedDifference + statistic * StandardError);
     }
 
-    protected void OnSizeChanged()
+    public static double StatisticToPValue(double t, Distribution distribution, DistributionTailSailfish type)
     {
-        Confidence = GetConfidenceInterval(1.0 - Size);
-        if (Analysis == null)
-            return;
-        powerAnalysis.Size = Size;
-        powerAnalysis.ComputePower();
+        return type switch
+        {
+            DistributionTailSailfish.TwoTail => 2.0 * distribution.ComplementaryDistributionFunction(Math.Abs(t)),
+            DistributionTailSailfish.OneUpper => distribution.ComplementaryDistributionFunction(t),
+            DistributionTailSailfish.OneLower => distribution.DistributionFunction(t),
+            _ => throw new InvalidOperationException()
+        };
     }
 
-    public override double PValueToStatistic(double p)
+    public static double PValueToStatistic(double p, Distribution distribution, DistributionTailSailfish type)
     {
-        return TestExtensionMethods.PValueToStatistic(p, StatisticDistribution, Tail);
-    }
-
-    public override double StatisticToPValue(double x)
-    {
-        return TestExtensionMethods.StatisticToPValue(x, StatisticDistribution, Tail);
+        return type switch
+        {
+            DistributionTailSailfish.TwoTail => distribution.InverseDistributionFunction(1.0 - p / 2.0),
+            DistributionTailSailfish.OneUpper => distribution.InverseDistributionFunction(1.0 - p),
+            DistributionTailSailfish.OneLower => distribution.InverseDistributionFunction(p),
+            _ => throw new InvalidOperationException()
+        };
     }
 }

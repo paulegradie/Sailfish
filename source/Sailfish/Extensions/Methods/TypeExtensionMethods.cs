@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Sailfish.Exceptions;
+using System;
 using System.Linq;
 using System.Reflection;
 
@@ -14,7 +15,7 @@ internal static class TypeExtensionMethods
                 | BindingFlags.Instance
                 | BindingFlags.DeclaredOnly
                 | BindingFlags.NonPublic);
-        if (ctorInfos.Length is 0 or > 1) throw new Exception("A single ctor must be declared in all test types");
+        if (ctorInfos.Length is 0 or > 1) throw new SailfishException("A single ctor must be declared in all test types");
         return ctorInfos.Single();
     }
 

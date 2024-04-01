@@ -11,7 +11,7 @@ public class ExceptionExample
     [SailfishMethod]
     public void ThrowException()
     {
-        throw new Exception("Where did this go??");
+        throw new TestException("Where did this go??");
     }
 
     [SailfishMethod]

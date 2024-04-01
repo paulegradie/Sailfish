@@ -1,11 +1,12 @@
+using Sailfish.Analysis.SailDiff.Statistics.StatsCore.Analysers.AnalysersBase;
 using System;
 using System.Linq;
 using Sailfish.Analysis.SailDiff.Statistics.StatsCore.Distributions;
+using Sailfish.Analysis.SailDiff.Statistics.StatsCore.Distributions.DistributionBase;
 
 namespace Sailfish.Analysis.SailDiff.Statistics.StatsCore.Analysers;
 
-[Serializable]
-public class TwoSampleKolmogorovSmirnov : HypothesisTest<KolmogorovSmirnovDistribution>
+internal sealed class TwoSampleKolmogorovSmirnov : HypothesisTest
 {
     public TwoSampleKolmogorovSmirnov(
         double[] sample1,
@@ -61,15 +62,5 @@ public class TwoSampleKolmogorovSmirnov : HypothesisTest<KolmogorovSmirnovDistri
     public EmpiricalDistribution EmpiricalDistribution1 { get; private set; }
 
     public EmpiricalDistribution EmpiricalDistribution2 { get; private set; }
-    public sealed override KolmogorovSmirnovDistribution StatisticDistribution { get; set; }
-
-    public override double PValueToStatistic(double p)
-    {
-        throw new NotSupportedException();
-    }
-
-    public override double StatisticToPValue(double x)
-    {
-        throw new NotSupportedException();
-    }
+    public KolmogorovSmirnovDistribution StatisticDistribution { get; set; }
 }

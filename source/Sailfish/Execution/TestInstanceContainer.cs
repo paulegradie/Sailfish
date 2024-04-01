@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Reflection;
 using Sailfish.Contracts.Public.Models;
+using Sailfish.Exceptions;
 using Sailfish.Utils;
 
 namespace Sailfish.Execution;
@@ -52,7 +53,7 @@ internal class TestInstanceContainer
         IExecutionSettings executionSettings
     )
     {
-        if (propertyNames.Length != variables.Length) throw new Exception("Property names and variables do not match");
+        if (propertyNames.Length != variables.Length) throw new SailfishException("Property names and variables do not match");
 
         var testCaseId = DisplayNameHelper.CreateTestCaseId(instance.GetType(), method.Name, propertyNames, variables); // a uniq id
 

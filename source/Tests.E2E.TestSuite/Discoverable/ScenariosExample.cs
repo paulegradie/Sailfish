@@ -12,7 +12,7 @@ public class ScenariosExample
     [SailfishVariable("wow", "ok")] public string N { get; set; } = null!;
 
     [SailfishVariable(ScenarioA, ScenarioB)]
-    public string Scenario { get; set; } = null!;
+    public string Scenario { get; set; }
 
     [SailfishGlobalSetup]
     public void GlobalSetup()

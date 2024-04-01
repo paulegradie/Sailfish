@@ -3,7 +3,6 @@ using Microsoft.VisualStudio.TestPlatform.ObjectModel;
 using Sailfish.Contracts.Public.Notifications;
 using Sailfish.Logging;
 using Sailfish.TestAdapter.Display.VSTestFramework;
-using System;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -25,9 +24,7 @@ internal class TestCaseExceptionNotificationHandler : INotificationHandler<TestC
     {
         await Task.CompletedTask;
 
-        logger.Log(LogLevel.Error, notification.Exception ?? new Exception(
-                "Undefined Exception"),
-            "Encountered exception during test case execution");
+        logger.Log(LogLevel.Error, notification.Exception ?? new TestAdapterException("Undefined Exception"), "Encountered exception during test case execution");
         if (notification.TestInstanceContainer is null)
         {
             foreach (var testCase in notification.TestCaseGroup)

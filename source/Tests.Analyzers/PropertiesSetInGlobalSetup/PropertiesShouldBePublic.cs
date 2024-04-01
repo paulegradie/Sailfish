@@ -1,7 +1,6 @@
 ﻿using Microsoft.CodeAnalysis.CSharp.Testing.XUnit;
 using Microsoft.CodeAnalysis.Testing;
 using Sailfish.Analyzers.DiagnosticAnalyzers.PropertiesSetInAnySailfishGlobalSetup;
-using Sailfish.Analyzers.Utils;
 using Tests.Analyzers.Utils;
 using Xunit;
 

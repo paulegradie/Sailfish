@@ -1,33 +1,55 @@
+using Sailfish.Analysis.SailDiff.Statistics.StatsCore.Distributions.DistributionBase;
+using Sailfish.Analysis.SailDiff.Statistics.StatsCore.MathOps;
 using System;
 using System.Linq;
-using Sailfish.Analysis.SailDiff.Statistics.StatsCore.Ops;
 
 namespace Sailfish.Analysis.SailDiff.Statistics.StatsCore.Distributions;
 
-public class EmpiricalDistribution : UnivariateContinuousDistribution
+internal sealed class EmpiricalDistribution : UnivariateContinuousDistribution
 {
-    private double constant;
+    private readonly double constant;
     private double? mean;
-    private int[] repeats;
-    private double sumOfWeights;
-    private WeightType type;
-    private double? variance;
-    private double[]? weights;
+    private readonly int[]? repeats;
+    private readonly double sumOfWeights;
+    private readonly WeightType type;
+    private readonly double[]? weights;
 
-    public EmpiricalDistribution(double[] samples, double smoothing)
+    public EmpiricalDistribution(double[] samples, double? smoothing, int[]? repeats = null, double[]? weights = null)
     {
-        Initialize(samples, null, null, smoothing);
+        Smoothing = smoothing ?? SmoothingRule(samples, weights, repeats);
+        Samples = samples;
+        this.repeats = repeats;
+        this.weights = weights;
+        if (weights != null)
+        {
+            type = WeightType.Fraction;
+            Length = Samples.Length;
+            sumOfWeights = weights.Sum();
+            constant = 1.0 / (2.5066282746310007 * Smoothing);
+        }
+        else if (repeats != null)
+        {
+            type = WeightType.Repetition;
+            Length = repeats.Sum();
+            sumOfWeights = 1.0;
+            constant = 1.0 / (2.5066282746310007 * Smoothing * Length);
+        }
+        else
+        {
+            type = WeightType.None;
+            Length = Samples.Length;
+            sumOfWeights = 1.0;
+            constant = 1.0 / (2.5066282746310007 * Smoothing * Length);
+        }
+
+        mean = new double?();
     }
 
-    private EmpiricalDistribution()
-    {
-    }
+    private double[] Samples { get; }
 
-    private double[] Samples { get; set; }
+    private int Length { get; }
 
-    private int Length { get; set; }
-
-    private double Smoothing { get; set; }
+    private double Smoothing { get; }
 
     public override double Mean
     {
@@ -49,46 +71,28 @@ public class EmpiricalDistribution : UnivariateContinuousDistribution
 
     public override DoubleRange Support => new(double.NegativeInfinity, double.PositiveInfinity);
 
-    public override object Clone()
-    {
-        var empiricalDistribution = new EmpiricalDistribution
-        {
-            type = type,
-            sumOfWeights = sumOfWeights,
-            Length = Length,
-            Smoothing = Smoothing,
-            constant = constant,
-            Samples = (double[])Samples.Clone()
-        };
-        if (weights != null)
-            empiricalDistribution.weights = (double[])weights.Clone();
-        if (repeats != null)
-            empiricalDistribution.repeats = (int[])repeats.Clone();
-        return empiricalDistribution;
-    }
-
     protected internal override double InnerDistributionFunction(double x)
     {
         switch (type)
         {
             case WeightType.None:
-            {
-                var num = 0;
-                for (var index = 0; index < Samples.Length; ++index)
-                    if (Samples[index] <= x)
-                        ++num;
+                {
+                    var num = 0;
+                    for (var index = 0; index < Samples.Length; ++index)
+                        if (Samples[index] <= x)
+                            ++num;
 
-                return num / (double)Length;
-            }
+                    return num / (double)Length;
+                }
             case WeightType.Repetition:
-            {
-                var num = 0;
-                for (var index = 0; index < Samples.Length; ++index)
-                    if (Samples[index] <= x)
-                        num += repeats[index];
+                {
+                    var num = 0;
+                    for (var index = 0; index < Samples.Length; ++index)
+                        if (Samples[index] <= x)
+                            num += repeats[index];
 
-                return num / (double)Length;
-            }
+                    return num / (double)Length;
+                }
         }
 
         if (type != WeightType.Fraction)
@@ -126,46 +130,7 @@ public class EmpiricalDistribution : UnivariateContinuousDistribution
         return num1 * constant;
     }
 
-
-    private void Initialize(
-        double[] observations,
-        double[]? weights,
-        int[] repeats,
-        double? smoothing)
-    {
-        if (!smoothing.HasValue)
-            smoothing = SmoothingRule(observations, weights, repeats);
-        Samples = observations;
-        this.weights = weights;
-        this.repeats = repeats;
-        Smoothing = smoothing.Value;
-        if (weights != null)
-        {
-            type = WeightType.Fraction;
-            Length = Samples.Length;
-            sumOfWeights = weights.Sum();
-            constant = 1.0 / (2.5066282746310007 * Smoothing);
-        }
-        else if (repeats != null)
-        {
-            type = WeightType.Repetition;
-            Length = repeats.Sum();
-            sumOfWeights = 1.0;
-            constant = 1.0 / (2.5066282746310007 * Smoothing * Length);
-        }
-        else
-        {
-            type = WeightType.None;
-            Length = Samples.Length;
-            sumOfWeights = 1.0;
-            constant = 1.0 / (2.5066282746310007 * Smoothing * Length);
-        }
-
-        mean = new double?();
-        variance = new double?();
-    }
-
-    public override string ToString(string format, IFormatProvider formatProvider)
+    public override string ToString(string? format, IFormatProvider? formatProvider)
     {
         return string.Format(formatProvider, "Fn(x; S)");
     }

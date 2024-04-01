@@ -10,7 +10,7 @@ namespace PerformanceTestingUserInvokedConsoleApp;
 
 public class AppRegistrationProvider : IProvideARegistrationCallback
 {
-    public async Task RegisterAsync(ContainerBuilder builder, CancellationToken cancellationToken)
+    public async Task RegisterAsync(ContainerBuilder builder, CancellationToken cancellationToken = default)
     {
         builder.RegisterType<WebApplicationFactory<DemoApp>>();
         builder.RegisterType<TestRunCompletedNotificationHandler>().As<INotificationHandler<TestRunCompletedNotification>>();

@@ -39,7 +39,7 @@ internal static class TestDiscovery
             {
                 const string msg = "Failed to discover the test project";
                 logger.SendMessage(TestMessageLevel.Error, msg);
-                throw new Exception(msg);
+                throw new TestAdapterException(msg);
             }
 
             Type[] perfTestTypes;

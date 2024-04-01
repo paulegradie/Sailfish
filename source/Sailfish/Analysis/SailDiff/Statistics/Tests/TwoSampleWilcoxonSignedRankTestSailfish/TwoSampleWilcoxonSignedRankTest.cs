@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using MathNet.Numerics.Statistics;
-using Sailfish.Analysis.SailDiff.Statistics.StatsCore.Analysers;
+using Sailfish.Analysis.SailDiff.Statistics.StatsCore.Analysers.Factories;
 using Sailfish.Contracts.Public;
 using Sailfish.Contracts.Public.Models;
 
@@ -21,9 +21,8 @@ public class TwoSampleWilcoxonSignedRankTest(ITestPreprocessor preprocessor) : I
             var sample1 = preprocessed1.OutlierAnalysis?.DataWithOutliersRemoved ?? preprocessed1.RawData;
             var sample2 = preprocessed2.OutlierAnalysis?.DataWithOutliersRemoved ?? preprocessed2.RawData;
 
-            var test = new TwoSampleWilcoxonSignedRank(
-                sample1,
-                sample2);
+            var test = TwoSampleWilcoxonSignedRankFactory.Create(sample1, sample2);
+
             var meanBefore = Math.Round(before.Mean(), sigDig);
             var meanAfter = Math.Round(after.Mean(), sigDig);
             var medianBefore = Math.Round(before.Median(), sigDig);

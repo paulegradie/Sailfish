@@ -1,6 +1,6 @@
 namespace Sailfish.Analysis.SailDiff.Statistics.StatsCore.Search;
 
-public enum BrentSearchStatus : byte
+internal enum BrentSearchStatus : byte
 {
     Success,
 

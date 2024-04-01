@@ -1,3 +1,4 @@
+using Sailfish.Exceptions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,7 +9,7 @@ public class TestCaseIdComparer : IComparer<TestCaseId>
 {
     public int Compare(TestCaseId? x, TestCaseId? y)
     {
-        if (x is null || y is null) throw new Exception("TestCaseIds shouldn't be null");
+        if (x is null || y is null) throw new SailfishException("TestCaseIds shouldn't be null");
 
         var nameComparison = string.Compare(x.TestCaseName.Name, y.TestCaseName.Name, StringComparison.InvariantCultureIgnoreCase);
         return nameComparison != 0

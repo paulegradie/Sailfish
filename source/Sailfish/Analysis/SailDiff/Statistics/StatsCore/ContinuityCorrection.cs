@@ -1,6 +1,6 @@
 namespace Sailfish.Analysis.SailDiff.Statistics.StatsCore;
 
-public enum ContinuityCorrection
+internal enum ContinuityCorrection
 {
     Midpoint,
 

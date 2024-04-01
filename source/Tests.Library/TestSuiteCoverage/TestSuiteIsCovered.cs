@@ -17,23 +17,26 @@ public class TestSuiteIsCovered
     [Fact]
     public async Task Cover()
     {
-        await new DemoPerformanceTest().DoThing(new CancellationToken());
-        new ResolveTestCaseIdTestMultipleCtorArgs(new ExampleDependencyForAltRego(),
+        await new DemoPerformanceTest().DoThing(CancellationToken.None);
+        new ResolveTestCaseIdTestMultipleCtorArgs(
+            new ExampleDependencyForAltRego(),
             new TestCaseId($"{nameof(ResolveTestCaseIdTestMultipleCtorArgs)}.{nameof(ResolveTestCaseIdTestMultipleCtorArgs.MainMethod)}()")).MainMethod();
-        new ScenariosExample().TestMethod(new CancellationToken());
         new MinimalTest().Minimal();
         new Tests.E2E.TestSuite.Discoverable.InnerNamespace.MinimalTest().Minimal();
-        await new IterationSetupExceptionComesFirst().LifeCycleExceptionTests(new CancellationToken());
-        await new IterationSetupExceptionIsHandled().LifeCycleExceptionTests(new CancellationToken());
-        await new MethodSetupExceptionIsHandled().LifeCycleExceptionTests(new CancellationToken());
-        await new MultipleInjectionsOnAsyncMethod().MainMethod(Substitute.For<ILogger>(), new CancellationToken());
-        await new OnlyTheSailfishMethodThrows().MethodTeardown(new CancellationToken());
-        await new GlobalSetupExceptionIsHandled().LifeCycleExceptionTests(new CancellationToken());
+        var scenarios = new ScenariosExample();
+        scenarios.GlobalSetup();
+        scenarios.TestMethod(CancellationToken.None);
+        await new IterationSetupExceptionComesFirst().LifeCycleExceptionTests(CancellationToken.None);
+        await new IterationSetupExceptionIsHandled().LifeCycleExceptionTests(CancellationToken.None);
+        await new MethodSetupExceptionIsHandled().LifeCycleExceptionTests(CancellationToken.None);
+        await new MultipleInjectionsOnAsyncMethod().MainMethod(Substitute.For<ILogger>(), CancellationToken.None);
+        await new OnlyTheSailfishMethodThrows().MethodTeardown(CancellationToken.None);
+        await new GlobalSetupExceptionIsHandled().LifeCycleExceptionTests(CancellationToken.None);
 
-        new VoidMethodRequestsCancellationToken().MainMethod(new CancellationToken());
+        new VoidMethodRequestsCancellationToken().MainMethod(CancellationToken.None);
 
-        await Should.ThrowAsync<Exception>(async () => await new IterationSetupExceptionComesFirst().MethodTeardown(new CancellationToken()));
-        await Should.ThrowAsync<Exception>(async () => await new MethodTeardownExceptionComesFirst().GlobalTeardown(new CancellationToken()));
-        await Should.ThrowAsync<Exception>(async () => await new IterationSetupExceptionComesFirst().SailfishMethodException(new CancellationToken()));
+        await Should.ThrowAsync<Exception>(async () => await new IterationSetupExceptionComesFirst().MethodTeardown(CancellationToken.None));
+        await Should.ThrowAsync<Exception>(async () => await new MethodTeardownExceptionComesFirst().GlobalTeardown(CancellationToken.None));
+        await Should.ThrowAsync<Exception>(async () => await new IterationSetupExceptionComesFirst().SailfishMethodException(CancellationToken.None));
     }
 }

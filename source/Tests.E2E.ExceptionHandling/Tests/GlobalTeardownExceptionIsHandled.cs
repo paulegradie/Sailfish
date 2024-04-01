@@ -15,6 +15,6 @@ public class GlobalTeardownExceptionIsHandled
     public async Task GlobalTeardown(CancellationToken cancellationToken)
     {
         await Task.Delay(10, cancellationToken);
-        throw new Exception("Global Teardown Exception");
+        throw new TestException("Global Teardown Exception");
     }
 }

@@ -99,7 +99,7 @@ internal static class SailfishTypeRegistrationUtility
             else
             {
                 var task = asyncCallback.RegisterAsync(containerBuilder, cancellationToken);
-                if (!task.IsCompletedSuccessfully) throw new Exception("Task error in your registration callback");
+                if (!task.IsCompletedSuccessfully) throw new SailfishException("Task error in your registration callback");
             }
         }
     }

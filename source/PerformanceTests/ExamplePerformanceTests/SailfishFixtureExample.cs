@@ -14,7 +14,7 @@ namespace PerformanceTests.ExamplePerformanceTests;
 [WriteToCsv]
 [WriteToMarkdown]
 [Sailfish(SampleSize = 3, NumWarmupIterations = 2, DisableOverheadEstimation = false, Disabled = false)]
-public class SailfishFixtureExample : TestBase
+public sealed class SailfishFixtureExample : TestBase
 {
     private readonly SailfishFixture sailfishFixture;
 
@@ -90,6 +90,7 @@ public class SailfishFixture : IDisposable
 
     public void Dispose()
     {
+        GC.SuppressFinalize(this);
         Container.Dispose();
     }
 

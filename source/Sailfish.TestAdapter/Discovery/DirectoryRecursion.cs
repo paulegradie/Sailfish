@@ -11,7 +11,7 @@ internal static class DirectoryRecursion
     public static FileInfo RecurseUpwardsUntilFileIsFound(string suffixToMatch, string sourceFile, int maxParentDirLevel)
     {
         var result = RecurseUpwardsUntilFileIsFoundInner(suffixToMatch, sourceFile, maxParentDirLevel);
-        if (result is null) throw new Exception($"Couldn't locate a ${suffixToMatch} file in this project.");
+        if (result is null) throw new TestAdapterException($"Couldn't locate a ${suffixToMatch} file in this project.");
         return result;
     }
 

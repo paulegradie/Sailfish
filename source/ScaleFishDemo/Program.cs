@@ -1,4 +1,5 @@
-﻿using PerformanceTests.ExamplePerformanceTests;
+﻿using ModelPredictions;
+using PerformanceTests.ExamplePerformanceTests;
 using Sailfish;
 using Sailfish.Analysis.SailDiff;
 using Sailfish.Analysis.ScaleFish;
@@ -29,10 +30,10 @@ async Task<ScalefishModel> LoadAModelFile(string rootDir)
     try
     {
         var file = Directory.GetFiles(rootDir, "ScalefishModels*").LastOrDefault();
-        if (file is null) throw new Exception("Run a Sailfish test with a variable with multiple values and enable complexity for that variable to produce a Scalefish model file");
+        if (file is null) throw new TestException("Run a Sailfish test with a variable with multiple values and enable complexity for that variable to produce a Scalefish model file");
         var loaded = ModelLoader.LoadModelFile(file);
         var model = loaded.GetScalefishModel(nameof(ScaleFishExample), nameof(ScaleFishExample.Linear), nameof(ScaleFishExample.N));
-        if (model is null) throw new Exception("Could not load model - is your method disabled?");
+        if (model is null) throw new TestException("Could not load model - is your method disabled?");
         return model;
     }
     catch

@@ -1,33 +1,15 @@
 using System;
-using System.Runtime.Serialization;
 
 namespace Sailfish.Analysis.SailDiff.Statistics.StatsCore.Exceptions;
 
-[Serializable]
 public class DimensionMismatchException : ArgumentException
 {
-    public DimensionMismatchException()
-    {
-    }
-
     public DimensionMismatchException(string paramName)
-        : base(paramName, "Array dimensions must match.")
+        : base("Array dimensions must match.", paramName)
     {
     }
 
-    public DimensionMismatchException(string paramName, string message)
-        : base(message, paramName)
-    {
-    }
-
-    public DimensionMismatchException(string message, Exception innerException)
-        : base(message, innerException)
-    {
-    }
-
-    [Obsolete("Obsolete")]
-    protected DimensionMismatchException(SerializationInfo info, StreamingContext context)
-        : base(info, context)
+    public DimensionMismatchException(string paramName, string message) : base(message, paramName)
     {
     }
 }

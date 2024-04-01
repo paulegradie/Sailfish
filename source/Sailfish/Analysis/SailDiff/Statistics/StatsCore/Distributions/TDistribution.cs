@@ -1,9 +1,10 @@
 using System;
 using Sailfish.Analysis.SailDiff.Statistics.StatsCore.Attributes;
+using Sailfish.Analysis.SailDiff.Statistics.StatsCore.Distributions.DistributionBase;
 
 namespace Sailfish.Analysis.SailDiff.Statistics.StatsCore.Distributions;
 
-public class Distribution : UnivariateContinuousDistribution, IFormattable
+internal sealed class Distribution : UnivariateContinuousDistribution, IFormattable
 {
     public Distribution([Positive(1.0)] double degreesOfFreedom)
     {
@@ -16,7 +17,7 @@ public class Distribution : UnivariateContinuousDistribution, IFormattable
 
     public override DoubleRange Support => new(double.NegativeInfinity, double.PositiveInfinity);
 
-    public override string ToString(string format, IFormatProvider formatProvider)
+    public override string ToString(string? format, IFormatProvider? formatProvider)
     {
         return $"T(x; df = {(object)DegreesOfFreedom.ToString(format, formatProvider)})";
     }
@@ -36,12 +37,6 @@ public class Distribution : UnivariateContinuousDistribution, IFormattable
     protected internal override double InnerInverseDistributionFunction(double p)
     {
         return InverseDistributionLeftTail(DegreesOfFreedom, p);
-    }
-
-
-    public override object Clone()
-    {
-        return new Distribution(DegreesOfFreedom);
     }
 
     private static double InverseDistributionLeftTail(double df, double p)

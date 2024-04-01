@@ -108,7 +108,7 @@ public static class DiscoveryAnalysisMethods
                 }
             });
 
-        if (!result.IsCompleted) throw new Exception("Exception encountered while reading and parsing source files");
+        if (!result.IsCompleted) throw new TestAdapterException("Exception encountered while reading and parsing source files");
         return classMetas;
     }
 

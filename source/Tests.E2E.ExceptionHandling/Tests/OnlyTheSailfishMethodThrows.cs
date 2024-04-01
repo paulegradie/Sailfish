@@ -9,7 +9,7 @@ public class OnlyTheSailfishMethodThrows
     public async Task SailfishMethodException(CancellationToken cancellationToken)
     {
         await Task.Delay(10, cancellationToken);
-        throw new Exception("Sailfish Method Exception");
+        throw new TestException("Sailfish Method Exception");
     }
 
     [SailfishIterationSetup]
