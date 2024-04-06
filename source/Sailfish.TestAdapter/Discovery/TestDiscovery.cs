@@ -8,7 +8,12 @@ using System.Linq;
 
 namespace Sailfish.TestAdapter.Discovery;
 
-internal static class TestDiscovery
+public interface ITestDiscovery
+{
+    IEnumerable<TestCase> DiscoverTests(IEnumerable<string> sourceDllPaths, IMessageLogger logger);
+}
+
+internal class TestDiscovery : ITestDiscovery
 {
     /// <summary>
     ///     This method should scan through the dlls provided, and extract each type that qualifies as a test type
@@ -16,7 +21,7 @@ internal static class TestDiscovery
     /// <param name="sourceDllPaths"></param>
     /// <param name="logger"></param>
     /// <returns></returns>
-    public static IEnumerable<TestCase> DiscoverTests(IEnumerable<string> sourceDllPaths, IMessageLogger logger)
+    public IEnumerable<TestCase> DiscoverTests(IEnumerable<string> sourceDllPaths, IMessageLogger logger)
     {
         var hasher = new HashWrapper();
         var testCases = new List<TestCase>();

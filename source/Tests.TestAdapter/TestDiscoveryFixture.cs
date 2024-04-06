@@ -16,7 +16,7 @@ public class TestDiscoveryFixture
 
         // Assumes there is one valid test file.
         // And The discoverer tests will be those found from inside the
-        var testCases = TestDiscovery.DiscoverTests(new[] { source }, new LoggerHelper()).ToList();
+        var testCases = new TestDiscovery().DiscoverTests(new[] { source }, new LoggerHelper()).ToList();
         testCases.Count.ShouldBe(18);
     }
 
@@ -24,7 +24,7 @@ public class TestDiscoveryFixture
     public void TestCasesAreAssembledCorrect()
     {
         var source = DllFinder.FindThisProjectsDllRecursively();
-        var testCases = TestDiscovery.DiscoverTests(new[] { source }, new LoggerHelper()).ToList();
+        var testCases = new TestDiscovery().DiscoverTests(new[] { source }, new LoggerHelper()).ToList();
         testCases.SingleOrDefault(x => x.FullyQualifiedName == "Tests.TestAdapter.TestResources.ExampleComponentTest.Interpolate(N: 1)").ShouldNotBeNull();
     }
 }

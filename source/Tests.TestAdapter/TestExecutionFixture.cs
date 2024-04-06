@@ -32,7 +32,7 @@ public class TestExecutionFixture
         builder.RegisterSailfishTypes(Substitute.For<IRunSettings>(), new TestAdapterRegistrations(frameworkHandle));
         builder.RegisterInstance(RunSettingsBuilder.CreateBuilder().DisableOverheadEstimation().Build());
         var projectDll = DllFinder.FindThisProjectsDllRecursively();
-        testCases = TestDiscovery.DiscoverTests(new[] { projectDll }, Substitute.For<IMessageLogger>()).ToList();
+        testCases = new TestDiscovery().DiscoverTests(new[] { projectDll }, Substitute.For<IMessageLogger>()).ToList();
         var refTestType = TestExecutor.RetrieveReferenceTypeForTestProject(testCases);
         SailfishTypeRegistrationUtility.InvokeRegistrationProviderCallbackMain(
                 builder,
