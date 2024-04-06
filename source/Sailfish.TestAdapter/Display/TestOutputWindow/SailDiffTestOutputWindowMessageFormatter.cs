@@ -24,32 +24,39 @@ internal class SailDiffTestOutputWindowMessageFormatter : ISailDiffTestOutputWin
         SailDiffSettings sailDiffSettings)
     {
         var stringBuilder = new StringBuilder();
-        stringBuilder.AppendLine($"Before Ids: {string.Join(", ", testIds.BeforeTestIds)}");
-        stringBuilder.AppendLine($"After Ids: {string.Join(", ", testIds.AfterTestIds)}");
-        return StatisticalTestFailsThenBailAndReturnNothing(sailDiffResult, stringBuilder, out var nothingToWrite)
-            ? nothingToWrite
-            : FormattedSailDiffResult(sailDiffResult, sailDiffSettings, stringBuilder);
+        return StatisticalTestFailsThenBailAndReturnNothing(sailDiffResult, stringBuilder, out var errorDetails)
+            ? FormattedSailDiffResult(testIds, sailDiffResult, sailDiffSettings, stringBuilder)
+            : errorDetails;
     }
 
     private static bool StatisticalTestFailsThenBailAndReturnNothing(
         SailDiffResult sailDiffResult,
         StringBuilder stringBuilder,
-        out string s)
+        out string errorDetails)
     {
-        s = string.Empty;
-        if (!sailDiffResult.TestResultsWithOutlierAnalysis.StatisticalTestResult.Failed) return false;
-        stringBuilder.AppendLine("Statistical testing failed:");
-        stringBuilder.AppendLine(sailDiffResult.TestResultsWithOutlierAnalysis.ExceptionMessage);
-        stringBuilder.AppendLine(sailDiffResult.TestResultsWithOutlierAnalysis.ExceptionMessage);
+        errorDetails = string.Empty;
+        if (StatTestResultIsOkayToPresent(sailDiffResult))
         {
-            s = stringBuilder.ToString();
             return true;
         }
+
+        stringBuilder.AppendLine("Statistical testing failed:");
+        stringBuilder.AppendLine(sailDiffResult.TestResultsWithOutlierAnalysis.ExceptionMessage);
+        errorDetails = stringBuilder.ToString();
+        return false;
     }
 
-    private static string FormattedSailDiffResult(SailDiffResult sailDiffResult, SailDiffSettings sailDiffSettings,
+    private static bool StatTestResultIsOkayToPresent(SailDiffResult sailDiffResult)
+    {
+        return !sailDiffResult.TestResultsWithOutlierAnalysis.StatisticalTestResult.Failed;
+    }
+
+    private static string FormattedSailDiffResult(TestIds testIds, SailDiffResult sailDiffResult, SailDiffSettings sailDiffSettings,
         StringBuilder stringBuilder)
     {
+        stringBuilder.AppendLine($"Before Ids: {string.Join(", ", testIds.BeforeTestIds)}");
+        stringBuilder.AppendLine($"After Ids: {string.Join(", ", testIds.AfterTestIds)}");
+
         const string testLine = "Statistical Test";
         stringBuilder.AppendLine(testLine);
         stringBuilder.AppendLine(string.Join("", Enumerable.Range(0, testLine.Length).Select(x => "-")));

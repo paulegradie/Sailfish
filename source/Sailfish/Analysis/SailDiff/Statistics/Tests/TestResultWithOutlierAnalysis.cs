@@ -17,19 +17,7 @@ public class TestResultWithOutlierAnalysis
 
     public TestResultWithOutlierAnalysis(Exception exception)
     {
-        StatisticalTestResult = new StatisticalTestResult(
-            float.NaN,
-            float.NaN,
-            float.NaN,
-            float.NaN,
-            float.NaN,
-            float.NaN,
-            string.Empty,
-            0,
-            0,
-            [],
-            [],
-            new Dictionary<string, object>());
+        StatisticalTestResult = new StatisticalTestResult(exception);
         ExceptionMessage = exception.Message;
         StackTrace = exception.StackTrace ?? string.Empty;
     }

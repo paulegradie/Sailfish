@@ -35,7 +35,7 @@ public class TestExecutor : ITestExecutor
             throw new SailfishException(
                 $"Nulls encountered. runContext: {runContext}, frameworkHandle: {frameworkHandle}");
 
-        var testCases = TestDiscovery.DiscoverTests(enumeratedSources, frameworkHandle).ToList();
+        var testCases = new TestDiscovery().DiscoverTests(enumeratedSources, frameworkHandle).ToList();
 
         RunTests(testCases, runContext, frameworkHandle);
     }
