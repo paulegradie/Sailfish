@@ -8,6 +8,7 @@ using System.Collections.Immutable;
 
 namespace Sailfish.Analyzers.DiagnosticAnalyzers;
 
+[DiagnosticAnalyzer(LanguageNames.CSharp)]
 public class SuppressNonNullablePropertiesWarningWhenSetInGlobalSetupMethod : AnalyzerBase<ClassDeclarationSyntax>
 {
     private static readonly DiagnosticDescriptor Descriptor = new(

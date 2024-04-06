@@ -7,7 +7,6 @@ using System.Diagnostics;
 
 namespace Sailfish.Analyzers.DiagnosticAnalyzers;
 
-[DiagnosticAnalyzer(LanguageNames.CSharp)]
 public abstract class AnalyzerBase<TSyntax> : DiagnosticAnalyzer where TSyntax : TypeDeclarationSyntax
 {
     public override void Initialize(AnalysisContext context)

@@ -8,6 +8,7 @@ using System.Collections.Immutable;
 
 namespace Sailfish.Analyzers.DiagnosticAnalyzers.SailfishVariable;
 
+[DiagnosticAnalyzer(LanguageNames.CSharp)]
 public class ShouldHavePublicGettersAnalyzer : AnalyzerBase<ClassDeclarationSyntax>
 {
     public static readonly DiagnosticDescriptor Descriptor = new(

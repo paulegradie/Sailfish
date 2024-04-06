@@ -8,6 +8,7 @@ using System.Collections.Immutable;
 
 namespace Sailfish.Analyzers.DiagnosticAnalyzers.LifecycleMethods;
 
+[DiagnosticAnalyzer(LanguageNames.CSharp)]
 public class LifecycleMethodsShouldBePublicAnalyzer : AnalyzerBase<ClassDeclarationSyntax>
 {
     public static readonly DiagnosticDescriptor Descriptor = new(
