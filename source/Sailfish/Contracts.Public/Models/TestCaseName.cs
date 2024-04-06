@@ -38,29 +38,14 @@ public class TestCaseName
         Parts = parts;
     }
 
-    public string Name { get; set; }
+    public string Name { get; }
 
-    public IReadOnlyList<string> Parts { get; set; }
+    public IReadOnlyList<string> Parts { get; }
 
-    private static IReadOnlyList<string> GetNameParts(string displayName)
-    { return displayName.Split(OpenBracket).First().Split(Dot).ToArray(); }
-
-    public string GetMethodPart() { return Name.Split(Dot).Last(); }
-
-    /// <summary>
-    /// Method to parse and return an index of the '.' delimited test name. /// e.g. some.test where index 0 = some
-    /// </summary>
-    /// <param name="index"></param>
-    /// <returns></returns>
-    public string? GetNamePart(int index)
+    private static string[] GetNameParts(string displayName)
     {
-        try
-        {
-            return GetNameParts(Name)[index];
-        }
-        catch
-        {
-            return null;
-        }
+        return displayName.Split(OpenBracket).First().Split(Dot).ToArray();
     }
+
+    public string GetMethodPart() => Name.Split(Dot).Last();
 }

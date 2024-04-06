@@ -1,3 +1,4 @@
+using Sailfish.Contracts.Public.Models;
 using System.Collections.Generic;
 using System.Linq;
 using Sailfish.Execution;
@@ -6,23 +7,14 @@ namespace Sailfish.Extensions.Types;
 
 public class TrackingFileDataList : List<List<IClassExecutionSummary>>
 {
-    public List<IClassExecutionSummary> PeekTrackingFileData()
+    public ICompiledTestCaseResult? FindFirstMatchingTestCaseId(TestCaseId displayName)
     {
-        return this.First();
-    }
-
-    public void SetTrackingFileData(List<IClassExecutionSummary> classExecutionSummaries)
-    {
-        Clear();
-        Add(classExecutionSummaries);
-    }
-
-    public bool PopTrackingFile(out List<IClassExecutionSummary> trackingFileData)
-    {
-        trackingFileData = this.First();
-        var updated = this.Skip(1).ToList();
-        Clear();
-        AddRange(updated);
-        return Count > 0;
+        return this.Select(preloadedLastRun =>
+                preloadedLastRun
+                    .SelectMany(x => x.CompiledTestCaseResults)
+                    .FirstOrDefault(x => x.TestCaseId is not null && new TestCaseId(x.TestCaseId?.DisplayName!).Equals(displayName)))
+            .Where(x => x?.PerformanceRunResult is not null)
+            .Cast<ICompiledTestCaseResult>()
+            .FirstOrDefault();
     }
 }
