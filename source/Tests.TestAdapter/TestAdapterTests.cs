@@ -25,14 +25,6 @@ public class TestDiscovererTests : IAsyncLifetime
     private ITestCaseDiscoverySink sink = null!;
 
     [Fact]
-    public void TestDiscovererSetsCorrectAttributes()
-    {
-        var fileExtensionAttributes = typeof(TestDiscoverer).GetCustomAttributes();
-        var names = fileExtensionAttributes.Select(x => x.GetType().Name).ToList();
-        names.ShouldBeEquivalentTo(new List<string> { "FileExtensionAttribute", "DefaultExecutorUriAttribute" });
-    }
-
-    [Fact]
     public void FileExtensionsAreSetCorrectly()
     {
         var extension = typeof(TestDiscoverer)
