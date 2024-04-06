@@ -279,7 +279,7 @@ internal class SailfishExecutionEngine : ISailfishExecutionEngine
         }
 
         await mediator.Publish(new TestCaseExceptionNotification(testCase.ToExternal(), testCaseGroup, ex), cancellationToken);
-        return [new(ex)];
+        return [new TestCaseExecutionResult(testCase, ex)];
     }
 
     private async Task<TestCaseExecutionResult> IterateOverVariableCombos(

@@ -120,30 +120,17 @@ internal class TestCaseCompletedNotificationHandler : INotificationHandler<TestC
         string testOutputWindowMessage,
         TrackingFileDataList preloadedLastRunsIfAvailable)
     {
-        // preloadedLastRun represents an entire tracking file
-        var preloadedRuns = preloadedLastRunsIfAvailable
-            .Select(preloadedLastRun =>
-                preloadedLastRun
-                    .SelectMany(x => x.CompiledTestCaseResults)
-                    .SingleOrDefault(x => x.TestCaseId?.DisplayName == testCaseDisplayName));
+        var preloadedRun = preloadedLastRunsIfAvailable.FindFirstMatchingTestCaseId(new TestCaseId(testCaseDisplayName));
+        if (preloadedRun is null) return testOutputWindowMessage;
 
-        foreach (var preloadedSummaryMatchingCurrentSummary in preloadedRuns)
-        {
-            if (preloadedSummaryMatchingCurrentSummary?.PerformanceRunResult is null) continue;
+        var testCaseResults = sailDiff.ComputeTestCaseDiff(
+            [testCaseDisplayName],
+            [testCaseDisplayName],
+            testCaseDisplayName,
+            classExecutionSummary,
+            preloadedRun.PerformanceRunResult!);
 
-            // if we eventually find a previous run (we don't discriminate by age of run -- perhaps we should
-            var testCaseResults = sailDiff.ComputeTestCaseDiff(
-                [testCaseDisplayName],
-                [testCaseDisplayName],
-                testCaseDisplayName,
-                classExecutionSummary,
-                preloadedSummaryMatchingCurrentSummary.PerformanceRunResult);
-
-            testOutputWindowMessage = AttachSailDiffResultMessage(testOutputWindowMessage, testCaseResults);
-
-            break;
-        }
-
+        testOutputWindowMessage = AttachSailDiffResultMessage(testOutputWindowMessage, testCaseResults);
         return testOutputWindowMessage;
     }
 
