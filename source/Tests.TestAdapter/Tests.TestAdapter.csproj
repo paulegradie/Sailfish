@@ -23,6 +23,7 @@
     </ItemGroup>
     <ItemGroup>
         <ProjectReference Include="..\Sailfish.TestAdapter\Sailfish.TestAdapter.csproj" IncludeAssets="all"/>
+        <ProjectReference Include="..\Tests.Common\Tests.Common.csproj" />
     </ItemGroup>
     <ItemGroup>
         <None Update=".sailfish.json">

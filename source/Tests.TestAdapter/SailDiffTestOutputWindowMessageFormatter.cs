@@ -6,7 +6,7 @@ using Sailfish.TestAdapter.Display.TestOutputWindow;
 using Shouldly;
 using System;
 using System.Collections.Generic;
-using Tests.TestAdapter.Utils;
+using Tests.Common.Utils;
 using Xunit;
 
 namespace Tests.TestAdapter;

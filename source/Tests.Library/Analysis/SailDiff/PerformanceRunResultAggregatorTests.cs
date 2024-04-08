@@ -2,8 +2,8 @@
 using Sailfish.Contracts.Public.Models;
 using Shouldly;
 using System.Collections.Generic;
-using Tests.Library.Utils;
-using Tests.Library.Utils.Builders;
+using Tests.Common.Builders;
+using Tests.Common.Utils;
 using Xunit;
 
 namespace Tests.Library.Analysis.SailDiff;

@@ -1,8 +1,6 @@
 ﻿using Sailfish.Contracts.Public.Serialization.Tracking.V1;
-using System;
-using System.Collections.Generic;
 
-namespace Tests.Library.Utils.Builders;
+namespace Tests.Common.Builders;
 
 public class ClassExecutionSummaryTrackingFormatBuilder
 {
@@ -60,7 +58,7 @@ public class ClassExecutionSummaryTrackingFormatBuilder
             compiledTestCaseResults);
     }
 
-    internal class TestClass
+    public class TestClass
     {
     }
 }

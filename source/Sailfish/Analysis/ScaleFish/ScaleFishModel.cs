@@ -1,6 +1,6 @@
 namespace Sailfish.Analysis.ScaleFish;
 
-public class ScalefishModel(
+public class ScaleFishModel(
     ScaleFishModelFunction scaleFishModelFunction,
     double goodnessOfFit,
     ScaleFishModelFunction nextClosestScaleFishModelFunction,

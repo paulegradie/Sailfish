@@ -3,7 +3,7 @@ using Shouldly;
 using System;
 using Xunit;
 
-namespace Tests.Library.Utils;
+namespace Tests.Library.Execution;
 
 public class TestCasePropertyClonerFixture
 {

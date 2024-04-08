@@ -36,21 +36,21 @@ public class ComplexityFunctionConverter : JsonConverter<List<ScalefishClassMode
                 {
                     var propertyName = testPropertyElement.GetProperty(nameof(ScaleFishPropertyModel.PropertyName)).GetString() ??
                                        throw new SailfishException($"Failed to find property '{nameof(ScaleFishPropertyModel.PropertyName)}'");
-                    var complexityResultJsonElement = testPropertyElement.GetProperty(nameof(ScaleFishPropertyModel.ScalefishModel));
+                    var complexityResultJsonElement = testPropertyElement.GetProperty(nameof(ScaleFishPropertyModel.ScaleFishModel));
 
-                    var complexityFunctionProperty = complexityResultJsonElement.GetProperty(nameof(ScalefishModel.ScaleFishModelFunction));
+                    var complexityFunctionProperty = complexityResultJsonElement.GetProperty(nameof(ScaleFishModel.ScaleFishModelFunction));
                     var complexityFunctionTypeName = complexityFunctionProperty.GetProperty(nameof(ScaleFishModelFunction.Name)).GetString();
                     if (complexityFunctionTypeName is null) throw new SerializationException($"Failed to find {nameof(ScaleFishModelFunction.Name)} property");
                     var complexityFunction = DeserializeComplexityFunction(complexityFunctionTypeName, complexityFunctionProperty);
-                    var goodnessOfFit = complexityResultJsonElement.GetProperty(nameof(ScalefishModel.GoodnessOfFit)).GetDouble();
+                    var goodnessOfFit = complexityResultJsonElement.GetProperty(nameof(ScaleFishModel.GoodnessOfFit)).GetDouble();
 
-                    var nextBestComplexityFunctionProperty = complexityResultJsonElement.GetProperty(nameof(ScalefishModel.NextClosestScaleFishModelFunction));
+                    var nextBestComplexityFunctionProperty = complexityResultJsonElement.GetProperty(nameof(ScaleFishModel.NextClosestScaleFishModelFunction));
                     var nextBestComplexityFunctionTypeName = nextBestComplexityFunctionProperty.GetProperty(nameof(ScaleFishModelFunction.Name)).GetString();
                     if (nextBestComplexityFunctionTypeName is null) throw new SerializationException($"Failed to find {nameof(ScaleFishModelFunction.Name)} property");
                     var nextBestComplexityFunction = DeserializeComplexityFunction(nextBestComplexityFunctionTypeName, nextBestComplexityFunctionProperty);
-                    var nextBestGoodnessOfFit = complexityResultJsonElement.GetProperty(nameof(ScalefishModel.NextClosestGoodnessOfFit)).GetDouble();
+                    var nextBestGoodnessOfFit = complexityResultJsonElement.GetProperty(nameof(ScaleFishModel.NextClosestGoodnessOfFit)).GetDouble();
 
-                    var complexityResult = new ScalefishModel(
+                    var complexityResult = new ScaleFishModel(
                         complexityFunction,
                         goodnessOfFit,
                         nextBestComplexityFunction,

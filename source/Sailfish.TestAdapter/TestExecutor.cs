@@ -26,6 +26,17 @@ public class TestExecutor : ITestExecutor
 
     private readonly object lockObject = new();
     public bool Cancelled;
+    private readonly ITestExecution testExecution;
+
+    public TestExecutor()
+    {
+        testExecution = new TestExecution();
+    }
+
+    public TestExecutor(ITestExecution testExecution)
+    {
+        this.testExecution = testExecution;
+    }
 
     public void RunTests(IEnumerable<string>? sources, IRunContext? runContext, IFrameworkHandle? frameworkHandle)
     {
@@ -56,6 +67,7 @@ public class TestExecutor : ITestExecutor
             cancellationTokenSource.Cancel();
             Cancelled = true;
         }
+
         cancellationTokenSource.Dispose();
     }
 
@@ -87,7 +99,7 @@ public class TestExecutor : ITestExecutor
 
         try
         {
-            TestExecution.ExecuteTests(testCases, container, frameworkHandle, cancellationTokenSource.Token);
+            testExecution.ExecuteTests(testCases, container, frameworkHandle, cancellationTokenSource.Token);
         }
         catch (Exception ex)
         {
@@ -106,10 +118,7 @@ public class TestExecutor : ITestExecutor
             $"Encountered exception while executing tests: {ex.Message}");
         foreach (var testCase in testCases)
         {
-            var result = new TestResult(testCase)
-            {
-                Outcome = TestOutcome.Skipped, ErrorMessage = ex.Message, ErrorStackTrace = ex.StackTrace
-            };
+            var result = new TestResult(testCase) { Outcome = TestOutcome.Skipped, ErrorMessage = ex.Message, ErrorStackTrace = ex.StackTrace };
             result.Messages.Add(new TestResultMessage(TestResultMessage.StandardErrorCategory, ex.Message));
             frameworkHandle.RecordResult(result);
             frameworkHandle.RecordEnd(testCase, TestOutcome.Skipped);

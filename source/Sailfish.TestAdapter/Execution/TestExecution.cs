@@ -8,9 +8,14 @@ using System.Threading;
 
 namespace Sailfish.TestAdapter.Execution;
 
-internal static class TestExecution
+public interface ITestExecution
 {
-    public static void ExecuteTests(List<TestCase> testCases, IContainer container, IFrameworkHandle? frameworkHandle, CancellationToken cancellationToken)
+    void ExecuteTests(List<TestCase> testCases, IContainer container, IFrameworkHandle? frameworkHandle, CancellationToken cancellationToken);
+}
+
+internal class TestExecution : ITestExecution
+{
+    public void ExecuteTests(List<TestCase> testCases, IContainer container, IFrameworkHandle? frameworkHandle, CancellationToken cancellationToken)
     {
         try
         {

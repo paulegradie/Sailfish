@@ -60,15 +60,33 @@ public class MarkdownTableConverter : IMarkdownTableConverter
                 tableBuilder.AppendLine(methodGroup
                     .SelectMany(x => x.ScaleFishPropertyModels)
                     .ToStringTable(
-                        new List<string> { "", "", "", "", "", "", "" },
-                        new List<string> { "Variable", "BestFit", "BigO", "GoodnessOfFit", "NextBest", "NextBigO", "NextBestGoodnessOfFit" },
+                        new List<string>
+                        {
+                            "",
+                            "",
+                            "",
+                            "",
+                            "",
+                            "",
+                            ""
+                        },
+                        new List<string>
+                        {
+                            "Variable",
+                            "BestFit",
+                            "BigO",
+                            "GoodnessOfFit",
+                            "NextBest",
+                            "NextBigO",
+                            "NextBestGoodnessOfFit"
+                        },
                         c => c.PropertyName,
-                        c => c.ScalefishModel.ScaleFishModelFunction.Name,
-                        c => c.ScalefishModel.ScaleFishModelFunction.OName,
-                        c => c.ScalefishModel.GoodnessOfFit,
-                        c => c.ScalefishModel.NextClosestScaleFishModelFunction.Name,
-                        c => c.ScalefishModel.NextClosestScaleFishModelFunction.OName,
-                        c => c.ScalefishModel.NextClosestGoodnessOfFit
+                        c => c.ScaleFishModel.ScaleFishModelFunction.Name,
+                        c => c.ScaleFishModel.ScaleFishModelFunction.OName,
+                        c => c.ScaleFishModel.GoodnessOfFit,
+                        c => c.ScaleFishModel.NextClosestScaleFishModelFunction.Name,
+                        c => c.ScaleFishModel.NextClosestScaleFishModelFunction.OName,
+                        c => c.ScaleFishModel.NextClosestGoodnessOfFit
                     ));
         }
 
@@ -86,8 +104,22 @@ public class MarkdownTableConverter : IMarkdownTableConverter
 
             var table = group.ToStringTable(
                 typeName,
-                new List<string> { "", "ms", "ms", "ms", "" },
-                new List<string> { "Display Name", "Mean", "Median", $"StdDev (N={n})", "Variance" },
+                new List<string>
+                {
+                    "",
+                    "ms",
+                    "ms",
+                    "ms",
+                    ""
+                },
+                new List<string>
+                {
+                    "Display Name",
+                    "Mean",
+                    "Median",
+                    $"StdDev (N={n})",
+                    "Variance"
+                },
                 u => u.TestCaseId!.DisplayName,
                 u => u.PerformanceRunResult!.Mean,
                 u => u.PerformanceRunResult!.Median,

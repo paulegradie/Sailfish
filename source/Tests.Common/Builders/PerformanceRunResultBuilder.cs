@@ -1,6 +1,6 @@
 ﻿using Sailfish.Contracts.Public.Models;
 
-namespace Tests.Library.Utils.Builders;
+namespace Tests.Common.Builders;
 
 public class PerformanceRunResultBuilder
 {

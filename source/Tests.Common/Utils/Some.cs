@@ -1,7 +1,6 @@
 using Sailfish.Contracts.Public.Models;
-using System;
 
-namespace Tests.TestAdapter.Utils;
+namespace Tests.Common.Utils;
 
 public static class Some
 {

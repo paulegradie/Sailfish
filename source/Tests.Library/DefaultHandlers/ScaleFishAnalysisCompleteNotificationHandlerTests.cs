@@ -9,8 +9,8 @@ using Sailfish.Contracts.Public.Notifications;
 using Sailfish.Contracts.Public.Serialization;
 using Sailfish.DefaultHandlers.ScaleFish;
 using Shouldly;
-using Tests.Library.Utils;
-using Tests.Library.Utils.Builders.Scalefish;
+using Tests.Common.Builders.ScaleFish;
+using Tests.Common.Utils;
 using Xunit;
 
 namespace Tests.Library.DefaultHandlers;
@@ -50,6 +50,6 @@ public class ScaleFishAnalysisCompleteNotificationHandlerTests
         model.ShouldNotBeNull();
         model.Count.ShouldBe(1);
         model.Single().TestClassName.ShouldBe(testClassName);
-        model.Single().ScaleFishMethodModels.Single().ScaleFishPropertyModels.Single().ScalefishModel.GoodnessOfFit.ShouldBe(0.98);
+        model.Single().ScaleFishMethodModels.Single().ScaleFishPropertyModels.Single().ScaleFishModel.GoodnessOfFit.ShouldBe(0.98);
     }
 }

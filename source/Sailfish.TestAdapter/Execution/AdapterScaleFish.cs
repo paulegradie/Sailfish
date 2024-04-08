@@ -53,7 +53,7 @@ internal class AdapterScaleFish : IAdapterScaleFish
 
             var complexityMarkdown = markdownTableConverter.ConvertScaleFishResultToMarkdown(complexityResults);
             logger.Log(LogLevel.Information, complexityMarkdown);
-            await mediator.Publish(new ScaleFishAnalysisCompleteNotification(complexityMarkdown, complexityResults), cancellationToken).ConfigureAwait(false);
+            await mediator.Publish(new ScaleFishAnalysisCompleteNotification(complexityMarkdown, complexityResults), cancellationToken);
         }
         catch (Exception ex)
         {
