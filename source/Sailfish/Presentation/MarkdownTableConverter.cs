@@ -60,8 +60,26 @@ public class MarkdownTableConverter : IMarkdownTableConverter
                 tableBuilder.AppendLine(methodGroup
                     .SelectMany(x => x.ScaleFishPropertyModels)
                     .ToStringTable(
-                        new List<string> { "", "", "", "", "", "", "" },
-                        new List<string> { "Variable", "BestFit", "BigO", "GoodnessOfFit", "NextBest", "NextBigO", "NextBestGoodnessOfFit" },
+                        new List<string>
+                        {
+                            "",
+                            "",
+                            "",
+                            "",
+                            "",
+                            "",
+                            ""
+                        },
+                        new List<string>
+                        {
+                            "Variable",
+                            "BestFit",
+                            "BigO",
+                            "GoodnessOfFit",
+                            "NextBest",
+                            "NextBigO",
+                            "NextBestGoodnessOfFit"
+                        },
                         c => c.PropertyName,
                         c => c.ScaleFishModel.ScaleFishModelFunction.Name,
                         c => c.ScaleFishModel.ScaleFishModelFunction.OName,
@@ -86,8 +104,22 @@ public class MarkdownTableConverter : IMarkdownTableConverter
 
             var table = group.ToStringTable(
                 typeName,
-                new List<string> { "", "ms", "ms", "ms", "" },
-                new List<string> { "Display Name", "Mean", "Median", $"StdDev (N={n})", "Variance" },
+                new List<string>
+                {
+                    "",
+                    "ms",
+                    "ms",
+                    "ms",
+                    ""
+                },
+                new List<string>
+                {
+                    "Display Name",
+                    "Mean",
+                    "Median",
+                    $"StdDev (N={n})",
+                    "Variance"
+                },
                 u => u.TestCaseId!.DisplayName,
                 u => u.PerformanceRunResult!.Mean,
                 u => u.PerformanceRunResult!.Median,

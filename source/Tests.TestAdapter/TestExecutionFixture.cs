@@ -3,6 +3,7 @@ using Microsoft.VisualStudio.TestPlatform.ObjectModel;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.Adapter;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.Logging;
 using NSubstitute;
+using NSubstitute.ExceptionExtensions;
 using Sailfish;
 using Sailfish.Registration;
 using Sailfish.TestAdapter;
@@ -14,6 +15,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
+using System.Threading.Tasks;
 using Tests.TestAdapter.Utils;
 using Xunit;
 using IRunSettings = Sailfish.Contracts.Public.Models.IRunSettings;
@@ -58,12 +60,26 @@ public class TestExecutionFixture
     }
 
     [Fact]
+    public async Task TaskExecutionShouldThrow()
+    {
+        var program = Substitute.For<ITestAdapterExecutionProgram>();
+        var ct = new CancellationToken();
+        program.Run(testCases, ct).ThrowsForAnyArgs(new Exception("Test"));
+        var b = new ContainerBuilder();
+        b.RegisterInstance(program);
+        await using var container = b.Build();
+
+        var execution = new TestExecution();
+        Should.Throw<Exception>(() => execution.ExecuteTests(testCases, container, frameworkHandle, ct));
+    }
+
+    [Fact]
     public void StartupExceptionsAreHandled()
     {
         var context = Substitute.For<IRunContext>();
         using var container = builder.Build();
 
-        var execution = Substitute.For<ITestExecution>(); ;
+        var execution = Substitute.For<ITestExecution>();
         execution
             .When(x => x.ExecuteTests(Arg.Any<List<TestCase>>(), Arg.Any<IContainer>(), frameworkHandle, Arg.Any<CancellationToken>()))
             .Do(call => throw new Exception("Oopsie"));
