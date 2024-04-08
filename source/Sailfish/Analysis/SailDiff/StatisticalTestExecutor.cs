@@ -13,16 +13,23 @@ public interface IStatisticalTestExecutor
     TestResultWithOutlierAnalysis ExecuteStatisticalTest(double[] beforeData, double[] afterData, SailDiffSettings settings);
 }
 
-public class StatisticalTestExecutor(
-    IMannWhitneyWilcoxonTest mannWhitneyWilcoxonTestSailfish,
-    ITTest ttest,
-    ITwoSampleWilcoxonSignedRankTest twoSampWilcoxonSignedRankTestSailfish,
-    IKolmogorovSmirnovTest kolmogorovSmirnovTestSailfish) : IStatisticalTestExecutor
+public class StatisticalTestExecutor : IStatisticalTestExecutor
 {
-    private readonly IKolmogorovSmirnovTest kolmogorovSmirnovTestSailfish = kolmogorovSmirnovTestSailfish;
-    private readonly IMannWhitneyWilcoxonTest mannWhitneyWilcoxonTestSailfish = mannWhitneyWilcoxonTestSailfish;
-    private readonly ITTest ttest = ttest;
-    private readonly ITwoSampleWilcoxonSignedRankTest twoSampWilcoxonSignedRankTestSailfish = twoSampWilcoxonSignedRankTestSailfish;
+    private readonly IKolmogorovSmirnovTest kolmogorovSmirnovTestSailfish;
+    private readonly IMannWhitneyWilcoxonTest mannWhitneyWilcoxonTestSailfish;
+    private readonly ITTest ttest;
+    private readonly ITwoSampleWilcoxonSignedRankTest twoSampWilcoxonSignedRankTestSailfish;
+
+    public StatisticalTestExecutor(IMannWhitneyWilcoxonTest mannWhitneyWilcoxonTestSailfish,
+        ITTest ttest,
+        ITwoSampleWilcoxonSignedRankTest twoSampWilcoxonSignedRankTestSailfish,
+        IKolmogorovSmirnovTest kolmogorovSmirnovTestSailfish)
+    {
+        this.kolmogorovSmirnovTestSailfish = kolmogorovSmirnovTestSailfish;
+        this.mannWhitneyWilcoxonTestSailfish = mannWhitneyWilcoxonTestSailfish;
+        this.ttest = ttest;
+        this.twoSampWilcoxonSignedRankTestSailfish = twoSampWilcoxonSignedRankTestSailfish;
+    }
 
     public TestResultWithOutlierAnalysis ExecuteStatisticalTest(
         double[] beforeData,
@@ -37,8 +44,8 @@ public class StatisticalTestExecutor(
             { TestType.KolmogorovSmirnovTest, kolmogorovSmirnovTestSailfish }
         };
 
-        if (!testMap.ContainsKey(settings.TestType)) throw new SailfishException($"Test type {settings.TestType.ToString()} not supported");
+        if (!testMap.TryGetValue(settings.TestType, out var value)) throw new SailfishException($"Test type {settings.TestType.ToString()} not supported");
 
-        return testMap[settings.TestType].ExecuteTest(beforeData, afterData, settings);
+        return value.ExecuteTest(beforeData, afterData, settings);
     }
 }
