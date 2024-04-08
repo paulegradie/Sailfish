@@ -25,7 +25,7 @@ foreach (var val in nValues)
 }
 
 // print some details
-async Task<ScalefishModel> LoadAModelFile(string rootDir)
+async Task<ScaleFishModel> LoadAModelFile(string rootDir)
 {
     try
     {

@@ -8,9 +8,9 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using Tests.Common.Utils;
 using Tests.E2E.TestSuite;
 using Tests.E2E.TestSuite.Discoverable;
-using Tests.Library.Utils;
 using Xunit;
 
 namespace Tests.Library.E2EScenarios;

@@ -1,6 +1,6 @@
 ﻿using Sailfish.Contracts.Public.Serialization.Tracking.V1;
 
-namespace Tests.Library.Utils.Builders;
+namespace Tests.Common.Builders;
 
 public class ExecutionSettingsTrackingFormatBuilder
 {

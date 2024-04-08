@@ -31,6 +31,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Tests.Analyzers", "Tests.An
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ScaleFishDemo", "ScaleFishDemo\ScaleFishDemo.csproj", "{AEB0818A-54F5-4243-A3EF-65974D9A8886}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Tests.Common", "Tests.Common\Tests.Common.csproj", "{C3822414-E036-4C43-AAE1-1F8A345FF74F}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -85,6 +87,10 @@ Global
 		{AEB0818A-54F5-4243-A3EF-65974D9A8886}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{AEB0818A-54F5-4243-A3EF-65974D9A8886}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{AEB0818A-54F5-4243-A3EF-65974D9A8886}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C3822414-E036-4C43-AAE1-1F8A345FF74F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C3822414-E036-4C43-AAE1-1F8A345FF74F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C3822414-E036-4C43-AAE1-1F8A345FF74F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C3822414-E036-4C43-AAE1-1F8A345FF74F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -99,5 +105,6 @@ Global
 		{F806AE1E-4D04-4EBF-BEA5-47731A37B0F0} = {74A88B77-784B-4600-9F69-097A6CDF71D5}
 		{8D35AC3D-E18E-46A3-BCC5-2F3EEC7DA2B6} = {74A88B77-784B-4600-9F69-097A6CDF71D5}
 		{AEB0818A-54F5-4243-A3EF-65974D9A8886} = {AA777AE3-7608-4068-9BDE-3AE366657722}
+		{C3822414-E036-4C43-AAE1-1F8A345FF74F} = {74A88B77-784B-4600-9F69-097A6CDF71D5}
 	EndGlobalSection
 EndGlobal

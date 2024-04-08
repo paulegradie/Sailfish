@@ -2,7 +2,7 @@ using Sailfish.Utils;
 using Shouldly;
 using Xunit;
 
-namespace Tests.Library.Utils.DisplayNames;
+namespace Tests.Library.DisplayNames;
 
 public class WhenCreatingFullyQualifiedNames
 {

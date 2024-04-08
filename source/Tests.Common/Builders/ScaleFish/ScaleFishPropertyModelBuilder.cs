@@ -1,7 +1,8 @@
-﻿using System;
-using Sailfish.Analysis.ScaleFish;
+﻿using Sailfish.Analysis.ScaleFish;
+using Tests.Common.Builders.Scalefish;
+using Tests.Common.Utils;
 
-namespace Tests.Library.Utils.Builders.Scalefish;
+namespace Tests.Common.Builders.ScaleFish;
 
 public class ScaleFishPropertyModelBuilder : ScaleFishPropertyModelBuilder.IHavePropertyName
 {
@@ -12,7 +13,7 @@ public class ScaleFishPropertyModelBuilder : ScaleFishPropertyModelBuilder.IHave
     }
 
     private string? propertyName;
-    private ScalefishModel? scalefishModel;
+    private ScaleFishModel? scalefishModel;
 
     public static IHavePropertyName Create()
     {
@@ -25,7 +26,7 @@ public class ScaleFishPropertyModelBuilder : ScaleFishPropertyModelBuilder.IHave
         return this;
     }
 
-    public ScaleFishPropertyModelBuilder WithScaleFishModel(ScalefishModel model)
+    public ScaleFishPropertyModelBuilder WithScaleFishModel(ScaleFishModel model)
     {
         scalefishModel = model;
         return this;

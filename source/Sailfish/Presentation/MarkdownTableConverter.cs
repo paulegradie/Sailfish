@@ -63,12 +63,12 @@ public class MarkdownTableConverter : IMarkdownTableConverter
                         new List<string> { "", "", "", "", "", "", "" },
                         new List<string> { "Variable", "BestFit", "BigO", "GoodnessOfFit", "NextBest", "NextBigO", "NextBestGoodnessOfFit" },
                         c => c.PropertyName,
-                        c => c.ScalefishModel.ScaleFishModelFunction.Name,
-                        c => c.ScalefishModel.ScaleFishModelFunction.OName,
-                        c => c.ScalefishModel.GoodnessOfFit,
-                        c => c.ScalefishModel.NextClosestScaleFishModelFunction.Name,
-                        c => c.ScalefishModel.NextClosestScaleFishModelFunction.OName,
-                        c => c.ScalefishModel.NextClosestGoodnessOfFit
+                        c => c.ScaleFishModel.ScaleFishModelFunction.Name,
+                        c => c.ScaleFishModel.ScaleFishModelFunction.OName,
+                        c => c.ScaleFishModel.GoodnessOfFit,
+                        c => c.ScaleFishModel.NextClosestScaleFishModelFunction.Name,
+                        c => c.ScaleFishModel.NextClosestScaleFishModelFunction.OName,
+                        c => c.ScaleFishModel.NextClosestGoodnessOfFit
                     ));
         }
 

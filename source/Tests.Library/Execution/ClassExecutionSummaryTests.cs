@@ -4,9 +4,9 @@ using Shouldly;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Tests.Common.Builders;
+using Tests.Common.Utils;
 using Tests.E2E.TestSuite.Discoverable.InnerNamespace;
-using Tests.Library.Utils;
-using Tests.Library.Utils.Builders;
 using Xunit;
 
 namespace Tests.Library.Execution;

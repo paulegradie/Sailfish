@@ -25,6 +25,7 @@
     <ItemGroup>
         <ProjectReference Include="..\Sailfish\Sailfish.csproj"/>
         <ProjectReference Include="..\Demo.API\Demo.API.csproj"/>
+        <ProjectReference Include="..\Tests.Common\Tests.Common.csproj" />
         <ProjectReference Include="..\Tests.E2E.ExceptionHandling\Tests.E2E.ExceptionHandling.csproj"/>
         <ProjectReference Include="..\Tests.E2E.TestSuite\Tests.E2E.TestSuite.csproj"/>
     </ItemGroup>

@@ -5,7 +5,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Xunit;
 
-namespace Tests.Library.Utils.DisplayNames;
+namespace Tests.Library.DisplayNames;
 
 public class WhenCreatingTestCaseIdsWithASingleVariable : IAsyncLifetime
 {

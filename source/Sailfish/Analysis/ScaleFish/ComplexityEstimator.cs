@@ -6,12 +6,12 @@ namespace Sailfish.Analysis.ScaleFish;
 
 public interface IComplexityEstimator
 {
-    ScalefishModel? EstimateComplexity(ComplexityMeasurement[] measurements);
+    ScaleFishModel? EstimateComplexity(ComplexityMeasurement[] measurements);
 }
 
 public class ComplexityEstimator : IComplexityEstimator
 {
-    public ScalefishModel? EstimateComplexity(ComplexityMeasurement[] measurements)
+    public ScaleFishModel? EstimateComplexity(ComplexityMeasurement[] measurements)
     {
         if (measurements.Length < 2) return null;
         var complexityFunctions = ComplexityReferences.GetComplexityFunctions();
@@ -36,7 +36,7 @@ public class ComplexityEstimator : IComplexityEstimator
         var closestComplexity = orderedFitnessResults[0];
         var nextClosestComplexity = orderedFitnessResults[1];
 
-        return new ScalefishModel(
+        return new ScaleFishModel(
             closestComplexity.Item1,
             closestComplexity.Item2.RSquared,
             nextClosestComplexity.Item1,

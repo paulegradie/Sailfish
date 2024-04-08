@@ -11,7 +11,7 @@ using Shouldly;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Tests.TestAdapter.Utils;
+using Tests.Common.Utils;
 using Xunit;
 
 namespace Tests.TestAdapter;
