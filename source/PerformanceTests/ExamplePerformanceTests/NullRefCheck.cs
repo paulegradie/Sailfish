@@ -18,6 +18,6 @@ public class NullRefCheck : NullRefOnTheBase
     public async Task OopsNullRef()
     {
         await Task.CompletedTask;
-        Console.WriteLine(ThingINeed.NotPresent);
+        Console.WriteLine(ThingINeed!.NotPresent);
     }
 }
