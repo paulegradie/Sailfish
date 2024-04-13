@@ -23,6 +23,7 @@ public class FullE2EExceptionCases
 
         var result = await SailfishRunner.Run(runSettings);
 
+        result.ExecutionSummaries.First().CompiledTestCaseResults.First().TestCaseId.ShouldNotBeNull();
         result.IsValid.ShouldBeFalse();
         result.Exceptions.ShouldNotBeNull();
         result.Exceptions.Count().ShouldBe(1);
@@ -41,6 +42,7 @@ public class FullE2EExceptionCases
 
         var result = await SailfishRunner.Run(runSettings);
 
+        result.ExecutionSummaries.First().CompiledTestCaseResults.First().TestCaseId.ShouldNotBeNull();
         result.IsValid.ShouldBeFalse();
         result.Exceptions.ShouldNotBeNull();
         result.Exceptions.Count().ShouldBe(1);
@@ -59,6 +61,7 @@ public class FullE2EExceptionCases
 
         var result = await SailfishRunner.Run(runSettings);
 
+        result.ExecutionSummaries.First().CompiledTestCaseResults.First().TestCaseId.ShouldNotBeNull();
         result.IsValid.ShouldBeFalse();
         result.Exceptions.ShouldNotBeNull();
         result.Exceptions.Count().ShouldBe(1);
@@ -77,6 +80,7 @@ public class FullE2EExceptionCases
 
         var result = await SailfishRunner.Run(runSettings);
 
+        result.ExecutionSummaries.First().CompiledTestCaseResults.First().TestCaseId.ShouldNotBeNull();
         result.IsValid.ShouldBeFalse();
         result.Exceptions.ShouldNotBeNull();
         result.Exceptions.Count().ShouldBe(1);
@@ -95,6 +99,7 @@ public class FullE2EExceptionCases
 
         var result = await SailfishRunner.Run(runSettings);
 
+        result.ExecutionSummaries.First().CompiledTestCaseResults.First().TestCaseId.ShouldNotBeNull();
         result.IsValid.ShouldBeFalse();
         result.Exceptions.ShouldNotBeNull();
         result.Exceptions.Count().ShouldBe(1);
@@ -113,6 +118,7 @@ public class FullE2EExceptionCases
 
         var result = await SailfishRunner.Run(runSettings);
 
+        result.ExecutionSummaries.First().CompiledTestCaseResults.First().TestCaseId.ShouldNotBeNull();
         result.IsValid.ShouldBeFalse();
         result.Exceptions.ShouldNotBeNull();
         result.Exceptions.Count().ShouldBe(1);
@@ -131,6 +137,7 @@ public class FullE2EExceptionCases
 
         var result = await SailfishRunner.Run(runSettings);
 
+        result.ExecutionSummaries.First().CompiledTestCaseResults.First().TestCaseId.ShouldNotBeNull();
         result.IsValid.ShouldBeFalse();
         result.Exceptions.ShouldNotBeNull();
         result.Exceptions.Count().ShouldBe(1);
@@ -149,10 +156,10 @@ public class FullE2EExceptionCases
 
         var result = await SailfishRunner.Run(runSettings);
 
+        result.ExecutionSummaries.First().CompiledTestCaseResults.First().TestCaseId.ShouldNotBeNull();
         result.IsValid.ShouldBeFalse();
         result.Exceptions.ShouldNotBeNull();
         result.Exceptions.Count().ShouldBe(2);
-
         result.Exceptions.ToList()[0].Message.ShouldBe("Iteration Setup Exception");
         result.Exceptions.ToList()[1].Message.ShouldBe("Iteration Setup Exception");
     }
@@ -170,6 +177,7 @@ public class FullE2EExceptionCases
         var result = await SailfishRunner.Run(runSettings);
 
         result.IsValid.ShouldBeFalse();
+        result.ExecutionSummaries.First().CompiledTestCaseResults.First().TestCaseId.ShouldNotBeNull();
         result.Exceptions.ShouldNotBeNull();
         result.Exceptions.Count().ShouldBe(1);
         result.Exceptions.Single().Message.ShouldBe("Sailfish Method Exception");
@@ -229,6 +237,8 @@ public class FullE2EExceptionCases
 
         result.Exceptions.ShouldNotBeNull();
         result.Exceptions?.Count().ShouldBe(1);
+
+        result.ExecutionSummaries.First().CompiledTestCaseResults.First().TestCaseId.ShouldNotBeNull();
         result.ExecutionSummaries
             .SelectMany(x => x.CompiledTestCaseResults.Select(c => c.PerformanceRunResult))
             .Count(x => x is null)
