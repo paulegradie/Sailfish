@@ -193,7 +193,6 @@ internal class SailfishExecutionEngine : ISailfishExecutionEngine
                     return await CatchAndReturn(ex, testCase, testCaseGroup, cancellationToken);
                 }
 
-
                 var executionResult = await IterateOverVariableCombos(testCase, testCaseGroup, cancellationToken);
 
                 // TODO: Allow users to force method teardown on failure
