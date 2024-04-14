@@ -1,0 +1,6 @@
+codecov:
+  precision: 2
+  round: up
+
+ignore:
+  - "*/*Tests*/*"
