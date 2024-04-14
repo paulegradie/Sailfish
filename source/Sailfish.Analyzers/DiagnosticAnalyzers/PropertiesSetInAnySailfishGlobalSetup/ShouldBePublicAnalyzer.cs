@@ -19,9 +19,7 @@ public class ShouldBePublicAnalyzer : AnalyzerBase<ClassDeclarationSyntax>
         defaultSeverity: DiagnosticSeverity.Error,
         isEnabledByDefault: true,
         description: "Properties that are assigned in the SailfishGlobalSetup must be public.",
-        helpLinkUri: $"{AnalyzerGroups.EssentialAnalyzers.HelpLink}",
-        customTags: []
-    );
+        helpLinkUri: $"{AnalyzerGroups.EssentialAnalyzers.HelpLink}");
 
     public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(Descriptor);
 
