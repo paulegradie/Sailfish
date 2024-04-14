@@ -107,6 +107,7 @@ jobs:
       - name: Upload coverage reports to Codecov
         uses: codecov/codecov-action@v4.0.1
         with:
+          exclude: "source/*Tests*"
           token: ${{ secrets.CODECOV_TOKEN }}
           slug: paulegradie/Sailfish
 
