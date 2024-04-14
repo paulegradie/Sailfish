@@ -175,7 +175,8 @@ internal class SailfishExecutionEngine : ISailfishExecutionEngine
 
                 if (testCase.Disabled)
                 {
-                    await mediator.Publish(new TestCaseDisabledNotification(testCase.ToExternal(), testCaseGroup, false),
+                    await mediator.Publish(
+                        new TestCaseDisabledNotification(testCase.ToExternal(), testCaseGroup, false),
                         cancellationToken);
 
                     currentVariableSetIndex += 1;
@@ -191,7 +192,6 @@ internal class SailfishExecutionEngine : ISailfishExecutionEngine
                 {
                     return await CatchAndReturn(ex, testCase, testCaseGroup, cancellationToken);
                 }
-
 
                 var executionResult = await IterateOverVariableCombos(testCase, testCaseGroup, cancellationToken);
 
@@ -288,7 +288,7 @@ internal class SailfishExecutionEngine : ISailfishExecutionEngine
         CancellationToken cancellationToken = default)
     {
         TestCaseExecutionResult testCaseExecutionResult;
-        try
+        try // this is not great control flow - this is where we catch SailfishMethod exceptions
         {
             testCaseExecutionResult = await testCaseIterator.Iterate(
                 testInstanceContainer,
@@ -305,7 +305,7 @@ internal class SailfishExecutionEngine : ISailfishExecutionEngine
         }
         catch (Exception ex)
         {
-            testCaseExecutionResult = new TestCaseExecutionResult(ex);
+            testCaseExecutionResult = new TestCaseExecutionResult(testInstanceContainer, ex);
         }
 
         await mediator.Publish(
