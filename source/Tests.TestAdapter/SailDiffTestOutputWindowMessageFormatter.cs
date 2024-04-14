@@ -13,6 +13,8 @@ namespace Tests.TestAdapter;
 
 public class SailDiffTestOutputWindowMessageFormatterTests
 {
+    private static readonly string[] afterTestIds = new[] { "Id2" };
+
     [Fact]
     public void OutputIsCreatedCorrectly()
     {
@@ -32,7 +34,7 @@ public class SailDiffTestOutputWindowMessageFormatterTests
             new Dictionary<string, object>()), null, null);
 
         var sailDiffResult = new SailDiffResult(id1, testResultWithOutlierAnalysis);
-        var ids = new TestIds(new[] { id1.DisplayName }, new[] { "Id2" });
+        var ids = new TestIds(new[] { id1.DisplayName }, afterTestIds);
         var settings = new SailDiffSettings();
 
         var formatter = new SailDiffTestOutputWindowMessageFormatter();
