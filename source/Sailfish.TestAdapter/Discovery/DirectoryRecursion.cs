@@ -58,7 +58,6 @@ internal static class DirectoryRecursion
         if (where is not null) filePaths = filePaths.Where(where).ToArray();
         return filePaths.ToList();
     }
-    
 
     public static class FileSearchFilters
     {
