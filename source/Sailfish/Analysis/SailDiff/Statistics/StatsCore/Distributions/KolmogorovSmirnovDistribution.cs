@@ -47,9 +47,9 @@ internal sealed class KolmogorovSmirnovDistribution : UnivariateContinuousDistri
     {
         if (double.IsNaN(x))
             throw new ArgumentOutOfRangeException(nameof(x));
-        var num = n * x * x;
+        var number = n * x * x;
         var n1 = (int)Math.Ceiling(n);
-        if (x >= 1.0 || num >= 18.0)
+        if (x >= 1.0 || number >= 18.0)
             return 1.0;
         if (x <= 0.5 / n)
             return 0.0;
@@ -59,25 +59,25 @@ internal sealed class KolmogorovSmirnovDistribution : UnivariateContinuousDistri
             return n > 20.0 ? Math.Exp(Specials.LogFactorial(n) + n * Math.Log(2.0 * x - 1.0 / n)) : Specials.Factorial(n) * Math.Pow(2.0 * x - 1.0 / n, n);
         if (x >= 1.0 - 1.0 / n)
             return 1.0 - 2.0 * Math.Pow(1.0 - x, n);
-        if (!(n <= 140.0)) return n <= 100000.0 && n * num * x <= 1.96 ? Durbin(n1, x) : PelzGood(n, x);
-        if (num < 0.754693) return Durbin(n1, x);
-        return num < 4.0 ? Pomeranz(n1, x) : 1.0 - ComplementaryDistributionFunction(n, x);
+        if (!(n <= 140.0)) return n <= 100000.0 && n * number * x <= 1.96 ? Durbin(n1, x) : PelzGood(n, x);
+        if (number < 0.754693) return Durbin(n1, x);
+        return number < 4.0 ? Pomeranz(n1, x) : 1.0 - ComplementaryDistributionFunction(n, x);
     }
 
     public static double ComplementaryDistributionFunction(double n, double x)
     {
-        var num = n * x * x;
-        if (x >= 1.0 || num >= 370.0)
+        var number = n * x * x;
+        if (x >= 1.0 || number >= 370.0)
             return 0.0;
-        if (x <= 0.5 / n || num <= 0.0274)
+        if (x <= 0.5 / n || number <= 0.0274)
             return 1.0;
-        if (n == 1.0)
+        if (Math.Abs(n - 1.0) < 0.000000001)
             return 2.0 - 2.0 * x;
         if (x <= 1.0 / n)
             return n > 20.0 ? 1.0 - Math.Exp(Specials.LogFactorial(n) + n * Math.Log(2.0 * x - 1.0 / n)) : 1.0 - Specials.Factorial(n) * Math.Pow(2.0 * x - 1.0 / n, n);
         if (x >= 1.0 - 1.0 / n)
             return 2.0 * Math.Pow(1.0 - x, n);
-        return n <= 140.0 ? num >= 4.0 ? 2.0 * OneSideUpperTail(n, x) : 1.0 - CumulativeFunction(n, x) : num >= 2.2 ? 2.0 * OneSideUpperTail(n, x) : 1.0 - CumulativeFunction(n, x);
+        return n <= 140.0 ? number >= 4.0 ? 2.0 * OneSideUpperTail(n, x) : 1.0 - CumulativeFunction(n, x) : number >= 2.2 ? 2.0 * OneSideUpperTail(n, x) : 1.0 - CumulativeFunction(n, x);
     }
 
     public static double PelzGood(double n, double x)

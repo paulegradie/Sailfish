@@ -45,7 +45,6 @@ internal sealed class TwoSampleKolmogorovSmirnov : HypothesisTest
                 PValue = StatisticDistribution.OneSideDistributionFunction(Statistic);
                 break;
 
-            case TwoSampleKolmogorovSmirnovTestHypothesis.FirstSampleIsSmallerThanSecond:
             default:
                 for (var index = 0; index < array.Length - 1; ++index)
                     values[index] = Math.Max(func2(array[index + 1]) - func1(array[index]), func2(array[index]) - func1(array[index]));

@@ -11,10 +11,10 @@ internal abstract class HypothesisTest : IFormattable
     public double Statistic { get; protected init; }
 
     public static double Size => 0.05;
+    public DistributionTailSailfish Tail { get; protected init; }
 
     public string ToString(string? format, IFormatProvider? formatProvider) => PValue.ToString(format, formatProvider);
 
-    public DistributionTailSailfish Tail { get; protected init; }
 
     public override string ToString()
     {
