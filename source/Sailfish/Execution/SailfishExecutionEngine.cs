@@ -25,7 +25,7 @@ internal interface ISailfishExecutionEngine
     Task<List<TestCaseExecutionResult>> ActivateContainer(
         int testProviderIndex,
         int totalTestProviderCount,
-        TestInstanceContainerProvider testProvider,
+        ITestInstanceContainerProvider testProvider,
         MemoryCache memoryCache,
         string providerPropertiesCacheKey,
         CancellationToken cancellationToken = default);
@@ -33,7 +33,7 @@ internal interface ISailfishExecutionEngine
     Task<List<TestCaseExecutionResult>> ActivateContainer(
         int testProviderIndex,
         int totalTestProviderCount,
-        TestInstanceContainerProvider testProvider,
+        ITestInstanceContainerProvider testProvider,
         MemoryCache memoryCache,
         string providerPropertiesCacheKey,
         List<dynamic> testCaseGroup,
@@ -50,7 +50,8 @@ internal class SailfishExecutionEngine : ISailfishExecutionEngine
     private readonly ITestCaseCountPrinter testCaseCountPrinter;
     private readonly ITestCaseIterator testCaseIterator;
 
-    public SailfishExecutionEngine(ILogger logger,
+    public SailfishExecutionEngine(
+        ILogger logger,
         IConsoleWriter consoleWriter,
         ITestCaseIterator testCaseIterator,
         ITestCaseCountPrinter testCaseCountPrinter,
@@ -70,7 +71,7 @@ internal class SailfishExecutionEngine : ISailfishExecutionEngine
     public async Task<List<TestCaseExecutionResult>> ActivateContainer(
         [Range(1, int.MaxValue)] int testProviderIndex,
         [Range(1, int.MaxValue)] int totalTestProviderCount,
-        TestInstanceContainerProvider testProvider,
+        ITestInstanceContainerProvider testProvider,
         MemoryCache memoryCache,
         string providerPropertiesCacheKey,
         CancellationToken cancellationToken = default)
@@ -100,7 +101,7 @@ internal class SailfishExecutionEngine : ISailfishExecutionEngine
     public async Task<List<TestCaseExecutionResult>> ActivateContainer(
         [Range(1, int.MaxValue)] int testProviderIndex,
         [Range(1, int.MaxValue)] int totalTestProviderCount,
-        TestInstanceContainerProvider testProvider,
+        ITestInstanceContainerProvider testProvider,
         MemoryCache memoryCache,
         string providerPropertiesCacheKey,
         List<dynamic> testCaseGroup,

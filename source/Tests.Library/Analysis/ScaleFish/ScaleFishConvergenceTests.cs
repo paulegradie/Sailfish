@@ -8,7 +8,7 @@ using Xunit;
 
 namespace Tests.Library.Analysis.ScaleFish;
 
-public class ScaleFishFixture
+public class ScaleFishConvergenceTests
 {
     [Fact]
     public void EstimatorFindsCorrectComplexity_Linear()

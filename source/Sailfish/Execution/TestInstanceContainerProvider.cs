@@ -9,18 +9,35 @@ using Sailfish.Utils;
 
 namespace Sailfish.Execution;
 
-internal class TestInstanceContainerProvider(
-    IRunSettings runSettings,
-    ITypeActivator typeActivator,
-    Type test,
-    IEnumerable<PropertySet> propertySets,
-    MethodInfo method)
+internal interface ITestInstanceContainerProvider
 {
-    public readonly MethodInfo Method = method;
-    private readonly IEnumerable<PropertySet> propertySets = propertySets;
-    private readonly IRunSettings runSettings = runSettings;
-    public readonly Type Test = test;
-    private readonly ITypeActivator typeActivator = typeActivator;
+    int GetNumberOfPropertySetsInTheQueue();
+    IEnumerable<TestInstanceContainer> ProvideNextTestCaseEnumeratorForClass();
+    public Type Test { get; }
+}
+
+internal class TestInstanceContainerProvider : ITestInstanceContainerProvider
+{
+    private readonly IEnumerable<PropertySet> propertySets;
+    private readonly IRunSettings runSettings;
+    private readonly ITypeActivator typeActivator;
+
+    public TestInstanceContainerProvider(
+        IRunSettings runSettings,
+        ITypeActivator typeActivator,
+        Type test,
+        IEnumerable<PropertySet> propertySets,
+        MethodInfo method)
+    {
+        Method = method;
+        Test = test;
+        this.propertySets = propertySets;
+        this.runSettings = runSettings;
+        this.typeActivator = typeActivator;
+    }
+
+    public Type Test { get; }
+    public MethodInfo Method { get; }
 
     public int GetNumberOfPropertySetsInTheQueue()
     {

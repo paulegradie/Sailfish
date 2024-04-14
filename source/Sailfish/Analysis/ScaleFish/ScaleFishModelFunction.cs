@@ -11,11 +11,6 @@ namespace Sailfish.Analysis.ScaleFish;
 
 public abstract class ScaleFishModelFunction
 {
-    protected ScaleFishModelFunction()
-    {
-        FitnessCalculator = new FitnessCalculator();
-    }
-
     public abstract string Name { get; set; }
     public abstract string OName { get; set; }
     public abstract string Quality { get; set; }
@@ -23,8 +18,7 @@ public abstract class ScaleFishModelFunction
 
     public FittedCurve? FunctionParameters { get; set; }
 
-    // ReSharper disable once MemberCanBePrivate.Global
-    [JsonIgnore] public IFitnessCalculator FitnessCalculator { get; set; } // leave this public for testing. Gross, but willing to accept
+    [JsonIgnore] public IFitnessCalculator FitnessCalculator { get; set; } = new FitnessCalculator(); // leave this public for testing. Gross, but willing to accept
 
     public abstract double Compute(double bias, double scale, double x);
 
@@ -56,7 +50,7 @@ public abstract class ScaleFishModelFunction
         }
         catch
         {
-            // to hard to fit - plate at end of list
+            // too hard to fit - place at end of list
             return new FitnessResult(0, 9999999999, 999999999, 999999999, 999999999, 999999999);
         }
     }
