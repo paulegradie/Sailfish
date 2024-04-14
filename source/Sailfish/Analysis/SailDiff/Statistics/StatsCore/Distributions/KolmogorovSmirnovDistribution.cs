@@ -77,7 +77,11 @@ internal sealed class KolmogorovSmirnovDistribution : UnivariateContinuousDistri
             return n > 20.0 ? 1.0 - Math.Exp(Specials.LogFactorial(n) + n * Math.Log(2.0 * x - 1.0 / n)) : 1.0 - Specials.Factorial(n) * Math.Pow(2.0 * x - 1.0 / n, n);
         if (x >= 1.0 - 1.0 / n)
             return 2.0 * Math.Pow(1.0 - x, n);
-        return n <= 140.0 ? number >= 4.0 ? 2.0 * OneSideUpperTail(n, x) : 1.0 - CumulativeFunction(n, x) : number >= 2.2 ? 2.0 * OneSideUpperTail(n, x) : 1.0 - CumulativeFunction(n, x);
+        return n <= 140.0
+            ? number >= 4.0 ? 2.0 * OneSideUpperTail(n, x) : 1.0 - CumulativeFunction(n, x)
+            : number >= 2.2
+                ? 2.0 * OneSideUpperTail(n, x)
+                : 1.0 - CumulativeFunction(n, x);
     }
 
     public static double PelzGood(double n, double x)
@@ -266,7 +270,10 @@ internal sealed class KolmogorovSmirnovDistribution : UnivariateContinuousDistri
 
             if (!(num9 < 1E-280)) continue;
             for (var index8 = num4; index8 <= num5; ++index8)
+            {
                 numArray[index2][index8] *= num2;
+            }
+
             ++num3;
         }
 
@@ -284,9 +291,16 @@ internal sealed class KolmogorovSmirnovDistribution : UnivariateContinuousDistri
         var v = new double[length, length];
         var b = new double[length, length];
         for (var index1 = 0; index1 < length; ++index1)
-        for (var index2 = 0; index2 < length; ++index2)
-            if (index1 - index2 + 1 >= 0)
-                a[index1, index2] = 1.0;
+        {
+            for (var index2 = 0; index2 < length; ++index2)
+            {
+                if (index1 - index2 + 1 >= 0)
+                {
+                    a[index1, index2] = 1.0;
+                }
+            }
+        }
+
         for (var index = 0; index < length; ++index)
         {
             a[index, 0] -= Math.Pow(x, index + 1);
@@ -295,10 +309,21 @@ internal sealed class KolmogorovSmirnovDistribution : UnivariateContinuousDistri
 
         a[length - 1, 0] += 2.0 * x - 1.0 > 0.0 ? Math.Pow(2.0 * x - 1.0, length) : 0.0;
         for (var index3 = 0; index3 < length; ++index3)
-        for (var index4 = 0; index4 < length; ++index4)
-            if (index3 - index4 + 1 > 0)
+        {
+            for (var index4 = 0; index4 < length; ++index4)
+            {
+                if (index3 - index4 + 1 <= 0)
+                {
+                    continue;
+                }
+
                 for (var index5 = 1; index5 <= index3 - index4 + 1; ++index5)
+                {
                     a[index3, index4] /= index5;
+                }
+            }
+        }
+
         var eV = 0;
         MatrixPower(a, 0, v, ref eV, length, n, b);
         var num2 = v[num1 - 1, num1 - 1];
@@ -325,8 +350,13 @@ internal sealed class KolmogorovSmirnovDistribution : UnivariateContinuousDistri
         if (n == 1)
         {
             for (var index1 = 0; index1 < m; ++index1)
-            for (var index2 = 0; index2 < m; ++index2)
-                v[index1, index2] = a[index1, index2];
+            {
+                for (var index2 = 0; index2 < m; ++index2)
+                {
+                    v[index1, index2] = a[index1, index2];
+                }
+            }
+
             eV = eA;
         }
         else

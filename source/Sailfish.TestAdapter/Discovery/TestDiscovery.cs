@@ -29,86 +29,61 @@ internal class TestDiscovery : ITestDiscovery
         FileInfo? project = null;
         foreach (var sourceDllPath in sourceDllPaths.Distinct())
         {
-            previousSearchDir = GetProjectOrThrow(logger, sourceDllPath, previousSearchDir, ref project);
+            var currentSearchDir = new FileInfo(sourceDllPath);
+            if (previousSearchDir is null || (currentSearchDir.Directory is not null && previousSearchDir.Directory is not null &&
+                                              currentSearchDir.Directory?.FullName != previousSearchDir.Directory?.FullName))
+            {
+                project = DirectoryRecursion.RecurseUpwardsUntilFileIsFound(
+                    ".csproj",
+                    sourceDllPath,
+                    10);
+                previousSearchDir = currentSearchDir;
+            }
 
-            if (!TryFindPerformanceTestTypes(sourceDllPath, logger, out var performanceTestTypes)) continue;
-            if (!TryFindAllFiles(project, logger, out var projectSourceCodeFilePaths)) continue;
+            if (project is null)
+            {
+                const string msg = "Failed to discover the test project";
+                logger.SendMessage(TestMessageLevel.Error, msg);
+                throw new TestAdapterException(msg);
+            }
+
+            Type[] perfTestTypes;
+            try
+            {
+                perfTestTypes = TypeLoader.LoadSailfishTestTypesFrom(sourceDllPath, logger);
+            }
+            catch
+            {
+                continue;
+            }
+
+            if (perfTestTypes.Length == 0) continue;
+
+            var projectSourceCodeFilePaths = DirectoryRecursion.FindAllFilesRecursively(
+                project,
+                "*.cs",
+                logger,
+                DirectoryRecursion.FileSearchFilters.FilePathDoesNotContainBinOrObjDirs);
+            if (projectSourceCodeFilePaths.Count == 0) continue;
 
             var classMetaDatas = DiscoveryAnalysisMethods.CompilePreRenderedSourceMap(
                     projectSourceCodeFilePaths,
-                    performanceTestTypes,
+                    perfTestTypes,
                     nameof(SailfishAttribute).Replace(nameof(Attribute), ""),
                     nameof(SailfishMethodAttribute).Replace(nameof(Attribute), ""))
                 .OrderBy(meta => meta.ClassFullName.Split(".").Last());
 
             foreach (var classMetaData in classMetaDatas)
             {
-                AddTestCases(classMetaData, sourceDllPath, hasher, testCases);
+                var classTestCases = TestCaseItemCreator
+                    .AssembleTestCases(classMetaData, sourceDllPath, hasher)
+                    .ToList();
+
+                if (classTestCases.Count == 0) continue;
+                testCases.AddRange(classTestCases);
             }
         }
 
         return testCases;
-    }
-
-    private static FileInfo? GetProjectOrThrow(IMessageLogger logger, string sourceDllPath, FileInfo? previousSearchDir, ref FileInfo? project)
-    {
-        var currentSearchDir = new FileInfo(sourceDllPath);
-        if (WeArentBeingInefficient(previousSearchDir, currentSearchDir))
-        {
-            project = DirectoryRecursion.RecurseUpwardsUntilFileIsFound(
-                ".csproj",
-                sourceDllPath,
-                10);
-            previousSearchDir = currentSearchDir;
-        }
-
-        if (project is not null)
-        {
-            return previousSearchDir;
-        }
-
-        const string msg = "Failed to discover the test project";
-        logger.SendMessage(TestMessageLevel.Error, msg);
-        throw new TestAdapterException(msg);
-    }
-
-    private static bool WeArentBeingInefficient(FileInfo? previousSearchDir, FileInfo currentSearchDir)
-    {
-        return previousSearchDir is null || (currentSearchDir.Directory is not null && previousSearchDir.Directory is not null &&
-                                             currentSearchDir.Directory?.FullName != previousSearchDir.Directory?.FullName);
-    }
-
-    private static void AddTestCases(ClassMetaData classMetaData, string sourceDllPath, HashWrapper hasher, List<TestCase> testCases)
-    {
-        var classTestCases = TestCaseItemCreator
-            .AssembleTestCases(classMetaData, sourceDllPath, hasher)
-            .ToList();
-
-        if (classTestCases.Count == 0) return;
-        testCases.AddRange(classTestCases);
-    }
-
-    private static bool TryFindPerformanceTestTypes(string sourceDllPath, IMessageLogger logger, out Type[] performanceTestTypes)
-    {
-        try
-        {
-            performanceTestTypes = TypeLoader.LoadSailfishTestTypesFrom(sourceDllPath, logger);
-            return performanceTestTypes.Length > 0;
-        }
-        catch
-        {
-            performanceTestTypes = [];
-            return false;
-        }
-    }
-
-    private static bool TryFindAllFiles(FileInfo project, IMessageLogger logger, out List<string> projectSourceCodeFilePaths)
-    {
-        projectSourceCodeFilePaths = DirectoryRecursion.FindAllFilesRecursively(
-            project,
-            "*.cs",
-            logger,
-            DirectoryRecursion.FileSearchFilters.FilePathDoesNotContainBinOrObjDirs);
-        return projectSourceCodeFilePaths.Count > 0;
     }
 }

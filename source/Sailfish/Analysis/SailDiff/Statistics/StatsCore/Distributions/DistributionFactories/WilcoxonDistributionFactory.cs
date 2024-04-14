@@ -8,7 +8,9 @@ internal static class WilcoxonDistributionFactory
     {
         var numberOfSamples = ranks.Length;
         if (numberOfSamples == 0)
-            throw new ArgumentOutOfRangeException(nameof(numberOfSamples), "The number of samples must be positive.");
+        {
+            throw new ArgumentOutOfRangeException(nameof(ranks), "The number of samples must be positive.");
+        }
 
         return new WilcoxonDistribution(ranks, ranks.Length < 12);
     }

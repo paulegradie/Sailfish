@@ -3,4 +3,7 @@ codecov:
   round: up
 
 ignore:
-  - "source/Tests.Common/"
+  - source/Tests.Common
+  - source/Tests.E2E.ExceptionHandling
+  - source/Tests.E2E.TestSuite
+  - source/Demo.API
