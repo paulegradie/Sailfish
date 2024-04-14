@@ -3,4 +3,4 @@ codecov:
   round: up
 
 ignore:
-  - "*/*Tests*/*"
+  - "source/Tests.Common/"

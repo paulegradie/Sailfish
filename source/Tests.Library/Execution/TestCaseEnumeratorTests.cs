@@ -60,7 +60,7 @@ public class TestCaseEnumerationTests
 
         result.Count.ShouldBe(1);
         result.Single().IsSuccess.ShouldBeFalse();
-        result.Single()?.Exception?.Message.ShouldBe("Failed to create test cases for Tests.Library.Execution.TestCaseEnumerationTests");
+        result.Single().Exception?.Message.ShouldBe("Failed to create test cases for Tests.Library.Execution.TestCaseEnumerationTests");
         enumerator.Dispose();
     }
 }
