@@ -9,6 +9,7 @@ using MediatR;
 using Sailfish.Contracts.Private.CsvMaps;
 using Sailfish.Contracts.Public.Models;
 using Sailfish.Contracts.Public.Notifications;
+using Sailfish.Exceptions;
 using Sailfish.Presentation;
 
 namespace Sailfish.DefaultHandlers.SailDiff;
@@ -36,8 +37,11 @@ internal class SailDiffAnalysisCompleteNotificationHandler : INotificationHandle
         var filePath = Path.Join(runSettings.LocalOutputDirectory, filename);
         if (!string.IsNullOrEmpty(markdownTable))
         {
+            var directory = Path.GetDirectoryName(filePath);
             if (Directory.Exists(filePath)) throw new IOException("Cannot write to a directory");
+            if (directory is null) throw new SailfishException("Failed to find output directory");
 
+            Directory.CreateDirectory(directory);
             await File.WriteAllTextAsync(filePath, markdownTable, cancellationToken).ConfigureAwait(false);
             File.SetAttributes(filePath, FileAttributes.ReadOnly);
         }
