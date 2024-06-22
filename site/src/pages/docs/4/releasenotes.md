@@ -2,6 +2,11 @@
 title: Release Notes
 ---
 
+- 2.0.192
+  - Code cleanup
+  - Update documentation
+  - Fix stale vs test documentation link
+
 - 2.0.0
 
   - **Breaking Change**: Public mediator contracts converted to records and CamelCased property names

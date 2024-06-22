@@ -143,7 +143,7 @@ jobs:
 
   sonar:
     name: Sonar Code Quality Check
-    needs: [set_version, build, test]
+    needs: [set_version, build]
     runs-on: windows-latest
     steps:
       - name: Set up JDK 17
