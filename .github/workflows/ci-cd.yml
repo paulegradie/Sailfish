@@ -102,7 +102,7 @@ jobs:
           name: built-binaries
 
       - name: Test Projects
-        run: dotnet test ./source/${{ matrix.project }}/${{ matrix.project }}.csproj --verbosity normal --collect:"XPlat Code Coverage" 
+        run: dotnet test ./source/${{ matrix.project }}/${{ matrix.project }}.csproj --verbosity normal --collect:"XPlat Code Coverage"
 
       - name: Upload coverage reports to Codecov
         uses: codecov/codecov-action@v4.0.1
@@ -143,7 +143,7 @@ jobs:
 
   sonar:
     name: Sonar Code Quality Check
-    needs: [build, set_version]
+    needs: [set_version, build, test]
     runs-on: windows-latest
     steps:
       - name: Set up JDK 17
