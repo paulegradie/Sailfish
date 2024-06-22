@@ -21,15 +21,15 @@ internal static class InvocationReflectionExtensionMethods
     internal static bool ReturnTypeIsTask(Type returnType)
     {
         return returnType == typeof(Task) ||
-               returnType.IsGenericType &&
-               returnType.GetGenericTypeDefinition() == typeof(Task<>);
+               (returnType.IsGenericType &&
+                returnType.GetGenericTypeDefinition() == typeof(Task<>));
     }
 
     internal static bool ReturnTypeIsValueTask(Type returnType)
     {
         return returnType == typeof(ValueTask) ||
-               returnType.IsGenericType &&
-               returnType.GetGenericTypeDefinition() == typeof(ValueTask<>);
+               (returnType.IsGenericType &&
+                returnType.GetGenericTypeDefinition() == typeof(ValueTask<>));
     }
 
     internal static async Task TryInvoke(this MethodInfo? method, object instance, CancellationToken cancellationToken, PerformanceTimer? performanceTimer = null)
@@ -45,10 +45,7 @@ internal static class InvocationReflectionExtensionMethods
             case 1:
             {
                 var paramIsCancellationToken = parameters.Single().ParameterType == typeof(CancellationToken);
-                if (!paramIsCancellationToken)
-                {
-                    throw new TestFormatException(errorMsg);
-                }
+                if (!paramIsCancellationToken) throw new TestFormatException(errorMsg);
 
                 arguments.Add(cancellationToken);
                 break;

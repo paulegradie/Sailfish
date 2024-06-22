@@ -14,7 +14,8 @@ public class PerfTestWithISailfishFixture : ISailfishFixture<SailfishDependencie
         this.sailfishDependencies = sailfishDependencies;
     }
 
-    [SailfishVariable(1, 2, 3)] public int VariableA { get; set; }
+    [SailfishVariable(1, 2, 3)]
+    public int VariableA { get; set; }
 
     [SailfishMethod]
     public async Task TestA(CancellationToken cancellationToken)

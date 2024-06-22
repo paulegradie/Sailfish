@@ -1,11 +1,11 @@
-﻿using MediatR;
+﻿using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
+using MediatR;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel;
 using Sailfish.Contracts.Public.Notifications;
 using Sailfish.TestAdapter.Display.VSTestFramework;
 using Sailfish.TestAdapter.TestProperties;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace Sailfish.TestAdapter.Handlers.TestCaseEvents;
 

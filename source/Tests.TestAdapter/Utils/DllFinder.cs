@@ -1,8 +1,8 @@
-﻿using Microsoft.VisualStudio.TestPlatform.ObjectModel.Logging;
+﻿using System.IO;
+using System.Linq;
+using Microsoft.VisualStudio.TestPlatform.ObjectModel.Logging;
 using NSubstitute;
 using Sailfish.TestAdapter.Discovery;
-using System.IO;
-using System.Linq;
 
 namespace Tests.TestAdapter.Utils;
 

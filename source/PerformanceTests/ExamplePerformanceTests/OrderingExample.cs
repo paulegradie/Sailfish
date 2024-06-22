@@ -1,6 +1,6 @@
-using Sailfish.Attributes;
 using System;
 using System.Threading;
+using Sailfish.Attributes;
 
 namespace PerformanceTests.ExamplePerformanceTests;
 

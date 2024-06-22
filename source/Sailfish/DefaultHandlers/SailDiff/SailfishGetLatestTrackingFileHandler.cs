@@ -12,7 +12,8 @@ using Sailfish.Extensions.Types;
 
 namespace Sailfish.DefaultHandlers.SailDiff;
 
-internal class SailDiffGetLatestExecutionSummariesHandler(ITrackingFileDirectoryReader trackingFileDirectoryReader, ITrackingFileParser trackingFileParser, IRunSettings runSettings) : IRequestHandler<GetLatestExecutionSummaryRequest, GetLatestExecutionSummaryResponse>
+internal class SailDiffGetLatestExecutionSummariesHandler(ITrackingFileDirectoryReader trackingFileDirectoryReader, ITrackingFileParser trackingFileParser, IRunSettings runSettings)
+    : IRequestHandler<GetLatestExecutionSummaryRequest, GetLatestExecutionSummaryResponse>
 {
     private readonly IRunSettings runSettings = runSettings;
     private readonly ITrackingFileDirectoryReader trackingFileDirectoryReader = trackingFileDirectoryReader;

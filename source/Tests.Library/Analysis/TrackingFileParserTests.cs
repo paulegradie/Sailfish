@@ -1,14 +1,14 @@
-﻿using NSubstitute;
+﻿using System.Collections.Generic;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
+using NSubstitute;
 using Sailfish.Analysis;
 using Sailfish.Contracts.Public.Serialization;
 using Sailfish.Contracts.Public.Serialization.Tracking.V1;
 using Sailfish.Extensions.Types;
 using Sailfish.Logging;
 using Shouldly;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 using Tests.Common.Builders;
 using Tests.Common.Utils;
 using Xunit;
@@ -28,7 +28,8 @@ public class TrackingFileParserTests
     [Fact]
     public async Task FilesAreParsedSuccessfully()
     {
-        var summaries = new List<ClassExecutionSummaryTrackingFormat>() { ClassExecutionSummaryTrackingFormatBuilder.Create().Build() };
+        var summaries = new List<ClassExecutionSummaryTrackingFormat>
+            { ClassExecutionSummaryTrackingFormatBuilder.Create().Build() };
         var serialized = SailfishSerializer.Serialize(summaries);
         var file = TempFileHelper.WriteStringToTempFile(serialized);
 
@@ -61,13 +62,15 @@ public class TrackingFileParserTests
     public async Task WhenCorruptFileIsPresent_SerializationOfTheOthersStillSucceeds()
     {
         var corruptFile = TempFileHelper.WriteStringToTempFile(SailfishSerializer.Serialize(new List<ClassExecutionSummaryTrackingFormat>()));
-        var summaries = new List<ClassExecutionSummaryTrackingFormat>() { ClassExecutionSummaryTrackingFormatBuilder.Create().Build() };
+        var summaries = new List<ClassExecutionSummaryTrackingFormat>
+            { ClassExecutionSummaryTrackingFormatBuilder.Create().Build() };
         var serialized = SailfishSerializer.Serialize(summaries);
         var goodFile = TempFileHelper.WriteStringToTempFile(serialized);
 
         var datalist = new TrackingFileDataList();
 
-        var result = await parser.TryParseMany(new List<string>() { corruptFile, goodFile }, datalist, CancellationToken.None);
+        var result = await parser.TryParseMany(new List<string>
+            { corruptFile, goodFile }, datalist, CancellationToken.None);
 
         result.ShouldBeTrue();
         datalist.Count.ShouldBe(1);

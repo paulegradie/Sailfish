@@ -16,8 +16,8 @@ internal interface ITestCaseIterator
 
 internal class TestCaseIterator : ITestCaseIterator
 {
-    private readonly IRunSettings runSettings;
     private readonly ILogger logger;
+    private readonly IRunSettings runSettings;
 
     public TestCaseIterator(IRunSettings runSettings, ILogger logger)
     {
@@ -71,10 +71,7 @@ internal class TestCaseIterator : ITestCaseIterator
 
         testInstanceContainer.CoreInvoker.SetTestCaseStop();
 
-        if (disableOverheadEstimation)
-        {
-            return new TestCaseExecutionResult(testInstanceContainer);
-        }
+        if (disableOverheadEstimation) return new TestCaseExecutionResult(testInstanceContainer);
 
         await overheadEstimator.Estimate();
         testInstanceContainer.ApplyOverheadEstimates(overheadEstimator.GetAverageEstimate());
@@ -118,9 +115,7 @@ internal class TestCaseIterator : ITestCaseIterator
     private TestCaseExecutionResult CatchAndReturn(TestInstanceContainer testProvider, Exception ex)
     {
         if (ex is NullReferenceException)
-        {
             ex = new NullReferenceException(ex.Message + Environment.NewLine + $"Null variable or property encountered in method: {testProvider.ExecutionMethod.Name}");
-        }
 
         logger.Log(LogLevel.Error, ex, "An exception occured during test execution");
         return new TestCaseExecutionResult(testProvider, ex);

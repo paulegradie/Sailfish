@@ -60,10 +60,7 @@ public static class Tools
         {
             var index = 1;
             var i = 1;
-            for (; index < items.Length; ++index)
-            {
-                items[index] = ++i;
-            }
+            for (; index < items.Length; ++index) items[index] = ++i;
         }
 
         if (!alreadySorted)

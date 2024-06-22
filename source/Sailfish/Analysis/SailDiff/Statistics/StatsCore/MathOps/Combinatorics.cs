@@ -79,7 +79,7 @@ internal static class Combinatorics
 
             c[j] = x;
             --j;
-        label_16:;
+            label_16: ;
         } while (j < k);
     }
 }

@@ -5,8 +5,8 @@ using System.Text.Json.Serialization;
 namespace Sailfish.Contracts.Public.Models;
 
 /// <summary>
-/// Class to hold and manipulate the test case name Name will be like some.test(maybe:20,other:30)
-/// some.other.test(maybe:10,other:30)
+///     Class to hold and manipulate the test case name Name will be like some.test(maybe:20,other:30)
+///     some.other.test(maybe:10,other:30)
 /// </summary>
 public class TestCaseName
 {
@@ -47,5 +47,8 @@ public class TestCaseName
         return displayName.Split(OpenBracket).First().Split(Dot).ToArray();
     }
 
-    public string GetMethodPart() => Name.Split(Dot).Last();
+    public string GetMethodPart()
+    {
+        return Name.Split(Dot).Last();
+    }
 }

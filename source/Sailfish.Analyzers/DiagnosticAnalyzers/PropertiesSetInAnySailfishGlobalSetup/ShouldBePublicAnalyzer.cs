@@ -1,10 +1,10 @@
+using System.Collections.Immutable;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Diagnostics;
 using Sailfish.Analyzers.Utils;
 using Sailfish.Analyzers.Utils.TreeParsingExtensionMethods;
-using System.Collections.Immutable;
 
 namespace Sailfish.Analyzers.DiagnosticAnalyzers.PropertiesSetInAnySailfishGlobalSetup;
 
@@ -12,14 +12,14 @@ namespace Sailfish.Analyzers.DiagnosticAnalyzers.PropertiesSetInAnySailfishGloba
 public class ShouldBePublicAnalyzer : AnalyzerBase<ClassDeclarationSyntax>
 {
     public static readonly DiagnosticDescriptor Descriptor = new(
-        id: "SF1000",
-        title: "Properties initialized in the global setup must be public",
-        messageFormat: "Property '{0}' must be public when assigned within a method decorated with the SailfishGlobalSetup attribute",
-        category: AnalyzerGroups.EssentialAnalyzers.Category,
-        defaultSeverity: DiagnosticSeverity.Error,
-        isEnabledByDefault: true,
-        description: "Properties that are assigned in the SailfishGlobalSetup must be public.",
-        helpLinkUri: $"{AnalyzerGroups.EssentialAnalyzers.HelpLink}");
+        "SF1000",
+        "Properties initialized in the global setup must be public",
+        "Property '{0}' must be public when assigned within a method decorated with the SailfishGlobalSetup attribute",
+        AnalyzerGroups.EssentialAnalyzers.Category,
+        DiagnosticSeverity.Error,
+        true,
+        "Properties that are assigned in the SailfishGlobalSetup must be public.",
+        $"{AnalyzerGroups.EssentialAnalyzers.HelpLink}");
 
     public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(Descriptor);
 
@@ -51,9 +51,7 @@ public class ShouldBePublicAnalyzer : AnalyzerBase<ClassDeclarationSyntax>
 
             var propertyDeclaration = classDeclaration.Members.OfType<PropertyDeclarationSyntax>().SingleOrDefault(p => p.Identifier.Text == symbol.Name);
             if (propertyDeclaration is not null)
-            {
                 context.ReportDiagnostic(Diagnostic.Create(Descriptor, propertyDeclaration.Identifier.GetLocation(), propertyDeclaration.Identifier.Text));
-            }
         }
     }
 }

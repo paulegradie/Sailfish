@@ -1,9 +1,9 @@
+using System.Collections.Immutable;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Diagnostics;
 using Sailfish.Analyzers.Utils;
 using Sailfish.Analyzers.Utils.TreeParsingExtensionMethods;
-using System.Collections.Immutable;
 
 namespace Sailfish.Analyzers.DiagnosticAnalyzers.LifecycleMethods;
 
@@ -11,10 +11,10 @@ namespace Sailfish.Analyzers.DiagnosticAnalyzers.LifecycleMethods;
 public class OnlyOneLifecycleAttributePerMethod : AnalyzerBase<ClassDeclarationSyntax>
 {
     public static readonly DiagnosticDescriptor Descriptor = new(
-        id: "SF1021",
-        title: "Only one Sailfish lifecycle attribute is allowed per method",
-        messageFormat: "Method '{0}' may only be decorated with a single Sailfish lifecycle attribute",
-        category: AnalyzerGroups.EssentialAnalyzers.Category,
+        "SF1021",
+        "Only one Sailfish lifecycle attribute is allowed per method",
+        "Method '{0}' may only be decorated with a single Sailfish lifecycle attribute",
+        AnalyzerGroups.EssentialAnalyzers.Category,
         isEnabledByDefault: AnalyzerGroups.EssentialAnalyzers.IsEnabledByDefault,
         defaultSeverity: DiagnosticSeverity.Error,
         description: "Only one Sailfish lifecycle attribute is allowed per method.",

@@ -1,6 +1,6 @@
+using System;
 using Sailfish.Utils;
 using Shouldly;
-using System;
 using Xunit;
 
 namespace Tests.Library.Execution;
@@ -31,8 +31,8 @@ public class TestCasePropertyClonerFixture
 
     public class Dehydrated
     {
-        internal string? InternalField;
         private readonly string? PrivateField;
+        internal string? InternalField;
         protected string? ProtectedField;
         public string? PublicField;
 

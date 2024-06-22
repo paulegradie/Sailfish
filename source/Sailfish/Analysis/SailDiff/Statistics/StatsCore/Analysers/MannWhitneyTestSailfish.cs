@@ -1,6 +1,6 @@
-using Sailfish.Analysis.SailDiff.Statistics.StatsCore.Analysers.AnalysersBase;
 using System;
 using System.Linq;
+using Sailfish.Analysis.SailDiff.Statistics.StatsCore.Analysers.AnalysersBase;
 using Sailfish.Analysis.SailDiff.Statistics.StatsCore.Distributions.DistributionBase;
 using Sailfish.Analysis.SailDiff.Statistics.StatsCore.Distributions.DistributionFactories;
 using Sailfish.Analysis.SailDiff.Statistics.StatsCore.MathOps;

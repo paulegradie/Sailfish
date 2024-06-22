@@ -1,11 +1,11 @@
+using System;
+using System.Collections.Generic;
 using Sailfish.Analysis.SailDiff;
 using Sailfish.Analysis.SailDiff.Statistics.Tests;
 using Sailfish.Contracts.Public;
 using Sailfish.Contracts.Public.Models;
 using Sailfish.TestAdapter.Display.TestOutputWindow;
 using Shouldly;
-using System;
-using System.Collections.Generic;
 using Tests.Common.Utils;
 using Xunit;
 
@@ -13,12 +13,12 @@ namespace Tests.TestAdapter;
 
 public class SailDiffTestOutputWindowMessageFormatterTests
 {
-    private static readonly string[] afterTestIds = new[] { "Id2" };
+    private static readonly string[] afterTestIds = { "Id2" };
 
     [Fact]
     public void OutputIsCreatedCorrectly()
     {
-        var id1 = new TestCaseId($"abc.wow()");
+        var id1 = new TestCaseId("abc.wow()");
         var testResultWithOutlierAnalysis = new TestResultWithOutlierAnalysis(new StatisticalTestResult(
             5.0,
             6.0,
@@ -63,7 +63,7 @@ Change:          No Change  (reason: 0.001 > 0.001)
     [Fact]
     public void OutputIsNotWrittenWhenThereIsATestFailure()
     {
-        var id1 = new TestCaseId($"abc.wow()");
+        var id1 = new TestCaseId("abc.wow()");
         const string exceptionMessage = "Exception Encountered";
         var testResultWithOutlierAnalysis = new TestResultWithOutlierAnalysis(new Exception(exceptionMessage));
 

@@ -1,9 +1,9 @@
-using Sailfish.Analysis.ScaleFish;
-using Sailfish.Analysis.ScaleFish.ComplexityFunctions;
-using Shouldly;
 using System;
 using System.Linq;
 using System.Reflection;
+using Sailfish.Analysis.ScaleFish;
+using Sailfish.Analysis.ScaleFish.ComplexityFunctions;
+using Shouldly;
 using Xunit;
 
 namespace Tests.Library.Analysis.ScaleFish;

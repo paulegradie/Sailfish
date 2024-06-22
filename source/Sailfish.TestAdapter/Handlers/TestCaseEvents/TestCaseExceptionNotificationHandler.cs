@@ -1,18 +1,18 @@
-﻿using MediatR;
+﻿using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
+using MediatR;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel;
 using Sailfish.Contracts.Public.Notifications;
 using Sailfish.Logging;
 using Sailfish.TestAdapter.Display.VSTestFramework;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace Sailfish.TestAdapter.Handlers.TestCaseEvents;
 
 internal class TestCaseExceptionNotificationHandler : INotificationHandler<TestCaseExceptionNotification>
 {
-    private readonly ITestFrameworkWriter testFrameworkWriter;
     private readonly ILogger logger;
+    private readonly ITestFrameworkWriter testFrameworkWriter;
 
     public TestCaseExceptionNotificationHandler(ITestFrameworkWriter testFrameworkWriter, ILogger logger)
     {

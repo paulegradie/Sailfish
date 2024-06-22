@@ -1,11 +1,11 @@
-using Octopus.Client;
-using Octopus.Client.Model;
-using Sailfish.Attributes;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Octopus.Client;
+using Octopus.Client.Model;
+using Sailfish.Attributes;
 
 namespace PerformanceTests.ExamplePerformanceTests;
 

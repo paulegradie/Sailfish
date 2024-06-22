@@ -13,7 +13,8 @@ public class PerfTestWithAltRego
         this.dep = dep;
     }
 
-    [SailfishVariable(1, 2)] public int VariableA { get; set; }
+    [SailfishVariable(1, 2)]
+    public int VariableA { get; set; }
 
     [SailfishMethod]
     public async Task TestA(CancellationToken cancellationToken)

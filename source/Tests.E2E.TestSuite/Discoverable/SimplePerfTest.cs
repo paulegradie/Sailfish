@@ -5,7 +5,8 @@ namespace Tests.E2E.TestSuite.Discoverable;
 [Sailfish(SampleSize = 3, NumWarmupIterations = 0, Disabled = Constants.Disabled)]
 public class SimplePerfTest
 {
-    [SailfishVariable(1, 2, 3)] public int TestProp { get; set; }
+    [SailfishVariable(1, 2, 3)]
+    public int TestProp { get; set; }
 
     [SailfishGlobalSetup]
     public async Task GlobalSetup(CancellationToken cancellationToken)

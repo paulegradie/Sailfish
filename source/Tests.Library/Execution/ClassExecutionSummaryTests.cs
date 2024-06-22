@@ -1,9 +1,9 @@
-﻿using Sailfish.Contracts.Public.Models;
-using Sailfish.Execution;
-using Shouldly;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Sailfish.Contracts.Public.Models;
+using Sailfish.Execution;
+using Shouldly;
 using Tests.Common.Builders;
 using Tests.Common.Utils;
 using Tests.E2E.TestSuite.Discoverable.InnerNamespace;
@@ -21,7 +21,7 @@ public class ClassExecutionSummaryTests
         var failedTestCaseId = Some.SimpleTestCaseId();
 
         var perfResult = PerformanceRunResultBuilder.Create().WithDisplayName(successTestCaseId.DisplayName).Build();
-        var results = new List<ICompiledTestCaseResult>()
+        var results = new List<ICompiledTestCaseResult>
         {
             new CompiledTestCaseResult(successTestCaseId, string.Empty, perfResult),
             new CompiledTestCaseResult(failedTestCaseId, string.Empty, new Exception())

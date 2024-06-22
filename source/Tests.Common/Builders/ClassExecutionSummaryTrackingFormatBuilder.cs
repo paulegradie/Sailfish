@@ -4,11 +4,14 @@ namespace Tests.Common.Builders;
 
 public class ClassExecutionSummaryTrackingFormatBuilder
 {
-    private Type? testClass;
-    private ExecutionSettingsTrackingFormat? executionSettings;
     private List<CompiledTestCaseResultTrackingFormat> compiledTestCaseResults = new();
+    private ExecutionSettingsTrackingFormat? executionSettings;
+    private Type? testClass;
 
-    public static ClassExecutionSummaryTrackingFormatBuilder Create() => new();
+    public static ClassExecutionSummaryTrackingFormatBuilder Create()
+    {
+        return new ClassExecutionSummaryTrackingFormatBuilder();
+    }
 
     public ClassExecutionSummaryTrackingFormatBuilder WithTestClass(Type testClass)
     {
@@ -47,10 +50,7 @@ public class ClassExecutionSummaryTrackingFormatBuilder
 
     public ClassExecutionSummaryTrackingFormat Build()
     {
-        if (compiledTestCaseResults.Count == 0)
-        {
-            compiledTestCaseResults.Add(CompiledTestCaseResultTrackingFormatBuilder.Create().Build());
-        }
+        if (compiledTestCaseResults.Count == 0) compiledTestCaseResults.Add(CompiledTestCaseResultTrackingFormatBuilder.Create().Build());
 
         return new ClassExecutionSummaryTrackingFormat(
             testClass ?? typeof(TestClass),

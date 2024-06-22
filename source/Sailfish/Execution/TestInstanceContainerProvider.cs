@@ -11,9 +11,9 @@ namespace Sailfish.Execution;
 
 internal interface ITestInstanceContainerProvider
 {
+    public Type Test { get; }
     int GetNumberOfPropertySetsInTheQueue();
     IEnumerable<TestInstanceContainer> ProvideNextTestCaseEnumeratorForClass();
-    public Type Test { get; }
 }
 
 internal class TestInstanceContainerProvider : ITestInstanceContainerProvider
@@ -36,19 +36,13 @@ internal class TestInstanceContainerProvider : ITestInstanceContainerProvider
         this.typeActivator = typeActivator;
     }
 
-    public Type Test { get; }
     public MethodInfo Method { get; }
+
+    public Type Test { get; }
 
     public int GetNumberOfPropertySetsInTheQueue()
     {
         return propertySets.Count();
-    }
-
-    private static bool TestIsDisabled(MemberInfo test, MemberInfo method)
-    {
-        var typeIsDisabled = test.GetCustomAttributes<SailfishAttribute>().Single().Disabled;
-        var methodIsDisabled = method.GetCustomAttributes<SailfishMethodAttribute>().Single().Disabled;
-        return methodIsDisabled || typeIsDisabled;
     }
 
     public IEnumerable<TestInstanceContainer> ProvideNextTestCaseEnumeratorForClass()
@@ -77,6 +71,13 @@ internal class TestInstanceContainerProvider : ITestInstanceContainerProvider
                 yield return TestInstanceContainer.CreateTestInstance(instance, Method, propertyNames, variableValues, disabled, executionSettings);
             }
         }
+    }
+
+    private static bool TestIsDisabled(MemberInfo test, MemberInfo method)
+    {
+        var typeIsDisabled = test.GetCustomAttributes<SailfishAttribute>().Single().Disabled;
+        var methodIsDisabled = method.GetCustomAttributes<SailfishMethodAttribute>().Single().Disabled;
+        return methodIsDisabled || typeIsDisabled;
     }
 
     private static void HydrateInstanceTestProperties(object obj, PropertySet propertySet)

@@ -1,6 +1,6 @@
-using Sailfish.Analysis.SailDiff.Statistics.StatsCore.Analysers.AnalysersBase;
 using System;
 using System.Linq;
+using Sailfish.Analysis.SailDiff.Statistics.StatsCore.Analysers.AnalysersBase;
 using Sailfish.Analysis.SailDiff.Statistics.StatsCore.Distributions;
 using Sailfish.Analysis.SailDiff.Statistics.StatsCore.Distributions.DistributionBase;
 
@@ -58,8 +58,8 @@ internal sealed class TwoSampleKolmogorovSmirnov : HypothesisTest
 
     public TwoSampleKolmogorovSmirnovTestHypothesis Hypothesis { get; private set; }
 
-    public EmpiricalDistribution EmpiricalDistribution1 { get; private set; }
+    public EmpiricalDistribution EmpiricalDistribution1 { get; }
 
-    public EmpiricalDistribution EmpiricalDistribution2 { get; private set; }
+    public EmpiricalDistribution EmpiricalDistribution2 { get; }
     public KolmogorovSmirnovDistribution StatisticDistribution { get; set; }
 }

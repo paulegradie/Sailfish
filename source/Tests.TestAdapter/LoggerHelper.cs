@@ -1,5 +1,5 @@
-using Microsoft.VisualStudio.TestPlatform.ObjectModel.Logging;
 using System;
+using Microsoft.VisualStudio.TestPlatform.ObjectModel.Logging;
 
 namespace Tests.TestAdapter;
 

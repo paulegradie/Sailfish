@@ -1,9 +1,9 @@
-﻿using Microsoft.VisualStudio.TestPlatform.ObjectModel.Logging;
-using Sailfish.Attributes;
-using Sailfish.Extensions.Methods;
-using System;
+﻿using System;
 using System.Linq;
 using System.Reflection;
+using Microsoft.VisualStudio.TestPlatform.ObjectModel.Logging;
+using Sailfish.Attributes;
+using Sailfish.Extensions.Methods;
 
 namespace Sailfish.TestAdapter.Discovery;
 

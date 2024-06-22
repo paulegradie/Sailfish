@@ -1,13 +1,14 @@
-using Sailfish.Attributes;
 using System;
 using System.IO;
+using Sailfish.Attributes;
 
 namespace Tests.TestAdapter.TestResources;
 
 [Sailfish(Disabled = false, DisableOverheadEstimation = true)]
 public class SimplePerfTest
 {
-    [SailfishVariable(1, 2, 3)] public int VariableA { get; set; }
+    [SailfishVariable(1, 2, 3)]
+    public int VariableA { get; set; }
 
     [SailfishVariable(1_000_000, 4_000_000)]
     public int VariableB { get; set; }

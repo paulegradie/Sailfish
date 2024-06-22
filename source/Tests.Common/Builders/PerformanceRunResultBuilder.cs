@@ -4,20 +4,23 @@ namespace Tests.Common.Builders;
 
 public class PerformanceRunResultBuilder
 {
+    private double[]? dataWithOutliersRemoved;
     private string? displayName;
+    private double[]? lowerOutliers;
     private double? mean;
-    private double? stdDev;
-    private double? variance;
     private double? median;
+    private int? numWarmupIterations;
     private double[]? rawExecutionResults;
     private int? sampleSize;
-    private int? numWarmupIterations;
-    private double[]? dataWithOutliersRemoved;
-    private double[]? upperOutliers;
-    private double[]? lowerOutliers;
+    private double? stdDev;
     private int? totalNumOutliers;
+    private double[]? upperOutliers;
+    private double? variance;
 
-    public static PerformanceRunResultBuilder Create() => new();
+    public static PerformanceRunResultBuilder Create()
+    {
+        return new PerformanceRunResultBuilder();
+    }
 
     public PerformanceRunResultBuilder WithDisplayName(string displayName)
     {

@@ -1,18 +1,17 @@
-using Microsoft.VisualStudio.TestPlatform.ObjectModel;
-using Microsoft.VisualStudio.TestPlatform.ObjectModel.Adapter;
-using Microsoft.VisualStudio.TestPlatform.ObjectModel.Logging;
-using NSubstitute;
-using NSubstitute.ExceptionExtensions;
-using Sailfish.Analysis.SailDiff.Statistics.Tests.TTest;
-using Sailfish.Exceptions;
-using Sailfish.TestAdapter;
-using Sailfish.TestAdapter.Discovery;
-using Shouldly;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using System.Threading.Tasks;
+using Microsoft.VisualStudio.TestPlatform.ObjectModel;
+using Microsoft.VisualStudio.TestPlatform.ObjectModel.Adapter;
+using Microsoft.VisualStudio.TestPlatform.ObjectModel.Logging;
+using NSubstitute;
+using NSubstitute.ExceptionExtensions;
+using Sailfish.Exceptions;
+using Sailfish.TestAdapter;
+using Sailfish.TestAdapter.Discovery;
+using Shouldly;
 using Tests.TestAdapter.Utils;
 using Xunit;
 
@@ -23,6 +22,20 @@ public class TestDiscovererTests : IAsyncLifetime
     private IDiscoveryContext context = null!;
     private IMessageLogger logger = null!;
     private ITestCaseDiscoverySink sink = null!;
+
+
+    public Task InitializeAsync()
+    {
+        context = Substitute.For<IDiscoveryContext>();
+        logger = Substitute.For<IMessageLogger>();
+        sink = Substitute.For<ITestCaseDiscoverySink>();
+        return Task.CompletedTask;
+    }
+
+    public async Task DisposeAsync()
+    {
+        await Task.CompletedTask;
+    }
 
     [Fact]
     public void FileExtensionsAreSetCorrectly()
@@ -45,7 +58,8 @@ public class TestDiscovererTests : IAsyncLifetime
     [Fact]
     public void DiscoverTestsReturnsWhenNoTestsDiscovered()
     {
-        var sources = new List<string>() { "testSource" };
+        var sources = new List<string>
+            { "testSource" };
         var discoverer = new TestDiscoverer();
         discoverer.DiscoverTests(sources, context, logger, sink);
 
@@ -93,19 +107,5 @@ public class TestDiscovererTests : IAsyncLifetime
         var discoverer = new TestDiscoverer(discovery);
 
         Should.Throw<SailfishException>(() => discoverer.DiscoverTests([source], context, logger, sink));
-    }
-
-
-    public Task InitializeAsync()
-    {
-        context = Substitute.For<IDiscoveryContext>();
-        logger = Substitute.For<IMessageLogger>();
-        sink = Substitute.For<ITestCaseDiscoverySink>();
-        return Task.CompletedTask;
-    }
-
-    public async Task DisposeAsync()
-    {
-        await Task.CompletedTask;
     }
 }

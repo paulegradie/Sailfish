@@ -1,8 +1,8 @@
-﻿using Microsoft.VisualStudio.TestPlatform.ObjectModel.Logging;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using Microsoft.VisualStudio.TestPlatform.ObjectModel.Logging;
 
 namespace Sailfish.TestAdapter.Discovery;
 

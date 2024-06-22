@@ -12,8 +12,8 @@ namespace Sailfish.DefaultHandlers.SailDiff;
 
 internal class SailDiffReadInBeforeAndAfterDataHandler : IRequestHandler<ReadInBeforeAndAfterDataRequest, ReadInBeforeAndAfterDataResponse>
 {
-    private readonly ITrackingFileParser trackingFileParser;
     private readonly ILogger logger;
+    private readonly ITrackingFileParser trackingFileParser;
 
     public SailDiffReadInBeforeAndAfterDataHandler(ITrackingFileParser trackingFileParser, ILogger logger)
     {

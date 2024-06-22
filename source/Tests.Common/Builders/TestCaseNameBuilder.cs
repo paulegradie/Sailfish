@@ -10,7 +10,7 @@ public class TestCaseNameBuilder
     public TestCaseNameBuilder WithName(string name)
     {
         this.name = name;
-        this.parts = null;
+        parts = null;
         return this;
     }
 
@@ -23,15 +23,9 @@ public class TestCaseNameBuilder
 
     public TestCaseName Build()
     {
-        if (name == null && parts == null)
-        {
-            throw new InvalidOperationException("Either Name or Parts must be provided.");
-        }
+        if (name == null && parts == null) throw new InvalidOperationException("Either Name or Parts must be provided.");
 
-        if (parts != null)
-        {
-            return new TestCaseName(parts);
-        }
+        if (parts != null) return new TestCaseName(parts);
 
         return new TestCaseName(name!);
     }

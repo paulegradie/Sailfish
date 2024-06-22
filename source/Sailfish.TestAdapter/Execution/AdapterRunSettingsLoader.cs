@@ -1,8 +1,8 @@
+using System.IO;
 using Sailfish.Contracts.Public.Models;
 using Sailfish.Exceptions;
 using Sailfish.TestAdapter.Discovery;
 using Sailfish.TestAdapter.TestSettingsParser;
-using System.IO;
 using SailDiffSettings = Sailfish.Analysis.SailDiff.SailDiffSettings;
 
 namespace Sailfish.TestAdapter.Execution;

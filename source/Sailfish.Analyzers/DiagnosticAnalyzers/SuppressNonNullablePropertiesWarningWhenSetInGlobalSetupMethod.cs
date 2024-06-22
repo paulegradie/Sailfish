@@ -1,10 +1,10 @@
+using System.Collections.Immutable;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Diagnostics;
 using Sailfish.Analyzers.Utils;
 using Sailfish.Analyzers.Utils.TreeParsingExtensionMethods;
-using System.Collections.Immutable;
 
 namespace Sailfish.Analyzers.DiagnosticAnalyzers;
 
@@ -12,10 +12,10 @@ namespace Sailfish.Analyzers.DiagnosticAnalyzers;
 public class SuppressNonNullablePropertiesWarningWhenSetInGlobalSetupMethod : AnalyzerBase<ClassDeclarationSyntax>
 {
     private static readonly DiagnosticDescriptor Descriptor = new(
-        id: "SF7000",
-        title: "Suppresses warnings when a non nullable property is set in the global setup method",
-        messageFormat: "'{0}' should be suppressed",
-        category: AnalyzerGroups.SuppressionAnalyzers.Category,
+        "SF7000",
+        "Suppresses warnings when a non nullable property is set in the global setup method",
+        "'{0}' should be suppressed",
+        AnalyzerGroups.SuppressionAnalyzers.Category,
         isEnabledByDefault: AnalyzerGroups.SuppressionAnalyzers.IsEnabledByDefault,
         defaultSeverity: DiagnosticSeverity.Hidden,
         description: "",

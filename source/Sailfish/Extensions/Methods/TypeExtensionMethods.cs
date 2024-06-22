@@ -1,7 +1,7 @@
-﻿using Sailfish.Exceptions;
-using System;
+﻿using System;
 using System.Linq;
 using System.Reflection;
+using Sailfish.Exceptions;
 
 namespace Sailfish.Extensions.Methods;
 

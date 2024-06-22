@@ -4,20 +4,23 @@ namespace Tests.Common.Builders;
 
 public class PerformanceRunResultTrackingFormatBuilder
 {
+    private double[]? dataWithOutliersRemoved;
     private string? displayName;
+    private double[]? lowerOutliers;
     private double? mean;
     private double? median;
-    private double? stdDev;
-    private double? variance;
+    private int? numWarmupIterations;
     private double[]? rawExecutionResults;
     private int? sampleSize;
-    private int? numWarmupIterations;
-    private double[]? dataWithOutliersRemoved;
-    private double[]? upperOutliers;
-    private double[]? lowerOutliers;
+    private double? stdDev;
     private int? totalNumOutliers;
+    private double[]? upperOutliers;
+    private double? variance;
 
-    public static PerformanceRunResultTrackingFormatBuilder Create() => new();
+    public static PerformanceRunResultTrackingFormatBuilder Create()
+    {
+        return new PerformanceRunResultTrackingFormatBuilder();
+    }
 
     public PerformanceRunResultTrackingFormatBuilder WithDisplayName(string displayName)
     {

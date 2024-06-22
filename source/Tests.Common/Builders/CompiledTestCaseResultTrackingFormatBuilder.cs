@@ -5,13 +5,16 @@ namespace Tests.Common.Builders;
 
 public class CompiledTestCaseResultTrackingFormatBuilder
 {
+    private Exception? exception;
     private string? groupingId;
     private PerformanceRunResultTrackingFormat? performanceRunResult;
-    private Exception? exception;
     private TestCaseId? testCaseId;
 
-    public static CompiledTestCaseResultTrackingFormatBuilder Create() => new();
-    
+    public static CompiledTestCaseResultTrackingFormatBuilder Create()
+    {
+        return new CompiledTestCaseResultTrackingFormatBuilder();
+    }
+
     public CompiledTestCaseResultTrackingFormatBuilder WithGroupingId(string? groupingId)
     {
         this.groupingId = groupingId;

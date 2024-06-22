@@ -1,10 +1,10 @@
+using System.Collections.Immutable;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Diagnostics;
 using Sailfish.Analyzers.Utils;
 using Sailfish.Analyzers.Utils.TreeParsingExtensionMethods;
-using System.Collections.Immutable;
 
 namespace Sailfish.Analyzers.DiagnosticAnalyzers.PropertiesSetInAnySailfishGlobalSetup;
 
@@ -12,14 +12,14 @@ namespace Sailfish.Analyzers.DiagnosticAnalyzers.PropertiesSetInAnySailfishGloba
 public class ShouldHavePublicGettersAnalyzer : AnalyzerBase<ClassDeclarationSyntax>
 {
     public static readonly DiagnosticDescriptor Descriptor = new(
-        id: "SF1001",
-        title: "Properties assigned in the global setup must have public getters",
-        messageFormat: "Property '{0}' must have a public getter when assigned within a method decorated with the SailfishGlobalSetup attribute",
+        "SF1001",
+        "Properties assigned in the global setup must have public getters",
+        "Property '{0}' must have a public getter when assigned within a method decorated with the SailfishGlobalSetup attribute",
         AnalyzerGroups.EssentialAnalyzers.Category,
-        defaultSeverity: DiagnosticSeverity.Error,
-        isEnabledByDefault: AnalyzerGroups.EssentialAnalyzers.IsEnabledByDefault,
-        description: "Properties assigned in the global setup must have public getters.",
-        helpLinkUri: AnalyzerGroups.EssentialAnalyzers.HelpLink
+        DiagnosticSeverity.Error,
+        AnalyzerGroups.EssentialAnalyzers.IsEnabledByDefault,
+        "Properties assigned in the global setup must have public getters.",
+        AnalyzerGroups.EssentialAnalyzers.HelpLink
     );
 
     public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(Descriptor);

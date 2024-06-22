@@ -1,5 +1,5 @@
-using Sailfish.Attributes;
 using System.Threading;
+using Sailfish.Attributes;
 
 namespace PerformanceTests.ExamplePerformanceTests.TestNameSpace;
 

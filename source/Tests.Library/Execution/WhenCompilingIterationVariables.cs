@@ -1,8 +1,9 @@
-﻿using Sailfish.Exceptions;
+﻿using System.Collections.Generic;
+using System.Linq;
+using Sailfish.Contracts.Public.Models;
+using Sailfish.Exceptions;
 using Sailfish.Execution;
 using Shouldly;
-using System.Collections.Generic;
-using System.Linq;
 using Xunit;
 using Xunit.Abstractions;
 
@@ -37,10 +38,10 @@ public class WhenCompilingIterationVariables(ITestOutputHelper testOutputHelper)
 
         var expected = new List<PropertySet>
         {
-            new([new(propA, 1), new(propB, 20)]),
-            new([new(propA, 1), new(propB, 50)]),
-            new([new(propA, 2), new(propB, 20)]),
-            new([new(propA, 2), new(propB, 50)])
+            new([new TestCaseVariable(propA, 1), new TestCaseVariable(propB, 20)]),
+            new([new TestCaseVariable(propA, 1), new TestCaseVariable(propB, 50)]),
+            new([new TestCaseVariable(propA, 2), new TestCaseVariable(propB, 20)]),
+            new([new TestCaseVariable(propA, 2), new TestCaseVariable(propB, 50)])
         };
 
         result.ShouldBeEquivalentTo(expected);

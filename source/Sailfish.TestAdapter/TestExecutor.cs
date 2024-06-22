@@ -1,4 +1,10 @@
-﻿using Autofac;
+﻿using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Linq;
+using System.Reflection;
+using System.Threading;
+using Autofac;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.Adapter;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.Logging;
@@ -8,12 +14,6 @@ using Sailfish.TestAdapter.Discovery;
 using Sailfish.TestAdapter.Execution;
 using Sailfish.TestAdapter.Registrations;
 using Sailfish.TestAdapter.TestProperties;
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Reflection;
-using System.Threading;
 
 namespace Sailfish.TestAdapter;
 
@@ -25,8 +25,8 @@ public class TestExecutor : ITestExecutor
     private readonly CancellationTokenSource cancellationTokenSource = new();
 
     private readonly object lockObject = new();
-    public bool Cancelled;
     private readonly ITestExecution testExecution;
+    public bool Cancelled;
 
     public TestExecutor()
     {
@@ -54,7 +54,7 @@ public class TestExecutor : ITestExecutor
     public void RunTests(IEnumerable<TestCase>? testCases, IRunContext? runContext, IFrameworkHandle? frameworkHandle)
     {
         Debug.Assert(frameworkHandle is not null);
-        var tests = (testCases?.ToList()) ?? throw new TestAdapterException("Tests was null in the test case list!");
+        var tests = testCases?.ToList() ?? throw new TestAdapterException("Tests was null in the test case list!");
         if (runContext is null || frameworkHandle is null) throw new TestAdapterException("Wow more nulls");
 
         ExecuteTests(tests, frameworkHandle);

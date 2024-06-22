@@ -15,8 +15,8 @@ public interface IMannWhitneyWilcoxonTest : ITest;
 
 public class MannWhitneyWilcoxonTest : IMannWhitneyWilcoxonTest
 {
-    private readonly ITestPreprocessor preprocessor;
     private const int MaxArraySize = 10;
+    private readonly ITestPreprocessor preprocessor;
 
     public MannWhitneyWilcoxonTest(ITestPreprocessor preprocessor)
     {

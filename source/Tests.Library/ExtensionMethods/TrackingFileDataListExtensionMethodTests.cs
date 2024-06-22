@@ -1,8 +1,8 @@
+using System.Collections.Generic;
 using Sailfish.Contracts.Public.Models;
 using Sailfish.Execution;
 using Sailfish.Extensions.Types;
 using Shouldly;
-using System.Collections.Generic;
 using Tests.Common.Builders;
 using Tests.Common.Utils;
 using Xunit;
@@ -15,7 +15,8 @@ public class TrackingFileDataListExtensionMethodTests
     public void FindsFirstMatchingTestCaseId()
     {
         var displayName = Some.RandomString();
-        var caseId = TestCaseIdBuilder.Create().WithTestCaseName(displayName, new List<string>() { "A" }).Build();
+        var caseId = TestCaseIdBuilder.Create().WithTestCaseName(displayName, new List<string>
+            { "A" }).Build();
         var summaries = new TrackingFileDataList
         {
             new()
@@ -27,7 +28,7 @@ public class TrackingFileDataListExtensionMethodTests
                 new ClassExecutionSummary(
                     typeof(TrackingFileDataListExtensionMethodTests),
                     new ExecutionSettings(),
-                    new[] { new CompiledTestCaseResult(caseId, Some.RandomString(), PerformanceRunResultBuilder.Create().Build()) }),
+                    new[] { new CompiledTestCaseResult(caseId, Some.RandomString(), PerformanceRunResultBuilder.Create().Build()) })
             }
         };
         var result = summaries.FindFirstMatchingTestCaseId(caseId);

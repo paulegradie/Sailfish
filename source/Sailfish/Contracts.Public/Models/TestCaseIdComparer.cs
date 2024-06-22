@@ -1,7 +1,7 @@
-using Sailfish.Exceptions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using Sailfish.Exceptions;
 
 namespace Sailfish.Contracts.Public.Models;
 

@@ -1,3 +1,4 @@
+using System;
 using Sailfish.Analysis.ScaleFish;
 using Sailfish.Exceptions;
 using Shouldly;
@@ -13,7 +14,7 @@ public class ScaleFishModelFunctionTests
         Should.Throw<SailfishModelException>(() => new TestFunction().Predict(10));
     }
 
-    class TestFunction : ScaleFishModelFunction
+    private class TestFunction : ScaleFishModelFunction
     {
         public override string Name { get; set; } = "TestFunction";
         public override string OName { get; set; } = "O(Test)";
@@ -22,7 +23,7 @@ public class ScaleFishModelFunctionTests
 
         public override double Compute(double bias, double scale, double x)
         {
-            throw new System.NotImplementedException();
+            throw new NotImplementedException();
         }
     }
 }

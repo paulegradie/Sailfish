@@ -1,4 +1,8 @@
-﻿using Sailfish.Analysis;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Linq.Expressions;
+using Sailfish.Analysis;
 using Sailfish.Analysis.SailDiff;
 using Sailfish.Analysis.SailDiff.Statistics.Tests;
 using Sailfish.Analysis.SailDiff.Statistics.Tests.KolmogorovSmirnovTestSailfish;
@@ -8,10 +12,6 @@ using Sailfish.Analysis.SailDiff.Statistics.Tests.TwoSampleWilcoxonSignedRankTes
 using Sailfish.Contracts.Public.Models;
 using Sailfish.Extensions.Methods;
 using Shouldly;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Linq.Expressions;
 using Xunit;
 
 namespace Tests.Library.ExtensionMethods;

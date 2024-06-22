@@ -1,9 +1,9 @@
-using Sailfish.Analysis.SailDiff.Statistics.StatsCore.Distributions.DistributionBase;
-using Sailfish.Analysis.SailDiff.Statistics.StatsCore.Distributions.DistributionFactories;
-using Sailfish.Analysis.SailDiff.Statistics.StatsCore.MathOps;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
+using Sailfish.Analysis.SailDiff.Statistics.StatsCore.Distributions.DistributionBase;
+using Sailfish.Analysis.SailDiff.Statistics.StatsCore.Distributions.DistributionFactories;
+using Sailfish.Analysis.SailDiff.Statistics.StatsCore.MathOps;
 
 namespace Sailfish.Analysis.SailDiff.Statistics.StatsCore.Distributions;
 
@@ -32,10 +32,7 @@ internal sealed class WilcoxonDistribution : UnivariateContinuousDistribution
         {
             var signs = item.Item1;
             var index1 = item.Item2;
-            for (var index2 = 0; index2 < signs.Length; ++index2)
-            {
-                signs[index2] = Math.Sign(signs[index2] * 2 - 1);
-            }
+            for (var index2 = 0; index2 < signs.Length; ++index2) signs[index2] = Math.Sign(signs[index2] * 2 - 1);
 
             Table[index1] = WPositive(signs, ranks);
         });

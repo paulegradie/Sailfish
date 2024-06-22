@@ -1,7 +1,7 @@
-﻿using Sailfish.Attributes;
-using System;
+﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
+using Sailfish.Attributes;
 
 namespace PerformanceTests.ExamplePerformanceTests;
 
@@ -9,8 +9,10 @@ namespace PerformanceTests.ExamplePerformanceTests;
 [Sailfish(SampleSize = 3, Disabled = false)]
 public class ReadmeExample
 {
-    private Random random = new();
-    [SailfishVariable(1, 10)] public int N { get; set; }
+    private readonly Random random = new();
+
+    [SailfishVariable(1, 10)]
+    public int N { get; set; }
 
     [SailfishMethod]
     public async Task TestMethod(CancellationToken cancellationToken) // token is injected when requested
