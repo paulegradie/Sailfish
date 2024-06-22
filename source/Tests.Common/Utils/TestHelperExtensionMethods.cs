@@ -10,16 +10,12 @@ public static class ExceptionExtensions
         ArgumentNullException.ThrowIfNull(stackTrace);
 
         var stackTraceField = typeof(Exception).GetField("_stackTraceString", BindingFlags.NonPublic | BindingFlags.Instance);
-        
+
         if (stackTraceField != null)
-        {
             stackTraceField.SetValue(exception, stackTrace);
-        }
         else
-        {
             // As a fallback or warning, in case the reflection didn't work.
             // You could log this case or handle it according to your needs.
             Console.WriteLine("Warning: Unable to set stack trace via reflection.");
-        }
     }
 }

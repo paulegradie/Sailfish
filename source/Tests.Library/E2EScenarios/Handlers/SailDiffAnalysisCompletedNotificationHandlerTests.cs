@@ -1,3 +1,8 @@
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using Sailfish;
 using Sailfish.Analysis.SailDiff.Statistics.Tests;
 using Sailfish.Contracts.Public;
@@ -6,11 +11,6 @@ using Sailfish.Contracts.Public.Notifications;
 using Sailfish.DefaultHandlers.SailDiff;
 using Sailfish.Presentation;
 using Shouldly;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 using Tests.Common.Utils;
 using Xunit;
 

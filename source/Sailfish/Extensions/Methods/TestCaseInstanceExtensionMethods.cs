@@ -4,6 +4,7 @@ using Sailfish.Attributes;
 using Sailfish.Execution;
 
 namespace Sailfish.Extensions.Methods;
+
 internal static class TestCaseInstanceExtensionMethods
 {
     public static bool IsDisabled(this ITestInstanceContainerProvider testProvider)

@@ -37,11 +37,11 @@ internal class ScalefishObservationCompiler : IScalefishObservationCompiler
 
         var observations = new List<ScaleFishObservation>();
         foreach (var testCaseGroup in testCaseGroups)
-            foreach (var (complexityCase, caseIndex) in complexityCases.Zip(Enumerable.Range(0, complexityCases.Count)))
-            {
-                var complexityMeasurements = ComputeComplexityMeasurements(caseIndex, complexityCase, complexityCases, testCaseGroup);
-                observations.Add(new ScaleFishObservation(testCaseGroup.TestCaseMethodName, complexityCase.ComplexityPropertyName, [.. complexityMeasurements]));
-            }
+        foreach (var (complexityCase, caseIndex) in complexityCases.Zip(Enumerable.Range(0, complexityCases.Count)))
+        {
+            var complexityMeasurements = ComputeComplexityMeasurements(caseIndex, complexityCase, complexityCases, testCaseGroup);
+            observations.Add(new ScaleFishObservation(testCaseGroup.TestCaseMethodName, complexityCase.ComplexityPropertyName, [.. complexityMeasurements]));
+        }
 
         return new ObservationSetFromSummaries(testClassSummary.TestClass.FullName ?? $"Unknown-Namespace-{testClassSummary.TestClass.Name}", observations);
     }

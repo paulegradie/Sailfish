@@ -1,4 +1,8 @@
-﻿using MediatR;
+﻿using System;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
+using MediatR;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel;
 using Sailfish.Contracts.Public.Models;
 using Sailfish.Contracts.Public.Notifications;
@@ -11,21 +15,17 @@ using Sailfish.Presentation;
 using Sailfish.TestAdapter.Display.TestOutputWindow;
 using Sailfish.TestAdapter.Execution;
 using Sailfish.TestAdapter.Handlers.FrameworkHandlers;
-using System;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace Sailfish.TestAdapter.Handlers.TestCaseEvents;
 
 internal class TestCaseCompletedNotificationHandler : INotificationHandler<TestCaseCompletedNotification>
 {
-    private readonly ISailfishConsoleWindowFormatter sailfishConsoleWindowFormatter;
-    private readonly ISailDiffTestOutputWindowMessageFormatter sailDiffTestOutputWindowMessageFormatter;
-    private readonly IRunSettings runSettings;
-    private readonly IMediator mediator;
-    private readonly IAdapterSailDiff sailDiff;
     private readonly ILogger logger;
+    private readonly IMediator mediator;
+    private readonly IRunSettings runSettings;
+    private readonly IAdapterSailDiff sailDiff;
+    private readonly ISailDiffTestOutputWindowMessageFormatter sailDiffTestOutputWindowMessageFormatter;
+    private readonly ISailfishConsoleWindowFormatter sailfishConsoleWindowFormatter;
 
     public TestCaseCompletedNotificationHandler(
         ISailfishConsoleWindowFormatter sailfishConsoleWindowFormatter,
@@ -89,13 +89,11 @@ internal class TestCaseCompletedNotificationHandler : INotificationHandler<TestC
 
         var preloadedPreviousRuns = await GetLastRun(cancellationToken);
         if (preloadedPreviousRuns.Count > 0 && !runSettings.DisableAnalysisGlobally)
-        {
             testOutputWindowMessage = RunSailDiff(
                 notification.TestInstanceContainerExternal.TestCaseId.DisplayName,
                 classExecutionSummaries,
                 testOutputWindowMessage,
                 preloadedPreviousRuns);
-        }
 
         var exception = notification.ClassExecutionSummaryTrackingFormat.GetFailedTestCases().Any()
             ? notification.ClassExecutionSummaryTrackingFormat.GetFailedTestCases().Single().Exception
@@ -156,10 +154,7 @@ internal class TestCaseCompletedNotificationHandler : INotificationHandler<TestC
     private async Task<TrackingFileDataList> GetLastRun(CancellationToken cancellationToken)
     {
         var preloadedLastRunsIfAvailable = new TrackingFileDataList();
-        if (runSettings.DisableAnalysisGlobally || runSettings is { RunScaleFish: false, RunSailDiff: false })
-        {
-            return preloadedLastRunsIfAvailable;
-        }
+        if (runSettings.DisableAnalysisGlobally || runSettings is { RunScaleFish: false, RunSailDiff: false }) return preloadedLastRunsIfAvailable;
 
         try
         {

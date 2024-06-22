@@ -1,6 +1,6 @@
-﻿using Sailfish.Attributes;
-using System;
+﻿using System;
 using System.Threading.Tasks;
+using Sailfish.Attributes;
 
 namespace PerformanceTests.ExamplePerformanceTests;
 
@@ -12,7 +12,7 @@ public class TestsRunIfException
     {
         await Task.Yield();
     }
-    
+
     [SailfishMethod(Order = 1)]
     public async Task WillItRun()
     {

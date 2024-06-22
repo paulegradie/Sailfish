@@ -1,5 +1,5 @@
-using Sailfish.Extensions.Types;
 using System.Collections.Generic;
+using Sailfish.Extensions.Types;
 using Xunit;
 
 namespace Tests.Library;
@@ -103,11 +103,8 @@ public class OrderedDictionaryTests
     {
         var dictionary = new OrderedDictionary { { "key1", "value1" }, { "key2", "value2" } };
 
-        int count = 0;
-        foreach (var item in dictionary)
-        {
-            count++;
-        }
+        var count = 0;
+        foreach (var item in dictionary) count++;
 
         Assert.Equal(2, count);
     }

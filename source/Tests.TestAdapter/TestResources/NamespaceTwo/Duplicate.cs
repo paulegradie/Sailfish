@@ -1,5 +1,5 @@
-using Sailfish.Attributes;
 using System;
+using Sailfish.Attributes;
 
 namespace Tests.TestAdapter.TestResources.NamespaceTwo;
 

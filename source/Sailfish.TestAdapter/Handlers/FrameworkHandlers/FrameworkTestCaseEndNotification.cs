@@ -1,11 +1,11 @@
-using MediatR;
-using Microsoft.VisualStudio.TestPlatform.ObjectModel;
-using Sailfish.Execution;
-using Sailfish.TestAdapter.Display.VSTestFramework;
 using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
+using MediatR;
+using Microsoft.VisualStudio.TestPlatform.ObjectModel;
+using Sailfish.Execution;
+using Sailfish.TestAdapter.Display.VSTestFramework;
 
 namespace Sailfish.TestAdapter.Handlers.FrameworkHandlers;
 
@@ -21,14 +21,13 @@ internal record FrameworkTestCaseEndNotification(
 
 internal class FrameworkTestCaseEndNotificationHandler : INotificationHandler<FrameworkTestCaseEndNotification>
 {
+    private readonly Dictionary<StatusCode, TestOutcome> outcomeMap = new() { { StatusCode.Success, TestOutcome.Passed }, { StatusCode.Failure, TestOutcome.Failed } };
     private readonly ITestFrameworkWriter testFrameworkWriter;
 
     public FrameworkTestCaseEndNotificationHandler(ITestFrameworkWriter testFrameworkWriter)
     {
         this.testFrameworkWriter = testFrameworkWriter;
     }
-
-    private readonly Dictionary<StatusCode, TestOutcome> outcomeMap = new() { { StatusCode.Success, TestOutcome.Passed }, { StatusCode.Failure, TestOutcome.Failed } };
 
     public async Task Handle(FrameworkTestCaseEndNotification notification, CancellationToken cancellationToken)
     {
@@ -75,15 +74,10 @@ internal class FrameworkTestCaseEndNotificationHandler : INotificationHandler<Fr
 
         var exMessage = exception.Message;
         if (exception.StackTrace?.Contains("InvocationReflectionExtensionMethods.TryInvoke") ?? false)
-        {
             exMessage = $"An unhandled exception was thrown in your SailfishMethod:\n[{currentTestCase.FullyQualifiedName}] ";
-        }
 
         var stackTrace = "\nStackTrace:\n\n" + exception.StackTrace;
-        if (exception.InnerException is not null)
-        {
-            stackTrace = "\nInner StackTrace:\n\n" + exception.InnerException + "\n" + stackTrace;
-        }
+        if (exception.InnerException is not null) stackTrace = "\nInner StackTrace:\n\n" + exception.InnerException + "\n" + stackTrace;
 
         testResult.ErrorStackTrace = stackTrace;
         testResult.ErrorMessage = exMessage;

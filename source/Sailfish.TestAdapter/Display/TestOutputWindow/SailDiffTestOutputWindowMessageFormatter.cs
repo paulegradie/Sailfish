@@ -1,10 +1,10 @@
-using Sailfish.Analysis.SailDiff;
-using Sailfish.Contracts.Public.Models;
-using Sailfish.Extensions.Methods;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using Sailfish.Analysis.SailDiff;
+using Sailfish.Contracts.Public.Models;
+using Sailfish.Extensions.Methods;
 
 namespace Sailfish.TestAdapter.Display.TestOutputWindow;
 
@@ -35,10 +35,7 @@ internal class SailDiffTestOutputWindowMessageFormatter : ISailDiffTestOutputWin
         out string errorDetails)
     {
         errorDetails = string.Empty;
-        if (StatTestResultIsOkayToPresent(sailDiffResult))
-        {
-            return true;
-        }
+        if (StatTestResultIsOkayToPresent(sailDiffResult)) return true;
 
         stringBuilder.AppendLine("Statistical testing failed:");
         stringBuilder.AppendLine(sailDiffResult.TestResultsWithOutlierAnalysis.ExceptionMessage);
@@ -78,19 +75,19 @@ internal class SailDiffTestOutputWindowMessageFormatter : ISailDiffTestOutputWin
         var tableValues = new List<Table>
         {
             new(
-                Name: "Mean",
-                Before: Math.Round(sailDiffResult.TestResultsWithOutlierAnalysis.StatisticalTestResult.MeanBefore, 4),
-                After: Math.Round(sailDiffResult.TestResultsWithOutlierAnalysis.StatisticalTestResult.MeanAfter, 4)
+                "Mean",
+                Math.Round(sailDiffResult.TestResultsWithOutlierAnalysis.StatisticalTestResult.MeanBefore, 4),
+                Math.Round(sailDiffResult.TestResultsWithOutlierAnalysis.StatisticalTestResult.MeanAfter, 4)
             ),
             new(
-                Name: "Median",
-                Before: Math.Round(sailDiffResult.TestResultsWithOutlierAnalysis.StatisticalTestResult.MedianBefore, 4),
-                After: Math.Round(sailDiffResult.TestResultsWithOutlierAnalysis.StatisticalTestResult.MedianAfter, 4)
+                "Median",
+                Math.Round(sailDiffResult.TestResultsWithOutlierAnalysis.StatisticalTestResult.MedianBefore, 4),
+                Math.Round(sailDiffResult.TestResultsWithOutlierAnalysis.StatisticalTestResult.MedianAfter, 4)
             ),
             new(
-                Name: "Sample Size",
-                Before: sailDiffResult.TestResultsWithOutlierAnalysis.StatisticalTestResult.SampleSizeBefore,
-                After: sailDiffResult.TestResultsWithOutlierAnalysis.StatisticalTestResult.SampleSizeAfter
+                "Sample Size",
+                sailDiffResult.TestResultsWithOutlierAnalysis.StatisticalTestResult.SampleSizeBefore,
+                sailDiffResult.TestResultsWithOutlierAnalysis.StatisticalTestResult.SampleSizeAfter
             )
         };
 

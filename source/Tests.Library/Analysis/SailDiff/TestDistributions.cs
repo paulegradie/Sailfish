@@ -1,5 +1,5 @@
-using Sailfish.Analysis.SailDiff.Statistics.StatsCore.Distributions.DistributionFactories;
 using System;
+using Sailfish.Analysis.SailDiff.Statistics.StatsCore.Distributions.DistributionFactories;
 
 namespace Tests.Library.Analysis.SailDiff;
 

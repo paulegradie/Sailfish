@@ -1,12 +1,12 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
 using Sailfish.Contracts.Public.Models;
 using Sailfish.Execution;
 using Sailfish.Extensions.Methods;
 using Sailfish.Extensions.Types;
 using Sailfish.Logging;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 
 namespace Sailfish.TestAdapter.Display.TestOutputWindow;
 

@@ -1,9 +1,9 @@
-using Sailfish.Analysis.SailDiff.Statistics.StatsCore.Distributions.DistributionBase;
-using Sailfish.Analysis.SailDiff.Statistics.StatsCore.Distributions.DistributionFactories;
-using Sailfish.Analysis.SailDiff.Statistics.StatsCore.MathOps;
 using System;
 using System.Linq;
 using System.Threading.Tasks;
+using Sailfish.Analysis.SailDiff.Statistics.StatsCore.Distributions.DistributionBase;
+using Sailfish.Analysis.SailDiff.Statistics.StatsCore.Distributions.DistributionFactories;
+using Sailfish.Analysis.SailDiff.Statistics.StatsCore.MathOps;
 using Sailfish.Analysis.SailDiff.Statistics.StatsCore.Search;
 
 namespace Sailfish.Analysis.SailDiff.Statistics.StatsCore.Distributions;

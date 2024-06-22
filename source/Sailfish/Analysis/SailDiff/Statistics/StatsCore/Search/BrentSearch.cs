@@ -108,14 +108,17 @@ internal static class BrentSearch
         return new BrentSearchResult(upperBound, BrentSearchStatus.MaxIterationsReached);
     }
 
-    private static double HandleResult(BrentSearchResult result) => result.Status switch
+    private static double HandleResult(BrentSearchResult result)
     {
-        BrentSearchStatus.Success => result.Solution,
-        BrentSearchStatus.RootNotBracketed => throw new ConvergenceException("Root must be enclosed between bounds once and only once."),
-        BrentSearchStatus.FunctionNotFinite => throw new ConvergenceException("Function evaluation didn't return a finite number."),
-        BrentSearchStatus.MaxIterationsReached => throw new ConvergenceException("The maximum number of iterations was reached."),
-        _ => throw new ArgumentOutOfRangeException(nameof(result), "Argument type error")
-    };
+        return result.Status switch
+        {
+            BrentSearchStatus.Success => result.Solution,
+            BrentSearchStatus.RootNotBracketed => throw new ConvergenceException("Root must be enclosed between bounds once and only once."),
+            BrentSearchStatus.FunctionNotFinite => throw new ConvergenceException("Function evaluation didn't return a finite number."),
+            BrentSearchStatus.MaxIterationsReached => throw new ConvergenceException("The maximum number of iterations was reached."),
+            _ => throw new ArgumentOutOfRangeException(nameof(result), "Argument type error")
+        };
+    }
 
     private readonly struct BrentSearchResult(double solution, BrentSearchStatus status)
     {

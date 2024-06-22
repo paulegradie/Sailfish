@@ -118,17 +118,17 @@ public static class TableParserExtensionMethods
 
         var adjustedNumRows = headerHasAnyValues ? numRows + 2 : numRows;
         for (var rowIndex = headerHasAnyValues ? 2 : 0; rowIndex < adjustedNumRows; rowIndex++)
-            for (var colIndex = 0; colIndex < numCols; colIndex++)
-            {
-                var value = valueSelectors[colIndex].Invoke(values[headerHasAnyValues ? rowIndex - 2 : rowIndex]);
-                var cell = columnSuffixes.Count == 0
-                    // ReSharper disable once ConditionIsAlwaysTrueOrFalseAccordingToNullableAPIContract
-                    ? (value is null ? "null" : value.ToString() ?? string.Empty).Trim()
-                    // ReSharper disable once ConditionIsAlwaysTrueOrFalseAccordingToNullableAPIContract
-                    : (value is null ? "null" : $"{value.ToString()?.Trim() ?? string.Empty} {columnSuffixes[colIndex]}").Trim();
+        for (var colIndex = 0; colIndex < numCols; colIndex++)
+        {
+            var value = valueSelectors[colIndex].Invoke(values[headerHasAnyValues ? rowIndex - 2 : rowIndex]);
+            var cell = columnSuffixes.Count == 0
+                // ReSharper disable once ConditionIsAlwaysTrueOrFalseAccordingToNullableAPIContract
+                ? (value is null ? "null" : value.ToString() ?? string.Empty).Trim()
+                // ReSharper disable once ConditionIsAlwaysTrueOrFalseAccordingToNullableAPIContract
+                : (value is null ? "null" : $"{value.ToString()?.Trim() ?? string.Empty} {columnSuffixes[colIndex]}").Trim();
 
-                internalMatrix[rowIndex, colIndex] = cell.Trim();
-            }
+            internalMatrix[rowIndex, colIndex] = cell.Trim();
+        }
 
         return internalMatrix;
     }

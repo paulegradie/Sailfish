@@ -1,3 +1,9 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Runtime.Caching;
+using System.Threading;
+using System.Threading.Tasks;
 using MediatR;
 using NSubstitute;
 using NSubstitute.ExceptionExtensions;
@@ -6,12 +12,6 @@ using Sailfish.Execution;
 using Sailfish.Logging;
 using Sailfish.Presentation.Console;
 using Shouldly;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.Caching;
-using System.Threading;
-using System.Threading.Tasks;
 using Tests.Common.Utils;
 using Xunit;
 

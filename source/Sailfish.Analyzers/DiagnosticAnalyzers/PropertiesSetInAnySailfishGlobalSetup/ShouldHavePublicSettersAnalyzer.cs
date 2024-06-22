@@ -1,10 +1,10 @@
+using System.Collections.Immutable;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Diagnostics;
 using Sailfish.Analyzers.Utils;
 using Sailfish.Analyzers.Utils.TreeParsingExtensionMethods;
-using System.Collections.Immutable;
 
 namespace Sailfish.Analyzers.DiagnosticAnalyzers.PropertiesSetInAnySailfishGlobalSetup;
 
@@ -12,10 +12,10 @@ namespace Sailfish.Analyzers.DiagnosticAnalyzers.PropertiesSetInAnySailfishGloba
 public class ShouldHavePublicSettersAnalyzer : AnalyzerBase<ClassDeclarationSyntax>
 {
     public static readonly DiagnosticDescriptor Descriptor = new(
-        id: "SF1002",
-        title: "Properties assigned in the global setup must have public setters",
-        messageFormat: "Property '{0}' must have a public setter when assigned within a method decorated with the SailfishGlobalSetup attribute",
-        category: AnalyzerGroups.EssentialAnalyzers.Category,
+        "SF1002",
+        "Properties assigned in the global setup must have public setters",
+        "Property '{0}' must have a public setter when assigned within a method decorated with the SailfishGlobalSetup attribute",
+        AnalyzerGroups.EssentialAnalyzers.Category,
         isEnabledByDefault: AnalyzerGroups.EssentialAnalyzers.IsEnabledByDefault,
         defaultSeverity: DiagnosticSeverity.Error,
         description: "Properties assigned in the global setup must have public setters.",

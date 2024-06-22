@@ -16,9 +16,6 @@ public static class AssemblyRegistrationExtensionMethods
         params IProvideAdditionalRegistrations[] additionalModules)
     {
         builder.RegisterSailfishTypes(runSettings);
-        foreach (var additionalModule in additionalModules)
-        {
-            additionalModule.Load(builder);
-        }
+        foreach (var additionalModule in additionalModules) additionalModule.Load(builder);
     }
 }

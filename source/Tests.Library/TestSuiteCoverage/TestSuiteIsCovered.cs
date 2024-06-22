@@ -1,14 +1,14 @@
-﻿using NSubstitute;
-using Sailfish.Contracts.Public.Models;
+﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
+using NSubstitute;
+using Sailfish.Contracts.Public.Models;
+using Sailfish.Logging;
+using Shouldly;
 using Tests.E2E.ExceptionHandling.Tests;
 using Tests.E2E.TestSuite.Discoverable;
 using Tests.E2E.TestSuite.Utils;
 using Xunit;
-using Sailfish.Logging;
-using Shouldly;
-using System;
 
 namespace Tests.Library.TestSuiteCoverage;
 
@@ -30,7 +30,7 @@ public class TestSuiteIsCovered
         await se.TestMethod(new CancellationToken());
 
         new MinimalTest().Minimal();
-        new Tests.E2E.TestSuite.Discoverable.InnerNamespace.MinimalTest().Minimal();
+        new E2E.TestSuite.Discoverable.InnerNamespace.MinimalTest().Minimal();
         var scenarios = new ScenariosExample();
         scenarios.GlobalSetup();
         scenarios.Scenario = "ScenarioA";

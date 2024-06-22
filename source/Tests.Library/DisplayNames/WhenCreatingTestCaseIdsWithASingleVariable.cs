@@ -1,8 +1,8 @@
+using System.Linq;
+using System.Threading.Tasks;
 using Sailfish.Contracts.Public.Models;
 using Sailfish.Utils;
 using Shouldly;
-using System.Linq;
-using System.Threading.Tasks;
 using Xunit;
 
 namespace Tests.Library.DisplayNames;

@@ -1,3 +1,6 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using Sailfish.Analysis;
 using Sailfish.Analysis.SailDiff;
 using Sailfish.Analysis.SailDiff.Statistics.Tests;
@@ -5,9 +8,6 @@ using Sailfish.Analysis.SailDiff.Statistics.Tests.MWWilcoxonTestSailfish;
 using Sailfish.Analysis.SailDiff.Statistics.Tests.TwoSampleWilcoxonSignedRankTestSailfish;
 using Sailfish.Contracts.Public;
 using Shouldly;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using Xunit;
 
 namespace Tests.Library.Analysis.SailDiff;
@@ -91,10 +91,7 @@ public class ConvergenceChecks
         List<TestResultWithOutlierAnalysis> results = new();
 
         var test = new MannWhitneyWilcoxonTest(new TestPreprocessor(new SailfishOutlierDetector()));
-        for (var i = 0; i < 20; i++)
-        {
-            results.Add(test.ExecuteTest(bf, af, new SailDiffSettings(0.0001, 4, false, TestType.WilcoxonRankSumTest)));
-        }
+        for (var i = 0; i < 20; i++) results.Add(test.ExecuteTest(bf, af, new SailDiffSettings(0.0001, 4, false, TestType.WilcoxonRankSumTest)));
 
         var converged = results.All(x => x.StatisticalTestResult.ChangeDescription == SailfishChangeDirection.NoChange);
         converged.ShouldBeTrue();

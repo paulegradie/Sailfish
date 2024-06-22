@@ -9,8 +9,8 @@
 
     <ItemGroup>
         <PackageReference Include="coverlet.collector" Version="6.0.1">
-          <PrivateAssets>all</PrivateAssets>
-          <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+            <PrivateAssets>all</PrivateAssets>
+            <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
         <PackageReference Include="NSubstitute" Version="5.1.0"/>
         <PackageReference Include="Shouldly" Version="4.2.1"/>
@@ -23,7 +23,7 @@
     </ItemGroup>
     <ItemGroup>
         <ProjectReference Include="..\Sailfish.TestAdapter\Sailfish.TestAdapter.csproj" IncludeAssets="all"/>
-        <ProjectReference Include="..\Tests.Common\Tests.Common.csproj" />
+        <ProjectReference Include="..\Tests.Common\Tests.Common.csproj"/>
     </ItemGroup>
     <ItemGroup>
         <None Update=".sailfish.json">

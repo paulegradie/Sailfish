@@ -1,7 +1,7 @@
-using Sailfish.Analysis.SailDiff.Statistics.StatsCore.Distributions.DistributionBase;
-using Sailfish.Analysis.SailDiff.Statistics.StatsCore.MathOps;
 using System;
 using System.Collections.Generic;
+using Sailfish.Analysis.SailDiff.Statistics.StatsCore.Distributions.DistributionBase;
+using Sailfish.Analysis.SailDiff.Statistics.StatsCore.MathOps;
 
 namespace Sailfish.Analysis.SailDiff.Statistics.StatsCore.Distributions;
 
@@ -269,10 +269,7 @@ internal sealed class KolmogorovSmirnovDistribution : UnivariateContinuousDistri
             }
 
             if (!(num9 < 1E-280)) continue;
-            for (var index8 = num4; index8 <= num5; ++index8)
-            {
-                numArray[index2][index8] *= num2;
-            }
+            for (var index8 = num4; index8 <= num5; ++index8) numArray[index2][index8] *= num2;
 
             ++num3;
         }
@@ -291,15 +288,9 @@ internal sealed class KolmogorovSmirnovDistribution : UnivariateContinuousDistri
         var v = new double[length, length];
         var b = new double[length, length];
         for (var index1 = 0; index1 < length; ++index1)
-        {
-            for (var index2 = 0; index2 < length; ++index2)
-            {
-                if (index1 - index2 + 1 >= 0)
-                {
-                    a[index1, index2] = 1.0;
-                }
-            }
-        }
+        for (var index2 = 0; index2 < length; ++index2)
+            if (index1 - index2 + 1 >= 0)
+                a[index1, index2] = 1.0;
 
         for (var index = 0; index < length; ++index)
         {
@@ -309,19 +300,11 @@ internal sealed class KolmogorovSmirnovDistribution : UnivariateContinuousDistri
 
         a[length - 1, 0] += 2.0 * x - 1.0 > 0.0 ? Math.Pow(2.0 * x - 1.0, length) : 0.0;
         for (var index3 = 0; index3 < length; ++index3)
+        for (var index4 = 0; index4 < length; ++index4)
         {
-            for (var index4 = 0; index4 < length; ++index4)
-            {
-                if (index3 - index4 + 1 <= 0)
-                {
-                    continue;
-                }
+            if (index3 - index4 + 1 <= 0) continue;
 
-                for (var index5 = 1; index5 <= index3 - index4 + 1; ++index5)
-                {
-                    a[index3, index4] /= index5;
-                }
-            }
+            for (var index5 = 1; index5 <= index3 - index4 + 1; ++index5) a[index3, index4] /= index5;
         }
 
         var eV = 0;
@@ -350,12 +333,8 @@ internal sealed class KolmogorovSmirnovDistribution : UnivariateContinuousDistri
         if (n == 1)
         {
             for (var index1 = 0; index1 < m; ++index1)
-            {
-                for (var index2 = 0; index2 < m; ++index2)
-                {
-                    v[index1, index2] = a[index1, index2];
-                }
-            }
+            for (var index2 = 0; index2 < m; ++index2)
+                v[index1, index2] = a[index1, index2];
 
             eV = eA;
         }
@@ -403,38 +382,38 @@ internal sealed class KolmogorovSmirnovDistribution : UnivariateContinuousDistri
         switch (limits)
         {
             case > 0.5:
-                {
-                    for (var index = 1; index < floors.Count; index += 2)
-                        floors[index] = index / 2 - 1 - num1;
-                    for (var index = 2; index < floors.Count; index += 2)
-                        floors[index] = index / 2 - 2 - num1;
-                    for (var index = 1; index < ceilings.Count; index += 2)
-                        ceilings[index] = index / 2 + 1 + num1;
-                    for (var index = 2; index < ceilings.Count; index += 2)
-                        ceilings[index] = index / 2 + num1;
-                    break;
-                }
+            {
+                for (var index = 1; index < floors.Count; index += 2)
+                    floors[index] = index / 2 - 1 - num1;
+                for (var index = 2; index < floors.Count; index += 2)
+                    floors[index] = index / 2 - 2 - num1;
+                for (var index = 1; index < ceilings.Count; index += 2)
+                    ceilings[index] = index / 2 + 1 + num1;
+                for (var index = 2; index < ceilings.Count; index += 2)
+                    ceilings[index] = index / 2 + num1;
+                break;
+            }
             case > 0.0:
-                {
-                    ceilings[1] = 1.0 + num1;
-                    for (var index = 1; index < floors.Count; ++index)
-                        floors[index] = index / 2 - 1 - num1;
-                    for (var index = 2; index < ceilings.Count; ++index)
-                        ceilings[index] = index / 2 + num1;
-                    break;
-                }
+            {
+                ceilings[1] = 1.0 + num1;
+                for (var index = 1; index < floors.Count; ++index)
+                    floors[index] = index / 2 - 1 - num1;
+                for (var index = 2; index < ceilings.Count; ++index)
+                    ceilings[index] = index / 2 + num1;
+                break;
+            }
             default:
-                {
-                    for (var index = 1; index < floors.Count; index += 2)
-                        floors[index] = index / 2 - num1;
-                    for (var index = 2; index < floors.Count; index += 2)
-                        floors[index] = index / 2 - 1 - num1;
-                    for (var index = 1; index < ceilings.Count; index += 2)
-                        ceilings[index] = index / 2 + num1;
-                    for (var index = 2; index < ceilings.Count; index += 2)
-                        ceilings[index] = index / 2 - 1 + num1;
-                    break;
-                }
+            {
+                for (var index = 1; index < floors.Count; index += 2)
+                    floors[index] = index / 2 - num1;
+                for (var index = 2; index < floors.Count; index += 2)
+                    floors[index] = index / 2 - 1 - num1;
+                for (var index = 1; index < ceilings.Count; index += 2)
+                    ceilings[index] = index / 2 + num1;
+                for (var index = 2; index < ceilings.Count; index += 2)
+                    ceilings[index] = index / 2 - 1 + num1;
+                break;
+            }
         }
 
         if (num4 < limits)

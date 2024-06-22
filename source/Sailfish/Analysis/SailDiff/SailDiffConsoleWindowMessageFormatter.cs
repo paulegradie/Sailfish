@@ -18,8 +18,8 @@ public interface ISailDiffConsoleWindowMessageFormatter
 
 public class SailDiffConsoleWindowMessageFormatter : ISailDiffConsoleWindowMessageFormatter
 {
-    private readonly ISailDiffResultMarkdownConverter sailDiffResultMarkdownConverter;
     private readonly ILogger logger;
+    private readonly ISailDiffResultMarkdownConverter sailDiffResultMarkdownConverter;
 
     public SailDiffConsoleWindowMessageFormatter(
         ISailDiffResultMarkdownConverter sailDiffResultMarkdownConverter,

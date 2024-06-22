@@ -1,13 +1,13 @@
-﻿using MediatR;
+﻿using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
+using MediatR;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel;
 using Sailfish.Contracts.Public.Models;
 using Sailfish.Contracts.Public.Notifications;
 using Sailfish.Logging;
 using Sailfish.Presentation;
 using Sailfish.TestAdapter.Display.TestOutputWindow;
-using System.Collections.Generic;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace Sailfish.TestAdapter.Execution;
 
@@ -18,11 +18,11 @@ public interface ITestAdapterExecutionProgram
 
 internal class TestAdapterExecutionProgram : ITestAdapterExecutionProgram
 {
-    private readonly IMediator mediator;
     private readonly ILogger logger;
+    private readonly IMediator mediator;
     private readonly ISailfishConsoleWindowFormatter sailfishConsoleWindowFormatter;
-    private readonly ITestCaseCountPrinter testCaseCountPrinter;
     private readonly ITestAdapterExecutionEngine testAdapterExecutionEngine;
+    private readonly ITestCaseCountPrinter testCaseCountPrinter;
 
     public TestAdapterExecutionProgram(
         IRunSettings runSettings,

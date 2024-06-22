@@ -1,5 +1,5 @@
-using Sailfish.Analysis.SailDiff.Statistics.StatsCore.Analysers.AnalysersBase;
 using System;
+using Sailfish.Analysis.SailDiff.Statistics.StatsCore.Analysers.AnalysersBase;
 using Sailfish.Analysis.SailDiff.Statistics.StatsCore.Distributions;
 using Sailfish.Analysis.SailDiff.Statistics.StatsCore.Distributions.DistributionBase;
 
@@ -49,7 +49,7 @@ internal sealed class TwoSampleT : HypothesisTest
 
     public TwoSampleHypothesis Hypothesis { get; private set; }
 
-    public bool AssumeEqualVariance { get; private set; }
+    public bool AssumeEqualVariance { get; }
 
     public double StandardError { get; }
 

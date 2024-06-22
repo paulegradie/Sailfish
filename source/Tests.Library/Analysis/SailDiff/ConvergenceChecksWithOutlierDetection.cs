@@ -1,3 +1,6 @@
+using System;
+using System.Collections.Generic;
+using System.Linq;
 using Sailfish.Analysis;
 using Sailfish.Analysis.SailDiff;
 using Sailfish.Analysis.SailDiff.Statistics.Tests;
@@ -5,9 +8,6 @@ using Sailfish.Analysis.SailDiff.Statistics.Tests.MWWilcoxonTestSailfish;
 using Sailfish.Analysis.SailDiff.Statistics.Tests.TwoSampleWilcoxonSignedRankTestSailfish;
 using Sailfish.Contracts.Public;
 using Shouldly;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using Xunit;
 
 namespace Tests.Library.Analysis.SailDiff;

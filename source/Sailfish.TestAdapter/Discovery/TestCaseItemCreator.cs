@@ -1,10 +1,10 @@
-﻿using Microsoft.VisualStudio.TestPlatform.ObjectModel;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using Microsoft.VisualStudio.TestPlatform.ObjectModel;
 using Sailfish.Execution;
 using Sailfish.TestAdapter.TestProperties;
 using Sailfish.Utils;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 
 namespace Sailfish.TestAdapter.Discovery;
 

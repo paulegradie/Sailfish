@@ -1,13 +1,13 @@
+using System;
+using System.Net.Http;
+using System.Threading;
+using System.Threading.Tasks;
 using Autofac;
 using Demo.API;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
 using Sailfish.Attributes;
 using Sailfish.Registration;
-using System;
-using System.Net.Http;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace PerformanceTests.ExamplePerformanceTests;
 
@@ -25,9 +25,11 @@ public sealed class SailfishFixtureExample : TestBase
         this.sailfishFixture = sailfishFixture;
     }
 
-    [SailfishVariable(1, 10)] public int VariableA { get; set; }
+    [SailfishVariable(1, 10)]
+    public int VariableA { get; set; }
 
-    [SailfishRangeVariable(true, 1, 4)] public int Multiplier { get; set; }
+    [SailfishRangeVariable(true, 1, 4)]
+    public int Multiplier { get; set; }
 
     [SailfishMethod]
     public async Task Control(CancellationToken cancellationToken)

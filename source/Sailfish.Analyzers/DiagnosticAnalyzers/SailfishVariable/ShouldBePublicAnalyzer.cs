@@ -1,10 +1,10 @@
+using System.Collections.Immutable;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Diagnostics;
 using Sailfish.Analyzers.Utils;
 using Sailfish.Analyzers.Utils.TreeParsingExtensionMethods;
-using System.Collections.Immutable;
 
 namespace Sailfish.Analyzers.DiagnosticAnalyzers.SailfishVariable;
 
@@ -12,8 +12,8 @@ namespace Sailfish.Analyzers.DiagnosticAnalyzers.SailfishVariable;
 public class ShouldBePublicAnalyzer : AnalyzerBase<ClassDeclarationSyntax>
 {
     public static readonly DiagnosticDescriptor Descriptor = new(
-        id: "SF1010",
-        title: "Properties decorated with the SailfishVariableAttribute must be public",
+        "SF1010",
+        "Properties decorated with the SailfishVariableAttribute must be public",
         category: AnalyzerGroups.EssentialAnalyzers.Category,
         isEnabledByDefault: AnalyzerGroups.EssentialAnalyzers.IsEnabledByDefault,
         messageFormat: "Property '{0}' must be public",

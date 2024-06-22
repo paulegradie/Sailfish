@@ -6,9 +6,18 @@ using Sailfish.Execution;
 
 namespace Sailfish.Contracts.Public.Models;
 
-public class PerformanceRunResult(string displayName, double mean, double stdDev, double variance,
-    double median, double[] rawExecutionResults, int sampleSize, int numWarmupIterations,
-    double[] dataWithOutliersRemoved, double[] upperOutliers, double[] lowerOutliers,
+public class PerformanceRunResult(
+    string displayName,
+    double mean,
+    double stdDev,
+    double variance,
+    double median,
+    double[] rawExecutionResults,
+    int sampleSize,
+    int numWarmupIterations,
+    double[] dataWithOutliersRemoved,
+    double[] upperOutliers,
+    double[] lowerOutliers,
     int totalNumOutliers)
 {
     public string DisplayName { get; } = displayName;

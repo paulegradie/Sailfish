@@ -28,7 +28,8 @@ public class TestCaseId
     public TestCaseName TestCaseName { get; init; } = null!;
     public TestCaseVariables TestCaseVariables { get; init; } = null!;
 
-    [JsonIgnore] public string DisplayName => FormDisplayName();
+    [JsonIgnore]
+    public string DisplayName => FormDisplayName();
 
     public string GetMethodWithVariables()
     {

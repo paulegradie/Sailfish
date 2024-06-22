@@ -1,7 +1,7 @@
-﻿using Sailfish.Analysis;
+﻿using System.Threading.Tasks;
+using Sailfish.Analysis;
 using Sailfish.Analysis.SailDiff.Statistics.Tests;
 using Shouldly;
-using System.Threading.Tasks;
 using Xunit;
 
 namespace Tests.Library.Analysis.SailDiff;

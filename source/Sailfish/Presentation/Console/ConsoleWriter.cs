@@ -25,17 +25,17 @@ internal class ConsoleWriter(IMarkdownTableConverter markdownTableConverter, ILo
         return markdownStringTable;
     }
 
+    public void WriteString(string content)
+    {
+        logger.Log(LogLevel.Information, content);
+    }
+
     public void WriteStatTestResultsToConsole(string markdownBody, TestIds testIds, SailDiffSettings sailDiffSettings)
     {
         var stringBuilder = new StringBuilder();
         BuildHeader(stringBuilder, testIds.BeforeTestIds, testIds.AfterTestIds, sailDiffSettings);
         stringBuilder.AppendLine(markdownBody);
         logger.Log(LogLevel.Information, stringBuilder.ToString());
-    }
-
-    public void WriteString(string content)
-    {
-        logger.Log(LogLevel.Information, content);
     }
 
     private static void BuildHeader(StringBuilder stringBuilder, IEnumerable<string> beforeIds, IEnumerable<string> afterIds, SailDiffSettings sailDiffSettings)

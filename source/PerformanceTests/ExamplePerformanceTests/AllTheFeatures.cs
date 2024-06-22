@@ -1,9 +1,9 @@
-using Sailfish.Attributes;
-using Sailfish.Registration;
 using System;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
+using Sailfish.Attributes;
+using Sailfish.Registration;
 
 namespace PerformanceTests.ExamplePerformanceTests;
 
@@ -26,7 +26,8 @@ public class AllTheFeatures
     [SailfishRangeVariable(true, 10, 3, 2)]
     public int Delay { get; set; }
 
-    [SailfishVariable(3, 5)] public int Multiplier { get; set; }
+    [SailfishVariable(3, 5)]
+    public int Multiplier { get; set; }
 
     [SailfishGlobalSetup]
     public void GlobalSetup()

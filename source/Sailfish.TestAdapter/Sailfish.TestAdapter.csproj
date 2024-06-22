@@ -32,12 +32,12 @@
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
 
-        <PackageReference Include="System.ComponentModel.Composition" Version="8.0.0" />
-        <PackageReference Include="Microsoft.TestPlatform.ObjectModel" Version="17.8.0" PrivateAssets="All" />
-        <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.5.0" />
+        <PackageReference Include="System.ComponentModel.Composition" Version="8.0.0"/>
+        <PackageReference Include="Microsoft.TestPlatform.ObjectModel" Version="17.8.0" PrivateAssets="All"/>
+        <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.5.0"/>
     </ItemGroup>
     <ItemGroup>
-        <ProjectReference Include="..\Sailfish\Sailfish.csproj" />
+        <ProjectReference Include="..\Sailfish\Sailfish.csproj"/>
     </ItemGroup>
 
     <!--    <ItemGroup>-->
@@ -45,7 +45,7 @@
     <!--    </ItemGroup>-->
 
     <ItemGroup>
-        <InternalsVisibleTo Include="Tests.TestAdapter" />
+        <InternalsVisibleTo Include="Tests.TestAdapter"/>
     </ItemGroup>
-    
+
 </Project>

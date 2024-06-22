@@ -1,8 +1,3 @@
-using Microsoft.VisualStudio.TestPlatform.ObjectModel;
-using Sailfish.Exceptions;
-using Sailfish.Execution;
-using Sailfish.Logging;
-using Sailfish.TestAdapter.TestProperties;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,6 +5,11 @@ using System.Reflection;
 using System.Runtime.Caching;
 using System.Threading;
 using System.Threading.Tasks;
+using Microsoft.VisualStudio.TestPlatform.ObjectModel;
+using Sailfish.Exceptions;
+using Sailfish.Execution;
+using Sailfish.Logging;
+using Sailfish.TestAdapter.TestProperties;
 
 namespace Sailfish.TestAdapter.Execution;
 

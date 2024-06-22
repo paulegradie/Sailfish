@@ -1,7 +1,7 @@
-﻿using Sailfish.Analysis.SailDiff;
+﻿using System.Collections.Generic;
+using Sailfish.Analysis.SailDiff;
 using Sailfish.Contracts.Public.Models;
 using Shouldly;
-using System.Collections.Generic;
 using Tests.Common.Builders;
 using Tests.Common.Utils;
 using Xunit;
@@ -14,10 +14,10 @@ public class PerformanceRunResultAggregatorTests
     public void AggregatorAggregatesCorrectly()
     {
         var testCaseId = Some.SimpleTestCaseId();
-        var perfResults = new List<PerformanceRunResult>()
+        var perfResults = new List<PerformanceRunResult>
         {
             PerformanceRunResultBuilder.Create().WithDisplayName(testCaseId.DisplayName).WithRawExecutionResults([1.0, 2, 3]).Build(),
-            PerformanceRunResultBuilder.Create().WithDisplayName(testCaseId.DisplayName).WithRawExecutionResults([2.0, 3, 4]).Build(),
+            PerformanceRunResultBuilder.Create().WithDisplayName(testCaseId.DisplayName).WithRawExecutionResults([2.0, 3, 4]).Build()
         };
         var aggregator = new PerformanceRunResultAggregator();
 

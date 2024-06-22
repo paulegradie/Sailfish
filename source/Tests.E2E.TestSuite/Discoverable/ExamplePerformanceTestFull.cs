@@ -19,8 +19,11 @@ public class ExamplePerformanceTestFull : TestBase
         this.logger = logger;
     }
 
-    [SailfishVariable(200, 300)] public int WaitPeriod { get; set; }
-    [SailfishVariable(1, 2)] public int NTries { get; set; } // try to avoid multiple variables if you can manage
+    [SailfishVariable(200, 300)]
+    public int WaitPeriod { get; set; }
+
+    [SailfishVariable(1, 2)]
+    public int NTries { get; set; } // try to avoid multiple variables if you can manage
 
     [SailfishGlobalSetup]
     public void GlobalSetup()

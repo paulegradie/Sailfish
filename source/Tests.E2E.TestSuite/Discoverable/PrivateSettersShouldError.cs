@@ -8,8 +8,11 @@ public class PrivateSettersShouldError
 {
     public int PrivateSetter { get; set; }
 
-    [SailfishVariable(1, 2, 3)] public int Placeholder { get; set; }
-    [SailfishVariable(1, 2, 3)] public int PrivatePropertyErrors { get; set; }
+    [SailfishVariable(1, 2, 3)]
+    public int Placeholder { get; set; }
+
+    [SailfishVariable(1, 2, 3)]
+    public int PrivatePropertyErrors { get; set; }
 
     [SailfishGlobalSetup]
     public void GlobalSetup()

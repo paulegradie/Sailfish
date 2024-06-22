@@ -4,12 +4,12 @@ namespace Tests.Common.Builders;
 
 public class ExecutionSettingsTrackingFormatBuilder
 {
-    private bool? asCsv;
     private bool? asConsole;
+    private bool? asCsv;
     private bool? asMarkdown;
+    private bool? disableOverheadEstimation;
     private int? numWarmupIterations;
     private int? sampleSize;
-    private bool? disableOverheadEstimation;
 
     public static ExecutionSettingsTrackingFormatBuilder Create()
     {

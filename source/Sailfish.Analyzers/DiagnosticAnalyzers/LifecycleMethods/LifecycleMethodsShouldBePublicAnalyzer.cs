@@ -1,10 +1,10 @@
+using System.Collections.Immutable;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Diagnostics;
 using Sailfish.Analyzers.Utils;
 using Sailfish.Analyzers.Utils.TreeParsingExtensionMethods;
-using System.Collections.Immutable;
 
 namespace Sailfish.Analyzers.DiagnosticAnalyzers.LifecycleMethods;
 
@@ -12,10 +12,10 @@ namespace Sailfish.Analyzers.DiagnosticAnalyzers.LifecycleMethods;
 public class LifecycleMethodsShouldBePublicAnalyzer : AnalyzerBase<ClassDeclarationSyntax>
 {
     public static readonly DiagnosticDescriptor Descriptor = new(
-        id: "SF1020",
-        title: "Sailfish lifecycle methods must be public",
-        messageFormat: "Method '{0}' must be public",
-        category: AnalyzerGroups.EssentialAnalyzers.Category,
+        "SF1020",
+        "Sailfish lifecycle methods must be public",
+        "Method '{0}' must be public",
+        AnalyzerGroups.EssentialAnalyzers.Category,
         isEnabledByDefault: AnalyzerGroups.EssentialAnalyzers.IsEnabledByDefault,
         defaultSeverity: DiagnosticSeverity.Error,
         description: "Sailfish lifecycle methods must be public.",

@@ -1,3 +1,7 @@
+using System;
+using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel;
 using NSubstitute;
 using Sailfish.Contracts.Public.Models;
@@ -10,10 +14,6 @@ using Sailfish.TestAdapter.Handlers.FrameworkHandlers;
 using Sailfish.TestAdapter.Handlers.TestCaseEvents;
 using Sailfish.TestAdapter.TestProperties;
 using Shouldly;
-using System;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 using Tests.Common.Utils;
 using Xunit;
 
@@ -56,7 +56,7 @@ public class TestAdapterHandlerTests
 
         var recordResultArgs = calls.Last().GetArguments();
         recordResultArgs.Length.ShouldBe(1);
-        var result = (recordResultArgs.First() as TestResult);
+        var result = recordResultArgs.First() as TestResult;
         result.ShouldNotBeNull();
         result.ErrorMessage.ShouldBe("Test Disabled");
     }
@@ -97,7 +97,7 @@ public class TestAdapterHandlerTests
 
         var recordResultArgs = calls.Last().GetArguments();
         recordResultArgs.Length.ShouldBe(1);
-        var result = (recordResultArgs.First() as TestResult);
+        var result = recordResultArgs.First() as TestResult;
         result.ShouldNotBeNull();
     }
 

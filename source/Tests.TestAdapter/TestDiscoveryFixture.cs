@@ -1,6 +1,6 @@
-﻿using Sailfish.TestAdapter.Discovery;
+﻿using System.Linq;
+using Sailfish.TestAdapter.Discovery;
 using Shouldly;
-using System.Linq;
 using Tests.TestAdapter.Utils;
 using Xunit;
 

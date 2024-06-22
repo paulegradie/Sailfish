@@ -1,42 +1,30 @@
-using Sailfish.Analysis.SailDiff.Statistics.StatsCore.Search;
 using System;
 using System.ComponentModel.DataAnnotations;
+using Sailfish.Analysis.SailDiff.Statistics.StatsCore.Search;
 
 namespace Sailfish.Analysis.SailDiff.Statistics.StatsCore.Distributions.DistributionBase;
 
 internal abstract class UnivariateContinuousDistribution : DistributionBase
 {
-    public double[] Generate(int samples, Random source)
-    {
-        var result = new double[samples];
-        for (var index = 0; index < samples; ++index)
-        {
-            result[index] = InverseDistributionFunction(source.NextDouble());
-        }
-
-        return result;
-    }
-
     public abstract double Mean { get; }
 
     public abstract DoubleRange Support { get; }
 
+    public double[] Generate(int samples, Random source)
+    {
+        var result = new double[samples];
+        for (var index = 0; index < samples; ++index) result[index] = InverseDistributionFunction(source.NextDouble());
+
+        return result;
+    }
+
     public virtual double DistributionFunction(double x)
     {
-        if (double.IsNaN(x))
-        {
-            throw new ArgumentOutOfRangeException(nameof(x), "The input argument is NaN.");
-        }
+        if (double.IsNaN(x)) throw new ArgumentOutOfRangeException(nameof(x), "The input argument is NaN.");
 
-        if ((double.IsNegativeInfinity(Support.Min) && double.IsNegativeInfinity(x)) || x < Support.Min)
-        {
-            return 0.0;
-        }
+        if ((double.IsNegativeInfinity(Support.Min) && double.IsNegativeInfinity(x)) || x < Support.Min) return 0.0;
 
-        if (x >= Support.Max)
-        {
-            return 1.0;
-        }
+        if (x >= Support.Max) return 1.0;
 
         var d = InnerDistributionFunction(x);
         return d switch
@@ -49,20 +37,11 @@ internal abstract class UnivariateContinuousDistribution : DistributionBase
 
     public double ComplementaryDistributionFunction(double x)
     {
-        if (double.IsNaN(x))
-        {
-            throw new ArgumentOutOfRangeException(nameof(x), "The input argument is NaN.");
-        }
+        if (double.IsNaN(x)) throw new ArgumentOutOfRangeException(nameof(x), "The input argument is NaN.");
 
-        if ((double.IsNegativeInfinity(Support.Min) && double.IsNegativeInfinity(x)) || x < Support.Min)
-        {
-            return 1.0;
-        }
+        if ((double.IsNegativeInfinity(Support.Min) && double.IsNegativeInfinity(x)) || x < Support.Min) return 1.0;
 
-        if (x >= Support.Max)
-        {
-            return 0.0;
-        }
+        if (x >= Support.Max) return 0.0;
 
         var d = InnerComplementaryDistributionFunction(x);
         return d switch
@@ -88,15 +67,9 @@ internal abstract class UnivariateContinuousDistribution : DistributionBase
         }
 
         var d = InnerInverseDistributionFunction(p);
-        if (double.IsNaN(d))
-        {
-            throw new InvalidOperationException("invCDF computation generated NaN values.");
-        }
+        if (double.IsNaN(d)) throw new InvalidOperationException("invCDF computation generated NaN values.");
 
-        if (d < Support.Min || d > Support.Max)
-        {
-            throw new InvalidOperationException("invCDF computation generated values outside the distribution supported range.");
-        }
+        if (d < Support.Min || d > Support.Max) throw new InvalidOperationException("invCDF computation generated values outside the distribution supported range.");
 
         return d;
     }
@@ -136,10 +109,7 @@ internal abstract class UnivariateContinuousDistribution : DistributionBase
             }
             else
             {
-                if (num3 >= p)
-                {
-                    return num1;
-                }
+                if (num3 >= p) return num1;
 
                 for (; num3 < p && !double.IsInfinity(num2); num3 = DistributionFunction(num2))
                     num2 += 2.0 * (num2 - num1) + 1.0;
@@ -157,10 +127,7 @@ internal abstract class UnivariateContinuousDistribution : DistributionBase
             }
             else
             {
-                if (num4 >= p)
-                {
-                    return num2;
-                }
+                if (num4 >= p) return num2;
 
                 for (; num4 < p && !double.IsInfinity(num1); num4 = DistributionFunction(num1))
                     num1 -= 2.0 * num1;
@@ -181,10 +148,7 @@ internal abstract class UnivariateContinuousDistribution : DistributionBase
             }
             else
             {
-                if (num5 >= p)
-                {
-                    return 0.0;
-                }
+                if (num5 >= p) return 0.0;
 
                 for (; num5 < p && !double.IsInfinity(num2); num5 = DistributionFunction(num2))
                 {
@@ -194,30 +158,18 @@ internal abstract class UnivariateContinuousDistribution : DistributionBase
             }
         }
 
-        if (double.IsNegativeInfinity(num1))
-        {
-            num1 = double.MinValue;
-        }
+        if (double.IsNegativeInfinity(num1)) num1 = double.MinValue;
 
-        if (double.IsPositiveInfinity(num2))
-        {
-            num2 = double.MaxValue;
-        }
+        if (double.IsPositiveInfinity(num2)) num2 = double.MaxValue;
 
         return BrentSearch.Find(DistributionFunction, p, num1, num2);
     }
 
     public double ProbabilityDensityFunction(double x)
     {
-        if (double.IsNaN(x))
-        {
-            throw new ArgumentOutOfRangeException(nameof(x), "The input argument is NaN.");
-        }
+        if (double.IsNaN(x)) throw new ArgumentOutOfRangeException(nameof(x), "The input argument is NaN.");
 
-        if (x < Support.Min || x > Support.Max)
-        {
-            return 0.0;
-        }
+        if (x < Support.Min || x > Support.Max) return 0.0;
 
         var d = InnerProbabilityDensityFunction(x);
         return !double.IsNaN(d) ? d : throw new InvalidOperationException("PDF computation generated NaN values.");
@@ -230,15 +182,9 @@ internal abstract class UnivariateContinuousDistribution : DistributionBase
 
     public double LogProbabilityDensityFunction(double x)
     {
-        if (double.IsNaN(x))
-        {
-            throw new ArgumentOutOfRangeException(nameof(x), "The input argument is NaN.");
-        }
+        if (double.IsNaN(x)) throw new ArgumentOutOfRangeException(nameof(x), "The input argument is NaN.");
 
-        if (x < Support.Min || x > Support.Max)
-        {
-            return double.NegativeInfinity;
-        }
+        if (x < Support.Min || x > Support.Max) return double.NegativeInfinity;
 
         var d = InnerLogProbabilityDensityFunction(x);
         return !double.IsNaN(d) ? d : throw new InvalidOperationException("LogPDF computation generated NaN values.");

@@ -18,7 +18,8 @@ public abstract class ScaleFishModelFunction
 
     public FittedCurve? FunctionParameters { get; set; }
 
-    [JsonIgnore] public IFitnessCalculator FitnessCalculator { get; set; } = new FitnessCalculator(); // leave this public for testing. Gross, but willing to accept
+    [JsonIgnore]
+    public IFitnessCalculator FitnessCalculator { get; set; } = new FitnessCalculator(); // leave this public for testing. Gross, but willing to accept
 
     public abstract double Compute(double bias, double scale, double x);
 

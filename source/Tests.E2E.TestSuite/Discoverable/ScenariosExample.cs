@@ -9,7 +9,8 @@ public class ScenariosExample
     private const string ScenarioB = "ScenarioB";
     private Dictionary<string, string> scenarioMap = null!;
 
-    [SailfishVariable("wow", "ok")] public string N { get; set; } = null!;
+    [SailfishVariable("wow", "ok")]
+    public string N { get; set; } = null!;
 
     [SailfishVariable(ScenarioA, ScenarioB)]
     public string? Scenario { get; set; }

@@ -9,7 +9,9 @@ public class VariablesIterateTest
     private static List<int> Expected = new();
 
     private string FieldMan = null!;
-    [SailfishVariable(1, 2)] public int N { get; set; }
+
+    [SailfishVariable(1, 2)]
+    public int N { get; set; }
 
     public int MyInt { get; set; } = 456;
 
