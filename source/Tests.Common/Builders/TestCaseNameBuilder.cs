@@ -7,6 +7,8 @@ public class TestCaseNameBuilder
     private string? name;
     private IReadOnlyList<string>? parts;
 
+    public static TestCaseNameBuilder Create() => new();
+
     public TestCaseNameBuilder WithName(string name)
     {
         this.name = name;

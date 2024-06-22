@@ -1,5 +1,4 @@
 ﻿using Sailfish.Analysis.ScaleFish;
-using Tests.Common.Builders.Scalefish;
 using Tests.Common.Utils;
 
 namespace Tests.Common.Builders.ScaleFish;
@@ -7,7 +6,7 @@ namespace Tests.Common.Builders.ScaleFish;
 public class ScaleFishPropertyModelBuilder : ScaleFishPropertyModelBuilder.IHavePropertyName
 {
     private string? propertyName;
-    private ScaleFishModel? scalefishModel;
+    private ScaleFishModel? scaleFishModel;
 
     public ScaleFishPropertyModelBuilder WithPropertyName(string name)
     {
@@ -17,7 +16,7 @@ public class ScaleFishPropertyModelBuilder : ScaleFishPropertyModelBuilder.IHave
 
     public ScaleFishPropertyModel Build()
     {
-        return new ScaleFishPropertyModel(propertyName ?? Some.RandomString(), scalefishModel ?? ScalefishModelBuilder.Create().Build());
+        return new ScaleFishPropertyModel(propertyName ?? Some.RandomString(), scaleFishModel ?? ScaleFishModelBuilder.Create().Build());
     }
 
     public static IHavePropertyName Create()
@@ -27,16 +26,16 @@ public class ScaleFishPropertyModelBuilder : ScaleFishPropertyModelBuilder.IHave
 
     public ScaleFishPropertyModelBuilder WithScaleFishModel(ScaleFishModel model)
     {
-        scalefishModel = model;
+        scaleFishModel = model;
         return this;
     }
 
 
-    public ScaleFishPropertyModelBuilder WithScaleFishModel(Action<ScalefishModelBuilder.IHavePrimaryFunction> configure)
+    public ScaleFishPropertyModelBuilder WithScaleFishModel(Action<ScaleFishModelBuilder.IHavePrimaryFunction> configure)
     {
-        var builder = ScalefishModelBuilder.Create();
+        var builder = ScaleFishModelBuilder.Create();
         configure(builder);
-        scalefishModel = builder.Build();
+        scaleFishModel = builder.Build();
         return this;
     }
 

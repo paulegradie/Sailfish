@@ -33,7 +33,7 @@ public class ClassExecutionSummaryTrackingFormatBuilder
         return this;
     }
 
-    public ClassExecutionSummaryTrackingFormatBuilder WithCompiledTestCaseResults(List<CompiledTestCaseResultTrackingFormat> compiledTestCaseResults)
+    public ClassExecutionSummaryTrackingFormatBuilder WithCompiledTestCaseResult(List<CompiledTestCaseResultTrackingFormat> compiledTestCaseResults)
     {
         this.compiledTestCaseResults = compiledTestCaseResults;
         return this;

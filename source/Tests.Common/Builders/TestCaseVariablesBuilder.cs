@@ -4,6 +4,9 @@ namespace Tests.Common.Builders;
 
 public class TestCaseVariablesBuilder
 {
+    public static TestCaseVariablesBuilder Create() => new();
+
+
     private readonly List<TestCaseVariable> variables = new();
 
     public TestCaseVariablesBuilder AddVariable(TestCaseVariable variable)

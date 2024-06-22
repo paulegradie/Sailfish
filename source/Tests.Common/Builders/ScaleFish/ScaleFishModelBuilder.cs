@@ -1,10 +1,13 @@
 ﻿using Sailfish.Analysis.ScaleFish;
 using Sailfish.Analysis.ScaleFish.ComplexityFunctions;
 
-namespace Tests.Common.Builders.Scalefish;
+namespace Tests.Common.Builders.ScaleFish;
 
-public class ScalefishModelBuilder : ScalefishModelBuilder.IHavePrimaryFunction, ScalefishModelBuilder.IHavePrimaryGoodnessOfFit, ScalefishModelBuilder.IHaveSecondaryFunction,
-    ScalefishModelBuilder.IHaveSecondaryGoodnessOfFit
+public class ScaleFishModelBuilder :
+    ScaleFishModelBuilder.IHavePrimaryFunction,
+    ScaleFishModelBuilder.IHavePrimaryGoodnessOfFit,
+    ScaleFishModelBuilder.IHaveSecondaryFunction,
+    ScaleFishModelBuilder.IHaveSecondaryGoodnessOfFit
 {
     private ScaleFishModelFunction? primaryFunction;
     private double? primaryGoodnessOfFit;
@@ -47,7 +50,7 @@ public class ScalefishModelBuilder : ScalefishModelBuilder.IHavePrimaryFunction,
 
     public static IHavePrimaryFunction Create()
     {
-        return new ScalefishModelBuilder();
+        return new ScaleFishModelBuilder();
     }
 
     public interface IHavePrimaryFunction

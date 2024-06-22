@@ -9,7 +9,6 @@ using Sailfish.Contracts.Public.Notifications;
 using Sailfish.Contracts.Public.Serialization;
 using Sailfish.DefaultHandlers.ScaleFish;
 using Shouldly;
-using Tests.Common.Builders.Scalefish;
 using Tests.Common.Builders.ScaleFish;
 using Tests.Common.Utils;
 using Xunit;

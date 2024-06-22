@@ -25,12 +25,6 @@ public class TestCaseIdBuilder
         return this;
     }
 
-    public TestCaseIdBuilder WithTestCaseVariables(string displayName)
-    {
-        testCaseVariables = new TestCaseVariables(displayName);
-        return this;
-    }
-
     public TestCaseIdBuilder WithTestCaseVariables(IEnumerable<TestCaseVariable> variables)
     {
         testCaseVariables = new TestCaseVariables(variables);
