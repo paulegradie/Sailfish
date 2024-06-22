@@ -9,6 +9,7 @@ using Sailfish.Contracts.Public.Notifications;
 using Sailfish.Contracts.Public.Serialization;
 using Sailfish.DefaultHandlers.ScaleFish;
 using Shouldly;
+using Tests.Common.Builders.Scalefish;
 using Tests.Common.Builders.ScaleFish;
 using Tests.Common.Utils;
 using Xunit;
@@ -18,9 +19,10 @@ namespace Tests.Library.DefaultHandlers;
 public class ScaleFishAnalysisCompleteNotificationHandlerTests
 {
     [Fact]
-    public async Task ScalefishNotificationIsHandled()
+    public async Task ScaleFishNotificationIsHandled()
     {
         var testClassName = Some.RandomString();
+
         var classModels = new List<ScalefishClassModel>
         {
             new(Some.RandomString(), testClassName, new List<ScaleFishMethodModel>
