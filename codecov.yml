@@ -7,3 +7,7 @@ ignore:
   - "**/Tests.E2E.ExceptionHandling/*"
   - "**/Tests.E2E.TestSuite/*"
   - "**/Demo.API/*"
+  - "**/PerformanceTests/*"
+  - "**/ScaleFishDemo/*"
+  - "**/ConsoleAppDemo/*"
+  - "**/Tests.*/*"
