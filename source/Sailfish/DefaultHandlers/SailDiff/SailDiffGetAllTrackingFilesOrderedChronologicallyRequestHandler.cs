@@ -9,15 +9,21 @@ using Sailfish.Extensions.Types;
 
 namespace Sailfish.DefaultHandlers.SailDiff;
 
-internal class SailDiffGetAllTrackingFilesOrderedChronologicallyRequestHandler(
-    IRunSettings runSettings,
-    ITrackingFileDirectoryReader trackingFileDirectoryReader,
-    ITrackingFileParser trackingFileParser) : IRequestHandler<GetAllTrackingDataOrderedChronologicallyRequest,
+internal class SailDiffGetAllTrackingFilesOrderedChronologicallyRequestHandler : IRequestHandler<GetAllTrackingDataOrderedChronologicallyRequest,
     GetAllTrackingDataOrderedChronologicallyResponse>
 {
-    private readonly IRunSettings runSettings = runSettings;
-    private readonly ITrackingFileDirectoryReader trackingFileDirectoryReader = trackingFileDirectoryReader;
-    private readonly ITrackingFileParser trackingFileParser = trackingFileParser;
+    private readonly IRunSettings runSettings;
+    private readonly ITrackingFileDirectoryReader trackingFileDirectoryReader;
+    private readonly ITrackingFileParser trackingFileParser;
+
+    public SailDiffGetAllTrackingFilesOrderedChronologicallyRequestHandler(IRunSettings runSettings,
+        ITrackingFileDirectoryReader trackingFileDirectoryReader,
+        ITrackingFileParser trackingFileParser)
+    {
+        this.runSettings = runSettings;
+        this.trackingFileDirectoryReader = trackingFileDirectoryReader;
+        this.trackingFileParser = trackingFileParser;
+    }
 
     public async Task<GetAllTrackingDataOrderedChronologicallyResponse> Handle(
         GetAllTrackingDataOrderedChronologicallyRequest request,

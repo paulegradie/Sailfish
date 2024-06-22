@@ -4,4 +4,7 @@ using Sailfish.Analysis.ScaleFish;
 
 namespace Sailfish.Contracts.Public.Notifications;
 
-public record ScaleFishAnalysisCompleteNotification(string ScaleFishResultMarkdown, List<ScalefishClassModel> TestClassComplexityResults) : INotification;
+public record ScaleFishAnalysisCompleteNotification(
+    string ScaleFishResultMarkdown,
+    List<ScalefishClassModel> TestClassComplexityResults)
+    : INotification;

@@ -3,8 +3,7 @@ using MediatR;
 
 namespace Sailfish.Contracts.Public.Requests;
 
-public class ReadInBeforeAndAfterDataRequest(IEnumerable<string> beforeFilePaths, IEnumerable<string> afterFilePaths) : IRequest<ReadInBeforeAndAfterDataResponse>
-{
-    public IEnumerable<string> BeforeFilePaths { get; } = beforeFilePaths;
-    public IEnumerable<string> AfterFilePaths { get; } = afterFilePaths;
-}
+public record ReadInBeforeAndAfterDataRequest(
+    IEnumerable<string> BeforeFilePaths,
+    IEnumerable<string> AfterFilePaths)
+    : IRequest<ReadInBeforeAndAfterDataResponse>;

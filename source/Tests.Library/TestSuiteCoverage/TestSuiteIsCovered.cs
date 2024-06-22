@@ -17,10 +17,18 @@ public class TestSuiteIsCovered
     [Fact]
     public async Task Cover()
     {
-        await new DemoPerformanceTest().DoThing(CancellationToken.None);
+        await new DemoPerformanceTest().DoThing(new CancellationToken());
         new ResolveTestCaseIdTestMultipleCtorArgs(
-            new ExampleDependencyForAltRego(),
-            new TestCaseId($"{nameof(ResolveTestCaseIdTestMultipleCtorArgs)}.{nameof(ResolveTestCaseIdTestMultipleCtorArgs.MainMethod)}()")).MainMethod();
+                new ExampleDependencyForAltRego(),
+                new TestCaseId($"{nameof(ResolveTestCaseIdTestMultipleCtorArgs)}.{nameof(ResolveTestCaseIdTestMultipleCtorArgs.MainMethod)}()"))
+            .MainMethod();
+
+        var se = new ScenariosExample();
+        se.GlobalSetup();
+        se.Scenario = "ScenarioA";
+        se.Scenario = "ScenarioB";
+        await se.TestMethod(new CancellationToken());
+
         new MinimalTest().Minimal();
         new Tests.E2E.TestSuite.Discoverable.InnerNamespace.MinimalTest().Minimal();
         var scenarios = new ScenariosExample();

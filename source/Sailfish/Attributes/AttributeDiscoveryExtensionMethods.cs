@@ -25,7 +25,6 @@ internal static class AttributeDiscoveryExtensionMethods
     }
 
 
-
     internal static ISailfishVariableAttribute GetSailfishVariableAttributeOrThrow(this PropertyInfo propertyInfo)
     {
         var attribute = propertyInfo

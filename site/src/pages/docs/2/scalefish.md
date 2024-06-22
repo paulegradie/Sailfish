@@ -139,4 +139,4 @@ var result = model.ScaleFishModelFunction.Predict(50_000);
 Console.WriteLine(result);
 ```
 
-For a working example, [visit the demo](https://github.com/paulegradie/Sailfish/blob/main/source/ModelPredictions/Program.cs).
+For a working example, [visit the demo](https://github.com/paulegradie/Sailfish/blob/main/source/ScaleFishDemo/Program.cs).

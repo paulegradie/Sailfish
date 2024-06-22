@@ -8,8 +8,8 @@ Apply the `[Sailfish]` attribute to the class.
 
 ```csharp
 [Sailfish(
-    SampleSize = 2,
-    NumWarmupIterations = 1,
+    SampleSize = 45,
+    NumWarmupIterations = 2,
     DisableOverheadEstimation = false,
     Disabled = false)]
 public class AMostBasicTest { ... }

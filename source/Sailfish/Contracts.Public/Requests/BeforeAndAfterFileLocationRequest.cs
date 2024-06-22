@@ -3,7 +3,6 @@ using MediatR;
 
 namespace Sailfish.Contracts.Public.Requests;
 
-public class BeforeAndAfterFileLocationRequest(IEnumerable<string> providedBeforeTrackingFiles) : IRequest<BeforeAndAfterFileLocationResponse>
-{
-    public IEnumerable<string> ProvidedBeforeTrackingFiles { get; } = providedBeforeTrackingFiles;
-}
+public record BeforeAndAfterFileLocationRequest(
+    IEnumerable<string> ProvidedBeforeTrackingFiles)
+    : IRequest<BeforeAndAfterFileLocationResponse>;

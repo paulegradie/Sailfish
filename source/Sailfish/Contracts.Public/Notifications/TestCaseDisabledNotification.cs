@@ -7,4 +7,5 @@ namespace Sailfish.Contracts.Public.Notifications;
 internal record TestCaseDisabledNotification(
     TestInstanceContainerExternal TestInstanceContainer,
     IEnumerable<dynamic> TestCaseGroup,
-    bool DisableTheGroup) : INotification;
+    bool DisableTheGroup)
+    : INotification;
