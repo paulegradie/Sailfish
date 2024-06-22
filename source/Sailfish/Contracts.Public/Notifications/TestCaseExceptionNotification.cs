@@ -5,4 +5,8 @@ using Sailfish.Contracts.Public.Models;
 
 namespace Sailfish.Contracts.Public.Notifications;
 
-public record TestCaseExceptionNotification(TestInstanceContainerExternal? TestInstanceContainer, IEnumerable<dynamic> TestCaseGroup, Exception? Exception) : INotification;
+public record TestCaseExceptionNotification(
+    TestInstanceContainerExternal? TestInstanceContainer,
+    IEnumerable<dynamic> TestCaseGroup,
+    Exception? Exception)
+    : INotification;

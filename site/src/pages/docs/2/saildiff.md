@@ -94,11 +94,11 @@ You may use the `RunSettingsBuilder` to configure SailDiff before running.
 ```csharp
 var settings = new SailfDiffSettings(
     alpha: 0.001,
-    round = 3,
-    useOutlierDetection = true,
-    testType = TestType.TTest,
-    maxDegreeOfParallelism = 4,
-    disableOrdering = false);
+    round: 3,
+    useOutlierDetection: true,
+    testType: TestType.TTest,
+    maxDegreeOfParallelism: 4,
+    disableOrdering: false);
 
 var settings = RunSettingsBuilder
     .CreateBuilder()
@@ -148,6 +148,7 @@ internal class SailfishBeforeAndAfterFileLocationHandler
         .FindTrackingFilesInDirectoryOrderedByLastModified(
             runSettings.GetRunSettingsTrackingDirectoryPath(),
             ascending: false);
+
         // Consider reading data from a:
         // - database
         // - cloud storage container

@@ -2,7 +2,5 @@ using MediatR;
 
 namespace Sailfish.Contracts.Public.Requests;
 
-public class GetAllTrackingDataOrderedChronologicallyRequest(bool ascending = false) : IRequest<GetAllTrackingDataOrderedChronologicallyResponse>
-{
-    public bool Ascending { get; } = ascending;
-}
+public record GetAllTrackingDataOrderedChronologicallyRequest(bool Ascending = false)
+    : IRequest<GetAllTrackingDataOrderedChronologicallyResponse>;

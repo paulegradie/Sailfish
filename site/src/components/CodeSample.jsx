@@ -24,9 +24,27 @@ const rego = `public class RegoProvider : IProvideARegistrationCallback
 }
 `;
 
+const settings = `var settings = RunSettingsBuilder
+    .CreateBuilder()
+    .TestsFromAssembliesContaining(typeof(ProjectAnchor))
+    .ProvidersFromAssembliesContaining(typeof(AppRegProvider))
+    .WithTestNames(typeof(MyTest).FullName)
+    .WithSailDiff()
+    .WithScaleFish()
+    .WithGlobalSampleSize(30)
+    .WithMinimumLogLevel(LogLevel.Information)
+    .WithCustomLogger(LoggerFactory.Create())
+    .DisableStreamingTrackingUpdates()
+    .WithLocalOutputDirectory("test_output")
+    .Build();
+
+await SailfishRunner.Run(settings);
+`;
+
 const tabs = [
     { name: 'BasicTest.cs', code: testCode },
-    { name: 'RegistrationProvider.cs', code: rego }
+    { name: 'RegistrationProvider.cs', code: rego },
+    { name: 'RunSettingsBuilder.cs', code: settings }
 ];
 
 

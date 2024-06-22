@@ -4,4 +4,7 @@ using Sailfish.Contracts.Public.Models;
 
 namespace Sailfish.Contracts.Public.Notifications;
 
-public record TestCaseStartedNotification(TestInstanceContainerExternal TestInstanceContainer, IEnumerable<dynamic> TestCaseGroup) : INotification;
+public record TestCaseStartedNotification(
+    TestInstanceContainerExternal TestInstanceContainer,
+    IEnumerable<dynamic> TestCaseGroup)
+    : INotification;

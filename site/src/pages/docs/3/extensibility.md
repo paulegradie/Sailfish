@@ -1,6 +1,7 @@
 ---
 title: Extensibility Commands
 ---
+
 ## Introduction
 
 Sailfish exposes several public MediatR commands. Implement MediatR handlers for these commands to furhter customize Sailfish behavior.
@@ -8,34 +9,20 @@ Sailfish exposes several public MediatR commands. Implement MediatR handlers for
 ## BeforeAndAfterFileLocationRequest
 
 - **Default handler implemented**
-- Used to provide tracking file location data to the t-test executor. E.g. Reading tracking data from blob storage.
+- Used to provide tracking file location data to the statistical test executor. E.g. Reading tracking data from blob storage or somewher else.
 - Registering an implementation of this will customize existing behaviour
 
 ```csharp
 
 // This is passed to the handler
-public class BeforeAndAfterFileLocationRequest : IRequest<BeforeAndAfterFileLocationResponse>
-{
-    public BeforeAndAfterFileLocationRequest(IEnumerable<string> providedBeforeTrackingFiles)
-    {
-        ProvidedBeforeTrackingFiles = providedBeforeTrackingFiles;
-    }
-
-    public IEnumerable<string> ProvidedBeforeTrackingFiles { get; }
-}
+public record BeforeAndAfterFileLocationRequest(
+    IEnumerable<string> ProvidedBeforeTrackingFiles)
+    : IRequest<BeforeAndAfterFileLocationResponse>;
 
 // you will return this from your handler's Handle method
-public class BeforeAndAfterFileLocationResponse
-{
-    public BeforeAndAfterFileLocationResponse(IEnumerable<string> beforeFilePaths, IEnumerable<string> afterFilePaths)
-    {
-        BeforeFilePaths = beforeFilePaths;
-        AfterFilePaths = afterFilePaths;
-    }
-
-    public IEnumerable<string> BeforeFilePaths { get; set; }
-    public IEnumerable<string> AfterFilePaths { get; set; }
-}
+public record BeforeAndAfterFileLocationResponse(
+    IEnumerable<string> BeforeFilePaths,
+    IEnumerable<string> AfterFilePaths);
 ```
 
 ---
@@ -48,91 +35,138 @@ public class BeforeAndAfterFileLocationResponse
 - Registering an implementation of this will customize existing behaviour
 
 ```csharp
-public class ReadInBeforeAndAfterDataRequest : IRequest<ReadInBeforeAndAfterDataResponse>
-{
-    public IEnumerable<string> BeforeFilePaths { get; }
-    public IEnumerable<string> AfterFilePaths { get; }
+public record ReadInBeforeAndAfterDataRequest(
+    IEnumerable<string> BeforeFilePaths,
+    IEnumerable<string> AfterFilePaths)
+    : IRequest<ReadInBeforeAndAfterDataResponse>;
 
-    public ReadInBeforeAndAfterDataRequest(IEnumerable<string> beforeFilePaths, IEnumerable<string> afterFilePaths)
-    {
-        BeforeFilePaths = beforeFilePaths;
-        AfterFilePaths = afterFilePaths;
-    }
-}
+
+public record ReadInBeforeAndAfterDataResponse(
+    TestData? BeforeData,
+    TestData? AfterData)
 ```
+
 ---
 
+## GetAllTrackingDataOrderedChronologicallyRequest
 
+- **Default handler implemented**
+- Returns a TrackingFileDataList in requested chronological order (ascending or descending)
+- Overriding this will let you specify a custom list of ordered data
+- This won't typically need to be overriden
+
+```csharp
+public class GetAllTrackingDataOrderedChronologicallyRequest(bool Ascending = false)
+    : IRequest<GetAllTrackingDataOrderedChronologicallyResponse>;
+
+public record GetAllTrackingDataOrderedChronologicallyResponse(TrackingFileDataList TrackingData);
+```
+
+---
 
 ## GetLatestExecutionSummaryRequest
 
 - Used to specify the latest execution summary for both Saildiff and ScaleFish
 
 ```csharp
-public class GetLatestExecutionSummaryRequest : IRequest<GetLatestExecutionSummaryResponse>
-{
-}
+public record GetLatestExecutionSummaryRequest
+    : IRequest<GetLatestExecutionSummaryResponse>;
+
+public record GetLatestExecutionSummaryResponse(List<IClassExecutionSummary> LatestExecutionSummaries);
 ```
+
+## TestCaseStartedNotification
+
+- A notification that signals the start of a single test case
+
+```csharp
+public record TestCaseStartedNotification(
+    TestInstanceContainerExternal TestInstanceContainer,
+    IEnumerable<dynamic> TestCaseGroup)
+    : INotification;
+```
+
 ---
 
 ## TestCaseCompletedNotification
 
- - Invoked after completion of a single test case
- - Used to stream individual test cases for tracking or otherwise
+- A notification that signals the completion of a single test case
+- Used to stream individual test cases for tracking or otherwise
 
+```csharp
+public record TestCaseCompletedNotification(
+    ClassExecutionSummaryTrackingFormat ClassExecutionSummaryTrackingFormat,
+    TestInstanceContainerExternal TestInstanceContainerExternal,
+    IEnumerable<dynamic> TestCaseGroup
+) : INotification;
+```
 
- ```csharp
- public class TestCaseCompletedNotification : INotification
-{
-    public TestCaseCompletedNotification(ClassExecutionSummaryTrackingFormat testCaseExecutionResult)
-    {
-        TestCaseExecutionResult = testCaseExecutionResult;
-    }
+---
 
-    public ClassExecutionSummaryTrackingFormat TestCaseExecutionResult { get; }
-}
- ```
+## TestClassCompletedNotification
+
+- A notification that signals the completion a single test class
+
+```csharp
+public record TestClassCompletedNotification(
+    ClassExecutionSummaryTrackingFormat ClassExecutionSummaryTrackingFormat,
+    TestInstanceContainerExternal TestInstanceContainerExternal,
+    IEnumerable<dynamic> TestCaseGroup) : INotification;
+```
+
+---
+
+## TestCaseDisabledNotification
+
+- A notification that signals that the current test case is disabled
+
+```csharp
+internal record TestCaseDisabledNotification(
+    TestInstanceContainerExternal TestInstanceContainer,
+    IEnumerable<dynamic> TestCaseGroup,
+    bool DisableTheGroup)
+    : INotification;
+```
+
+---
+
+## TestCaseExceptionNotification
+
+- A notification that signals that there was an exception in a test case
+
+```csharp
+public record TestCaseExceptionNotification(
+    TestInstanceContainerExternal? TestInstanceContainer,
+    IEnumerable<dynamic> TestCaseGroup,
+    Exception? Exception)
+    : INotification;
+```
 
 ---
 
 ## TestRunCompletedNotification
 
-- Invoked after completion of the full test run
+- A notification that signals the completion of the full test run
 - Used to write final tracking data
 
 ```csharp
-public class TestRunCompletedNotification : INotification
-{
-    public TestRunCompletedNotification(IEnumerable<ClassExecutionSummaryTrackingFormat> classExecutionSummaries)
-    {
-        ClassExecutionSummaries = classExecutionSummaries;
-    }
-
-    public IEnumerable<ClassExecutionSummaryTrackingFormat> ClassExecutionSummaries { get; }
-}
+public record TestRunCompletedNotification(
+    IEnumerable<ClassExecutionSummaryTrackingFormat> ClassExecutionSummaries)
+    : INotification;
 ```
 
 ---
 
-
-
-## ScalefishAnalysisCompleteNotification
+## ScaleFishAnalysisCompleteNotification
 
 - Invoked on completion of Scalefish analysis
 - Used to write model selection and model fitting result
 
 ```csharp
-public class ScalefishAnalysisCompleteNotification : INotification
-{
-    public ScalefishAnalysisCompleteNotification(string scalefishResultMarkdown, List<IScalefishClassModels> testClassComplexityResults)
-    {
-        ScalefishResultMarkdown = scalefishResultMarkdown;
-        TestClassComplexityResults = testClassComplexityResults;
-    }
-
-    public List<IScalefishClassModels> TestClassComplexityResults { get; }
-    public string ScalefishResultMarkdown { get; }
-}
+public record ScaleFishAnalysisCompleteNotification(
+    string ScaleFishResultMarkdown,
+    List<ScalefishClassModel> TestClassComplexityResults)
+    : INotification;
 ```
 
 ---
