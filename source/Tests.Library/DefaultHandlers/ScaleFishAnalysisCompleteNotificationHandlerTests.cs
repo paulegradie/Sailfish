@@ -42,9 +42,9 @@ public class ScaleFishAnalysisCompleteNotificationHandlerTests
         // invoke the handler
         await handler.Handle(notification, CancellationToken.None);
 
-        // assert results
         var files = Directory.GetFiles(outputDirectory);
         files.Length.ShouldBe(2);
+
         var modelFile = files.Single(x => x.EndsWith("json"));
 
         var data = await File.ReadAllTextAsync(modelFile);
