@@ -32,7 +32,7 @@ async Task<ScaleFishModel> LoadAModelFile(string rootDir)
         var file = Directory.GetFiles(rootDir, "ScalefishModels*").LastOrDefault();
         if (file is null) throw new TestException("Run a Sailfish test with a variable with multiple values and enable complexity for that variable to produce a Scalefish model file");
         var loaded = ModelLoader.LoadModelFile(file);
-        var model = loaded.GetScalefishModel(nameof(ScaleFishExample), nameof(ScaleFishExample.Linear), nameof(ScaleFishExample.N));
+        var model = loaded.GetScaleFishModel(nameof(ScaleFishExample), nameof(ScaleFishExample.Linear), nameof(ScaleFishExample.N));
         if (model is null) throw new TestException("Could not load model - is your method disabled?");
         return model;
     }

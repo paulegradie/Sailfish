@@ -65,7 +65,7 @@ public static class ModelLoader
     /// <param name="method"></param>
     /// <param name="property"></param>
     /// <returns></returns>
-    public static ScaleFishModel? GetScalefishModel(
+    public static ScaleFishModel? GetScaleFishModel(
         this IEnumerable<ScalefishClassModel> classModels,
         string testClass,
         string method,
@@ -80,7 +80,7 @@ public static class ModelLoader
             .ScaleFishModel;
     }
 
-    public static ScaleFishModel? GetScalefishModel(
+    public static ScaleFishModel? GetScaleFishModel(
         this IEnumerable<ScalefishClassModel> classModels,
         Type testClass,
         MemberInfo method,

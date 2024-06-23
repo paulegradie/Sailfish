@@ -25,11 +25,6 @@ public sealed class SailfishVariableAttribute : Attribute, ISailfishVariableAttr
     public SailfishVariableAttribute([MinLength(1)] params object[] n)
     {
         if (n.Length == 0) throw new SailfishException($"No values were provided to the {nameof(SailfishVariableAttribute)} attribute.");
-
-        if (UseScalefish && n.Length < 3)
-            throw new SailfishException(
-                "Complexity estimation requires at least 3 variable values for n. Accuracy positively correlates with the number and breath of values for n.");
-
         N.AddRange(n);
     }
 
@@ -42,7 +37,10 @@ public sealed class SailfishVariableAttribute : Attribute, ISailfishVariableAttr
     /// <exception cref="SailfishException">Thrown when no values are provided.</exception>
     public SailfishVariableAttribute(bool scaleFish, [MinLength(3)] params int[] n) : this(n.Cast<object>().ToArray())
     {
-        UseScalefish = scaleFish;
+        UseScaleFish = scaleFish;
+        if (UseScaleFish && n.Length < 3)
+            throw new SailfishException(
+                "Complexity estimation requires at least 3 variable values for n. Accuracy positively correlates with the number and breath of values for n.");
     }
 
     /// <summary>
@@ -50,7 +48,7 @@ public sealed class SailfishVariableAttribute : Attribute, ISailfishVariableAttr
     /// </summary>
     private List<object> N { get; } = new();
 
-    private bool UseScalefish { get; }
+    private bool UseScaleFish { get; }
 
     /// <summary>
     ///     Retrieves the variables as an enumerable.
@@ -67,6 +65,6 @@ public sealed class SailfishVariableAttribute : Attribute, ISailfishVariableAttr
     /// <returns>bool</returns>
     public bool IsScaleFishVariable()
     {
-        return UseScalefish;
+        return UseScaleFish;
     }
 }
