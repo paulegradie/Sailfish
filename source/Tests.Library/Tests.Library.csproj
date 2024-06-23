@@ -29,4 +29,8 @@
         <ProjectReference Include="..\Tests.E2E.ExceptionHandling\Tests.E2E.ExceptionHandling.csproj"/>
         <ProjectReference Include="..\Tests.E2E.TestSuite\Tests.E2E.TestSuite.csproj"/>
     </ItemGroup>
+
+    <ItemGroup>
+      <Folder Include="Analysis\SailDiff\StatsCore\" />
+    </ItemGroup>
 </Project>
