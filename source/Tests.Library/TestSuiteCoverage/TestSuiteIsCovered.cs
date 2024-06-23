@@ -68,9 +68,9 @@ public class TestSuiteIsCovered
             .WithMedian(0.2)
             .WithStdDev(1.0)
             .WithVariance(234.0)
-            .WithRawExecutionResults(new[] { 1.0, 2.0 })
+            .WithRawExecutionResults([1.0, 2.0])
             .WithSampleSize(2)
-            .WithDataWithOutliersRemoved(new[] { 3.0, 2.0 })
+            .WithDataWithOutliersRemoved([3.0, 2.0])
             .WithNumWarmupIterations(3)
             .WithLowerOutliers([2, 3])
             .WithUpperOutliers([3, 4])
@@ -84,9 +84,9 @@ public class TestSuiteIsCovered
             .WithMedian(2.3)
             .WithSampleSize(3)
             .WithNumWarmupIterations(2)
-            .WithDataWithOutliersRemoved(new[] { 1.0, 2.0 })
-            .WithLowerOutliers(new[] { 1.2, 3.0 })
-            .WithUpperOutliers(new[] { 2.3, 4.5 })
+            .WithDataWithOutliersRemoved([1.0, 2.0])
+            .WithLowerOutliers([1.2, 3.0])
+            .WithUpperOutliers([2.3, 4.5])
             .WithTotalNumOutliers(4)
             .Build();
 
@@ -110,7 +110,7 @@ public class TestSuiteIsCovered
             .WithTestClass(typeof(TestSuiteIsCovered))
             .WithExecutionSettings(executionSettings)
             .WithExecutionSettings(b => b.Build())
-            .WithCompiledTestCaseResult(new List<CompiledTestCaseResultTrackingFormat>() { })
+            .WithCompiledTestCaseResult([])
             .WithCompiledTestCaseResult(b => b.Build())
             .Build();
 

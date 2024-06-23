@@ -8,10 +8,7 @@ public class TestCaseIdBuilder
     private TestCaseName? testCaseName;
     private TestCaseVariables? testCaseVariables;
 
-    public static TestCaseIdBuilder Create()
-    {
-        return new TestCaseIdBuilder();
-    }
+    public static TestCaseIdBuilder Create() => new();
 
     public TestCaseIdBuilder WithTestCaseName(string displayName)
     {

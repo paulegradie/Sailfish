@@ -45,18 +45,18 @@ internal class TestCaseCompletedNotificationHandler : INotificationHandler<TestC
 
     public async Task Handle(TestCaseCompletedNotification notification, CancellationToken cancellationToken)
     {
-        if (notification.TestInstanceContainerExternal.PerformanceTimer is null)
-        {
-            var msg = $"PerformanceTimerResults was null for {notification.TestInstanceContainerExternal.Type.Name}";
-            logger.Log(LogLevel.Error, msg);
-            throw new SailfishException(msg);
-        }
-
         if (notification.TestInstanceContainerExternal is null)
         {
             var groupRef = notification.TestCaseGroup.FirstOrDefault()?.Cast<TestCase>();
 
             var msg = $"TestInstanceContainer was null for {groupRef?.Type.Name ?? "UnKnown Type"}";
+            logger.Log(LogLevel.Error, msg);
+            throw new SailfishException(msg);
+        }
+
+        if (notification.TestInstanceContainerExternal.PerformanceTimer is null)
+        {
+            var msg = $"PerformanceTimerResults was null for {notification.TestInstanceContainerExternal.Type.Name}";
             logger.Log(LogLevel.Error, msg);
             throw new SailfishException(msg);
         }
