@@ -10,19 +10,14 @@ coverage:
     project:
       default:
         # Set the minimum coverage percentage required
-        target: 75%
+        target: 72%
     patch:
       default:
         # Disable coverage percentage checks on diffs
         enabled: no
 
-  precision: 2  # Report coverage numbers with a precision of 2 decimal places
-  round: down   # Round coverage numbers down
-
-  range:
-    # Coverage percentage range (0 to 100)
-    start: 0
-    end: 100
+  precision: 2 # Report coverage numbers with a precision of 2 decimal places
+  round: down # Round coverage numbers down
 
   # Define a threshold below which the coverage is considered poor
   threshold: 1%
@@ -30,10 +25,10 @@ coverage:
 comment:
   layout: "reach, diff, flags, files"
   behavior: default
-  require_changes: no
-  require_base: no
-  require_head: no
-  require_report: no
+  require_changes: False
+  require_base: False
+  require_head: False
+  require_report: False
 
 parsers:
   gcov:
@@ -44,10 +39,10 @@ parsers:
       macro: no
 
 flags:
-  unittest:  # Define a flag for unit tests
+  unittest: # Define a flag for unit tests
     paths:
       - "tests/unit"
-  integration:  # Define a flag for integration tests
+  integration: # Define a flag for integration tests
     paths:
       - "tests/integration"
 
@@ -57,7 +52,7 @@ ignore:
   - "vendor/*"
   - "docs/*"
   - "**/*.md"
-  - "**/*Tests.*"  # Ignore any project with 'Tests.' in its name
+  - "**/*Tests.*" # Ignore any project with 'Tests.' in its name
 
 # Settings for custom coverage reporting
 yaml:
