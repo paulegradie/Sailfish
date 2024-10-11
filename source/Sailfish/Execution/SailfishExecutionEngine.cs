@@ -167,7 +167,10 @@ internal class SailfishExecutionEngine : ISailfishExecutionEngine
                         if (!testCase.Disabled)
                             memoryCache.Add(
                                 new CacheItem(providerPropertiesCacheKey,
-                                    testCase.Instance.RetrievePropertiesAndFields()), new CacheItemPolicy());
+                                    testCase.Instance.RetrievePropertiesAndFields()), new CacheItemPolicy()
+                                {
+                                    Priority = CacheItemPriority.NotRemovable
+                                });
                     }
                     catch (Exception ex)
                     {
