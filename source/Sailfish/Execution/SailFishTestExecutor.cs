@@ -21,7 +21,8 @@ internal class SailFishTestExecutor(
     ILogger logger,
     ITestCaseCountPrinter testCaseCountPrinter,
     ITestInstanceContainerCreator testInstanceContainerCreator,
-    ISailfishExecutionEngine engine) : ISailFishTestExecutor
+    ISailfishExecutionEngine engine,
+    IExecutionState executionState) : ISailFishTestExecutor
 {
     private const string MemoryCacheName = "GlobalStateMemoryCache";
     private readonly ISailfishExecutionEngine engine = engine;
@@ -77,8 +78,6 @@ internal class SailFishTestExecutor(
 
         var testProviderIndex = 0;
         var totalMethodCount = testInstanceContainerProviders.Count - 1;
-
-        var memoryCache = new MemoryCache(MemoryCacheName);
         foreach (var testProvider in testInstanceContainerProviders)
         {
             var providerPropertiesCacheKey = testProvider.Test.FullName ?? throw new SailfishException($"Failed to read the FullName of {testProvider.Test.Name}");
@@ -87,7 +86,7 @@ internal class SailFishTestExecutor(
                 testProviderIndex,
                 totalMethodCount,
                 testProvider,
-                memoryCache,
+                executionState,
                 providerPropertiesCacheKey,
                 cancellationToken);
             results.AddRange(executionResults);

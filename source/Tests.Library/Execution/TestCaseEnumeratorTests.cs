@@ -30,7 +30,7 @@ public class TestCaseEnumerationTests
         var summaryCompiler = Substitute.For<IClassExecutionSummaryCompiler>();
         var settings = Substitute.For<IRunSettings>();
         var engine = new SailfishExecutionEngine(logger, consoleWriter, iterator, printer, mediator, summaryCompiler, settings);
-
+        var executionState = new ExecutionState();
         var enumerator = Substitute.For<IEnumerator<TestInstanceContainer>>();
         enumerator.MoveNext().Throws<Exception>();
         var instanceContainer = TestInstanceContainer.CreateTestInstance(
@@ -53,7 +53,7 @@ public class TestCaseEnumerationTests
             1,
             2,
             provider,
-            MemoryCache.Default,
+            executionState,
             Some.RandomString(),
             [],
             CancellationToken.None);

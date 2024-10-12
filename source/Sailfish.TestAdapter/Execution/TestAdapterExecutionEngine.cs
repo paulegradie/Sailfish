@@ -22,24 +22,27 @@ internal interface ITestAdapterExecutionEngine
 
 internal class TestAdapterExecutionEngine : ITestAdapterExecutionEngine
 {
-    private const string MemoryCacheName = "GlobalStateMemoryCache";
     private readonly IClassExecutionSummaryCompiler classExecutionSummaryCompiler;
     private readonly ISailfishExecutionEngine engine;
+    private readonly IExecutionState executionState;
     private readonly ILogger logger;
     private readonly ITestInstanceContainerCreator testInstanceContainerCreator;
 
     public TestAdapterExecutionEngine(ITestInstanceContainerCreator testInstanceContainerCreator,
         IClassExecutionSummaryCompiler classExecutionSummaryCompiler,
         ISailfishExecutionEngine engine,
+        IExecutionState executionState,
         ILogger logger)
     {
         this.classExecutionSummaryCompiler = classExecutionSummaryCompiler;
         this.engine = engine;
+        this.executionState = executionState;
         this.logger = logger;
         this.testInstanceContainerCreator = testInstanceContainerCreator;
     }
 
-    public async Task<List<IClassExecutionSummary>> Execute(List<TestCase> testCases,
+    public async Task<List<IClassExecutionSummary>> Execute(
+        List<TestCase> testCases,
         CancellationToken cancellationToken)
     {
         var rawExecutionResults = new List<(string, TestClassResultGroup)>();
@@ -62,8 +65,6 @@ internal class TestAdapterExecutionEngine : ITestAdapterExecutionEngine
             var totalTestProviderCount = providerForCurrentTestCases.Count - 1;
 
             // reset a memory cache to hold class property values when transferring them between instances
-            var memoryCache = new MemoryCache(MemoryCacheName);
-
             var groupResults = new List<TestCaseExecutionResult>();
             for (var i = 0; i < providerForCurrentTestCases.Count; i++)
             {
@@ -75,7 +76,7 @@ internal class TestAdapterExecutionEngine : ITestAdapterExecutionEngine
                     i,
                     totalTestProviderCount,
                     testProvider,
-                    memoryCache,
+                    executionState,
                     providerPropertiesCacheKey,
                     unsortedTestCaseGroup.Cast<dynamic>().ToList(), // gross, but we need to send the object model testcase through the core lib. hmm
                     cancellationToken);
