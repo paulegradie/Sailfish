@@ -61,7 +61,6 @@ internal class TestInstanceContainerProvider : ITestInstanceContainerProvider
             {
                 var propertyNames = nextPropertySet.GetPropertyNames().ToArray();
                 var variableValues = nextPropertySet.GetPropertyValues().ToArray();
-
                 var testCaseId = DisplayNameHelper.CreateTestCaseId(Test, Method.Name, propertyNames, variableValues); // a uniq id
 
                 var instance = typeActivator.CreateDehydratedTestInstance(Test, testCaseId, disabled);
