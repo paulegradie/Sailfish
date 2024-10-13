@@ -89,6 +89,5 @@ internal class SailfishModuleRegistrations : IProvideAdditionalRegistrations
         builder.RegisterType<KolmogorovSmirnovTest>().As<IKolmogorovSmirnovTest>();
         builder.RegisterType<ScalefishObservationCompiler>().As<IScalefishObservationCompiler>();
         builder.RegisterType<SailDiffConsoleWindowMessageFormatter>().As<ISailDiffConsoleWindowMessageFormatter>();
-        builder.RegisterType<ExecutionState>().As<IExecutionState>().InstancePerDependency();
     }
 }

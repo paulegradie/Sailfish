@@ -94,7 +94,7 @@ internal class SailfishExecutionEngine : ISailfishExecutionEngine
     /// <param name="testProviderIndex"></param>
     /// <param name="totalTestProviderCount"></param>
     /// <param name="testProvider"></param>
-    /// <param name="memoryCache"></param>
+    /// <param name="executionState"></param>
     /// <param name="providerPropertiesCacheKey"></param>
     /// <param name="testCaseGroup"></param>
     /// <param name="cancellationToken"></param>
@@ -140,7 +140,7 @@ internal class SailfishExecutionEngine : ISailfishExecutionEngine
         if (testProvider.IsDisabled())
         {
             await mediator.Publish(
-                new TestCaseDisabledNotification(testCaseEnumerator.Current.ToExternal(), testCaseGroup.ToList(), true),
+                new TestCaseDisabledNotification(testCaseEnumerator.Current.ToExternal(), testCaseGroup, true),
                 cancellationToken);
             testCaseEnumerator.Dispose();
             return results;
@@ -280,7 +280,7 @@ internal class SailfishExecutionEngine : ISailfishExecutionEngine
 
     private async Task<TestCaseExecutionResult> IterateOverVariableCombos(
         TestInstanceContainer testInstanceContainer,
-        IEnumerable<dynamic> testCaseGroup,
+        IReadOnlyCollection<dynamic> testCaseGroup,
         CancellationToken cancellationToken = default)
     {
         TestCaseExecutionResult testCaseExecutionResult;
@@ -320,10 +320,10 @@ internal class SailfishExecutionEngine : ISailfishExecutionEngine
         TestCaseExecutionResult testExecutionResult)
     {
         var group = new TestClassResultGroup(testClass, [testExecutionResult]);
-        return classExecutionSummaryCompiler.CompileToSummaries(new[]
-        {
-            group
-        }).ToTrackingFormat().Single();
+        return classExecutionSummaryCompiler
+            .CompileToSummaries([group])
+            .ToTrackingFormat()
+            .Single();
     }
 
     private static bool ShouldDisableOverheadEstimationFromTypeOrMethod(TestInstanceContainer testInstanceContainer)
