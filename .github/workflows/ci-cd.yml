@@ -54,7 +54,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        project: ["Sailfish", "Sailfish.TestAdapter", "Sailfish.Analyzers"]
+        project: ["Sailfish"]
 
     steps:
       - uses: actions/checkout@v4
