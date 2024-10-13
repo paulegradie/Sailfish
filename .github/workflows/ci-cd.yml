@@ -70,7 +70,7 @@ jobs:
           dotnet build ./source/Sailfish.TestAdapter/Sailfish.TestAdapter.csproj --configuration Release /p:Version=${{ needs.set_version.outputs.version }}
           dotnet build ./source/Sailfish.Analyzers/Sailfish.Analyzers.csproj --configuration Release /p:Version=${{ needs.set_version.outputs.version }}
       - name: Upload Artifacts
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
           name: built-binaries
           path: |
