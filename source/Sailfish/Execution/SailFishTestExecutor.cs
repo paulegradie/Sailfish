@@ -17,17 +17,23 @@ internal interface ISailFishTestExecutor
         CancellationToken cancellationToken = default);
 }
 
-internal class SailFishTestExecutor(
-    ILogger logger,
-    ITestCaseCountPrinter testCaseCountPrinter,
-    ITestInstanceContainerCreator testInstanceContainerCreator,
-    ISailfishExecutionEngine engine) : ISailFishTestExecutor
+internal class SailFishTestExecutor : ISailFishTestExecutor
 {
-    private const string MemoryCacheName = "GlobalStateMemoryCache";
-    private readonly ISailfishExecutionEngine engine = engine;
-    private readonly ILogger logger = logger;
-    private readonly ITestCaseCountPrinter testCaseCountPrinter = testCaseCountPrinter;
-    private readonly ITestInstanceContainerCreator testInstanceContainerCreator = testInstanceContainerCreator;
+    private readonly ISailfishExecutionEngine engine;
+    private readonly ILogger logger;
+    private readonly ITestCaseCountPrinter testCaseCountPrinter;
+    private readonly ITestInstanceContainerCreator testInstanceContainerCreator;
+
+    public SailFishTestExecutor(ILogger logger,
+        ITestCaseCountPrinter testCaseCountPrinter,
+        ITestInstanceContainerCreator testInstanceContainerCreator,
+        ISailfishExecutionEngine engine)
+    {
+        this.engine = engine;
+        this.logger = logger;
+        this.testCaseCountPrinter = testCaseCountPrinter;
+        this.testInstanceContainerCreator = testInstanceContainerCreator;
+    }
 
     public async Task<List<TestClassResultGroup>> Execute(
         IEnumerable<Type> testTypes,
@@ -77,8 +83,7 @@ internal class SailFishTestExecutor(
 
         var testProviderIndex = 0;
         var totalMethodCount = testInstanceContainerProviders.Count - 1;
-
-        var memoryCache = new MemoryCache(MemoryCacheName);
+        var executionState = new ExecutionState();
         foreach (var testProvider in testInstanceContainerProviders)
         {
             var providerPropertiesCacheKey = testProvider.Test.FullName ?? throw new SailfishException($"Failed to read the FullName of {testProvider.Test.Name}");
@@ -87,7 +92,7 @@ internal class SailFishTestExecutor(
                 testProviderIndex,
                 totalMethodCount,
                 testProvider,
-                memoryCache,
+                executionState,
                 providerPropertiesCacheKey,
                 cancellationToken);
             results.AddRange(executionResults);

@@ -67,7 +67,7 @@ internal class SailfishModuleRegistrations : IProvideAdditionalRegistrations
         builder.RegisterType<DefaultTrackingFileDirectoryReader>().As<ITrackingFileDirectoryReader>();
         builder.RegisterType<IterationVariableRetriever>().As<IIterationVariableRetriever>();
         builder.RegisterType<SailDiffResultMarkdownConverter>().As<ISailDiffResultMarkdownConverter>();
-        builder.RegisterType<SailfishExecutionEngine>().As<ISailfishExecutionEngine>();
+        builder.RegisterType<SailfishExecutionEngine>().As<ISailfishExecutionEngine>().InstancePerDependency();
         builder.RegisterType<MarkdownTableConverter>().As<IMarkdownTableConverter>().InstancePerDependency();
         builder.RegisterType<TrackingFileParser>().As<ITrackingFileParser>();
         builder.RegisterType<SailDiff>().As<ISailDiffInternal>().InstancePerDependency();

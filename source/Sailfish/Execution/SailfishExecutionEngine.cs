@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Reflection;
-using System.Runtime.Caching;
 using System.Threading;
 using System.Threading.Tasks;
 using MediatR;
@@ -26,7 +25,7 @@ internal interface ISailfishExecutionEngine
         int testProviderIndex,
         int totalTestProviderCount,
         ITestInstanceContainerProvider testProvider,
-        MemoryCache memoryCache,
+        IExecutionState executionState,
         string providerPropertiesCacheKey,
         CancellationToken cancellationToken = default);
 
@@ -34,7 +33,7 @@ internal interface ISailfishExecutionEngine
         int testProviderIndex,
         int totalTestProviderCount,
         ITestInstanceContainerProvider testProvider,
-        MemoryCache memoryCache,
+        IExecutionState executionState,
         string providerPropertiesCacheKey,
         List<dynamic> testCaseGroup,
         CancellationToken cancellationToken = default);
@@ -72,7 +71,7 @@ internal class SailfishExecutionEngine : ISailfishExecutionEngine
         [Range(1, int.MaxValue)] int testProviderIndex,
         [Range(1, int.MaxValue)] int totalTestProviderCount,
         ITestInstanceContainerProvider testProvider,
-        MemoryCache memoryCache,
+        IExecutionState executionState,
         string providerPropertiesCacheKey,
         CancellationToken cancellationToken = default)
     {
@@ -80,7 +79,7 @@ internal class SailfishExecutionEngine : ISailfishExecutionEngine
             testProviderIndex,
             totalTestProviderCount,
             testProvider,
-            memoryCache,
+            executionState,
             providerPropertiesCacheKey,
             [],
             cancellationToken);
@@ -95,7 +94,7 @@ internal class SailfishExecutionEngine : ISailfishExecutionEngine
     /// <param name="testProviderIndex"></param>
     /// <param name="totalTestProviderCount"></param>
     /// <param name="testProvider"></param>
-    /// <param name="memoryCache"></param>
+    /// <param name="executionState"></param>
     /// <param name="providerPropertiesCacheKey"></param>
     /// <param name="testCaseGroup"></param>
     /// <param name="cancellationToken"></param>
@@ -104,7 +103,7 @@ internal class SailfishExecutionEngine : ISailfishExecutionEngine
         [Range(1, int.MaxValue)] int testProviderIndex,
         [Range(1, int.MaxValue)] int totalTestProviderCount,
         ITestInstanceContainerProvider testProvider,
-        MemoryCache memoryCache,
+        IExecutionState executionState,
         string providerPropertiesCacheKey,
         List<dynamic> testCaseGroup,
         CancellationToken cancellationToken = default)
@@ -123,7 +122,8 @@ internal class SailfishExecutionEngine : ISailfishExecutionEngine
         }
         catch (Exception ex)
         {
-            await mediator.Publish(new TestCaseExceptionNotification(testCaseEnumerator.Current.ToExternal(), testCaseGroup, ex),
+            await mediator.Publish(
+                new TestCaseExceptionNotification(testCaseEnumerator.Current.ToExternal(), testCaseGroup, ex),
                 cancellationToken);
             await DisposeOfTestInstance(testCaseEnumerator.Current);
             testCaseEnumerator.Dispose();
@@ -140,7 +140,7 @@ internal class SailfishExecutionEngine : ISailfishExecutionEngine
         if (testProvider.IsDisabled())
         {
             await mediator.Publish(
-                new TestCaseDisabledNotification(testCaseEnumerator.Current.ToExternal(), testCaseGroup.ToList(), true),
+                new TestCaseDisabledNotification(testCaseEnumerator.Current.ToExternal(), testCaseGroup, true),
                 cancellationToken);
             testCaseEnumerator.Dispose();
             return results;
@@ -151,9 +151,9 @@ internal class SailfishExecutionEngine : ISailfishExecutionEngine
             var testCase = testCaseEnumerator.Current;
             try
             {
-                if (!testCase.Disabled && memoryCache.Contains(providerPropertiesCacheKey))
+                if (!testCase.Disabled && executionState.Contains(providerPropertiesCacheKey))
                 {
-                    var savedState = memoryCache.Get(providerPropertiesCacheKey) as PropertiesAndFields;
+                    var savedState = executionState.GetState(providerPropertiesCacheKey);
                     savedState?.ApplyPropertiesAndFieldsTo(testCase.Instance);
                 }
 
@@ -161,21 +161,20 @@ internal class SailfishExecutionEngine : ISailfishExecutionEngine
                 testCaseCountPrinter.PrintCaseUpdate(testCase.TestCaseId.DisplayName);
 
                 if (ShouldCallGlobalSetup(testProviderIndex, currentVariableSetIndex))
+                {
                     try
                     {
                         await testCase.CoreInvoker.GlobalSetup(cancellationToken);
                         if (!testCase.Disabled)
-                            memoryCache.Add(
-                                new CacheItem(providerPropertiesCacheKey,
-                                    testCase.Instance.RetrievePropertiesAndFields()), new CacheItemPolicy()
-                                {
-                                    Priority = CacheItemPriority.NotRemovable // Otherwise we can find we can't re-hydrate the test class instance
-                                });
+                        {
+                            executionState.SetState(providerPropertiesCacheKey, testCase.Instance.RetrievePropertiesAndFields());
+                        }
                     }
                     catch (Exception ex)
                     {
                         return await CatchAndReturn(ex, testCase, testCaseGroup, cancellationToken);
                     }
+                }
 
                 if (testCase.Disabled)
                 {
@@ -216,7 +215,7 @@ internal class SailfishExecutionEngine : ISailfishExecutionEngine
                     try
                     {
                         await testCase.CoreInvoker.GlobalTeardown(cancellationToken);
-                        if (!testCase.Disabled) memoryCache.Remove(providerPropertiesCacheKey);
+                        if (!testCase.Disabled) executionState.RemoveState(providerPropertiesCacheKey);
                     }
                     catch (Exception ex)
                     {
@@ -273,7 +272,9 @@ internal class SailfishExecutionEngine : ISailfishExecutionEngine
         IEnumerable<dynamic> testCaseGroup, CancellationToken cancellationToken)
     {
         if (ex is NullReferenceException)
+        {
             ex = new NullReferenceException(ex.Message + Environment.NewLine + $"Null variable or property encountered in method: {testCase.ExecutionMethod.Name}");
+        }
 
         await mediator.Publish(new TestCaseExceptionNotification(testCase.ToExternal(), testCaseGroup, ex), cancellationToken);
         return [new TestCaseExecutionResult(testCase, ex)];
@@ -281,11 +282,11 @@ internal class SailfishExecutionEngine : ISailfishExecutionEngine
 
     private async Task<TestCaseExecutionResult> IterateOverVariableCombos(
         TestInstanceContainer testInstanceContainer,
-        IEnumerable<dynamic> testCaseGroup,
+        IReadOnlyCollection<dynamic> testCaseGroup,
         CancellationToken cancellationToken = default)
     {
         TestCaseExecutionResult testCaseExecutionResult;
-        try // this is not great control flow - this is where we catch SailfishMethod exceptions
+        try // this is not great flow control - this is where we catch SailfishMethod exceptions
         {
             testCaseExecutionResult = await testCaseIterator.Iterate(
                 testInstanceContainer,
@@ -321,7 +322,10 @@ internal class SailfishExecutionEngine : ISailfishExecutionEngine
         TestCaseExecutionResult testExecutionResult)
     {
         var group = new TestClassResultGroup(testClass, [testExecutionResult]);
-        return classExecutionSummaryCompiler.CompileToSummaries(new[] { group }).ToTrackingFormat().Single();
+        return classExecutionSummaryCompiler
+            .CompileToSummaries([group])
+            .ToTrackingFormat()
+            .Single();
     }
 
     private static bool ShouldDisableOverheadEstimationFromTypeOrMethod(TestInstanceContainer testInstanceContainer)
@@ -360,11 +364,11 @@ internal class SailfishExecutionEngine : ISailfishExecutionEngine
                 break;
 
             default:
-            {
-                if (instanceContainer is not null) instanceContainer.Instance = null!;
+                {
+                    if (instanceContainer is not null) instanceContainer.Instance = null!;
 
-                break;
-            }
+                    break;
+                }
         }
     }
 }

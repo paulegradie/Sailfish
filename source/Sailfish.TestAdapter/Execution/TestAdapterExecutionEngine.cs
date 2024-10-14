@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using System.Runtime.Caching;
 using System.Threading;
 using System.Threading.Tasks;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel;
@@ -22,7 +21,6 @@ internal interface ITestAdapterExecutionEngine
 
 internal class TestAdapterExecutionEngine : ITestAdapterExecutionEngine
 {
-    private const string MemoryCacheName = "GlobalStateMemoryCache";
     private readonly IClassExecutionSummaryCompiler classExecutionSummaryCompiler;
     private readonly ISailfishExecutionEngine engine;
     private readonly ILogger logger;
@@ -39,7 +37,8 @@ internal class TestAdapterExecutionEngine : ITestAdapterExecutionEngine
         this.testInstanceContainerCreator = testInstanceContainerCreator;
     }
 
-    public async Task<List<IClassExecutionSummary>> Execute(List<TestCase> testCases,
+    public async Task<List<IClassExecutionSummary>> Execute(
+        List<TestCase> testCases,
         CancellationToken cancellationToken)
     {
         var rawExecutionResults = new List<(string, TestClassResultGroup)>();
@@ -61,22 +60,20 @@ internal class TestAdapterExecutionEngine : ITestAdapterExecutionEngine
 
             var totalTestProviderCount = providerForCurrentTestCases.Count - 1;
 
-            // reset a memory cache to hold class property values when transferring them between instances
-            var memoryCache = new MemoryCache(MemoryCacheName);
-
+            var executionState = new ExecutionState();
             var groupResults = new List<TestCaseExecutionResult>();
             for (var i = 0; i < providerForCurrentTestCases.Count; i++)
             {
                 var testProvider = providerForCurrentTestCases[i];
-                var providerPropertiesCacheKey = testProvider.Test.FullName ??
+                var providerPropertiesStateKey = testProvider.Test.FullName ??
                                                  throw new SailfishException(
                                                      $"Failed to read the FullName of {testProvider.Test.Name}");
                 var results = await engine.ActivateContainer(
                     i,
                     totalTestProviderCount,
                     testProvider,
-                    memoryCache,
-                    providerPropertiesCacheKey,
+                    executionState,
+                    providerPropertiesStateKey,
                     unsortedTestCaseGroup.Cast<dynamic>().ToList(), // gross, but we need to send the object model testcase through the core lib. hmm
                     cancellationToken);
                 groupResults.AddRange(results);

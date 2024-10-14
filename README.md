@@ -21,4 +21,5 @@ Available on [Nuget](https://www.nuget.org/packages/Sailfish/)
 </h1>
 
 ### Used by:
-<img src="./assets/OctopusDeploy-logo-RGB.png" alt="Octopus Deploy" style='background: white; border-radius: 10px' />
+<img src="./assets/OctopusDeploy-logo-RGB.svg" alt="Octopus Deploy" style='width: 500px; background: white; border-radius: 10px' />
+<img src="./assets/empower.svg" alt="Octopus Deploy" style='width: 500px;  height: 150px; object-fit: cover; object-position: center; background: white; border-radius: 10px' />
