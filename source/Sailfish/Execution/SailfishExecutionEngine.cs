@@ -161,6 +161,7 @@ internal class SailfishExecutionEngine : ISailfishExecutionEngine
                 testCaseCountPrinter.PrintCaseUpdate(testCase.TestCaseId.DisplayName);
 
                 if (ShouldCallGlobalSetup(testProviderIndex, currentVariableSetIndex))
+                {
                     try
                     {
                         await testCase.CoreInvoker.GlobalSetup(cancellationToken);
@@ -173,6 +174,7 @@ internal class SailfishExecutionEngine : ISailfishExecutionEngine
                     {
                         return await CatchAndReturn(ex, testCase, testCaseGroup, cancellationToken);
                     }
+                }
 
                 if (testCase.Disabled)
                 {

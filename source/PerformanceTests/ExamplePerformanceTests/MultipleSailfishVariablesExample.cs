@@ -3,7 +3,7 @@ using System;
 
 namespace PerformanceTests.ExamplePerformanceTests;
 
-[Sailfish]
+[Sailfish(DisableOverheadEstimation = true)]
 public class MultipleSailfishVariablesExample
 {
     [SailfishVariable(1, 2, 3)]
