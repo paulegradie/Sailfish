@@ -169,7 +169,7 @@ internal class SailfishExecutionEngine : ISailfishExecutionEngine
                                 new CacheItem(providerPropertiesCacheKey,
                                     testCase.Instance.RetrievePropertiesAndFields()), new CacheItemPolicy()
                                 {
-                                    Priority = CacheItemPriority.NotRemovable
+                                    Priority = CacheItemPriority.NotRemovable // Otherwise we can find we can't re-hydrate the test class instance
                                 });
                     }
                     catch (Exception ex)
