@@ -2,6 +2,9 @@
 title: Release Notes
 ---
 
+- 2.0.268
+  - replaces internal MemoryCache with a class to hold a state cache. Fixes issue #180 MemoryCache would evict data
+
 - 2.0.192
   - Code cleanup
   - Update documentation
