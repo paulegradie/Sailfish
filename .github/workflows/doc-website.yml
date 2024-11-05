@@ -76,6 +76,9 @@ jobs:
 
       - name: Static HTML export with Next.js
         run: npx --no-install next export
+      
+      - name: List Dirs
+        run: ls */**
 
       - name: Upload artifact
         uses: actions/upload-pages-artifact@v3
