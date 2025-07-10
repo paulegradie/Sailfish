@@ -48,7 +48,7 @@ jobs:
         uses: actions/setup-node@v4
         with:
           cache-dependency-path: site/package-lock.json
-          node-version: "16"
+          node-version: "18"
           cache: npm
 
       - name: Setup Pages
@@ -58,7 +58,7 @@ jobs:
           static_site_generator: next
 
       - name: Restore cache
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: |
             ./.next/cache
