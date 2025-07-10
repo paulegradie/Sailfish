@@ -6,28 +6,23 @@ on:
       - main
     paths-ignore:
       - "**/*.md"
-      - "**/*.yml"
       - "**/.gitignore"
       - "assets/*"
       - "source/PerformanceTests/*"
       - "source/PerformanceTestingConsoleApp/*"
       - "**/site/*"
-      - /site/*"
+      - "/site/*"
 
   pull_request:
-    types: [opened, synchronize, reopened]
+    types: [ opened, synchronize, reopened ]
     paths-ignore:
       - "**/*.md"
-      - "**/*.yml"
       - "**/.gitignore"
       - "assets/*"
       - "source/PerformanceTests/*"
       - "source/PerformanceTestingConsoleApp/*"
       - "**/site/*"
-      - /site/*"
-
-  schedule:
-    - cron: "0 0 * * *" # Runs at 00:00 UTC every day
+      - "/site/*"
 
   workflow_dispatch:
 
@@ -54,7 +49,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        project: ["Sailfish"]
+        project: [ "Sailfish" ]
 
     steps:
       - uses: actions/checkout@v4
@@ -75,11 +70,9 @@ jobs:
           name: built-binaries
           path: |
             source/Sailfish/bin/Release/**
-            source/Sailfish/obj/Release/**
             source/Sailfish.TestAdapter/bin/Release/**
-            source/Sailfish.TestAdapter/obj/Release/**
             source/Sailfish.Analyzers/bin/Release/**
-            source/Sailfish.Analyzers/obj/Release/**
+          retention-days: 1
 
   test:
     name: Unit Tests
@@ -87,12 +80,12 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        project: ["Tests.Library", "Tests.TestAdapter", "Tests.Analyzers"]
+        project: [ "Tests.Library", "Tests.TestAdapter", "Tests.Analyzers" ]
     steps:
       - uses: actions/checkout@v4
 
       - name: Setup dotnet
-        uses: actions/setup-dotnet@v3
+        uses: actions/setup-dotnet@v4
         with:
           dotnet-version: 8.x.x
 
@@ -112,16 +105,16 @@ jobs:
 
   pack:
     name: Nuget Package Test
-    needs: [test, set_version]
+    needs: [ test, set_version ]
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        project: ["Sailfish", "Sailfish.TestAdapter", "Sailfish.Analyzers"]
+        project: [ "Sailfish", "Sailfish.TestAdapter", "Sailfish.Analyzers" ]
     steps:
       - uses: actions/checkout@v4
 
       - name: Setup dotnet
-        uses: actions/setup-dotnet@v3
+        uses: actions/setup-dotnet@v4
         with:
           dotnet-version: 8.x.x
 
@@ -137,17 +130,25 @@ jobs:
       - name: Pack Projects
         run: dotnet pack ./source/${{matrix.project}}/${{matrix.project}}.csproj --configuration Release /p:Version=${{ needs.set_version.outputs.version }} --no-build --output .
 
+      - name: Verify Package Exists
+        run: |
+          if [ ! -f "${{matrix.project}}.${{ needs.set_version.outputs.version }}.nupkg" ]; then
+            echo "Package file not found: ${{matrix.project}}.${{ needs.set_version.outputs.version }}.nupkg"
+            exit 1
+          fi
+          echo "Package file found: ${{matrix.project}}.${{ needs.set_version.outputs.version }}.nupkg"
+
       - name: Push Packages to Nuget
-        if: github.ref == 'refs/heads/main' && github.event_name != 'schedule'
-        run: dotnet nuget push ${{matrix.project}}.${{ needs.set_version.outputs.version }}.nupkg --source https://www.nuget.org --api-key ${{secrets.NUGET_API_KEY}}
+        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+        run: dotnet nuget push ${{matrix.project}}.${{ needs.set_version.outputs.version }}.nupkg --source https://www.nuget.org --api-key ${{secrets.NUGET_API_KEY}} --skip-duplicate
 
   sonar:
     name: Sonar Code Quality Check
-    needs: [set_version, build]
+    needs: [ set_version, build ]
     runs-on: windows-latest
     steps:
       - name: Set up JDK 17
-        uses: actions/setup-java@v3
+        uses: actions/setup-java@v4
         with:
           java-version: 17
           distribution: "zulu" # Alternative distribution options are available.
@@ -155,14 +156,14 @@ jobs:
         with:
           fetch-depth: 0 # Shallow clones should be disabled for a better relevancy of analysis
       - name: Cache SonarCloud packages
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: ~\sonar\cache
           key: ${{ runner.os }}-sonar
           restore-keys: ${{ runner.os }}-sonar
       - name: Cache SonarCloud scanner
         id: cache-sonar-scanner
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: .\.sonar\scanner
           key: ${{ runner.os }}-sonar-scanner
