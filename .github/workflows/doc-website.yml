@@ -5,10 +5,10 @@ on:
   push:
     branches: ["main"]
     paths-ignore:
-      - "**/*.yml"
+      - "**/*.yml"  # Workflow changes don't affect documentation
       - "**/.gitignore"
       - "assets/*"
-      - "source/*"
+      - "source/*"  # Source code changes don't affect documentation
 
   # Allows you to run this workflow manually from the Actions tab
   workflow_dispatch:

@@ -6,7 +6,6 @@ on:
       - main
     paths-ignore:
       - "**/*.md"
-      - "**/*.yml"
       - "**/.gitignore"
       - "assets/*"
       - "source/PerformanceTests/*"
@@ -18,7 +17,6 @@ on:
     types: [ opened, synchronize, reopened ]
     paths-ignore:
       - "**/*.md"
-      - "**/*.yml"
       - "**/.gitignore"
       - "assets/*"
       - "source/PerformanceTests/*"
@@ -132,8 +130,16 @@ jobs:
       - name: Pack Projects
         run: dotnet pack ./source/${{matrix.project}}/${{matrix.project}}.csproj --configuration Release /p:Version=${{ needs.set_version.outputs.version }} --no-build --output .
 
+      - name: Verify Package Exists
+        run: |
+          if [ ! -f "${{matrix.project}}.${{ needs.set_version.outputs.version }}.nupkg" ]; then
+            echo "Package file not found: ${{matrix.project}}.${{ needs.set_version.outputs.version }}.nupkg"
+            exit 1
+          fi
+          echo "Package file found: ${{matrix.project}}.${{ needs.set_version.outputs.version }}.nupkg"
+
       - name: Push Packages to Nuget
-        if: github.ref == 'refs/heads/main' && github.event_name != 'schedule'
+        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
         run: dotnet nuget push ${{matrix.project}}.${{ needs.set_version.outputs.version }}.nupkg --source https://www.nuget.org --api-key ${{secrets.NUGET_API_KEY}} --skip-duplicate
 
   sonar:
