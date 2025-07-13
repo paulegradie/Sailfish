@@ -13,6 +13,7 @@ using Sailfish.Analysis.SailDiff.Statistics.Tests.TwoSampleWilcoxonSignedRankTes
 using Sailfish.Analysis.ScaleFish;
 using Sailfish.Contracts.Public;
 using Sailfish.Contracts.Public.Models;
+using Sailfish.Contracts.Public.Notifications;
 using Sailfish.Contracts.Public.Serialization.Tracking.V1;
 using Sailfish.Execution;
 using Sailfish.Logging;
@@ -91,6 +92,8 @@ internal class SailfishModuleRegistrations : IProvideAdditionalRegistrations
         builder.RegisterType<KolmogorovSmirnovTest>().As<IKolmogorovSmirnovTest>();
         builder.RegisterType<ScalefishObservationCompiler>().As<IScalefishObservationCompiler>();
         builder.RegisterType<SailDiffConsoleWindowMessageFormatter>().As<ISailDiffConsoleWindowMessageFormatter>();
+        builder.RegisterType<MethodComparisonCoordinator>().As<IMethodComparisonCoordinator>().SingleInstance();
+        builder.RegisterType<MethodComparisonPresenter>().As<INotificationHandler<MethodComparisonCompletedNotification>>().SingleInstance();
     }
 
     private const string MediatrCommunityLicenseString =

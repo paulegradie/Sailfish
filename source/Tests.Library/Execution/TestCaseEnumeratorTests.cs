@@ -34,7 +34,8 @@ public class TestCaseEnumerationTests
         var mediator = Substitute.For<IMediator>();
         var summaryCompiler = Substitute.For<IClassExecutionSummaryCompiler>();
         var settings = Substitute.For<IRunSettings>();
-        var engine = new SailfishExecutionEngine(logger, consoleWriter, iterator, printer, mediator, summaryCompiler, settings);
+        var methodComparisonCoordinator = Substitute.For<IMethodComparisonCoordinator>();
+        var engine = new SailfishExecutionEngine(logger, consoleWriter, iterator, printer, mediator, summaryCompiler, settings, methodComparisonCoordinator);
         var executionState = new ExecutionState();
         var enumerator = Substitute.For<IEnumerator<TestInstanceContainer>>();
         enumerator.MoveNext().Throws<Exception>();
@@ -97,7 +98,10 @@ public class TestCaseEnumerationTests
 
         var iterator = new TestCaseIterator(runSettings, logger);
         var summaryCompiler = new ClassExecutionSummaryCompiler(new StatisticsCompiler(), runSettings); //Substitute.For<IClassExecutionSummaryCompiler>());
-        var engine = new SailfishExecutionEngine(logger, consoleWriter, iterator, printer, mediator, summaryCompiler, settings);
+        var methodComparisonCoordinator = Substitute.For<IMethodComparisonCoordinator>();
+        methodComparisonCoordinator.ExecuteComparisons(Arg.Any<List<TestCaseExecutionResult>>(), Arg.Any<CancellationToken>())
+            .Returns(Task.FromResult(new List<MethodComparisonResult>()));
+        var engine = new SailfishExecutionEngine(logger, consoleWriter, iterator, printer, mediator, summaryCompiler, settings, methodComparisonCoordinator);
         var executionState = new ExecutionState();
 
         var provider = new TestInstanceContainerProvider(

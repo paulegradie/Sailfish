@@ -48,6 +48,7 @@ internal class SailfishExecutionEngine : ISailfishExecutionEngine
     private readonly IRunSettings runSettings;
     private readonly ITestCaseCountPrinter testCaseCountPrinter;
     private readonly ITestCaseIterator testCaseIterator;
+    private readonly IMethodComparisonCoordinator methodComparisonCoordinator;
 
     public SailfishExecutionEngine(
         ILogger logger,
@@ -56,7 +57,8 @@ internal class SailfishExecutionEngine : ISailfishExecutionEngine
         ITestCaseCountPrinter testCaseCountPrinter,
         IMediator mediator,
         IClassExecutionSummaryCompiler classExecutionSummaryCompiler,
-        IRunSettings runSettings)
+        IRunSettings runSettings,
+        IMethodComparisonCoordinator methodComparisonCoordinator)
     {
         this.classExecutionSummaryCompiler = classExecutionSummaryCompiler;
         this.logger = logger;
@@ -65,6 +67,7 @@ internal class SailfishExecutionEngine : ISailfishExecutionEngine
         this.runSettings = runSettings;
         this.testCaseCountPrinter = testCaseCountPrinter;
         this.testCaseIterator = testCaseIterator;
+        this.methodComparisonCoordinator = methodComparisonCoordinator;
     }
 
     public async Task<List<TestCaseExecutionResult>> ActivateContainer(
@@ -244,6 +247,20 @@ internal class SailfishExecutionEngine : ISailfishExecutionEngine
 
         testCaseEnumerator.Dispose();
 
+        // Execute method comparisons if any results contain comparison attributes
+        if (results.Any())
+        {
+            var comparisonResults = await ExecuteMethodComparisons(results, cancellationToken);
+
+            // Publish comparison results
+            foreach (var comparisonResult in comparisonResults)
+            {
+                await mediator.Publish(
+                    new MethodComparisonCompletedNotification(comparisonResult, testCaseGroup),
+                    cancellationToken);
+            }
+        }
+
         return results;
     }
 
@@ -370,5 +387,12 @@ internal class SailfishExecutionEngine : ISailfishExecutionEngine
                     break;
                 }
         }
+    }
+
+    private async Task<List<MethodComparisonResult>> ExecuteMethodComparisons(
+        List<TestCaseExecutionResult> results,
+        CancellationToken cancellationToken)
+    {
+        return await methodComparisonCoordinator.ExecuteComparisons(results, cancellationToken);
     }
 }

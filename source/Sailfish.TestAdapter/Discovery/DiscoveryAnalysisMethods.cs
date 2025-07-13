@@ -105,7 +105,13 @@ public static class DiscoveryAnalysisMethods
                             from methodDeclaration in methodDeclarations
                             let lineSpan = syntaxTree.GetLineSpan(methodDeclaration.Span)
                             let lineNumber = lineSpan.StartLinePosition.Line + 1
-                            select new MethodMetaData(methodDeclaration.Identifier.ValueText, lineNumber))
+                            let comparisonInfo = ExtractComparisonInfo(methodDeclaration)
+                            select new MethodMetaData(
+                                methodDeclaration.Identifier.ValueText,
+                                lineNumber,
+                                comparisonInfo.ComparisonGroup,
+                                comparisonInfo.BaselineMethod,
+                                comparisonInfo.SignificanceLevel))
                         .ToArray(),
                         syntaxTree: syntaxTree);
 
@@ -138,5 +144,59 @@ public static class DiscoveryAnalysisMethods
         }
 
         return fullClassName;
+    }
+
+    private static (string? ComparisonGroup, string? BaselineMethod, double SignificanceLevel) ExtractComparisonInfo(MethodDeclarationSyntax methodDeclaration)
+    {
+        var comparisonAttributes = methodDeclaration
+            .AttributeLists
+            .SelectMany(attrList => attrList.Attributes)
+            .Where(attr => attr.Name.ToString() == "SailfishMethodComparison"
+                           || attr.Name.ToString() == "SailfishMethodComparisonAttribute")
+            .ToList();
+
+        if (!comparisonAttributes.Any())
+            return (null, null, 0.05);
+
+        var comparisonAttr = comparisonAttributes.First();
+        string? comparisonGroup = null;
+        string? baselineMethod = null;
+        double significanceLevel = 0.05;
+
+        // Extract comparison group from first argument
+        if (comparisonAttr.ArgumentList?.Arguments.Count > 0)
+        {
+            var firstArg = comparisonAttr.ArgumentList.Arguments[0];
+            comparisonGroup = ExtractStringLiteral(firstArg.Expression);
+        }
+
+        // Extract named parameters
+        if (comparisonAttr.ArgumentList?.Arguments != null)
+        {
+            foreach (var arg in comparisonAttr.ArgumentList.Arguments)
+            {
+                if (arg.NameEquals?.Name.Identifier.ValueText == "BaselineMethod")
+                {
+                    baselineMethod = ExtractStringLiteral(arg.Expression);
+                }
+                else if (arg.NameEquals?.Name.Identifier.ValueText == "SignificanceLevel")
+                {
+                    if (double.TryParse(arg.Expression.ToString(), out var level))
+                        significanceLevel = level;
+                }
+            }
+        }
+
+        return (comparisonGroup, baselineMethod, significanceLevel);
+    }
+
+    private static string? ExtractStringLiteral(SyntaxNode expression)
+    {
+        var literal = expression.ToString();
+        if (literal.StartsWith("\"") && literal.EndsWith("\""))
+        {
+            return literal.Substring(1, literal.Length - 2);
+        }
+        return literal;
     }
 }
