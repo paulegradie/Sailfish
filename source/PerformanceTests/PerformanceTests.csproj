@@ -33,9 +33,6 @@
     </Target>
 
     <!-- Tell VSTest where to find the test adapter -->
-    <ItemGroup>
-        <VSTestLogger Include="console;verbosity=normal" />
-    </ItemGroup>
 
     <PropertyGroup>
         <VSTestAdapterPath>$(OutputPath)</VSTestAdapterPath>

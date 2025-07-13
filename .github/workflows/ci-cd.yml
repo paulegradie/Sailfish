@@ -58,7 +58,6 @@ jobs:
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: |
-            6.x.x
             8.x.x
             9.x.x
 
@@ -84,7 +83,7 @@ jobs:
     strategy:
       matrix:
         project: [ "Tests.Library", "Tests.TestAdapter", "Tests.Analyzers" ]
-        dotnet-version: [ "6.x.x", "8.x.x", "9.x.x" ]
+        dotnet-version: [ "8.x.x", "9.x.x" ]
     steps:
       - uses: actions/checkout@v4
 
@@ -92,7 +91,6 @@ jobs:
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: |
-            6.x.x
             8.x.x
             9.x.x
 
@@ -102,7 +100,7 @@ jobs:
           name: built-binaries
 
       - name: Test Projects
-        run: dotnet test ./source/${{ matrix.project }}/${{ matrix.project }}.csproj --framework net${{ matrix.dotnet-version == '6.x.x' && '6.0' || matrix.dotnet-version == '8.x.x' && '8.0' || '9.0' }} --verbosity normal --collect:"XPlat Code Coverage"
+        run: dotnet test ./source/${{ matrix.project }}/${{ matrix.project }}.csproj --framework net${{ matrix.dotnet-version == '8.x.x' && '8.0' || '9.0' }} --verbosity normal --collect:"XPlat Code Coverage"
 
       - name: Upload coverage reports to Codecov
         uses: codecov/codecov-action@v4.0.1
@@ -124,7 +122,6 @@ jobs:
         uses: actions/setup-dotnet@v4
         with:
           dotnet-version: |
-            6.x.x
             8.x.x
             9.x.x
 

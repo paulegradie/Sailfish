@@ -38,7 +38,9 @@ internal class SailfishModuleRegistrations : IProvideAdditionalRegistrations
             runSettings.DisableLogging
                 ? new SilentLogger()
                 : runSettings.CustomLogger ?? new DefaultLogger(runSettings.MinimumLogLevel)).As<ILogger>();
-        builder.RegisterMediatR(MediatRConfigurationBuilder.Create(typeof(SailfishModuleRegistrations).Assembly.Location).Build());
+        builder.RegisterMediatR(MediatRConfigurationBuilder
+            .Create(MediatrCommunityLicenseString, typeof(SailfishModuleRegistrations).Assembly)
+            .Build());
         builder.RegisterAssemblyTypes(typeof(SailfishModuleRegistrations).Assembly)
             .AsClosedTypesOf(typeof(INotificationHandler<>))
             .AsImplementedInterfaces();
@@ -90,4 +92,15 @@ internal class SailfishModuleRegistrations : IProvideAdditionalRegistrations
         builder.RegisterType<ScalefishObservationCompiler>().As<IScalefishObservationCompiler>();
         builder.RegisterType<SailDiffConsoleWindowMessageFormatter>().As<ISailDiffConsoleWindowMessageFormatter>();
     }
+
+    private const string MediatrCommunityLicenseString =
+        "eyJhbGciOiJSUzI1NiIsImtpZCI6Ikx1Y2t5UGVubnlTb2Z0d2FyZUxpY2Vuc2VLZXkvYmJiMTNhY2I1OTkwNGQ4OWI0Y2" +
+        "IxYzg1ZjA4OGNjZjkiLCJ0eXAiOiJKV1QifQ.eyJpc3MiOiJodHRwczovL2x1Y2t5cGVubnlzb2Z0d2FyZS5jb20iLCJhd" +
+        "WQiOiJMdWNreVBlbm55U29mdHdhcmUiLCJleHAiOiIxNzgzOTAwODAwIiwiaWF0IjoiMTc1MjQwOTMzMCIsImFjY291bnR" +
+        "faWQiOiIwMTk4MDNiOGZmM2I3Zjg1OWRhYTQ3ZDAxNjRmNzRhMCIsImN1c3RvbWVyX2lkIjoiY3RtXzAxazAxdnJuNnlwZ" +
+        "XZ3MW16bm04dDN3Z3IwIiwic3ViX2lkIjoiLSIsImVkaXRpb24iOiIwIiwidHlwZSI6IjIifQ.wlaAwDaMwjOph1gw7UH1" +
+        "tesVDWym25fVn1jA_xJ3yTinTIoiedDxy6STARKqWIw97d44RB2-WXT4E_bNKTLxheAEeUiycH1RzCRvfl8n5qsRbHbu8J" +
+        "PyhqdPUBP7uNDWPU60YzcsCQeeL607w3G4qTD9jUN8eXz_nMqo4MJDwdwsyUOppfuRKhHNz8CGvYGdKOtYSQFsQa5JoF9W" +
+        "sS2hvUkGnpqCzWZRCdCDh22TUzuXJklV8iYYvOrNKZ-gbEdTJligEhcHAI-sopdK0J-SzGOxJyiX4nBe3A1OduLG-S58QZ" +
+        "8g6oOIdWuTWgyhTPYE0oqsBZ5nEqsS42rnEF2cbw";
 }
