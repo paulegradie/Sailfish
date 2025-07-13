@@ -1,192 +1,192 @@
-name: CI/CD Workflow
+# name: CI/CD Workflow
 
-on:
-  push:
-    branches:
-      - main
-    paths-ignore:
-      - "**/*.md"
-      - "**/.gitignore"
-      - "assets/*"
-      - "source/PerformanceTests/*"
-      - "source/PerformanceTestingConsoleApp/*"
-      - "**/site/*"
-      - "/site/*"
+# on:
+#   push:
+#     branches:
+#       - main
+#     paths-ignore:
+#       - "**/*.md"
+#       - "**/.gitignore"
+#       - "assets/*"
+#       - "source/PerformanceTests/*"
+#       - "source/PerformanceTestingConsoleApp/*"
+#       - "**/site/*"
+#       - "/site/*"
 
-  pull_request:
-    types: [ opened, synchronize, reopened ]
-    paths-ignore:
-      - "**/*.md"
-      - "**/.gitignore"
-      - "assets/*"
-      - "source/PerformanceTests/*"
-      - "source/PerformanceTestingConsoleApp/*"
-      - "**/site/*"
-      - "/site/*"
+#   pull_request:
+#     types: [ opened, synchronize, reopened ]
+#     paths-ignore:
+#       - "**/*.md"
+#       - "**/.gitignore"
+#       - "assets/*"
+#       - "source/PerformanceTests/*"
+#       - "source/PerformanceTestingConsoleApp/*"
+#       - "**/site/*"
+#       - "/site/*"
 
-  workflow_dispatch:
+#   workflow_dispatch:
 
-jobs:
-  set_version:
-    name: Set Version
-    runs-on: ubuntu-latest
-    outputs:
-      version: ${{ steps.set_version_number.outputs.version }}
-    steps:
-      - name: Set Pull Request Version
-        id: set_version_number
-        run: |
-          version=2.0.${{ github.run_number }}
-          if [ "${{ github.ref }}" == "refs/heads/main" ]; then
-            echo "version=${version}" >> "$GITHUB_OUTPUT"
-          else
-            echo "version=${version}-pull-request" >> "$GITHUB_OUTPUT"
-          fi
+# jobs:
+#   set_version:
+#     name: Set Version
+#     runs-on: ubuntu-latest
+#     outputs:
+#       version: ${{ steps.set_version_number.outputs.version }}
+#     steps:
+#       - name: Set Pull Request Version
+#         id: set_version_number
+#         run: |
+#           version=2.0.${{ github.run_number }}
+#           if [ "${{ github.ref }}" == "refs/heads/main" ]; then
+#             echo "version=${version}" >> "$GITHUB_OUTPUT"
+#           else
+#             echo "version=${version}-pull-request" >> "$GITHUB_OUTPUT"
+#           fi
 
-  build:
-    name: Build
-    needs: set_version
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        project: [ "Sailfish" ]
+#   build:
+#     name: Build
+#     needs: set_version
+#     runs-on: ubuntu-latest
+#     strategy:
+#       matrix:
+#         project: [ "Sailfish" ]
 
-    steps:
-      - uses: actions/checkout@v4
+#     steps:
+#       - uses: actions/checkout@v4
 
-      - name: Setup dotnet
-        uses: actions/setup-dotnet@v4
-        with:
-          dotnet-version: |
-            8.x.x
-            9.x.x
+#       - name: Setup dotnet
+#         uses: actions/setup-dotnet@v4
+#         with:
+#           dotnet-version: |
+#             8.x.x
+#             9.x.x
 
-      - name: Build Projects
-        run: |
-          dotnet build ./source/Sailfish/Sailfish.csproj --configuration Release /p:Version=${{ needs.set_version.outputs.version }}
-          dotnet build ./source/Sailfish.TestAdapter/Sailfish.TestAdapter.csproj --configuration Release /p:Version=${{ needs.set_version.outputs.version }}
-          dotnet build ./source/Sailfish.Analyzers/Sailfish.Analyzers.csproj --configuration Release /p:Version=${{ needs.set_version.outputs.version }}
-      - name: Upload Artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: built-binaries
-          path: |
-            source/Sailfish/bin/Release/**
-            source/Sailfish.TestAdapter/bin/Release/**
-            source/Sailfish.Analyzers/bin/Release/**
-          retention-days: 1
+#       - name: Build Projects
+#         run: |
+#           dotnet build ./source/Sailfish/Sailfish.csproj --configuration Release /p:Version=${{ needs.set_version.outputs.version }}
+#           dotnet build ./source/Sailfish.TestAdapter/Sailfish.TestAdapter.csproj --configuration Release /p:Version=${{ needs.set_version.outputs.version }}
+#           dotnet build ./source/Sailfish.Analyzers/Sailfish.Analyzers.csproj --configuration Release /p:Version=${{ needs.set_version.outputs.version }}
+#       - name: Upload Artifacts
+#         uses: actions/upload-artifact@v4
+#         with:
+#           name: built-binaries
+#           path: |
+#             source/Sailfish/bin/Release/**
+#             source/Sailfish.TestAdapter/bin/Release/**
+#             source/Sailfish.Analyzers/bin/Release/**
+#           retention-days: 1
 
-  test:
-    name: Unit Tests
-    needs: build
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        project: [ "Tests.Library", "Tests.TestAdapter", "Tests.Analyzers" ]
-        dotnet-version: [ "8.x.x", "9.x.x" ]
-    steps:
-      - uses: actions/checkout@v4
+#   test:
+#     name: Unit Tests
+#     needs: build
+#     runs-on: ubuntu-latest
+#     strategy:
+#       matrix:
+#         project: [ "Tests.Library", "Tests.TestAdapter", "Tests.Analyzers" ]
+#         dotnet-version: [ "8.x.x", "9.x.x" ]
+#     steps:
+#       - uses: actions/checkout@v4
 
-      - name: Setup dotnet
-        uses: actions/setup-dotnet@v4
-        with:
-          dotnet-version: |
-            8.x.x
-            9.x.x
+#       - name: Setup dotnet
+#         uses: actions/setup-dotnet@v4
+#         with:
+#           dotnet-version: |
+#             8.x.x
+#             9.x.x
 
-      - name: Download Artifacts
-        uses: actions/download-artifact@v4
-        with:
-          name: built-binaries
+#       - name: Download Artifacts
+#         uses: actions/download-artifact@v4
+#         with:
+#           name: built-binaries
 
-      - name: Test Projects
-        run: dotnet test ./source/${{ matrix.project }}/${{ matrix.project }}.csproj --framework net${{ matrix.dotnet-version == '8.x.x' && '8.0' || '9.0' }} --verbosity normal --collect:"XPlat Code Coverage"
+#       - name: Test Projects
+#         run: dotnet test ./source/${{ matrix.project }}/${{ matrix.project }}.csproj --framework net${{ matrix.dotnet-version == '8.x.x' && '8.0' || '9.0' }} --verbosity normal --collect:"XPlat Code Coverage"
 
-      - name: Upload coverage reports to Codecov
-        uses: codecov/codecov-action@v4.0.1
-        with:
-          token: ${{ secrets.CODECOV_TOKEN }}
-          slug: paulegradie/Sailfish
+#       - name: Upload coverage reports to Codecov
+#         uses: codecov/codecov-action@v4.0.1
+#         with:
+#           token: ${{ secrets.CODECOV_TOKEN }}
+#           slug: paulegradie/Sailfish
 
-  pack:
-    name: Nuget Package Test
-    needs: [ test, set_version ]
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        project: [ "Sailfish", "Sailfish.TestAdapter", "Sailfish.Analyzers" ]
-    steps:
-      - uses: actions/checkout@v4
+#   pack:
+#     name: Nuget Package Test
+#     needs: [ test, set_version ]
+#     runs-on: ubuntu-latest
+#     strategy:
+#       matrix:
+#         project: [ "Sailfish", "Sailfish.TestAdapter", "Sailfish.Analyzers" ]
+#     steps:
+#       - uses: actions/checkout@v4
 
-      - name: Setup dotnet
-        uses: actions/setup-dotnet@v4
-        with:
-          dotnet-version: |
-            8.x.x
-            9.x.x
+#       - name: Setup dotnet
+#         uses: actions/setup-dotnet@v4
+#         with:
+#           dotnet-version: |
+#             8.x.x
+#             9.x.x
 
-      - name: Download Artifacts
-        uses: actions/download-artifact@v4
-        with:
-          name: built-binaries
-          path: source/
+#       - name: Download Artifacts
+#         uses: actions/download-artifact@v4
+#         with:
+#           name: built-binaries
+#           path: source/
 
-      - name: Restore Dependencies
-        run: dotnet restore ./source/${{matrix.project}}/${{matrix.project}}.csproj
+#       - name: Restore Dependencies
+#         run: dotnet restore ./source/${{matrix.project}}/${{matrix.project}}.csproj
 
-      - name: Pack Projects
-        run: dotnet pack ./source/${{matrix.project}}/${{matrix.project}}.csproj --configuration Release /p:Version=${{ needs.set_version.outputs.version }} --no-build --output .
+#       - name: Pack Projects
+#         run: dotnet pack ./source/${{matrix.project}}/${{matrix.project}}.csproj --configuration Release /p:Version=${{ needs.set_version.outputs.version }} --no-build --output .
 
-      - name: Verify Package Exists
-        run: |
-          if [ ! -f "${{matrix.project}}.${{ needs.set_version.outputs.version }}.nupkg" ]; then
-            echo "Package file not found: ${{matrix.project}}.${{ needs.set_version.outputs.version }}.nupkg"
-            exit 1
-          fi
-          echo "Package file found: ${{matrix.project}}.${{ needs.set_version.outputs.version }}.nupkg"
+#       - name: Verify Package Exists
+#         run: |
+#           if [ ! -f "${{matrix.project}}.${{ needs.set_version.outputs.version }}.nupkg" ]; then
+#             echo "Package file not found: ${{matrix.project}}.${{ needs.set_version.outputs.version }}.nupkg"
+#             exit 1
+#           fi
+#           echo "Package file found: ${{matrix.project}}.${{ needs.set_version.outputs.version }}.nupkg"
 
-      - name: Push Packages to Nuget
-        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-        run: dotnet nuget push ${{matrix.project}}.${{ needs.set_version.outputs.version }}.nupkg --source https://www.nuget.org --api-key ${{secrets.NUGET_API_KEY}} --skip-duplicate
+#       - name: Push Packages to Nuget
+#         if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+#         run: dotnet nuget push ${{matrix.project}}.${{ needs.set_version.outputs.version }}.nupkg --source https://www.nuget.org --api-key ${{secrets.NUGET_API_KEY}} --skip-duplicate
 
-  sonar:
-    name: Sonar Code Quality Check
-    needs: [ set_version, build ]
-    runs-on: windows-latest
-    steps:
-      - name: Set up JDK 17
-        uses: actions/setup-java@v4
-        with:
-          java-version: 17
-          distribution: "zulu" # Alternative distribution options are available.
-      - uses: actions/checkout@v4
-        with:
-          fetch-depth: 0 # Shallow clones should be disabled for a better relevancy of analysis
-      - name: Cache SonarCloud packages
-        uses: actions/cache@v4
-        with:
-          path: ~\sonar\cache
-          key: ${{ runner.os }}-sonar
-          restore-keys: ${{ runner.os }}-sonar
-      - name: Cache SonarCloud scanner
-        id: cache-sonar-scanner
-        uses: actions/cache@v4
-        with:
-          path: .\.sonar\scanner
-          key: ${{ runner.os }}-sonar-scanner
-          restore-keys: ${{ runner.os }}-sonar-scanner
-      - name: Install SonarCloud scanner
-        if: steps.cache-sonar-scanner.outputs.cache-hit != 'true'
-        shell: powershell
-        run: |
-          New-Item -Path .\.sonar\scanner -ItemType Directory
-          dotnet tool update dotnet-sonarscanner --tool-path .\.sonar\scanner
-      - name: Build and analyze
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # Needed to get PR information, if any
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-        shell: powershell
-        run: |
-          .\.sonar\scanner\dotnet-sonarscanner begin /k:"sailfish_library" /o:"sailfish" /d:sonar.token="${{ secrets.SONAR_TOKEN }}" /d:sonar.host.url="https://sonarcloud.io"
-          dotnet build ./source
-          .\.sonar\scanner\dotnet-sonarscanner end /d:sonar.token="${{ secrets.SONAR_TOKEN }}"
+#   sonar:
+#     name: Sonar Code Quality Check
+#     needs: [ set_version, build ]
+#     runs-on: windows-latest
+#     steps:
+#       - name: Set up JDK 17
+#         uses: actions/setup-java@v4
+#         with:
+#           java-version: 17
+#           distribution: "zulu" # Alternative distribution options are available.
+#       - uses: actions/checkout@v4
+#         with:
+#           fetch-depth: 0 # Shallow clones should be disabled for a better relevancy of analysis
+#       - name: Cache SonarCloud packages
+#         uses: actions/cache@v4
+#         with:
+#           path: ~\sonar\cache
+#           key: ${{ runner.os }}-sonar
+#           restore-keys: ${{ runner.os }}-sonar
+#       - name: Cache SonarCloud scanner
+#         id: cache-sonar-scanner
+#         uses: actions/cache@v4
+#         with:
+#           path: .\.sonar\scanner
+#           key: ${{ runner.os }}-sonar-scanner
+#           restore-keys: ${{ runner.os }}-sonar-scanner
+#       - name: Install SonarCloud scanner
+#         if: steps.cache-sonar-scanner.outputs.cache-hit != 'true'
+#         shell: powershell
+#         run: |
+#           New-Item -Path .\.sonar\scanner -ItemType Directory
+#           dotnet tool update dotnet-sonarscanner --tool-path .\.sonar\scanner
+#       - name: Build and analyze
+#         env:
+#           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }} # Needed to get PR information, if any
+#           SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+#         shell: powershell
+#         run: |
+#           .\.sonar\scanner\dotnet-sonarscanner begin /k:"sailfish_library" /o:"sailfish" /d:sonar.token="${{ secrets.SONAR_TOKEN }}" /d:sonar.host.url="https://sonarcloud.io"
+#           dotnet build ./source
+#           .\.sonar\scanner\dotnet-sonarscanner end /d:sonar.token="${{ secrets.SONAR_TOKEN }}"
