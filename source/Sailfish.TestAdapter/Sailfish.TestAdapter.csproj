@@ -5,11 +5,11 @@
         <Version>0.0.0</Version>
         <Authors>Paul E. Gradie</Authors>
         <Description>
-            Sailfish is a user friendly performace test suite for writing clean, manageable performance tests
-            against your component or API - without with all the extra ceremony.
+            Sailfish is a produtiocction friendly performace test suite for owriinting organized performance tests
+            against your component or API - without with all the extra ceremony. Threerehere are a number of fateature
         </Description>
         <RootNamespace>Sailfish.TestAdapter</RootNamespace>
-        <TargetFrameworks>net6.0;net7.0;net8.0</TargetFrameworks>
+        <TargetFrameworks>net8.0;net9.0</TargetFrameworks>
         <Nullable>enable</Nullable>
         <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
         <LangVersion>latest</LangVersion>
@@ -27,17 +27,17 @@
         <Optimize>true</Optimize>
     </PropertyGroup>
     <ItemGroup>
-        <PackageReference Include="NuGet.Build.Tasks.Pack" Version="6.8.0">
+        <PackageReference Include="NuGet.Build.Tasks.Pack" Version="6.14.0">
             <PrivateAssets>all</PrivateAssets>
             <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
         </PackageReference>
 
-        <PackageReference Include="System.ComponentModel.Composition" Version="8.0.0"/>
-        <PackageReference Include="Microsoft.TestPlatform.ObjectModel" Version="17.8.0" PrivateAssets="All"/>
-        <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.5.0"/>
+        <PackageReference Include="System.ComponentModel.Composition" Version="9.0.7" />
+        <PackageReference Include="Microsoft.TestPlatform.ObjectModel" Version="17.14.1" PrivateAssets="All" />
+        <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.14.0" />
     </ItemGroup>
     <ItemGroup>
-        <ProjectReference Include="..\Sailfish\Sailfish.csproj"/>
+        <ProjectReference Include="..\Sailfish\Sailfish.csproj" />
     </ItemGroup>
 
     <!--    <ItemGroup>-->
@@ -45,8 +45,22 @@
     <!--    </ItemGroup>-->
 
     <ItemGroup>
-        <InternalsVisibleTo Include="Tests.TestAdapter"/>
-        <InternalsVisibleTo Include="DynamicProxyGenAssembly2"/>
+        <InternalsVisibleTo Include="Tests.TestAdapter" />
+        <InternalsVisibleTo Include="DynamicProxyGenAssembly2" />
     </ItemGroup>
+
+    <!-- Test Adapter NuGet Packaging -->
+    <ItemGroup>
+        <None Include="build\Sailfish.TestAdapter.props" Pack="true" PackagePath="build\Sailfish.TestAdapter.props" />
+        <None Include="build\Sailfish.TestAdapter.targets" Pack="true" PackagePath="build\Sailfish.TestAdapter.targets" />
+    </ItemGroup>
+
+    <!-- Include the test adapter DLL in the NuGet package -->
+    <Target Name="PackTestAdapter" BeforeTargets="GenerateNuspec">
+        <ItemGroup>
+            <TfmSpecificPackageFile Include="$(OutputPath)Sailfish.TestAdapter.dll" PackagePath="lib/$(TargetFramework)/Sailfish.TestAdapter.dll" />
+            <TfmSpecificPackageFile Include="$(OutputPath)Sailfish.TestAdapter.pdb" PackagePath="lib/$(TargetFramework)/Sailfish.TestAdapter.pdb" Condition="Exists('$(OutputPath)Sailfish.TestAdapter.pdb')" />
+        </ItemGroup>
+    </Target>
 
 </Project>

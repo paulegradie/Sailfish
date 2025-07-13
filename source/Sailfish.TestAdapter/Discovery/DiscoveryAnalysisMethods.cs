@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
@@ -48,7 +49,9 @@ public static class DiscoveryAnalysisMethods
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine(ex.Message);
+                    // Use Debug.WriteLine instead of Console.WriteLine to avoid RS1035 analyzer warning
+                    // Console operations are banned in analyzers as they can block threads during parallel execution
+                    Debug.WriteLine($"[Sailfish.TestAdapter] Failed to read file '{filePath}': {ex.Message}");
                     return;
                 }
 
@@ -60,7 +63,9 @@ public static class DiscoveryAnalysisMethods
                 }
                 catch (Exception ex)
                 {
-                    Console.WriteLine(ex.Message);
+                    // Use Debug.WriteLine instead of Console.WriteLine to avoid RS1035 analyzer warning
+                    // Console operations are banned in analyzers as they can block threads during parallel execution
+                    Debug.WriteLine($"[Sailfish.TestAdapter] Failed to parse syntax tree for file '{filePath}': {ex.Message}");
                     return;
                 }
 

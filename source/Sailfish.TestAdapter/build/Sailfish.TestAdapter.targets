@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="utf-8"?>
+<Project>
+  <!-- This file is automatically imported by NuGet when the package is referenced -->
+
+  <!-- Copy the test adapter to the output directory so VSTest can discover it -->
+  <ItemGroup>
+    <Content Include="$(MSBuildThisFileDirectory)../lib/net8.0/Sailfish.TestAdapter.dll" Condition="'$(TargetFramework)' == 'net8.0' and Exists('$(MSBuildThisFileDirectory)../lib/net8.0/Sailfish.TestAdapter.dll')">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <Visible>False</Visible>
+    </Content>
+    <Content Include="$(MSBuildThisFileDirectory)../lib/net9.0/Sailfish.TestAdapter.dll" Condition="'$(TargetFramework)' == 'net9.0' and Exists('$(MSBuildThisFileDirectory)../lib/net9.0/Sailfish.TestAdapter.dll')">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <Visible>False</Visible>
+    </Content>
+  </ItemGroup>
+
+  <!-- Ensure the test adapter is available for test discovery -->
+  <ItemGroup>
+    <TestAdapterPath Include="$(MSBuildThisFileDirectory)../lib/net8.0/" Condition="'$(TargetFramework)' == 'net8.0'" />
+    <TestAdapterPath Include="$(MSBuildThisFileDirectory)../lib/net9.0/" Condition="'$(TargetFramework)' == 'net9.0'" />
+  </ItemGroup>
+
+</Project>

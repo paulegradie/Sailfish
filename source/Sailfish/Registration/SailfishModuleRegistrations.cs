@@ -38,7 +38,7 @@ internal class SailfishModuleRegistrations : IProvideAdditionalRegistrations
             runSettings.DisableLogging
                 ? new SilentLogger()
                 : runSettings.CustomLogger ?? new DefaultLogger(runSettings.MinimumLogLevel)).As<ILogger>();
-        builder.RegisterMediatR(MediatRConfigurationBuilder.Create(typeof(SailfishModuleRegistrations).Assembly).Build());
+        builder.RegisterMediatR(MediatRConfigurationBuilder.Create(typeof(SailfishModuleRegistrations).Assembly.Location).Build());
         builder.RegisterAssemblyTypes(typeof(SailfishModuleRegistrations).Assembly)
             .AsClosedTypesOf(typeof(INotificationHandler<>))
             .AsImplementedInterfaces();
