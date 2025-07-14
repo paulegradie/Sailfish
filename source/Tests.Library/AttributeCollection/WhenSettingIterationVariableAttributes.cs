@@ -48,7 +48,7 @@ public class WhenSettingSailfishAttributes
         propName.ShouldBe(nameof(testClass.MyValues));
 
         var variableSet = variables[propName];
-        variableSet.OrderedVariables.ShouldBe(new object[] { new TestClassWithVariableSupplyingMethod.MySpecialType("A"), new TestClassWithVariableSupplyingMethod.MySpecialType("B"), new TestClassWithVariableSupplyingMethod.MySpecialType("C") });
+        variableSet.OrderedVariables.ShouldBe(new object[] { new MySpecialType("A"), new MySpecialType("B"), new MySpecialType("C") });
     }
 }
 
@@ -61,45 +61,45 @@ public class TestClass
 public class TestClassWithVariableSupplyingMethod
 {
     [SailfishVariable(typeof(MyVariables))]
-    public MySpecialType MyValues { get; set; }
+    public MySpecialType? MyValues { get; set; }
+}
 
-    public class MyVariables : ISailfishVariablesProvider
+public class MyVariables : ISailfishVariablesProvider<MySpecialType>
+{
+    public IEnumerable<MySpecialType> Variables() => [new MySpecialType("A"), new MySpecialType("B"), new MySpecialType("C")];
+}
+
+public class MySpecialType : IComparable
+{
+    public string Value { get; set; }
+
+    public MySpecialType(string value)
     {
-        public IEnumerable<object> Variables => [new MySpecialType("A"), new MySpecialType("B"), new MySpecialType("C")];
+        this.Value = value;
     }
 
-    public class MySpecialType : IComparable
+    public override bool Equals(object? obj)
     {
-        public string Value { get; set; }
-
-        public MySpecialType(string value)
+        if (obj is null)
         {
-            this.Value = value;
+            return false;
         }
 
-        public override bool Equals(object? obj)
+        if (ReferenceEquals(this, obj))
         {
-            if (obj is null)
-            {
-                return false;
-            }
-
-            if (ReferenceEquals(this, obj))
-            {
-                return true;
-            }
-
-            if (obj.GetType() != GetType())
-            {
-                return false;
-            }
-
-            return Equals((MySpecialType)obj);
+            return true;
         }
 
-        public int CompareTo(object? obj)
+        if (obj.GetType() != GetType())
         {
-            return 0;
+            return false;
         }
+
+        return Equals((MySpecialType)obj);
+    }
+
+    public int CompareTo(object? obj)
+    {
+        return 0;
     }
 }
