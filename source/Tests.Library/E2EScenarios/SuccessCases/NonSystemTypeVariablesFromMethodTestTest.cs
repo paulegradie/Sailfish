@@ -10,19 +10,19 @@ using Xunit;
 
 namespace Tests.Library.E2EScenarios.SuccessCases;
 
-public class StringVariablesFromMethodTestTest
+public class NonSystemTypeVariablesFromMethodTestTest
 {
     [Fact]
-    public async Task StringVariablesCanBeSuppliedFromAMethod()
+    public async Task NonSystemVariablesCanBeSuppliedFromAMethod()
     {
         // Will hold the variables the perf tests where executed with
-        var testVariables = new List<string>();
-        StringVariablesFromMethodTest.CaptureStringVariablesForTestingThisTest.Value = testVariables;
+        var testVariables = new List<MyNonSystemType>();
+        NonSystemTypeVariablesFromMethodTest.CaptureStringVariablesForTestingThisTest.Value = testVariables;
         var runSettings = RunSettingsBuilder.CreateBuilder()
             .WithLocalOutputDirectory(Some.RandomString())
             .ProvidersFromAssembliesContaining(typeof(E2ETestRegistrationProvider))
             .TestsFromAssembliesContaining(typeof(E2ETestRegistrationProvider))
-            .WithTestNames(nameof(StringVariablesFromMethodTest))
+            .WithTestNames(nameof(NonSystemTypeVariablesFromMethodTest))
             .DisableOverheadEstimation()
             .WithAnalysisDisabledGlobally()
             .Build();
@@ -31,10 +31,16 @@ public class StringVariablesFromMethodTestTest
 
         result.IsValid.ShouldBe(true);
         result.ExecutionSummaries.Count().ShouldBe(1);
-        
-        
+
+
         // The variables should be processed in their natural order
-        // We have each variable twice since we have warm ups
-        testVariables.ShouldBeEquivalentTo(new List<string>{"A", "A", "B", "B", "Z", "Z"});
+        // We have each variable twice since we have warm-ups
+        testVariables.ShouldBeEquivalentTo(new List<MyNonSystemType>
+        {
+            new("Foo", 1337), 
+            new("Foo", 1337), 
+            new("Bar", 42),
+            new("Bar", 42)
+        });
     }
 }

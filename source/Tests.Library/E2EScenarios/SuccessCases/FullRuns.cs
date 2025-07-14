@@ -50,8 +50,9 @@ public class FullRuns
 
         var result = await SailfishRunner.Run(runSettings);
 
+        result.Exceptions.ShouldBeEmpty();
         result.IsValid.ShouldBe(true);
-        result.ExecutionSummaries.Count().ShouldBe(16);
+        result.ExecutionSummaries.Count().ShouldBe(17);
     }
 
     [Fact]
