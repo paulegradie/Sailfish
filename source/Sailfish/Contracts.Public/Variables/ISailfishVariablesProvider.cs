@@ -1,9 +1,8 @@
-using System;
 using System.Collections.Generic;
 
 namespace Sailfish.Contracts.Public.Variables;
 
-public interface ISailfishVariablesProvider<T> where T : IComparable
+public interface ISailfishVariablesProvider
 {
-    public IEnumerable<T> Variables();
+    public IEnumerable<object> Variables { get; }
 }
