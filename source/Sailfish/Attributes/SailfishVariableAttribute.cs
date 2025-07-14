@@ -88,12 +88,12 @@ public sealed class SailfishVariableAttribute : Attribute, ISailfishVariableAttr
             }
                 
             var method = instance.GetType().GetMethod("Variables");
-            if (method != null)
+            if (method == null)
             {
-                return (IEnumerable<object>) method.Invoke(instance, null);
+                throw new Exception($"Could not find Variables() method on type {variablesProvidingType}.");
             }
 
-            throw new Exception($"Could not find Variables() method on type {variablesProvidingType}.");
+            return (IEnumerable<object>) method.Invoke(instance, null);
         }
 
         throw new Exception($"Type {variablesProvidingType} does not implement {typeof(ISailfishVariablesProvider<>).FullName}.");

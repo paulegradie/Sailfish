@@ -52,7 +52,7 @@ public class FullRuns
 
         result.Exceptions.ShouldBeEmpty();
         result.IsValid.ShouldBe(true);
-        result.ExecutionSummaries.Count().ShouldBe(16);
+        result.ExecutionSummaries.Count().ShouldBe(17);
     }
 
     [Fact]

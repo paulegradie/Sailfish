@@ -13,7 +13,7 @@ namespace Tests.Library.E2EScenarios.SuccessCases;
 public class StringVariablesFromMethodTestTest
 {
     [Fact]
-    public async Task AFullTestRunOfTheDemoShouldFindAllTests()
+    public async Task StringVariablesCanBeSuppliedFromAMethod()
     {
         // Will hold the variables the perf tests where executed with
         var testVariables = new List<string>();
