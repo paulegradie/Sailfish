@@ -71,8 +71,8 @@ public class SailfishAttributeTests
         atty.GetVariables().Cast<string>().ToList().ShouldBeEquivalentTo(new List<string>() { "A", "B", "C" });
     }
 
-    public class TestVariablesSupplier : ISailfishVariablesProvider
+    public class TestVariablesSupplier : ISailfishVariablesProvider<string>
     {
-        public IEnumerable<object> Variables => ["A", "B", "C"];
+        public IEnumerable<string> Variables() => ["A", "B", "C"];
     }
 }

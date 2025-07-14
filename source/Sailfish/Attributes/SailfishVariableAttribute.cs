@@ -5,6 +5,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using Sailfish.Exceptions;
 using System.Collections;
+using System.Reflection;
 
 namespace Sailfish.Attributes;
 
@@ -68,14 +69,9 @@ public sealed class SailfishVariableAttribute : Attribute, ISailfishVariableAttr
     /// <returns>An enumerable of the variables.</returns>
     public IEnumerable<object> GetVariables()
     {
-        if (N.Count == 1 && N.First() is Type type)
+        if (variablesProvidingType != null)
         {
-            if (typeof(ISailfishVariablesProvider).IsAssignableFrom(type))
-            {
-                var instance = (ISailfishVariablesProvider) Activator.CreateInstance(type);
-                return instance.Variables;
-            }
-
+            return CollectVariablesFromVariablesProvider(variablesProvidingType);
         }
         return N.ToArray();
     }
@@ -90,14 +86,14 @@ public sealed class SailfishVariableAttribute : Attribute, ISailfishVariableAttr
             {
                 throw new Exception($"Could not construct instance of {variablesProvidingType}.");
             }
-            
-            var method = instance.GetType().GetMethod(nameof(ISailfishVariablesProvider<string>.Variables));
-            if (method == null)
+                
+            var method = instance.GetType().GetMethod("Variables");
+            if (method != null)
             {
-                throw new Exception($"Could not find Variables() method on type {variablesProvidingType}.");
+                return (IEnumerable<object>) method.Invoke(instance, null);
             }
 
-            return (IEnumerable<object>) method.Invoke(instance, null);
+            throw new Exception($"Could not find Variables() method on type {variablesProvidingType}.");
         }
 
         throw new Exception($"Type {variablesProvidingType} does not implement {typeof(ISailfishVariablesProvider<>).FullName}.");
