@@ -9,13 +9,14 @@ public class StringVariablesFromMethodTest
     [SailfishVariable(typeof(StringVariablesProvider))]
     public string MyString { get; set; }
 
-    public static AsyncLocal<List<string>> StringVariables = new();
+    public static AsyncLocal<List<string>> CaptureStringVariablesForTestingThisTest = new();
+    
     [SailfishMethod]
     public void Run()
     {
-        if (StringVariables.Value is not null)
+        if (CaptureStringVariablesForTestingThisTest.Value is not null)
         {
-            StringVariables.Value.Add(MyString);
+            CaptureStringVariablesForTestingThisTest.Value.Add(MyString);
         }
     }
 }
