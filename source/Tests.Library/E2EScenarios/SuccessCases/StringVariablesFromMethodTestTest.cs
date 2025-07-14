@@ -17,7 +17,7 @@ public class StringVariablesFromMethodTestTest
     {
         // Will hold the variables the perf tests where executed with
         var testVariables = new List<string>();
-        StringVariablesFromMethodTest.StringVariables.Value = testVariables;
+        StringVariablesFromMethodTest.CaptureStringVariablesForTestingThisTest.Value = testVariables;
         var runSettings = RunSettingsBuilder.CreateBuilder()
             .WithLocalOutputDirectory(Some.RandomString())
             .ProvidersFromAssembliesContaining(typeof(E2ETestRegistrationProvider))
