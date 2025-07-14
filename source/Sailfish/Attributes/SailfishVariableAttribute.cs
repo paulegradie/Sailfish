@@ -1,8 +1,10 @@
+using Sailfish.Contracts.Public.Variables;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using Sailfish.Exceptions;
+using System.Collections;
 
 namespace Sailfish.Attributes;
 
@@ -56,6 +58,15 @@ public sealed class SailfishVariableAttribute : Attribute, ISailfishVariableAttr
     /// <returns>An enumerable of the variables.</returns>
     public IEnumerable<object> GetVariables()
     {
+        if (N.Count == 1 && N.First() is Type type)
+        {
+            if (typeof(ISailfishVariablesProvider).IsAssignableFrom(type))
+            {
+                var instance = (ISailfishVariablesProvider) Activator.CreateInstance(type);
+                return instance.Variables;
+            }
+
+        }
         return N.ToArray();
     }
 

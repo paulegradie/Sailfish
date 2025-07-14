@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using Sailfish.Attributes;
+using Sailfish.Contracts.Public.Variables;
 using Sailfish.Exceptions;
 using Shouldly;
 using Xunit;
@@ -61,5 +62,17 @@ public class SailfishAttributeTests
     public void SailfishVariableAttributeShouldThrowWhenScaleFishAndNLessThanThree()
     {
         Should.Throw<SailfishException>(() => new SailfishVariableAttribute(true, 1, 2));
+    }
+    
+    [Fact]
+    public void SailfishVariableAttributeCanBeConfiguredFromMethod()
+    {
+        var atty = new SailfishVariableAttribute(typeof(TestVariablesSupplier));
+        atty.GetVariables().Cast<string>().ToList().ShouldBeEquivalentTo(new List<string>() { "A", "B", "C" });
+    }
+
+    public class TestVariablesSupplier : ISailfishVariablesProvider
+    {
+        public IEnumerable<object> Variables => ["A", "B", "C"];
     }
 }
