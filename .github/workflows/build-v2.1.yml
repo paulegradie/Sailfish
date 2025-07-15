@@ -2,7 +2,7 @@
 
 on:
   push:
-    branches: [ main ]
+    branches: [main]
     paths-ignore:
       - "**/*.md"
       - "**/.gitignore"
@@ -13,7 +13,7 @@ on:
       - "/site/*"
 
   pull_request:
-    types: [ opened, synchronize, reopened ]
+    types: [opened, synchronize, reopened]
     paths-ignore:
       - "**/*.md"
       - "**/.gitignore"
@@ -34,44 +34,44 @@ jobs:
       version_prefix: ${{ steps.extract_version.outputs.version_prefix }}
     steps:
       - uses: actions/checkout@v4
-      
+
       - name: Extract version from workflow filename
         id: extract_version
         run: |
           # Get the workflow filename from GITHUB_WORKFLOW environment variable
           WORKFLOW_FILENAME="${GITHUB_WORKFLOW}.yml"
-          
+
           # Extract major.minor from filename (build-v2.1.yml -> 2.1)
           VERSION_PREFIX=$(echo "$WORKFLOW_FILENAME" | sed -n 's/.*build-v\([0-9]\+\.[0-9]\+\)\.yml.*/\1/p')
-          
+
           # If that fails, try using the workflow name directly
           if [ -z "$VERSION_PREFIX" ]; then
             VERSION_PREFIX=$(echo "$GITHUB_WORKFLOW" | sed -n 's/.*v\([0-9]\+\.[0-9]\+\).*/\1/p')
           fi
-          
+
           # Validate that we extracted a version
           if [ -z "$VERSION_PREFIX" ]; then
             echo "Error: Could not extract version from workflow name: $GITHUB_WORKFLOW"
             echo "Workflow filename attempted: $WORKFLOW_FILENAME"
             exit 1
           fi
-          
+
           # Use github.run_number as build/patch number
           BUILD_NUMBER=${{ github.run_number }}
-          
+
           # Combine to form full version
           FULL_VERSION="$VERSION_PREFIX.$BUILD_NUMBER"
-          
+
           # Add suffix for pull requests
           if [ "${{ github.ref }}" != "refs/heads/main" ]; then
             FULL_VERSION="$FULL_VERSION-pull-request"
           fi
-          
+
           echo "version_prefix=$VERSION_PREFIX" >> $GITHUB_OUTPUT
           echo "full_version=$FULL_VERSION" >> $GITHUB_OUTPUT
           echo "Extracted version: $FULL_VERSION"
           echo "Version prefix extracted: $VERSION_PREFIX"
-          
+
           # Debug output
           echo "Workflow name: $GITHUB_WORKFLOW"
           echo "Workflow filename: $WORKFLOW_FILENAME"
@@ -83,7 +83,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        project: [ "Sailfish" ]
+        project: ["Sailfish"]
 
     steps:
       - uses: actions/checkout@v4
@@ -111,45 +111,45 @@ jobs:
             source/Sailfish.Analyzers/bin/Release/**
           retention-days: 1
 
-  # test:
-  #   name: Unit Tests
-  #   needs: build
-  #   runs-on: ubuntu-latest
-  #   strategy:
-  #     matrix:
-  #       project: [ "Tests.Library", "Tests.TestAdapter", "Tests.Analyzers" ]
-  #   steps:
-  #     - uses: actions/checkout@v4
-
-  #     - name: Setup dotnet
-  #       uses: actions/setup-dotnet@v4
-  #       with:
-  #         dotnet-version: |
-  #           8.x.x
-  #           9.x.x
-
-  #     - name: Download Artifacts
-  #       uses: actions/download-artifact@v4
-  #       with:
-  #         name: built-binaries
-  #         path: .
-
-  #     - name: Test Projects
-  #       run: dotnet test ./source/${{ matrix.project }}/${{ matrix.project }}.csproj --verbosity normal --collect:"XPlat Code Coverage"
-
-  #     - name: Upload coverage reports to Codecov
-  #       uses: codecov/codecov-action@v4.0.1
-  #       with:
-  #         token: ${{ secrets.CODECOV_TOKEN }}
-  #         slug: paulegradie/Sailfish
-
-  pack:
-    name: Nuget Package Test
-    needs: [ build, set_version ]
+  test:
+    name: Unit Tests
+    needs: build
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        project: [ "Sailfish", "Sailfish.TestAdapter", "Sailfish.Analyzers" ]
+        project: ["Tests.Library", "Tests.TestAdapter", "Tests.Analyzers"]
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup dotnet
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: |
+            8.x.x
+            9.x.x
+
+      - name: Download Artifacts
+        uses: actions/download-artifact@v4
+        with:
+          name: built-binaries
+          path: .
+
+      - name: Test Projects
+        run: dotnet test ./source/${{ matrix.project }}/${{ matrix.project }}.csproj --verbosity normal --collect:"XPlat Code Coverage"
+
+      - name: Upload coverage reports to Codecov
+        uses: codecov/codecov-action@v4.0.1
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
+          slug: paulegradie/Sailfish
+
+  pack:
+    name: Nuget Package Test
+    needs: [test, set_version]
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        project: ["Sailfish", "Sailfish.TestAdapter", "Sailfish.Analyzers"]
     steps:
       - uses: actions/checkout@v4
 
@@ -177,21 +177,21 @@ jobs:
           echo "=== Current directory contents ==="
           pwd
           ls -la
-          
+
           echo "=== Looking for .nupkg files ==="
           find . -name "*.nupkg" -type f
-          
+
           echo "=== Expected package name: ${{matrix.project}}.${{ needs.set_version.outputs.version }}.nupkg ==="
-          
+
           EXPECTED_PACKAGE="./${{matrix.project}}.${{ needs.set_version.outputs.version }}.nupkg"
-          
+
           if [ ! -f "$EXPECTED_PACKAGE" ]; then
-            echo "❌ Package file not found: $EXPECTED_PACKAGE"
+            echo "Package file not found: $EXPECTED_PACKAGE"
             echo "Available .nupkg files:"
             ls -la *.nupkg 2>/dev/null || echo "No .nupkg files found"
             exit 1
           fi
-          
+
           echo "Package file found: $EXPECTED_PACKAGE"
           ls -la "$EXPECTED_PACKAGE"
 
@@ -201,7 +201,7 @@ jobs:
 
   sonar:
     name: Sonar Code Quality Check
-    needs: [ set_version, build ]
+    needs: [set_version, build]
     runs-on: windows-latest
     steps:
       - name: Set up JDK 17
@@ -240,7 +240,3 @@ jobs:
           .\.sonar\scanner\dotnet-sonarscanner begin /k:"sailfish_library" /o:"sailfish" /d:sonar.token="${{ secrets.SONAR_TOKEN }}" /d:sonar.host.url="https://sonarcloud.io"
           dotnet build ./source
           .\.sonar\scanner\dotnet-sonarscanner end /d:sonar.token="${{ secrets.SONAR_TOKEN }}"
-
-
-
-
