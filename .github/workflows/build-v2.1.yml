@@ -170,16 +170,30 @@ jobs:
         run: dotnet restore ./source/${{matrix.project}}/${{matrix.project}}.csproj
 
       - name: Pack Projects
-        run: dotnet pack ./source/${{matrix.project}}/${{matrix.project}}.csproj --configuration Release --no-build --output .
+        run: dotnet pack ./source/${{matrix.project}}/${{matrix.project}}.csproj --configuration Release --no-build --output . /p:Version=${{ needs.set_version.outputs.version }}
 
       - name: Verify Package Exists
         run: |
-          ls */**
-          if [ ! -f "./${{matrix.project}}.${{ needs.set_version.outputs.version }}.nupkg" ]; then
-            echo "Package file not found: ${{matrix.project}}.${{ needs.set_version.outputs.version }}.nupkg"
+          echo "=== Current directory contents ==="
+          pwd
+          ls -la
+          
+          echo "=== Looking for .nupkg files ==="
+          find . -name "*.nupkg" -type f
+          
+          echo "=== Expected package name: ${{matrix.project}}.${{ needs.set_version.outputs.version }}.nupkg ==="
+          
+          EXPECTED_PACKAGE="./${{matrix.project}}.${{ needs.set_version.outputs.version }}.nupkg"
+          
+          if [ ! -f "$EXPECTED_PACKAGE" ]; then
+            echo "❌ Package file not found: $EXPECTED_PACKAGE"
+            echo "Available .nupkg files:"
+            ls -la *.nupkg 2>/dev/null || echo "No .nupkg files found"
             exit 1
           fi
-          echo "Package file found: ${{matrix.project}}.${{ needs.set_version.outputs.version }}.nupkg"
+          
+          echo "Package file found: $EXPECTED_PACKAGE"
+          ls -la "$EXPECTED_PACKAGE"
 
       - name: Push Packages to Nuget
         if: github.ref == 'refs/heads/main' && github.event_name == 'push'
