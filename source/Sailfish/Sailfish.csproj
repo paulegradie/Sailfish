@@ -8,7 +8,7 @@
             against your component or API. The general intention is to provide a simple tool that teams can use to write straight forward
             tests that assess the speed of your code, without weighing you down with all the extra ceremony.
         </Description>
-        <TargetFrameworks>net6.0;net7.0;net8.0</TargetFrameworks>
+        <TargetFrameworks>net8.0;net9.0</TargetFrameworks>
         <LangVersion>latest</LangVersion>
         <Nullable>enable</Nullable>
         <IsPackable>true</IsPackable>
@@ -25,17 +25,17 @@
 
     <ItemGroup>
         <PackageReference Include="MathNet.Numerics" Version="5.0.0"/>
-        <PackageReference Include="Autofac" Version="7.1.0"/>
-        <PackageReference Include="CsvHelper" Version="30.0.1"/>
-        <PackageReference Include="MediatR" Version="12.2.0"/>
-        <PackageReference Include="MediatR.Extensions.Autofac.DependencyInjection" Version="11.3.0"/>
-        <PackageReference Include="Microsoft.Extensions.Configuration" Version="8.0.0"/>
-        <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="8.0.0"/>
-        <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="8.0.0"/>
-        <PackageReference Include="Perfolizer" Version="0.3.5"/>
+        <PackageReference Include="Autofac" Version="8.3.0" />
+        <PackageReference Include="CsvHelper" Version="33.1.0" />
+        <PackageReference Include="MediatR" Version="13.0.0" />
+        <PackageReference Include="MediatR.Extensions.Autofac.DependencyInjection" Version="13.0.0" />
+        <PackageReference Include="Microsoft.Extensions.Configuration" Version="9.0.7" />
+        <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="9.0.7" />
+        <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="9.0.7" />
+        <PackageReference Include="Perfolizer" Version="0.5.3" />
         <PackageReference Include="System.Collections.Specialized" Version="4.3.0"/>
-        <PackageReference Include="System.Linq.Async" Version="6.0.1"/>
-        <PackageReference Include="System.Runtime.Caching" Version="8.0.0"/>
+        <PackageReference Include="System.Linq.Async" Version="6.0.3" />
+        <PackageReference Include="System.Runtime.Caching" Version="9.0.7" />
     </ItemGroup>
 
     <ItemGroup>
