@@ -68,7 +68,7 @@ public class SailfishAttributeTests
     public void SailfishVariableAttributeCanBeConfiguredFromMethod()
     {
         var atty = new SailfishVariableAttribute(typeof(TestVariablesSupplier));
-        atty.GetVariables().Cast<string>().ToList().ShouldBeEquivalentTo(new List<string>() { "A", "B", "C" });
+        atty.GetVariables().Cast<string>().ToList().ShouldBeEquivalentTo(new List<string> { "A", "B", "C" });
     }
 
     public class TestVariablesSupplier : ISailfishVariablesProvider<string>
