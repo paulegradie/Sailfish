@@ -13,6 +13,9 @@
         <PackageReference Include="Serilog" Version="4.3.0"/>
     </ItemGroup>
     <ItemGroup>
+        <TestAdapterPath Include="$(OutputPath)" />
+    </ItemGroup>
+    <ItemGroup>
         <ProjectReference Include="..\Demo.API\Demo.API.csproj"/>
         <ProjectReference Include="..\Sailfish.TestAdapter\Sailfish.TestAdapter.csproj"/>
     </ItemGroup>
