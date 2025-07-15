@@ -86,8 +86,8 @@ public sealed class SailfishVariableAttribute : Attribute, ISailfishVariableAttr
             {
                 throw new Exception($"Could not construct instance of {variablesProvidingType}.");
             }
-                
-            var method = instance.GetType().GetMethod("Variables");
+            
+            var method = instance.GetType().GetMethod(nameof(ISailfishVariablesProvider<string>.Variables));
             if (method == null)
             {
                 throw new Exception($"Could not find Variables() method on type {variablesProvidingType}.");
