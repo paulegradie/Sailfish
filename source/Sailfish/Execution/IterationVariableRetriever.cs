@@ -15,26 +15,44 @@ internal class IterationVariableRetriever : IIterationVariableRetriever
 {
     public Dictionary<string, VariableAttributeMeta> RetrieveIterationVariables(Type type)
     {
-        return type
-            .CollectAllSailfishVariableAttributes()
-            .ToDictionary(
-                prop => prop.Name,
-                prop =>
-                    new VariableAttributeMeta(
-                        [
-                            .. prop
-                                .GetCustomAttributes()
-                                .Where(x => x.IsSailfishVariableAttribute())
-                                .Cast<ISailfishVariableAttribute>().Single() // multiple prop on the attribute is false, so this shouldn't throw - we validate first to give feedback
-                                .GetVariables()
-                                .Distinct() // Duplicate values are currently allowed until we have an analyzer that prevents folks from providing duplicate values
-                                .OrderBy(x => x)
-                        ],
-                        prop
-                            .GetCustomAttributes()
-                            .Where(x => x.IsSailfishVariableAttribute())
-                            .Cast<ISailfishVariableAttribute>()
-                            .Single()
-                            .IsScaleFishVariable()));
+        var result = new Dictionary<string, VariableAttributeMeta>();
+
+        // Handle attribute-based variables (existing system)
+        var attributeProperties = type.CollectAllSailfishVariableAttributes();
+        foreach (var prop in attributeProperties)
+        {
+            var variableProvider = new AttributeVariableProvider(
+                prop.GetCustomAttributes()
+                    .Where(x => x.IsSailfishVariableAttribute())
+                    .Cast<ISailfishVariableAttribute>()
+                    .Single());
+
+            result[prop.Name] = new VariableAttributeMeta(
+                [
+                    .. variableProvider
+                        .GetVariables()
+                        .Distinct() // Duplicate values are currently allowed until we have an analyzer that prevents folks from providing duplicate values
+                        .OrderBy(x => x)
+                ],
+                variableProvider.IsScaleFishVariable());
+        }
+
+        // Handle interface-based complex variables (new system)
+        var complexProperties = type.CollectAllSailfishComplexVariableProperties();
+        foreach (var prop in complexProperties)
+        {
+            var variableProvider = new ComplexVariableProvider(prop.PropertyType);
+
+            result[prop.Name] = new VariableAttributeMeta(
+                [
+                    .. variableProvider
+                        .GetVariables()
+                        .Distinct()
+                        .OrderBy(x => x)
+                ],
+                variableProvider.IsScaleFishVariable());
+        }
+
+        return result;
     }
 }
