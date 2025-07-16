@@ -4,8 +4,6 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using Sailfish.Exceptions;
-using System.Collections;
-using System.Reflection;
 
 namespace Sailfish.Attributes;
 
@@ -27,7 +25,9 @@ public sealed class SailfishVariableAttribute : Attribute, ISailfishVariableAttr
     /// <exception cref="SailfishException">Thrown when no values are provided.</exception>
     public SailfishVariableAttribute([MinLength(1)] params object[] n)
     {
-        if (n.Length == 0) throw new SailfishException($"No values were provided to the {nameof(SailfishVariableAttribute)} attribute.");
+        if (n.Length == 0)
+            throw new SailfishException(
+                $"No values were provided to the {nameof(SailfishVariableAttribute)} attribute.");
         N.AddRange(n);
     }
 
@@ -55,7 +55,7 @@ public sealed class SailfishVariableAttribute : Attribute, ISailfishVariableAttr
     ///     Gets the list of values used as variables within the test.
     /// </summary>
     private List<object> N { get; } = new();
-    
+
     /// <summary>
     ///     
     /// </summary>
@@ -73,12 +73,14 @@ public sealed class SailfishVariableAttribute : Attribute, ISailfishVariableAttr
         {
             return CollectVariablesFromVariablesProvider(variablesProvidingType);
         }
+
         return N.ToArray();
     }
 
     private static IEnumerable<object> CollectVariablesFromVariablesProvider(Type variablesProvidingType)
     {
-        if (variablesProvidingType.GetInterfaces().Any(i => i.IsGenericType && i.GetGenericTypeDefinition() == typeof(ISailfishVariablesProvider<>)))
+        if (variablesProvidingType.GetInterfaces().Any(i =>
+                i.IsGenericType && i.GetGenericTypeDefinition() == typeof(ISailfishVariablesProvider<>)))
         {
             var instance = Activator.CreateInstance(variablesProvidingType);
 
@@ -86,17 +88,18 @@ public sealed class SailfishVariableAttribute : Attribute, ISailfishVariableAttr
             {
                 throw new Exception($"Could not construct instance of {variablesProvidingType}.");
             }
-            
+
             var method = instance.GetType().GetMethod(nameof(ISailfishVariablesProvider<string>.Variables));
             if (method == null)
             {
                 throw new Exception($"Could not find Variables() method on type {variablesProvidingType}.");
             }
 
-            return (IEnumerable<object>) method.Invoke(instance, null);
+            return (IEnumerable<object>)method.Invoke(instance, null);
         }
 
-        throw new Exception($"Type {variablesProvidingType} does not implement {typeof(ISailfishVariablesProvider<>).FullName}.");
+        throw new Exception(
+            $"Type {variablesProvidingType} does not implement {typeof(ISailfishVariablesProvider<>).FullName}.");
     }
 
     /// <summary>

@@ -4,6 +4,7 @@ using Sailfish.Attributes;
 using Sailfish.Contracts.Public.Variables;
 using Sailfish.Exceptions;
 using Shouldly;
+using Tests.E2E.TestSuite.Discoverable;
 using Xunit;
 
 namespace Tests.Library.AttributeCollection;
