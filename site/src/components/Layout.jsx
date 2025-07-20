@@ -7,6 +7,14 @@ import { MobileNavigation } from '@/components/MobileNavigation'
 import { Navigation } from '@/components/Navigation'
 import { Prose } from '@/components/Prose'
 import { ThemeSelector } from '@/components/ThemeSelector'
+import { Logo } from '@/components/ui/Logo'
+import { MainNavigation } from '@/components/ui/MainNavigation'
+import { EnhancedMobileNavigation } from '@/components/ui/EnhancedMobileNavigation'
+import { Breadcrumb } from '@/components/ui/Breadcrumb'
+import { SearchBox } from '@/components/ui/SearchBox'
+import { EditOnGitHub } from '@/components/ui/EditOnGitHub'
+import { ReadingProgress, ReadingTime, TableOfContentsWithProgress } from '@/components/ui/ReadingProgress'
+import { DocumentationAnalytics } from '@/components/ui/Analytics'
 
 const navigation = [
     {
@@ -17,6 +25,7 @@ const navigation = [
             { title: 'Installation', href: '/docs/0/installation' },
             { title: 'Quick Start', href: '/docs/0/quick-start' },
             { title: 'Essential Information', href: '/docs/0/essential-information' },
+            { title: 'Design System Showcase', href: '/docs/0/design-system-showcase' },
             { title: 'License', href: '/docs/0/license' },
         ],
     },
@@ -61,13 +70,7 @@ function GitHubIcon(props) {
     )
 }
 
-function HomeIcon(props) {
-    return (
-        <div className={props.className}>
-            {"Home"}
-        </div>
-    );
-}
+// Removed HomeIcon - now using Logo component
 
 function Header({ navigation }) {
     let [isScrolled, setIsScrolled] = useState(false)
@@ -86,30 +89,45 @@ function Header({ navigation }) {
     return (
         <header
             className={clsx(
-                'sticky top-0 z-50 flex flex-wrap items-center justify-between bg-white px-4 py-5 shadow-md shadow-slate-900/5 transition duration-500 dark:shadow-none sm:px-6 lg:px-8',
-                isScrolled
-                    ? 'dark:bg-slate-900/95 dark:backdrop-blur dark:[@supports(backdrop-filter:blur(0))]:bg-slate-900/75'
-                    : 'dark:bg-transparent'
+                'sticky top-0 z-50 bg-white/95 backdrop-blur-sm border-b border-slate-200/50 transition-all duration-300',
+                'dark:bg-slate-900/95 dark:border-slate-800/50',
+                isScrolled && 'shadow-sm'
             )}
         >
-            <div className="mr-6 flex lg:hidden">
-                <MobileNavigation navigation={navigation} />
-            </div>
-            <div className="relative flex basis-0 justify-end gap-6 sm:gap-8 md:flex-grow">
-                <Link href={`/`} className="relative z-10">
-                    <HomeIcon className="dark:text-white" />
-                </Link>
-                <ThemeSelector className="relative z-10" />
-                <Link href="https://github.com/paulegradie/Sailfish" className="group" aria-label="GitHub">
-                    <GitHubIcon className="h-6 w-6 fill-slate-400 group-hover:fill-slate-500 dark:group-hover:fill-slate-300" />
-                </Link>
+            <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+                <div className="flex h-16 items-center justify-between">
+                    {/* Logo */}
+                    <div className="flex items-center">
+                        <Link href="/" className="flex items-center">
+                            <Logo size="md" />
+                        </Link>
+                    </div>
+
+                    {/* Main Navigation - Desktop */}
+                    <MainNavigation className="flex-1 justify-center" />
+
+                    {/* Right side actions */}
+                    <div className="flex items-center gap-4">
+                        <ThemeSelector />
+                        <Link
+                            href="https://github.com/paulegradie/Sailfish"
+                            className="group p-2 text-slate-400 hover:text-slate-500 dark:hover:text-slate-300 transition-colors duration-200"
+                            aria-label="GitHub"
+                            target="_blank"
+                            rel="noopener noreferrer"
+                        >
+                            <GitHubIcon className="h-5 w-5" />
+                        </Link>
+                        <EnhancedMobileNavigation />
+                    </div>
+                </div>
             </div>
         </header>
     )
 }
 
 function useTableOfContents(tableOfContents) {
-    let [currentSection, setCurrentSection] = useState(tableOfContents[0]?.id)
+    let [currentSection, setCurrentSection] = useState(tableOfContents?.[0]?.id)
 
     let getHeadings = useCallback((tableOfContents) => {
         return tableOfContents
@@ -127,7 +145,7 @@ function useTableOfContents(tableOfContents) {
     }, [])
 
     useEffect(() => {
-        if (tableOfContents.length === 0) return
+        if (!tableOfContents || tableOfContents.length === 0) return
         let headings = getHeadings(tableOfContents)
         function onScroll() {
             let top = window.scrollY
@@ -151,7 +169,7 @@ function useTableOfContents(tableOfContents) {
     return currentSection
 }
 
-export function Layout({ children, title, tableOfContents }) {
+export function Layout({ children, title, tableOfContents = [] }) {
     let router = useRouter()
     let isHomePage = router.pathname === '/'
     let allLinks = navigation.flatMap((section) => section.links)
@@ -177,6 +195,14 @@ export function Layout({ children, title, tableOfContents }) {
         <>
             <Header navigation={navigation} />
 
+            {/* Analytics tracking for documentation */}
+            <DocumentationAnalytics />
+
+            {/* Reading progress bar for documentation pages */}
+            {!isHomePage && router.pathname.startsWith('/docs') && (
+                <ReadingProgress />
+            )}
+
             {isHomePage && <Hero />}
 
             <div className="relative mx-auto flex max-w-8xl justify-center sm:px-2 lg:px-8 xl:px-12">
@@ -185,18 +211,28 @@ export function Layout({ children, title, tableOfContents }) {
                     <div className="absolute top-16 bottom-0 right-0 hidden h-12 w-px bg-gradient-to-t from-slate-800 dark:block" />
                     <div className="absolute top-28 bottom-0 right-0 hidden w-px bg-slate-800 dark:block" />
                     <div className="sticky top-[4.5rem] -ml-0.5 h-[calc(100vh-4.5rem)] overflow-y-auto overflow-x-hidden py-16 pl-0.5">
-                        <Navigation
-                            navigation={navigation}
-                            className="w-64 pr-8 xl:w-72 xl:pr-16"
-                        />
+                        <div className="w-64 pr-8 xl:w-72 xl:pr-16 space-y-6">
+                            {/* Search box for documentation */}
+                            <SearchBox />
+
+                            {/* Navigation */}
+                            <Navigation navigation={navigation} />
+                        </div>
                     </div>
                 </div>
                 <div className="min-w-0 max-w-2xl flex-auto px-4 py-16 lg:max-w-none lg:pr-0 lg:pl-8 xl:px-16">
                     <article>
+                        {/* Breadcrumb Navigation */}
+                        {!isHomePage && (
+                            <div className="mb-6">
+                                <Breadcrumb />
+                            </div>
+                        )}
+
                         {(title || section) && (
-                            <header className="mb-9 space-y-1">
+                            <header className="mb-9 space-y-4">
                                 {section && (
-                                    <p className="font-display text-sm font-medium text-sky-500">
+                                    <p className="font-display text-sm font-medium text-primary-600 dark:text-primary-400">
                                         {section.title}
                                     </p>
                                 )}
@@ -205,9 +241,23 @@ export function Layout({ children, title, tableOfContents }) {
                                         {title}
                                     </h1>
                                 )}
+                                {/* Reading time for documentation pages */}
+                                {!isHomePage && router.pathname.startsWith('/docs') && (
+                                    <ReadingTime content={typeof children === 'string' ? children : ''} />
+                                )}
                             </header>
                         )}
                         <Prose>{children}</Prose>
+
+                        {/* Edit on GitHub link for documentation pages */}
+                        {!isHomePage && router.pathname.startsWith('/docs') && (
+                            <div className="mt-8 pt-8 border-t border-slate-200 dark:border-slate-800">
+                                <EditOnGitHub
+                                    filePath={`${router.pathname}.md`}
+                                    variant="subtle"
+                                />
+                            </div>
+                        )}
                     </article>
                     <dl className="mt-12 flex border-t border-slate-200 pt-6 dark:border-slate-800">
                         {previousPage && (
@@ -248,49 +298,14 @@ export function Layout({ children, title, tableOfContents }) {
                             <>
                                 <h2
                                     id="on-this-page-title"
-                                    className="font-display text-sm font-medium text-slate-900 dark:text-white"
+                                    className="font-display text-sm font-medium text-slate-900 dark:text-white mb-4"
                                 >
                                     On this page
                                 </h2>
-                                <ol role="list" className="mt-4 space-y-3 text-sm">
-                                    {tableOfContents.map((section) => (
-                                        <li key={section.id}>
-                                            <h3>
-                                                <Link
-                                                    href={`#${section.id}`}
-                                                    className={clsx(
-                                                        isActive(section)
-                                                            ? 'text-sky-500'
-                                                            : 'font-normal text-slate-500 hover:text-slate-700 dark:text-slate-400 dark:hover:text-slate-300'
-                                                    )}
-                                                >
-                                                    {section.title}
-                                                </Link>
-                                            </h3>
-                                            {section.children.length > 0 && (
-                                                <ol
-                                                    role="list"
-                                                    className="mt-2 space-y-3 pl-5 text-slate-500 dark:text-slate-400"
-                                                >
-                                                    {section.children.map((subSection) => (
-                                                        <li key={subSection.id}>
-                                                            <Link
-                                                                href={`#${subSection.id}`}
-                                                                className={
-                                                                    isActive(subSection)
-                                                                        ? 'text-sky-500'
-                                                                        : 'hover:text-slate-600 dark:hover:text-slate-300'
-                                                                }
-                                                            >
-                                                                {subSection.title}
-                                                            </Link>
-                                                        </li>
-                                                    ))}
-                                                </ol>
-                                            )}
-                                        </li>
-                                    ))}
-                                </ol>
+                                <TableOfContentsWithProgress
+                                    tableOfContents={tableOfContents}
+                                    currentSection={currentSection}
+                                />
                             </>
                         )}
                     </nav>

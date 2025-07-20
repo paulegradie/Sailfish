@@ -1,38 +1,57 @@
 ---
-title: Extensibility Commands
+title: Extensibility
 ---
 
-## Introduction
+Sailfish provides extensive extensibility through MediatR commands and notifications, allowing you to customize behavior, integrate with external systems, and create custom workflows.
 
-Sailfish exposes several public MediatR commands. Implement MediatR handlers for these commands to furhter customize Sailfish behavior.
+{% success-callout title="MediatR Integration" %}
+Sailfish exposes several public MediatR commands and notifications. Implement MediatR handlers for these to customize Sailfish behavior and integrate with your existing systems.
+{% /success-callout %}
 
-## BeforeAndAfterFileLocationRequest
+## 🔧 Extension Categories
 
-- **Default handler implemented**
-- Used to provide tracking file location data to the statistical test executor. E.g. Reading tracking data from blob storage or somewher else.
-- Registering an implementation of this will customize existing behaviour
+{% feature-grid columns=3 %}
+{% feature-card title="Data Sources" description="Customize where tracking data is read from and written to." /%}
+
+{% feature-card title="Notifications" description="React to test lifecycle events for logging, monitoring, or custom processing." /%}
+
+{% feature-card title="Analysis" description="Extend SailDiff and ScaleFish with custom analysis and reporting." /%}
+{% /feature-grid %}
+
+## 📁 Data Source Customization
+
+### BeforeAndAfterFileLocationRequest
+
+{% tip-callout title="Custom Data Sources" %}
+**Default handler implemented** - Customize this to read tracking data from cloud storage, databases, or other external sources.
+{% /tip-callout %}
+
+Used to provide tracking file location data to the statistical test executor. Perfect for reading tracking data from blob storage, databases, or network locations.
 
 ```csharp
-
 // This is passed to the handler
 public record BeforeAndAfterFileLocationRequest(
     IEnumerable<string> ProvidedBeforeTrackingFiles)
     : IRequest<BeforeAndAfterFileLocationResponse>;
 
-// you will return this from your handler's Handle method
+// You will return this from your handler's Handle method
 public record BeforeAndAfterFileLocationResponse(
     IEnumerable<string> BeforeFilePaths,
     IEnumerable<string> AfterFilePaths);
 ```
 
----
+**Use cases:**
+- **Cloud Storage**: Read from Azure Blob, AWS S3, or Google Cloud Storage
+- **Database Integration**: Query tracking data from SQL databases
+- **Network Shares**: Access data from network drives or shared storage
 
-## ReadInBeforeAndAfterDataRequest
+### ReadInBeforeAndAfterDataRequest
 
-- **Default handler implemented**
-- Used to convert file locations into `TestData` objects that can be passed to the analyzer functions
-- May be used to bypass the need to download data when read data from cloud storage
-- Registering an implementation of this will customize existing behaviour
+{% code-callout title="Data Processing" %}
+**Default handler implemented** - Convert file locations into `TestData` objects, with support for custom data processing and aggregation.
+{% /code-callout %}
+
+Used to convert file locations into `TestData` objects that can be passed to the analyzer functions. May be used to bypass file downloads when reading data from cloud storage.
 
 ```csharp
 public record ReadInBeforeAndAfterDataRequest(
@@ -40,152 +59,130 @@ public record ReadInBeforeAndAfterDataRequest(
     IEnumerable<string> AfterFilePaths)
     : IRequest<ReadInBeforeAndAfterDataResponse>;
 
-
 public record ReadInBeforeAndAfterDataResponse(
     TestData? BeforeData,
-    TestData? AfterData)
+    TestData? AfterData);
 ```
 
----
+**Use cases:**
+- **Data Aggregation**: Combine multiple data sources before analysis
+- **Format Conversion**: Transform data from custom formats
+- **Preprocessing**: Clean or filter data before statistical analysis
 
-## GetAllTrackingDataOrderedChronologicallyRequest
+## 📊 Test Lifecycle Notifications
 
-- **Default handler implemented**
-- Returns a TrackingFileDataList in requested chronological order (ascending or descending)
-- Overriding this will let you specify a custom list of ordered data
-- This won't typically need to be overriden
+{% info-callout title="Event-Driven Architecture" %}
+Sailfish provides comprehensive notifications throughout the test lifecycle, enabling you to build event-driven integrations and monitoring systems.
+{% /info-callout %}
 
-```csharp
-public class GetAllTrackingDataOrderedChronologicallyRequest(bool Ascending = false)
-    : IRequest<GetAllTrackingDataOrderedChronologicallyResponse>;
+### Key Lifecycle Events
 
-public record GetAllTrackingDataOrderedChronologicallyResponse(TrackingFileDataList TrackingData);
-```
+{% feature-grid columns=2 %}
+{% feature-card title="Test Case Events" description="TestCaseStartedNotification, TestCaseCompletedNotification, TestCaseDisabledNotification" /%}
 
----
+{% feature-card title="Test Run Events" description="TestRunCompletedNotification, TestClassCompletedNotification" /%}
 
-## GetLatestExecutionSummaryRequest
+{% feature-card title="Analysis Events" description="SailDiffAnalysisCompleteNotification, ScaleFishAnalysisCompleteNotification" /%}
 
-- Used to specify the latest execution summary for both Saildiff and ScaleFish
+{% feature-card title="Error Handling" description="TestCaseExceptionNotification for robust error handling and logging" /%}
+{% /feature-grid %}
 
-```csharp
-public record GetLatestExecutionSummaryRequest
-    : IRequest<GetLatestExecutionSummaryResponse>;
-
-public record GetLatestExecutionSummaryResponse(List<IClassExecutionSummary> LatestExecutionSummaries);
-```
-
-## TestCaseStartedNotification
-
-- A notification that signals the start of a single test case
+### Example: Custom Test Monitoring
 
 ```csharp
-public record TestCaseStartedNotification(
-    TestInstanceContainerExternal TestInstanceContainer,
-    IEnumerable<dynamic> TestCaseGroup)
-    : INotification;
-```
-
----
-
-## TestCaseCompletedNotification
-
-- A notification that signals the completion of a single test case
-- Used to stream individual test cases for tracking or otherwise
-
-```csharp
-public record TestCaseCompletedNotification(
-    ClassExecutionSummaryTrackingFormat ClassExecutionSummaryTrackingFormat,
-    TestInstanceContainerExternal TestInstanceContainerExternal,
-    IEnumerable<dynamic> TestCaseGroup
-) : INotification;
-```
-
----
-
-## TestClassCompletedNotification
-
-- A notification that signals the completion a single test class
-
-```csharp
-public record TestClassCompletedNotification(
-    ClassExecutionSummaryTrackingFormat ClassExecutionSummaryTrackingFormat,
-    TestInstanceContainerExternal TestInstanceContainerExternal,
-    IEnumerable<dynamic> TestCaseGroup) : INotification;
-```
-
----
-
-## TestCaseDisabledNotification
-
-- A notification that signals that the current test case is disabled
-
-```csharp
-internal record TestCaseDisabledNotification(
-    TestInstanceContainerExternal TestInstanceContainer,
-    IEnumerable<dynamic> TestCaseGroup,
-    bool DisableTheGroup)
-    : INotification;
-```
-
----
-
-## TestCaseExceptionNotification
-
-- A notification that signals that there was an exception in a test case
-
-```csharp
-public record TestCaseExceptionNotification(
-    TestInstanceContainerExternal? TestInstanceContainer,
-    IEnumerable<dynamic> TestCaseGroup,
-    Exception? Exception)
-    : INotification;
-```
-
----
-
-## TestRunCompletedNotification
-
-- A notification that signals the completion of the full test run
-- Used to write final tracking data
-
-```csharp
-public record TestRunCompletedNotification(
-    IEnumerable<ClassExecutionSummaryTrackingFormat> ClassExecutionSummaries)
-    : INotification;
-```
-
----
-
-## ScaleFishAnalysisCompleteNotification
-
-- Invoked on completion of Scalefish analysis
-- Used to write model selection and model fitting result
-
-```csharp
-public record ScaleFishAnalysisCompleteNotification(
-    string ScaleFishResultMarkdown,
-    List<ScalefishClassModel> TestClassComplexityResults)
-    : INotification;
-```
-
----
-
-## SailDiffAnalysisCompleteNotification
-
-- Invoked on completion of a SailDiff analysis
-- Used to write
-
-```csharp
-public class SailDiffAnalysisCompleteNotification : INotification
+public class CustomTestMonitoringHandler :
+    INotificationHandler<TestCaseStartedNotification>,
+    INotificationHandler<TestCaseCompletedNotification>,
+    INotificationHandler<TestRunCompletedNotification>
 {
-    public IEnumerable<TestCaseResults> TestCaseResults { get; }
-    public string ResultsAsMarkdown { get; }
+    private readonly ILogger<CustomTestMonitoringHandler> logger;
+    private readonly IMetricsCollector metricsCollector;
 
-    public SailDiffAnalysisCompleteNotification(IEnumerable<TestCaseResults> testCaseResults, string resultsAsMarkdown)
+    public CustomTestMonitoringHandler(
+        ILogger<CustomTestMonitoringHandler> logger,
+        IMetricsCollector metricsCollector)
     {
-        TestCaseResults = testCaseResults;
-        ResultsAsMarkdown = resultsAsMarkdown;
+        this.logger = logger;
+        this.metricsCollector = metricsCollector;
+    }
+
+    public async Task Handle(TestCaseStartedNotification notification, CancellationToken cancellationToken)
+    {
+        logger.LogInformation("Test case started: {TestCase}", notification.TestInstanceContainer.DisplayName);
+        await metricsCollector.IncrementCounter("sailfish.tests.started");
+    }
+
+    public async Task Handle(TestCaseCompletedNotification notification, CancellationToken cancellationToken)
+    {
+        logger.LogInformation("Test case completed: {TestCase}", notification.TestInstanceContainerExternal.DisplayName);
+
+        // Send metrics to monitoring system
+        await metricsCollector.RecordGauge(
+            "sailfish.test.duration",
+            notification.ClassExecutionSummaryTrackingFormat.Mean);
+    }
+
+    public async Task Handle(TestRunCompletedNotification notification, CancellationToken cancellationToken)
+    {
+        logger.LogInformation("Test run completed with {Count} test classes", notification.ClassExecutionSummaries.Count());
+
+        // Generate custom report
+        await GenerateCustomReport(notification.ClassExecutionSummaries);
     }
 }
 ```
+
+## 🚀 Advanced Integration Examples
+
+### Cloud Storage Integration
+
+{% code-callout title="Azure Blob Storage Example" %}
+Integrate with Azure Blob Storage to store and retrieve performance tracking data.
+{% /code-callout %}
+
+```csharp
+public class AzureBlobTrackingHandler : INotificationHandler<TestRunCompletedNotification>
+{
+    private readonly BlobServiceClient blobServiceClient;
+
+    public async Task Handle(TestRunCompletedNotification notification, CancellationToken cancellationToken)
+    {
+        var containerClient = blobServiceClient.GetBlobContainerClient("performance-data");
+        var blobName = $"tracking-{DateTime.UtcNow:yyyy-MM-dd-HH-mm-ss}.json";
+
+        var trackingData = JsonSerializer.Serialize(notification.ClassExecutionSummaries);
+        await containerClient.UploadBlobAsync(blobName, new BinaryData(trackingData));
+    }
+}
+```
+
+### Database Integration
+
+{% success-callout title="Performance Data Warehouse" %}
+Store performance results in a database for historical analysis and trending.
+{% /success-callout %}
+
+```csharp
+public class DatabaseTrackingHandler : INotificationHandler<TestCaseCompletedNotification>
+{
+    private readonly IPerformanceDataRepository repository;
+
+    public async Task Handle(TestCaseCompletedNotification notification, CancellationToken cancellationToken)
+    {
+        var performanceRecord = new PerformanceRecord
+        {
+            TestName = notification.TestInstanceContainerExternal.DisplayName,
+            Mean = notification.ClassExecutionSummaryTrackingFormat.Mean,
+            Median = notification.ClassExecutionSummaryTrackingFormat.Median,
+            StandardDeviation = notification.ClassExecutionSummaryTrackingFormat.StdDev,
+            Timestamp = DateTime.UtcNow
+        };
+
+        await repository.SavePerformanceRecordAsync(performanceRecord);
+    }
+}
+```
+
+{% note-callout title="Getting Started" %}
+Ready to extend Sailfish? Start by implementing a simple notification handler for logging, then gradually add more sophisticated integrations as your needs grow. Check out our [Example App](/docs/3/example-app) for a complete working example.
+{% /note-callout %}

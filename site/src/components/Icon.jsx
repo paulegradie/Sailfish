@@ -46,6 +46,11 @@ const gradients = {
     { stopColor: '#22D3EE', offset: '.527' },
     { stopColor: '#818CF8', offset: 1 },
   ],
+  emerald: [
+    { stopColor: '#10B981' },
+    { stopColor: '#34D399', offset: '.527' },
+    { stopColor: '#6EE7B7', offset: 1 },
+  ],
   amber: [
     { stopColor: '#FDE68A', offset: '.08' },
     { stopColor: '#F59E0B', offset: '.837' },

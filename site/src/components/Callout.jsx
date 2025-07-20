@@ -9,6 +9,18 @@ const styles = {
     title: 'text-sky-900 dark:text-sky-400',
     body: 'text-sky-800 [--tw-prose-background:theme(colors.sky.50)] prose-a:text-sky-900 prose-code:text-sky-900 dark:text-slate-300 dark:prose-code:text-slate-300',
   },
+  info: {
+    container:
+      'bg-blue-50 dark:bg-slate-800/60 dark:ring-1 dark:ring-slate-300/10',
+    title: 'text-blue-900 dark:text-blue-400',
+    body: 'text-blue-800 [--tw-prose-background:theme(colors.blue.50)] prose-a:text-blue-900 prose-code:text-blue-900 dark:text-slate-300 dark:prose-code:text-slate-300',
+  },
+  tip: {
+    container:
+      'bg-emerald-50 dark:bg-slate-800/60 dark:ring-1 dark:ring-slate-300/10',
+    title: 'text-emerald-900 dark:text-emerald-400',
+    body: 'text-emerald-800 [--tw-prose-background:theme(colors.emerald.50)] prose-a:text-emerald-900 prose-code:text-emerald-900 dark:text-slate-300 dark:prose-code:text-slate-300',
+  },
   warning: {
     container:
       'bg-amber-50 dark:bg-slate-800/60 dark:ring-1 dark:ring-slate-300/10',
@@ -19,6 +31,8 @@ const styles = {
 
 const icons = {
   note: (props) => <Icon icon="lightbulb" {...props} />,
+  info: (props) => <Icon icon="lightbulb" color="blue" {...props} />,
+  tip: (props) => <Icon icon="lightbulb" color="emerald" {...props} />,
   warning: (props) => <Icon icon="warning" color="amber" {...props} />,
 }
 

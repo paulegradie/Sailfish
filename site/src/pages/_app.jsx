@@ -1,75 +1,34 @@
-import Head from 'next/head'
-import { slugifyWithCounter } from '@sindresorhus/slugify'
-
+import { useRouter } from 'next/router'
+import { ThemeProvider } from '@/components/ThemeProvider'
 import { Layout } from '@/components/Layout'
-
-import 'focus-visible'
-import '@/styles/tailwind.css'
-
-function getNodeText(node) {
-  let text = ''
-  for (let child of node.children ?? []) {
-    if (typeof child === 'string') {
-      text += child
-    }
-    text += getNodeText(child)
-  }
-  return text
-}
-
-function collectHeadings(nodes, slugify = slugifyWithCounter()) {
-  let sections = []
-
-  for (let node of nodes) {
-    if (node.name === 'h2' || node.name === 'h3') {
-      let title = getNodeText(node)
-      if (title) {
-        let id = slugify(title)
-        node.attributes.id = id
-        if (node.name === 'h3') {
-          if (!sections[sections.length - 1]) {
-            throw new Error(
-              'Cannot add `h3` to table of contents without a preceding `h2`'
-            )
-          }
-          sections[sections.length - 1].children.push({
-            ...node.attributes,
-            title,
-          })
-        } else {
-          sections.push({ ...node.attributes, title, children: [] })
-        }
-      }
-    }
-
-    sections.push(...collectHeadings(node.children ?? [], slugify))
-  }
-
-  return sections
-}
+import '@/styles/globals.css'
 
 export default function App({ Component, pageProps }) {
-  let title = pageProps.markdoc?.frontmatter.title
+  const router = useRouter()
 
-  let pageTitle =
-    pageProps.markdoc?.frontmatter.pageTitle ||
-    `${pageProps.markdoc?.frontmatter.title} - Docs`
+  // Check if this is a documentation page that should use the Layout component
+  const isDocumentationPage = router.pathname.startsWith('/docs') ||
+                              router.pathname.startsWith('/pricing') ||
+                              router.pathname.startsWith('/enterprise') ||
+                              router.pathname.startsWith('/community') ||
+                              router.pathname.startsWith('/case-studies') ||
+                              router.pathname.startsWith('/comparison')
 
-  let description = pageProps.markdoc?.frontmatter.description
+  // For documentation pages, wrap with Layout component
+  if (isDocumentationPage) {
+    return (
+      <ThemeProvider defaultTheme="system">
+        <Layout title={pageProps.title} tableOfContents={pageProps.tableOfContents || []}>
+          <Component {...pageProps} />
+        </Layout>
+      </ThemeProvider>
+    )
+  }
 
-  let tableOfContents = pageProps.markdoc?.content
-    ? collectHeadings(pageProps.markdoc.content)
-    : []
-
+  // For other pages (like landing page), render directly
   return (
-    <>
-      <Head>
-        <title>{pageTitle}</title>
-        {description && <meta name="description" content={description} />}
-      </Head>
-      <Layout title={title} tableOfContents={tableOfContents}>
-        <Component {...pageProps} />
-      </Layout>
-    </>
+    <ThemeProvider defaultTheme="system">
+      <Component {...pageProps} />
+    </ThemeProvider>
   )
 }

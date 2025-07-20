@@ -2,35 +2,50 @@
 title: ScaleFish
 ---
 
-## Introduction
+ScaleFish is Sailfish's machine learning-powered complexity analysis tool that automatically determines the algorithmic complexity (Big O) of your code.
 
-**Scalefish** is a **machine learning** tool used to perform regression analysis.
+{% success-callout title="Machine Learning Analysis" %}
+**ScaleFish** uses machine learning to perform regression analysis, fitting your performance data against various complexity curves (linear, O(n log n), quadratic, etc.) to determine your algorithm's Big O complexity.
+{% /success-callout %}
 
-When enabled, scalefish will discover test cases with scalefish-enabled variables and use machine learning to fit result data against various parameterized functions representing general complexity curves (e.g. linear, nlogn, etc).
+When enabled, ScaleFish will discover test cases with ScaleFish-enabled variables and use machine learning to fit result data against various parameterized functions representing general complexity curves.
 
-This outputs a model file and a results file once your run is complete. The model file can be used to make predictions.
+This outputs a model file and a results file once your run is complete. The model file can be used to make predictions about performance at different scales.
 
-**NOTE**: The more data you collect, the more accurate these measurements will be.
+{% warning-callout title="Data Quality Matters" %}
+**NOTE**: The more data you collect, the more accurate these measurements will be. Use sufficient sample sizes and variable ranges for reliable complexity analysis.
+{% /warning-callout %}
 
 
-## Enabling / Configuring ScaleFish
+## ⚙️ Enabling ScaleFish
 
-The first thing you'll need to do when enabling **ScaleFish** is to specify a SailfishVariable or SailfishRangeVariable and set the optional complexity boolean to true.
+{% tip-callout title="Variable Configuration" %}
+The first thing you'll need to do when enabling **ScaleFish** is to specify a SailfishVariable or SailfishRangeVariable and set the optional complexity boolean to `true`.
+{% /tip-callout %}
+
+### 🔢 Variable Setup
 
 ```csharp
-[SailfishRangeVariable(true, start: 5, 4, 6)]
+[SailfishRangeVariable(true, start: 5, count: 4, step: 6)]
 public int N { get; set; }
 
 // or
 
 [SailfishVariable(true, 1, 10, 50, 100, 500, 1000)]
 public int N { get; set; }
-
 ```
 
-If using Sailfish as a test project, you can create a `.sailfish.json` file in the root of your test project (next to your `.csproj` file). This file can hold various configuration settings. When found, SailDiff will be automatically run. If any compatible setting is omitted, a sensible default will be used.
+{% feature-grid columns=2 %}
+{% feature-card title="SailfishRangeVariable" description="Generate systematic ranges for complexity analysis with start, count, and step parameters." /%}
 
-**Example `.sailfish.json`**
+{% feature-card title="SailfishVariable" description="Specify discrete values that represent different scales for your algorithm." /%}
+{% /feature-grid %}
+
+### 📁 Configuration File
+
+{% code-callout title="JSON Configuration" %}
+If using Sailfish as a test project, create a `.sailfish.json` file in the root of your test project (next to your `.csproj` file) to enable ScaleFish.
+{% /code-callout %}
 
 ```json
 {
@@ -54,11 +69,15 @@ If using Sailfish as a test project, you can create a `.sailfish.json` file in t
 }
 ```
 
-There are currently no customizations for the ScaleFishSettings.
+{% info-callout title="Simple Configuration" %}
+There are currently no customizations for the ScaleFishSettings - just include the empty object to enable the feature.
+{% /info-callout %}
 
-### Library
+### 📚 Library Configuration
 
-You may use the `RunsettingsBuilder` to configure ScaleFish before running.
+{% tip-callout title="Programmatic Setup" %}
+You may use the `RunSettingsBuilder` to configure ScaleFish when using Sailfish as a library.
+{% /tip-callout %}
 
 ```csharp
 var settings = RunSettingsBuilder
@@ -67,7 +86,11 @@ var settings = RunSettingsBuilder
     .Build();
 ```
 
-## Results
+## 📊 Analysis Results
+
+{% success-callout title="Complexity Analysis Output" %}
+ScaleFish provides detailed complexity analysis with goodness-of-fit metrics to help you understand your algorithm's performance characteristics.
+{% /success-callout %}
 
 **Test Class: ScaleFishExample**
 
@@ -75,7 +98,9 @@ var settings = RunSettingsBuilder
 | ------------------------- | ------- | ---- | ------------------ | -------- | ---------- | --------------------- |
 | ScaleFishExample.Linear.N | Linear  | O(n) | 0.9994126639733568 | NLogN    | O(nLog(n)) | 0.9942376556590526    |
 
-For each variable, all other variables will be held constant at their smallest scale. For each parameterized function, regression will be performed to fit the model to the data. For each resulting model, a goodness of fit is calculated and best two fitting models are returned. Using this result, you can guadge the general complexity of the logic inside the SailfishMethod.
+{% info-callout title="Analysis Process" %}
+For each variable, all other variables are held constant at their smallest scale. For each parameterized function, regression is performed to fit the model to the data. The goodness of fit is calculated and the best two fitting models are returned, helping you gauge the general complexity of the logic inside the SailfishMethod.
+{% /info-callout %}
 
 ## Models
 
@@ -123,9 +148,11 @@ In addition, a model file is produced with content similar to:
 ]
 ```
 
-## Making predictions
+## 🔮 Making Predictions
 
-Sailfish provides basic tools for loading models and making predictions.
+{% code-callout title="Predictive Modeling" %}
+Sailfish provides tools for loading models and making predictions about performance at different scales.
+{% /code-callout %}
 
 ```csharp
 var model = ModelLoader
@@ -139,4 +166,14 @@ var result = model.ScaleFishModelFunction.Predict(50_000);
 Console.WriteLine(result);
 ```
 
-For a working example, [visit the demo](https://github.com/paulegradie/Sailfish/blob/main/source/ScaleFishDemo/Program.cs).
+### 🎯 Use Cases
+
+{% feature-grid columns=2 %}
+{% feature-card title="Capacity Planning" description="Predict performance at different scales to plan infrastructure and resources." /%}
+
+{% feature-card title="Algorithm Selection" description="Compare different algorithms' complexity to choose the best approach for your scale." /%}
+{% /feature-grid %}
+
+{% note-callout title="Learn More" %}
+For a working example, [visit the demo](https://github.com/paulegradie/Sailfish/blob/main/source/ScaleFishDemo/Program.cs). Ready to explore more? Check out our [Advanced Usage](/docs/3/extensibility) guide or learn about [Example Applications](/docs/3/example-app).
+{% /note-callout %}
