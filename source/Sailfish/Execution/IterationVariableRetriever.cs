@@ -18,6 +18,7 @@ internal class IterationVariableRetriever : IIterationVariableRetriever
     {
         var attributeBasedVariables = GetAttributeBasedVariables(type);
         var interfaceBasedVariables = GetInterfaceBasedVariables(type);
+        var classBasedVariables = GetClassBasedVariables(type);
         var complexVariables = GetComplexVariables(type);
 
         // Combine all types of variables
@@ -29,6 +30,11 @@ internal class IterationVariableRetriever : IIterationVariableRetriever
         }
 
         foreach (var kvp in interfaceBasedVariables)
+        {
+            allVariables[kvp.Key] = kvp.Value;
+        }
+
+        foreach (var kvp in classBasedVariables)
         {
             allVariables[kvp.Key] = kvp.Value;
         }
@@ -75,6 +81,26 @@ internal class IterationVariableRetriever : IIterationVariableRetriever
                 prop =>
                 {
                     var provider = new TypedVariableProvider(prop.PropertyType);
+                    var variables = provider.GetVariables()
+                        .Distinct()
+                        .OrderBy(x => x)
+                        .ToArray();
+
+                    return new VariableAttributeMeta(
+                        variables,
+                        provider.IsScaleFishVariable());
+                });
+    }
+
+    private Dictionary<string, VariableAttributeMeta> GetClassBasedVariables(Type type)
+    {
+        return type
+            .CollectAllSailfishVariablesClassProperties()
+            .ToDictionary(
+                prop => prop.Name,
+                prop =>
+                {
+                    var provider = new SailfishVariablesClassProvider(prop.PropertyType);
                     var variables = provider.GetVariables()
                         .Distinct()
                         .OrderBy(x => x)

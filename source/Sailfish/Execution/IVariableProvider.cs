@@ -2,6 +2,9 @@
 using System.Linq;
 using Sailfish.Attributes;
 using Sailfish.Contracts.Public.Variables;
+using Sailfish.Exceptions;
+using System;
+using System.Collections;
 
 namespace Sailfish.Execution;
 
@@ -110,6 +113,91 @@ internal class TypedVariableProvider : IVariableProvider
 
         // Convert to object enumerable
         return enumerable.Cast<object>();
+    }
+}
+
+/// <summary>
+/// Variable provider for SailfishVariables&lt;T, TProvider&gt; class-based variables
+/// </summary>
+internal class SailfishVariablesClassProvider : IVariableProvider
+{
+    private readonly System.Type propertyType;
+
+    public SailfishVariablesClassProvider(System.Type propertyType)
+    {
+        this.propertyType = propertyType;
+    }
+
+    public IEnumerable<object> GetVariables()
+    {
+        return GetSailfishVariablesClassVariables(propertyType);
+    }
+
+    public bool IsScaleFishVariable()
+    {
+        // SailfishVariables class variables are not used for complexity estimation by default
+        // This could be extended in the future if needed
+        return false;
+    }
+
+    private static IEnumerable<object> GetSailfishVariablesClassVariables(System.Type propertyType)
+    {
+        // Verify this is a SailfishVariables<T, TProvider> type
+        if (!propertyType.IsGenericType ||
+            propertyType.GetGenericTypeDefinition() != typeof(SailfishVariables<,>))
+        {
+            throw new SailfishException($"Type {propertyType} is not SailfishVariables<T, TProvider>.");
+        }
+
+        // Get the generic arguments (T and TProvider)
+        var genericArgs = propertyType.GetGenericArguments();
+        var dataType = genericArgs[0];
+        var providerType = genericArgs[1];
+
+        // Create an instance of the provider
+        var providerInstance = Activator.CreateInstance(providerType);
+        if (providerInstance == null)
+        {
+            throw new SailfishException($"Could not create instance of provider type {providerType}.");
+        }
+
+        // Find the Variables() method on the provider
+        var method = providerType.GetMethod("Variables");
+        if (method == null)
+        {
+            throw new SailfishException($"Could not find Variables() method on provider type {providerType}.");
+        }
+
+        // Invoke the method to get the variables
+        var result = method.Invoke(providerInstance, null);
+        if (result is not IEnumerable enumerable)
+        {
+            throw new SailfishException($"Variables() method on {providerType} did not return an IEnumerable.");
+        }
+
+        // Convert each variable to a SailfishVariables<T, TProvider> instance
+        var sailfishVariablesList = new List<object>();
+        foreach (var variable in enumerable)
+        {
+            // Create a SailfishVariables<T, TProvider> instance and set its Value
+            var sailfishVariablesInstance = Activator.CreateInstance(propertyType);
+            if (sailfishVariablesInstance == null)
+            {
+                throw new SailfishException($"Could not create instance of {propertyType}.");
+            }
+
+            // Set the Value property
+            var valueProperty = propertyType.GetProperty("Value");
+            if (valueProperty == null)
+            {
+                throw new SailfishException($"Could not find Value property on {propertyType}.");
+            }
+
+            valueProperty.SetValue(sailfishVariablesInstance, variable);
+            sailfishVariablesList.Add(sailfishVariablesInstance);
+        }
+
+        return sailfishVariablesList;
     }
 }
 

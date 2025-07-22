@@ -54,13 +54,27 @@ internal static class AttributeDiscoveryExtensionMethods
     }
 
     /// <summary>
-    /// Collects both attribute-based and interface-based variable properties
+    /// Collects all properties that are of type SailfishVariables&lt;T, TProvider&gt;
+    /// </summary>
+    internal static List<PropertyInfo> CollectAllSailfishVariablesClassProperties(this Type type)
+    {
+        return type.GetProperties()
+            .Where(prop => prop.PropertyType.IsSailfishVariablesClass())
+            .ToList();
+    }
+
+    /// <summary>
+    /// Collects all variable properties: attribute-based, interface-based, and class-based
     /// </summary>
     internal static List<PropertyInfo> CollectAllVariableProperties(this Type type)
     {
         var attributeProperties = type.CollectAllSailfishVariableAttributes();
         var variablesInterfaceProperties = type.CollectAllSailfishVariablesProperties();
-        return attributeProperties.Concat(variablesInterfaceProperties).ToList();
+        var variablesClassProperties = type.CollectAllSailfishVariablesClassProperties();
+        return attributeProperties
+            .Concat(variablesInterfaceProperties)
+            .Concat(variablesClassProperties)
+            .ToList();
     }
 
     /// <summary>
@@ -78,6 +92,23 @@ internal static class AttributeDiscoveryExtensionMethods
     internal static bool IsVariablesProperty(this PropertyInfo propertyInfo)
     {
         return propertyInfo.PropertyType.ImplementsISailfishVariables();
+    }
+
+    /// <summary>
+    /// Checks if a type is SailfishVariables&lt;T, TProvider&gt;
+    /// </summary>
+    internal static bool IsSailfishVariablesClass(this Type type)
+    {
+        return type.IsGenericType &&
+               type.GetGenericTypeDefinition() == typeof(SailfishVariables<,>);
+    }
+
+    /// <summary>
+    /// Checks if a property type is SailfishVariables&lt;T, TProvider&gt;
+    /// </summary>
+    internal static bool IsSailfishVariablesClassProperty(this PropertyInfo propertyInfo)
+    {
+        return propertyInfo.PropertyType.IsSailfishVariablesClass();
     }
 
     /// <summary>
