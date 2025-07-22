@@ -11,91 +11,86 @@ namespace Tests.Library.Execution;
 
 public class WhenUsingComplexVariableProviders
 {
+
+
     [Fact]
-    public void ComplexVariableProvider_ShouldReturnCorrectVariables()
+    public void IterationVariableRetriever_ShouldHandleTypedVariables()
     {
         // Arrange
-        var provider = new ComplexVariableProvider(typeof(TestComplexVariable));
+        var retriever = new IterationVariableRetriever();
+
+        // Act
+        var variables = retriever.RetrieveIterationVariables(typeof(MixedVariableTestClassWithTyped));
+
+        // Assert
+        variables.ShouldNotBeEmpty();
+        variables.Count.ShouldBe(2);
+
+        // Should have attribute-based and typed variables
+        variables.ShouldContainKey("SimpleValue");
+        variables.ShouldContainKey("TypedValue");
+
+        // Check simple variable
+        var simpleVar = variables["SimpleValue"];
+        simpleVar.OrderedVariables.ShouldContain(1);
+        simpleVar.OrderedVariables.ShouldContain(2);
+        simpleVar.OrderedVariables.ShouldContain(3);
+
+        // Check typed variable
+        var typedVar = variables["TypedValue"];
+        typedVar.OrderedVariables.Count().ShouldBe(2);
+        typedVar.OrderedVariables.ShouldAllBe(v => v is TestTypedVariable);
+    }
+
+
+
+    [Fact]
+    public void AttributeDiscoveryExtensions_ShouldDetectTypedVariableProperties()
+    {
+        // Arrange
+        var type = typeof(MixedVariableTestClassWithTyped);
+
+        // Act
+        var typedProperties = type.CollectAllSailfishVariablesProperties();
+        var allProperties = type.CollectAllVariableProperties();
+
+        // Assert
+        typedProperties.Count.ShouldBe(1);
+        typedProperties.Single().Name.ShouldBe("TypedValue");
+
+        allProperties.Count.ShouldBe(2);
+        allProperties.ShouldContain(p => p.Name == "SimpleValue");
+        allProperties.ShouldContain(p => p.Name == "TypedValue");
+    }
+
+
+
+    [Fact]
+    public void TypedVariableProvider_ShouldReturnCorrectVariables()
+    {
+        // Arrange
+        var provider = new TypedVariableProvider(typeof(ITestTypedVariable));
 
         // Act
         var variables = provider.GetVariables().ToList();
 
         // Assert
         variables.ShouldNotBeEmpty();
-        variables.Count.ShouldBe(3);
-        variables.ShouldAllBe(v => v is TestComplexVariable);
-        
-        var typedVariables = variables.Cast<TestComplexVariable>().ToList();
-        typedVariables.ShouldContain(v => v.Name == "Test1" && v.Value == 1);
-        typedVariables.ShouldContain(v => v.Name == "Test2" && v.Value == 2);
-        typedVariables.ShouldContain(v => v.Name == "Test3" && v.Value == 3);
-    }
-
-    [Fact]
-    public void ComplexVariableProvider_ShouldNotBeScaleFishVariable()
-    {
-        // Arrange
-        var provider = new ComplexVariableProvider(typeof(TestComplexVariable));
-
-        // Act & Assert
-        provider.IsScaleFishVariable().ShouldBeFalse();
-    }
-
-    [Fact]
-    public void IterationVariableRetriever_ShouldHandleBothAttributeAndComplexVariables()
-    {
-        // Arrange
-        var retriever = new IterationVariableRetriever();
-
-        // Act
-        var variables = retriever.RetrieveIterationVariables(typeof(MixedVariableTestClass));
-
-        // Assert
-        variables.ShouldNotBeEmpty();
         variables.Count.ShouldBe(2);
-        
-        // Should have both attribute-based and complex variables
-        variables.ShouldContainKey("SimpleValue");
-        variables.ShouldContainKey("ComplexValue");
-        
-        // Check simple variable
-        var simpleVar = variables["SimpleValue"];
-        simpleVar.OrderedVariables.ShouldContain(1);
-        simpleVar.OrderedVariables.ShouldContain(2);
-        simpleVar.OrderedVariables.ShouldContain(3);
-        
-        // Check complex variable
-        var complexVar = variables["ComplexValue"];
-        complexVar.OrderedVariables.Count().ShouldBe(3);
-        complexVar.OrderedVariables.ShouldAllBe(v => v is TestComplexVariable);
+        variables.ShouldAllBe(v => v is TestTypedVariable);
+
+        var typedVariables = variables.Cast<TestTypedVariable>().ToList();
+        typedVariables.ShouldContain(v => v.Name == "Config1" && v.Value == 10);
+        typedVariables.ShouldContain(v => v.Name == "Config2" && v.Value == 20);
     }
 
     [Fact]
-    public void AttributeDiscoveryExtensions_ShouldDetectComplexVariableProperties()
-    {
-        // Arrange
-        var type = typeof(MixedVariableTestClass);
-
-        // Act
-        var complexProperties = type.CollectAllSailfishComplexVariableProperties();
-        var allProperties = type.CollectAllVariableProperties();
-
-        // Assert
-        complexProperties.Count.ShouldBe(1);
-        complexProperties.Single().Name.ShouldBe("ComplexValue");
-        
-        allProperties.Count.ShouldBe(2);
-        allProperties.ShouldContain(p => p.Name == "SimpleValue");
-        allProperties.ShouldContain(p => p.Name == "ComplexValue");
-    }
-
-    [Fact]
-    public void TypeExtensions_ShouldCorrectlyIdentifyComplexVariableProvider()
+    public void TypeExtensions_ShouldCorrectlyIdentifyTypedVariables()
     {
         // Act & Assert
-        typeof(TestComplexVariable).ImplementsISailfishComplexVariableProvider().ShouldBeTrue();
-        typeof(string).ImplementsISailfishComplexVariableProvider().ShouldBeFalse();
-        typeof(int).ImplementsISailfishComplexVariableProvider().ShouldBeFalse();
+        typeof(TestTypedVariable).ImplementsISailfishVariables().ShouldBeTrue();
+        typeof(string).ImplementsISailfishVariables().ShouldBeFalse();
+        typeof(int).ImplementsISailfishVariables().ShouldBeFalse();
     }
 }
 
@@ -104,35 +99,47 @@ public class MixedVariableTestClass
 {
     [SailfishVariable(1, 2, 3)]
     public int SimpleValue { get; set; }
-
-    public ITestComplexVariable ComplexValue { get; set; } = null!;
 }
 
-public interface ITestComplexVariable : ISailfishComplexVariableProvider<TestComplexVariable>
+// Test class with all variable types
+public class MixedVariableTestClassWithTyped
+{
+    [SailfishVariable(1, 2, 3)]
+    public int SimpleValue { get; set; }
+
+    public ITestTypedVariable TypedValue { get; set; } = null!;
+}
+
+// Test interface for typed variables
+public interface ITestTypedVariable : ISailfishVariables<TestTypedVariable, TestTypedVariableProvider>
 {
     string Name { get; }
     int Value { get; }
 }
 
-public record TestComplexVariable(string Name, int Value) : ITestComplexVariable
+// Test provider for typed variables
+public class TestTypedVariableProvider : ISailfishVariablesProvider<TestTypedVariable>
 {
-    public int CompareTo(object? obj)
-    {
-        if (obj is not TestComplexVariable other) return 1;
-        
-        var nameComparison = string.Compare(Name, other.Name, StringComparison.Ordinal);
-        if (nameComparison != 0) return nameComparison;
-        
-        return Value.CompareTo(other.Value);
-    }
-
-    public static IEnumerable<TestComplexVariable> GetVariableInstances()
+    public IEnumerable<TestTypedVariable> Variables()
     {
         return new[]
         {
-            new TestComplexVariable("Test1", 1),
-            new TestComplexVariable("Test2", 2),
-            new TestComplexVariable("Test3", 3)
+            new TestTypedVariable("Config1", 10),
+            new TestTypedVariable("Config2", 20)
         };
+    }
+}
+
+// Test data type for typed variables
+public record TestTypedVariable(string Name, int Value) : ITestTypedVariable
+{
+    public int CompareTo(object? obj)
+    {
+        if (obj is not TestTypedVariable other) return 1;
+
+        var nameComparison = string.Compare(Name, other.Name, StringComparison.Ordinal);
+        if (nameComparison != 0) return nameComparison;
+
+        return Value.CompareTo(other.Value);
     }
 }

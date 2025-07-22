@@ -37,11 +37,13 @@ internal class IterationVariableRetriever : IIterationVariableRetriever
                 variableProvider.IsScaleFishVariable());
         }
 
-        // Handle interface-based complex variables (new system)
-        var complexProperties = type.CollectAllSailfishComplexVariableProperties();
-        foreach (var prop in complexProperties)
+
+
+        // Handle interface-based typed variables (ISailfishVariables<TType, TTypeProvider> system)
+        var typedVariableProperties = type.CollectAllSailfishVariablesProperties();
+        foreach (var prop in typedVariableProperties)
         {
-            var variableProvider = new ComplexVariableProvider(prop.PropertyType);
+            var variableProvider = new TypedVariableProvider(prop.PropertyType);
 
             result[prop.Name] = new VariableAttributeMeta(
                 [

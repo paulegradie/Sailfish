@@ -46,57 +46,66 @@ internal class AttributeVariableProvider : IVariableProvider
 }
 
 /// <summary>
-/// Variable provider for interface-based complex variables (ISailfishComplexVariableProvider)
+/// Variable provider for interface-based variables (ISailfishVariables&lt;TType, TTypeProvider&gt;)
 /// </summary>
-internal class ComplexVariableProvider : IVariableProvider
+internal class TypedVariableProvider : IVariableProvider
 {
     private readonly System.Type propertyType;
 
-    public ComplexVariableProvider(System.Type propertyType)
+    public TypedVariableProvider(System.Type propertyType)
     {
         this.propertyType = propertyType;
     }
 
     public IEnumerable<object> GetVariables()
     {
-        return GetComplexVariables(propertyType);
+        return GetTypedVariables(propertyType);
     }
 
     public bool IsScaleFishVariable()
     {
-        // Complex variables are not used for complexity estimation by default
+        // Typed variables are not used for complexity estimation by default
         // This could be extended in the future if needed
         return false;
     }
 
-    private static IEnumerable<object> GetComplexVariables(System.Type propertyType)
-    {
-        // Find the concrete implementation type that implements ISailfishComplexVariableProvider<T>
-        var complexInterface = propertyType.GetInterfaces()
-            .FirstOrDefault(i => i.IsGenericType &&
-                                i.GetGenericTypeDefinition() == typeof(Contracts.Public.Variables.ISailfishComplexVariableProvider<>));
 
-        if (complexInterface == null)
+
+    private static IEnumerable<object> GetTypedVariables(System.Type propertyType)
+    {
+        // Find the ISailfishVariables<TType, TTypeProvider> interface
+        var variablesInterface = propertyType.GetInterfaces()
+            .FirstOrDefault(i => i.IsGenericType &&
+                                i.GetGenericTypeDefinition() == typeof(Contracts.Public.Variables.ISailfishVariables<,>));
+
+        if (variablesInterface == null)
         {
-            throw new System.Exception($"Type {propertyType} does not implement ISailfishComplexVariableProvider<T>.");
+            throw new System.Exception($"Type {propertyType} does not implement ISailfishVariables<TType, TTypeProvider>.");
         }
 
-        // Get the generic argument (the concrete type T)
-        var concreteType = complexInterface.GetGenericArguments()[0];
+        // Get the generic arguments (TType and TTypeProvider)
+        var genericArgs = variablesInterface.GetGenericArguments();
+        var dataType = genericArgs[0];
+        var providerType = genericArgs[1];
 
-        // Find the GetVariableInstances method on the concrete type
-        var method = concreteType.GetMethod("GetVariableInstances",
-            System.Reflection.BindingFlags.Public | System.Reflection.BindingFlags.Static);
+        // Create an instance of the provider
+        var providerInstance = System.Activator.CreateInstance(providerType);
+        if (providerInstance == null)
+        {
+            throw new System.Exception($"Could not create instance of provider type {providerType}.");
+        }
 
+        // Find the Variables() method on the provider
+        var method = providerType.GetMethod("Variables");
         if (method == null)
         {
-            throw new System.Exception($"Could not find GetVariableInstances() method on type {concreteType}.");
+            throw new System.Exception($"Could not find Variables() method on provider type {providerType}.");
         }
 
-        var result = method.Invoke(null, null);
+        var result = method.Invoke(providerInstance, null);
         if (result is not System.Collections.IEnumerable variables)
         {
-            throw new System.Exception($"GetVariableInstances() method on type {concreteType} did not return IEnumerable.");
+            throw new System.Exception($"Variables() method on provider type {providerType} did not return IEnumerable.");
         }
 
         return variables.Cast<object>();

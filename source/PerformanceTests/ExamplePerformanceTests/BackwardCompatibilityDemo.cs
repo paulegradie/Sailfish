@@ -8,11 +8,12 @@ namespace PerformanceTests.ExamplePerformanceTests;
 /// <summary>
 /// Comprehensive demonstration showing ALL variable provider approaches working together:
 /// 1. Simple attribute-based variables (original system)
-/// 2. Type-based attribute variables (original system)  
+/// 2. Type-based attribute variables (original system)
 /// 3. Range-based attribute variables (original system)
-/// 4. New interface-based complex variables (new system)
-/// 
+/// 4. New interface-based typed variables (new system with better separation of concerns)
+///
 /// This shows complete backward compatibility while adding new capabilities.
+/// The new ISailfishVariables&lt;Type, TypeProvider&gt; pattern separates data concerns from variable generation.
 /// </summary>
 [Sailfish(NumWarmupIterations = 1, SampleSize = 2)]
 public class BackwardCompatibilityDemo
@@ -35,8 +36,8 @@ public class BackwardCompatibilityDemo
     [SailfishRangeVariable(1, 5, 2)]
     public int RangeNumbers { get; set; }
 
-    // 4. NEW: Interface-based complex variables (new feature)
-    public IComplexConfiguration ComplexConfig { get; set; } = null!;
+    // 4. NEW: Interface-based typed variables (new feature with better separation of concerns)
+    public IAlgorithmConfiguration AlgorithmConfig { get; set; } = null!;
 
     [SailfishMethod]
     public void DemoAllVariableTypes()
@@ -45,7 +46,7 @@ public class BackwardCompatibilityDemo
         Console.WriteLine($"Simple: {SimpleNumbers}, {SimpleStrings}");
         Console.WriteLine($"Type-based: {TypeBasedString}, {TypeBasedObject.Name}");
         Console.WriteLine($"Range: {RangeNumbers}");
-        Console.WriteLine($"Complex: {ComplexConfig.Algorithm}, {ComplexConfig.Settings.Count}");
+        Console.WriteLine($"Algorithm: {AlgorithmConfig.Algorithm}, {AlgorithmConfig.Settings.Count}");
         
         // Simulate some work
         System.Threading.Thread.Sleep(1);
@@ -83,48 +84,55 @@ public record CustomObject(string Name, int Value) : IComparable
     }
 }
 
-// NEW: Interface-based complex variables
-public interface IComplexConfiguration : ISailfishComplexVariableProvider<ComplexConfiguration>
+// NEW: Interface-based typed variables with better separation of concerns
+public interface IAlgorithmConfiguration : ISailfishVariables<AlgorithmConfiguration, AlgorithmConfigurationProvider>
 {
     string Algorithm { get; }
     Dictionary<string, object> Settings { get; }
     TimeSpan Timeout { get; }
 }
 
-public record ComplexConfiguration(
-    string Algorithm,
-    Dictionary<string, object> Settings,
-    TimeSpan Timeout) : IComplexConfiguration
+// Separate provider class handles variable generation
+public class AlgorithmConfigurationProvider : ISailfishVariablesProvider<AlgorithmConfiguration>
 {
-    public int CompareTo(object? obj)
-    {
-        if (obj is not ComplexConfiguration other) return 1;
-        
-        var algorithmComparison = string.Compare(Algorithm, other.Algorithm, StringComparison.Ordinal);
-        if (algorithmComparison != 0) return algorithmComparison;
-        
-        return Timeout.CompareTo(other.Timeout);
-    }
-
-    public static IEnumerable<ComplexConfiguration> GetVariableInstances()
+    public IEnumerable<AlgorithmConfiguration> Variables()
     {
         return new[]
         {
-            new ComplexConfiguration(
+            new AlgorithmConfiguration(
                 "FastAlgorithm",
                 new Dictionary<string, object> { ["CacheSize"] = 1000, ["Parallel"] = true },
                 TimeSpan.FromSeconds(5)
             ),
-            new ComplexConfiguration(
-                "AccurateAlgorithm", 
+            new AlgorithmConfiguration(
+                "AccurateAlgorithm",
                 new Dictionary<string, object> { ["CacheSize"] = 5000, ["Parallel"] = false },
                 TimeSpan.FromSeconds(30)
             ),
-            new ComplexConfiguration(
+            new AlgorithmConfiguration(
                 "BalancedAlgorithm",
                 new Dictionary<string, object> { ["CacheSize"] = 2500, ["Parallel"] = true },
                 TimeSpan.FromSeconds(15)
             )
         };
     }
+}
+
+// Clean data type - no variable generation concerns
+public record AlgorithmConfiguration(
+    string Algorithm,
+    Dictionary<string, object> Settings,
+    TimeSpan Timeout) : IAlgorithmConfiguration
+{
+    public int CompareTo(object? obj)
+    {
+        if (obj is not AlgorithmConfiguration other) return 1;
+
+        var algorithmComparison = string.Compare(Algorithm, other.Algorithm, StringComparison.Ordinal);
+        if (algorithmComparison != 0) return algorithmComparison;
+
+        return Timeout.CompareTo(other.Timeout);
+    }
+
+    // No GetVariableInstances() method needed - the provider handles that!
 }
