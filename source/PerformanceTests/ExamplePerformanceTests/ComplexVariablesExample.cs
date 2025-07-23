@@ -9,12 +9,11 @@ namespace PerformanceTests.ExamplePerformanceTests;
 /// Example demonstrating the new ISailfishVariables&lt;VariableType, VariableTypeProvider&gt; pattern.
 /// This pattern provides better separation of concerns by separating data types from variable generation logic.
 /// </summary>
-[Sailfish(NumWarmupIterations = 1, SampleSize = 2)]
+[Sailfish(NumWarmupIterations = 1, SampleSize = 2, DisableOverheadEstimation = true)]
 public class ComplexVariablesExample
 {
     // Traditional attribute-based variable for comparison
-    [SailfishVariable(100, 500, 1000)]
-    public int BufferSize { get; set; }
+    [SailfishVariable(10, 50, 100)] public int BufferSize { get; set; }
 
     // NEW: ISailfishVariables<VariableType, VariableTypeProvider> pattern
     public IDatabaseConfiguration DatabaseConfig { get; set; } = null!;
@@ -27,9 +26,9 @@ public class ComplexVariablesExample
         Console.WriteLine($"Testing with buffer: {BufferSize}");
         Console.WriteLine($"Database: {DatabaseConfig.ConnectionString} (timeout: {DatabaseConfig.TimeoutSeconds}s)");
         Console.WriteLine($"Network: {NetworkConfig.Protocol}://{NetworkConfig.Host}:{NetworkConfig.Port}");
-
+        Console.WriteLine($"IsItOn: {NetworkConfig.InnerNestedDataContainer.ItIsOn}");
         // Simulate database work
-        System.Threading.Thread.Sleep(DatabaseConfig.TimeoutSeconds * 10);
+        System.Threading.Thread.Sleep(BufferSize);
     }
 }
 
@@ -91,6 +90,7 @@ public interface INetworkConfiguration : ISailfishVariables<NetworkConfiguration
     string Host { get; }
     int Port { get; }
     int MaxConnections { get; }
+    InnerNestedDataContainer InnerNestedDataContainer { get; }
 }
 
 // Separate provider for network configurations
@@ -98,12 +98,12 @@ public class NetworkConfigurationProvider : ISailfishVariablesProvider<NetworkCo
 {
     public IEnumerable<NetworkConfiguration> Variables()
     {
-        return new[]
-        {
-            new NetworkConfiguration("http", "localhost", 8080, 10),
-            new NetworkConfiguration("https", "api.example.com", 443, 50),
-            new NetworkConfiguration("tcp", "cache.internal", 6379, 100)
-        };
+        return
+        [
+            new NetworkConfiguration("http", "localhost", 8080, 10, new InnerNestedDataContainer(true)),
+            new NetworkConfiguration("https", "api.example.com", 443, 50, new InnerNestedDataContainer(true)),
+            new NetworkConfiguration("tcp", "cache.internal", 6379, 100, new InnerNestedDataContainer(true))
+        ];
     }
 }
 
@@ -112,7 +112,8 @@ public record NetworkConfiguration(
     string Protocol,
     string Host,
     int Port,
-    int MaxConnections) : INetworkConfiguration
+    int MaxConnections,
+    InnerNestedDataContainer InnerNestedDataContainer) : INetworkConfiguration
 {
     public int CompareTo(object? obj)
     {
@@ -127,3 +128,5 @@ public record NetworkConfiguration(
         return Port.CompareTo(other.Port);
     }
 }
+
+public record InnerNestedDataContainer(bool ItIsOn);

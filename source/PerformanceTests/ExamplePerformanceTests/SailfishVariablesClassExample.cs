@@ -32,7 +32,7 @@ public class SailfishVariablesClassExample
         Console.WriteLine($"Network: {NetworkConfig.Value.Protocol}://{NetworkConfig.Value.Host}:{NetworkConfig.Value.Port}");
 
         // Simulate database work
-        System.Threading.Thread.Sleep(DatabaseConfig.Value.TimeoutSeconds * 10);
+        System.Threading.Thread.Sleep(100);
     }
 }
 
@@ -119,17 +119,17 @@ public class MyDatabaseConfigProvider : ISailfishVariablesProvider<MyDatabaseCon
         {
             new MyDatabaseConfig(
                 "Server=localhost;Database=TestDB_Fast;",
-                5,
+                1,
                 false
             ),
             new MyDatabaseConfig(
                 "Server=localhost;Database=TestDB_Reliable;",
-                30,
+                1,
                 true
             ),
             new MyDatabaseConfig(
                 "Server=localhost;Database=TestDB_Balanced;",
-                15,
+                1,
                 true
             )
         };

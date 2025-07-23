@@ -50,15 +50,85 @@ public class TestCaseVariables
 
     public string FormVariableSection()
     {
-        var parts = Variables.Select(variable => $"{variable.Name.Trim()}: {variable.Value.ToString()?.Trim() ?? string.Empty}");
+        var parts = Variables.Select(variable =>
+        {
+            var valueString = variable.Value.ToString()?.Trim() ?? string.Empty;
+
+            // Clean up complex object representations
+            var cleanValue = CleanComplexObjectString(variable.Value, valueString);
+
+            // Remove commas from the value to prevent parsing issues
+            cleanValue = cleanValue.Replace(",", "");
+
+            return $"{variable.Name.Trim()}: {cleanValue}";
+        });
         return OpenBracket + string.Join(", ", parts).Trim() + CloseBracket;
+    }
+
+    private static string CleanComplexObjectString(object value, string valueString)
+    {
+        // If it's a primitive type or string, return as-is
+        if (IsPrimitiveType(value.GetType()))
+        {
+            return valueString;
+        }
+
+        // If it contains braces, it's likely a complex object representation
+        if (valueString.Contains('{') && valueString.Contains('}'))
+        {
+            return RemoveRedundantTypeNames(valueString, value.GetType());
+        }
+
+        return valueString;
+    }
+
+    private static bool IsPrimitiveType(Type type)
+    {
+        return type.IsPrimitive ||
+               type == typeof(string) ||
+               type == typeof(decimal) ||
+               type == typeof(DateTime) ||
+               type == typeof(TimeSpan) ||
+               type.IsEnum;
+    }
+
+    private static string RemoveRedundantTypeNames(string objectString, Type objectType)
+    {
+        var typeName = objectType.Name;
+        if (objectString.StartsWith(typeName + " {"))
+        {
+            if (typeName.Length <= objectString.Length)
+            {
+                objectString = objectString[typeName.Length..].TrimStart();
+            }
+        }
+
+        // Remove nested type names recursively
+        // Look for patterns like "PropertyName = TypeName { ... }"
+        var properties = objectType.GetProperties();
+        foreach (var prop in properties)
+        {
+            if (IsPrimitiveType(prop.PropertyType))
+            {
+                continue;
+            }
+
+            var propTypeName = prop.PropertyType.Name;
+            var pattern = $"{prop.Name} = {propTypeName} {{";
+            var replacement = $"{prop.Name} = {{";
+            objectString = objectString.Replace(pattern, replacement);
+        }
+
+        return objectString;
     }
 
     private static TestCaseVariable ParseVariable(string variable)
     {
         // like varName:int
         var parts = variable.Split(Colon);
-        return int.TryParse(parts[1], out var value) ? new TestCaseVariable(parts[0], value) : new TestCaseVariable(parts[0], parts[1]);
+        return int.TryParse(parts[1], out var value)
+            ? new TestCaseVariable(parts[0], value)
+            : new TestCaseVariable(parts[0], parts[1]);
     }
 
     private static IEnumerable<TestCaseVariable> GetElements(string s)
@@ -71,13 +141,15 @@ public class TestCaseVariables
             .Where(x => !string.IsNullOrEmpty(x))
             .ToList();
 
-        if (rawElements.Any())
+        if (rawElements.Count != 0)
+        {
             return rawElements
                 .Select(ParseVariable)
                 .OrderByDescending(x => x.Name)
                 .ThenBy(x => x.Value)
                 .ToList();
+        }
 
-        return Array.Empty<TestCaseVariable>();
+        return [];
     }
 }
