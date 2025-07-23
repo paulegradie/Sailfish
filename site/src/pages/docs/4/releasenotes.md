@@ -2,6 +2,15 @@
 title: Release Notes
 ---
 
+- 2.1.20
+  - **Major Feature**: **Complex Variables System** - New support for complex object variables using modern provider patterns
+    - **Interface-Based Approach**: `ISailfishVariables<TType, TProvider>` pattern for explicit data contracts
+    - **Class-Based Approach**: `SailfishVariables<T, TProvider>` class for simplified syntax without custom interfaces
+    - **Provider Pattern**: Clean separation of data types from variable generation logic through dedicated provider classes
+    - **Type Safety**: Enhanced type safety, IntelliSense support, and compile-time checking for complex variable scenarios
+    - **Backward Compatibility**: Full compatibility with existing `SailfishVariable` attributes and legacy `ISailfishComplexVariableProvider` patterns
+    - **Mixed Usage**: Support for combining simple attribute-based variables with complex variables in the same test class
+
 - 2.1.0
   - **Breaking Change**: Deprecated .NET 6 support - now supports .NET 8 and .NET 9 only
   - **Framework Upgrades**: Updated all projects to target .NET 8.0 and .NET 9.0 for improved performance and latest features
