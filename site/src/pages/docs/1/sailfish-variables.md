@@ -264,6 +264,153 @@ Both approaches provide significant advantages over simple attribute-based varia
 
 ---
 
+## Scenario-Based Testing
+
+Scenario-based testing is a powerful pattern for comparing performance across different real-world scenarios, configurations, or environments. This approach uses string variables to represent different scenarios and maps them to complex configurations during setup.
+
+### Basic Scenario Pattern
+
+```csharp
+[Sailfish(SampleSize = 5, DisableOverheadEstimation = true)]
+[WriteToMarkdown]
+[WriteToCsv]
+public class ScenariosExample
+{
+    private const string ScenarioA = "ScenarioA";
+    private const string ScenarioB = "ScenarioB";
+    private const string ScenarioC = "ScenarioC";
+    private Dictionary<string, MyScenario> scenarioMap = null!;
+
+    /// <summary>
+    /// Controls the complexity of operations - "wow" triggers multiple operations per test
+    /// </summary>
+    [SailfishVariable("wow", "ok")]
+    public string N { get; set; } = null!;
+
+    /// <summary>
+    /// Defines which connection scenario to test - each has different performance characteristics
+    /// </summary>
+    [SailfishVariable(ScenarioA, ScenarioB, ScenarioC)]
+    public string Scenario { get; set; } = null!;
+
+    [SailfishGlobalSetup]
+    public void GlobalSetup()
+    {
+        scenarioMap = new Dictionary<string, MyScenario>
+        {
+            { ScenarioA, new MyScenario("ftp://test.example.com", 21, new InnerScenario("FTP_Transfer")) },
+            { ScenarioB, new MyScenario("https://api.example.com", 443, new InnerScenario("HTTPS_API")) },
+            { ScenarioC, new MyScenario("tcp://db.example.com", 5432, new InnerScenario("Database_Query")) }
+        };
+    }
+
+    [SailfishMethod]
+    public async Task TestMethod(CancellationToken cancellationToken)
+    {
+        var scenario = scenarioMap[Scenario];
+        Console.WriteLine($"Testing scenario: {scenario.InnerScenario.Name} on {scenario.ConnStr}:{scenario.Port}");
+
+        // Use multiple variables to control test behavior
+        var operationCount = N == "wow" ? 3 : 1; // Use the N variable to control operation complexity
+
+        for (int i = 0; i < operationCount; i++)
+        {
+            await SimulateScenarioOperation(scenario, cancellationToken);
+        }
+    }
+
+    private async Task SimulateScenarioOperation(MyScenario scenario, CancellationToken cancellationToken)
+    {
+        // Different scenarios have different performance characteristics
+        var delay = scenario.InnerScenario.Name switch
+        {
+            "FTP_Transfer" => 150,      // FTP operations are typically slower
+            "HTTPS_API" => 75,          // API calls are moderate speed
+            "Database_Query" => 50,     // Database queries are typically fastest
+            _ => 100
+        };
+
+        // Simulate connection establishment (varies by port/protocol)
+        var connectionDelay = scenario.Port switch
+        {
+            21 => 25,   // FTP connection overhead
+            443 => 15,  // HTTPS handshake
+            5432 => 10, // Database connection
+            _ => 20
+        };
+
+        await Task.Delay(connectionDelay, cancellationToken);
+        await Task.Delay(delay, cancellationToken);
+
+        Console.WriteLine($"Completed operation for {scenario.InnerScenario.Name}");
+    }
+
+    record MyScenario(string ConnStr, int Port, InnerScenario InnerScenario);
+    record InnerScenario(string Name);
+}
+```
+
+### Scenario Testing with Dependency Injection
+
+You can also combine scenarios with dependency injection for more realistic testing:
+
+```csharp
+[Sailfish(SampleSize = 1)]
+public class TestWithStringVariable
+{
+    private const string ScenarioA = "ScenarioA";
+    private const string ScenarioB = "ScenarioB";
+    private readonly Configuration configuration;
+    private readonly Dictionary<string, ScenarioData> scenarioMap = new();
+    private IClient client = null!;
+
+    public TestWithStringVariable(Configuration configuration)
+    {
+        this.configuration = configuration;
+    }
+
+    [SailfishVariable(ScenarioA, ScenarioB)]
+    public string? Scenario { get; set; }
+
+    [SailfishGlobalSetup]
+    public void Setup()
+    {
+        scenarioMap.Add(ScenarioA, configuration.Get(ScenarioA));
+        scenarioMap.Add(ScenarioB, configuration.Get(ScenarioB));
+    }
+
+    [SailfishMethodSetup]
+    public void MethodSetup()
+    {
+        client = ClientFactory.CreateClient(scenarioMap[Scenario!].Url);
+    }
+
+    [SailfishMethod]
+    public async Task TestMethod(CancellationToken ct)
+    {
+        await client.Get(ct);
+    }
+}
+```
+
+### When to Use Scenario-Based Testing
+
+**Use scenario-based testing when:**
+- Comparing performance across different environments (dev, staging, prod)
+- Testing different connection types or protocols (HTTP, FTP, Database, etc.)
+- Evaluating different algorithms or implementations
+- Measuring performance under different load conditions
+- Testing various configuration settings or feature flags
+
+**Benefits:**
+- **Real-world relevance**: Tests reflect actual usage scenarios
+- **Comparative analysis**: Easy to compare performance across scenarios
+- **Flexible configuration**: Scenarios can be easily added or modified
+- **Clear reporting**: Results are grouped by scenario for easy analysis
+- **Environment testing**: Perfect for testing across different deployment environments
+
+---
+
 ## Mixed Usage Examples
 
 You can combine all variable approaches in a single test class:
@@ -302,19 +449,84 @@ Sailfish maintains full backward compatibility with existing variable patterns:
 
 ```csharp
 // Legacy pattern - still works but not recommended for new code
-public interface ILegacyConfig : ISailfishComplexVariableProvider<LegacyConfig>
+[Sailfish(NumWarmupIterations = 1, SampleSize = 2)]
+public class LegacyComplexVariableExample
 {
-    string Value { get; }
+    // Property type implements ISailfishComplexVariableProvider directly
+    public ITestConfiguration Configuration { get; set; } = null!;
+
+    [SailfishMethod]
+    public void ProcessData()
+    {
+        // Use the complex configuration object
+        var processingTime = Configuration.ProcessingDelay;
+        var algorithm = Configuration.Algorithm;
+
+        // Simulate algorithm-specific processing
+        if (algorithm == ProcessingAlgorithm.Fast)
+        {
+            Thread.Sleep(processingTime / 2);
+        }
+        else
+        {
+            Thread.Sleep(processingTime);
+        }
+    }
 }
 
-public record LegacyConfig(string Value) : ILegacyConfig
+// Legacy interface pattern
+public interface ITestConfiguration : ISailfishComplexVariableProvider<TestConfiguration>
 {
-    public static IEnumerable<LegacyConfig> GetVariableInstances()
+    ProcessingAlgorithm Algorithm { get; }
+    int ProcessingDelay { get; }
+    Dictionary<string, object> Settings { get; }
+}
+
+// Implementation provides the variable instances via static method
+public record TestConfiguration(
+    ProcessingAlgorithm Algorithm,
+    int ProcessingDelay,
+    Dictionary<string, object> Settings) : ITestConfiguration
+{
+    public int CompareTo(object? obj)
     {
-        return new[] { new LegacyConfig("Legacy1"), new LegacyConfig("Legacy2") };
+        if (obj is not TestConfiguration other) return 1;
+
+        var algorithmComparison = Algorithm.CompareTo(other.Algorithm);
+        if (algorithmComparison != 0) return algorithmComparison;
+
+        return ProcessingDelay.CompareTo(other.ProcessingDelay);
     }
 
-    public int CompareTo(object? obj) => obj is LegacyConfig other ? string.Compare(Value, other.Value, StringComparison.Ordinal) : 1;
+    // Legacy pattern: Static method provides variable instances
+    public static IEnumerable<TestConfiguration> GetVariableInstances()
+    {
+        return new[]
+        {
+            new TestConfiguration(
+                ProcessingAlgorithm.Fast,
+                10,
+                new Dictionary<string, object> { ["CacheEnabled"] = true, ["MaxRetries"] = 3 }
+            ),
+            new TestConfiguration(
+                ProcessingAlgorithm.Thorough,
+                50,
+                new Dictionary<string, object> { ["CacheEnabled"] = false, ["MaxRetries"] = 5 }
+            ),
+            new TestConfiguration(
+                ProcessingAlgorithm.Balanced,
+                25,
+                new Dictionary<string, object> { ["CacheEnabled"] = true, ["MaxRetries"] = 2 }
+            )
+        };
+    }
+}
+
+public enum ProcessingAlgorithm
+{
+    Fast,
+    Balanced,
+    Thorough
 }
 ```
 
@@ -322,10 +534,44 @@ public record LegacyConfig(string Value) : ILegacyConfig
 
 **From Legacy ISailfishComplexVariableProvider to New Patterns:**
 
-1. **Extract Provider Logic**: Move `GetVariableInstances()` to a separate provider class
-2. **Choose Approach**: Decide between interface-based or class-based approach
+1. **Extract Provider Logic**: Move `GetVariableInstances()` to a separate provider class implementing `ISailfishVariablesProvider<T>`
+2. **Choose Approach**: Decide between interface-based (`ISailfishVariables<T, TProvider>`) or class-based (`SailfishVariables<T, TProvider>`) approach
 3. **Update Interface**: Change from `ISailfishComplexVariableProvider<T>` to `ISailfishVariables<T, TProvider>` or use `SailfishVariables<T, TProvider>`
-4. **Update Data Type**: Remove static method, keep `IComparable` implementation
+4. **Update Data Type**: Remove static `GetVariableInstances()` method, keep `IComparable` implementation
+5. **Create Provider**: Implement `ISailfishVariablesProvider<T>` with `Variables()` method containing your variable generation logic
+
+**Example Migration:**
+
+```csharp
+// BEFORE: Legacy pattern
+public interface ITestConfiguration : ISailfishComplexVariableProvider<TestConfiguration>
+{
+    ProcessingAlgorithm Algorithm { get; }
+    int ProcessingDelay { get; }
+}
+
+public record TestConfiguration(...) : ITestConfiguration
+{
+    public static IEnumerable<TestConfiguration> GetVariableInstances() { ... }
+}
+
+// AFTER: New interface-based pattern
+public interface ITestConfiguration : ISailfishVariables<TestConfiguration, TestConfigurationProvider>
+{
+    ProcessingAlgorithm Algorithm { get; }
+    int ProcessingDelay { get; }
+}
+
+public record TestConfiguration(...) : ITestConfiguration
+{
+    // No static method needed
+}
+
+public class TestConfigurationProvider : ISailfishVariablesProvider<TestConfiguration>
+{
+    public IEnumerable<TestConfiguration> Variables() { ... }
+}
+```
 
 ---
 
@@ -337,4 +583,4 @@ When applying a variable attribute, you may choose to specify that variable for 
 [SailfishVariable(scalefish: true, 10, 100, 1000)]
 ```
 
-**NOTE**: When using ScaleFish, variables must be of type `int`. Complex variables are not currently supported for complexity estimation.
+**NOTE**: When using ScaleFish, variables must be of type `int`. Non-int and complex `Type` variables are not currently supported for complexity estimation.

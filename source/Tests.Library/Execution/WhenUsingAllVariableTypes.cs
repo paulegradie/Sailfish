@@ -116,11 +116,6 @@ public class AllVariableTypesTestClass
 }
 
 // Test interface for typed variables (ISailfishVariables pattern)
-public interface ITestTypedVariable : ISailfishVariables<TestTypedVariable, TestTypedVariableProvider>
-{
-    string Name { get; }
-    int Value { get; }
-}
 
 // Test provider for typed variables
 public class TestTypedVariableProvider : ISailfishVariablesProvider<TestTypedVariable>
