@@ -75,12 +75,22 @@ internal class TestDiscovery : ITestDiscovery
 
             foreach (var classMetaData in classMetaDatas)
             {
-                var classTestCases = TestCaseItemCreator
-                    .AssembleTestCases(classMetaData, sourceDllPath, hasher)
-                    .ToList();
+                try
+                {
+                    var classTestCases = TestCaseItemCreator
+                        .AssembleTestCases(classMetaData, sourceDllPath, hasher)
+                        .ToList();
 
-                if (classTestCases.Count == 0) continue;
-                testCases.AddRange(classTestCases);
+                    if (classTestCases.Count == 0) continue;
+                    testCases.AddRange(classTestCases);
+                }
+                catch (Exception ex)
+                {
+                    logger.SendMessage(TestMessageLevel.Error,
+                        $"Failed to discover tests for class {classMetaData.ClassFullName}: {ex.Message}");
+                    // Continue with other classes instead of failing completely
+                    continue;
+                }
             }
         }
 

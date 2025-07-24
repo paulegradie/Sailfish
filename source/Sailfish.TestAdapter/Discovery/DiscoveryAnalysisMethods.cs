@@ -123,7 +123,16 @@ public static class DiscoveryAnalysisMethods
         var fullClassName = "";
         while (parentNode != null)
         {
-            if (parentNode is FileScopedNamespaceDeclarationSyntax namespaceNode) fullClassName = $"{namespaceNode.Name}.{classDeclarationSyntax.Identifier.ValueText}";
+            if (parentNode is FileScopedNamespaceDeclarationSyntax fileScopedNamespace)
+            {
+                fullClassName = $"{fileScopedNamespace.Name}.{classDeclarationSyntax.Identifier.ValueText}";
+                break;
+            }
+            else if (parentNode is NamespaceDeclarationSyntax regularNamespace)
+            {
+                fullClassName = $"{regularNamespace.Name}.{classDeclarationSyntax.Identifier.ValueText}";
+                break;
+            }
 
             parentNode = parentNode.Parent;
         }

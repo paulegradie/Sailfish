@@ -15,7 +15,7 @@ public abstract class NullRefOnTheBase
 public class NullRefCheck : NullRefOnTheBase
 {
     [SailfishMethod]
-    public async Task OopsNullRef()
+    public async Task OopsNullRefFails()
     {
         await Task.CompletedTask;
         Console.WriteLine(ThingINeed!.NotPresent);

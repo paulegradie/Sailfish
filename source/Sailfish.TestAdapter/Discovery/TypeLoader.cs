@@ -18,24 +18,28 @@ internal static class TypeLoader
 
     private static Type[] CollectSailfishTestTypesFromAssembly(Assembly assembly, IMessageLogger logger)
     {
-        var perfTestTypes = assembly
-            .GetTypes()
+        Type[] allTypes;
+
+        try
+        {
+            allTypes = assembly.GetTypes();
+        }
+        catch (ReflectionTypeLoadException ex)
+        {
+            // When ReflectionTypeLoadException occurs, we can still get the types that loaded successfully
+            allTypes = ex.Types.Where(t => t != null).ToArray();
+
+            logger?.SendMessage(TestMessageLevel.Warning,
+                $"Some types could not be loaded from assembly {assembly.GetName().Name}. " +
+                $"Successfully loaded {allTypes.Length} types. " +
+                $"First loader exception: {ex.LoaderExceptions?.FirstOrDefault()?.Message}");
+        }
+
+        var perfTestTypes = allTypes
             .Where(x => x.HasAttribute<SailfishAttribute>())
+            .Where(x => x.GetCustomAttribute<SailfishAttribute>()?.Disabled != true)
             .ToArray();
 
-#if debug
-        foreach (var testType in perfTestTypes)
-        {
-            if (logger is null)
-            {
-                Console.WriteLine($" - Perf tests: {testType.Name}");
-            }
-            else
-            {
-                logger?.SendMessage(TestMessageLevel.Informational, $" - Perf tests: {testType.Name}");
-            }
-        }
-#endif
         return perfTestTypes;
     }
 

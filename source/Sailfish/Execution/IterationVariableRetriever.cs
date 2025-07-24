@@ -4,6 +4,7 @@ using System.Linq;
 using System.Reflection;
 using Sailfish.Attributes;
 using Sailfish.Contracts.Public.Variables;
+using Sailfish.Exceptions;
 
 namespace Sailfish.Execution;
 
@@ -21,27 +22,30 @@ internal class IterationVariableRetriever : IIterationVariableRetriever
         var classBasedVariables = GetClassBasedVariables(type);
         var complexVariables = GetComplexVariables(type);
 
-        // Combine all types of variables
+        // Combine all types of variables with duplicate detection
+        var variableSources = new[]
+        {
+            ("attribute-based", attributeBasedVariables),
+            ("interface-based", interfaceBasedVariables),
+            ("class-based", classBasedVariables),
+            ("complex", complexVariables)
+        };
+
         var allVariables = new Dictionary<string, VariableAttributeMeta>();
 
-        foreach (var kvp in attributeBasedVariables)
+        foreach (var (sourceType, variables) in variableSources)
         {
-            allVariables[kvp.Key] = kvp.Value;
-        }
-
-        foreach (var kvp in interfaceBasedVariables)
-        {
-            allVariables[kvp.Key] = kvp.Value;
-        }
-
-        foreach (var kvp in classBasedVariables)
-        {
-            allVariables[kvp.Key] = kvp.Value;
-        }
-
-        foreach (var kvp in complexVariables)
-        {
-            allVariables[kvp.Key] = kvp.Value;
+            foreach (var kvp in variables)
+            {
+                if (allVariables.ContainsKey(kvp.Key))
+                {
+                    throw new SailfishException(
+                        $"Duplicate variable property name '{kvp.Key}' found. " +
+                        $"Property names must be unique across all variable types. " +
+                        $"Conflict between existing variable and {sourceType} variable.");
+                }
+                allVariables[kvp.Key] = kvp.Value;
+            }
         }
 
         return allVariables;

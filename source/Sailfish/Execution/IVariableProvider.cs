@@ -35,7 +35,7 @@ internal class AttributeVariableProvider : IVariableProvider
 
     public AttributeVariableProvider(ISailfishVariableAttribute attribute)
     {
-        this.attribute = attribute;
+        this.attribute = attribute ?? throw new ArgumentNullException(nameof(attribute));
     }
 
     public IEnumerable<object> GetVariables()
@@ -58,7 +58,7 @@ internal class TypedVariableProvider : IVariableProvider
 
     public TypedVariableProvider(System.Type propertyType)
     {
-        this.propertyType = propertyType;
+        this.propertyType = propertyType ?? throw new ArgumentNullException(nameof(propertyType));
     }
 
     public IEnumerable<object> GetVariables()
@@ -82,7 +82,7 @@ internal class TypedVariableProvider : IVariableProvider
 
         if (variablesInterface == null)
         {
-            throw new System.Exception($"Type {propertyType} does not implement ISailfishVariables<TType, TTypeProvider>.");
+            throw new SailfishException($"Type {propertyType} does not implement ISailfishVariables<TType, TTypeProvider>.");
         }
 
         // Get the generic arguments (TType and TTypeProvider)
@@ -94,21 +94,21 @@ internal class TypedVariableProvider : IVariableProvider
         var providerInstance = System.Activator.CreateInstance(providerType);
         if (providerInstance == null)
         {
-            throw new System.Exception($"Could not create instance of provider type {providerType}.");
+            throw new SailfishException($"Could not create instance of provider type {providerType}. Ensure it has a parameterless constructor.");
         }
 
         // Find the Variables() method on the provider
         var method = providerType.GetMethod("Variables");
         if (method == null)
         {
-            throw new System.Exception($"Could not find Variables() method on provider type {providerType}.");
+            throw new SailfishException($"Could not find Variables() method on provider type {providerType}.");
         }
 
         // Invoke the method to get the variables
         var result = method.Invoke(providerInstance, null);
         if (result is not System.Collections.IEnumerable enumerable)
         {
-            throw new System.Exception($"Variables() method on {providerType} did not return an IEnumerable.");
+            throw new SailfishException($"Variables() method on {providerType} did not return an IEnumerable.");
         }
 
         // Convert to object enumerable
@@ -234,7 +234,7 @@ internal class ComplexVariableProvider : IVariableProvider
 
         if (complexInterface == null)
         {
-            throw new System.Exception($"Type {propertyType} does not implement ISailfishComplexVariableProvider<T>.");
+            throw new SailfishException($"Type {propertyType} does not implement ISailfishComplexVariableProvider<T>.");
         }
 
         // Get the concrete type that implements the interface
@@ -246,14 +246,14 @@ internal class ComplexVariableProvider : IVariableProvider
         
         if (method == null)
         {
-            throw new System.Exception($"Could not find static GetVariableInstances() method on type {concreteType}.");
+            throw new SailfishException($"Could not find static GetVariableInstances() method on type {concreteType}.");
         }
 
         // Invoke the static method to get the variables
         var result = method.Invoke(null, null);
         if (result is not System.Collections.IEnumerable enumerable)
         {
-            throw new System.Exception($"GetVariableInstances() method on {concreteType} did not return an IEnumerable.");
+            throw new SailfishException($"GetVariableInstances() method on {concreteType} did not return an IEnumerable.");
         }
 
         // Convert to object enumerable

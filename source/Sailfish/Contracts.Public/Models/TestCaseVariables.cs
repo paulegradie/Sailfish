@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json.Serialization;
+using System.Text.RegularExpressions;
 
 namespace Sailfish.Contracts.Public.Models;
 
@@ -57,8 +58,8 @@ public class TestCaseVariables
             // Clean up complex object representations
             var cleanValue = CleanComplexObjectString(variable.Value, valueString);
 
-            // Remove commas from the value to prevent parsing issues
-            cleanValue = cleanValue.Replace(",", "");
+            // Escape commas in the value to prevent parsing issues while preserving data integrity
+            cleanValue = cleanValue.Replace(",", "\\,");
 
             return $"{variable.Name.Trim()}: {cleanValue}";
         });
@@ -114,9 +115,10 @@ public class TestCaseVariables
             }
 
             var propTypeName = prop.PropertyType.Name;
-            var pattern = $"{prop.Name} = {propTypeName} {{";
+            // Use regex with word boundaries to ensure we only match property assignments
+            var pattern = $@"\b{Regex.Escape(prop.Name)}\s*=\s*{Regex.Escape(propTypeName)}\s*\{{";
             var replacement = $"{prop.Name} = {{";
-            objectString = objectString.Replace(pattern, replacement);
+            objectString = Regex.Replace(objectString, pattern, replacement);
         }
 
         return objectString;
