@@ -66,7 +66,7 @@ public record MyDatabaseConfig(
     string ConnectionString,
     int TimeoutSeconds,
     bool EnableRetries
-) : IComparable
+) : IMyDatabaseConfig
 {
     public int CompareTo(object? obj)
     {
@@ -156,3 +156,5 @@ public interface IMyDatabaseConfig : ISailfishVariables<MyDatabaseConfig, MyData
     int TimeoutSeconds { get; }
     bool EnableRetries { get; }
 }
+
+
