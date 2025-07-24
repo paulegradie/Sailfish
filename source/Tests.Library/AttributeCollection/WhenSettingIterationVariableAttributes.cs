@@ -15,7 +15,7 @@ public class WhenSettingSailfishAttributes
 
         var atty = new SailfishVariableAttribute(parameters);
 
-        atty.GetVariables().Cast<int>().ShouldBeEquivalentTo(parameters);
+        atty.GetVariables().Cast<int>().ToArray().ShouldBeEquivalentTo(parameters);
     }
 
     [Fact]
