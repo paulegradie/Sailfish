@@ -27,7 +27,7 @@ internal static class TypeLoader
         catch (ReflectionTypeLoadException ex)
         {
             // When ReflectionTypeLoadException occurs, we can still get the types that loaded successfully
-            allTypes = ex.Types.Where(t => t != null).ToArray();
+            allTypes = ex.Types.Where(t => t != null).ToArray()!;
 
             logger?.SendMessage(TestMessageLevel.Warning,
                 $"Some types could not be loaded from assembly {assembly.GetName().Name}. " +

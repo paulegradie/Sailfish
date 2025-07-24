@@ -125,7 +125,7 @@ internal class SailfishVariablesClassProvider : IVariableProvider
 
     public SailfishVariablesClassProvider(System.Type propertyType)
     {
-        this.propertyType = propertyType;
+        this.propertyType = propertyType ?? throw new ArgumentNullException(nameof(propertyType));
     }
 
     public IEnumerable<object> GetVariables()
@@ -211,7 +211,7 @@ internal class ComplexVariableProvider : IVariableProvider
 
     public ComplexVariableProvider(System.Type propertyType)
     {
-        this.propertyType = propertyType;
+        this.propertyType = propertyType ?? throw new ArgumentNullException(nameof(propertyType));
     }
 
     public IEnumerable<object> GetVariables()

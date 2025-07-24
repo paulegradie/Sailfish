@@ -28,6 +28,7 @@ public class ReflectionExtensionMethodsTests
         [SailfishGlobalSetup]
         public async Task EnforcedGlobalSetup(CancellationToken cancellationToken)
         {
+            await Task.CompletedTask;
         }
     }
 

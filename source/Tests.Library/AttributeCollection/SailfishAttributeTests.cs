@@ -89,4 +89,64 @@ public class SailfishAttributeTests
         stringAttr.GetVariables().Cast<string>().ToList().ShouldBeEquivalentTo(new List<string> { "a", "b", "c" });
         doubleAttr.GetVariables().Cast<double>().ToList().ShouldBeEquivalentTo(new List<double> { 1.0, 2.0, 3.0 });
     }
+
+    [Fact]
+    public void SailfishVariableAttributeDecimalConstructorShouldWork()
+    {
+        // Arrange & Act
+        var decimalAttr = new SailfishVariableAttribute(1.5m, 2.5m, 3.5m);
+
+        // Assert
+        decimalAttr.GetVariables().Cast<decimal>().ToList().ShouldBeEquivalentTo(new List<decimal> { 1.5m, 2.5m, 3.5m });
+    }
+
+    [Fact]
+    public void SailfishVariableAttributeEmptyDecimalParamsWillThrow()
+    {
+        Should.Throw<SailfishException>(() => new SailfishVariableAttribute(new decimal[0]));
+    }
+
+    [Fact]
+    public void SailfishVariableAttributeScaleFishConstructorShouldValidateMinimumValues()
+    {
+        // Should not throw with 3 or more values
+        var validAttr = new SailfishVariableAttribute(true, 1, 2, 3);
+        validAttr.IsScaleFishVariable().ShouldBeTrue();
+
+        // Should throw with less than 3 values
+        Should.Throw<SailfishException>(() => new SailfishVariableAttribute(true, 1, 2));
+        Should.Throw<SailfishException>(() => new SailfishVariableAttribute(true, 1));
+    }
+
+    [Fact]
+    public void SailfishVariableAttributeScaleFishConstructorShouldAcceptExactlyThreeValues()
+    {
+        // Arrange & Act
+        var attr = new SailfishVariableAttribute(true, 10, 20, 30);
+
+        // Assert
+        attr.IsScaleFishVariable().ShouldBeTrue();
+        attr.GetVariables().Cast<int>().ToList().ShouldBeEquivalentTo(new List<int> { 10, 20, 30 });
+    }
+
+    [Fact]
+    public void SailfishVariableAttributeScaleFishConstructorShouldAcceptMoreThanThreeValues()
+    {
+        // Arrange & Act
+        var attr = new SailfishVariableAttribute(true, 10, 20, 30, 40, 50);
+
+        // Assert
+        attr.IsScaleFishVariable().ShouldBeTrue();
+        attr.GetVariables().Cast<int>().ToList().ShouldBeEquivalentTo(new List<int> { 10, 20, 30, 40, 50 });
+    }
+
+    [Fact]
+    public void SailfishVariableAttributeRegularConstructorShouldNotBeScaleFish()
+    {
+        // Arrange & Act
+        var attr = new SailfishVariableAttribute(1, 2, 3);
+
+        // Assert
+        attr.IsScaleFishVariable().ShouldBeFalse();
+    }
 }

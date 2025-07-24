@@ -168,4 +168,123 @@ public class TestDataProvider : ISailfishVariablesProvider<TestData>
             new TestData("Config2", 20)
         };
     }
+
+    [Fact]
+    public void SailfishVariables_CompareTo_WithSameType_ShouldWork()
+    {
+        // Arrange
+        var data1 = new TestData("A", 10);
+        var data2 = new TestData("B", 20);
+        var var1 = new SailfishVariables<TestData, TestDataProvider> { Value = data1 };
+        var var2 = new SailfishVariables<TestData, TestDataProvider> { Value = data2 };
+
+        // Act & Assert
+        var1.CompareTo(var2).ShouldBeLessThan(0);
+        var2.CompareTo(var1).ShouldBeGreaterThan(0);
+        var1.CompareTo(var1).ShouldBe(0);
+    }
+
+    [Fact]
+    public void SailfishVariables_CompareTo_WithDirectValue_ShouldWork()
+    {
+        // Arrange
+        var data1 = new TestData("A", 10);
+        var data2 = new TestData("B", 20);
+        var var1 = new SailfishVariables<TestData, TestDataProvider> { Value = data1 };
+
+        // Act & Assert
+        var1.CompareTo(data2).ShouldBeLessThan(0);
+        var1.CompareTo(data1).ShouldBe(0);
+    }
+
+    [Fact]
+    public void SailfishVariables_CompareTo_WithDifferentType_ShouldReturnOne()
+    {
+        // Arrange
+        var data = new TestData("Test", 42);
+        var sailfishVar = new SailfishVariables<TestData, TestDataProvider> { Value = data };
+
+        // Act & Assert
+        sailfishVar.CompareTo("string").ShouldBe(1);
+        sailfishVar.CompareTo(42).ShouldBe(1);
+        sailfishVar.CompareTo(null).ShouldBe(1);
+    }
+
+    [Fact]
+    public void SailfishVariables_Equals_WithSameType_ShouldWork()
+    {
+        // Arrange
+        var data = new TestData("Test", 42);
+        var var1 = new SailfishVariables<TestData, TestDataProvider> { Value = data };
+        var var2 = new SailfishVariables<TestData, TestDataProvider> { Value = data };
+
+        // Act & Assert
+        var1.Equals(var2).ShouldBeTrue();
+        var1.Equals(var1).ShouldBeTrue();
+    }
+
+    [Fact]
+    public void SailfishVariables_Equals_WithDirectValue_ShouldWork()
+    {
+        // Arrange
+        var data = new TestData("Test", 42);
+        var sailfishVar = new SailfishVariables<TestData, TestDataProvider> { Value = data };
+
+        // Act & Assert
+        sailfishVar.Equals(data).ShouldBeTrue();
+    }
+
+    [Fact]
+    public void SailfishVariables_Equals_WithDifferentType_ShouldReturnFalse()
+    {
+        // Arrange
+        var data = new TestData("Test", 42);
+        var sailfishVar = new SailfishVariables<TestData, TestDataProvider> { Value = data };
+
+        // Act & Assert
+        sailfishVar.Equals("string").ShouldBeFalse();
+        sailfishVar.Equals(42).ShouldBeFalse();
+        sailfishVar.Equals(null).ShouldBeFalse();
+    }
+
+    [Fact]
+    public void SailfishVariables_ToString_ShouldReturnValueToString()
+    {
+        // Arrange
+        var data = new TestData("Test", 42);
+        var sailfishVar = new SailfishVariables<TestData, TestDataProvider> { Value = data };
+
+        // Act
+        var result = sailfishVar.ToString();
+
+        // Assert
+        result.ShouldBe(data.ToString());
+    }
+
+    [Fact]
+    public void SailfishVariables_ToString_WithNullValue_ShouldReturnEmptyString()
+    {
+        // Arrange
+        var sailfishVar = new SailfishVariables<TestData, TestDataProvider> { Value = null! };
+
+        // Act
+        var result = sailfishVar.ToString();
+
+        // Assert
+        result.ShouldBe(string.Empty);
+    }
+
+    [Fact]
+    public void SailfishVariables_GetHashCode_ShouldWork()
+    {
+        // Arrange
+        var data = new TestData("Test", 42);
+        var sailfishVar = new SailfishVariables<TestData, TestDataProvider> { Value = data };
+
+        // Act
+        var hashCode = sailfishVar.GetHashCode();
+
+        // Assert
+        hashCode.ShouldBe(data.GetHashCode());
+    }
 }

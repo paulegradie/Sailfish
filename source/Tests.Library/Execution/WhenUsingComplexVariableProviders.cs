@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+﻿using System;
 using System.Linq;
 using Sailfish.Attributes;
 using Sailfish.Contracts.Public.Variables;
@@ -107,6 +107,116 @@ public class WhenUsingComplexVariableProviders
 
         // Act & Assert
         provider.IsScaleFishVariable().ShouldBeFalse();
+    }
+
+    [Fact]
+    public void TypedVariableProvider_ShouldThrowOnNullType()
+    {
+        // Act & Assert
+        Should.Throw<ArgumentNullException>(() => new TypedVariableProvider(null!));
+    }
+
+    [Fact]
+    public void AttributeVariableProvider_ShouldThrowOnNullAttribute()
+    {
+        // Act & Assert
+        Should.Throw<ArgumentNullException>(() => new AttributeVariableProvider(null!));
+    }
+
+    [Fact]
+    public void AttributeVariableProvider_ShouldReturnCorrectVariables()
+    {
+        // Arrange
+        var attribute = new SailfishVariableAttribute(1, 2, 3);
+        var provider = new AttributeVariableProvider(attribute);
+
+        // Act
+        var variables = provider.GetVariables().ToList();
+
+        // Assert
+        variables.ShouldNotBeEmpty();
+        variables.Count.ShouldBe(3);
+        variables.ToArray().ShouldBeEquivalentTo(new object[] { 1, 2, 3 });
+    }
+
+    [Fact]
+    public void AttributeVariableProvider_ShouldReturnScaleFishStatus()
+    {
+        // Arrange
+        var scaleFishAttribute = new SailfishVariableAttribute(true, 1, 2, 3);
+        var regularAttribute = new SailfishVariableAttribute(1, 2, 3);
+        var scaleFishProvider = new AttributeVariableProvider(scaleFishAttribute);
+        var regularProvider = new AttributeVariableProvider(regularAttribute);
+
+        // Act & Assert
+        scaleFishProvider.IsScaleFishVariable().ShouldBeTrue();
+        regularProvider.IsScaleFishVariable().ShouldBeFalse();
+    }
+
+    [Fact]
+    public void SailfishVariablesClassProvider_ShouldReturnCorrectVariables()
+    {
+        // Arrange
+        var propertyType = typeof(SailfishVariables<TestTypedVariable, TestTypedVariableProvider>);
+        var provider = new SailfishVariablesClassProvider(propertyType);
+
+        // Act
+        var variables = provider.GetVariables().ToArray();
+
+        // Assert
+        variables.Length.ShouldBe(2);
+        variables.ShouldAllBe(v => v is SailfishVariables<TestTypedVariable, TestTypedVariableProvider>);
+    }
+
+    [Fact]
+    public void SailfishVariablesClassProvider_ShouldNotBeScaleFishVariable()
+    {
+        // Arrange
+        var propertyType = typeof(SailfishVariables<TestTypedVariable, TestTypedVariableProvider>);
+        var provider = new SailfishVariablesClassProvider(propertyType);
+
+        // Act & Assert
+        provider.IsScaleFishVariable().ShouldBeFalse();
+    }
+
+    [Fact]
+    public void SailfishVariablesClassProvider_ShouldThrowOnNullType()
+    {
+        // Act & Assert
+        Should.Throw<ArgumentNullException>(() => new SailfishVariablesClassProvider(null!));
+    }
+
+    [Fact]
+    public void ComplexVariableProvider_ShouldReturnCorrectVariables()
+    {
+        // Arrange
+        var propertyType = typeof(ITestComplexVariable);
+        var provider = new ComplexVariableProvider(propertyType);
+
+        // Act
+        var variables = provider.GetVariables().ToArray();
+
+        // Assert
+        variables.Length.ShouldBe(2);
+        variables.ShouldAllBe(v => v is TestComplexVariable);
+    }
+
+    [Fact]
+    public void ComplexVariableProvider_ShouldNotBeScaleFishVariable()
+    {
+        // Arrange
+        var propertyType = typeof(ITestComplexVariable);
+        var provider = new ComplexVariableProvider(propertyType);
+
+        // Act & Assert
+        provider.IsScaleFishVariable().ShouldBeFalse();
+    }
+
+    [Fact]
+    public void ComplexVariableProvider_ShouldThrowOnNullType()
+    {
+        // Act & Assert
+        Should.Throw<ArgumentNullException>(() => new ComplexVariableProvider(null!));
     }
 }
 
