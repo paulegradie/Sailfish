@@ -18,24 +18,104 @@ namespace Sailfish.Attributes;
 public sealed class SailfishVariableAttribute : Attribute, ISailfishVariableAttribute
 {
     /// <summary>
-    ///     Initializes a new instance of the <see cref="SailfishVariableAttribute" /> class with the specified values.
+    ///     Initializes a new instance of the <see cref="SailfishVariableAttribute" /> class with the specified integer values.
     /// </summary>
-    /// <param name="n">A params array of values to be used as variables within the test.</param>
+    /// <param name="n">A params array of integer values to be used as variables within the test.</param>
     /// <exception cref="SailfishException">Thrown when no values are provided.</exception>
-    public SailfishVariableAttribute([MinLength(1)] params object[] n)
+    public SailfishVariableAttribute([MinLength(1)] params int[] n)
     {
-        if (n.Length == 0) throw new SailfishException($"No values were provided to the {nameof(SailfishVariableAttribute)} attribute.");
-        N.AddRange(n);
+        if (n.Length == 0)
+            throw new SailfishException(
+                $"No values were provided to the {nameof(SailfishVariableAttribute)} attribute.");
+        N.AddRange(n.Cast<object>());
     }
 
     /// <summary>
-    ///     Initializes a new instance of the <see cref="SailfishVariableAttribute" /> class with the specified values and the
+    ///     Initializes a new instance of the <see cref="SailfishVariableAttribute" /> class with the specified string values.
+    /// </summary>
+    /// <param name="n">A params array of string values to be used as variables within the test.</param>
+    /// <exception cref="SailfishException">Thrown when no values are provided.</exception>
+    public SailfishVariableAttribute([MinLength(1)] params string[] n)
+    {
+        if (n.Length == 0)
+            throw new SailfishException(
+                $"No values were provided to the {nameof(SailfishVariableAttribute)} attribute.");
+        N.AddRange(n.Cast<object>());
+    }
+
+    /// <summary>
+    ///     Initializes a new instance of the <see cref="SailfishVariableAttribute" /> class with the specified double values.
+    /// </summary>
+    /// <param name="n">A params array of double values to be used as variables within the test.</param>
+    /// <exception cref="SailfishException">Thrown when no values are provided.</exception>
+    public SailfishVariableAttribute([MinLength(1)] params double[] n)
+    {
+        if (n.Length == 0)
+            throw new SailfishException(
+                $"No values were provided to the {nameof(SailfishVariableAttribute)} attribute.");
+        N.AddRange(n.Cast<object>());
+    }
+
+    /// <summary>
+    ///     Initializes a new instance of the <see cref="SailfishVariableAttribute" /> class with the specified float values.
+    /// </summary>
+    /// <param name="n">A params array of float values to be used as variables within the test.</param>
+    /// <exception cref="SailfishException">Thrown when no values are provided.</exception>
+    public SailfishVariableAttribute([MinLength(1)] params float[] n)
+    {
+        if (n.Length == 0)
+            throw new SailfishException(
+                $"No values were provided to the {nameof(SailfishVariableAttribute)} attribute.");
+        N.AddRange(n.Cast<object>());
+    }
+
+    /// <summary>
+    ///     Initializes a new instance of the <see cref="SailfishVariableAttribute" /> class with the specified long values.
+    /// </summary>
+    /// <param name="n">A params array of long values to be used as variables within the test.</param>
+    /// <exception cref="SailfishException">Thrown when no values are provided.</exception>
+    public SailfishVariableAttribute([MinLength(1)] params long[] n)
+    {
+        if (n.Length == 0)
+            throw new SailfishException(
+                $"No values were provided to the {nameof(SailfishVariableAttribute)} attribute.");
+        N.AddRange(n.Cast<object>());
+    }
+
+    /// <summary>
+    ///     Initializes a new instance of the <see cref="SailfishVariableAttribute" /> class with the specified decimal values.
+    /// </summary>
+    /// <param name="n">A params array of decimal values to be used as variables within the test.</param>
+    /// <exception cref="SailfishException">Thrown when no values are provided.</exception>
+    public SailfishVariableAttribute([MinLength(1)] params decimal[] n)
+    {
+        if (n.Length == 0)
+            throw new SailfishException(
+                $"No values were provided to the {nameof(SailfishVariableAttribute)} attribute.");
+        N.AddRange(n.Cast<object>());
+    }
+
+    /// <summary>
+    ///     Initializes a new instance of the <see cref="SailfishVariableAttribute" /> class with the specified boolean values.
+    /// </summary>
+    /// <param name="n">A params array of boolean values to be used as variables within the test.</param>
+    /// <exception cref="SailfishException">Thrown when no values are provided.</exception>
+    public SailfishVariableAttribute([MinLength(1)] params bool[] n)
+    {
+        if (n.Length == 0)
+            throw new SailfishException(
+                $"No values were provided to the {nameof(SailfishVariableAttribute)} attribute.");
+        N.AddRange(n.Cast<object>());
+    }
+
+    /// <summary>
+    ///     Initializes a new instance of the <see cref="SailfishVariableAttribute" /> class with the specified integer values and the
     ///     option to best fit the test method to a complexity curve.
     /// </summary>
     /// <param name="scaleFish">Boolean to enable complexity estimate feature</param>
-    /// <param name="n">A params array of values to be used as variables within the test.</param>
+    /// <param name="n">A params array of integer values to be used as variables within the test.</param>
     /// <exception cref="SailfishException">Thrown when no values are provided.</exception>
-    public SailfishVariableAttribute(bool scaleFish, [MinLength(3)] params int[] n) : this(n.Cast<object>().ToArray())
+    public SailfishVariableAttribute(bool scaleFish, [MinLength(3)] params int[] n) : this(n)
     {
         UseScaleFish = scaleFish;
         if (UseScaleFish && n.Length < 3)

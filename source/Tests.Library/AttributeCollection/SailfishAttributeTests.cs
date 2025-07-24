@@ -52,14 +52,41 @@ public class SailfishAttributeTests
     }
 
     [Fact]
-    public void SailfishVariableAttributeEmptyParamsWillThrow()
+    public void SailfishVariableAttributeEmptyIntParamsWillThrow()
     {
-        Should.Throw<SailfishException>(() => new SailfishVariableAttribute());
+        Should.Throw<SailfishException>(() => new SailfishVariableAttribute(new int[0]));
+    }
+
+    [Fact]
+    public void SailfishVariableAttributeEmptyStringParamsWillThrow()
+    {
+        Should.Throw<SailfishException>(() => new SailfishVariableAttribute(new string[0]));
+    }
+
+    [Fact]
+    public void SailfishVariableAttributeEmptyDoubleParamsWillThrow()
+    {
+        Should.Throw<SailfishException>(() => new SailfishVariableAttribute(new double[0]));
     }
 
     [Fact]
     public void SailfishVariableAttributeShouldThrowWhenScaleFishAndNLessThanThree()
     {
         Should.Throw<SailfishException>(() => new SailfishVariableAttribute(true, 1, 2));
+    }
+
+
+
+    [Fact]
+    public void SailfishVariableAttributeShouldAcceptHomogeneousTypes()
+    {
+        // These should not throw
+        var intAttr = new SailfishVariableAttribute(1, 2, 3);
+        var stringAttr = new SailfishVariableAttribute("a", "b", "c");
+        var doubleAttr = new SailfishVariableAttribute(1.0, 2.0, 3.0);
+
+        intAttr.GetVariables().Cast<int>().ToList().ShouldBeEquivalentTo(new List<int> { 1, 2, 3 });
+        stringAttr.GetVariables().Cast<string>().ToList().ShouldBeEquivalentTo(new List<string> { "a", "b", "c" });
+        doubleAttr.GetVariables().Cast<double>().ToList().ShouldBeEquivalentTo(new List<double> { 1.0, 2.0, 3.0 });
     }
 }

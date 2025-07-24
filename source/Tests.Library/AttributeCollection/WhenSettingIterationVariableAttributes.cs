@@ -11,11 +11,11 @@ public class WhenSettingSailfishAttributes
     [Fact]
     public void TheNPropertyIsSet()
     {
-        var parameters = new object[] { 1, 2, 3 };
+        var parameters = new int[] { 1, 2, 3 };
 
         var atty = new SailfishVariableAttribute(parameters);
 
-        atty.GetVariables().ShouldBe(parameters);
+        atty.GetVariables().Cast<int>().ShouldBeEquivalentTo(parameters);
     }
 
     [Fact]

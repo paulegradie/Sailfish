@@ -10,7 +10,7 @@ namespace PerformanceTests.ExamplePerformanceTests;
 /// This provides a cleaner API compared to the interface-based ISailfishVariables pattern
 /// by eliminating the need for custom interfaces.
 /// </summary>
-[Sailfish(NumWarmupIterations = 1, SampleSize = 2)]
+[Sailfish(NumWarmupIterations = 1, SampleSize = 2, DisableOverheadEstimation = true)]
 public class SailfishVariablesClassExample
 {
     // Traditional attribute-based variable for comparison
@@ -32,7 +32,7 @@ public class SailfishVariablesClassExample
         Console.WriteLine($"Network: {NetworkConfig.Value.Protocol}://{NetworkConfig.Value.Host}:{NetworkConfig.Value.Port}");
 
         // Simulate database work
-        System.Threading.Thread.Sleep(100);
+        System.Threading.Thread.Sleep(10);
     }
 }
 
