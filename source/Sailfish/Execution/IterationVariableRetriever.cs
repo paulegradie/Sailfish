@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
 using Sailfish.Attributes;
-using Sailfish.Contracts.Public.Variables;
 using Sailfish.Exceptions;
 
 namespace Sailfish.Execution;
@@ -17,6 +16,9 @@ internal class IterationVariableRetriever : IIterationVariableRetriever
 {
     public Dictionary<string, VariableAttributeMeta> RetrieveIterationVariables(Type type)
     {
+        if (type is null)
+            throw new ArgumentNullException(nameof(type));
+
         var attributeBasedVariables = GetAttributeBasedVariables(type);
         var interfaceBasedVariables = GetInterfaceBasedVariables(type);
         var classBasedVariables = GetClassBasedVariables(type);

@@ -54,19 +54,16 @@ public class WhenUsingAllVariableTypes
         // Act
         var attributeProperties = type.CollectAllSailfishVariableAttributes();
         var typedProperties = type.CollectAllSailfishVariablesProperties();
-        var complexProperties = new List<PropertyInfo>(); // Complex variables removed
         var allProperties = type.CollectAllVariableProperties();
 
         // Assert
         attributeProperties.Count.ShouldBe(2); // SimpleValue and RangeValue
         typedProperties.Count.ShouldBe(1); // TypedValue
-        complexProperties.Count.ShouldBe(0); // No complex variables (ISailfishComplexVariableProvider removed)
         allProperties.Count.ShouldBe(3); // SimpleValue, RangeValue, and TypedValue
 
         attributeProperties.ShouldContain(p => p.Name == "SimpleValue");
         attributeProperties.ShouldContain(p => p.Name == "RangeValue");
         typedProperties.Single().Name.ShouldBe("TypedValue");
-        complexProperties.ShouldBeEmpty(); // No complex variables after removal
     }
 
     [Fact]
@@ -113,9 +110,8 @@ public class WhenUsingAllVariableTypes
         var retriever = new IterationVariableRetriever();
 
         // Act & Assert
-        // The actual implementation throws NullReferenceException, not ArgumentNullException
-        // This is the current behavior, so we test for what actually happens
-        Should.Throw<NullReferenceException>(() =>
+        // Should throw ArgumentNullException for proper null argument validation
+        Should.Throw<ArgumentNullException>(() =>
             retriever.RetrieveIterationVariables(null!));
     }
 }
