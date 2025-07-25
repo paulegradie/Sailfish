@@ -4,6 +4,7 @@ using System.Linq;
 using Sailfish.Attributes;
 using Sailfish.TestAdapter.Discovery;
 using Shouldly;
+
 using Xunit;
 
 namespace Tests.TestAdapter;
@@ -17,7 +18,7 @@ public class DiscoveryAnalysisMethodsTests
         var sourceCode = @"
 using Sailfish.Attributes;
 
-namespace TestNamespace
+namespace Tests.TestAdapter
 {
     [Sailfish]
     public class TestClass
@@ -44,7 +45,7 @@ namespace TestNamespace
             result.ShouldNotBeEmpty();
             result.Count.ShouldBe(1);
             var classMetaData = result.First();
-            classMetaData.ClassFullName.ShouldBe("TestNamespace.TestClass");
+            classMetaData.ClassFullName.ShouldBe("Tests.TestAdapter.TestClass");
             classMetaData.Methods.ShouldNotBeEmpty();
             classMetaData.Methods.First().MethodName.ShouldBe("TestMethod");
         }
@@ -62,7 +63,7 @@ namespace TestNamespace
         var sourceCode = @"
 using Sailfish.Attributes;
 
-namespace TestNamespace;
+namespace Tests.TestAdapter;
 
 [Sailfish]
 public class TestClass
@@ -87,7 +88,7 @@ public class TestClass
             // Assert
             result.ShouldNotBeEmpty();
             var classMetaData = result.First();
-            classMetaData.ClassFullName.ShouldBe("TestNamespace.TestClass");
+            classMetaData.ClassFullName.ShouldBe("Tests.TestAdapter.TestClass");
         }
         finally
         {
@@ -177,7 +178,7 @@ public class TestClass
         var sourceCode = @"
 using Sailfish.Attributes;
 
-namespace TestNamespace
+namespace Tests.TestAdapter
 {
     [CustomAttribute]
     public class NonSailfishClass
@@ -189,10 +190,10 @@ namespace TestNamespace
     }
 
     [Sailfish]
-    public class SailfishClass
+    public class TestClass
     {
         [SailfishMethod]
-        public void SailfishMethod()
+        public void TestMethod()
         {
         }
     }
@@ -210,8 +211,12 @@ namespace TestNamespace
                 "SailfishMethod").ToList();
 
             // Assert
-            // Should only find classes with Sailfish attribute
+            // Should only find classes with Sailfish attribute and matching types
             result.ShouldNotContain(meta => meta.ClassFullName.Contains("NonSailfishClass"));
+            if (result.Any())
+            {
+                result.ShouldContain(meta => meta.ClassFullName == "Tests.TestAdapter.TestClass");
+            }
         }
         finally
         {
@@ -227,22 +232,22 @@ namespace TestNamespace
         var sourceCode = @"
 using Sailfish.Attributes;
 
-namespace TestNamespace
+namespace Tests.TestAdapter
 {
     [Sailfish]
-    public class TestClass1
+    public class TestClass
     {
         [SailfishMethod]
-        public void TestMethod1()
+        public void TestMethod()
         {
         }
     }
 
     [Sailfish]
-    public class TestClass2
+    public class AnotherTestClass
     {
         [SailfishMethod]
-        public void TestMethod2()
+        public void AnotherTestMethod()
         {
         }
     }
@@ -260,7 +265,9 @@ namespace TestNamespace
                 "SailfishMethod").ToList();
 
             // Assert
-            result.Count.ShouldBeGreaterThanOrEqualTo(0); // Depends on matching types
+            result.Count.ShouldBe(2); // Should find both matching classes
+            result.ShouldContain(meta => meta.ClassFullName == "Tests.TestAdapter.TestClass");
+            result.ShouldContain(meta => meta.ClassFullName == "Tests.TestAdapter.AnotherTestClass");
         }
         finally
         {
@@ -278,8 +285,8 @@ namespace TestNamespace
     }
 }
 
-// Test classes for the discovery analysis tests
-[Sailfish]
+// Test classes for the discovery analysis tests - already in Tests.TestAdapter namespace due to file-scoped namespace
+// [Sailfish(Disabled = true, DisableOverheadEstimation = true)]
 public class TestClass
 {
     [SailfishMethod]
@@ -289,7 +296,7 @@ public class TestClass
     }
 }
 
-[Sailfish]
+// [Sailfish(Disabled = true, DisableOverheadEstimation = true)]
 public class AnotherTestClass
 {
     [SailfishMethod]

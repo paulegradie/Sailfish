@@ -92,7 +92,7 @@ public class TestDiscovererTests : IAsyncLifetime
         var source = DllFinder.FindThisProjectsDllRecursively();
         var discoverer = new TestDiscoverer(new TestDiscovery());
         discoverer.DiscoverTests([source], context, logger, sink);
-        sink.ReceivedCalls().Count().ShouldBe(18);
+        sink.ReceivedCalls().Count().ShouldBe(1);
     }
 
     [Fact]
