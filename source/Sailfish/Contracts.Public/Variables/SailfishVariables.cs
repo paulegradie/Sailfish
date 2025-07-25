@@ -24,7 +24,7 @@ public class SailfishVariables<T, TProvider> : IComparable
     /// <summary>
     /// The actual variable value that will be set during test execution
     /// </summary>
-    public T Value { get; set; } = default!;
+    public T Value { get; init; } = default!;
 
     /// <summary>
     /// Implicit conversion to T for seamless usage in test methods

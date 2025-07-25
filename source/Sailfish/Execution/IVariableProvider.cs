@@ -54,9 +54,9 @@ internal class AttributeVariableProvider : IVariableProvider
 /// </summary>
 internal class TypedVariableProvider : IVariableProvider
 {
-    private readonly System.Type propertyType;
+    private readonly Type propertyType;
 
-    public TypedVariableProvider(System.Type propertyType)
+    public TypedVariableProvider(Type propertyType)
     {
         this.propertyType = propertyType ?? throw new ArgumentNullException(nameof(propertyType));
     }
@@ -73,7 +73,7 @@ internal class TypedVariableProvider : IVariableProvider
         return false;
     }
 
-    private static IEnumerable<object> GetTypedVariables(System.Type propertyType)
+    private static IEnumerable<object> GetTypedVariables(Type propertyType)
     {
         // Find the ISailfishVariables<TType, TTypeProvider> interface
         var variablesInterface = propertyType.GetInterfaces()
@@ -87,26 +87,29 @@ internal class TypedVariableProvider : IVariableProvider
 
         // Get the generic arguments (TType and TTypeProvider)
         var genericArgs = variablesInterface.GetGenericArguments();
-        var dataType = genericArgs[0];
         var providerType = genericArgs[1];
 
         // Create an instance of the provider
-        var providerInstance = System.Activator.CreateInstance(providerType);
+        var providerInstance = Activator.CreateInstance(providerType);
         if (providerInstance == null)
         {
             throw new SailfishException($"Could not create instance of provider type {providerType}. Ensure it has a parameterless constructor.");
         }
 
         // Find the Variables() method on the provider
-        var method = providerType.GetMethod("Variables");
+        // Note: We use 'string' as the generic type parameter here only to satisfy the IComparable constraint
+        // for nameof compilation. The actual generic type doesn't matter since nameof only returns the method name "Variables"
+        // and GetMethod only searches by name, not by signature. The real method signature is determined by the
+        // actual provider type at runtime (e.g., ISailfishVariablesProvider<DatabaseConfig>.Variables)
+        var method = providerType.GetMethod(nameof(ISailfishVariablesProvider<string>.Variables));
         if (method == null)
         {
-            throw new SailfishException($"Could not find Variables() method on provider type {providerType}.");
+            throw new SailfishException($"Could not find {nameof(ISailfishVariablesProvider<string>.Variables)}() method on provider type {providerType}.");
         }
 
         // Invoke the method to get the variables
         var result = method.Invoke(providerInstance, null);
-        if (result is not System.Collections.IEnumerable enumerable)
+        if (result is not IEnumerable enumerable)
         {
             throw new SailfishException($"Variables() method on {providerType} did not return an IEnumerable.");
         }
@@ -121,9 +124,9 @@ internal class TypedVariableProvider : IVariableProvider
 /// </summary>
 internal class SailfishVariablesClassProvider : IVariableProvider
 {
-    private readonly System.Type propertyType;
+    private readonly Type propertyType;
 
-    public SailfishVariablesClassProvider(System.Type propertyType)
+    public SailfishVariablesClassProvider(Type propertyType)
     {
         this.propertyType = propertyType ?? throw new ArgumentNullException(nameof(propertyType));
     }
@@ -140,7 +143,7 @@ internal class SailfishVariablesClassProvider : IVariableProvider
         return false;
     }
 
-    private static IEnumerable<object> GetSailfishVariablesClassVariables(System.Type propertyType)
+    private static IEnumerable<object> GetSailfishVariablesClassVariables(Type propertyType)
     {
         // Verify this is a SailfishVariables<T, TProvider> type
         if (!propertyType.IsGenericType ||
@@ -162,10 +165,14 @@ internal class SailfishVariablesClassProvider : IVariableProvider
         }
 
         // Find the Variables() method on the provider
-        var method = providerType.GetMethod("Variables");
+        // Note: We use 'string' as the generic type parameter here only to satisfy the IComparable constraint
+        // for nameof compilation. The actual generic type doesn't matter since nameof only returns the method name "Variables"
+        // and GetMethod only searches by name, not by signature. The real method signature is determined by the
+        // actual provider type at runtime (e.g., ISailfishVariablesProvider<MyCustomType>.Variables)
+        var method = providerType.GetMethod(nameof(ISailfishVariablesProvider<string>.Variables));
         if (method == null)
         {
-            throw new SailfishException($"Could not find Variables() method on provider type {providerType}.");
+            throw new SailfishException($"Could not find {nameof(ISailfishVariablesProvider<string>.Variables)}() method on provider type {providerType}.");
         }
 
         // Invoke the method to get the variables

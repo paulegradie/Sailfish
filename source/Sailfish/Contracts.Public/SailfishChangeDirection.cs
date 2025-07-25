@@ -1,6 +1,6 @@
 ﻿namespace Sailfish.Contracts.Public;
 
-public class SailfishChangeDirection
+public static class SailfishChangeDirection
 {
     public const string Improved = "Improved";
     public const string Regressed = "Regressed";
