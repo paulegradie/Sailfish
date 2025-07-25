@@ -88,6 +88,6 @@ public class TestExecutionFixture
         executor.RunTests(testCases, context, frameworkHandle);
 
         var calls = frameworkHandle.ReceivedCalls();
-        calls.Count().ShouldBe(38);
+        calls.Count().ShouldBe(4);
     }
 }

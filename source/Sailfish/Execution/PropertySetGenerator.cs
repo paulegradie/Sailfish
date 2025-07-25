@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Sailfish.Exceptions;
 
 namespace Sailfish.Execution;
 
@@ -25,7 +26,7 @@ internal class PropertySetGenerator(IParameterCombinator parameterCombinator, II
         }
         catch (Exception ex)
         {
-            throw new Exception($"{ex.Message} for {test.Name}", ex?.InnerException);
+            throw new SailfishException($"{ex.Message} for {test.Name}");
         }
     }
 }

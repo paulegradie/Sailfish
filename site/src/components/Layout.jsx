@@ -179,7 +179,7 @@ export function Layout({ children, title, tableOfContents }) {
 
             {isHomePage && <Hero />}
 
-            <div className="relative mx-auto flex max-w-8xl justify-center sm:px-2 lg:px-8 xl:px-12">
+            <div className="relative mx-auto flex max-w-9xl justify-center sm:px-2 lg:px-8 xl:px-12 2xl:px-16">
                 <div className="hidden lg:relative lg:block lg:flex-none">
                     <div className="absolute inset-y-0 right-0 w-[50vw] bg-slate-50 dark:hidden" />
                     <div className="absolute top-16 bottom-0 right-0 hidden h-12 w-px bg-gradient-to-t from-slate-800 dark:block" />
@@ -191,7 +191,7 @@ export function Layout({ children, title, tableOfContents }) {
                         />
                     </div>
                 </div>
-                <div className="min-w-0 max-w-2xl flex-auto px-4 py-16 lg:max-w-none lg:pr-0 lg:pl-8 xl:px-16">
+                <div className="min-w-0 max-w-2xl flex-auto px-4 py-16 lg:max-w-none lg:pr-0 lg:pl-8 xl:px-16 2xl:px-20">
                     <article>
                         {(title || section) && (
                             <header className="mb-9 space-y-1">

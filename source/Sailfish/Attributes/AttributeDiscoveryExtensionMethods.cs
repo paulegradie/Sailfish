@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using Sailfish.Contracts.Public.Variables;
 using Sailfish.Exceptions;
 using Sailfish.Extensions.Methods;
 
@@ -41,4 +42,83 @@ internal static class AttributeDiscoveryExtensionMethods
         return propertyInfo.GetCustomAttributes<SailfishVariableAttribute>().Any(a => a.IsScaleFishVariable())
                || propertyInfo.GetCustomAttributes<SailfishRangeVariableAttribute>().Any(a => a.IsScaleFishVariable());
     }
+
+    /// <summary>
+    /// Collects all properties that implement ISailfishVariables interface
+    /// </summary>
+    internal static List<PropertyInfo> CollectAllSailfishVariablesProperties(this Type type)
+    {
+        return type.GetProperties()
+            .Where(prop => prop.PropertyType.ImplementsISailfishVariables())
+            .ToList();
+    }
+
+    /// <summary>
+    /// Collects all properties that are of type SailfishVariables&lt;T, TProvider&gt;
+    /// </summary>
+    internal static List<PropertyInfo> CollectAllSailfishVariablesClassProperties(this Type type)
+    {
+        return type.GetProperties()
+            .Where(prop => prop.PropertyType.IsSailfishVariablesClass())
+            .ToList();
+    }
+
+    /// <summary>
+    /// Collects all variable properties: attribute-based, interface-based, and class-based
+    /// </summary>
+    internal static List<PropertyInfo> CollectAllVariableProperties(this Type type)
+    {
+        var attributeProperties = type.CollectAllSailfishVariableAttributes();
+        var variablesInterfaceProperties = type.CollectAllSailfishVariablesProperties();
+        var variablesClassProperties = type.CollectAllSailfishVariablesClassProperties();
+        return attributeProperties
+            .Concat(variablesInterfaceProperties)
+            .Concat(variablesClassProperties)
+            .ToList();
+    }
+
+    /// <summary>
+    /// Checks if a type implements ISailfishVariables interface
+    /// </summary>
+    internal static bool ImplementsISailfishVariables(this Type type)
+    {
+        return type.GetInterfaces().Any(i =>
+            i.IsGenericType && i.GetGenericTypeDefinition() == typeof(ISailfishVariables<,>));
+    }
+
+    /// <summary>
+    /// Checks if a property type implements ISailfishVariables interface
+    /// </summary>
+    internal static bool IsVariablesProperty(this PropertyInfo propertyInfo)
+    {
+        return propertyInfo.PropertyType.ImplementsISailfishVariables();
+    }
+
+    /// <summary>
+    /// Checks if a type is SailfishVariables&lt;T, TProvider&gt;
+    /// </summary>
+    internal static bool IsSailfishVariablesClass(this Type type)
+    {
+        return type.IsGenericType &&
+               type.GetGenericTypeDefinition() == typeof(SailfishVariables<,>);
+    }
+
+    /// <summary>
+    /// Checks if a property type is SailfishVariables&lt;T, TProvider&gt;
+    /// </summary>
+    internal static bool IsSailfishVariablesClassProperty(this PropertyInfo propertyInfo)
+    {
+        return propertyInfo.PropertyType.IsSailfishVariablesClass();
+    }
+
+    /// <summary>
+    /// Checks if a property has any Sailfish variable attributes (attribute-based or interface-based)
+    /// </summary>
+    internal static bool HasAnySailfishVariableConfiguration(this PropertyInfo propertyInfo)
+    {
+        return !propertyInfo.PropertyDoesNotHaveAnySailfishVariableAttributes() ||
+               propertyInfo.IsVariablesProperty();
+    }
+
+
 }

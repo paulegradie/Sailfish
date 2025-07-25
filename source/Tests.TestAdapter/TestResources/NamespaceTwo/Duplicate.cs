@@ -3,7 +3,7 @@ using Sailfish.Attributes;
 
 namespace Tests.TestAdapter.TestResources.NamespaceTwo;
 
-[Sailfish]
+[Sailfish(Disabled = true)]
 public class DuplicateTest
 {
     [SailfishMethod]

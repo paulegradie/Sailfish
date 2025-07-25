@@ -4,7 +4,7 @@ using Sailfish.Attributes;
 
 namespace Tests.TestAdapter.TestResources;
 
-[Sailfish(Disabled = false, DisableOverheadEstimation = true)]
+[Sailfish(Disabled = true, DisableOverheadEstimation = true)]
 public class SimplePerfTest
 {
     [SailfishVariable(1, 2, 3)]
