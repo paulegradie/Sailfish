@@ -17,7 +17,7 @@ public class TestDiscoveryFixture
         // Assumes there is one valid test file.
         // And The discoverer tests will be those found from inside the
         var testCases = new TestDiscovery().DiscoverTests(new[] { source }, new LoggerHelper()).ToList();
-        testCases.Count.ShouldBe(18);
+        testCases.Count.ShouldBe(21);
     }
 
     [Fact]
