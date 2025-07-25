@@ -186,38 +186,7 @@ public class WhenUsingComplexVariableProviders
         Should.Throw<ArgumentNullException>(() => new SailfishVariablesClassProvider(null!));
     }
 
-    [Fact]
-    public void ComplexVariableProvider_ShouldReturnCorrectVariables()
-    {
-        // Arrange
-        var propertyType = typeof(ITestComplexVariable);
-        var provider = new ComplexVariableProvider(propertyType);
 
-        // Act
-        var variables = provider.GetVariables().ToArray();
-
-        // Assert
-        variables.Length.ShouldBe(2);
-        variables.ShouldAllBe(v => v is TestComplexVariable);
-    }
-
-    [Fact]
-    public void ComplexVariableProvider_ShouldNotBeScaleFishVariable()
-    {
-        // Arrange
-        var propertyType = typeof(ITestComplexVariable);
-        var provider = new ComplexVariableProvider(propertyType);
-
-        // Act & Assert
-        provider.IsScaleFishVariable().ShouldBeFalse();
-    }
-
-    [Fact]
-    public void ComplexVariableProvider_ShouldThrowOnNullType()
-    {
-        // Act & Assert
-        Should.Throw<ArgumentNullException>(() => new ComplexVariableProvider(null!));
-    }
 }
 
 // Test classes for the unit tests

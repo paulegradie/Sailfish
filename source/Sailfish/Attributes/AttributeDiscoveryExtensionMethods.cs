@@ -117,34 +117,8 @@ internal static class AttributeDiscoveryExtensionMethods
     internal static bool HasAnySailfishVariableConfiguration(this PropertyInfo propertyInfo)
     {
         return !propertyInfo.PropertyDoesNotHaveAnySailfishVariableAttributes() ||
-               propertyInfo.IsVariablesProperty() ||
-               propertyInfo.IsComplexVariableProperty();
+               propertyInfo.IsVariablesProperty();
     }
 
-    /// <summary>
-    /// Collects all properties that implement ISailfishComplexVariableProvider interface
-    /// </summary>
-    internal static List<PropertyInfo> CollectAllComplexVariableProperties(this Type type)
-    {
-        return type.GetProperties()
-            .Where(prop => prop.PropertyType.ImplementsISailfishComplexVariableProvider())
-            .ToList();
-    }
 
-    /// <summary>
-    /// Checks if a type implements ISailfishComplexVariableProvider interface
-    /// </summary>
-    internal static bool ImplementsISailfishComplexVariableProvider(this Type type)
-    {
-        return type.GetInterfaces().Any(i =>
-            i.IsGenericType && i.GetGenericTypeDefinition() == typeof(ISailfishComplexVariableProvider<>));
-    }
-
-    /// <summary>
-    /// Checks if a property type implements ISailfishComplexVariableProvider interface
-    /// </summary>
-    internal static bool IsComplexVariableProperty(this PropertyInfo propertyInfo)
-    {
-        return propertyInfo.PropertyType.ImplementsISailfishComplexVariableProvider();
-    }
 }

@@ -20,15 +20,12 @@ internal class IterationVariableRetriever : IIterationVariableRetriever
         var attributeBasedVariables = GetAttributeBasedVariables(type);
         var interfaceBasedVariables = GetInterfaceBasedVariables(type);
         var classBasedVariables = GetClassBasedVariables(type);
-        var complexVariables = GetComplexVariables(type);
-
         // Combine all types of variables with duplicate detection
         var variableSources = new[]
         {
             ("attribute-based", attributeBasedVariables),
             ("interface-based", interfaceBasedVariables),
-            ("class-based", classBasedVariables),
-            ("complex", complexVariables)
+            ("class-based", classBasedVariables)
         };
 
         var allVariables = new Dictionary<string, VariableAttributeMeta>();
@@ -116,23 +113,5 @@ internal class IterationVariableRetriever : IIterationVariableRetriever
                 });
     }
 
-    private Dictionary<string, VariableAttributeMeta> GetComplexVariables(Type type)
-    {
-        return type
-            .CollectAllComplexVariableProperties()
-            .ToDictionary(
-                prop => prop.Name,
-                prop =>
-                {
-                    var provider = new ComplexVariableProvider(prop.PropertyType);
-                    var variables = provider.GetVariables()
-                        .Distinct()
-                        .OrderBy(x => x)
-                        .ToArray();
 
-                    return new VariableAttributeMeta(
-                        variables,
-                        provider.IsScaleFishVariable());
-                });
-    }
 }
