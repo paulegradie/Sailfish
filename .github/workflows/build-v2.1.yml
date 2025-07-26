@@ -199,6 +199,123 @@ jobs:
         if: github.ref == 'refs/heads/main' && github.event_name == 'push'
         run: dotnet nuget push ${{matrix.project}}.${{ needs.set_version.outputs.version }}.nupkg --source https://www.nuget.org --api-key ${{secrets.NUGET_API_KEY}} --skip-duplicate
 
+  create_release:
+    name: Create GitHub Release
+    needs: [pack, set_version]
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Download NuGet packages
+        uses: actions/download-artifact@v4
+        with:
+          name: built-binaries
+          path: ./packages/
+
+      - name: Find NuGet packages
+        id: find_packages
+        run: |
+          echo "Finding .nupkg files..."
+          find . -name "*.nupkg" -type f
+
+          # Create a list of package files for the release
+          PACKAGES=""
+          for pkg in Sailfish Sailfish.TestAdapter Sailfish.Analyzers; do
+            PKG_FILE="./${pkg}.${{ needs.set_version.outputs.version }}.nupkg"
+            if [ -f "$PKG_FILE" ]; then
+              PACKAGES="$PACKAGES $PKG_FILE"
+              echo "Found package: $PKG_FILE"
+            else
+              echo "Warning: Package not found: $PKG_FILE"
+            fi
+          done
+
+          echo "packages=$PACKAGES" >> $GITHUB_OUTPUT
+
+      - name: Check for manual release notes
+        id: check_release_notes
+        run: |
+          # Check if there's a RELEASE_NOTES.md file in the repo root
+          if [ -f "RELEASE_NOTES.md" ]; then
+            echo "manual_notes=true" >> $GITHUB_OUTPUT
+            echo "Found manual release notes file"
+          else
+            echo "manual_notes=false" >> $GITHUB_OUTPUT
+            echo "No manual release notes found, will generate from commits"
+          fi
+
+      - name: Generate Release Notes from Commits
+        if: steps.check_release_notes.outputs.manual_notes == 'false'
+        id: auto_release_notes
+        run: |
+          VERSION="${{ needs.set_version.outputs.version }}"
+
+          # Get commits since last release
+          LAST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "")
+          if [ -n "$LAST_TAG" ]; then
+            COMMITS=$(git log ${LAST_TAG}..HEAD --oneline --no-merges)
+          else
+            # If no previous tags, get last 10 commits
+            COMMITS=$(git log -10 --oneline --no-merges)
+          fi
+
+          # Create release notes
+          cat > release_notes.md << EOF
+          ## What's Changed in v${VERSION}
+
+          ### Commits in this release:
+          ${COMMITS}
+
+          ### NuGet Packages
+          - [Sailfish v${VERSION}](https://www.nuget.org/packages/Sailfish/${VERSION})
+          - [Sailfish.TestAdapter v${VERSION}](https://www.nuget.org/packages/Sailfish.TestAdapter/${VERSION})
+          - [Sailfish.Analyzers v${VERSION}](https://www.nuget.org/packages/Sailfish.Analyzers/${VERSION})
+
+          **Full Changelog**: https://github.com/paulegradie/Sailfish/compare/${LAST_TAG}...v${VERSION}
+          EOF
+
+          echo "Auto-generated release notes:"
+          cat release_notes.md
+
+      - name: Prepare Manual Release Notes
+        if: steps.check_release_notes.outputs.manual_notes == 'true'
+        id: manual_release_notes
+        run: |
+          VERSION="${{ needs.set_version.outputs.version }}"
+
+          # Replace placeholder version in manual notes
+          sed "s/NEXT_VERSION/${VERSION}/g" RELEASE_NOTES.md > release_notes.md
+
+          # Add NuGet package links at the end
+          cat >> release_notes.md << EOF
+
+          ### NuGet Packages
+          - [Sailfish v${VERSION}](https://www.nuget.org/packages/Sailfish/${VERSION})
+          - [Sailfish.TestAdapter v${VERSION}](https://www.nuget.org/packages/Sailfish.TestAdapter/${VERSION})
+          - [Sailfish.Analyzers v${VERSION}](https://www.nuget.org/packages/Sailfish.Analyzers/${VERSION})
+          EOF
+
+          echo "Manual release notes prepared:"
+          cat release_notes.md
+
+          # Clean up the manual notes file after use
+          rm RELEASE_NOTES.md
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: v${{ needs.set_version.outputs.version }}
+          name: Sailfish v${{ needs.set_version.outputs.version }}
+          body_path: release_notes.md
+          draft: false
+          prerelease: false
+          files: ${{ steps.find_packages.outputs.packages }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
   sonar:
     name: Sonar Code Quality Check
     needs: [set_version, build]
