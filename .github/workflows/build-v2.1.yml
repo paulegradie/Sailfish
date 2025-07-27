@@ -212,7 +212,7 @@ jobs:
       - name: Download NuGet packages
         uses: actions/download-artifact@v4
         with:
-          name: built-binaries
+          name: nuget-packages   # ← must match upload step
           path: ./packages/
 
       - name: Find NuGet packages
@@ -224,7 +224,7 @@ jobs:
           # Create a list of package files for the release
           PACKAGES=""
           for pkg in Sailfish Sailfish.TestAdapter Sailfish.Analyzers; do
-            PKG_FILE="./${pkg}.${{ needs.set_version.outputs.version }}.nupkg"
+            PKG_FILE="./packages/${pkg}.${{ needs.set_version.outputs.version }}.nupkg"
             if [ -f "$PKG_FILE" ]; then
               PACKAGES="$PACKAGES $PKG_FILE"
               echo "Found package: $PKG_FILE"
