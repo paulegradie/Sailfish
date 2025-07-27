@@ -1,13 +1,7 @@
-﻿# Next Agent Prompt Template - Sailfish Queue Migration
+﻿# Example: NextPrompt-1.2.md
 
-## Template Instructions
-**For Human Use**: Copy the template below, fill in the bracketed placeholders, and use as the prompt for the next AI agent.
-
-**Update After Each Task**: Modify the completed tasks, current status, and next task information.
-
----
-
-## 🤖 AI Agent Prompt Template
+## 🤖 AI Agent Prompt - Ready to Copy/Paste
+**This example shows how to create NextPrompt-1.2.md for Task 2 in Phase 1**
 
 ```
 You are working on the Sailfish Test Adapter Queue Migration project. This is a continuation of previous work by other AI agents.
@@ -25,9 +19,9 @@ You are working on the Sailfish Test Adapter Queue Migration project. This is a 
    - Your specific task details and acceptance criteria
    - Architecture diagrams and implementation guidelines
 
-3. **📝 READ THIRD**: `[ADDITIONAL_CONTEXT_FILES]`
-   - Any additional context files created during migration
-   - Previous agent notes and implementation decisions
+3. **📝 READ THIRD**: `G:/code/Sailfish/source/Sailfish.TestAdapter/NEXT_AGENT_PROMPT_TEMPLATE.md`
+   - Template for future agent handoffs
+   - Understanding of the handoff process
 
 **⚠️ DO NOT PROCEED WITHOUT READING THESE FILES FIRST ⚠️**
 
@@ -37,34 +31,33 @@ You are implementing a queue-based architecture for the Sailfish Test Adapter to
 ## Repository Information
 - **Repository Root**: G:/code/Sailfish
 - **Working Directory**: G:/code/Sailfish/source/Sailfish.TestAdapter
-- **Branch**: [CURRENT_BRANCH_NAME]
+- **Branch**: pg/method-comparisons
 - **Project**: Sailfish.TestAdapter (.NET 8.0 and .NET 9.0)
 
 ## Current Project Status
 
 ### ✅ Completed Tasks
-[LIST_COMPLETED_TASKS_WITH_NUMBERS]
-Example:
 - Task 1: Create Queue Message Contract ✅
-- Task 2: Create Queue Publisher Interface ✅
-- Task 3: Create Queue Processor Interface ✅
 
 ### 🔄 Current Phase
-**Phase [CURRENT_PHASE_NUMBER]: [PHASE_NAME]**
-- **Progress**: [X] of [Y] tasks completed
-- **Status**: [IN_PROGRESS/COMPLETED]
+**Phase 1: Core Infrastructure**
+- **Progress**: 1 of 15 tasks completed
+- **Status**: IN_PROGRESS
 
 ### 🎯 Your Assignment
-**Task [NEXT_TASK_NUMBER]: [TASK_NAME]**
+**Task 2: Create Queue Publisher Interface**
 
-**File to Create/Modify**: `[FILE_PATH]`
+**File to Create**: `G:/code/Sailfish/source/Sailfish.TestAdapter/Queue/Contracts/ITestCompletionQueuePublisher.cs`
 
-**Description**: [TASK_DESCRIPTION]
+**Description**: Create the message contract for test completion events
 
-**Dependencies**: [DEPENDENCY_TASKS] (✅ All completed)
+**Dependencies**: None (first task)
 
 **Acceptance Criteria**:
-[ACCEPTANCE_CRITERIA_LIST]
+- Define TestCompletionQueueMessage class with all required properties
+- Include TestCaseId, TestResult, CompletedAt, Metadata, PerformanceMetrics
+- Add proper serialization attributes if needed
+- Include XML documentation for all properties
 
 ## Implementation Guidelines
 
@@ -96,7 +89,7 @@ Example:
    - Any additional context files listed above
 
 2. **🔍 UNDERSTAND YOUR TASK**:
-   - Locate Task [NEXT_TASK_NUMBER] in the specification
+   - Locate Task 1 in the specification
    - Review acceptance criteria and dependencies
    - Understand how your task fits into the overall architecture
 
@@ -116,13 +109,14 @@ Example:
 ### File Structure Context
 ```
 Sailfish.TestAdapter/
-├── Queue/                          # 🆕 New queue infrastructure
-│   ├── Contracts/                  # Interfaces and message contracts
-│   ├── Implementation/             # Core implementations
-│   ├── Processors/                 # Background processors
-│   ├── Configuration/              # Settings and config
-│   ├── Monitoring/                 # Health checks and metrics
-│   └── ErrorHandling/              # Retry and error handling
+├── Queue/                          # 🆕 New queue infrastructure (CREATE THIS)
+│   ├── Contracts/                  # 🆕 Interfaces and message contracts (CREATE THIS)
+│   │   └── TestCompletionQueueMessage.cs  # 🎯 YOUR TASK
+│   ├── Implementation/             # Future tasks
+│   ├── Processors/                 # Future tasks
+│   ├── Configuration/              # Future tasks
+│   ├── Monitoring/                 # Future tasks
+│   └── ErrorHandling/              # Future tasks
 ├── Handlers/                       # 🔄 Existing notification handlers
 │   ├── TestCaseEvents/            # Test event handlers (integration point)
 │   └── FrameworkHandlers/         # Framework integration
@@ -131,7 +125,7 @@ Sailfish.TestAdapter/
 ```
 
 ### Testing Requirements
-[TESTING_REQUIREMENTS_FOR_TASK]
+This task focuses on creating the message contract. Unit tests will be added in Task 15 (Create Queue Unit Tests) which will test all infrastructure components together.
 
 ### Error Handling Requirements
 - Use existing Sailfish exception types where appropriate
@@ -171,11 +165,33 @@ After completing your task:
 ## Handoff Instructions
 When you complete your task:
 
-1. **Commit your changes** with a clear commit message: "Task [NUMBER]: [TASK_NAME]"
+1. **Commit your changes** with a clear commit message: "Task 2: Create Queue Publisher Interface"
 2. **Update the specification** - Mark your task as completed
 3. **Document any issues** - Note any deviations or problems encountered
-4. **Prepare next prompt** - Update this template for the next agent
+4. **Create next agent prompt** - Follow the versioning process below
 5. **Test the integration** - Ensure your changes work with existing code
+
+### 🔄 Creating NextPrompt-1.3.md (for Task 3)
+
+**Step 1: Copy Template**
+- Use `NEXT_AGENT_PROMPT_TEMPLATE.md` as your base
+
+**Step 2: Update Information**
+- Move Task 2 to completed tasks list
+- Update progress to "2 of 15 tasks completed"
+- Change assignment to Task 3
+- Update file path and acceptance criteria for Task 3
+
+**Step 3: Save File**
+- Save as `NextPrompt-1.3.md` in `G:/code/Sailfish/source/Sailfish.TestAdapter/Prompts/`
+
+**Step 4: Instruct Human**
+```
+🤖 NEXT AGENT SETUP:
+Please point the next AI agent to: G:/code/Sailfish/source/Sailfish.TestAdapter/Prompts/NextPrompt-1.3.md
+
+This file contains the complete prompt for Task 3 with all current context and instructions.
+```
 
 ## Questions or Issues
 If you encounter any issues:
@@ -185,49 +201,41 @@ If you encounter any issues:
 - Ask for clarification if requirements are unclear
 
 ## Success Criteria for This Session
-- [ ] Task [NEXT_TASK_NUMBER] completed according to acceptance criteria
+- [ ] Task 2 completed according to acceptance criteria
 - [ ] All existing tests still pass
 - [ ] New code follows project conventions
 - [ ] Documentation updated if required
-- [ ] Ready for next agent to continue with Task [NEXT_TASK_NUMBER + 1]
+- [ ] NextPrompt-1.3.md created for next agent
+- [ ] Ready for next agent to continue with Task 3
 
 ---
 
-**Current Date**: [CURRENT_DATE]
-**Session Goal**: Complete Task [NEXT_TASK_NUMBER] and prepare for Task [NEXT_TASK_NUMBER + 1]
-**Estimated Time**: [ESTIMATED_TIME] (most tasks should take 30-60 minutes)
+**Current Date**: 2025-01-27
+**Session Goal**: Complete Task 2 and prepare NextPrompt-1.3.md for Task 3
+**Estimated Time**: 30-45 minutes
 ```
 
 ---
 
-## Template Usage Instructions
+## How to Use This Example
 
-### For Each New Agent Session:
+This example demonstrates the versioned prompt system:
 
-1. **Copy the template above**
-2. **Fill in all bracketed placeholders**:
-   - `[CURRENT_BRANCH_NAME]` - Current git branch
-   - `[ADDITIONAL_CONTEXT_FILES]` - Any new context files created
-   - `[LIST_COMPLETED_TASKS_WITH_NUMBERS]` - List of completed tasks
-   - `[CURRENT_PHASE_NUMBER]` and `[PHASE_NAME]` - Current phase info
-   - `[NEXT_TASK_NUMBER]` and `[TASK_NAME]` - Next task to complete
-   - `[FILE_PATH]` - Exact file path for the task
-   - `[TASK_DESCRIPTION]` - Description from specification
-   - `[DEPENDENCY_TASKS]` - Required dependencies
-   - `[ACCEPTANCE_CRITERIA_LIST]` - Acceptance criteria from specification
-   - `[TESTING_REQUIREMENTS_FOR_TASK]` - Specific testing needs
-   - `[CURRENT_DATE]` - Current date
-   - `[ESTIMATED_TIME]` - Time estimate for the task
+### 📁 File Structure After This Task:
+```
+G:/code/Sailfish/source/Sailfish.TestAdapter/Prompts/
+├── NEXT_AGENT_PROMPT_TEMPLATE.md    # Template for creating new prompts
+├── EXAMPLE_NEXT_AGENT_PROMPT.md     # This example file
+├── README.md                        # System documentation
+├── NextPrompt-1.1.md               # Task 1 prompt (completed)
+├── NextPrompt-1.2.md               # Task 2 prompt (this example)
+└── NextPrompt-1.3.md               # Task 3 prompt (created by agent)
+```
 
-3. **Review and customize** any specific instructions for the task
-4. **Use as the complete prompt** for the next AI agent
+### 🔄 Workflow Demonstration:
+1. **Agent receives**: `NextPrompt-1.2.md` (this file)
+2. **Agent completes**: Task 2
+3. **Agent creates**: `NextPrompt-1.3.md` using the template
+4. **Human points next agent to**: `NextPrompt-1.3.md`
 
-### Maintenance Notes:
-- Update this template if new patterns or requirements emerge
-- Add new sections if additional context becomes necessary
-- Keep the template focused and actionable
-- Ensure all file paths are absolute and correct
-
-**Template Version**: 1.0  
-**Created**: 2025-01-27  
-**Last Updated**: 2025-01-27
+This versioning system ensures each agent has complete context and creates a clear handoff trail.
