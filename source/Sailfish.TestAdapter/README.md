@@ -243,104 +243,150 @@ build/
 - Added comprehensive notification handling system
 - Integrated with latest Sailfish framework features
 
+### In Progress: Queue Migration 🚧
+- **Queue Message Contract**: ✅ Completed (Task 1)
+- **Intercepting Queue Architecture**: 🔄 In Progress
+- **Batch Processing System**: 📋 Planned
+- **Cross-Test-Case Analysis**: 📋 Planned
+
 > **Note for AI Agents**: This section should be updated whenever changes are made to the test adapter. Include date, description of changes, and any breaking changes or migration notes.
 
-## Future Directions
+## Queue Migration Architecture
 
-### Background Queue Architecture Proposal
+### **NEW: Intercepting Queue Architecture** 🎯
 
-#### Current Architecture
-The test adapter currently follows a synchronous execution model:
-
-```
-TestExecutor → TestAdapterExecutionProgram → TestAdapterExecutionEngine → Results → VS Test Platform
-                                                    ↓
-                                            MediatR Notifications
-                                                    ↓
-                                            Notification Handlers
-```
-
-#### Proposed Enhanced Architecture
-Introduce a background queue system for asynchronous test result processing:
+#### Current Architecture (Being Replaced)
+The test adapter currently follows a direct framework publishing model:
 
 ```
-TestExecutor → TestAdapterExecutionProgram → TestAdapterExecutionEngine → Results → VS Test Platform
-                                                    ↓                              ↓
-                                            MediatR Notifications              Background Queue
-                                                    ↓                              ↓
-                                            Notification Handlers          Queue Processors
-                                                                                  ↓
-                                                                          Post-Processing
-                                                                          (Analysis, Storage,
-                                                                           Reporting, etc.)
+TestExecutor → SailfishExecutionEngine → TestCaseCompletedNotification
+                                              ↓
+                                    TestCaseCompletedNotificationHandler
+                                              ↓
+                                    FrameworkTestCaseEndNotification
+                                              ↓
+                                    FrameworkTestCaseEndNotificationHandler
+                                              ↓
+                                        VS Test Platform
 ```
 
-#### Background Queue Components
+#### **NEW: Intercepting Queue Architecture** 🎯
+Introduce a queue system that **intercepts** framework publishing to enable batch processing and cross-test-case analysis:
 
-**Queue Infrastructure**:
-- **In-Memory Message Queue**: Lightweight in-memory queue for test completion events (using System.Threading.Channels)
-- **Queue Publisher**: Service that publishes test results to in-memory queue
-- **Queue Processors**: Background services that consume and process queued results within test adapter runtime
+```
+TestExecutor → SailfishExecutionEngine → TestCaseCompletedNotification
+                                              ↓
+                                    TestCaseCompletedNotificationHandler
+                                              ↓
+                                    TestCompletionQueueMessage → In-Memory Queue
+                                              ↓
+                                    Queue Processors (Batching, Comparison, Analysis)
+                                              ↓
+                                    Enhanced FrameworkTestCaseEndNotification(s)
+                                              ↓
+                                    FrameworkTestCaseEndNotificationHandler
+                                              ↓
+                                        VS Test Platform
+```
+
+#### **Key Architectural Changes**:
+- **NO direct framework publishing** from TestCaseCompletedNotificationHandler
+- **Queue processors are responsible** for publishing FrameworkTestCaseEndNotification
+- **Batching and cross-test-case analysis** occurs before framework reporting
+- **Enhanced results** with comparison data sent to framework
+
+#### Queue Infrastructure Components
+
+**Core Queue System**:
+- **In-Memory Message Queue**: Lightweight queue using System.Threading.Channels
+- **Test Case Batching Service**: Groups related test cases for batch processing
+- **Queue Processors**: Process batched results and publish to framework
 - **Message Contracts**: Standardized message formats for test completion data
 
+**Batch Processing**:
+- **Batch Completion Detection**: Determines when test case groups are complete
+- **Cross-Test-Case Analysis**: Compares and analyzes multiple test cases
+- **Framework Publishing Processor**: Publishes enhanced results to VS Test Platform
+- **Timeout Handling**: Processes incomplete batches after timeout
+
 **Integration Points**:
-- **MediatR Extension**: Extend existing notification handlers to publish to queue
-- **Container Integration**: Register queue services in Autofac container
+- **Modified Notification Handler**: TestCaseCompletedNotificationHandler publishes to queue instead of framework
+- **Container Integration**: Register all queue services in Autofac container
 - **Lifecycle Management**: Ensure proper queue startup/shutdown with test execution
+- **Fallback Mechanism**: Direct framework publishing if queue fails
 
-#### Proposed Implementation
+#### Implementation Status
 
-**1. Queue Message Contract**:
+**✅ Completed Components**:
+
+**1. Queue Message Contract** (Task 1):
 ```csharp
 public class TestCompletionQueueMessage
 {
     public string TestCaseId { get; set; }
-    public TestResult Result { get; set; }
+    public TestExecutionResult TestResult { get; set; }
     public DateTime CompletedAt { get; set; }
     public Dictionary<string, object> Metadata { get; set; }
-    public PerformanceData PerformanceMetrics { get; set; }
+    public PerformanceMetrics PerformanceMetrics { get; set; }
 }
 ```
 
-**2. Queue Publisher Service**:
+**🔄 In Progress Components**:
+
+**2. Queue Publisher Interface** (Task 2 - Current):
 ```csharp
 public interface ITestCompletionQueuePublisher
 {
-    Task PublishTestCompletion(TestCompletionQueueMessage message);
+    Task PublishTestCompletion(TestCompletionQueueMessage message, CancellationToken cancellationToken);
 }
 ```
 
-**3. Queue Processor Framework**:
+**📋 Planned Components**:
+
+**3. Batching Service Interface** (Task 15):
 ```csharp
-public interface ITestCompletionQueueProcessor
+public interface ITestCaseBatchingService
 {
-    Task ProcessTestCompletion(TestCompletionQueueMessage message);
+    Task AddTestCaseToBatch(TestCompletionQueueMessage message);
+    Task<bool> IsBatchComplete(string batchId);
 }
 ```
 
-#### Benefits of Background Queue Architecture
+**4. Framework Publishing Processor** (Task 17):
+```csharp
+public class FrameworkPublishingProcessor : ITestCompletionQueueProcessor
+{
+    Task ProcessTestCompletion(TestCompletionQueueMessage message, CancellationToken cancellationToken);
+}
+```
 
-**Asynchronous Processing**:
-- Test execution doesn't block on post-processing activities
-- Improved test runner performance and responsiveness
-- Parallel processing of multiple test results
+#### Benefits of Intercepting Queue Architecture
+
+**Cross-Test-Case Analysis** 🎯:
+- **Batch Processing**: Group related test cases for comparison analysis
+- **Performance Comparison**: Compare multiple test methods within a single test run
+- **Baseline Analysis**: Establish performance baselines and detect regressions
+- **Statistical Analysis**: Advanced statistical analysis across test case groups
+- **Enhanced Results**: Enrich test results with comparison data before framework reporting
+
+**Flexible Result Processing**:
+- **Batch Completion Detection**: Wait for all related tests before processing
+- **Timeout Handling**: Process incomplete batches after configurable timeouts
+- **Result Enhancement**: Add comparison rankings, performance insights, and analysis
+- **Custom Processors**: Extensible processor pipeline for custom analysis
+
+**Framework Integration**:
+- **Seamless IDE Experience**: Enhanced results appear normally in test explorers
+- **No Breaking Changes**: Maintains existing VS Test Platform contracts
+- **Fallback Support**: Direct framework publishing if queue processing fails
+- **Configurable**: Enable/disable queue processing via configuration
 
 **Extensible Post-Processing**:
 - **Historical Data Collection**: Store test results for trend analysis
-- **Performance Analysis**: Deep analysis of performance metrics
-- **Report Generation**: Automated report creation and distribution
-- **Integration Services**: Push results to external systems (databases, monitoring, etc.)
-- **Alerting**: Automated notifications for performance regressions
-
-**Scalability**:
-- Queue can handle high-volume test execution scenarios
-- Multiple processors can work in parallel
-- Configurable queue depth and processing strategies
-
-**Reliability**:
-- Persistent queues ensure no data loss
-- Retry mechanisms for failed processing
-- Dead letter queues for problematic messages
+- **Performance Analysis**: Deep analysis of performance metrics across batches
+- **Report Generation**: Automated report creation with comparison data
+- **Integration Services**: Push enhanced results to external systems
+- **Alerting**: Automated notifications for performance regressions across test groups
 
 #### Implementation Considerations
 
@@ -349,44 +395,70 @@ public interface ITestCompletionQueueProcessor
 - **Runtime Scoped**: Queue exists only during test execution - no persistence across test runs
 - **Process Bound**: All queue operations occur within the test adapter runtime
 
+**Batching Strategy**:
+- **Grouping Logic**: Group test cases by comparison attributes, test class, or custom criteria
+- **Completion Detection**: Determine when all expected test cases in a batch have been received
+- **Timeout Handling**: Process incomplete batches after configurable timeout periods
+- **Dynamic Sizing**: Support variable batch sizes based on test discovery
+
+**Framework Integration**:
+- **Intercepting Architecture**: Replace direct framework publishing with queue-first processing
+- **Enhanced Results**: Enrich test results with comparison data before framework reporting
+- **Timing Considerations**: Ensure framework receives results in reasonable time
+- **Error Handling**: Robust fallback to direct publishing if queue processing fails
+
 **Container Integration**:
-- Register queue services in `TestAdapterRegistrations`
+- Register all queue services in `TestAdapterRegistrations`
+- Include batching services and framework publishing processors
 - Manage queue lifecycle with test execution container
 - Ensure proper disposal and cleanup
 
 **Configuration**:
-- Queue settings in Sailfish run settings
+- Queue and batching settings in Sailfish run settings
 - Processor configuration and enablement
-- Performance tuning parameters
+- Timeout and batch size parameters
+- Fallback configuration options
 
 **Backward Compatibility**:
-- Queue system should be optional and configurable
-- Existing notification system remains unchanged
-- Graceful degradation if queue is unavailable
+- **CRITICAL**: Fallback to direct framework publishing if queue fails
+- Configuration flag to enable/disable queue interception
+- Maintain existing notification system for fallback scenarios
+- Graceful degradation ensures tests never hang
 
 #### Migration Path
 
-**Phase 1**: Infrastructure
-- Implement basic queue interfaces and in-memory implementation using System.Threading.Channels
-- Add queue publisher service
-- Integrate with existing MediatR notification system
+**Phase 1**: Core Infrastructure (Tasks 1-18)
+- ✅ Queue message contracts and interfaces
+- 🔄 Test case batching and grouping services
+- 📋 Framework publishing queue processor
+- 📋 In-memory queue implementation using System.Threading.Channels
 
-**Phase 2**: Processors
-- Implement in-memory queue processors
-- Add configuration system for processor enablement
-- Create sample processors for common scenarios
+**Phase 2**: Framework Integration (Tasks 19-30)
+- 📋 **CRITICAL**: Replace direct framework publishing with queue interception
+- 📋 Integrate queue services with DI container
+- 📋 Add fallback mechanisms and error handling
+- 📋 Queue lifecycle management with test execution
 
-**Phase 3**: Advanced Features
-- Implement retry and error handling for in-memory operations
-- Add monitoring and observability features
-- Memory usage optimization and capacity management
+**Phase 3**: Batch Processing (Tasks 31-42)
+- 📋 Cross-test-case comparison and analysis processors
+- 📋 Batch completion detection and timeout handling
+- 📋 Enhanced result generation with comparison data
+- 📋 Processor pipeline and registry system
 
-**Phase 4**: Production Features
-- Advanced in-memory queue capabilities
-- Performance optimization and tuning
-- Comprehensive testing and validation
+**Phase 4**: Configuration & Settings (Tasks 43-52)
+- 📋 Comprehensive configuration system for queue and batching
+- 📋 Runtime configuration updates and validation
+- 📋 Documentation and schema support
 
-This background queue architecture would significantly enhance the test adapter's capabilities while maintaining backward compatibility and leveraging the existing notification infrastructure.
+**Phase 5**: Advanced Features (Tasks 53-62)
+- 📋 Performance optimization and memory management
+- 📋 Advanced error handling and circuit breaker patterns
+- 📋 Comprehensive monitoring and observability
+- 📋 Cross-test-case analysis engine
+
+**Current Status**: Task 1 completed ✅, Task 2 in progress 🔄
+
+This intercepting queue architecture will enable powerful cross-test-case analysis and comparison capabilities while maintaining full backward compatibility with the existing VS Test Platform integration.
 
 ---
 
