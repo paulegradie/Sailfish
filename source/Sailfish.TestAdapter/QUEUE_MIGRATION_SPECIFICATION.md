@@ -2,43 +2,45 @@
 
 ## Document Overview
 
-**Purpose**: Detailed specification for migrating Sailfish Test Adapter to a queue-based architecture for asynchronous test result processing.
+**Purpose**: Detailed specification for migrating Sailfish Test Adapter to an in-memory queue-based architecture for asynchronous test result processing within the test adapter runtime.
 
 **Target Audience**: AI agents implementing the migration in small, manageable tasks.
 
-**Scope**: Complete migration from synchronous notification handling to asynchronous queue-based processing with backward compatibility.
+**Scope**: Complete migration from synchronous notification handling to asynchronous in-memory queue-based processing with backward compatibility.
+
+**Queue Architecture**: In-memory only - no database, external storage, or persistent queues required. All queue operations occur within the test adapter process lifetime.
 
 ## High-Level Migration Plan
 
 ### Phase 1: Core Infrastructure (Tasks 1-15)
 - Create queue interfaces and contracts
-- Implement basic in-memory queue
+- Implement in-memory queue using System.Threading.Channels
 - Add queue publisher service
 - Create basic queue processor framework
 
 ### Phase 2: Integration (Tasks 16-25)
 - Integrate queue publisher with existing notification handlers
 - Add queue services to DI container
-- Implement queue lifecycle management
+- Implement queue lifecycle management within test execution
 - Add basic configuration support
 
 ### Phase 3: Processors (Tasks 26-35)
-- Create sample queue processors
+- Create sample in-memory queue processors
 - Implement processor registration system
 - Add processor configuration
 - Create processor base classes and utilities
 
 ### Phase 4: Configuration & Settings (Tasks 36-45)
-- Extend run settings for queue configuration
+- Extend run settings for in-memory queue configuration
 - Add processor enablement settings
 - Implement configuration validation
 - Add runtime configuration updates
 
 ### Phase 5: Advanced Features (Tasks 46-55)
-- Add persistent queue options
-- Implement retry and error handling
+- Implement retry and error handling for in-memory operations
 - Add monitoring and observability
-- Performance optimization
+- Performance optimization for in-memory processing
+- Advanced in-memory queue features
 
 ## Current Architecture Analysis
 
@@ -111,13 +113,14 @@ TestCaseCompletedNotification
 
 #### Task 5: Create In-Memory Queue Implementation
 **File**: `G:\code\Sailfish\source\Sailfish.TestAdapter\Queue\Implementation\InMemoryTestCompletionQueue.cs`
-**Description**: Implement basic in-memory queue using System.Threading.Channels
+**Description**: Implement in-memory queue using System.Threading.Channels - this is the primary and only queue implementation needed
 **Dependencies**: Tasks 1, 4
 **Acceptance Criteria**:
-- Implement ITestCompletionQueue using Channel<T>
-- Thread-safe enqueue/dequeue operations
-- Proper disposal and cleanup
-- Basic error handling
+- Implement ITestCompletionQueue using Channel<T> from System.Threading.Channels
+- Thread-safe enqueue/dequeue operations within test adapter process
+- Proper disposal and cleanup when test execution completes
+- Basic error handling for in-memory operations
+- Queue exists only during test execution lifetime - no persistence required
 
 #### Task 6: Create Queue Publisher Implementation
 **File**: `G:\code\Sailfish\source\Sailfish.TestAdapter\Queue\Implementation\TestCompletionQueuePublisher.cs`
@@ -151,13 +154,13 @@ TestCaseCompletedNotification
 
 #### Task 9: Create Queue Configuration Model
 **File**: `G:\code\Sailfish\source\Sailfish.TestAdapter\Queue\Configuration\QueueConfiguration.cs`
-**Description**: Configuration model for queue settings
+**Description**: Configuration model for in-memory queue settings
 **Dependencies**: None
 **Acceptance Criteria**:
-- Define QueueConfiguration class with all settings
-- Include queue type, capacity, processor settings
-- Default values and validation
-- Serialization support for settings files
+- Define QueueConfiguration class for in-memory queue settings
+- Include queue capacity, processor settings, enablement flags
+- Default values optimized for in-memory operations
+- Simple configuration model - no complex persistence settings needed
 
 #### Task 10: Create Queue Factory Interface
 **File**: `G:\code\Sailfish\source\Sailfish.TestAdapter\Queue\Contracts\ITestCompletionQueueFactory.cs`
@@ -527,25 +530,25 @@ TestCaseCompletedNotification
 
 ### Phase 5: Advanced Features
 
-#### Task 46: Create Persistent Queue Implementation
-**File**: `G:\code\Sailfish\source\Sailfish.TestAdapter\Queue\Implementation\PersistentTestCompletionQueue.cs`
-**Description**: File-based persistent queue implementation
+#### Task 46: Create Queue Capacity Management
+**File**: `G:\code\Sailfish\source\Sailfish.TestAdapter\Queue\Implementation\QueueCapacityManager.cs`
+**Description**: Manage in-memory queue capacity and memory usage
 **Dependencies**: Task 4
 **Acceptance Criteria**:
-- Persist queue messages to disk
-- Survive application restarts
-- Handle file corruption and recovery
-- Configurable persistence options
+- Monitor in-memory queue size and memory usage
+- Implement queue capacity limits to prevent memory issues
+- Handle queue overflow scenarios gracefully
+- Provide queue capacity metrics and warnings
 
-#### Task 47: Add Database Queue Implementation
-**File**: `G:\code\Sailfish\source\Sailfish.TestAdapter\Queue\Implementation\DatabaseTestCompletionQueue.cs`
-**Description**: Database-backed queue implementation
-**Dependencies**: Task 4
+#### Task 47: Add Queue Memory Optimization
+**File**: `G:\code\Sailfish\source\Sailfish.TestAdapter\Queue\Optimization\MemoryOptimizer.cs`
+**Description**: Optimize memory usage for in-memory queue operations
+**Dependencies**: Task 46
 **Acceptance Criteria**:
-- Store queue messages in database
-- Support multiple database providers
-- Handle database connection failures
-- Implement proper transaction handling
+- Implement message pooling to reduce allocations
+- Optimize message serialization for in-memory storage
+- Monitor and report memory usage patterns
+- Implement garbage collection optimization hints
 
 #### Task 48: Create Retry Mechanism
 **File**: `G:\code\Sailfish\source\Sailfish.TestAdapter\Queue\ErrorHandling\RetryPolicy.cs`
@@ -587,15 +590,15 @@ TestCaseCompletedNotification
 - Memory usage optimization
 - Performance tuning recommendations
 
-#### Task 52: Create External Integration Support
-**File**: `G:\code\Sailfish\source\Sailfish.TestAdapter\Queue\Integration\ExternalQueueAdapter.cs`
-**Description**: Adapter for external message queue systems
+#### Task 52: Create Queue Integration Testing
+**File**: `G:\code\Sailfish\source\Sailfish.TestAdapter\Queue\Testing\QueueIntegrationTesting.cs`
+**Description**: Comprehensive integration testing for in-memory queue system
 **Dependencies**: Task 4
 **Acceptance Criteria**:
-- Support for RabbitMQ, Azure Service Bus, etc.
-- Configurable external queue connections
-- Message format translation
-- External queue health monitoring
+- End-to-end testing of queue with test execution
+- Integration testing with notification system
+- Performance testing under various load conditions
+- Memory usage validation during extended test runs
 
 #### Task 53: Add Security Features
 **File**: `G:\code\Sailfish\source\Sailfish.TestAdapter\Queue\Security\QueueSecurity.cs`

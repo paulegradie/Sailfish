@@ -278,9 +278,9 @@ TestExecutor → TestAdapterExecutionProgram → TestAdapterExecutionEngine → 
 #### Background Queue Components
 
 **Queue Infrastructure**:
-- **Message Queue**: In-memory or persistent queue for test completion events
-- **Queue Publisher**: Service that publishes test results to queue
-- **Queue Processors**: Background services that consume and process queued results
+- **In-Memory Message Queue**: Lightweight in-memory queue for test completion events (using System.Threading.Channels)
+- **Queue Publisher**: Service that publishes test results to in-memory queue
+- **Queue Processors**: Background services that consume and process queued results within test adapter runtime
 - **Message Contracts**: Standardized message formats for test completion data
 
 **Integration Points**:
@@ -344,10 +344,10 @@ public interface ITestCompletionQueueProcessor
 
 #### Implementation Considerations
 
-**Queue Technology Options**:
-- **In-Memory**: Simple implementation using `System.Threading.Channels`
-- **Persistent**: File-based or database-backed queues
-- **External**: Integration with message brokers (RabbitMQ, Azure Service Bus, etc.)
+**Queue Technology**:
+- **In-Memory Only**: Implementation using `System.Threading.Channels` within test adapter process
+- **Runtime Scoped**: Queue exists only during test execution - no persistence across test runs
+- **Process Bound**: All queue operations occur within the test adapter runtime
 
 **Container Integration**:
 - Register queue services in `TestAdapterRegistrations`
@@ -367,24 +367,24 @@ public interface ITestCompletionQueueProcessor
 #### Migration Path
 
 **Phase 1**: Infrastructure
-- Implement basic queue interfaces and in-memory implementation
+- Implement basic queue interfaces and in-memory implementation using System.Threading.Channels
 - Add queue publisher service
 - Integrate with existing MediatR notification system
 
 **Phase 2**: Processors
-- Implement basic queue processors
+- Implement in-memory queue processors
 - Add configuration system for processor enablement
 - Create sample processors for common scenarios
 
 **Phase 3**: Advanced Features
-- Add persistent queue options
-- Implement retry and error handling
+- Implement retry and error handling for in-memory operations
 - Add monitoring and observability features
+- Memory usage optimization and capacity management
 
-**Phase 4**: External Integration
-- Support for external message brokers
-- Advanced processor capabilities
+**Phase 4**: Production Features
+- Advanced in-memory queue capabilities
 - Performance optimization and tuning
+- Comprehensive testing and validation
 
 This background queue architecture would significantly enhance the test adapter's capabilities while maintaining backward compatibility and leveraging the existing notification infrastructure.
 
