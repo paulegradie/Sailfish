@@ -12,35 +12,41 @@
 
 ## High-Level Migration Plan
 
-### Phase 1: Core Infrastructure (Tasks 1-15)
+### Phase 1: Core Infrastructure (Tasks 1-18)
 - Create queue interfaces and contracts
 - Implement in-memory queue using System.Threading.Channels
 - Add queue publisher service
 - Create basic queue processor framework
+- Implement test case batching and grouping logic
 
-### Phase 2: Integration (Tasks 16-25)
+### Phase 2: Framework Integration (Tasks 19-30)
+- **CRITICAL**: Replace direct framework publishing with queue-first architecture
 - Integrate queue publisher with existing notification handlers
 - Add queue services to DI container
 - Implement queue lifecycle management within test execution
+- Create framework publishing queue processors
 - Add basic configuration support
 
-### Phase 3: Processors (Tasks 26-35)
-- Create sample in-memory queue processors
-- Implement processor registration system
+### Phase 3: Batch Processing (Tasks 31-42)
+- Create test case comparison and analysis processors
+- Implement batch completion detection
+- Add timeout handling for incomplete batches
+- Create processor registration system
 - Add processor configuration
-- Create processor base classes and utilities
 
-### Phase 4: Configuration & Settings (Tasks 36-45)
+### Phase 4: Configuration & Settings (Tasks 43-52)
 - Extend run settings for in-memory queue configuration
 - Add processor enablement settings
 - Implement configuration validation
 - Add runtime configuration updates
+- Add fallback and backward compatibility settings
 
-### Phase 5: Advanced Features (Tasks 46-55)
+### Phase 5: Advanced Features (Tasks 53-62)
 - Implement retry and error handling for in-memory operations
 - Add monitoring and observability
 - Performance optimization for in-memory processing
 - Advanced in-memory queue features
+- Cross-test-case analysis capabilities
 
 ## Current Architecture Analysis
 
@@ -53,19 +59,30 @@ FrameworkTestCaseEndNotification
 VS Test Platform (ITestFrameworkWriter)
 ```
 
-### Target Architecture
+### Target Architecture (INTERCEPTING QUEUE)
 ```
-TestCaseCompletedNotification 
+TestCaseCompletedNotification
     ↓ (TestCaseCompletedNotificationHandler)
-    ├── FrameworkTestCaseEndNotification → VS Test Platform
-    └── TestCompletionQueueMessage → Background Queue → Processors
+    ↓ TestCompletionQueueMessage → In-Memory Queue
+    ↓ Queue Processors (Batching, Comparison, Analysis)
+    ↓ Enhanced FrameworkTestCaseEndNotification(s)
+    ↓ (FrameworkTestCaseEndNotificationHandler)
+    ↓ VS Test Platform (ITestFrameworkWriter)
 ```
 
+**Key Architectural Changes:**
+- **NO direct framework publishing** from TestCaseCompletedNotificationHandler
+- **Queue processors are responsible** for publishing FrameworkTestCaseEndNotification
+- **Batching and cross-test-case analysis** occurs before framework reporting
+- **Enhanced results** with comparison data sent to framework
+
 ### Integration Points
-- **Primary**: `TestCaseCompletedNotificationHandler.Handle()` method
-- **Secondary**: `FrameworkTestCaseEndNotificationHandler.Handle()` method  
+- **Primary**: `TestCaseCompletedNotificationHandler.Handle()` method - **MODIFIED** to publish to queue instead of framework
+- **Queue Processors**: New components responsible for framework publishing
+- **Batching Service**: New component for grouping related test cases
 - **DI Container**: `TestAdapterRegistrations.Load()` method
-- **Configuration**: Sailfish run settings system
+- **Configuration**: Sailfish run settings system with queue and batching settings
+- **Fallback**: Backward compatibility for direct framework publishing
 
 ## Detailed Task Breakdown
 
@@ -212,325 +229,439 @@ TestCaseCompletedNotification
 - Utility methods for queue monitoring
 - Proper error handling
 
-#### Task 15: Create Queue Unit Tests
+#### Task 15: Create Test Case Batching Interface
+**File**: `G:\code\Sailfish\source\Sailfish.TestAdapter\Queue\Contracts\ITestCaseBatchingService.cs`
+**Description**: Interface for grouping and batching related test cases
+**Dependencies**: Task 1
+**Acceptance Criteria**:
+- Define ITestCaseBatchingService interface
+- Include methods for adding test cases to batches
+- Support for batch completion detection
+- Include timeout and batch size configuration
+- XML documentation for all methods
+
+#### Task 16: Create Test Case Batching Implementation
+**File**: `G:\code\Sailfish\source\Sailfish.TestAdapter\Queue\Implementation\TestCaseBatchingService.cs`
+**Description**: Implementation of test case batching and grouping logic
+**Dependencies**: Task 15
+**Acceptance Criteria**:
+- Implement ITestCaseBatchingService
+- Group test cases by comparison attributes, test class, or custom criteria
+- Detect when batches are complete (all expected tests received)
+- Handle timeout scenarios for incomplete batches
+- Thread-safe batch management
+- Configurable batching strategies
+
+#### Task 17: Create Framework Publishing Queue Processor
+**File**: `G:\code\Sailfish\source\Sailfish.TestAdapter\Queue\Processors\FrameworkPublishingProcessor.cs`
+**Description**: Queue processor responsible for publishing results to VS Test Platform
+**Dependencies**: Tasks 7, 16
+**Acceptance Criteria**:
+- Extends TestCompletionQueueProcessorBase
+- Inject IMediator for publishing FrameworkTestCaseEndNotification
+- Handle both individual and batch test results
+- Maintain original framework contract and timing
+- Proper error handling and fallback mechanisms
+- Support for enhanced test results with comparison data
+
+#### Task 18: Create Queue Unit Tests
 **File**: `G:\code\Sailfish\source\Tests.TestAdapter\Queue\QueueInfrastructureTests.cs`
-**Description**: Unit tests for core queue infrastructure
-**Dependencies**: Tasks 1-14
+**Description**: Unit tests for core queue infrastructure including batching
+**Dependencies**: Tasks 1-17
 **Acceptance Criteria**:
 - Test all queue interfaces and implementations
 - Test message publishing and processing
+- Test batching and grouping logic
+- Test framework publishing processor
 - Test error scenarios and edge cases
 - Achieve >90% code coverage for queue components
 
-### Phase 2: Integration
+### Phase 2: Framework Integration
 
-#### Task 16: Add Queue Services to DI Container
+#### Task 19: Add Queue Services to DI Container
 **File**: `G:\code\Sailfish\source\Sailfish.TestAdapter\Registrations\TestAdapterRegistrations.cs`
 **Description**: Register queue services in Autofac container
-**Dependencies**: Tasks 1-15
+**Dependencies**: Tasks 1-18
 **Acceptance Criteria**:
 - Register all queue interfaces and implementations
+- Register batching service and framework publishing processor
 - Proper service lifetimes (singleton, transient, etc.)
 - Conditional registration based on configuration
 - Update existing Load method
 
-#### Task 17: Integrate Queue Publisher in TestCaseCompletedNotificationHandler
+#### Task 20: **CRITICAL** - Replace Framework Publishing with Queue Publishing
 **File**: `G:\code\Sailfish\source\Sailfish.TestAdapter\Handlers\TestCaseEvents\TestCaseCompletedNotificationHandler.cs`
-**Description**: Add queue publishing to existing notification handler
-**Dependencies**: Tasks 2, 16
+**Description**: **REMOVE** direct framework publishing and replace with queue publishing
+**Dependencies**: Tasks 2, 19
 **Acceptance Criteria**:
-- Inject ITestCompletionQueuePublisher
-- Publish queue message after processing test completion
-- Maintain existing functionality unchanged
-- Proper error handling for queue failures
+- **REMOVE** all direct FrameworkTestCaseEndNotification publishing
+- **REPLACE** with TestCompletionQueueMessage publishing to queue
+- Inject ITestCompletionQueuePublisher and ITestCaseBatchingService
+- Add test case to appropriate batch before queue publishing
+- **ENSURE** no test results reach framework until queue processing completes
+- Robust error handling with fallback to direct publishing if queue fails
+- Configuration flag to enable/disable queue interception
 
-#### Task 18: Create Message Mapping Service
+#### Task 21: Create Message Mapping Service
 **File**: `G:\code\Sailfish\source\Sailfish.TestAdapter\Queue\Mapping\TestCompletionMessageMapper.cs`
-**Description**: Service to map notification data to queue messages
-**Dependencies**: Tasks 1, 17
+**Description**: Service to map notification data to queue messages with batching metadata
+**Dependencies**: Tasks 1, 20
 **Acceptance Criteria**:
 - Map TestCaseCompletedNotification to TestCompletionQueueMessage
 - Extract all relevant performance and result data
+- Include batching and grouping metadata (comparison groups, test class info)
 - Handle null values and edge cases
-- Include proper metadata mapping
+- Include proper metadata mapping for cross-test-case analysis
 
-#### Task 19: Add Queue Lifecycle to TestExecutor
+#### Task 22: Add Queue Lifecycle to TestExecutor
 **File**: `G:\code\Sailfish\source\Sailfish.TestAdapter\TestExecutor.cs`
 **Description**: Integrate queue lifecycle with test execution
-**Dependencies**: Tasks 12, 16
+**Dependencies**: Tasks 12, 19
 **Acceptance Criteria**:
-- Start queue manager during test execution setup
-- Stop queue manager during cleanup
+- Start queue manager and batching service during test execution setup
+- Stop queue manager during cleanup with proper batch completion handling
+- Ensure all pending batches are processed before test execution completes
 - Proper error handling for queue startup failures
 - Maintain existing test execution flow
+- Add timeout handling for batch completion
 
-#### Task 20: Create Queue Health Check
+#### Task 23: Create Batch Timeout Handler
+**File**: `G:\code\Sailfish\source\Sailfish.TestAdapter\Queue\Implementation\BatchTimeoutHandler.cs`
+**Description**: Handle timeout scenarios for incomplete test case batches
+**Dependencies**: Task 16
+**Acceptance Criteria**:
+- Monitor batch completion timeouts
+- Process incomplete batches when timeout expires
+- Publish framework notifications for timed-out batches
+- Configurable timeout values per batch type
+- Proper logging and error reporting for timeout scenarios
+
+#### Task 24: Create Queue Health Check
 **File**: `G:\code\Sailfish\source\Sailfish.TestAdapter\Queue\Monitoring\QueueHealthCheck.cs`
 **Description**: Health check service for queue status monitoring
 **Dependencies**: Task 12
 **Acceptance Criteria**:
 - Check queue operational status
 - Monitor queue depth and processing rates
+- Monitor batch completion rates and timeouts
 - Detect queue failures and errors
 - Provide health status reporting
 
-#### Task 21: Add Queue Metrics Collection
+#### Task 25: Add Queue Metrics Collection
 **File**: `G:\code\Sailfish\source\Sailfish.TestAdapter\Queue\Monitoring\QueueMetrics.cs`
 **Description**: Collect and track queue performance metrics
-**Dependencies**: Tasks 4, 20
+**Dependencies**: Tasks 4, 24
 **Acceptance Criteria**:
 - Track messages published, processed, failed
 - Monitor queue depth over time
+- Track batch completion rates and timeout statistics
 - Calculate processing rates and latencies
 - Expose metrics for monitoring
 
-#### Task 22: Create Queue Configuration Loader
+#### Task 26: Create Queue Configuration Loader
 **File**: `G:\code\Sailfish\source\Sailfish.TestAdapter\Queue\Configuration\QueueConfigurationLoader.cs`
 **Description**: Load queue configuration from run settings
 **Dependencies**: Task 9
 **Acceptance Criteria**:
 - Load configuration from Sailfish run settings
+- Include batching and timeout configuration
 - Apply default values for missing settings
 - Validate configuration values
 - Support runtime configuration updates
 
-#### Task 23: Add Queue Error Handling
+#### Task 27: Add Queue Error Handling
 **File**: `G:\code\Sailfish\source\Sailfish.TestAdapter\Queue\ErrorHandling\QueueErrorHandler.cs`
 **Description**: Centralized error handling for queue operations
 **Dependencies**: Tasks 4, 8
 **Acceptance Criteria**:
 - Handle queue publishing failures
 - Handle processor execution errors
+- Handle batch timeout and completion errors
 - Implement retry logic with backoff
+- Fallback to direct framework publishing on critical failures
 - Log errors appropriately
 
-#### Task 24: Create Queue Integration Tests
+#### Task 28: Create Fallback Framework Publisher
+**File**: `G:\code\Sailfish\source\Sailfish.TestAdapter\Queue\Fallback\FallbackFrameworkPublisher.cs`
+**Description**: Fallback mechanism for direct framework publishing when queue fails
+**Dependencies**: Tasks 20, 27
+**Acceptance Criteria**:
+- Direct framework publishing bypass for queue failures
+- Maintain original TestCaseCompletedNotificationHandler behavior
+- Configuration-driven fallback activation
+- Proper logging of fallback usage
+- Ensure test results are never lost
+
+#### Task 29: Create Queue Integration Tests
 **File**: `G:\code\Sailfish\source\Tests.TestAdapter\Queue\QueueIntegrationTests.cs`
 **Description**: Integration tests for queue system with test adapter
-**Dependencies**: Tasks 16-23
+**Dependencies**: Tasks 19-28
 **Acceptance Criteria**:
-- Test end-to-end queue integration
+- Test end-to-end queue integration with batching
 - Test with actual test execution scenarios
-- Verify message flow from notification to processing
+- Verify message flow from notification to framework publishing
+- Test batch completion and timeout scenarios
+- Test fallback mechanisms
 - Test error scenarios and recovery
 
-#### Task 25: Update TestAdapter Documentation
+#### Task 30: Update TestAdapter Documentation
 **File**: `G:\code\Sailfish\source\Sailfish.TestAdapter\README.md`
 **Description**: Update README with queue architecture information
-**Dependencies**: Tasks 16-24
+**Dependencies**: Tasks 19-29
 **Acceptance Criteria**:
-- Add queue architecture section
+- Add intercepting queue architecture section
 - Update component diagrams
+- Document batching and comparison capabilities
 - Document configuration options
 - Update current state tracking section
 
-### Phase 3: Processors
+### Phase 3: Batch Processing
 
-#### Task 26: Create Performance Analysis Processor
-**File**: `G:\code\Sailfish\source\Sailfish.TestAdapter\Queue\Processors\PerformanceAnalysisProcessor.cs`
-**Description**: Processor for deep performance analysis of test results
-**Dependencies**: Task 7
+#### Task 31: Create Test Case Comparison Processor
+**File**: `G:\code\Sailfish\source\Sailfish.TestAdapter\Queue\Processors\TestCaseComparisonProcessor.cs`
+**Description**: Processor for comparing multiple test cases within a batch
+**Dependencies**: Tasks 16, 17
 **Acceptance Criteria**:
-- Analyze performance trends and patterns
-- Detect performance regressions
-- Generate performance insights
-- Store analysis results
+- Receive batched test completion messages
+- Perform cross-test-case performance comparisons
+- Generate comparison results and rankings
+- Enhance test results with comparison data
+- Publish enhanced FrameworkTestCaseEndNotification messages
+- Handle comparison groups and baseline methods
 
-#### Task 27: Create Historical Data Processor
+#### Task 32: Create Performance Analysis Processor
+**File**: `G:\code\Sailfish\source\Sailfish.TestAdapter\Queue\Processors\PerformanceAnalysisProcessor.cs`
+**Description**: Processor for deep performance analysis of batched test results
+**Dependencies**: Task 17
+**Acceptance Criteria**:
+- Analyze performance trends and patterns across test batches
+- Detect performance regressions within comparison groups
+- Generate performance insights and recommendations
+- Enhance test results with analysis data
+- Support statistical analysis across multiple test runs
+
+#### Task 33: Create Batch Completion Detector
+**File**: `G:\code\Sailfish\source\Sailfish.TestAdapter\Queue\Implementation\BatchCompletionDetector.cs`
+**Description**: Service to detect when test case batches are complete and ready for processing
+**Dependencies**: Task 16
+**Acceptance Criteria**:
+- Monitor incoming test cases and group them into batches
+- Detect when all expected test cases in a batch have been received
+- Support multiple batch completion strategies (count-based, time-based, attribute-based)
+- Handle dynamic batch sizing based on test discovery
+- Trigger batch processing when completion is detected
+- Integration with timeout handling for incomplete batches
+
+#### Task 34: Create Historical Data Processor
 **File**: `G:\code\Sailfish\source\Sailfish.TestAdapter\Queue\Processors\HistoricalDataProcessor.cs`
 **Description**: Processor for storing test results in historical database
-**Dependencies**: Task 7
+**Dependencies**: Task 17
 **Acceptance Criteria**:
-- Store test results for trend analysis
-- Maintain historical performance data
+- Store batched test results for trend analysis
+- Maintain historical performance data with comparison context
 - Support data retention policies
 - Handle storage failures gracefully
+- Include batch and comparison metadata in stored data
 
-#### Task 28: Create Report Generation Processor
+#### Task 35: Create Report Generation Processor
 **File**: `G:\code\Sailfish\source\Sailfish.TestAdapter\Queue\Processors\ReportGenerationProcessor.cs`
-**Description**: Processor for generating automated test reports
-**Dependencies**: Task 7
+**Description**: Processor for generating automated test reports from batched results
+**Dependencies**: Task 17
 **Acceptance Criteria**:
-- Generate HTML/PDF test reports
-- Include performance charts and graphs
+- Generate HTML/PDF test reports with comparison data
+- Include performance charts and graphs for batch comparisons
 - Support custom report templates
 - Handle report delivery (email, file system, etc.)
+- Include cross-test-case analysis in reports
 
-#### Task 29: Create Alerting Processor
+#### Task 36: Create Alerting Processor
 **File**: `G:\code\Sailfish\source\Sailfish.TestAdapter\Queue\Processors\AlertingProcessor.cs`
 **Description**: Processor for sending alerts on test failures or performance issues
-**Dependencies**: Task 7
+**Dependencies**: Task 17
 **Acceptance Criteria**:
-- Detect failure patterns and thresholds
+- Detect failure patterns and thresholds across test batches
 - Send notifications via multiple channels
 - Support alert suppression and escalation
-- Configurable alert rules
+- Configurable alert rules based on batch analysis
 
-#### Task 30: Create Processor Registry
+#### Task 37: Create Processor Registry
 **File**: `G:\code\Sailfish\source\Sailfish.TestAdapter\Queue\Processors\ProcessorRegistry.cs`
 **Description**: Registry for managing available queue processors
-**Dependencies**: Tasks 26-29
+**Dependencies**: Tasks 31-36
 **Acceptance Criteria**:
 - Register and discover available processors
 - Support processor metadata and capabilities
 - Enable/disable processors at runtime
 - Validate processor dependencies
+- Support processor ordering for batch processing pipeline
 
-#### Task 31: Create Processor Configuration
+#### Task 38: Create Processor Configuration
 **File**: `G:\code\Sailfish\source\Sailfish.TestAdapter\Queue\Configuration\ProcessorConfiguration.cs`
 **Description**: Configuration model for individual processors
-**Dependencies**: Task 30
+**Dependencies**: Task 37
 **Acceptance Criteria**:
 - Define processor-specific settings
 - Support processor enablement flags
-- Include processor priority and ordering
+- Include processor priority and ordering for batch processing
 - Validation for processor configurations
+- Configuration for batch processing parameters
 
-#### Task 32: Create Processor Factory
+#### Task 39: Create Processor Factory
 **File**: `G:\code\Sailfish\source\Sailfish.TestAdapter\Queue\Processors\ProcessorFactory.cs`
 **Description**: Factory for creating and configuring processor instances
-**Dependencies**: Tasks 30, 31
+**Dependencies**: Tasks 37, 38
 **Acceptance Criteria**:
 - Create processor instances based on configuration
-- Inject processor dependencies
+- Inject processor dependencies including batching services
 - Handle processor initialization
 - Support processor lifecycle management
 
-#### Task 33: Add Processor Pipeline
+#### Task 40: Add Processor Pipeline
 **File**: `G:\code\Sailfish\source\Sailfish.TestAdapter\Queue\Implementation\ProcessorPipeline.cs`
-**Description**: Pipeline for executing multiple processors in sequence
-**Dependencies**: Tasks 30, 32
+**Description**: Pipeline for executing multiple processors in sequence on batched results
+**Dependencies**: Tasks 37, 39
 **Acceptance Criteria**:
-- Execute processors in configured order
+- Execute processors in configured order on completed batches
 - Handle processor failures without stopping pipeline
-- Support conditional processor execution
+- Support conditional processor execution based on batch content
 - Collect and aggregate processor results
+- Ensure framework publishing processor runs last
+- Handle batch-specific processing requirements
 
-#### Task 34: Create Processor Monitoring
+#### Task 41: Create Processor Monitoring
 **File**: `G:\code\Sailfish\source\Sailfish.TestAdapter\Queue\Monitoring\ProcessorMonitoring.cs`
 **Description**: Monitoring and metrics for processor execution
-**Dependencies**: Task 33
+**Dependencies**: Task 40
 **Acceptance Criteria**:
-- Track processor execution times
+- Track processor execution times for batch processing
 - Monitor processor success/failure rates
 - Detect slow or failing processors
 - Provide processor performance insights
+- Monitor batch processing throughput
 
-#### Task 35: Create Processor Tests
+#### Task 42: Create Processor Tests
 **File**: `G:\code\Sailfish\source\Tests.TestAdapter\Queue\ProcessorTests.cs`
-**Description**: Unit tests for all processor components
-**Dependencies**: Tasks 26-34
+**Description**: Unit tests for all processor components including batch processing
+**Dependencies**: Tasks 31-41
 **Acceptance Criteria**:
-- Test all processor implementations
+- Test all processor implementations including comparison and analysis processors
 - Test processor registry and factory
-- Test processor pipeline execution
+- Test processor pipeline execution with batching
+- Test batch completion detection and timeout handling
 - Test processor error scenarios
 
 ### Phase 4: Configuration & Settings
 
-#### Task 36: Extend Run Settings Model
+#### Task 43: Extend Run Settings Model
 **File**: `G:\code\Sailfish\source\Sailfish.TestAdapter\Queue\Configuration\QueueRunSettings.cs`
-**Description**: Extend Sailfish run settings to include queue configuration
-**Dependencies**: Tasks 9, 31
+**Description**: Extend Sailfish run settings to include queue and batching configuration
+**Dependencies**: Tasks 9, 38
 **Acceptance Criteria**:
 - Add queue settings to run settings model
+- Include batching and timeout configurations
 - Include processor configurations
 - Support queue enablement flags
+- Add fallback configuration options
 - Maintain backward compatibility
 
-#### Task 37: Create Settings Validation
+#### Task 44: Create Settings Validation
 **File**: `G:\code\Sailfish\source\Sailfish.TestAdapter\Queue\Configuration\QueueSettingsValidator.cs`
 **Description**: Validation service for queue configuration settings
-**Dependencies**: Task 36
+**Dependencies**: Task 43
 **Acceptance Criteria**:
 - Validate queue configuration values
 - Check processor configuration consistency
+- Validate batching and timeout settings
 - Provide clear validation error messages
 - Support configuration warnings
 
-#### Task 38: Add Configuration File Support
+#### Task 45: Add Configuration File Support
 **File**: `G:\code\Sailfish\source\Sailfish.TestAdapter\Queue\Configuration\QueueConfigurationFile.cs`
 **Description**: Support for external queue configuration files
-**Dependencies**: Tasks 36, 37
+**Dependencies**: Tasks 43, 44
 **Acceptance Criteria**:
 - Load configuration from JSON/XML files
 - Support configuration file discovery
 - Merge file and run settings configuration
 - Handle configuration file errors
+- Include batching and processor configuration
 
-#### Task 39: Create Configuration Builder
+#### Task 46: Create Configuration Builder
 **File**: `G:\code\Sailfish\source\Sailfish.TestAdapter\Queue\Configuration\QueueConfigurationBuilder.cs`
 **Description**: Fluent builder for queue configuration
-**Dependencies**: Task 38
+**Dependencies**: Task 45
 **Acceptance Criteria**:
 - Fluent API for building queue configuration
 - Support for programmatic configuration
 - Configuration validation during build
 - Default configuration templates
+- Support for batching and processor configuration
 
-#### Task 40: Add Runtime Configuration Updates
+#### Task 47: Add Runtime Configuration Updates
 **File**: `G:\code\Sailfish\source\Sailfish.TestAdapter\Queue\Configuration\RuntimeConfigurationManager.cs`
 **Description**: Support for updating queue configuration at runtime
-**Dependencies**: Task 39
+**Dependencies**: Task 46
 **Acceptance Criteria**:
 - Update queue settings without restart
 - Notify components of configuration changes
 - Validate configuration changes
 - Rollback invalid configurations
+- Handle batching configuration updates
 
-#### Task 41: Create Configuration Documentation
+#### Task 48: Create Configuration Documentation
 **File**: `G:\code\Sailfish\source\Sailfish.TestAdapter\Queue\Configuration\README.md`
 **Description**: Documentation for queue configuration options
-**Dependencies**: Tasks 36-40
+**Dependencies**: Tasks 43-47
 **Acceptance Criteria**:
-- Document all configuration options
-- Provide configuration examples
-- Include troubleshooting guide
+- Document all configuration options including batching
+- Provide configuration examples for different scenarios
+- Include troubleshooting guide for queue and batching issues
 - Document configuration best practices
+- Include fallback configuration guidance
 
-#### Task 42: Add Configuration Schema
+#### Task 49: Add Configuration Schema
 **File**: `G:\code\Sailfish\source\Sailfish.TestAdapter\Queue\Configuration\queue-config.schema.json`
 **Description**: JSON schema for queue configuration validation
-**Dependencies**: Task 41
+**Dependencies**: Task 48
 **Acceptance Criteria**:
-- Complete JSON schema for all settings
+- Complete JSON schema for all settings including batching
 - Support for IDE intellisense
 - Schema validation in configuration loader
 - Schema versioning support
 
-#### Task 43: Create Configuration Tests
+#### Task 50: Create Configuration Tests
 **File**: `G:\code\Sailfish\source\Tests.TestAdapter\Queue\ConfigurationTests.cs`
 **Description**: Unit tests for configuration components
-**Dependencies**: Tasks 36-42
+**Dependencies**: Tasks 43-49
 **Acceptance Criteria**:
-- Test configuration loading and validation
+- Test configuration loading and validation including batching settings
 - Test configuration file parsing
 - Test runtime configuration updates
 - Test configuration error scenarios
 
-#### Task 44: Add Configuration Migration
+#### Task 51: Add Configuration Migration
 **File**: `G:\code\Sailfish\source\Sailfish.TestAdapter\Queue\Configuration\ConfigurationMigration.cs`
 **Description**: Migration support for configuration format changes
-**Dependencies**: Task 43
+**Dependencies**: Task 50
 **Acceptance Criteria**:
 - Migrate old configuration formats
 - Support multiple configuration versions
 - Provide migration warnings and guidance
 - Maintain backward compatibility
 
-#### Task 45: Create Configuration UI Support
+#### Task 52: Create Configuration UI Support
 **File**: `G:\code\Sailfish\source\Sailfish.TestAdapter\Queue\Configuration\ConfigurationUIModel.cs`
 **Description**: Model for potential configuration UI integration
-**Dependencies**: Task 44
+**Dependencies**: Task 51
 **Acceptance Criteria**:
 - UI-friendly configuration model
-- Support for configuration categories
+- Support for configuration categories including batching
 - Validation for UI inputs
 - Configuration export/import support
 
 ### Phase 5: Advanced Features
 
-#### Task 46: Create Queue Capacity Management
+#### Task 53: Create Queue Capacity Management
 **File**: `G:\code\Sailfish\source\Sailfish.TestAdapter\Queue\Implementation\QueueCapacityManager.cs`
 **Description**: Manage in-memory queue capacity and memory usage
 **Dependencies**: Task 4
@@ -539,96 +670,103 @@ TestCaseCompletedNotification
 - Implement queue capacity limits to prevent memory issues
 - Handle queue overflow scenarios gracefully
 - Provide queue capacity metrics and warnings
+- Consider batch sizes in capacity calculations
 
-#### Task 47: Add Queue Memory Optimization
+#### Task 54: Add Queue Memory Optimization
 **File**: `G:\code\Sailfish\source\Sailfish.TestAdapter\Queue\Optimization\MemoryOptimizer.cs`
 **Description**: Optimize memory usage for in-memory queue operations
-**Dependencies**: Task 46
+**Dependencies**: Task 53
 **Acceptance Criteria**:
 - Implement message pooling to reduce allocations
 - Optimize message serialization for in-memory storage
 - Monitor and report memory usage patterns
 - Implement garbage collection optimization hints
+- Optimize batch storage and processing memory usage
 
-#### Task 48: Create Retry Mechanism
+#### Task 55: Create Retry Mechanism
 **File**: `G:\code\Sailfish\source\Sailfish.TestAdapter\Queue\ErrorHandling\RetryPolicy.cs`
 **Description**: Configurable retry mechanism for failed operations
-**Dependencies**: Task 23
+**Dependencies**: Task 27
 **Acceptance Criteria**:
 - Exponential backoff retry strategy
 - Configurable retry limits and delays
 - Dead letter queue for failed messages
 - Retry metrics and monitoring
+- Batch processing retry strategies
 
-#### Task 49: Add Circuit Breaker Pattern
+#### Task 56: Add Circuit Breaker Pattern
 **File**: `G:\code\Sailfish\source\Sailfish.TestAdapter\Queue\ErrorHandling\CircuitBreaker.cs`
 **Description**: Circuit breaker for queue operations
-**Dependencies**: Task 48
+**Dependencies**: Task 55
 **Acceptance Criteria**:
 - Prevent cascade failures
 - Configurable failure thresholds
 - Automatic recovery detection
 - Circuit breaker state monitoring
+- Integration with batch processing failures
 
-#### Task 50: Create Queue Observability
+#### Task 57: Create Queue Observability
 **File**: `G:\code\Sailfish\source\Sailfish.TestAdapter\Queue\Monitoring\QueueObservability.cs`
 **Description**: Comprehensive observability for queue operations
-**Dependencies**: Tasks 21, 34
+**Dependencies**: Tasks 25, 41
 **Acceptance Criteria**:
 - Structured logging with correlation IDs
 - Distributed tracing support
 - Custom metrics and counters
 - Integration with monitoring systems
+- Batch processing observability
 
-#### Task 51: Add Performance Optimization
+#### Task 58: Add Performance Optimization
 **File**: `G:\code\Sailfish\source\Sailfish.TestAdapter\Queue\Optimization\QueueOptimizer.cs`
 **Description**: Performance optimization for queue operations
-**Dependencies**: Task 50
+**Dependencies**: Task 57
 **Acceptance Criteria**:
-- Batch processing capabilities
-- Dynamic queue sizing
-- Memory usage optimization
+- Batch processing optimization
+- Dynamic queue sizing based on batch requirements
+- Memory usage optimization for large batches
 - Performance tuning recommendations
 
-#### Task 52: Create Queue Integration Testing
+#### Task 59: Create Cross-Test-Case Analysis Engine
+**File**: `G:\code\Sailfish\source\Sailfish.TestAdapter\Queue\Analysis\CrossTestCaseAnalyzer.cs`
+**Description**: Advanced analysis engine for comparing and analyzing multiple test cases
+**Dependencies**: Task 31
+**Acceptance Criteria**:
+- Statistical analysis across test case batches
+- Performance trend detection and regression analysis
+- Baseline comparison and ranking algorithms
+- Anomaly detection in test results
+- Generate insights and recommendations for test optimization
+
+#### Task 60: Create Queue Integration Testing
 **File**: `G:\code\Sailfish\source\Sailfish.TestAdapter\Queue\Testing\QueueIntegrationTesting.cs`
-**Description**: Comprehensive integration testing for in-memory queue system
+**Description**: Comprehensive integration testing for in-memory queue system with batching
 **Dependencies**: Task 4
 **Acceptance Criteria**:
-- End-to-end testing of queue with test execution
+- End-to-end testing of queue with test execution and batching
 - Integration testing with notification system
 - Performance testing under various load conditions
 - Memory usage validation during extended test runs
+- Batch completion and timeout testing
 
-#### Task 53: Add Security Features
+#### Task 61: Add Security Features
 **File**: `G:\code\Sailfish\source\Sailfish.TestAdapter\Queue\Security\QueueSecurity.cs`
 **Description**: Security features for queue operations
-**Dependencies**: Task 52
+**Dependencies**: Task 60
 **Acceptance Criteria**:
 - Message encryption at rest and in transit
 - Access control and authentication
 - Audit logging for queue operations
 - Secure configuration management
 
-#### Task 54: Create Load Testing Support
+#### Task 62: Create Load Testing Support
 **File**: `G:\code\Sailfish\source\Sailfish.TestAdapter\Queue\Testing\QueueLoadTesting.cs`
-**Description**: Load testing utilities for queue performance
-**Dependencies**: Task 51
+**Description**: Load testing utilities for queue performance with batching
+**Dependencies**: Task 58
 **Acceptance Criteria**:
-- Generate high-volume test messages
-- Measure queue performance under load
-- Identify performance bottlenecks
+- Generate high-volume test messages with batch scenarios
+- Measure queue performance under load with batching
+- Identify performance bottlenecks in batch processing
 - Load testing reports and analysis
-
-#### Task 55: Add Enterprise Features
-**File**: `G:\code\Sailfish\source\Sailfish.TestAdapter\Queue\Enterprise\EnterpriseQueueFeatures.cs`
-**Description**: Enterprise-grade features for production use
-**Dependencies**: Tasks 46-54
-**Acceptance Criteria**:
-- High availability and clustering
-- Backup and disaster recovery
-- Multi-tenant support
-- Enterprise monitoring integration
 
 ## Implementation Guidelines
 
@@ -713,8 +851,11 @@ TestCaseCompletedNotification
 
 ---
 
-**Document Version**: 1.0
+**Document Version**: 2.0 - Updated for Intercepting Queue Architecture
 **Created**: 2025-01-27
-**Total Tasks**: 55 across 5 phases
-**Estimated Effort**: 3-4 weeks with dedicated AI agent team
-**Next Review**: After Phase 1 completion (Tasks 1-15)
+**Updated**: 2025-01-27
+**Total Tasks**: 62 across 5 phases
+**Estimated Effort**: 4-5 weeks with dedicated AI agent team
+**Next Review**: After Phase 1 completion (Tasks 1-18)
+
+**Key Architecture Change**: Queue now intercepts framework publishing to enable batch processing and cross-test-case analysis before results reach VS Test Platform.
