@@ -274,9 +274,8 @@ jobs:
           - [Sailfish.TestAdapter v${VERSION}](https://www.nuget.org/packages/Sailfish.TestAdapter/${VERSION})
           - [Sailfish.Analyzers v${VERSION}](https://www.nuget.org/packages/Sailfish.Analyzers/${VERSION})
 
-          **Full Changelog**: https://github.com/paulegradie/Sailfish/compare/${LAST_TAG}...v${VERSION}
+          ${LAST_TAG:+**Full Changelog**: https://github.com/paulegradie/Sailfish/compare/${LAST_TAG}...v${VERSION}}
           EOF
-
           echo "Auto-generated release notes:"
           cat release_notes.md
 
