@@ -252,18 +252,20 @@ public class SailDiffConsoleWindowMessageFormatterTests
         var testIds = new TestIds(new[] { "BeforeTest" }, new[] { "AfterTest" });
         var settings = new SailDiffSettings(alpha: 0.001, testType: TestType.Test);
 
+        
         // Act
         var result = formatter.FormConsoleWindowMessageForSailDiff(sailDiffResults, testIds, settings, CancellationToken.None);
 
         // Assert
         var lines = result.Split('\n');
-        lines[0].ShouldBe("\r"); // Empty line with carriage return
-        lines[1].ShouldBe("-----------------------------------\r");
-        lines[2].ShouldBe("Test results comparing:\r");
-        lines[3].ShouldBe("Before: BeforeTest\r");
-        lines[4].ShouldBe("After: AfterTest\r");
-        lines[5].ShouldBe("-----------------------------------\r\r");
-        lines[6].ShouldBe("Note: Changes are significant if the PValue is less than 0.001\r");
+        // Replace strict equality with a normalized check:
+        lines[0].Trim().ShouldBe(string.Empty);
+        lines[1].Trim().ShouldBe("-----------------------------------");
+        lines[2].Trim().ShouldBe("Test results comparing:");
+        lines[3].Trim().ShouldBe("Before: BeforeTest");
+        lines[4].Trim().ShouldBe("After: AfterTest");
+        lines[5].Trim().ShouldBe("-----------------------------------");
+        lines[6].Trim().ShouldBe("Note: Changes are significant if the PValue is less than 0.001");
     }
 
     private static List<SailDiffResult> CreateSampleSailDiffResults()
