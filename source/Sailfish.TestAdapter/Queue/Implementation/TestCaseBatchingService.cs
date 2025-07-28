@@ -254,6 +254,23 @@ public class TestCaseBatchingService : ITestCaseBatchingService, IDisposable
         return await Task.FromResult(status).ConfigureAwait(false);
     }
 
+    /// <inheritdoc />
+    public async Task<IEnumerable<TestCaseBatch>> GetPendingBatchesAsync(CancellationToken cancellationToken = default)
+    {
+        ThrowIfDisposed();
+        cancellationToken.ThrowIfCancellationRequested();
+
+        var pendingBatches = _batches.Values
+            .Where(batch => batch.Status == BatchStatus.Pending)
+            .ToList();
+
+        _logger.Log(LogLevel.Debug,
+            "Retrieved {0} pending batches from batching service",
+            pendingBatches.Count);
+
+        return await Task.FromResult<IEnumerable<TestCaseBatch>>(pendingBatches).ConfigureAwait(false);
+    }
+
     #endregion
 
     #region Batching Strategy Configuration

@@ -236,6 +236,7 @@ public class TestExecutor : ITestExecutor
         // Resolve queue services
         var queueManager = container.ResolveOptional<TestCompletionQueueManager>();
         var batchingService = container.ResolveOptional<ITestCaseBatchingService>();
+        var timeoutHandler = container.ResolveOptional<IBatchTimeoutHandler>();
 
         if (queueManager == null)
         {
@@ -249,9 +250,21 @@ public class TestExecutor : ITestExecutor
             return;
         }
 
+        if (timeoutHandler == null)
+        {
+            logger?.Log(LogLevel.Warning, "IBatchTimeoutHandler not found in container. Timeout handling will not be available.");
+        }
+
         // Start batching service first
         await batchingService.StartAsync(cancellationToken).ConfigureAwait(false);
         logger?.Log(LogLevel.Debug, "Test case batching service started successfully");
+
+        // Start timeout handler if available
+        if (timeoutHandler != null)
+        {
+            await timeoutHandler.StartAsync(cancellationToken).ConfigureAwait(false);
+            logger?.Log(LogLevel.Debug, "Batch timeout handler started successfully");
+        }
 
         // Start queue manager
         await queueManager.StartAsync(queueConfiguration, cancellationToken).ConfigureAwait(false);
@@ -284,8 +297,9 @@ public class TestExecutor : ITestExecutor
         // Resolve queue services
         var queueManager = container.ResolveOptional<TestCompletionQueueManager>();
         var batchingService = container.ResolveOptional<ITestCaseBatchingService>();
+        var timeoutHandler = container.ResolveOptional<IBatchTimeoutHandler>();
 
-        if (queueManager == null && batchingService == null)
+        if (queueManager == null && batchingService == null && timeoutHandler == null)
         {
             return; // No queue services to stop
         }
@@ -311,6 +325,13 @@ public class TestExecutor : ITestExecutor
                 logger?.Log(LogLevel.Debug, "Queue manager stopped successfully");
             }
 
+            // Stop timeout handler
+            if (timeoutHandler != null)
+            {
+                await timeoutHandler.StopAsync(combinedCts.Token).ConfigureAwait(false);
+                logger?.Log(LogLevel.Debug, "Batch timeout handler stopped successfully");
+            }
+
             // Stop batching service
             if (batchingService != null)
             {
@@ -330,6 +351,10 @@ public class TestExecutor : ITestExecutor
             if (queueManager != null)
             {
                 await queueManager.StopAsync(cancellationToken).ConfigureAwait(false);
+            }
+            if (timeoutHandler != null)
+            {
+                await timeoutHandler.StopAsync(cancellationToken).ConfigureAwait(false);
             }
             if (batchingService != null)
             {
