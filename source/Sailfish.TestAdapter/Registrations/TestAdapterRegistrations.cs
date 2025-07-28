@@ -178,6 +178,11 @@ internal class TestAdapterRegistrations : IProvideAdditionalRegistrations
         builder.RegisterType<TestCaseBatchingService>()
             .As<ITestCaseBatchingService>()
             .SingleInstance();
+
+        // Batch timeout handler - singleton to monitor and handle batch timeouts
+        builder.RegisterType<BatchTimeoutHandler>()
+            .As<IBatchTimeoutHandler>()
+            .SingleInstance();
     }
 
     /// <summary>

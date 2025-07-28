@@ -208,6 +208,29 @@ public interface ITestCaseBatchingService
     /// </remarks>
     Task<BatchStatus> GetBatchStatusAsync(string batchId, CancellationToken cancellationToken = default);
 
+    /// <summary>
+    /// Asynchronously retrieves all pending batches that are currently waiting for completion.
+    /// </summary>
+    /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
+    /// <returns>
+    /// A task that represents the asynchronous operation. The task result contains
+    /// a collection of TestCaseBatch objects that have a status of Pending.
+    /// </returns>
+    /// <exception cref="OperationCanceledException">
+    /// Thrown when the operation is cancelled via the <paramref name="cancellationToken"/>.
+    /// </exception>
+    /// <remarks>
+    /// This method provides access to all batches that are currently pending completion,
+    /// which is useful for timeout monitoring and batch processing scenarios. The method
+    /// returns a snapshot of pending batches at the time of the call and is thread-safe.
+    ///
+    /// Pending batches are those with a status of BatchStatus.Pending and are actively
+    /// waiting for additional test cases or timeout completion. This method is primarily
+    /// used by timeout handlers and monitoring services to identify batches that may
+    /// need timeout processing.
+    /// </remarks>
+    Task<IEnumerable<TestCaseBatch>> GetPendingBatchesAsync(CancellationToken cancellationToken = default);
+
     #endregion
 
     #region Batching Strategy Configuration
