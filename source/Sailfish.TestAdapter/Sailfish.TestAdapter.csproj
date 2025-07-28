@@ -54,6 +54,9 @@
         <None Include="build\Sailfish.TestAdapter.props" Pack="true" PackagePath="build\Sailfish.TestAdapter.props" />
         <None Include="build\Sailfish.TestAdapter.targets" Pack="true" PackagePath="build\Sailfish.TestAdapter.targets" />
     </ItemGroup>
+    <ItemGroup>
+      <Folder Include="Tests\" />
+    </ItemGroup>
 
     <!-- Include the test adapter DLL in the NuGet package -->
     <Target Name="PackTestAdapter" BeforeTargets="GenerateNuspec">
