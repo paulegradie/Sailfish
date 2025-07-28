@@ -1,4 +1,4 @@
-﻿﻿You are working on the Sailfish Test Adapter Queue Migration project. This is a **CONTINUATION** of previous work by other AI agents.
+﻿﻿﻿You are working on the Sailfish Test Adapter Queue Migration project. This is a **CONTINUATION** of previous work by other AI agents.
 
 ## 🚨 CRITICAL FIRST STEP - READ DOCUMENTATION
 **BEFORE STARTING ANY WORK, YOU MUST READ THESE FILES IN ORDER:**
@@ -135,22 +135,22 @@ TestCaseCompletedNotification
 ### Step-by-Step Approach
 1. **📖 READ ALL DOCUMENTATION FIRST** (critical for understanding the architecture)
 
-2. **🔍 UNDERSTAND THE QUEUE EXTENSIONS IMPLEMENTATION**:
-   - Review Task 14 in the specification for detailed requirements
-   - Understand what extension methods are needed for queue operations
-   - Study the existing queue interfaces and message contracts
-   - Review common patterns for extension methods in .NET
-   - Understand how to create helper methods for message creation
+2. **🔍 UNDERSTAND THE BATCHING SERVICE REQUIREMENTS**:
+   - Review Task 15 in the specification for detailed requirements
+   - Understand what batching strategies are needed
+   - Study the existing queue message contracts and interfaces
+   - Review patterns for batch processing and completion detection
+   - Understand how to group test cases by different criteria
 
 3. **🔧 EXAMINE EXISTING CODE**:
    - Look at the TestCompletionQueueMessage structure (Task 1)
-   - Review the ITestCompletionQueue interface (Task 4)
-   - Study existing extension method patterns in the Sailfish codebase
-   - Understand the queue monitoring and utility requirements
+   - Review existing interfaces in the Contracts directory
+   - Study the queue extensions for batching patterns (Task 14)
+   - Understand how grouping and batch management should work
 
-4. **📁 CREATE THE EXTENSIONS DIRECTORY AND FILE**
+4. **📁 CREATE THE BATCHING INTERFACE**
 
-5. **⚙️ IMPLEMENT THE EXTENSIONS** according to acceptance criteria
+5. **⚙️ IMPLEMENT THE INTERFACE** according to acceptance criteria
 
 6. **🧪 BUILD AND VALIDATE** to ensure no compilation errors
 
@@ -163,7 +163,8 @@ Sailfish.TestAdapter/
 │   │   ├── ITestCompletionQueuePublisher.cs  # ✅ COMPLETED (Task 2)
 │   │   ├── ITestCompletionQueueProcessor.cs  # ✅ COMPLETED (Task 3)
 │   │   ├── ITestCompletionQueue.cs  # ✅ COMPLETED (Task 4)
-│   │   └── ITestCompletionQueueFactory.cs  # ✅ COMPLETED (Task 10)
+│   │   ├── ITestCompletionQueueFactory.cs  # ✅ COMPLETED (Task 10)
+│   │   └── ITestCaseBatchingService.cs  # 🎯 YOUR TASK (Task 15)
 │   ├── Implementation/             # 🎯 Core implementations
 │   │   ├── InMemoryTestCompletionQueue.cs  # ✅ COMPLETED (Task 5)
 │   │   ├── TestCompletionQueuePublisher.cs  # ✅ COMPLETED (Task 6)
@@ -174,7 +175,7 @@ Sailfish.TestAdapter/
 │   │   ├── TestCompletionQueueProcessorBase.cs  # ✅ COMPLETED (Task 7)
 │   │   └── LoggingQueueProcessor.cs  # ✅ COMPLETED (Task 13)
 │   ├── Extensions/                 # 🎯 Extension methods
-│   │   └── QueueExtensions.cs      # 🎯 YOUR TASK (Task 14)
+│   │   └── QueueExtensions.cs      # ✅ COMPLETED (Task 14)
 │   ├── Configuration/              # 🎯 Configuration
 │   │   └── QueueConfiguration.cs   # ✅ COMPLETED (Task 9)
 │   ├── Monitoring/                 # Future tasks (Tasks 24-25, 41)
@@ -187,16 +188,17 @@ Sailfish.TestAdapter/
 ```
 
 ### Implementation Requirements
-Based on the intercepting architecture, the queue extensions implementation must include:
+Based on the intercepting architecture, the batching service interface must include:
 
-1. **Extension methods for common queue operations** - simplify queue usage patterns
-2. **Helper methods for message creation** - streamline TestCompletionQueueMessage creation
-3. **Utility methods for queue monitoring** - provide queue status and health information
-4. **Proper error handling** - handle edge cases and provide meaningful error messages
-5. **Comprehensive XML documentation** - explain all extension methods and their usage
-6. **Integration with Sailfish.Logging.ILogger** - consistent logging patterns
-7. **Thread-safe operations** - ensure safe concurrent usage
-8. **Support for async/await patterns** - maintain asynchronous operation support
+1. **Methods for adding test cases to batches** - group related test cases together
+2. **Batch completion detection functionality** - determine when all expected test cases in a batch have been received
+3. **Batch retrieval and management operations** - access and manage batch contents
+4. **Support for different batching strategies** - by class, by attribute, custom grouping logic
+5. **Proper error handling and validation** - handle edge cases and provide meaningful error messages
+6. **Comprehensive XML documentation** - explain all interface methods and their usage
+7. **Integration with Sailfish.Logging.ILogger** - consistent logging patterns
+8. **Thread-safe operations** - ensure safe concurrent usage during test execution
+9. **Support for async/await patterns** - maintain asynchronous operation support
 
 ## Important Notes
 
@@ -207,25 +209,25 @@ Based on the intercepting architecture, the queue extensions implementation must
 - Maintain all existing public APIs
 
 ### Performance Considerations
-- Extension methods should be lightweight and efficient
-- Consider performance impact of utility operations
+- Batching service should be lightweight and efficient
+- Consider performance impact of grouping operations
 - Design for high-throughput test execution scenarios
-- Avoid complex operations that impact queue performance
+- Avoid complex operations that impact test execution performance
 
 ### Future Integration Points
-- Extensions will be used throughout the queue system (Tasks 15-62)
+- Batching service will be implemented in Task 16
 - Must support processor pipeline execution patterns
-- Should demonstrate extension method best practices
-- Must integrate with future batching and monitoring features
+- Should demonstrate batching best practices
+- Must integrate with future comparison and analysis features
 
 ## Validation Steps
 After completing your task:
 
 1. **Build the project** - Ensure no compilation errors
 2. **Run existing tests** - Verify no regressions
-3. **Validate implementation** - Ensure all extension methods work correctly
+3. **Validate interface design** - Ensure interface supports all required batching scenarios
 4. **Check documentation** - Verify XML documentation is comprehensive
-5. **Review integration points** - Ensure extensions support future tasks
+5. **Review integration points** - Ensure interface supports future implementation tasks
 
 ## Handoff Instructions
 When you complete your task:
@@ -233,48 +235,48 @@ When you complete your task:
 1. **Test your implementation** - Build and run tests
 2. **Document any issues** - Note any deviations or problems encountered
 3. **Create next agent prompt** - Follow the versioning process below
-4. **Prepare for Task 15** - Ensure foundation is solid for test case batching implementation
+4. **Prepare for Task 16** - Ensure interface foundation is solid for batching service implementation
 
-### 🔄 Creating NextPrompt-1.15.md (for Task 15)
+### 🔄 Creating NextPrompt-1.16.md (for Task 16)
 
 **Step 1: Copy This Template**
 - Use this file as your base structure
 
 **Step 2: Update Information**
-- Move Task 14 to completed tasks list
-- Update progress to "14 of 18 tasks completed"
-- Change assignment to Task 15: Create Test Case Batching Interface
-- Update file path and acceptance criteria for Task 15
+- Move Task 15 to completed tasks list
+- Update progress to "15 of 18 tasks completed"
+- Change assignment to Task 16: Create Test Case Batching Implementation
+- Update file path and acceptance criteria for Task 16
 
 **Step 3: Save File**
-- Save as `NextPrompt-1.15.md` in `G:/code/Sailfish/source/Sailfish.TestAdapter/Prompts/`
+- Save as `NextPrompt-1.16.md` in `G:/code/Sailfish/source/Sailfish.TestAdapter/Prompts/`
 
 **Step 4: Instruct Human**
 ```
 🤖 NEXT AGENT SETUP:
-Please point the next AI agent to: G:/code/Sailfish/source/Sailfish.TestAdapter/Prompts/NextPrompt-1.15.md
+Please point the next AI agent to: G:/code/Sailfish/source/Sailfish.TestAdapter/Prompts/NextPrompt-1.16.md
 
-This file contains the complete prompt for Task 15 with all current context and instructions.
+This file contains the complete prompt for Task 16 with all current context and instructions.
 ```
 
 ## Questions or Issues
 If you encounter any issues:
 - Check the existing codebase for similar patterns
 - Review the QUEUE_MIGRATION_SPECIFICATION.md for clarification
-- Look at the completed Tasks 1-13 for implementation examples
+- Look at the completed Tasks 1-14 for implementation examples
 - Ask for clarification if requirements are unclear
 
 ## Success Criteria for This Session
-- [ ] Task 14 completed according to acceptance criteria
+- [ ] Task 15 completed according to acceptance criteria
 - [ ] All existing tests still pass
-- [ ] New code follows project conventions
-- [ ] Implementation supports future queue integration requirements
-- [ ] NextPrompt-1.15.md created for next agent
-- [ ] Ready for next agent to continue with Task 15
+- [ ] New interface follows project conventions
+- [ ] Interface design supports future batching implementation requirements
+- [ ] NextPrompt-1.16.md created for next agent
+- [ ] Ready for next agent to continue with Task 16
 
 ---
 
 **Current Date**: 2025-01-28
-**Session Goal**: Complete Task 14 with intercepting architecture and prepare NextPrompt-1.15.md for Task 15
+**Session Goal**: Complete Task 15 with intercepting architecture and prepare NextPrompt-1.16.md for Task 16
 **Architecture**: Intercepting Queue with Batch Processing
 **Estimated Time**: 30-45 minutes
