@@ -11,7 +11,7 @@ public class ReadmeExample
 {
     private readonly Random random = new();
 
-    [SailfishVariable(1, 10)]
+    [SailfishVariable(1, 2)]
     public int N { get; set; }
 
     [SailfishMethod]

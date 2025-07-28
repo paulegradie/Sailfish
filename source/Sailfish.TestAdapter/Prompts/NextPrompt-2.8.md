@@ -1,4 +1,4 @@
-﻿﻿You are working on the Sailfish Test Adapter Queue Migration project. This is a **CONTINUATION** of previous work by other AI agents.
+﻿﻿﻿You are working on the Sailfish Test Adapter Queue Migration project. This is a **CONTINUATION** of previous work by other AI agents.
 
 ## 🚨 CRITICAL FIRST STEP - READ DOCUMENTATION
 **BEFORE STARTING ANY WORK, YOU MUST READ THESE FILES IN ORDER:**
@@ -86,19 +86,19 @@ This is **NOT** a side-channel queue. The queue **intercepts** framework publish
 
 ```
 CURRENT (Direct Framework Publishing):
-TestCaseCompletedNotification 
+TestCaseCompletedNotification
     ↓ (TestCaseCompletedNotificationHandler)
     ↓ FrameworkTestCaseEndNotification
-    ↓ (FrameworkTestCaseEndNotificationHandler)  
+    ↓ (FrameworkTestCaseEndNotificationHandler)
     ↓ VS Test Platform (ITestFrameworkWriter)
 
 TARGET (Intercepting Queue Architecture):
-TestCaseCompletedNotification 
+TestCaseCompletedNotification
     ↓ (TestCaseCompletedNotificationHandler)
     ↓ TestCompletionQueueMessage → In-Memory Queue
     ↓ Queue Processors (Batching, Comparison, Analysis)
     ↓ Enhanced FrameworkTestCaseEndNotification(s)
-    ↓ (FrameworkTestCaseEndNotificationHandler)  
+    ↓ (FrameworkTestCaseEndNotificationHandler)
     ↓ VS Test Platform (ITestFrameworkWriter)
 ```
 
@@ -137,6 +137,7 @@ TestCaseCompletedNotification
 - `TestExecutor.cs` - **MODIFIED** in Task 22 - now manages queue lifecycle
 - `BatchTimeoutHandler.cs` - **NEW** in Task 23 - monitors batch timeouts
 - `QueueHealthCheck.cs` - **NEW** in Task 24 - monitors queue health and performance
+- `QueuePerformanceOptimizer.cs` - **NEW** in Task 25 - optimizes queue performance
 
 ## Specific Instructions for This Task
 
@@ -145,21 +146,21 @@ TestCaseCompletedNotification
 
 2. **🔍 UNDERSTAND THE CURRENT IMPLEMENTATION**:
    - Examine the QueueHealthCheck implementation (Task 24)
-   - Understand how performance metrics are collected and analyzed
-   - Review the queue configuration and optimization settings
-   - Understand how queue capacity and processing can be optimized
+   - Review the QueuePerformanceOptimizer implementation (Task 25)
+   - Understand how performance metrics are currently collected
+   - Review the existing metrics structures and data collection patterns
 
 3. **🔧 EXAMINE THE QUEUE INFRASTRUCTURE**:
    - Review the queue consumer service and processor execution patterns
-   - Understand how queue throughput and latency can be improved
-   - Review the existing configuration system for optimization settings
-   - Understand the performance bottlenecks and optimization opportunities
+   - Understand how metrics should be collected during queue operations
+   - Review the existing configuration system for metrics settings
+   - Understand the metrics collection requirements and storage patterns
 
-4. **📁 CREATE THE QUEUE PERFORMANCE OPTIMIZER**:
-   - Create QueuePerformanceOptimizer.cs that optimizes queue system performance
-   - Implement performance monitoring and bottleneck identification
-   - Add dynamic queue capacity adjustment based on load
-   - Support configurable optimization strategies and thresholds
+4. **📁 CREATE THE QUEUE METRICS COLLECTION**:
+   - Create QueueMetrics.cs that collects and tracks queue performance metrics
+   - Implement comprehensive metrics tracking for all queue operations
+   - Add metrics for message publishing, processing, and failure rates
+   - Support queue depth monitoring and batch completion statistics
    - Add comprehensive error handling and logging
 
 5. **⚙️ IMPLEMENT COMPREHENSIVE ERROR HANDLING** according to acceptance criteria
@@ -169,11 +170,11 @@ TestCaseCompletedNotification
 ### Critical Implementation Requirements
 Based on the intercepting architecture, you must:
 
-1. **Performance Monitoring**: Monitor queue performance metrics and identify bottlenecks
-2. **Dynamic Optimization**: Implement dynamic queue capacity adjustment based on load
-3. **Throughput Optimization**: Optimize message processing throughput and latency
-4. **Tuning Recommendations**: Provide performance tuning recommendations
-5. **Configuration**: Support configurable optimization strategies and thresholds
+1. **Message Tracking**: Track messages published, processed, failed
+2. **Queue Monitoring**: Monitor queue depth over time
+3. **Batch Statistics**: Track batch completion rates and timeout statistics
+4. **Performance Metrics**: Calculate processing rates and latencies
+5. **Metrics Exposure**: Expose metrics for monitoring and analysis
 6. **Integration**: Ensure proper coordination with existing queue infrastructure
 
 ## Important Notes
@@ -186,14 +187,14 @@ Based on the intercepting architecture, you must:
 
 ### Performance Considerations
 - No performance regression in existing test execution
-- Optimization operations should be efficient and non-blocking
+- Metrics collection should be efficient and non-blocking
 - Proper disposal of resources and memory management
 - Consider thread pool usage and async/await best practices
 
 ### Future Integration Points
-- This enables performance optimization for queue system efficiency
-- Must support configuration-driven optimization behavior
-- Should enable dynamic performance tuning based on runtime conditions
+- This enables comprehensive metrics collection for queue system monitoring
+- Must support configuration-driven metrics behavior
+- Should enable detailed performance analysis and monitoring
 - Must integrate with existing queue infrastructure and health monitoring
 
 ## Validation Steps
@@ -201,7 +202,7 @@ After completing your task:
 
 1. **Build the project** - Ensure no compilation errors
 2. **Run existing tests** - Verify no regressions in existing functionality
-3. **Test performance optimization** - Verify optimization scenarios work correctly
+3. **Test metrics collection** - Verify metrics are collected correctly
 4. **Check integration** - Ensure proper coordination with queue infrastructure
 5. **Review documentation** - Ensure XML documentation is comprehensive
 
@@ -211,49 +212,49 @@ When you complete your task:
 1. **Test your implementation** - Build and run tests
 2. **Document any issues** - Note any deviations or problems encountered
 3. **Create next agent prompt** - Follow the versioning process below
-4. **Prepare for Task 26** - Ensure performance optimization is solid for queue metrics collection
+4. **Prepare for Task 27** - Ensure metrics collection is solid for queue error handling
 
-### 🔄 Creating NextPrompt-2.8.md (for Task 26)
+### 🔄 Creating NextPrompt-2.9.md (for Task 27)
 
 **Step 1: Copy This Template**
 - Use this file as your base structure
 
 **Step 2: Update Information**
-- Move Task 25 to completed tasks list
-- Update progress to "25 of 30 tasks completed" and keep "Phase 2: Framework Integration"
-- Change assignment to Task 26: Create Queue Metrics Collection
-- Update file path and acceptance criteria for Task 26
+- Move Task 26 to completed tasks list
+- Update progress to "26 of 30 tasks completed" and keep "Phase 2: Framework Integration"
+- Change assignment to Task 27: Add Queue Error Handling
+- Update file path and acceptance criteria for Task 27
 - Keep phase as "Phase 2: Framework Integration"
 
 **Step 3: Save File**
-- Save as `G:/code/Sailfish/source/Sailfish.TestAdapter/Prompts/NextPrompt-2.8.md` (use full absolute path)
+- Save as `G:/code/Sailfish/source/Sailfish.TestAdapter/Prompts/NextPrompt-2.9.md` (use full absolute path)
 
 **Step 4: Instruct Human**
 ```
 🤖 NEXT AGENT SETUP:
-Please point the next AI agent to: G:/code/Sailfish/source/Sailfish.TestAdapter/Prompts/NextPrompt-2.8.md
+Please point the next AI agent to: G:/code/Sailfish/source/Sailfish.TestAdapter/Prompts/NextPrompt-2.9.md
 
-This file contains the complete prompt for Task 26 with all current context and instructions.
+This file contains the complete prompt for Task 27 with all current context and instructions.
 ```
 
 ## Questions or Issues
 If you encounter any issues:
 - Check the existing codebase for similar patterns
 - Review the QUEUE_MIGRATION_SPECIFICATION.md for clarification
-- Look at the completed Tasks 1-24 for implementation examples
+- Look at the completed Tasks 1-25 for implementation examples
 - Ask for clarification if requirements are unclear
 
 ## Success Criteria for This Session
-- [ ] Task 25 completed according to acceptance criteria
-- [ ] Queue performance optimizer created and integrated
+- [ ] Task 26 completed according to acceptance criteria
+- [ ] Queue metrics collection created and integrated
 - [ ] All existing tests still pass
 - [ ] No regressions in existing functionality
-- [ ] NextPrompt-2.8.md created for next agent
-- [ ] Ready for next agent to continue with Task 26
+- [ ] NextPrompt-2.9.md created for next agent
+- [ ] Ready for next agent to continue with Task 27
 
 ---
 
 **Current Date**: 2025-01-28
-**Session Goal**: Complete Task 25 with queue performance optimization and prepare NextPrompt-2.8.md for Task 26
+**Session Goal**: Complete Task 26 with queue metrics collection and prepare NextPrompt-2.9.md for Task 27
 **Architecture**: Intercepting Queue with Framework Publishing
 **Estimated Time**: 45-60 minutes

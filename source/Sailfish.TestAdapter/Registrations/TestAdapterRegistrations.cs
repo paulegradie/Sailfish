@@ -183,6 +183,16 @@ internal class TestAdapterRegistrations : IProvideAdditionalRegistrations
         builder.RegisterType<BatchTimeoutHandler>()
             .As<IBatchTimeoutHandler>()
             .SingleInstance();
+
+        // Queue health check - singleton to monitor queue health and performance
+        builder.RegisterType<QueueHealthCheck>()
+            .As<IQueueHealthCheck>()
+            .SingleInstance();
+
+        // Queue performance optimizer - singleton to optimize queue performance
+        builder.RegisterType<QueuePerformanceOptimizer>()
+            .As<IQueuePerformanceOptimizer>()
+            .SingleInstance();
     }
 
     /// <summary>
