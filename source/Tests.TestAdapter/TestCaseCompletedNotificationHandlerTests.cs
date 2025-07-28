@@ -15,6 +15,7 @@ using Sailfish.TestAdapter.Display.TestOutputWindow;
 using Sailfish.TestAdapter.Execution;
 using Sailfish.TestAdapter.Handlers.FrameworkHandlers;
 using Sailfish.TestAdapter.Handlers.TestCaseEvents;
+using Sailfish.TestAdapter.Queue.Configuration;
 using Shouldly;
 using Tests.Common.Builders;
 using Tests.Common.Utils;
@@ -28,13 +29,15 @@ public class TestCaseCompletedNotificationHandlerTests
     [Fact]
     public async Task TestCaseCompleteNotificationHandlerThrowsOnNullPerformanceTimer()
     {
+        var queueConfig = new QueueConfiguration { IsEnabled = false }; // Disabled for backward compatibility tests
         var handler = new TestCaseCompletedNotificationHandler(
             Substitute.For<ISailfishConsoleWindowFormatter>(),
             Substitute.For<ISailDiffTestOutputWindowMessageFormatter>(),
             Substitute.For<IRunSettings>(),
             Substitute.For<IMediator>(),
             Substitute.For<IAdapterSailDiff>(),
-            Substitute.For<ILogger>()
+            Substitute.For<ILogger>(),
+            queueConfig
         );
 
         var summaryTrackingFormat = new ClassExecutionSummaryTrackingFormat(
@@ -64,13 +67,15 @@ public class TestCaseCompletedNotificationHandlerTests
     [Fact]
     public async Task TestCaseCompleteNotificationHandlerThrowsOnNullExternalContainer()
     {
+        var queueConfig = new QueueConfiguration { IsEnabled = false }; // Disabled for backward compatibility tests
         var handler = new TestCaseCompletedNotificationHandler(
             Substitute.For<ISailfishConsoleWindowFormatter>(),
             Substitute.For<ISailDiffTestOutputWindowMessageFormatter>(),
             Substitute.For<IRunSettings>(),
             Substitute.For<IMediator>(),
             Substitute.For<IAdapterSailDiff>(),
-            Substitute.For<ILogger>()
+            Substitute.For<ILogger>(),
+            queueConfig
         );
 
         var summaryTrackingFormat = new ClassExecutionSummaryTrackingFormat(
@@ -92,13 +97,15 @@ public class TestCaseCompletedNotificationHandlerTests
     public async Task TestCaseCompleteNotificationHandlerReturnsOnDetectedException()
     {
         var mediatorSub = Substitute.For<IMediator>();
+        var queueConfig = new QueueConfiguration { IsEnabled = false }; // Disabled for backward compatibility tests
         var handler = new TestCaseCompletedNotificationHandler(
             Substitute.For<ISailfishConsoleWindowFormatter>(),
             Substitute.For<ISailDiffTestOutputWindowMessageFormatter>(),
             Substitute.For<IRunSettings>(),
             mediatorSub,
             Substitute.For<IAdapterSailDiff>(),
-            Substitute.For<ILogger>());
+            Substitute.For<ILogger>(),
+            queueConfig);
 
         var exMsg = Some.RandomString();
         var summaryTrackingFormat = new ClassExecutionSummaryTrackingFormat(
