@@ -7,6 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using MediatR;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel;
+using Sailfish.Analysis.SailDiff.Formatting;
 using Sailfish.Attributes;
 using Sailfish.Contracts.Public.Models;
 using Sailfish.Contracts.Public.Notifications;
@@ -47,24 +48,30 @@ internal class MethodComparisonProcessor : TestCompletionQueueProcessorBase
     private readonly IMediator _mediator;
     private readonly ITestCaseBatchingService _batchingService;
     private readonly MethodComparisonBatchProcessor _batchProcessor;
+    private readonly ISailDiffUnifiedFormatter _unifiedFormatter;
 
     /// <summary>
     /// Initializes a new instance of the MethodComparisonProcessor.
     /// </summary>
     /// <param name="sailDiff">The SailDiff service for performing performance comparisons.</param>
     /// <param name="mediator">The mediator for publishing notifications.</param>
+    /// <param name="batchingService">The batching service for grouping test cases.</param>
+    /// <param name="batchProcessor">The batch processor for handling comparison groups.</param>
+    /// <param name="unifiedFormatter">The unified formatter for consistent output formatting.</param>
     /// <param name="logger">The logger for diagnostic output.</param>
     public MethodComparisonProcessor(
         IAdapterSailDiff sailDiff,
         IMediator mediator,
         ITestCaseBatchingService batchingService,
         MethodComparisonBatchProcessor batchProcessor,
+        ISailDiffUnifiedFormatter unifiedFormatter,
         ILogger logger) : base(logger)
     {
         _sailDiff = sailDiff ?? throw new ArgumentNullException(nameof(sailDiff));
         _mediator = mediator ?? throw new ArgumentNullException(nameof(mediator));
         _batchingService = batchingService ?? throw new ArgumentNullException(nameof(batchingService));
         _batchProcessor = batchProcessor ?? throw new ArgumentNullException(nameof(batchProcessor));
+        _unifiedFormatter = unifiedFormatter ?? throw new ArgumentNullException(nameof(unifiedFormatter));
     }
 
 
@@ -518,15 +525,18 @@ internal class MethodComparisonBatchProcessor
     private readonly IAdapterSailDiff _sailDiff;
     private readonly IMediator _mediator;
     private readonly ILogger _logger;
+    private readonly ISailDiffUnifiedFormatter _unifiedFormatter;
 
     public MethodComparisonBatchProcessor(
         IAdapterSailDiff sailDiff,
         IMediator mediator,
-        ILogger logger)
+        ILogger logger,
+        ISailDiffUnifiedFormatter unifiedFormatter)
     {
         _sailDiff = sailDiff ?? throw new ArgumentNullException(nameof(sailDiff));
         _mediator = mediator ?? throw new ArgumentNullException(nameof(mediator));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        _unifiedFormatter = unifiedFormatter ?? throw new ArgumentNullException(nameof(unifiedFormatter));
     }
 
     /// <summary>
@@ -1056,101 +1066,51 @@ internal class MethodComparisonBatchProcessor
     }
 
     /// <summary>
-    /// Formats SailDiff comparison results for display from a specific method's perspective.
+    /// Formats SailDiff comparison results for display from a specific method's perspective using the unified formatter.
     /// </summary>
     private string FormatComparisonResults(TestCaseSailDiffResult comparisonResult, string groupName, string beforeMethodName, string afterMethodName, string perspectiveMethodName)
     {
-        var sb = new StringBuilder();
-        sb.AppendLine();
-        sb.AppendLine("📊 COMPARISON RESULTS:");
-        sb.AppendLine($"Group: {groupName}");
+        _logger.Log(LogLevel.Debug,
+            "Formatting comparison results for group '{0}' from perspective '{1}'. ComparisonResult is null: {2}, SailDiffResults count: {3}",
+            groupName, ExtractMethodName(perspectiveMethodName), comparisonResult == null, comparisonResult?.SailDiffResults?.Count() ?? 0);
 
-        // Determine the perspective and comparison order
+        if (comparisonResult?.SailDiffResults?.Any() != true)
+        {
+            return "\n❌ No comparison results available\n";
+        }
+
+        // Convert SailDiff result to unified comparison data
+        var result = comparisonResult.SailDiffResults.First();
         var isBeforePerspective = perspectiveMethodName == beforeMethodName;
         var primaryMethod = ExtractMethodName(perspectiveMethodName);
         var comparedMethod = ExtractMethodName(isBeforePerspective ? afterMethodName : beforeMethodName);
 
-        sb.AppendLine($"Comparing: {primaryMethod} vs {comparedMethod}");
+        var comparisonData = new SailDiffComparisonData
+        {
+            GroupName = groupName,
+            PrimaryMethodName = primaryMethod,
+            ComparedMethodName = comparedMethod,
+            Statistics = result.TestResultsWithOutlierAnalysis.StatisticalTestResult,
+            Metadata = new ComparisonMetadata
+            {
+                SampleSize = result.TestResultsWithOutlierAnalysis.StatisticalTestResult.SampleSizeBefore,
+                AlphaLevel = 0.05,
+                TestType = "T-Test",
+                OutliersRemoved = (result.TestResultsWithOutlierAnalysis.Sample1?.TotalNumOutliers ?? 0) +
+                                 (result.TestResultsWithOutlierAnalysis.Sample2?.TotalNumOutliers ?? 0)
+            },
+            IsPerspectiveBased = true,
+            PerspectiveMethodName = perspectiveMethodName
+        };
+
+        // Format using unified formatter for IDE context
+        var formattedOutput = _unifiedFormatter.Format(comparisonData, OutputContext.IDE);
 
         _logger.Log(LogLevel.Debug,
-            "Formatting comparison results for group '{0}' from perspective '{1}'. ComparisonResult is null: {2}, SailDiffResults count: {3}",
-            groupName, primaryMethod, comparisonResult == null, comparisonResult?.SailDiffResults?.Count() ?? 0);
+            "Unified formatter generated output for '{0}' vs '{1}'. Significance: {2}, Change: {3:F1}%",
+            primaryMethod, comparedMethod, formattedOutput.Significance, formattedOutput.PercentageChange);
 
-        if (comparisonResult?.SailDiffResults?.Any() == true)
-        {
-            foreach (var result in comparisonResult.SailDiffResults)
-            {
-                var stats = result.TestResultsWithOutlierAnalysis.StatisticalTestResult;
-
-                // Calculate performance change relative to the perspective method
-                double percentChange;
-                double primaryTime, comparedTime;
-
-                if (isBeforePerspective)
-                {
-                    // From "before" method's perspective
-                    primaryTime = stats.MeanBefore;
-                    comparedTime = stats.MeanAfter;
-                    percentChange = primaryTime > 0 ? ((comparedTime - primaryTime) / primaryTime) * 100 : 0;
-                }
-                else
-                {
-                    // From "after" method's perspective (reverse the comparison)
-                    primaryTime = stats.MeanAfter;
-                    comparedTime = stats.MeanBefore;
-                    percentChange = primaryTime > 0 ? ((comparedTime - primaryTime) / primaryTime) * 100 : 0;
-                }
-
-                // Determine statistical significance based on both p-value and SailDiff's change description
-                var isStatisticallySignificant = stats.PValue < 0.05 &&
-                                                !stats.ChangeDescription.Contains("No Change", StringComparison.OrdinalIgnoreCase);
-
-                // Color coding based on statistical significance and direction
-                string changeIcon;
-                if (!isStatisticallySignificant || stats.ChangeDescription.Contains("No Change", StringComparison.OrdinalIgnoreCase))
-                {
-                    changeIcon = "⚪"; // Gray/white for no significant difference or "No Change"
-                }
-                else if (percentChange < 0)
-                {
-                    changeIcon = "🟢"; // Green for statistically significantly faster
-                }
-                else
-                {
-                    changeIcon = "🔴"; // Red for statistically significantly slower
-                }
-
-                var changeDirection = percentChange > 0 ? "slower" : "faster";
-                var absChange = Math.Abs(percentChange);
-
-                // Override SailDiff's change description with more intuitive language
-                string significanceDescription;
-                if (!isStatisticallySignificant || stats.ChangeDescription.Contains("No Change", StringComparison.OrdinalIgnoreCase))
-                {
-                    significanceDescription = "No Change";
-                }
-                else if (percentChange < 0)
-                {
-                    significanceDescription = "Improved"; // Faster is an improvement
-                }
-                else
-                {
-                    significanceDescription = "Regressed"; // Slower is a regression
-                }
-
-                sb.AppendLine($"{changeIcon} Performance: {absChange:F1}% {changeDirection}");
-                sb.AppendLine($"   Statistical Significance: {significanceDescription}");
-                sb.AppendLine($"   P-Value: {stats.PValue:F6}");
-                sb.AppendLine($"   Mean Times: {primaryTime:F3}ms vs {comparedTime:F3}ms");
-                sb.AppendLine();
-            }
-        }
-        else
-        {
-            sb.AppendLine("❌ No comparison results available");
-        }
-
-        return sb.ToString();
+        return formattedOutput.FullOutput;
     }
 
     /// <summary>

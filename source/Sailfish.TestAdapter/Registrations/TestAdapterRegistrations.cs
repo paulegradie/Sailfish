@@ -258,6 +258,23 @@ internal class TestAdapterRegistrations : IProvideAdditionalRegistrations
         // Method comparison processors - register conditionally based on configuration
         if (configuration.EnableMethodComparison)
         {
+            // Register unified formatter and its dependencies
+            builder.RegisterType<Sailfish.Analysis.SailDiff.Formatting.ImpactSummaryFormatter>()
+                .As<Sailfish.Analysis.SailDiff.Formatting.IImpactSummaryFormatter>()
+                .InstancePerDependency();
+
+            builder.RegisterType<Sailfish.Analysis.SailDiff.Formatting.DetailedTableFormatter>()
+                .As<Sailfish.Analysis.SailDiff.Formatting.IDetailedTableFormatter>()
+                .InstancePerDependency();
+
+            builder.RegisterType<Sailfish.Analysis.SailDiff.Formatting.OutputContextAdapter>()
+                .As<Sailfish.Analysis.SailDiff.Formatting.IOutputContextAdapter>()
+                .InstancePerDependency();
+
+            builder.RegisterType<Sailfish.Analysis.SailDiff.Formatting.SailDiffUnifiedFormatter>()
+                .As<Sailfish.Analysis.SailDiff.Formatting.ISailDiffUnifiedFormatter>()
+                .InstancePerDependency();
+
             builder.RegisterType<MethodComparisonProcessor>()
                 .As<ITestCompletionQueueProcessor>()
                 .InstancePerDependency();
