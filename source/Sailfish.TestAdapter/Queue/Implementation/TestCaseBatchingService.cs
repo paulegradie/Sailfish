@@ -331,7 +331,6 @@ public class TestCaseBatchingService : ITestCaseBatchingService, IDisposable
 
         _isStarted = true;
         _isCompleted = false;
-        
         _logger.Log(LogLevel.Information, 
             "TestCaseBatchingService started with strategy '{0}'", _currentStrategy);
 
@@ -417,6 +416,15 @@ public class TestCaseBatchingService : ITestCaseBatchingService, IDisposable
     private async Task<string> DetermineBatchIdByComparisonAttribute(TestCompletionQueueMessage message, CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
+
+        // Check if this test case has comparison metadata
+        var comparisonGroup = ExtractComparisonGroupFromMessage(message);
+        if (!string.IsNullOrEmpty(comparisonGroup))
+        {
+            // Create a batch ID that includes the test class and comparison group
+            var testClassName = ExtractTestClassName(message);
+            return await Task.FromResult($"Comparison_{testClassName}_{comparisonGroup}").ConfigureAwait(false);
+        }
 
         // Use grouping ID from performance metrics if available
         var groupingId = message.PerformanceMetrics?.GroupingId;
@@ -569,6 +577,20 @@ public class TestCaseBatchingService : ITestCaseBatchingService, IDisposable
             BatchingStrategy.None => message.TestCaseId,
             _ => "Unknown"
         };
+    }
+
+    /// <summary>
+    /// Extracts the comparison group from a test completion message metadata.
+    /// </summary>
+    /// <param name="message">The test completion message.</param>
+    /// <returns>The comparison group name, or null if not found.</returns>
+    private string? ExtractComparisonGroupFromMessage(TestCompletionQueueMessage message)
+    {
+        if (message.Metadata.TryGetValue("ComparisonGroup", out var group))
+        {
+            return group?.ToString();
+        }
+        return null;
     }
 
     /// <summary>

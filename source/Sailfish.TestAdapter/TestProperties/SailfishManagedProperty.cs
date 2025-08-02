@@ -43,4 +43,24 @@ public static class SailfishManagedProperty
         o => !string.IsNullOrWhiteSpace(o as string),
         TestPropertyAttributes.Hidden,
         typeof(SailfishManagedProperty));
+
+    public static readonly TestProperty SailfishComparisonGroupProperty = TestProperty.Register(
+        "Sailfish.ComparisonGroup",
+        "ComparisonGroup",
+        string.Empty,
+        string.Empty,
+        typeof(string),
+        o => o == null || !string.IsNullOrWhiteSpace(o as string),
+        TestPropertyAttributes.Hidden,
+        typeof(SailfishManagedProperty));
+
+    public static readonly TestProperty SailfishComparisonRoleProperty = TestProperty.Register(
+        "Sailfish.ComparisonRole",
+        "ComparisonRole",
+        string.Empty,
+        string.Empty,
+        typeof(string),
+        o => o == null || !string.IsNullOrWhiteSpace(o as string),
+        TestPropertyAttributes.Hidden,
+        typeof(SailfishManagedProperty));
 }

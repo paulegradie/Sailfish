@@ -102,6 +102,15 @@ public class TestCompletionQueueConsumer : IDisposable
     public int ProcessorCount => _processors.Count;
 
     /// <summary>
+    /// Gets a snapshot of all registered processors.
+    /// </summary>
+    /// <returns>An array of all currently registered processors.</returns>
+    public ITestCompletionQueueProcessor[] GetProcessors()
+    {
+        return _processors.ToArray();
+    }
+
+    /// <summary>
     /// Registers a processor to receive test completion messages from the queue.
     /// </summary>
     /// <param name="processor">

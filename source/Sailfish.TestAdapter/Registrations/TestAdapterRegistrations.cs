@@ -139,9 +139,16 @@ internal class TestAdapterRegistrations : IProvideAdditionalRegistrations
             .SingleInstance();
 
         // Queue manager - singleton to coordinate queue lifecycle
-        builder.RegisterType<TestCompletionQueueManager>()
-            .AsSelf()
-            .SingleInstance();
+        // Use factory registration to inject processors from container
+        builder.Register(context =>
+        {
+            var queue = context.Resolve<ITestCompletionQueue>();
+            var processors = context.Resolve<ITestCompletionQueueProcessor[]>();
+            var logger = context.Resolve<ILogger>();
+            return new TestCompletionQueueManager(queue, processors, logger);
+        })
+        .AsSelf()
+        .SingleInstance();
 
         // Queue consumer - singleton to maintain processing state
         builder.RegisterType<TestCompletionQueueConsumer>()
@@ -248,6 +255,18 @@ internal class TestAdapterRegistrations : IProvideAdditionalRegistrations
                 .InstancePerDependency();
         }
 
+        // Method comparison processors - register conditionally based on configuration
+        if (configuration.EnableMethodComparison)
+        {
+            builder.RegisterType<MethodComparisonProcessor>()
+                .As<ITestCompletionQueueProcessor>()
+                .InstancePerDependency();
+
+            builder.RegisterType<MethodComparisonBatchProcessor>()
+                .AsSelf()
+                .InstancePerDependency();
+        }
+
         // Additional processors will be registered here as they are implemented
         // in future phases of the queue migration project
     }
@@ -290,9 +309,8 @@ internal class TestAdapterRegistrations : IProvideAdditionalRegistrations
     {
         // TODO: Integrate with existing Sailfish settings system in future tasks
         // For now, return default configuration with queue disabled for backward compatibility
-        return new QueueConfiguration
+        var config = new QueueConfiguration
         {
-            IsEnabled = false, // Disabled by default for backward compatibility
             MaxQueueCapacity = 1000,
             PublishTimeoutMs = 5000,
             ProcessingTimeoutMs = 30000,
@@ -305,7 +323,16 @@ internal class TestAdapterRegistrations : IProvideAdditionalRegistrations
             EnableLoggingProcessor = false,
             EnableComparisonAnalysis = false,
             EnableFallbackPublishing = true,
-            LogLevel = "Information"
+            LogLevel = "Information",
+            EnableMethodComparison = true,
+            ComparisonDetectionStrategy = ComparisonDetectionStrategy.ByTestCaseCount,
+            ComparisonTimeoutMs = 30000
         };
+
+        // Enable queue system when method comparison is enabled
+        // This ensures the comparison feature works while maintaining backward compatibility
+        config.IsEnabled = config.EnableMethodComparison;
+
+        return config;
     }
 }

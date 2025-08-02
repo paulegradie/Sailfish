@@ -3,6 +3,9 @@ using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
 using Sailfish.Attributes;
 using Sailfish.Registration;
+using System.Net.Http;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace Tests.E2E.TestSuite.Utils;
 

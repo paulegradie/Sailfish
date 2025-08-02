@@ -66,7 +66,7 @@ public class FrameworkPublishingProcessor : TestCompletionQueueProcessorBase
     /// <summary>
     /// Metadata key for storing the formatted test output message.
     /// </summary>
-    private const string TestOutputMessageMetadataKey = "TestOutputMessage";
+    private const string TestOutputMessageMetadataKey = "FormattedMessage";
 
     /// <summary>
     /// Metadata key for storing the test execution start time.
@@ -124,6 +124,16 @@ public class FrameworkPublishingProcessor : TestCompletionQueueProcessorBase
 
         try
         {
+            // Check if this is a comparison method - if so, skip publishing here
+            // The MethodComparisonBatchProcessor will handle publishing enhanced results
+            if (IsComparisonMethod(message))
+            {
+                Logger.Log(LogLevel.Debug,
+                    "Skipping framework publishing for comparison method '{0}' - will be handled by MethodComparisonBatchProcessor",
+                    message.TestCaseId);
+                return;
+            }
+
             // Extract required data from the message and metadata
             var testCase = ExtractTestCase(message);
             var testOutputMessage = ExtractTestOutputMessage(message);
@@ -294,6 +304,20 @@ public class FrameworkPublishingProcessor : TestCompletionQueueProcessorBase
 
         // Fallback for failed tests without exception details
         return new Exception("Test failed without specific exception details");
+    }
+
+    /// <summary>
+    /// Determines if a test case is a comparison method that should be handled by MethodComparisonBatchProcessor.
+    /// </summary>
+    /// <param name="message">The test completion queue message to check.</param>
+    /// <returns>True if this is a comparison method, false otherwise.</returns>
+    private static bool IsComparisonMethod(TestCompletionQueueMessage message)
+    {
+        // Check if the message has comparison metadata
+        var hasComparisonGroup = message.Metadata.TryGetValue("ComparisonGroup", out var groupObj) &&
+                                 groupObj is string group && !string.IsNullOrEmpty(group);
+
+        return hasComparisonGroup;
     }
 
     #endregion

@@ -16,6 +16,7 @@ using Sailfish.Presentation;
 using Sailfish.TestAdapter.Display.TestOutputWindow;
 using Sailfish.TestAdapter.Execution;
 using Sailfish.TestAdapter.Queue.Contracts;
+using Sailfish.TestAdapter.TestProperties;
 
 namespace Sailfish.TestAdapter.Queue.Mapping;
 
@@ -483,7 +484,14 @@ internal class TestCompletionMessageMapper : ITestCompletionMessageMapper
             var comparisonGroupId = ExtractComparisonGroupId(currentTestCase);
             if (!string.IsNullOrEmpty(comparisonGroupId))
             {
-                metadata["ComparisonGroupId"] = comparisonGroupId;
+                metadata["ComparisonGroup"] = comparisonGroupId;
+            }
+
+            // Comparison role information for method comparison processing
+            var comparisonRole = ExtractComparisonRole(currentTestCase);
+            if (!string.IsNullOrEmpty(comparisonRole))
+            {
+                metadata["ComparisonRole"] = comparisonRole;
             }
 
             // Custom criteria for ByCustomCriteria batching
@@ -582,26 +590,35 @@ internal class TestCompletionMessageMapper : ITestCompletionMessageMapper
     {
         try
         {
-            // Look for comparison-related traits or properties
-            // This is a placeholder implementation - actual implementation would depend on
-            // how comparison groups are defined in Sailfish attributes
-            var traits = testCase.Traits;
-            foreach (var trait in traits)
-            {
-                if (trait.Name.Contains("Comparison", StringComparison.OrdinalIgnoreCase) ||
-                    trait.Name.Contains("Group", StringComparison.OrdinalIgnoreCase))
-                {
-                    return trait.Value;
-                }
-            }
-
-            // Could also extract from test case properties or other metadata
-            return null;
+            // Extract comparison group from Sailfish test case properties
+            var comparisonGroup = testCase.GetPropertyValue<string>(SailfishManagedProperty.SailfishComparisonGroupProperty, null);
+            return comparisonGroup;
         }
         catch (Exception ex)
         {
             logger.Log(LogLevel.Debug, ex,
                 "Failed to extract comparison group ID: {0}", ex.Message);
+            return null;
+        }
+    }
+
+    /// <summary>
+    /// Extracts comparison role from a test case's properties.
+    /// </summary>
+    /// <param name="testCase">The test case to extract comparison role from.</param>
+    /// <returns>Comparison role or null if not found.</returns>
+    private string? ExtractComparisonRole(TestCase testCase)
+    {
+        try
+        {
+            // Extract comparison role from Sailfish test case properties
+            var comparisonRole = testCase.GetPropertyValue<string>(SailfishManagedProperty.SailfishComparisonRoleProperty, null);
+            return comparisonRole;
+        }
+        catch (Exception ex)
+        {
+            logger.Log(LogLevel.Debug, ex,
+                "Failed to extract comparison role: {0}", ex.Message);
             return null;
         }
     }
