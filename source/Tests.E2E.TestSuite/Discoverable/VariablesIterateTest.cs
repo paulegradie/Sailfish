@@ -1,5 +1,6 @@
 ﻿using Sailfish.Attributes;
 using Shouldly;
+using System.Collections.Generic;
 
 namespace Tests.E2E.TestSuite.Discoverable;
 

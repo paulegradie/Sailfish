@@ -1,6 +1,7 @@
 using Autofac;
 using Demo.API;
 using Microsoft.AspNetCore.Mvc.Testing;
+using System;
 
 namespace Tests.E2E.TestSuite.Utils;
 

@@ -1,4 +1,6 @@
 ﻿using Sailfish.Contracts.Public.Serialization.Tracking.V1;
+using System;
+using System.Collections.Generic;
 
 namespace Tests.Common.Builders;
 

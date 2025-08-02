@@ -1,5 +1,6 @@
 using Microsoft.CodeAnalysis.Testing;
 using Sailfish.Analyzers.DiagnosticAnalyzers.SailfishVariable;
+using System.Threading.Tasks;
 using Tests.Analyzers.Utils;
 using Xunit;
 using Verify = Microsoft.CodeAnalysis.CSharp.Testing.XUnit.AnalyzerVerifier<Sailfish.Analyzers.DiagnosticAnalyzers.SailfishVariable.ShouldBePublicAnalyzer>;
