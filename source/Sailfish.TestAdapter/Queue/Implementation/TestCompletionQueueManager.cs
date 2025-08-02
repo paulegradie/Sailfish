@@ -1,9 +1,11 @@
 ﻿using System;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Sailfish.Logging;
 using Sailfish.TestAdapter.Queue.Configuration;
 using Sailfish.TestAdapter.Queue.Contracts;
+using Sailfish.TestAdapter.Queue.Processors;
 
 namespace Sailfish.TestAdapter.Queue.Implementation;
 
@@ -51,11 +53,11 @@ namespace Sailfish.TestAdapter.Queue.Implementation;
 /// </remarks>
 public class TestCompletionQueueManager : IDisposable
 {
-    private readonly ITestCompletionQueueFactory _factory;
+    private readonly ITestCompletionQueue _queue;
+    private readonly ITestCompletionQueueProcessor[] _processors;
     private readonly ILogger _logger;
     private readonly object _lock = new object();
-    
-    private ITestCompletionQueue? _queue;
+
     private TestCompletionQueueConsumer? _consumer;
     private bool _isRunning;
     private bool _isDisposed;
@@ -89,12 +91,12 @@ public class TestCompletionQueueManager : IDisposable
     /// </summary>
     /// <value>
     /// The current <see cref="ITestCompletionQueue"/> instance, or <c>null</c> if the manager
-    /// is not running or no queue has been created.
+    /// is not running or has been disposed.
     /// </value>
     /// <remarks>
-    /// This property provides access to the current queue instance for publishing test completion
-    /// messages. The queue instance is created during startup and disposed during shutdown.
-    /// Callers should check that the manager is running before using the queue instance.
+    /// This property provides access to the queue instance for publishing test completion
+    /// messages. The queue instance is injected during construction and managed throughout
+    /// the manager's lifecycle. Callers should check that the manager is running before using the queue instance.
     /// </remarks>
     public ITestCompletionQueue? Queue
     {
@@ -110,9 +112,13 @@ public class TestCompletionQueueManager : IDisposable
     /// <summary>
     /// Initializes a new instance of the <see cref="TestCompletionQueueManager"/> class.
     /// </summary>
-    /// <param name="factory">
-    /// The factory service for creating queue instances. Used to create queue instances
-    /// based on configuration settings during manager startup.
+    /// <param name="queue">
+    /// The queue instance to manage. This should be the same singleton instance used by
+    /// the publisher to ensure consistent queue state across the system.
+    /// </param>
+    /// <param name="processors">
+    /// The collection of processors to register with the queue consumer for message processing.
+    /// These processors will handle test completion messages from the queue.
     /// </param>
     /// <param name="logger">
     /// The logger service for recording manager operations, lifecycle events,
@@ -120,18 +126,20 @@ public class TestCompletionQueueManager : IDisposable
     /// and monitoring manager usage.
     /// </param>
     /// <exception cref="ArgumentNullException">
-    /// Thrown when <paramref name="factory"/> or <paramref name="logger"/> is null.
+    /// Thrown when <paramref name="queue"/>, <paramref name="processors"/>, or <paramref name="logger"/> is null.
     /// </exception>
     /// <remarks>
-    /// The manager requires a factory for creating queue instances and a logger for
-    /// comprehensive diagnostic information and error reporting. These dependencies
-    /// are typically injected by the DI container during manager registration and instantiation.
+    /// The manager uses the provided queue instance directly instead of creating a new one.
+    /// This ensures that the manager and publisher work with the same queue instance,
+    /// preventing race conditions and state inconsistencies. The processors are registered
+    /// with the consumer during startup to enable message processing.
     /// </remarks>
-    public TestCompletionQueueManager(ITestCompletionQueueFactory factory, ILogger logger)
+    public TestCompletionQueueManager(ITestCompletionQueue queue, ITestCompletionQueueProcessor[] processors, ILogger logger)
     {
-        _factory = factory ?? throw new ArgumentNullException(nameof(factory));
+        _queue = queue ?? throw new ArgumentNullException(nameof(queue));
+        _processors = processors ?? throw new ArgumentNullException(nameof(processors));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-        
+
         _isRunning = false;
         _isDisposed = false;
     }
@@ -194,26 +202,31 @@ public class TestCompletionQueueManager : IDisposable
 
         try
         {
-            // Create the queue instance using the factory
-            var queue = await _factory.CreateQueueAsync(configuration, cancellationToken).ConfigureAwait(false);
-            
-            // Create the consumer service
-            var consumer = new TestCompletionQueueConsumer(queue, _logger);
-            
+            // Create the consumer service using the injected queue instance
+            var consumer = new TestCompletionQueueConsumer(_queue, _logger);
+
+            // Register all processors with the consumer
+            foreach (var processor in _processors)
+            {
+                consumer.RegisterProcessor(processor);
+                _logger.Log(LogLevel.Debug, "Registered processor: {0}", processor.GetType().Name);
+            }
+
+            _logger.Log(LogLevel.Information, "Registered {0} processors with queue consumer", _processors.Length);
+
             // Start the queue
-            await queue.StartAsync(cancellationToken).ConfigureAwait(false);
-            
+            await _queue.StartAsync(cancellationToken).ConfigureAwait(false);
+
             // Start the consumer
             await consumer.StartAsync(cancellationToken).ConfigureAwait(false);
-            
+
             lock (_lock)
             {
-                _queue = queue;
                 _consumer = consumer;
                 _isRunning = true;
             }
-            
-            _logger.Log(LogLevel.Information, 
+
+            _logger.Log(LogLevel.Information,
                 "Test completion queue manager started successfully");
         }
         catch (Exception ex)
@@ -281,13 +294,16 @@ public class TestCompletionQueueManager : IDisposable
             {
                 await consumer.StopAsync(cancellationToken).ConfigureAwait(false);
             }
-            
+
             // Stop the queue
             if (queue != null)
             {
                 await queue.StopAsync(cancellationToken).ConfigureAwait(false);
             }
-            
+
+            // Process any completed batches for method comparisons
+            await ProcessCompletedBatchesForComparisons(cancellationToken).ConfigureAwait(false);
+
             _logger.Log(LogLevel.Information,
                 "Test completion queue manager stopped successfully");
         }
@@ -445,7 +461,6 @@ public class TestCompletionQueueManager : IDisposable
         {
             queue = _queue;
             consumer = _consumer;
-            _queue = null;
             _consumer = null;
         }
 
@@ -481,6 +496,41 @@ public class TestCompletionQueueManager : IDisposable
         }
 
         await Task.CompletedTask.ConfigureAwait(false);
+    }
+
+    /// <summary>
+    /// Processes completed batches for method comparisons after queue processing is complete.
+    /// </summary>
+    /// <param name="cancellationToken">Cancellation token for the operation.</param>
+    /// <returns>A task representing the asynchronous operation.</returns>
+    private async Task ProcessCompletedBatchesForComparisons(CancellationToken cancellationToken)
+    {
+        try
+        {
+            _logger.Log(LogLevel.Information, "Processing completed batches for method comparisons...");
+
+            // Get the MethodComparisonProcessor from the consumer's processors
+            var consumer = _consumer;
+            if (consumer != null)
+            {
+                var processors = consumer.GetProcessors();
+                var comparisonProcessor = processors.OfType<MethodComparisonProcessor>().FirstOrDefault();
+
+                if (comparisonProcessor != null)
+                {
+                    await comparisonProcessor.ProcessCompletedBatchesAsync(cancellationToken).ConfigureAwait(false);
+                }
+                else
+                {
+                    _logger.Log(LogLevel.Debug, "No MethodComparisonProcessor found - skipping batch comparison processing");
+                }
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.Log(LogLevel.Error, ex,
+                "Failed to process completed batches for method comparisons: {0}", ex.Message);
+        }
     }
 
     /// <summary>

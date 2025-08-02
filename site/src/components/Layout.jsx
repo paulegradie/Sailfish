@@ -24,6 +24,7 @@ const navigation = [
         title: 'Sailfish Basics',
         links: [
             { title: 'Required Attributes', href: '/docs/1/required-attributes' },
+            { title: 'Method Comparisons', href: '/docs/1/method-comparisons' },
             { title: 'Variables', href: '/docs/1/sailfish-variables' },
             { title: 'The Test Lifecycle', href: '/docs/1/sailfish-test-lifecycle' },
             { title: 'Test Dependencies', href: '/docs/1/test-dependencies' },

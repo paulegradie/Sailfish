@@ -18,6 +18,7 @@ using Sailfish.TestAdapter.Execution;
 using Sailfish.TestAdapter.Handlers.FrameworkHandlers;
 using Sailfish.TestAdapter.Queue.Configuration;
 using Sailfish.TestAdapter.Queue.Contracts;
+using Sailfish.TestAdapter.TestProperties;
 
 namespace Sailfish.TestAdapter.Handlers.TestCaseEvents;
 
@@ -417,7 +418,11 @@ internal class TestCaseCompletedNotificationHandler : INotificationHandler<TestC
                 ["ClassExecutionSummaries"] = classExecutionSummaries,
                 ["CompiledTestCaseResult"] = compiledTestCaseResult,
                 ["TestCaseGroup"] = notification.TestCaseGroup,
-                ["RunSettings"] = runSettings
+                ["RunSettings"] = runSettings,
+
+                // Comparison metadata (if present)
+                ["ComparisonGroup"] = ExtractComparisonGroup(currentTestCase) ?? (object)DBNull.Value,
+                ["ComparisonRole"] = ExtractComparisonRole(currentTestCase) ?? (object)DBNull.Value
             }
         };
 
@@ -485,6 +490,42 @@ internal class TestCaseCompletedNotificationHandler : INotificationHandler<TestC
         }
 
         return preloadedLastRunsIfAvailable;
+    }
+
+    /// <summary>
+    /// Extracts the comparison group from a test case's properties.
+    /// </summary>
+    /// <param name="testCase">The test case to extract from.</param>
+    /// <returns>The comparison group name, or null if not found.</returns>
+    private string? ExtractComparisonGroup(TestCase testCase)
+    {
+        try
+        {
+            var value = testCase.GetPropertyValue<string>(SailfishManagedProperty.SailfishComparisonGroupProperty, null);
+            return value;
+        }
+        catch
+        {
+            return null;
+        }
+    }
+
+    /// <summary>
+    /// Extracts the comparison role from a test case's properties.
+    /// </summary>
+    /// <param name="testCase">The test case to extract from.</param>
+    /// <returns>The comparison role (Before/After), or null if not found.</returns>
+    private string? ExtractComparisonRole(TestCase testCase)
+    {
+        try
+        {
+            var value = testCase.GetPropertyValue<string>(SailfishManagedProperty.SailfishComparisonRoleProperty, null);
+            return value;
+        }
+        catch
+        {
+            return null;
+        }
     }
 
     #endregion

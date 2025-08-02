@@ -225,6 +225,7 @@ public class TestExecutor : ITestExecutor
     {
         // Check if queue system is enabled
         var queueConfiguration = container.ResolveOptional<QueueConfiguration>();
+
         if (queueConfiguration == null || !queueConfiguration.IsEnabled)
         {
             return; // Queue system is disabled, nothing to start
@@ -232,6 +233,10 @@ public class TestExecutor : ITestExecutor
 
         var logger = container.ResolveOptional<ILogger>();
         logger?.Log(LogLevel.Information, "Starting queue services for test execution...");
+
+        // Debug: Log queue configuration status
+        logger?.Log(LogLevel.Information, "Queue configuration - IsEnabled: {0}, EnableMethodComparison: {1}",
+            queueConfiguration.IsEnabled, queueConfiguration.EnableMethodComparison);
 
         // Resolve queue services
         var queueManager = container.ResolveOptional<TestCompletionQueueManager>();

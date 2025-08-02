@@ -233,6 +233,54 @@ public class QueueConfiguration
     public bool EnableComparisonAnalysis { get; set; } = false;
 
     /// <summary>
+    /// Gets or sets whether method comparison processing is enabled.
+    /// When enabled, methods marked with SailfishComparisonAttribute will be
+    /// grouped and compared when full test classes are executed.
+    /// </summary>
+    /// <value>
+    /// <c>true</c> to enable method comparison processing; <c>false</c> to disable.
+    /// Default is <c>true</c>.
+    /// </value>
+    /// <remarks>
+    /// This setting enables the method comparison feature that performs SailDiff analysis
+    /// between methods marked with SailfishComparisonAttribute. When enabled, methods with
+    /// the same comparison group will be compared against each other when the full test
+    /// class is executed. Individual method execution will not trigger comparisons.
+    /// </remarks>
+    [JsonPropertyName("enableMethodComparison")]
+    public bool EnableMethodComparison { get; set; } = true;
+
+    /// <summary>
+    /// Gets or sets the strategy for detecting full class execution vs individual method execution.
+    /// </summary>
+    /// <value>
+    /// The strategy used to determine when to perform method comparisons.
+    /// Default is <c>ComparisonDetectionStrategy.ByTestCaseCount</c>.
+    /// </value>
+    /// <remarks>
+    /// This setting controls when method comparisons are performed:
+    /// - ByTestCaseCount: Compare executed methods vs all SailfishMethods in class
+    /// - Always: Perform comparisons when comparison groups are complete
+    /// - Never: Disable method comparison processing
+    /// </remarks>
+    [JsonPropertyName("comparisonDetectionStrategy")]
+    public ComparisonDetectionStrategy ComparisonDetectionStrategy { get; set; } = ComparisonDetectionStrategy.ByTestCaseCount;
+
+    /// <summary>
+    /// Gets or sets the timeout for comparison processing in milliseconds.
+    /// </summary>
+    /// <value>
+    /// The timeout in milliseconds for method comparison operations. Default is 30000 (30 seconds).
+    /// </value>
+    /// <remarks>
+    /// This timeout prevents comparison processing from hanging indefinitely when performing
+    /// SailDiff analysis between methods. If comparison processing takes longer than this
+    /// timeout, it will be cancelled and the test will continue with normal results.
+    /// </remarks>
+    [JsonPropertyName("comparisonTimeoutMs")]
+    public int ComparisonTimeoutMs { get; set; } = 30000;
+
+    /// <summary>
     /// Gets or sets a value indicating whether fallback to direct framework publishing is enabled
     /// when queue processing fails.
     /// </summary>

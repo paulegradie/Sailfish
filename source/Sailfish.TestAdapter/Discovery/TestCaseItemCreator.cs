@@ -30,6 +30,7 @@ internal static class TestCaseItemCreator
                     methodMetaData.LineNumber,
                     propertyNames,
                     propertyValues,
+                    methodMetaData.ComparisonGroup,
                     hashAlgorithm);
             }
         }
@@ -43,6 +44,7 @@ internal static class TestCaseItemCreator
         int lineNumber,
         IEnumerable<string> propertyNames,
         IEnumerable<object> propertyValues,
+        string? comparisonGroup,
         IHashAlgorithm hasher)
     {
         var testCaseId = DisplayNameHelper.CreateTestCaseId(testType, methodName, propertyNames.ToArray(), propertyValues.ToArray());
@@ -67,6 +69,12 @@ internal static class TestCaseItemCreator
         testCase.SetPropertyValue(SailfishManagedProperty.SailfishMethodFilterProperty, $"{methodName}");
         testCase.SetPropertyValue(SailfishManagedProperty.SailfishDisplayNameDefinitionProperty, testCaseId.DisplayName);
         testCase.SetPropertyValue(SailfishManagedProperty.SailfishFormedVariableSectionDefinitionProperty, testCaseId.TestCaseVariables.FormVariableSection());
+
+        // comparison properties (if present)
+        if (!string.IsNullOrEmpty(comparisonGroup))
+        {
+            testCase.SetPropertyValue(SailfishManagedProperty.SailfishComparisonGroupProperty, comparisonGroup);
+        }
 
         return testCase;
     }

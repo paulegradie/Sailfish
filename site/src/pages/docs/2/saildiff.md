@@ -6,7 +6,16 @@ title: SailDiff
 
 **SailDiff** is a tool for running automated **before & after** statistical testing on Sailfish tracking data.
 
+SailDiff operates in two main modes:
+
+1. **Historical Comparisons**: Compare current test runs against previously saved tracking data
+2. **Method Comparisons**: Compare multiple methods within a single test run using the `[SailfishComparison]` attribute
+
 When enabled, tracking data will be used for comparison to the current run and will produce various measurements describing the difference between two runs for each available test case. Depending on how you run Sailfish, SailDiff will presents its results either via StdOut, a test output window, or via an output file.
+
+### Method Comparisons
+
+For real-time method comparisons within a single test run, see the [Method Comparisons](/docs/1/method-comparisons) documentation. This feature allows you to compare multiple algorithms or implementations automatically using the `[SailfishComparison("GroupName")]` attribute.
 
 ## Enabling / Configuring SailDiff
 
