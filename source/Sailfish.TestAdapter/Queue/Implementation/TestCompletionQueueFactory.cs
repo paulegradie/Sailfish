@@ -93,10 +93,10 @@ public class TestCompletionQueueFactory : ITestCompletionQueueFactory
 
         try
         {
-            // Create the in-memory queue instance
-            var queue = new InMemoryTestCompletionQueue();
-            
-            _logger.Log(LogLevel.Information, 
+            // Create the in-memory queue instance with the configured capacity
+            var queue = new InMemoryTestCompletionQueue(configuration.MaxQueueCapacity);
+
+            _logger.Log(LogLevel.Information,
                 "Successfully created in-memory test completion queue with capacity: {0}, " +
                 "batch processing enabled: {1}, max batch size: {2}",
                 configuration.MaxQueueCapacity, configuration.EnableBatchProcessing, configuration.MaxBatchSize);
@@ -201,7 +201,7 @@ public class TestCompletionQueueFactory : ITestCompletionQueueFactory
             "InMemory - High-performance in-memory queue using System.Threading.Channels. " +
             "Provides thread-safe operations within the test adapter process lifetime. " +
             "Optimized for test execution scenarios with no persistence requirements. " +
-            "Supports unbounded capacity for high-throughput test suites. " +
+            "Supports configurable bounded capacity for controlled memory usage. " +
             "Includes proper lifecycle management and graceful shutdown capabilities."
         };
 

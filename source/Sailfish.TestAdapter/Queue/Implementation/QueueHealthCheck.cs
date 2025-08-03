@@ -11,6 +11,18 @@ using Sailfish.TestAdapter.Queue.Contracts;
 namespace Sailfish.TestAdapter.Queue.Implementation;
 
 /// <summary>
+/// Interface for collecting processing time metrics from queue operations.
+/// </summary>
+public interface IProcessingMetricsCollector
+{
+    /// <summary>
+    /// Records the processing time for a completed operation.
+    /// </summary>
+    /// <param name="durationMs">The processing duration in milliseconds.</param>
+    void RecordProcessingTime(double durationMs);
+}
+
+/// <summary>
 /// Service that monitors the health and performance of the queue system.
 /// This service is part of the intercepting queue architecture that enables comprehensive monitoring
 /// and diagnostics of queue operations, processing rates, and system performance.
@@ -43,7 +55,7 @@ namespace Sailfish.TestAdapter.Queue.Implementation;
 /// Monitoring operations are performed asynchronously and use efficient data structures
 /// to minimize memory allocation and processing overhead.
 /// </remarks>
-public class QueueHealthCheck : IQueueHealthCheck, IDisposable
+public class QueueHealthCheck : IQueueHealthCheck, IProcessingMetricsCollector, IDisposable
 {
     private readonly TestCompletionQueueManager _queueManager;
     private readonly QueueConfiguration _configuration;
@@ -57,7 +69,8 @@ public class QueueHealthCheck : IQueueHealthCheck, IDisposable
     private QueueHealthStatus _lastHealthStatus;
     
     // Metrics tracking
-    private readonly ConcurrentQueue<DateTime> _processingTimes = new();
+    private readonly ConcurrentQueue<double> _processingTimes = new();
+    private readonly ConcurrentQueue<DateTime> _processingTimestamps = new();
     private readonly ConcurrentQueue<double> _queueDepthHistory = new();
     private volatile int _totalMessagesProcessed;
     private volatile int _totalErrors;
@@ -92,6 +105,33 @@ public class QueueHealthCheck : IQueueHealthCheck, IDisposable
     }
 
     /// <inheritdoc />
+    public void RecordProcessingTime(double durationMs)
+    {
+        if (durationMs < 0)
+        {
+            return; // Ignore invalid durations
+        }
+
+        var timestamp = DateTime.UtcNow;
+        _processingTimes.Enqueue(durationMs);
+        _processingTimestamps.Enqueue(timestamp);
+
+        // Keep only recent processing times (last 1000 entries to prevent unbounded growth)
+        while (_processingTimes.Count > 1000)
+        {
+            _processingTimes.TryDequeue(out _);
+        }
+
+        while (_processingTimestamps.Count > 1000)
+        {
+            _processingTimestamps.TryDequeue(out _);
+        }
+
+        // Increment total messages processed counter
+        Interlocked.Increment(ref _totalMessagesProcessed);
+    }
+
+    /// <inheritdoc />
     public event EventHandler<QueueHealthStatusChangedEventArgs>? HealthStatusChanged;
 
     /// <inheritdoc />
@@ -118,7 +158,10 @@ public class QueueHealthCheck : IQueueHealthCheck, IDisposable
             // Initialize tracking
             _startTime = DateTime.UtcNow;
             ResetMetrics();
-            
+
+            // Register this health check as the metrics collector for the queue manager
+            _queueManager.SetMetricsCollector(this);
+
             // Start the monitoring timer
             _monitoringTimer = new Timer(
                 PerformHealthCheck,
@@ -259,6 +302,7 @@ public class QueueHealthCheck : IQueueHealthCheck, IDisposable
     private void ResetMetrics()
     {
         _processingTimes.Clear();
+        _processingTimestamps.Clear();
         _queueDepthHistory.Clear();
         _totalMessagesProcessed = 0;
         _totalErrors = 0;
@@ -538,11 +582,11 @@ public class QueueHealthCheck : IQueueHealthCheck, IDisposable
     private double CalculateProcessingRate()
     {
         var now = DateTime.UtcNow;
-        var recentProcessingTimes = _processingTimes.ToArray()
+        var recentProcessingTimestamps = _processingTimestamps.ToArray()
             .Where(time => (now - time).TotalMinutes <= 1) // Last minute
             .ToArray();
 
-        return recentProcessingTimes.Length; // Messages per minute, approximated as per second
+        return recentProcessingTimestamps.Length / 60.0; // Convert from messages per minute to messages per second
     }
 
     /// <summary>
@@ -551,9 +595,8 @@ public class QueueHealthCheck : IQueueHealthCheck, IDisposable
     /// <returns>Average processing time in milliseconds.</returns>
     private double CalculateAverageProcessingTime()
     {
-        // This would require tracking actual processing durations
-        // For now, return a placeholder based on configuration
-        return _configuration.ProcessingTimeoutMs * 0.1; // Assume 10% of timeout as average
+        var durations = _processingTimes.ToArray();
+        return durations.Length > 0 ? durations.Average() : 0;
     }
 
     /// <summary>

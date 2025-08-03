@@ -62,6 +62,12 @@ public class QueuePerformanceOptimizer : IQueuePerformanceOptimizer, IDisposable
     private DateTime _lastOptimization = DateTime.MinValue;
     private int _optimizationCount;
 
+    // Throughput optimization constants
+    private const double QueueDepthThreshold = 0.6;
+    private const double CapacityIncreaseFactor = 1.3;
+    private const int MaxBatchSizeLimit = 100;
+    private const int BatchSizeIncrement = 20;
+
     /// <summary>
     /// Initializes a new instance of the <see cref="QueuePerformanceOptimizer"/> class.
     /// </summary>
@@ -865,17 +871,17 @@ public class QueuePerformanceOptimizer : IQueuePerformanceOptimizer, IDisposable
         var optimizations = new List<string>();
 
         // Increase queue capacity for better throughput
-        if (metrics.QueueDepth > _configuration.MaxQueueCapacity * 0.6)
+        if (metrics.QueueDepth > _configuration.MaxQueueCapacity * QueueDepthThreshold)
         {
-            var newCapacity = (int)(_configuration.MaxQueueCapacity * 1.3);
+            var newCapacity = (int)(_configuration.MaxQueueCapacity * CapacityIncreaseFactor);
             _configuration.MaxQueueCapacity = newCapacity;
             optimizations.Add($"Increased queue capacity to {newCapacity} for better throughput");
         }
 
         // Increase batch size for better throughput
-        if (_configuration.MaxBatchSize < 100)
+        if (_configuration.MaxBatchSize < MaxBatchSizeLimit)
         {
-            var newBatchSize = Math.Min(_configuration.MaxBatchSize + 20, 100);
+            var newBatchSize = Math.Min(_configuration.MaxBatchSize + BatchSizeIncrement, MaxBatchSizeLimit);
             _configuration.MaxBatchSize = newBatchSize;
             optimizations.Add($"Increased batch size to {newBatchSize} for better throughput");
         }

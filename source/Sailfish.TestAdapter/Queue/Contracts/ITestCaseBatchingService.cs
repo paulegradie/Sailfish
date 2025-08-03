@@ -38,7 +38,7 @@ namespace Sailfish.TestAdapter.Queue.Contracts;
 /// Thread safety: All operations must be thread-safe to support concurrent test execution
 /// where multiple test cases may complete simultaneously and need to be added to batches.
 /// </remarks>
-public interface ITestCaseBatchingService
+internal interface ITestCaseBatchingService
 {
     #region Core Batching Operations
 

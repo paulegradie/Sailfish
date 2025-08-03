@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Collections.Concurrent;
+using System.Diagnostics;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using Sailfish.Logging;
 using Sailfish.TestAdapter.Queue.Contracts;
+using Sailfish.TestAdapter.Queue.Implementation;
 
 namespace Sailfish.TestAdapter.Queue.Implementation;
 
@@ -49,6 +51,7 @@ public class TestCompletionQueueConsumer : IDisposable
     private readonly ITestCompletionQueue _queue;
     private readonly ILogger _logger;
     private readonly ConcurrentBag<ITestCompletionQueueProcessor> _processors;
+    private readonly IProcessingMetricsCollector? _metricsCollector;
     
     private Task? _processingTask;
     private CancellationTokenSource? _cancellationTokenSource;
@@ -66,6 +69,10 @@ public class TestCompletionQueueConsumer : IDisposable
     /// The logger service for recording consumer operations, errors, and diagnostic information.
     /// Used to log processing lifecycle events, processor failures, and other significant events.
     /// </param>
+    /// <param name="metricsCollector">
+    /// Optional metrics collector for tracking processing performance. If provided,
+    /// processing times will be recorded for health monitoring and analysis.
+    /// </param>
     /// <exception cref="ArgumentNullException">
     /// Thrown when <paramref name="queue"/> or <paramref name="logger"/> is null.
     /// </exception>
@@ -74,12 +81,13 @@ public class TestCompletionQueueConsumer : IDisposable
     /// comprehensive error reporting and diagnostic information. These dependencies are
     /// typically injected by the DI container during service registration and instantiation.
     /// </remarks>
-    public TestCompletionQueueConsumer(ITestCompletionQueue queue, ILogger logger)
+    public TestCompletionQueueConsumer(ITestCompletionQueue queue, ILogger logger, IProcessingMetricsCollector? metricsCollector = null)
     {
         _queue = queue ?? throw new ArgumentNullException(nameof(queue));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        _metricsCollector = metricsCollector;
         _processors = new ConcurrentBag<ITestCompletionQueueProcessor>();
-        
+
         _isRunning = false;
         _isDisposed = false;
     }
@@ -405,7 +413,12 @@ public class TestCompletionQueueConsumer : IDisposable
         {
             try
             {
+                var stopwatch = Stopwatch.StartNew();
                 await processor.ProcessTestCompletion(message, cancellationToken).ConfigureAwait(false);
+                stopwatch.Stop();
+
+                // Record processing time if metrics collector is available
+                _metricsCollector?.RecordProcessingTime(stopwatch.Elapsed.TotalMilliseconds);
 
                 // Success - no need to retry
                 if (attempt > 1)

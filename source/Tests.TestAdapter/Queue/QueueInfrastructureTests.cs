@@ -210,7 +210,7 @@ public class QueueInfrastructureTests
     public async Task InMemoryTestCompletionQueue_Start_ShouldSetRunningState()
     {
         // Arrange
-        using var queue = new InMemoryTestCompletionQueue();
+        using var queue = new InMemoryTestCompletionQueue(1000);
 
         // Act
         await queue.StartAsync(CancellationToken.None);
@@ -227,7 +227,7 @@ public class QueueInfrastructureTests
     public async Task InMemoryTestCompletionQueue_StartTwice_ShouldThrowInvalidOperationException()
     {
         // Arrange
-        using var queue = new InMemoryTestCompletionQueue();
+        using var queue = new InMemoryTestCompletionQueue(1000);
         await queue.StartAsync(CancellationToken.None);
 
         // Act & Assert
@@ -242,7 +242,7 @@ public class QueueInfrastructureTests
     public async Task InMemoryTestCompletionQueue_EnqueueDequeue_ShouldWorkCorrectly()
     {
         // Arrange
-        using var queue = new InMemoryTestCompletionQueue();
+        using var queue = new InMemoryTestCompletionQueue(1000);
         await queue.StartAsync(CancellationToken.None);
         var message = CreateTestMessage();
 
@@ -263,7 +263,7 @@ public class QueueInfrastructureTests
     public async Task InMemoryTestCompletionQueue_EnqueueAfterStop_ShouldThrowInvalidOperationException()
     {
         // Arrange
-        using var queue = new InMemoryTestCompletionQueue();
+        using var queue = new InMemoryTestCompletionQueue(1000);
         await queue.StartAsync(CancellationToken.None);
         await queue.StopAsync(CancellationToken.None);
         var message = CreateTestMessage();
@@ -271,6 +271,33 @@ public class QueueInfrastructureTests
         // Act & Assert
         await Should.ThrowAsync<InvalidOperationException>(
             () => queue.EnqueueAsync(message, CancellationToken.None));
+    }
+
+    /// <summary>
+    /// Tests that InMemoryTestCompletionQueue throws when constructed with invalid capacity.
+    /// </summary>
+    [Fact]
+    public void InMemoryTestCompletionQueue_InvalidCapacity_ShouldThrowArgumentOutOfRangeException()
+    {
+        // Act & Assert
+        Should.Throw<ArgumentOutOfRangeException>(() => new InMemoryTestCompletionQueue(0));
+        Should.Throw<ArgumentOutOfRangeException>(() => new InMemoryTestCompletionQueue(-1));
+    }
+
+    /// <summary>
+    /// Tests that InMemoryTestCompletionQueue accepts valid capacity values.
+    /// </summary>
+    [Fact]
+    public void InMemoryTestCompletionQueue_ValidCapacity_ShouldCreateSuccessfully()
+    {
+        // Act & Assert
+        using var queue1 = new InMemoryTestCompletionQueue(1);
+        using var queue2 = new InMemoryTestCompletionQueue(1000);
+        using var queue3 = new InMemoryTestCompletionQueue(int.MaxValue);
+
+        queue1.ShouldNotBeNull();
+        queue2.ShouldNotBeNull();
+        queue3.ShouldNotBeNull();
     }
 
     #endregion
@@ -594,7 +621,7 @@ public class QueueInfrastructureTests
     public async Task QueueOperations_WithCancellationToken_ShouldRespectCancellation()
     {
         // Arrange
-        using var queue = new InMemoryTestCompletionQueue();
+        using var queue = new InMemoryTestCompletionQueue(1000);
         await queue.StartAsync(CancellationToken.None);
         using var cts = new CancellationTokenSource();
         cts.Cancel();
@@ -638,7 +665,7 @@ public class QueueInfrastructureTests
     public void QueueComponents_Disposal_ShouldCleanupResources()
     {
         // Arrange & Act
-        var queue = new InMemoryTestCompletionQueue();
+        var queue = new InMemoryTestCompletionQueue(1000);
         queue.Dispose();
 
         // Assert
@@ -646,6 +673,83 @@ public class QueueInfrastructureTests
         // Note: The actual implementation may not throw ObjectDisposedException for IsRunning
         // but should return false after disposal
         queue.IsRunning.ShouldBeFalse();
+    }
+
+    /// <summary>
+    /// Tests that QueueDepth property accurately tracks queue depth during enqueue/dequeue operations.
+    /// </summary>
+    [Fact]
+    public async Task InMemoryTestCompletionQueue_QueueDepth_ShouldTrackAccurately()
+    {
+        // Arrange
+        using var queue = new InMemoryTestCompletionQueue(1000);
+        await queue.StartAsync(CancellationToken.None);
+
+        // Assert initial depth
+        queue.QueueDepth.ShouldBe(0);
+
+        // Act - Enqueue first message
+        var message1 = CreateTestMessage();
+        await queue.EnqueueAsync(message1, CancellationToken.None);
+
+        // Assert depth after first enqueue
+        queue.QueueDepth.ShouldBe(1);
+
+        // Act - Enqueue second message
+        var message2 = CreateTestMessage();
+        await queue.EnqueueAsync(message2, CancellationToken.None);
+
+        // Assert depth after second enqueue
+        queue.QueueDepth.ShouldBe(2);
+
+        // Act - Dequeue first message
+        var dequeuedMessage1 = await queue.DequeueAsync(CancellationToken.None);
+
+        // Assert depth after first dequeue
+        queue.QueueDepth.ShouldBe(1);
+        dequeuedMessage1.ShouldNotBeNull();
+
+        // Act - Dequeue second message
+        var dequeuedMessage2 = await queue.DequeueAsync(CancellationToken.None);
+
+        // Assert depth after second dequeue
+        queue.QueueDepth.ShouldBe(0);
+        dequeuedMessage2.ShouldNotBeNull();
+    }
+
+    /// <summary>
+    /// Tests that QueueDepth property works correctly with TryDequeueAsync.
+    /// </summary>
+    [Fact]
+    public async Task InMemoryTestCompletionQueue_QueueDepth_WithTryDequeue_ShouldTrackAccurately()
+    {
+        // Arrange
+        using var queue = new InMemoryTestCompletionQueue(1000);
+        await queue.StartAsync(CancellationToken.None);
+
+        // Assert initial depth
+        queue.QueueDepth.ShouldBe(0);
+
+        // Act - Try dequeue from empty queue
+        var emptyResult = await queue.TryDequeueAsync(CancellationToken.None);
+
+        // Assert depth unchanged when no message available
+        queue.QueueDepth.ShouldBe(0);
+        emptyResult.ShouldBeNull();
+
+        // Act - Enqueue a message
+        var message = CreateTestMessage();
+        await queue.EnqueueAsync(message, CancellationToken.None);
+
+        // Assert depth after enqueue
+        queue.QueueDepth.ShouldBe(1);
+
+        // Act - Try dequeue with message available
+        var dequeuedMessage = await queue.TryDequeueAsync(CancellationToken.None);
+
+        // Assert depth after successful try dequeue
+        queue.QueueDepth.ShouldBe(0);
+        dequeuedMessage.ShouldNotBeNull();
     }
 
     #endregion

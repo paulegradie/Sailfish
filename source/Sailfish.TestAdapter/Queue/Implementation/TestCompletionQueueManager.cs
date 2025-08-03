@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using Sailfish.Logging;
 using Sailfish.TestAdapter.Queue.Configuration;
 using Sailfish.TestAdapter.Queue.Contracts;
+using Sailfish.TestAdapter.Queue.Implementation;
 using Sailfish.TestAdapter.Queue.Processors;
 
 namespace Sailfish.TestAdapter.Queue.Implementation;
@@ -58,6 +59,8 @@ public class TestCompletionQueueManager : IDisposable
     private readonly ILogger _logger;
     private readonly object _lock = new object();
 
+    private IProcessingMetricsCollector? _metricsCollector;
+
     private TestCompletionQueueConsumer? _consumer;
     private bool _isRunning;
     private bool _isDisposed;
@@ -83,6 +86,23 @@ public class TestCompletionQueueManager : IDisposable
             {
                 return _isRunning && !_isDisposed;
             }
+        }
+    }
+
+    /// <summary>
+    /// Sets the metrics collector for tracking processing performance.
+    /// This method allows late binding of the metrics collector to avoid circular dependencies.
+    /// </summary>
+    /// <param name="metricsCollector">The metrics collector to use for tracking processing times.</param>
+    /// <remarks>
+    /// This method is typically called during dependency injection setup to establish
+    /// the connection between the queue manager and health monitoring systems.
+    /// </remarks>
+    public void SetMetricsCollector(IProcessingMetricsCollector? metricsCollector)
+    {
+        lock (_lock)
+        {
+            _metricsCollector = metricsCollector;
         }
     }
 
@@ -133,6 +153,8 @@ public class TestCompletionQueueManager : IDisposable
     /// This ensures that the manager and publisher work with the same queue instance,
     /// preventing race conditions and state inconsistencies. The processors are registered
     /// with the consumer during startup to enable message processing.
+    ///
+    /// A metrics collector can be set later using SetMetricsCollector() to avoid circular dependencies.
     /// </remarks>
     public TestCompletionQueueManager(ITestCompletionQueue queue, ITestCompletionQueueProcessor[] processors, ILogger logger)
     {
@@ -203,7 +225,7 @@ public class TestCompletionQueueManager : IDisposable
         try
         {
             // Create the consumer service using the injected queue instance
-            var consumer = new TestCompletionQueueConsumer(_queue, _logger);
+            var consumer = new TestCompletionQueueConsumer(_queue, _logger, _metricsCollector);
 
             // Register all processors with the consumer
             foreach (var processor in _processors)

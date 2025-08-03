@@ -40,7 +40,7 @@ namespace Sailfish.TestAdapter.Queue.Implementation;
 /// All operations are thread-safe and designed to handle concurrent execution scenarios
 /// where multiple batches may timeout simultaneously or during active test execution.
 /// </remarks>
-public class BatchTimeoutHandler : IBatchTimeoutHandler, IDisposable
+internal class BatchTimeoutHandler : IBatchTimeoutHandler, IDisposable
 {
     private readonly ITestCaseBatchingService _batchingService;
     private readonly IMediator _mediator;

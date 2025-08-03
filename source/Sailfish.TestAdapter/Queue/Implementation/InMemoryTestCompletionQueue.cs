@@ -13,18 +13,19 @@ namespace Sailfish.TestAdapter.Queue.Implementation;
 /// </summary>
 /// <remarks>
 /// The InMemoryTestCompletionQueue is the primary queue implementation for the intercepting
-/// queue architecture. It uses an unbounded channel to provide high-throughput, thread-safe
-/// message queuing for test completion events. The queue supports the full lifecycle of
-/// test execution including graceful startup, shutdown, and completion detection.
-/// 
+/// queue architecture. It uses a bounded channel to provide high-throughput, thread-safe
+/// message queuing for test completion events with configurable capacity limits. The queue
+/// supports the full lifecycle of test execution including graceful startup, shutdown, and
+/// completion detection.
+///
 /// Key characteristics:
 /// - Thread-safe operations using System.Threading.Channels
 /// - In-memory only - no persistence across test runs
-/// - Unbounded capacity to handle high-throughput test scenarios
+/// - Bounded capacity with configurable limits to prevent memory issues
 /// - Proper lifecycle management with start/stop/complete operations
 /// - Graceful shutdown with completion detection
 /// - Comprehensive error handling for invalid operations
-/// 
+///
 /// The implementation is designed to be lightweight and efficient for the test adapter
 /// runtime environment where queue operations must not impact test execution performance.
 /// </remarks>
@@ -33,25 +34,42 @@ public class InMemoryTestCompletionQueue : ITestCompletionQueue, IDisposable
     private readonly Channel<TestCompletionQueueMessage> _channel;
     private readonly ChannelWriter<TestCompletionQueueMessage> _writer;
     private readonly ChannelReader<TestCompletionQueueMessage> _reader;
-    
+    private readonly int _maxCapacity;
+
     private volatile bool _isRunning;
     private volatile bool _isCompleted;
     private volatile bool _isDisposed;
+    private int _queueDepth;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="InMemoryTestCompletionQueue"/> class.
-    /// Creates an unbounded channel for high-throughput message processing.
+    /// Creates a bounded channel with the specified capacity for controlled memory usage.
     /// </summary>
-    public InMemoryTestCompletionQueue()
+    /// <param name="maxCapacity">
+    /// The maximum number of messages that can be queued. Must be greater than 0.
+    /// </param>
+    /// <exception cref="ArgumentOutOfRangeException">
+    /// Thrown when <paramref name="maxCapacity"/> is less than or equal to 0.
+    /// </exception>
+    public InMemoryTestCompletionQueue(int maxCapacity)
     {
-        // Create an unbounded channel for high-throughput scenarios
-        _channel = Channel.CreateUnbounded<TestCompletionQueueMessage>();
+        if (maxCapacity <= 0)
+        {
+            throw new ArgumentOutOfRangeException(nameof(maxCapacity),
+                "Maximum capacity must be greater than 0.");
+        }
+
+        _maxCapacity = maxCapacity;
+
+        // Create a bounded channel with the specified capacity
+        _channel = Channel.CreateBounded<TestCompletionQueueMessage>(maxCapacity);
         _writer = _channel.Writer;
         _reader = _channel.Reader;
-        
+
         _isRunning = false;
         _isCompleted = false;
         _isDisposed = false;
+        _queueDepth = 0;
     }
 
     /// <inheritdoc />
@@ -63,9 +81,7 @@ public class InMemoryTestCompletionQueue : ITestCompletionQueue, IDisposable
         get
         {
             ThrowIfDisposed();
-            // For unbounded channels, we can't get exact count efficiently without consuming messages
-            // Return 0 if completed or not running, otherwise we can't determine depth without side effects
-            return _isCompleted || !_isRunning ? 0 : 0;
+            return _queueDepth;
         }
     }
 
@@ -143,6 +159,7 @@ public class InMemoryTestCompletionQueue : ITestCompletionQueue, IDisposable
         try
         {
             await _writer.WriteAsync(message, cancellationToken).ConfigureAwait(false);
+            Interlocked.Increment(ref _queueDepth);
         }
         catch (InvalidOperationException ex)
         {
@@ -163,6 +180,7 @@ public class InMemoryTestCompletionQueue : ITestCompletionQueue, IDisposable
             {
                 if (_reader.TryRead(out var message))
                 {
+                    Interlocked.Decrement(ref _queueDepth);
                     return message;
                 }
             }
@@ -186,6 +204,7 @@ public class InMemoryTestCompletionQueue : ITestCompletionQueue, IDisposable
         // Try to read a message immediately without waiting
         if (_reader.TryRead(out var message))
         {
+            Interlocked.Decrement(ref _queueDepth);
             return Task.FromResult<TestCompletionQueueMessage?>(message);
         }
         
