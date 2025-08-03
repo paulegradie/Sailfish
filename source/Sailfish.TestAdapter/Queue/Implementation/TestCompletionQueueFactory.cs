@@ -134,7 +134,7 @@ public class TestCompletionQueueFactory : ITestCompletionQueueFactory
             EnableLoggingProcessor = false,
             EnableComparisonAnalysis = false,
             EnableFallbackPublishing = true,
-            LogLevel = "Information"
+            LogLevel = LogLevel.Information
         };
 
         _logger.Log(LogLevel.Information, "Using default queue configuration for queue creation");

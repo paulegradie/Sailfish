@@ -346,7 +346,7 @@ internal class TestAdapterRegistrations : IProvideAdditionalRegistrations
             EnableLoggingProcessor = false,
             EnableComparisonAnalysis = false,
             EnableFallbackPublishing = true,
-            LogLevel = "Information",
+            LogLevel = LogLevel.Information,
             EnableMethodComparison = true,
             ComparisonDetectionStrategy = ComparisonDetectionStrategy.ByTestCaseCount,
             ComparisonTimeoutMs = 30000

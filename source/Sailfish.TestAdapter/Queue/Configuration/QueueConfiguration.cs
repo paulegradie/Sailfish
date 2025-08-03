@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json.Serialization;
+using Sailfish.Logging;
 
 namespace Sailfish.TestAdapter.Queue.Configuration;
 
@@ -303,21 +304,21 @@ public class QueueConfiguration
     /// Gets or sets the log level for queue operations.
     /// </summary>
     /// <value>
-    /// The log level for queue-related logging. Default is "Information".
+    /// The log level for queue-related logging. Default is LogLevel.Information.
     /// </value>
     /// <remarks>
     /// This setting controls the verbosity of queue-related logging. Valid values include:
-    /// - "Trace": Very detailed logging for debugging
-    /// - "Debug": Detailed logging for development
-    /// - "Information": General operational information
-    /// - "Warning": Warning messages only
-    /// - "Error": Error messages only
-    /// - "Critical": Critical errors only
-    /// 
+    /// - LogLevel.Verbose: Very detailed logging for debugging
+    /// - LogLevel.Debug: Detailed logging for development
+    /// - LogLevel.Information: General operational information
+    /// - LogLevel.Warning: Warning messages only
+    /// - LogLevel.Error: Error messages only
+    /// - LogLevel.Fatal: Critical errors only
+    ///
     /// Higher verbosity levels may impact performance in high-throughput scenarios.
     /// </remarks>
     [JsonPropertyName("logLevel")]
-    public string LogLevel { get; set; } = "Information";
+    public LogLevel LogLevel { get; set; } = LogLevel.Information;
 
     /// <summary>
     /// Validates the configuration settings and returns any validation errors.
@@ -361,9 +362,8 @@ public class QueueConfiguration
         if (MaxBatchSize <= 0)
             errors.Add("MaxBatchSize must be greater than 0");
 
-        var validLogLevels = new[] { "Trace", "Debug", "Information", "Warning", "Error", "Critical" };
-        if (!validLogLevels.Contains(LogLevel, StringComparer.OrdinalIgnoreCase))
-            errors.Add($"LogLevel must be one of: {string.Join(", ", validLogLevels)}");
+        if (!Enum.IsDefined(typeof(LogLevel), LogLevel))
+            errors.Add($"LogLevel must be a valid LogLevel enum value");
 
         if (EnableBatchProcessing && MaxBatchSize > MaxQueueCapacity)
             errors.Add("MaxBatchSize cannot be greater than MaxQueueCapacity when batch processing is enabled");

@@ -491,7 +491,7 @@ public class TestCompletionQueueManager : IDisposable
         {
             try
             {
-                consumer.Dispose();
+                await consumer.DisposeAsync().ConfigureAwait(false);
             }
             catch (Exception ex)
             {

@@ -38,7 +38,7 @@ namespace Sailfish.TestAdapter.Queue.Implementation;
 /// All operations are thread-safe and designed to handle concurrent test execution scenarios
 /// where multiple test cases may complete simultaneously and need to be added to batches.
 /// </remarks>
-public class TestCaseBatchingService : ITestCaseBatchingService, IDisposable
+internal class TestCaseBatchingService : ITestCaseBatchingService, IDisposable
 {
     private readonly ILogger _logger;
     private readonly ConcurrentDictionary<string, TestCaseBatch> _batches;

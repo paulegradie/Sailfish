@@ -46,7 +46,7 @@ namespace Sailfish.TestAdapter.Queue.Implementation;
 /// of processors while the background processing loop is running. The service uses thread-safe
 /// collections and proper synchronization to ensure safe concurrent operations.
 /// </remarks>
-public class TestCompletionQueueConsumer : IDisposable
+public class TestCompletionQueueConsumer : IDisposable, IAsyncDisposable
 {
     private readonly ITestCompletionQueue _queue;
     private readonly ILogger _logger;
@@ -470,7 +470,44 @@ public class TestCompletionQueueConsumer : IDisposable
     }
 
     /// <summary>
+    /// Asynchronously releases all resources used by the <see cref="TestCompletionQueueConsumer"/>.
+    /// This is the preferred disposal method as it properly handles the async StopAsync operation.
+    /// </summary>
+    public async ValueTask DisposeAsync()
+    {
+        if (_isDisposed)
+        {
+            return;
+        }
+
+        _logger.Log(LogLevel.Information,
+            "Disposing test completion queue consumer service asynchronously");
+
+        // Stop the service if it's running
+        if (_isRunning)
+        {
+            try
+            {
+                await StopAsync(CancellationToken.None).ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                _logger.Log(LogLevel.Warning, ex,
+                    "Error occurred while stopping consumer service during async disposal");
+            }
+        }
+
+        _cancellationTokenSource?.Dispose();
+        _isDisposed = true;
+
+        _logger.Log(LogLevel.Information,
+            "Test completion queue consumer service disposed successfully");
+    }
+
+    /// <summary>
     /// Releases all resources used by the <see cref="TestCompletionQueueConsumer"/>.
+    /// Note: This method performs synchronous disposal without waiting for async operations to complete.
+    /// For proper async disposal, use DisposeAsync() instead.
     /// </summary>
     public void Dispose()
     {
@@ -480,19 +517,24 @@ public class TestCompletionQueueConsumer : IDisposable
         }
 
         _logger.Log(LogLevel.Information,
-            "Disposing test completion queue consumer service");
+            "Disposing test completion queue consumer service synchronously");
 
-        // Stop the service if it's running
+        // For synchronous disposal, we cancel and dispose without waiting
+        // to avoid blocking calls that could cause deadlocks
         if (_isRunning)
         {
             try
             {
-                StopAsync(CancellationToken.None).GetAwaiter().GetResult();
+                _isRunning = false;
+                _cancellationTokenSource?.Cancel();
+
+                _logger.Log(LogLevel.Information,
+                    "Consumer service cancellation requested during synchronous disposal");
             }
             catch (Exception ex)
             {
                 _logger.Log(LogLevel.Warning, ex,
-                    "Error occurred while stopping consumer service during disposal");
+                    "Error occurred while cancelling consumer service during synchronous disposal");
             }
         }
 
@@ -500,6 +542,6 @@ public class TestCompletionQueueConsumer : IDisposable
         _isDisposed = true;
 
         _logger.Log(LogLevel.Information,
-            "Test completion queue consumer service disposed successfully");
+            "Test completion queue consumer service disposed synchronously (background task may still be completing)");
     }
 }
