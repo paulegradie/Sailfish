@@ -20,6 +20,60 @@ Available on [Nuget](https://www.nuget.org/packages/Sailfish/)
 
 </h1>
 
+## 🚀 **Quick Start**
+
+Sailfish is a .NET performance testing framework that makes it easy to write, run, and analyze performance tests with statistical rigor.
+
+### **Basic Performance Test**
+
+```csharp
+[Sailfish]
+public class MyPerformanceTest
+{
+    [SailfishMethod]
+    public void TestMethod()
+    {
+        // Your code to test
+        Thread.Sleep(10);
+    }
+}
+```
+
+### **Method Comparisons**
+
+Compare multiple algorithms automatically:
+
+```csharp
+[WriteToMarkdown]  // Generate consolidated markdown output
+[WriteToCsv]       // Generate consolidated CSV output
+[Sailfish(SampleSize = 100)]
+public class AlgorithmComparison
+{
+    [SailfishMethod]
+    [SailfishComparison("SortingAlgorithms")]
+    public void BubbleSort() { /* implementation */ }
+
+    [SailfishMethod]
+    [SailfishComparison("SortingAlgorithms")]
+    public void QuickSort() { /* implementation */ }
+}
+```
+
+**Results include:**
+- 📊 **N×N comparison matrices** between all methods in each group
+- 📈 **Statistical significance testing** with p-values and confidence intervals
+- 📋 **Multiple output formats**: Test output, consolidated markdown, and CSV files
+- 🎯 **Performance ratios**: Clear "X times faster/slower" descriptions
+
+## ✨ **Key Features**
+
+- **🔬 Statistical Rigor**: Built-in outlier detection, multiple statistical tests, and significance analysis
+- **⚡ Method Comparisons**: Automatically compare multiple algorithms with `[SailfishComparison]`
+- **📊 Multiple Output Formats**: Test output, markdown, and CSV with session-based consolidation
+- **🎯 Easy Integration**: Works with existing test frameworks and CI/CD pipelines
+- **📈 Historical Analysis**: Compare current runs against previous results with SailDiff
+- **🔧 Highly Configurable**: Extensive customization options for test execution and analysis
+
 ### Used by:
 <img src="./assets/OctopusDeploy-logo-RGB.svg" alt="Octopus Deploy" style='width: 500px; background: white; border-radius: 10px' />
 <img src="./assets/empower.svg" alt="Octopus Deploy" style='width: 500px;  height: 150px; object-fit: cover; object-position: center; background: white; border-radius: 10px' />
