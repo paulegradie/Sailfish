@@ -25,7 +25,7 @@ namespace PerformanceTests.ExamplePerformanceTests;
 public class MethodComparisonExample
 {
     private readonly List<int> _data = new();
-
+ 
     [SailfishGlobalSetup]
     public void Setup()
     {
