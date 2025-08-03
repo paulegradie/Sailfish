@@ -42,8 +42,9 @@ internal class TestCaseBatchingService : ITestCaseBatchingService, IDisposable
 {
     private readonly ILogger _logger;
     private readonly ConcurrentDictionary<string, TestCaseBatch> _batches;
+    private readonly ConcurrentDictionary<string, object> _batchLocks;
     private readonly object _strategyLock = new();
-    
+
     private BatchingStrategy _currentStrategy = BatchingStrategy.ByTestClass;
     private bool _isStarted = false;
     private bool _isCompleted = false;
@@ -67,7 +68,8 @@ internal class TestCaseBatchingService : ITestCaseBatchingService, IDisposable
     {
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         _batches = new ConcurrentDictionary<string, TestCaseBatch>();
-        
+        _batchLocks = new ConcurrentDictionary<string, object>();
+
         _logger.Log(LogLevel.Debug, "TestCaseBatchingService initialized with default ByTestClass strategy");
     }
 
@@ -104,11 +106,11 @@ internal class TestCaseBatchingService : ITestCaseBatchingService, IDisposable
             var batch = _batches.GetOrAdd(batchId, id => CreateNewBatch(id, message));
             
             // Add the test case to the batch in a thread-safe manner
-            lock (batch)
+            lock (GetBatchLock(batchId))
             {
                 batch.TestCases.Add(message);
-                
-                _logger.Log(LogLevel.Debug, 
+
+                _logger.Log(LogLevel.Debug,
                     "Added test case '{0}' to batch '{1}'. Batch now contains {2} test cases.",
                     message.TestCaseId, batchId, batch.TestCases.Count);
             }
@@ -154,7 +156,7 @@ internal class TestCaseBatchingService : ITestCaseBatchingService, IDisposable
         foreach (var kvp in _batches)
         {
             var batch = kvp.Value;
-            lock (batch)
+            lock (GetBatchLock(batch.BatchId))
             {
                 if (IsBatchComplete(batch) && batch.Status != BatchStatus.Processing && batch.Status != BatchStatus.Processed)
                 {
@@ -163,12 +165,12 @@ internal class TestCaseBatchingService : ITestCaseBatchingService, IDisposable
                     {
                         batch.Status = BatchStatus.Complete;
                         batch.CompletedAt = DateTime.UtcNow;
-                        
-                        _logger.Log(LogLevel.Information, 
-                            "Batch '{0}' marked as complete with {1} test cases", 
+
+                        _logger.Log(LogLevel.Information,
+                            "Batch '{0}' marked as complete with {1} test cases",
                             batch.BatchId, batch.TestCases.Count);
                     }
-                    
+
                     completedBatches.Add(batch);
                 }
             }
@@ -218,11 +220,14 @@ internal class TestCaseBatchingService : ITestCaseBatchingService, IDisposable
         cancellationToken.ThrowIfCancellationRequested();
 
         var removed = _batches.TryRemove(batchId, out var batch);
-        
+
         if (removed && batch != null)
         {
-            _logger.Log(LogLevel.Debug, 
-                "Removed batch '{0}' containing {1} test cases from batching service", 
+            // Also remove the corresponding lock object to prevent memory leaks
+            _batchLocks.TryRemove(batchId, out _);
+
+            _logger.Log(LogLevel.Debug,
+                "Removed batch '{0}' containing {1} test cases from batching service",
                 batchId, batch.TestCases.Count);
         }
 
@@ -246,7 +251,7 @@ internal class TestCaseBatchingService : ITestCaseBatchingService, IDisposable
         }
 
         BatchStatus status;
-        lock (batch)
+        lock (GetBatchLock(batchId))
         {
             status = batch.Status;
         }
@@ -531,6 +536,17 @@ internal class TestCaseBatchingService : ITestCaseBatchingService, IDisposable
     }
 
     /// <summary>
+    /// Gets or creates a dedicated lock object for the specified batch ID.
+    /// This ensures thread-safe access to batch operations without locking on the batch object itself.
+    /// </summary>
+    /// <param name="batchId">The unique identifier for the batch.</param>
+    /// <returns>A lock object dedicated to the specified batch ID.</returns>
+    private object GetBatchLock(string batchId)
+    {
+        return _batchLocks.GetOrAdd(batchId, _ => new object());
+    }
+
+    /// <summary>
     /// Creates a new batch for the specified batch ID and initial test case.
     /// </summary>
     /// <param name="batchId">The unique identifier for the new batch.</param>
@@ -669,7 +685,7 @@ internal class TestCaseBatchingService : ITestCaseBatchingService, IDisposable
         foreach (var kvp in _batches)
         {
             var batch = kvp.Value;
-            lock (batch)
+            lock (GetBatchLock(batch.BatchId))
             {
                 if (batch.Status == BatchStatus.Pending)
                 {
@@ -729,8 +745,9 @@ internal class TestCaseBatchingService : ITestCaseBatchingService, IDisposable
                     StopAsync(CancellationToken.None).GetAwaiter().GetResult();
                 }
 
-                // Clear all batches
+                // Clear all batches and their corresponding lock objects
                 _batches.Clear();
+                _batchLocks.Clear();
 
                 _logger.Log(LogLevel.Debug, "TestCaseBatchingService disposed successfully");
             }

@@ -7,6 +7,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using MediatR;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel;
+using Sailfish.Analysis.SailDiff;
 using Sailfish.Analysis.SailDiff.Formatting;
 using Sailfish.Attributes;
 using Sailfish.Contracts.Private;
@@ -1446,8 +1447,8 @@ internal class MethodComparisonBatchProcessor
             Metadata = new ComparisonMetadata
             {
                 SampleSize = result.TestResultsWithOutlierAnalysis.StatisticalTestResult.SampleSizeBefore,
-                AlphaLevel = 0.05,
-                TestType = "T-Test",
+                AlphaLevel = comparisonResult.TestSettings.Alpha,
+                TestType = GetTestTypeDisplayName(comparisonResult.TestSettings.TestType),
                 OutliersRemoved = (result.TestResultsWithOutlierAnalysis.Sample1?.TotalNumOutliers ?? 0) +
                                  (result.TestResultsWithOutlierAnalysis.Sample2?.TotalNumOutliers ?? 0)
             },
@@ -1463,6 +1464,21 @@ internal class MethodComparisonBatchProcessor
             primaryMethod, comparedMethod, formattedOutput.Significance, formattedOutput.PercentageChange);
 
         return formattedOutput.FullOutput;
+    }
+
+    /// <summary>
+    /// Converts TestType enum to user-friendly display name
+    /// </summary>
+    private static string GetTestTypeDisplayName(TestType testType)
+    {
+        return testType switch
+        {
+            TestType.TwoSampleWilcoxonSignedRankTest => "Two-Sample Wilcoxon Signed-Rank Test",
+            TestType.WilcoxonRankSumTest => "Wilcoxon Rank-Sum Test",
+            TestType.Test => "T-Test",
+            TestType.KolmogorovSmirnovTest => "Kolmogorov-Smirnov Test",
+            _ => testType.ToString()
+        };
     }
 
     /// <summary>
