@@ -48,20 +48,18 @@ internal class MethodComparisonTestClassCompletedHandler : INotificationHandler<
         try
         {
             var testClass = notification.ClassExecutionSummaryTrackingFormat.TestClass;
-            
+
             _logger.Log(LogLevel.Debug,
-                "TestClassCompletedNotification received for class '{0}'",
+                "TestClassCompletedNotification received for class '{0}' - DISABLED: Session-based handler will generate consolidated markdown",
                 testClass.FullName);
 
-            // Check if the test class has the WriteToMarkdown attribute
-            var writeToMarkdownAttribute = testClass.GetCustomAttribute<WriteToMarkdownAttribute>();
-            if (writeToMarkdownAttribute == null)
-            {
-                _logger.Log(LogLevel.Debug,
-                    "Test class '{0}' does not have WriteToMarkdown attribute - skipping markdown generation",
-                    testClass.Name);
-                return;
-            }
+            // DISABLED: This handler is replaced by MethodComparisonTestRunCompletedHandler
+            // which generates consolidated session-based markdown files instead of per-class files.
+            // Skip all processing to prevent generating multiple individual files.
+            _logger.Log(LogLevel.Debug,
+                "Skipping per-class markdown generation for '{0}' - session-based consolidation handles all WriteToMarkdown classes",
+                testClass.Name);
+            return;
 
             _logger.Log(LogLevel.Information,
                 "Generating consolidated markdown for test class '{0}' with WriteToMarkdown attribute",

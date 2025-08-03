@@ -21,6 +21,7 @@ namespace PerformanceTests.ExamplePerformanceTests;
 /// - Run entire class: Method results + SailDiff comparison results shown
 /// </remarks>
 [WriteToMarkdown]
+[WriteToCsv]
 [Sailfish(DisableOverheadEstimation = true, SampleSize = 100)]
 public class MethodComparisonExample
 {

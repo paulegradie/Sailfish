@@ -311,8 +311,14 @@ internal class MethodComparisonProcessor : TestCompletionQueueProcessorBase
     {
         if (message.Metadata.TryGetValue("ComparisonGroup", out var group))
         {
-            return group?.ToString();
+            var groupName = group?.ToString();
+            Logger.Log(LogLevel.Information,
+                "Found comparison group '{0}' for test '{1}'", groupName, message.TestCaseId);
+            return groupName;
         }
+
+        Logger.Log(LogLevel.Debug,
+            "No comparison group found for test '{0}'", message.TestCaseId);
         return null;
     }
 
