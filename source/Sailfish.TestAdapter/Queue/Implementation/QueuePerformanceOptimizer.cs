@@ -42,7 +42,7 @@ namespace Sailfish.TestAdapter.Queue.Implementation;
 /// Optimization operations are performed asynchronously and use efficient algorithms
 /// to minimize processing overhead and resource usage.
 /// </remarks>
-public class QueuePerformanceOptimizer : IQueuePerformanceOptimizer, IDisposable
+public class QueuePerformanceOptimizer : IQueuePerformanceOptimizer, IDisposable, IAsyncDisposable
 {
     private readonly IQueueHealthCheck _healthCheck;
     private readonly QueueConfiguration _configuration;
@@ -1217,7 +1217,8 @@ public class QueuePerformanceOptimizer : IQueuePerformanceOptimizer, IDisposable
                 // Stop the optimizer if running
                 if (_isRunning)
                 {
-                    CleanupAsync().GetAwaiter().GetResult();
+                    // Perform synchronous cleanup to avoid deadlocks
+                    CleanupSynchronously();
                 }
             }
             catch (Exception ex)
@@ -1229,6 +1230,53 @@ public class QueuePerformanceOptimizer : IQueuePerformanceOptimizer, IDisposable
             {
                 _isDisposed = true;
             }
+        }
+    }
+
+    /// <summary>
+    /// Asynchronously disposes the performance optimizer and releases resources.
+    /// </summary>
+    /// <returns>A ValueTask representing the asynchronous disposal operation.</returns>
+    public async ValueTask DisposeAsync()
+    {
+        if (!_isDisposed)
+        {
+            try
+            {
+                // Stop the optimizer if running
+                if (_isRunning)
+                {
+                    await CleanupAsync().ConfigureAwait(false);
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.Log(LogLevel.Warning, ex,
+                    "Error occurred during performance optimizer async disposal: {0}", ex.Message);
+            }
+            finally
+            {
+                _isDisposed = true;
+                GC.SuppressFinalize(this);
+            }
+        }
+    }
+
+    /// <summary>
+    /// Performs synchronous cleanup to avoid blocking on async operations during disposal.
+    /// </summary>
+    private void CleanupSynchronously()
+    {
+        lock (_lock)
+        {
+            _isRunning = false;
+        }
+
+        // Dispose timer synchronously to avoid async deadlocks
+        if (_optimizationTimer != null)
+        {
+            _optimizationTimer.Dispose();
+            _optimizationTimer = null;
         }
     }
 }
