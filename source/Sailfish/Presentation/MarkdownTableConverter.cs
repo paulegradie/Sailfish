@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using Sailfish.Analysis.SailDiff.Formatting;
 using Sailfish.Analysis.ScaleFish;
 using Sailfish.Contracts.Public.Models;
 using Sailfish.Execution;
@@ -15,17 +16,47 @@ public interface IMarkdownTableConverter
 
     string ConvertToMarkdownTableString(IEnumerable<IClassExecutionSummary> executionSummaries, Func<IClassExecutionSummary, bool> summaryFilter);
 
+    string ConvertToEnhancedMarkdownTableString(IEnumerable<IClassExecutionSummary> executionSummaries);
+
+    string ConvertToEnhancedMarkdownTableString(IEnumerable<IClassExecutionSummary> executionSummaries, Func<IClassExecutionSummary, bool> summaryFilter);
+
     string ConvertScaleFishResultToMarkdown(IEnumerable<ScalefishClassModel> testClassComplexityResults);
 }
 
 public class MarkdownTableConverter : IMarkdownTableConverter
 {
+    private readonly ISailDiffUnifiedFormatter? _unifiedFormatter;
+
+    public MarkdownTableConverter()
+    {
+        // Default constructor for backward compatibility
+        _unifiedFormatter = null;
+    }
+
+    public MarkdownTableConverter(ISailDiffUnifiedFormatter unifiedFormatter)
+    {
+        _unifiedFormatter = unifiedFormatter ?? throw new ArgumentNullException(nameof(unifiedFormatter));
+    }
+
     public string ConvertToMarkdownTableString(
         IEnumerable<IClassExecutionSummary> executionSummaries,
         Func<IClassExecutionSummary, bool> summaryFilter)
     {
         var filteredSummaries = executionSummaries.Where(summaryFilter);
         return ConvertToMarkdownTableString(filteredSummaries);
+    }
+
+    public string ConvertToEnhancedMarkdownTableString(IEnumerable<IClassExecutionSummary> executionSummaries)
+    {
+        return ConvertToEnhancedMarkdownTableString(executionSummaries, _ => true);
+    }
+
+    public string ConvertToEnhancedMarkdownTableString(
+        IEnumerable<IClassExecutionSummary> executionSummaries,
+        Func<IClassExecutionSummary, bool> summaryFilter)
+    {
+        var filteredSummaries = executionSummaries.Where(summaryFilter);
+        return CreateEnhancedMarkdownOutput(filteredSummaries);
     }
 
     public string ConvertToMarkdownTableString(IEnumerable<IClassExecutionSummary> executionSummaries)
@@ -40,6 +71,125 @@ public class MarkdownTableConverter : IMarkdownTableConverter
         }
 
         AppendExceptions(allExceptions, stringBuilder);
+
+        return stringBuilder.ToString();
+    }
+
+    private string CreateEnhancedMarkdownOutput(IEnumerable<IClassExecutionSummary> executionSummaries)
+    {
+        var stringBuilder = new StringBuilder();
+
+        // Add document header
+        stringBuilder.AppendLine("# 📊 Performance Test Results");
+        stringBuilder.AppendLine();
+        stringBuilder.AppendLine($"**Generated:** {DateTime.UtcNow:yyyy-MM-dd HH:mm:ss} UTC");
+        stringBuilder.AppendLine();
+
+        var allExceptions = new List<Exception>();
+        var hasResults = false;
+
+        foreach (var result in executionSummaries)
+        {
+            if (result.CompiledTestCaseResults.Any())
+            {
+                hasResults = true;
+                AppendEnhancedResults(result.TestClass.Name, result.CompiledTestCaseResults, stringBuilder);
+                allExceptions.AddRange(result.CompiledTestCaseResults.Where(x => x.Exception is not null).Select(x => x.Exception).Cast<Exception>().ToList());
+            }
+        }
+
+        if (!hasResults)
+        {
+            stringBuilder.AppendLine("No performance test results available.");
+        }
+
+        AppendExceptions(allExceptions, stringBuilder);
+
+        return stringBuilder.ToString();
+    }
+
+    private static void AppendEnhancedResults(string typeName, IEnumerable<ICompiledTestCaseResult> compiledResults, StringBuilder stringBuilder)
+    {
+        stringBuilder.AppendLine($"## 🧪 {typeName}");
+        stringBuilder.AppendLine();
+
+        foreach (var group in compiledResults.GroupBy(x => x.GroupingId))
+        {
+            if (group.Key is null) continue;
+
+            var groupResults = group.ToList();
+            var n = groupResults.Select(x => x.PerformanceRunResult?.SampleSize).Distinct().Single();
+            if (n is null or 0) continue;
+
+            // Add group header if there are multiple groups
+            if (groupResults.Count > 1 || !string.IsNullOrEmpty(group.Key))
+            {
+                stringBuilder.AppendLine($"### 📈 {group.Key}");
+                stringBuilder.AppendLine();
+            }
+
+            // Add performance summary if unified formatter is available
+            var performanceSummary = CreatePerformanceSummary(groupResults);
+            if (!string.IsNullOrEmpty(performanceSummary))
+            {
+                stringBuilder.AppendLine(performanceSummary);
+                stringBuilder.AppendLine();
+            }
+
+            // Add detailed results table
+            var table = groupResults.ToStringTable(
+                typeName,
+                new List<string>
+                {
+                    "",
+                    "ms",
+                    "ms",
+                    "ms",
+                    ""
+                },
+                new List<string>
+                {
+                    "Display Name",
+                    "Mean",
+                    "Median",
+                    $"StdDev (N={n})",
+                    "Variance"
+                },
+                u => u.TestCaseId!.DisplayName,
+                u => u.PerformanceRunResult!.Mean,
+                u => u.PerformanceRunResult!.Median,
+                u => u.PerformanceRunResult!.StdDev,
+                u => u.PerformanceRunResult!.Variance
+            );
+
+            stringBuilder.AppendLine(table);
+            stringBuilder.AppendLine();
+        }
+    }
+
+    private static string CreatePerformanceSummary(List<ICompiledTestCaseResult> groupResults)
+    {
+        if (groupResults.Count < 2) return string.Empty;
+
+        var stringBuilder = new StringBuilder();
+        stringBuilder.AppendLine("**📊 Performance Summary:**");
+        stringBuilder.AppendLine();
+
+        // Find fastest and slowest methods
+        var validResults = groupResults.Where(r => r.PerformanceRunResult != null).ToList();
+        if (validResults.Count < 2) return string.Empty;
+
+        var fastest = validResults.OrderBy(r => r.PerformanceRunResult!.Mean).First();
+        var slowest = validResults.OrderByDescending(r => r.PerformanceRunResult!.Mean).First();
+
+        if (fastest.TestCaseId?.DisplayName != slowest.TestCaseId?.DisplayName)
+        {
+            var speedDifference = (slowest.PerformanceRunResult!.Mean - fastest.PerformanceRunResult!.Mean) / fastest.PerformanceRunResult!.Mean * 100;
+
+            stringBuilder.AppendLine($"- 🟢 **Fastest:** {fastest.TestCaseId?.DisplayName} ({fastest.PerformanceRunResult!.Mean:F3}ms)");
+            stringBuilder.AppendLine($"- 🔴 **Slowest:** {slowest.TestCaseId?.DisplayName} ({slowest.PerformanceRunResult!.Mean:F3}ms)");
+            stringBuilder.AppendLine($"- 📈 **Performance Gap:** {speedDifference:F1}% difference");
+        }
 
         return stringBuilder.ToString();
     }

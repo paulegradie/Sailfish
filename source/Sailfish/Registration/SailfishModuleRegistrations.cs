@@ -88,6 +88,8 @@ internal class SailfishModuleRegistrations : IProvideAdditionalRegistrations
         // Register enhanced SailDiffResultMarkdownConverter with unified formatter
         builder.RegisterType<SailDiffResultMarkdownConverter>().As<ISailDiffResultMarkdownConverter>();
         builder.RegisterType<SailfishExecutionEngine>().As<ISailfishExecutionEngine>().InstancePerDependency();
+
+        // Register enhanced MarkdownTableConverter with unified formatter
         builder.RegisterType<MarkdownTableConverter>().As<IMarkdownTableConverter>().InstancePerDependency();
         builder.RegisterType<TrackingFileParser>().As<ITrackingFileParser>();
         builder.RegisterType<SailDiff>().As<ISailDiffInternal>().InstancePerDependency();

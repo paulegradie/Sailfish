@@ -19,6 +19,18 @@ internal class SailfishWriteToMarkdownHandler(IMarkdownWriter markdownWriter, IR
         var fileName = DefaultFileSettings.AppendTagsToFilename(DefaultFileSettings.DefaultPerformanceResultsFileNameStem(runSettings.TimeStamp) + ".md", runSettings.Tags);
         var outputDirectory = runSettings.LocalOutputDirectory ?? DefaultFileSettings.DefaultOutputDirectory;
         if (!Directory.Exists(outputDirectory)) Directory.CreateDirectory(outputDirectory);
-        await markdownWriter.Write(notification.ClassExecutionSummaries, Path.Combine(outputDirectory, fileName), cancellationToken).ConfigureAwait(false);
+
+        var filePath = Path.Combine(outputDirectory, fileName);
+
+        // Try to use enhanced formatting if available, otherwise fall back to legacy
+        try
+        {
+            await markdownWriter.WriteEnhanced(notification.ClassExecutionSummaries, filePath, cancellationToken).ConfigureAwait(false);
+        }
+        catch (System.NotImplementedException)
+        {
+            // Fallback to legacy formatting if enhanced is not implemented
+            await markdownWriter.Write(notification.ClassExecutionSummaries, filePath, cancellationToken).ConfigureAwait(false);
+        }
     }
 }
