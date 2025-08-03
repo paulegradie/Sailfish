@@ -93,8 +93,8 @@ public class TestCompletionQueueFactory : ITestCompletionQueueFactory
 
         try
         {
-            // Create the in-memory queue instance with the configured capacity
-            var queue = new InMemoryTestCompletionQueue(configuration.MaxQueueCapacity);
+            // Create the in-memory queue instance with the full configuration
+            var queue = new InMemoryTestCompletionQueue(configuration);
 
             _logger.Log(LogLevel.Information,
                 "Successfully created in-memory test completion queue with capacity: {0}, " +

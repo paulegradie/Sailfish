@@ -214,8 +214,8 @@ public class QueueMetrics : IQueueMetrics, IDisposable
             var measurement = new Contracts.QueueDepthMeasurement(timestamp, depth);
             _queueDepthHistory.Enqueue(measurement);
 
-            // Cleanup old measurements to prevent memory leaks
-            CleanupOldQueueDepthMeasurements();
+            // Cleanup inactive metrics to prevent memory leaks
+            CleanupInactiveMetrics();
 
             _logger.Log(LogLevel.Debug, "Recorded queue depth: {0} at {1}", depth, timestamp);
         }
@@ -545,6 +545,74 @@ public class QueueMetrics : IQueueMetrics, IDisposable
         while (_queueDepthHistory.TryPeek(out var measurement) && measurement.Timestamp < cutoffTime)
         {
             _queueDepthHistory.TryDequeue(out _);
+        }
+    }
+
+    /// <summary>
+    /// Cleans up all inactive metrics to prevent memory leaks.
+    /// This method removes entries from all metric collections that have had no activity in the last 24 hours.
+    /// </summary>
+    private void CleanupInactiveMetrics()
+    {
+        var cutoffTime = DateTime.UtcNow.AddHours(-24); // Keep 24 hours of history
+
+        try
+        {
+            // Clean up existing queue depth measurements
+            CleanupOldQueueDepthMeasurements();
+
+            // Clean up inactive message metrics
+            var inactiveMessageKeys = _messageMetrics
+                .Where(kvp => !kvp.Value.HasActivityInPeriod(cutoffTime, DateTime.UtcNow))
+                .Select(kvp => kvp.Key)
+                .ToList();
+
+            foreach (var key in inactiveMessageKeys)
+            {
+                if (_messageMetrics.TryRemove(key, out _))
+                {
+                    _logger.Log(LogLevel.Debug, "Removed inactive message metric for test case: {0}", key);
+                }
+            }
+
+            // Clean up inactive batch metrics
+            var inactiveBatchKeys = _batchMetrics
+                .Where(kvp => !kvp.Value.HasActivityInPeriod(cutoffTime, DateTime.UtcNow))
+                .Select(kvp => kvp.Key)
+                .ToList();
+
+            foreach (var key in inactiveBatchKeys)
+            {
+                if (_batchMetrics.TryRemove(key, out _))
+                {
+                    _logger.Log(LogLevel.Debug, "Removed inactive batch metric for batch: {0}", key);
+                }
+            }
+
+            // Clean up inactive processor metrics
+            var inactiveProcessorKeys = _processorMetrics
+                .Where(kvp => !kvp.Value.HasActivityInPeriod(cutoffTime, DateTime.UtcNow))
+                .Select(kvp => kvp.Key)
+                .ToList();
+
+            foreach (var key in inactiveProcessorKeys)
+            {
+                if (_processorMetrics.TryRemove(key, out _))
+                {
+                    _logger.Log(LogLevel.Debug, "Removed inactive processor metric for processor: {0}", key);
+                }
+            }
+
+            if (inactiveMessageKeys.Any() || inactiveBatchKeys.Any() || inactiveProcessorKeys.Any())
+            {
+                _logger.Log(LogLevel.Debug,
+                    "Cleaned up inactive metrics: {0} messages, {1} batches, {2} processors",
+                    inactiveMessageKeys.Count, inactiveBatchKeys.Count, inactiveProcessorKeys.Count);
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.Log(LogLevel.Warning, ex, "Failed to cleanup inactive metrics: {0}", ex.Message);
         }
     }
 
@@ -904,6 +972,15 @@ internal class ProcessorMetric
             var errorRate = processed + failed > 0 ? (double)failed / (processed + failed) * 100 : 0;
 
             return new Contracts.ProcessorStats(processed, failed, averageTime, errorRate);
+        }
+    }
+
+    public bool HasActivityInPeriod(DateTime startTime, DateTime endTime)
+    {
+        lock (_lock)
+        {
+            return _processingEvents.Any(e => e.Timestamp >= startTime && e.Timestamp <= endTime) ||
+                   _failureEvents.Any(e => e.Timestamp >= startTime && e.Timestamp <= endTime);
         }
     }
 

@@ -105,11 +105,11 @@ public static class DiscoveryAnalysisMethods
                             from methodDeclaration in methodDeclarations
                             let lineSpan = syntaxTree.GetLineSpan(methodDeclaration.Span)
                             let lineNumber = lineSpan.StartLinePosition.Line + 1
-                            let comparisonInfo = ExtractComparisonInfo(methodDeclaration)
+                            let comparisonGroup = ExtractComparisonInfo(methodDeclaration)
                             select new MethodMetaData(
                                 methodDeclaration.Identifier.ValueText,
                                 lineNumber,
-                                comparisonInfo.Group))
+                                comparisonGroup))
                         .ToArray(),
                         syntaxTree: syntaxTree);
 
@@ -145,11 +145,11 @@ public static class DiscoveryAnalysisMethods
     }
 
     /// <summary>
-    /// Extracts comparison information from a method declaration's attributes.
+    /// Extracts comparison group information from a method declaration's attributes.
     /// </summary>
     /// <param name="methodDeclaration">The method declaration to analyze.</param>
-    /// <returns>A tuple containing the comparison group and role, or null values if no comparison attribute is found.</returns>
-    private static (string? Group, string? Role) ExtractComparisonInfo(MethodDeclarationSyntax methodDeclaration)
+    /// <returns>The comparison group name, or null if no comparison attribute is found.</returns>
+    private static string? ExtractComparisonInfo(MethodDeclarationSyntax methodDeclaration)
     {
         // Look for SailfishComparison attribute
         var comparisonAttribute = methodDeclaration.AttributeLists
@@ -160,22 +160,26 @@ public static class DiscoveryAnalysisMethods
 
         if (comparisonAttribute?.ArgumentList?.Arguments == null || comparisonAttribute.ArgumentList.Arguments.Count < 1)
         {
-            return (null, null);
+            return null;
         }
 
         try
         {
             // Extract comparison group (first and only argument)
             var groupArgument = comparisonAttribute.ArgumentList.Arguments[0];
-            var groupValue = ExtractStringLiteralValue(groupArgument.Expression);
-
-            // No role needed anymore - all methods in a group are compared with each other
-            return (groupValue, null);
+            return ExtractStringLiteralValue(groupArgument.Expression);
         }
-        catch
+        catch (ArgumentException ex)
         {
-            // If we can't parse the attribute arguments, return null values
-            return (null, null);
+            // If we can't parse the attribute arguments due to invalid argument format, return null
+            Debug.WriteLine($"[Sailfish.TestAdapter] Failed to parse SailfishComparison attribute arguments: {ex.Message}");
+            return null;
+        }
+        catch (InvalidOperationException ex)
+        {
+            // If we can't access the expression due to invalid syntax tree state, return null
+            Debug.WriteLine($"[Sailfish.TestAdapter] Failed to access SailfishComparison attribute expression: {ex.Message}");
+            return null;
         }
     }
 

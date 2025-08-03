@@ -300,6 +300,71 @@ public class QueueInfrastructureTests
         queue3.ShouldNotBeNull();
     }
 
+    /// <summary>
+    /// Tests that InMemoryTestCompletionQueue constructor with QueueConfiguration works correctly.
+    /// </summary>
+    [Fact]
+    public void InMemoryTestCompletionQueue_ConfigurationConstructor_ShouldCreateSuccessfully()
+    {
+        // Arrange
+        var config = new QueueConfiguration
+        {
+            MaxQueueCapacity = 500,
+            EnableBatchProcessing = true,
+            MaxBatchSize = 25
+        };
+
+        // Act
+        using var queue = new InMemoryTestCompletionQueue(config);
+
+        // Assert
+        queue.ShouldNotBeNull();
+        queue.Configuration.ShouldNotBeNull();
+        queue.Configuration.MaxQueueCapacity.ShouldBe(500);
+        queue.Configuration.EnableBatchProcessing.ShouldBeTrue();
+        queue.Configuration.MaxBatchSize.ShouldBe(25);
+        queue.MaxCapacity.ShouldBe(500);
+    }
+
+    /// <summary>
+    /// Tests that InMemoryTestCompletionQueue throws when configuration is null.
+    /// </summary>
+    [Fact]
+    public void InMemoryTestCompletionQueue_NullConfiguration_ShouldThrowArgumentNullException()
+    {
+        // Act & Assert
+        Should.Throw<ArgumentNullException>(() => new InMemoryTestCompletionQueue((QueueConfiguration)null!));
+    }
+
+    /// <summary>
+    /// Tests that InMemoryTestCompletionQueue throws when configuration has invalid capacity.
+    /// </summary>
+    [Fact]
+    public void InMemoryTestCompletionQueue_InvalidConfigurationCapacity_ShouldThrowArgumentOutOfRangeException()
+    {
+        // Arrange
+        var config1 = new QueueConfiguration { MaxQueueCapacity = 0 };
+        var config2 = new QueueConfiguration { MaxQueueCapacity = -1 };
+
+        // Act & Assert
+        Should.Throw<ArgumentOutOfRangeException>(() => new InMemoryTestCompletionQueue(config1));
+        Should.Throw<ArgumentOutOfRangeException>(() => new InMemoryTestCompletionQueue(config2));
+    }
+
+    /// <summary>
+    /// Tests that legacy constructor sets Configuration property to null.
+    /// </summary>
+    [Fact]
+    public void InMemoryTestCompletionQueue_LegacyConstructor_ShouldHaveNullConfiguration()
+    {
+        // Act
+        using var queue = new InMemoryTestCompletionQueue(1000);
+
+        // Assert
+        queue.Configuration.ShouldBeNull();
+        queue.MaxCapacity.ShouldBe(1000);
+    }
+
     #endregion
 
     #region TestCompletionQueuePublisher Tests

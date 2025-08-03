@@ -3,6 +3,7 @@ using System.Threading;
 using System.Threading.Channels;
 using System.Threading.Tasks;
 using Sailfish.TestAdapter.Queue.Contracts;
+using Sailfish.TestAdapter.Queue.Configuration;
 
 namespace Sailfish.TestAdapter.Queue.Implementation;
 
@@ -25,6 +26,13 @@ namespace Sailfish.TestAdapter.Queue.Implementation;
 /// - Proper lifecycle management with start/stop/complete operations
 /// - Graceful shutdown with completion detection
 /// - Comprehensive error handling for invalid operations
+/// - Configuration-aware with support for queue settings
+///
+/// Configuration Support:
+/// The queue accepts a QueueConfiguration object that controls various aspects of its behavior:
+/// - MaxQueueCapacity: Applied to the underlying channel capacity
+/// - EnableBatchProcessing, MaxBatchSize: Stored for future use by queue consumers
+/// - Other settings: Available via Configuration property for processors and consumers
 ///
 /// The implementation is designed to be lightweight and efficient for the test adapter
 /// runtime environment where queue operations must not impact test execution performance.
@@ -35,11 +43,54 @@ public class InMemoryTestCompletionQueue : ITestCompletionQueue, IDisposable
     private readonly ChannelWriter<TestCompletionQueueMessage> _writer;
     private readonly ChannelReader<TestCompletionQueueMessage> _reader;
     private readonly int _maxCapacity;
+    private readonly QueueConfiguration? _configuration;
 
     private volatile bool _isRunning;
     private volatile bool _isCompleted;
     private volatile bool _isDisposed;
     private int _queueDepth;
+
+    /// <summary>
+    /// Initializes a new instance of the <see cref="InMemoryTestCompletionQueue"/> class
+    /// with the specified configuration. Creates a bounded channel with the configured
+    /// capacity and stores configuration settings for use by queue consumers.
+    /// </summary>
+    /// <param name="configuration">
+    /// The queue configuration containing capacity, batch processing, and other settings.
+    /// Cannot be null.
+    /// </param>
+    /// <exception cref="ArgumentNullException">
+    /// Thrown when <paramref name="configuration"/> is null.
+    /// </exception>
+    /// <exception cref="ArgumentOutOfRangeException">
+    /// Thrown when <paramref name="configuration.MaxQueueCapacity"/> is less than or equal to 0.
+    /// </exception>
+    public InMemoryTestCompletionQueue(QueueConfiguration configuration)
+    {
+        if (configuration == null)
+        {
+            throw new ArgumentNullException(nameof(configuration));
+        }
+
+        if (configuration.MaxQueueCapacity <= 0)
+        {
+            throw new ArgumentOutOfRangeException(nameof(configuration),
+                "Maximum queue capacity must be greater than 0.");
+        }
+
+        _configuration = configuration;
+        _maxCapacity = configuration.MaxQueueCapacity;
+
+        // Create a bounded channel with the configured capacity
+        _channel = Channel.CreateBounded<TestCompletionQueueMessage>(_maxCapacity);
+        _writer = _channel.Writer;
+        _reader = _channel.Reader;
+
+        _isRunning = false;
+        _isCompleted = false;
+        _isDisposed = false;
+        _queueDepth = 0;
+    }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="InMemoryTestCompletionQueue"/> class.
@@ -51,6 +102,10 @@ public class InMemoryTestCompletionQueue : ITestCompletionQueue, IDisposable
     /// <exception cref="ArgumentOutOfRangeException">
     /// Thrown when <paramref name="maxCapacity"/> is less than or equal to 0.
     /// </exception>
+    /// <remarks>
+    /// This constructor is provided for backward compatibility. For full configuration support,
+    /// use the constructor that accepts a <see cref="QueueConfiguration"/> parameter.
+    /// </remarks>
     public InMemoryTestCompletionQueue(int maxCapacity)
     {
         if (maxCapacity <= 0)
@@ -59,6 +114,7 @@ public class InMemoryTestCompletionQueue : ITestCompletionQueue, IDisposable
                 "Maximum capacity must be greater than 0.");
         }
 
+        _configuration = null;
         _maxCapacity = maxCapacity;
 
         // Create a bounded channel with the specified capacity
@@ -71,6 +127,29 @@ public class InMemoryTestCompletionQueue : ITestCompletionQueue, IDisposable
         _isDisposed = false;
         _queueDepth = 0;
     }
+
+    /// <summary>
+    /// Gets the queue configuration used to initialize this queue instance.
+    /// Returns null if the queue was created using the legacy constructor.
+    /// </summary>
+    /// <value>
+    /// The <see cref="QueueConfiguration"/> used to create this queue, or null if created
+    /// with the legacy constructor that only accepts capacity.
+    /// </value>
+    /// <remarks>
+    /// This property provides access to the full configuration for queue consumers and processors
+    /// that need to access batch processing settings, timeouts, and other configuration values.
+    /// When null, consumers should use appropriate default values.
+    /// </remarks>
+    public QueueConfiguration? Configuration => _configuration;
+
+    /// <summary>
+    /// Gets the maximum capacity of the queue as configured during initialization.
+    /// </summary>
+    /// <value>
+    /// The maximum number of messages that can be queued simultaneously.
+    /// </value>
+    public int MaxCapacity => _maxCapacity;
 
     /// <inheritdoc />
     public bool IsRunning => _isRunning && !_isDisposed;
