@@ -55,7 +55,7 @@ public interface IProcessingMetricsCollector
 /// Monitoring operations are performed asynchronously and use efficient data structures
 /// to minimize memory allocation and processing overhead.
 /// </remarks>
-public class QueueHealthCheck : IQueueHealthCheck, IProcessingMetricsCollector, IDisposable
+public class QueueHealthCheck : IQueueHealthCheck, IProcessingMetricsCollector, IDisposable, IAsyncDisposable
 {
     private readonly TestCompletionQueueManager _queueManager;
     private readonly QueueConfiguration _configuration;
@@ -670,7 +670,32 @@ public class QueueHealthCheck : IQueueHealthCheck, IProcessingMetricsCollector, 
     }
 
     /// <summary>
-    /// Disposes the health check service and releases all resources.
+    /// Disposes the health check service and releases all resources asynchronously.
+    /// This is the preferred disposal method for async resource cleanup.
+    /// </summary>
+    public async ValueTask DisposeAsync()
+    {
+        if (_isDisposed)
+            return;
+
+        try
+        {
+            await CleanupAsync().ConfigureAwait(false);
+        }
+        catch (Exception ex)
+        {
+            _logger.Log(LogLevel.Warning, ex,
+                "Error occurred during QueueHealthCheck async disposal: {0}", ex.Message);
+        }
+
+        _isDisposed = true;
+        GC.SuppressFinalize(this);
+    }
+
+    /// <summary>
+    /// Disposes the health check service and releases all resources synchronously.
+    /// Note: This method performs synchronous cleanup only. For proper async resource disposal,
+    /// prefer using DisposeAsync() instead.
     /// </summary>
     public void Dispose()
     {
@@ -679,14 +704,24 @@ public class QueueHealthCheck : IQueueHealthCheck, IProcessingMetricsCollector, 
 
         try
         {
-            CleanupAsync().GetAwaiter().GetResult();
+            // Perform synchronous cleanup only to avoid deadlocks
+            lock (_lock)
+            {
+                _isRunning = false;
+            }
+
+            // For the timer, we can only dispose synchronously here
+            // The async disposal should be handled via DisposeAsync()
+            _monitoringTimer?.Dispose();
+            _monitoringTimer = null;
         }
         catch (Exception ex)
         {
             _logger.Log(LogLevel.Warning, ex,
-                "Error occurred during QueueHealthCheck disposal: {0}", ex.Message);
+                "Error occurred during QueueHealthCheck synchronous disposal: {0}", ex.Message);
         }
 
         _isDisposed = true;
+        GC.SuppressFinalize(this);
     }
 }
