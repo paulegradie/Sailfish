@@ -39,10 +39,8 @@ public class SailDiffConsoleWindowMessageFormatter : ISailDiffConsoleWindowMessa
         var stringBuilder = new StringBuilder();
         BuildHeader(stringBuilder, testIds.BeforeTestIds, testIds.AfterTestIds, sailDiffSettings);
 
-        // Try to use enhanced formatting if available
-        var resultsAsMarkdown = sailDiffResultMarkdownConverter is ISailDiffResultMarkdownConverter enhancedConverter
-            ? enhancedConverter.ConvertToEnhancedMarkdownTable(sailDiffResult, Formatting.OutputContext.Console)
-            : sailDiffResultMarkdownConverter.ConvertToMarkdownTable(sailDiffResult);
+        // Use enhanced formatting for console output
+        var resultsAsMarkdown = sailDiffResultMarkdownConverter.ConvertToEnhancedMarkdownTable(sailDiffResult, Formatting.OutputContext.Console);
 
         stringBuilder.AppendLine(resultsAsMarkdown);
         var result = stringBuilder.ToString();
