@@ -304,7 +304,6 @@ jobs:
           rm RELEASE_NOTES.md
 
       - name: Create Release
-      - name: Create Release
         uses: softprops/action-gh-release@v2
         with:
           tag_name: v${{ needs.set_version.outputs.version }}

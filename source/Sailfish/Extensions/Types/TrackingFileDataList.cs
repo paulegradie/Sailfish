@@ -12,9 +12,11 @@ public class TrackingFileDataList : List<List<IClassExecutionSummary>>
         return this.Select(preloadedLastRun =>
                 preloadedLastRun
                     .SelectMany(x => x.CompiledTestCaseResults)
-                    .FirstOrDefault(x => x.TestCaseId is not null && new TestCaseId(x.TestCaseId?.DisplayName!).Equals(displayName)))
+                    .FirstOrDefault(x =>
+                        x.TestCaseId is not null && new TestCaseId(x.TestCaseId?.DisplayName!).Equals(displayName)))
             .Where(x => x?.PerformanceRunResult is not null)
             .Cast<ICompiledTestCaseResult>()
             .FirstOrDefault();
     }
+    
 }
