@@ -332,7 +332,7 @@ internal interface ITestCaseBatchingService
 /// grouped together based on the batching strategy. The batch includes metadata
 /// about its creation, completion criteria, and current status.
 /// </remarks>
-public class TestCaseBatch
+internal class TestCaseBatch
 {
     /// <summary>
     /// Gets or sets the unique identifier for this batch.
@@ -392,7 +392,7 @@ public class TestCaseBatch
 /// <summary>
 /// Represents the current status of a test case batch.
 /// </summary>
-public enum BatchStatus
+internal enum BatchStatus
 {
     /// <summary>
     /// The batch is pending and waiting for more test cases.
@@ -428,7 +428,7 @@ public enum BatchStatus
 /// <summary>
 /// Defines the strategy used for grouping test cases into batches.
 /// </summary>
-public enum BatchingStrategy
+internal enum BatchingStrategy
 {
     /// <summary>
     /// Group test cases by their containing test class.
