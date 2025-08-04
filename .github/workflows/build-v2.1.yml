@@ -195,6 +195,13 @@ jobs:
           echo "Package file found: $EXPECTED_PACKAGE"
           ls -la "$EXPECTED_PACKAGE"
 
+      - name: Upload NuGet Packages
+        uses: actions/upload-artifact@v4
+        with:
+          name: nuget-packages-${{matrix.project}}
+          path: ${{matrix.project}}.${{ needs.set_version.outputs.version }}.nupkg
+          retention-days: 1
+
       - name: Push Packages to Nuget
         if: github.ref == 'refs/heads/main' && github.event_name == 'push'
         run: dotnet nuget push ${{matrix.project}}.${{ needs.set_version.outputs.version }}.nupkg --source https://www.nuget.org --api-key ${{secrets.NUGET_API_KEY}} --skip-duplicate
@@ -212,8 +219,9 @@ jobs:
       - name: Download NuGet packages
         uses: actions/download-artifact@v4
         with:
-          name: nuget-packages   # ← must match upload step
+          pattern: nuget-packages-*
           path: ./packages/
+          merge-multiple: true
 
       - name: Find NuGet packages
         id: find_packages
