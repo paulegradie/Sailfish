@@ -158,7 +158,7 @@ internal class TestCompletionMessageMapper : ITestCompletionMessageMapper
 
             return queueMessage;
         }
-        catch (Exception ex) when (!(ex is ArgumentNullException || ex is SailfishException))
+        catch (Exception ex) when (!(ex is ArgumentNullException || ex is SailfishException || ex is OperationCanceledException))
         {
             logger.Log(LogLevel.Error, ex,
                 "Failed to map test case completion notification to queue message for test '{0}': {1}",
@@ -254,6 +254,11 @@ internal class TestCompletionMessageMapper : ITestCompletionMessageMapper
 
             return testOutputWindowMessage;
         }
+        catch (OperationCanceledException)
+        {
+            // Re-throw cancellation exceptions to respect cancellation requests
+            throw;
+        }
         catch (Exception ex)
         {
             logger.Log(LogLevel.Warning, ex,
@@ -334,6 +339,11 @@ internal class TestCompletionMessageMapper : ITestCompletionMessageMapper
                 new GetAllTrackingDataOrderedChronologicallyRequest(),
                 cancellationToken);
             preloadedLastRunsIfAvailable.AddRange(response.TrackingData.Skip(1)); // the most recent is the current run
+        }
+        catch (OperationCanceledException)
+        {
+            // Re-throw cancellation exceptions to respect cancellation requests
+            throw;
         }
         catch (Exception ex)
         {

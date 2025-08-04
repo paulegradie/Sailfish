@@ -1,5 +1,6 @@
 ﻿using System.Threading;
 using System.Threading.Tasks;
+using Sailfish.TestAdapter.Queue.Configuration;
 
 namespace Sailfish.TestAdapter.Queue.Contracts;
 
@@ -45,6 +46,21 @@ public interface ITestCompletionQueue
     /// The number of test completion messages currently queued for processing.
     /// </value>
     int QueueDepth { get; }
+
+    /// <summary>
+    /// Gets the queue configuration used to initialize this queue instance.
+    /// Returns null if the queue was created using the legacy constructor.
+    /// </summary>
+    /// <value>
+    /// The <see cref="QueueConfiguration"/> used to create this queue, or null if created
+    /// with the legacy constructor that only accepts capacity.
+    /// </value>
+    /// <remarks>
+    /// This property provides access to the full configuration for queue consumers and processors
+    /// that need to access batch processing settings, timeouts, and other configuration values.
+    /// When null, consumers should use appropriate default values.
+    /// </remarks>
+    QueueConfiguration? Configuration { get; }
 
     /// <summary>
     /// Gets a value indicating whether the queue has been marked as complete

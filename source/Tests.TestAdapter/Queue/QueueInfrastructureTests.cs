@@ -10,6 +10,7 @@ using Sailfish.Contracts.Public.Notifications;
 using Sailfish.TestAdapter.Handlers.FrameworkHandlers;
 using Sailfish.TestAdapter.Queue.Configuration;
 using Sailfish.TestAdapter.Queue.Contracts;
+using Sailfish.TestAdapter.Queue.Extensions;
 using Sailfish.TestAdapter.Queue.Implementation;
 using Sailfish.TestAdapter.Queue.Processors;
 using Shouldly;
@@ -815,6 +816,57 @@ public class QueueInfrastructureTests
         // Assert depth after successful try dequeue
         queue.QueueDepth.ShouldBe(0);
         dequeuedMessage.ShouldNotBeNull();
+    }
+
+    #endregion
+
+    #region QueueExtensions Tests
+
+    /// <summary>
+    /// Tests that GetDiagnosticInfo returns null for Uptime when uptime tracking is not available.
+    /// </summary>
+    [Fact]
+    public async Task GetDiagnosticInfo_ShouldReturnNullUptime()
+    {
+        // Arrange
+        using var queue = new InMemoryTestCompletionQueue(1000);
+        await queue.StartAsync(CancellationToken.None);
+
+        // Act
+        var diagnosticInfo = queue.GetDiagnosticInfo();
+
+        // Assert
+        diagnosticInfo.ShouldNotBeNull();
+        diagnosticInfo.Uptime.ShouldBeNull();
+        diagnosticInfo.Status.ShouldNotBeNull();
+        diagnosticInfo.QueueType.ShouldBe("InMemoryTestCompletionQueue");
+        diagnosticInfo.AdditionalInfo.ShouldNotBeNull();
+        diagnosticInfo.AdditionalInfo.ShouldContainKey("QueueDepth");
+        diagnosticInfo.AdditionalInfo.ShouldContainKey("IsRunning");
+        diagnosticInfo.AdditionalInfo.ShouldContainKey("IsCompleted");
+        diagnosticInfo.AdditionalInfo.ShouldContainKey("IsHealthy");
+    }
+
+    /// <summary>
+    /// Tests that GetDiagnosticInfo includes correct additional information.
+    /// </summary>
+    [Fact]
+    public async Task GetDiagnosticInfo_ShouldIncludeCorrectAdditionalInfo()
+    {
+        // Arrange
+        using var queue = new InMemoryTestCompletionQueue(1000);
+        await queue.StartAsync(CancellationToken.None);
+        var message = CreateTestMessage();
+        await queue.EnqueueAsync(message, CancellationToken.None);
+
+        // Act
+        var diagnosticInfo = queue.GetDiagnosticInfo();
+
+        // Assert
+        diagnosticInfo.AdditionalInfo["QueueDepth"].ShouldBe(1);
+        diagnosticInfo.AdditionalInfo["IsRunning"].ShouldBe(true);
+        diagnosticInfo.AdditionalInfo["IsCompleted"].ShouldBe(false);
+        diagnosticInfo.AdditionalInfo["IsHealthy"].ShouldBe(true);
     }
 
     #endregion

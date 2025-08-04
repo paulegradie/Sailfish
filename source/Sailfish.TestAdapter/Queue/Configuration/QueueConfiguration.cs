@@ -362,6 +362,9 @@ public class QueueConfiguration
         if (MaxBatchSize <= 0)
             errors.Add("MaxBatchSize must be greater than 0");
 
+        if (ComparisonTimeoutMs <= 0)
+            errors.Add("ComparisonTimeoutMs must be greater than 0");
+
         if (!Enum.IsDefined(typeof(LogLevel), LogLevel))
             errors.Add($"LogLevel must be a valid LogLevel enum value");
 

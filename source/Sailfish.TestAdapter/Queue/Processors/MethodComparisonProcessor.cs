@@ -295,6 +295,11 @@ internal class MethodComparisonProcessor : TestCompletionQueueProcessorBase
                     batchId, comparisonMethods.Count);
             }
         }
+        catch (OperationCanceledException)
+        {
+            // Re-throw cancellation exceptions to respect cancellation requests
+            throw;
+        }
         catch (Exception ex)
         {
             Logger.Log(LogLevel.Error, ex,

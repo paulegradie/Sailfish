@@ -415,8 +415,9 @@ public static class QueueExtensions
     /// </exception>
     /// <remarks>
     /// This method provides detailed diagnostic information about the queue including
-    /// status, uptime estimation, queue type, and additional diagnostic details.
-    /// The uptime is estimated based on the queue's running state.
+    /// status, queue type, and additional diagnostic details. The uptime field will be
+    /// null when uptime tracking is not available, which requires queue implementations
+    /// to track their start time.
     /// </remarks>
     public static QueueDiagnosticInfo GetDiagnosticInfo(this ITestCompletionQueue queue)
     {
@@ -433,7 +434,7 @@ public static class QueueExtensions
 
         return new QueueDiagnosticInfo(
             status,
-            TimeSpan.Zero, // Uptime calculation would require tracking start time
+            null, // Uptime is not available without start time tracking
             queue.GetType().Name,
             additionalInfo
         );
@@ -531,17 +532,18 @@ public record QueueStatus(
 /// Represents comprehensive diagnostic information about a test completion queue.
 /// </summary>
 /// <param name="Status">The current status of the queue.</param>
-/// <param name="Uptime">The estimated uptime of the queue service.</param>
+/// <param name="Uptime">The uptime of the queue service, or null if uptime tracking is not available.</param>
 /// <param name="QueueType">The type name of the queue implementation.</param>
 /// <param name="AdditionalInfo">Additional diagnostic information specific to the queue implementation.</param>
 /// <remarks>
 /// This record provides detailed diagnostic information that can be used for troubleshooting,
 /// monitoring, and performance analysis of the queue system. The additional information
-/// dictionary can contain implementation-specific diagnostic data.
+/// dictionary can contain implementation-specific diagnostic data. The Uptime field will be
+/// null when the queue implementation does not track start time for uptime calculation.
 /// </remarks>
 public record QueueDiagnosticInfo(
     QueueStatus Status,
-    TimeSpan Uptime,
+    TimeSpan? Uptime,
     string QueueType,
     Dictionary<string, object> AdditionalInfo
 );
