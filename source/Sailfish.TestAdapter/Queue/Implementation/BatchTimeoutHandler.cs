@@ -228,7 +228,7 @@ internal class BatchTimeoutHandler : IBatchTimeoutHandler, IDisposable
         {
             _logger.Log(LogLevel.Error, ex,
                 "Error occurred while processing timed-out batches: {0}", ex.Message);
-            throw;
+            return 0;
         }
     }
 
@@ -383,7 +383,7 @@ internal class BatchTimeoutHandler : IBatchTimeoutHandler, IDisposable
     /// <returns>The test output message string.</returns>
     private static string ExtractTestOutputMessage(TestCompletionQueueMessage message)
     {
-        if (message.Metadata.TryGetValue("TestOutputMessage", out var outputObj) &&
+        if (message.Metadata.TryGetValue("FormattedMessage", out var outputObj) &&
             outputObj is string outputMessage)
         {
             return outputMessage;
