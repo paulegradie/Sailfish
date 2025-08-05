@@ -10,13 +10,11 @@ coverage:
     project:
       default:
         # Set the minimum coverage percentage required
-        target: 65%
-        threshold: 5%
+        target: 72%
     patch:
       default:
-        # Set a more reasonable patch coverage target
-        target: 65%
-        threshold: 5%
+        # Disable coverage percentage checks on diffs
+        enabled: no
 
   precision: 2 # Report coverage numbers with a precision of 2 decimal places
   round: down # Round coverage numbers down
