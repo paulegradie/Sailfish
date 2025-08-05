@@ -1,4 +1,4 @@
-﻿name: Build Pipeline v2.1
+﻿name: Build Pipeline v2.2
 
 on:
   push:

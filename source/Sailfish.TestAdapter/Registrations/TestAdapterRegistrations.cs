@@ -203,11 +203,6 @@ internal class TestAdapterRegistrations : IProvideAdditionalRegistrations
             .As<IQueueHealthCheck>()
             .SingleInstance();
 
-        // Queue performance optimizer - singleton to optimize queue performance
-        builder.RegisterType<QueuePerformanceOptimizer>()
-            .As<IQueuePerformanceOptimizer>()
-            .SingleInstance();
-
         // Queue metrics - singleton to collect and track queue performance metrics
         builder.RegisterType<QueueMetrics>()
             .As<IQueueMetrics>()
