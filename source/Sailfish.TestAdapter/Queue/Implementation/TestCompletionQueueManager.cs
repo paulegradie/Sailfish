@@ -52,7 +52,7 @@ namespace Sailfish.TestAdapter.Queue.Implementation;
 /// can be registered as a service in the DI container. It uses the standard ILogger
 /// interface for comprehensive diagnostic information and error reporting.
 /// </remarks>
-public class TestCompletionQueueManager : IDisposable
+internal class TestCompletionQueueManager : IDisposable
 {
     private readonly ITestCompletionQueue _queue;
     private readonly ITestCompletionQueueProcessor[] _processors;

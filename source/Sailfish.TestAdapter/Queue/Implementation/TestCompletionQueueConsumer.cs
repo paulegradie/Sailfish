@@ -46,7 +46,7 @@ namespace Sailfish.TestAdapter.Queue.Implementation;
 /// of processors while the background processing loop is running. The service uses thread-safe
 /// collections and proper synchronization to ensure safe concurrent operations.
 /// </remarks>
-public class TestCompletionQueueConsumer : IDisposable, IAsyncDisposable
+internal class TestCompletionQueueConsumer : IDisposable, IAsyncDisposable
 {
     private readonly ITestCompletionQueue _queue;
     private readonly ILogger _logger;

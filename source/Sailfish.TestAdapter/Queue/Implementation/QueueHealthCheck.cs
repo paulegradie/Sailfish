@@ -13,7 +13,7 @@ namespace Sailfish.TestAdapter.Queue.Implementation;
 /// <summary>
 /// Interface for collecting processing time metrics from queue operations.
 /// </summary>
-public interface IProcessingMetricsCollector
+internal interface IProcessingMetricsCollector
 {
     /// <summary>
     /// Records the processing time for a completed operation.
@@ -55,7 +55,7 @@ public interface IProcessingMetricsCollector
 /// Monitoring operations are performed asynchronously and use efficient data structures
 /// to minimize memory allocation and processing overhead.
 /// </remarks>
-public class QueueHealthCheck : IQueueHealthCheck, IProcessingMetricsCollector, IDisposable, IAsyncDisposable
+internal class QueueHealthCheck : IQueueHealthCheck, IProcessingMetricsCollector, IDisposable, IAsyncDisposable
 {
     private readonly TestCompletionQueueManager _queueManager;
     private readonly QueueConfiguration _configuration;

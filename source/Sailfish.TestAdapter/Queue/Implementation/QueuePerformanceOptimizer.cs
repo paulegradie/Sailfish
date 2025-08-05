@@ -42,7 +42,7 @@ namespace Sailfish.TestAdapter.Queue.Implementation;
 /// Optimization operations are performed asynchronously and use efficient algorithms
 /// to minimize processing overhead and resource usage.
 /// </remarks>
-public class QueuePerformanceOptimizer : IQueuePerformanceOptimizer, IDisposable, IAsyncDisposable
+internal class QueuePerformanceOptimizer : IQueuePerformanceOptimizer, IDisposable, IAsyncDisposable
 {
     private readonly IQueueHealthCheck _healthCheck;
     private readonly QueueConfiguration _configuration;
