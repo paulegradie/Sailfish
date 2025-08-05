@@ -14,7 +14,6 @@ using Sailfish.TestAdapter.Handlers.TestCaseEvents;
 using Sailfish.TestAdapter.Queue.Configuration;
 using Sailfish.TestAdapter.Queue.Contracts;
 using Sailfish.TestAdapter.Queue.Implementation;
-using Sailfish.TestAdapter.Queue.Monitoring;
 using Sailfish.TestAdapter.Queue.Processors;
 
 namespace Sailfish.TestAdapter.Registrations;
@@ -138,10 +137,7 @@ internal class TestAdapterRegistrations : IProvideAdditionalRegistrations
             .As<ITestCompletionQueuePublisher>()
             .InstancePerDependency();
 
-        // Queue factory - singleton as it's a factory service
-        builder.RegisterType<TestCompletionQueueFactory>()
-            .As<ITestCompletionQueueFactory>()
-            .SingleInstance();
+
 
         // Queue manager - singleton to coordinate queue lifecycle
         // Use factory registration to inject processors from container
@@ -203,10 +199,7 @@ internal class TestAdapterRegistrations : IProvideAdditionalRegistrations
             .As<IQueueHealthCheck>()
             .SingleInstance();
 
-        // Queue metrics - singleton to collect and track queue performance metrics
-        builder.RegisterType<QueueMetrics>()
-            .As<IQueueMetrics>()
-            .SingleInstance();
+
     }
 
     /// <summary>

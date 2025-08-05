@@ -640,43 +640,6 @@ public class QueueInfrastructureTests
 
     #endregion
 
-    #region TestCompletionQueueFactory Tests
-
-    /// <summary>
-    /// Tests that TestCompletionQueueFactory creates queue instances.
-    /// </summary>
-    [Fact]
-    public async Task TestCompletionQueueFactory_CreateQueue_ShouldReturnQueueInstance()
-    {
-        // Arrange
-        var mockLogger = Substitute.For<ILogger>();
-        var factory = new TestCompletionQueueFactory(mockLogger);
-        var config = new QueueConfiguration();
-
-        // Act
-        var queue = await factory.CreateQueueAsync(config, CancellationToken.None);
-
-        // Assert
-        queue.ShouldNotBeNull();
-        queue.ShouldBeOfType<InMemoryTestCompletionQueue>();
-    }
-
-    /// <summary>
-    /// Tests that TestCompletionQueueFactory throws for null configuration.
-    /// </summary>
-    [Fact]
-    public async Task TestCompletionQueueFactory_CreateQueueWithNullConfig_ShouldThrowArgumentNullException()
-    {
-        // Arrange
-        var mockLogger = Substitute.For<ILogger>();
-        var factory = new TestCompletionQueueFactory(mockLogger);
-
-        // Act & Assert
-        await Should.ThrowAsync<ArgumentNullException>(
-            () => factory.CreateQueueAsync(null!, CancellationToken.None));
-    }
-
-    #endregion
 
     #region Error Handling and Edge Cases
 
