@@ -571,16 +571,14 @@ public class TestCaseBatchingServiceTests : IDisposable
     #region IsBatchCompleteAsync Tests
 
     [Fact]
-    public async Task IsBatchCompleteAsync_WithNonExistentBatch_ShouldReturnFalse()
+    public async Task IsBatchCompleteAsync_WithNonExistentBatch_ShouldThrowArgumentException()
     {
         // Arrange
         _batchingService = new TestCaseBatchingService(_logger);
 
-        // Act
-        var isComplete = await _batchingService.IsBatchCompleteAsync("NonExistentBatch", CancellationToken.None);
-
-        // Assert
-        isComplete.ShouldBeFalse();
+        // Act & Assert
+        await Should.ThrowAsync<ArgumentException>(() =>
+            _batchingService.IsBatchCompleteAsync("NonExistentBatch", CancellationToken.None));
     }
 
     [Fact]
