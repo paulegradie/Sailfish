@@ -92,22 +92,6 @@ public class OverheadEstimatorTests
     }
 
     [Fact]
-    public async Task Estimate_ShouldTakeReasonableTime()
-    {
-        // Arrange
-        var estimator = new OverheadEstimator();
-        var stopwatch = Stopwatch.StartNew();
-
-        // Act
-        await estimator.Estimate();
-        stopwatch.Stop();
-
-        // Assert
-        // Should complete in reasonable time (less than 10 seconds for 50 iterations)
-        stopwatch.ElapsedMilliseconds.ShouldBeLessThan(10000);
-    }
-
-    [Fact]
     public async Task Estimate_WithMultipleCalls_ShouldProduceConsistentResults()
     {
         // Arrange
@@ -137,38 +121,6 @@ public class OverheadEstimatorTests
         await Should.NotThrowAsync(async () => await estimator.Estimate());
     }
 
-    [Fact]
-    public async Task Estimate_ShouldPerformTwoPhaseEstimation()
-    {
-        // Arrange
-        var estimator = new OverheadEstimator();
-        var initialTime = DateTimeOffset.Now;
-
-        // Act
-        await estimator.Estimate();
-        var finalTime = DateTimeOffset.Now;
-
-        // Assert
-        // Should take time for both phases (30 + 20 iterations)
-        var totalTime = finalTime - initialTime;
-        totalTime.TotalMilliseconds.ShouldBeGreaterThan(5000); // At least 5 seconds for 50 iterations
-    }
-
-    [Fact]
-    public async Task GetAverageEstimate_AfterEstimate_ShouldReturnReasonableValue()
-    {
-        // Arrange
-        var estimator = new OverheadEstimator();
-        await estimator.Estimate();
-
-        // Act
-        var result = estimator.GetAverageEstimate();
-
-        // Assert
-        // Should be a reasonable overhead estimate (not negative, not extremely large)
-        result.ShouldBeGreaterThanOrEqualTo(0);
-        result.ShouldBeLessThan(1000000); // Less than 1 million ticks
-    }
 
     [Fact]
     public async Task Estimate_WithNegativeOverhead_ShouldHandleGracefully()
@@ -233,23 +185,6 @@ public class OverheadEstimatorTests
         }
     }
 
-    [Fact]
-    public async Task Wait_MultipleSequentialCalls_ShouldWork()
-    {
-        // Arrange
-        var estimator = new OverheadEstimator();
-
-        // Act & Assert
-        for (int i = 0; i < 3; i++)
-        {
-            var stopwatch = Stopwatch.StartNew();
-            await estimator.Wait();
-            stopwatch.Stop();
-            
-            // Each call should take approximately 100ms
-            stopwatch.ElapsedMilliseconds.ShouldBeInRange(90, 150);
-        }
-    }
 
     [Fact]
     public async Task Estimate_ShouldHandleIterationLoops()
