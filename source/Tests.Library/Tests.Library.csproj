@@ -35,4 +35,10 @@
     <ItemGroup>
       <Folder Include="Analysis\SailDiff\StatsCore\" />
     </ItemGroup>
+
+    <ItemGroup>
+        <None Include="xunit.runner.json">
+            <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+        </None>
+    </ItemGroup>
 </Project>

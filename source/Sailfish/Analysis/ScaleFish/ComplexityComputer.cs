@@ -14,8 +14,8 @@ public class ComplexityComputer(
     IComplexityEstimator complexityEstimator,
     IScalefishObservationCompiler scalefishObservationCompiler) : IComplexityComputer
 {
-    private readonly IComplexityEstimator complexityEstimator = complexityEstimator;
-    private readonly IScalefishObservationCompiler scalefishObservationCompiler = scalefishObservationCompiler;
+    private readonly IComplexityEstimator complexityEstimator = complexityEstimator ?? throw new ArgumentNullException(nameof(complexityEstimator));
+    private readonly IScalefishObservationCompiler scalefishObservationCompiler = scalefishObservationCompiler ?? throw new ArgumentNullException(nameof(scalefishObservationCompiler));
 
     public IEnumerable<ScalefishClassModel> AnalyzeComplexity(List<IClassExecutionSummary> executionSummaries)
     {

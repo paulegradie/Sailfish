@@ -207,6 +207,9 @@ public class MarkdownTableConverter : IMarkdownTableConverter
                 .ScaleFishMethodModels
                 .GroupBy(x => x.TestMethodName);
             foreach (var methodGroup in methodGroups)
+            {
+                tableBuilder.AppendLine($"### {methodGroup.Key}");
+                tableBuilder.AppendLine();
                 tableBuilder.AppendLine(methodGroup
                     .SelectMany(x => x.ScaleFishPropertyModels)
                     .ToStringTable(
@@ -238,6 +241,8 @@ public class MarkdownTableConverter : IMarkdownTableConverter
                         c => c.ScaleFishModel.NextClosestScaleFishModelFunction.OName,
                         c => c.ScaleFishModel.NextClosestGoodnessOfFit
                     ));
+                tableBuilder.AppendLine();
+            }
         }
 
         return tableBuilder.ToString();

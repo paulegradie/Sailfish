@@ -105,4 +105,31 @@ internal static class InvocationReflectionExtensionMethods
             .Single()
             .Disabled;
     }
+
+    /// <summary>
+    /// Extension method to invoke a method with optional performance timer support
+    /// </summary>
+    public static object? InvokeMethod(this MethodInfo method, object? instance, object[] arguments, PerformanceTimer? performanceTimer = null)
+    {
+        if (method == null) throw new ArgumentNullException(nameof(method));
+        if (instance == null && !method.IsStatic) throw new ArgumentNullException(nameof(instance));
+
+        performanceTimer?.StartSailfishMethodExecutionTimer();
+        try
+        {
+            return method.Invoke(instance, arguments);
+        }
+        finally
+        {
+            performanceTimer?.StopSailfishMethodExecutionTimer();
+        }
+    }
+
+    /// <summary>
+    /// Extension method to invoke a method without performance timer
+    /// </summary>
+    public static object? InvokeMethod(this MethodInfo method, object? instance, object[] arguments)
+    {
+        return method.InvokeMethod(instance, arguments, null);
+    }
 }

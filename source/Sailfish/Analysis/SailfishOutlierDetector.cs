@@ -27,7 +27,7 @@ public class SailfishOutlierDetector : ISailfishOutlierDetector
 
     private static bool Between(double val, double hi, double low)
     {
-        return val > low && val < hi;
+        return val >= low && val <= hi;
     }
 
     private static bool Below(double val, double fence)

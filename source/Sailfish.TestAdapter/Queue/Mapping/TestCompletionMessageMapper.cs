@@ -206,10 +206,23 @@ internal class TestCompletionMessageMapper : ITestCompletionMessageMapper
         var classExecutionSummaries = notification.ClassExecutionSummaryTrackingFormat.ToSummaryFormat();
         var testOutputWindowMessage = sailfishConsoleWindowFormatter.FormConsoleWindowMessageForSailfish([classExecutionSummaries]);
 
-        var currentTestCase = notification
+        var testCases = notification
             .TestCaseGroup
             .Select(x => (TestCase)x)
-            .Single(x => x.FullyQualifiedName.EndsWith(notification.TestInstanceContainerExternal!.TestCaseId.DisplayName));
+            .ToList();
+
+        var targetDisplayName = notification.TestInstanceContainerExternal!.TestCaseId.DisplayName;
+
+        // Try multiple matching strategies to find the test case
+        var currentTestCase = testCases.SingleOrDefault(x => x.FullyQualifiedName.EndsWith(targetDisplayName)) ??
+                             testCases.SingleOrDefault(x => x.FullyQualifiedName.EndsWith(targetDisplayName + "()")) ??
+                             testCases.SingleOrDefault(x => x.FullyQualifiedName.Contains(targetDisplayName));
+
+        if (currentTestCase == null)
+        {
+            var availableTestCases = string.Join(", ", testCases.Select(tc => $"'{tc.FullyQualifiedName}'"));
+            throw new SailfishException($"Could not find test case matching '{targetDisplayName}'. Available test cases: [{availableTestCases}]");
+        }
 
         var compiledTestCaseResult = classExecutionSummaries.CompiledTestCaseResults.Single();
 
