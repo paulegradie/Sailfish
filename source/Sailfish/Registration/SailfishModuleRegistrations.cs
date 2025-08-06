@@ -68,8 +68,28 @@ internal class SailfishModuleRegistrations : IProvideAdditionalRegistrations
         builder.RegisterType<TrackingFileFinder>().As<ITrackingFileFinder>();
         builder.RegisterType<DefaultTrackingFileDirectoryReader>().As<ITrackingFileDirectoryReader>();
         builder.RegisterType<IterationVariableRetriever>().As<IIterationVariableRetriever>();
+        // Register unified formatter components for legacy SailDiff
+        builder.RegisterType<Sailfish.Analysis.SailDiff.Formatting.ImpactSummaryFormatter>()
+            .As<Sailfish.Analysis.SailDiff.Formatting.IImpactSummaryFormatter>()
+            .InstancePerDependency();
+
+        builder.RegisterType<Sailfish.Analysis.SailDiff.Formatting.DetailedTableFormatter>()
+            .As<Sailfish.Analysis.SailDiff.Formatting.IDetailedTableFormatter>()
+            .InstancePerDependency();
+
+        builder.RegisterType<Sailfish.Analysis.SailDiff.Formatting.OutputContextAdapter>()
+            .As<Sailfish.Analysis.SailDiff.Formatting.IOutputContextAdapter>()
+            .InstancePerDependency();
+
+        builder.RegisterType<Sailfish.Analysis.SailDiff.Formatting.SailDiffUnifiedFormatter>()
+            .As<Sailfish.Analysis.SailDiff.Formatting.ISailDiffUnifiedFormatter>()
+            .InstancePerDependency();
+
+        // Register enhanced SailDiffResultMarkdownConverter with unified formatter
         builder.RegisterType<SailDiffResultMarkdownConverter>().As<ISailDiffResultMarkdownConverter>();
         builder.RegisterType<SailfishExecutionEngine>().As<ISailfishExecutionEngine>().InstancePerDependency();
+
+        // Register enhanced MarkdownTableConverter with unified formatter
         builder.RegisterType<MarkdownTableConverter>().As<IMarkdownTableConverter>().InstancePerDependency();
         builder.RegisterType<TrackingFileParser>().As<ITrackingFileParser>();
         builder.RegisterType<SailDiff>().As<ISailDiffInternal>().InstancePerDependency();

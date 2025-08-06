@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Sailfish.Analysis.SailDiff;
+using Sailfish.Analysis.SailDiff.Formatting;
 using Sailfish.Contracts.Public.Models;
 using Sailfish.Extensions.Methods;
 
@@ -51,12 +52,23 @@ internal class SailDiffTestOutputWindowMessageFormatter : ISailDiffTestOutputWin
     private static string FormattedSailDiffResult(TestIds testIds, SailDiffResult sailDiffResult, SailDiffSettings sailDiffSettings,
         StringBuilder stringBuilder)
     {
+        // Add enhanced impact summary at the top
+        var impactSummary = CreateImpactSummary(sailDiffResult, sailDiffSettings);
+        if (!string.IsNullOrEmpty(impactSummary))
+        {
+            stringBuilder.AppendLine("📊 SAILDIFF PERFORMANCE ANALYSIS");
+            stringBuilder.AppendLine(new string('=', 50));
+            stringBuilder.AppendLine();
+            stringBuilder.AppendLine(impactSummary);
+            stringBuilder.AppendLine();
+        }
+
         stringBuilder.AppendLine($"Before Ids: {string.Join(", ", testIds.BeforeTestIds)}");
         stringBuilder.AppendLine($"After Ids: {string.Join(", ", testIds.AfterTestIds)}");
 
-        const string testLine = "Statistical Test";
+        const string testLine = "📋 Statistical Test Details";
         stringBuilder.AppendLine(testLine);
-        stringBuilder.AppendLine(string.Join("", Enumerable.Range(0, testLine.Length).Select(x => "-")));
+        stringBuilder.AppendLine(string.Join("", Enumerable.Range(0, testLine.Length - 3).Select(x => "-"))); // -3 for emoji
 
         stringBuilder.AppendLine("Test Used:       " + sailDiffSettings.TestType);
         stringBuilder.AppendLine("PVal Threshold:  " + sailDiffSettings.Alpha);
@@ -99,5 +111,27 @@ internal class SailDiffTestOutputWindowMessageFormatter : ISailDiffTestOutputWin
             t => t.After));
 
         return stringBuilder.ToString();
+    }
+
+    private static string CreateImpactSummary(SailDiffResult sailDiffResult, SailDiffSettings sailDiffSettings)
+    {
+        var stats = sailDiffResult.TestResultsWithOutlierAnalysis.StatisticalTestResult;
+        var percentChange = stats.MeanBefore > 0 ? ((stats.MeanAfter - stats.MeanBefore) / stats.MeanBefore) * 100 : 0;
+        var isSignificant = stats.PValue < sailDiffSettings.Alpha &&
+                           !stats.ChangeDescription.Contains("No Change", StringComparison.OrdinalIgnoreCase);
+
+        if (!isSignificant)
+        {
+            return $"⚪ IMPACT: {Math.Abs(percentChange):F1}% difference (NO CHANGE)\n" +
+                   $"   P-Value: {stats.PValue:F6} | Mean: {stats.MeanBefore:F3}ms → {stats.MeanAfter:F3}ms";
+        }
+
+        var isImprovement = percentChange < 0;
+        var direction = isImprovement ? "faster" : "slower";
+        var significance = isImprovement ? "IMPROVED" : "REGRESSED";
+        var icon = isImprovement ? "🟢" : "🔴";
+
+        return $"{icon} IMPACT: {Math.Abs(percentChange):F1}% {direction} ({significance})\n" +
+               $"   P-Value: {stats.PValue:F6} | Mean: {stats.MeanBefore:F3}ms → {stats.MeanAfter:F3}ms";
     }
 }

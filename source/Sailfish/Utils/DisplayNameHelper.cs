@@ -22,10 +22,13 @@ internal static class DisplayNameHelper
 
     public static string FullyQualifiedName(Type type, string methodName)
     {
-        var methodInfo = type.GetMethod(methodName);
-        if (methodInfo is null) throw new SailfishException($"Method name: {methodName} was not found on type {type.Name}");
+        // Handle case where there might be multiple overloaded methods
+        var methods = type.GetMethods().Where(m => m.Name == methodName).ToArray();
+        if (methods.Length == 0)
+            throw new SailfishException($"Method name: {methodName} was not found on type {type.Name}");
 
-        if (methodInfo is null) throw new SailfishException($"Method name: {methodName} was not found on type {type.Name}");
+        // Use the first method if there are multiple overloads
+        var methodInfo = methods.First();
 
         var names = $"{type.Namespace}.{type.Name}.{methodName}";
 

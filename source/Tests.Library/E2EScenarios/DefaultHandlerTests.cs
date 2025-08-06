@@ -98,8 +98,11 @@ public class DefaultHandlerTests
         await SailfishRunner.Run(runSettings);
 
         var files = Directory.GetFiles(outputDirectory);
-        var csv = files.Single(x => x.EndsWith(DefaultFileSettings.CsvSuffix));
-        var md = files.Single(x => x.EndsWith(DefaultFileSettings.MarkdownSuffix));
+        // Look specifically for the main performance results CSV file (not SailDiff or method comparison CSVs)
+        var csv = files.Single(x => x.EndsWith(DefaultFileSettings.CsvSuffix) &&
+                                   Path.GetFileName(x).StartsWith("PerformanceResults_"));
+        var md = files.Single(x => x.EndsWith(DefaultFileSettings.MarkdownSuffix) &&
+                                  Path.GetFileName(x).StartsWith("PerformanceResults_"));
 
         var csvContent = GetFileContent(csv);
         var mdContent = GetFileContent(md);

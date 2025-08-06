@@ -10,7 +10,6 @@ Sailfish provides three main approaches for defining test variables:
 
 1. **Simple Variables** - Using attributes for basic types (`[SailfishVariable]`, `[SailfishRangeVariable]`)
 2. **Complex Variables** - Using interfaces or classes for complex object instances
-3. **Legacy Complex Variables** - Older patterns maintained for backward compatibility
 
 ---
 

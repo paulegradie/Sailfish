@@ -19,6 +19,7 @@ Welcome to the **Sailfish Performance Testing Examples** project! This comprehen
 This project showcases **Sailfish**, a powerful .NET performance testing framework that enables:
 
 - **Precise Performance Measurement** with statistical analysis
+- **Method Comparisons** with automatic N×N algorithm comparison
 - **Parameterized Testing** with multiple variable combinations
 - **Scenario-Based Testing** for complex real-world scenarios
 - **IDE Integration** with test adapter support
@@ -106,6 +107,31 @@ public string Scenario { get; set; } = null!;
 
 #### [`ScaleFishExample.cs`](ExamplePerformanceTests/ScaleFishExample.cs)
 **Performance scaling** - analyzes how algorithms perform with different input sizes (Linear, Quadratic, N Log N).
+
+### ⚖️ **Method Comparisons**
+
+#### [`MethodComparisonExample.cs`](ExamplePerformanceTests/MethodComparisonExample.cs)
+**Algorithm comparison** - demonstrates the new method comparison feature that automatically compares multiple algorithms within a single test run.
+
+```csharp
+[SailfishMethod]
+[SailfishComparison("SortingAlgorithms")]
+public void BubbleSort() { /* Implementation */ }
+
+[SailfishMethod]
+[SailfishComparison("SortingAlgorithms")]
+public void QuickSort() { /* Implementation */ }
+
+[SailfishMethod]
+[SailfishComparison("SortingAlgorithms")]
+public void LinqSort() { /* Implementation */ }
+```
+
+**Features:**
+- **N×N Comparisons**: Each method shows how it compares to all others
+- **Statistical Analysis**: Powered by SailDiff with significance testing
+- **Perspective-Based Results**: Each method shows comparisons from its viewpoint
+- **Color-Coded Output**: 🟢 Improved, 🔴 Regressed, ⚪ No Change
 
 ### 🌐 **Real-World Integration**
 

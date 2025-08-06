@@ -63,8 +63,10 @@ internal static class DirectoryRecursion
     {
         public static bool FilePathDoesNotContainBinOrObjDirs(string path)
         {
-            var sep = Path.DirectorySeparatorChar;
-            return !(path.Contains($"{sep}bin{sep}") || path.Contains($"{sep}obj{sep}"));
+            // Check for both Windows (\) and Unix (/) path separators to ensure cross-platform compatibility
+            // This handles cases where paths might use different separators than the current OS
+            return !(path.Contains("\\bin\\") || path.Contains("/bin/") ||
+                     path.Contains("\\obj\\") || path.Contains("/obj/"));
         }
     }
 }

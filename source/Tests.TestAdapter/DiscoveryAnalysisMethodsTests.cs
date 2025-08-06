@@ -276,6 +276,152 @@ namespace Tests.TestAdapter
         }
     }
 
+    [Fact]
+    public void CompilePreRenderedSourceMap_WithEmptyFileList_ShouldReturnEmptyResult()
+    {
+        // Arrange
+        var performanceTestTypes = new[] { typeof(TestClass) };
+
+        // Act
+        var result = DiscoveryAnalysisMethods.CompilePreRenderedSourceMap(
+            Array.Empty<string>(),
+            performanceTestTypes,
+            "Sailfish",
+            "SailfishMethod").ToList();
+
+        // Assert
+        result.ShouldBeEmpty();
+    }
+
+    [Fact]
+    public void CompilePreRenderedSourceMap_WithNonExistentFile_ShouldHandleGracefully()
+    {
+        // Arrange
+        var performanceTestTypes = new[] { typeof(TestClass) };
+        var nonExistentFile = "non-existent-file.cs";
+
+        // Act & Assert - Should not throw
+        var result = DiscoveryAnalysisMethods.CompilePreRenderedSourceMap(
+            new[] { nonExistentFile },
+            performanceTestTypes,
+            "Sailfish",
+            "SailfishMethod").ToList();
+
+        // Result should be empty or handle the missing file gracefully
+        result.ShouldNotBeNull();
+    }
+
+    [Fact]
+    public void CompilePreRenderedSourceMap_WithInvalidSourceCode_ShouldHandleGracefully()
+    {
+        // Arrange
+        var invalidSourceCode = @"
+This is not valid C# code
+{{{
+invalid syntax
+";
+        var tempFile = CreateTempSourceFile(invalidSourceCode);
+        var performanceTestTypes = new[] { typeof(TestClass) };
+
+        try
+        {
+            // Act & Assert - Should not throw
+            var result = DiscoveryAnalysisMethods.CompilePreRenderedSourceMap(
+                new[] { tempFile },
+                performanceTestTypes,
+                "Sailfish",
+                "SailfishMethod").ToList();
+
+            // Should handle invalid syntax gracefully
+            result.ShouldNotBeNull();
+        }
+        finally
+        {
+            if (File.Exists(tempFile))
+                File.Delete(tempFile);
+        }
+    }
+
+    [Fact]
+    public void CompilePreRenderedSourceMap_WithEmptyPerformanceTestTypes_ShouldReturnEmptyResult()
+    {
+        // Arrange
+        var sourceCode = @"
+using Sailfish.Attributes;
+
+namespace Tests.TestAdapter
+{
+    [Sailfish]
+    public class TestClass
+    {
+        [SailfishMethod]
+        public void TestMethod()
+        {
+        }
+    }
+}";
+        var tempFile = CreateTempSourceFile(sourceCode);
+        var emptyPerformanceTestTypes = Array.Empty<Type>();
+
+        try
+        {
+            // Act
+            var result = DiscoveryAnalysisMethods.CompilePreRenderedSourceMap(
+                new[] { tempFile },
+                emptyPerformanceTestTypes,
+                "Sailfish",
+                "SailfishMethod").ToList();
+
+            // Assert
+            result.ShouldBeEmpty();
+        }
+        finally
+        {
+            if (File.Exists(tempFile))
+                File.Delete(tempFile);
+        }
+    }
+
+    [Fact]
+    public void CompilePreRenderedSourceMap_WithNullAttributeNames_ShouldHandleGracefully()
+    {
+        // Arrange
+        var sourceCode = @"
+using Sailfish.Attributes;
+
+namespace Tests.TestAdapter
+{
+    [Sailfish]
+    public class TestClass
+    {
+        [SailfishMethod]
+        public void TestMethod()
+        {
+        }
+    }
+}";
+        var tempFile = CreateTempSourceFile(sourceCode);
+        var performanceTestTypes = new[] { typeof(TestClass) };
+
+        try
+        {
+            // Act & Assert - Should not throw
+            var result = DiscoveryAnalysisMethods.CompilePreRenderedSourceMap(
+                new[] { tempFile },
+                performanceTestTypes,
+                null!,
+                null!).ToList();
+
+            // Should handle null attribute names gracefully
+            result.ShouldNotBeNull();
+        }
+        finally
+        {
+            if (File.Exists(tempFile))
+                File.Delete(tempFile);
+        }
+    }
+
     private static string CreateTempSourceFile(string content)
     {
         var tempPath = Path.GetTempFileName();

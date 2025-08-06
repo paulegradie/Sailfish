@@ -1,6 +1,7 @@
 using System.Collections.Generic;
 using System.Text;
 using System.Threading;
+using Sailfish.Analysis.SailDiff.Formatting;
 using Sailfish.Contracts.Public;
 using Sailfish.Contracts.Public.Models;
 using Sailfish.Logging;
@@ -35,9 +36,12 @@ public class SailDiffConsoleWindowMessageFormatter : ISailDiffConsoleWindowMessa
         SailDiffSettings sailDiffSettings,
         CancellationToken cancellationToken)
     {
-        var resultsAsMarkdown = sailDiffResultMarkdownConverter.ConvertToMarkdownTable(sailDiffResult);
         var stringBuilder = new StringBuilder();
         BuildHeader(stringBuilder, testIds.BeforeTestIds, testIds.AfterTestIds, sailDiffSettings);
+
+        // Use enhanced formatting for console output
+        var resultsAsMarkdown = sailDiffResultMarkdownConverter.ConvertToEnhancedMarkdownTable(sailDiffResult, Formatting.OutputContext.Console);
+
         stringBuilder.AppendLine(resultsAsMarkdown);
         var result = stringBuilder.ToString();
         logger.Log(LogLevel.Information, result);

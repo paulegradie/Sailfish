@@ -1,4 +1,5 @@
 ﻿using Sailfish.Contracts.Public.Models;
+using System.Collections.Generic;
 
 namespace Tests.Common.Builders;
 

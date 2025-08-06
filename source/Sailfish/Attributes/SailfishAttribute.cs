@@ -24,6 +24,8 @@ public sealed class SailfishAttribute : Attribute
 
     internal SailfishAttribute()
     {
+        SampleSize = DefaultNumIterations;
+        NumWarmupIterations = DefaultNumWarmupIterations;
     }
 
     /// <summary>

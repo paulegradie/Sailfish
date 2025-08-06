@@ -2,6 +2,8 @@ using Demo.API;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Sailfish.Attributes;
 using Sailfish.Logging;
+using System.Threading;
+using System.Threading.Tasks;
 using Tests.E2E.TestSuite.Utils;
 
 // Tests here are automatically discovered and executed

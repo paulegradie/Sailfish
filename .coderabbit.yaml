@@ -1,0 +1,33 @@
+# CodeRabbit Configuration
+# yaml-language-server: $schema=https://coderabbit.ai/integrations/schema.v2.json
+
+language: "en-US"
+early_access: false
+
+reviews:
+  profile: "chill"
+  request_changes_workflow: false
+  high_level_summary: true
+  poem: true
+  review_status: true
+  collapse_walkthrough: false
+  auto_review:
+    enabled: true
+    drafts: false
+    base_branches: ["main", "master", "develop"]
+  
+  # Exclude markdown files from review using path_filters
+  path_filters:
+    - "!**/*.md"
+    - "!**/*.markdown"
+    - "!*.md"
+    - "!*.markdown"
+    - "!README.md"
+    - "!CHANGELOG.md"
+    - "!CONTRIBUTING.md"
+    - "!LICENSE.md"
+    - "!docs/**/*.md"
+    - "!documentation/**/*.md"
+
+chat:
+  auto_reply: true

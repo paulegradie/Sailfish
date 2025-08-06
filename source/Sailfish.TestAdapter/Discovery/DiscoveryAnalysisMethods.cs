@@ -105,7 +105,11 @@ public static class DiscoveryAnalysisMethods
                             from methodDeclaration in methodDeclarations
                             let lineSpan = syntaxTree.GetLineSpan(methodDeclaration.Span)
                             let lineNumber = lineSpan.StartLinePosition.Line + 1
-                            select new MethodMetaData(methodDeclaration.Identifier.ValueText, lineNumber))
+                            let comparisonGroup = ExtractComparisonInfo(methodDeclaration)
+                            select new MethodMetaData(
+                                methodDeclaration.Identifier.ValueText,
+                                lineNumber,
+                                comparisonGroup))
                         .ToArray(),
                         syntaxTree: syntaxTree);
 
@@ -138,5 +142,72 @@ public static class DiscoveryAnalysisMethods
         }
 
         return fullClassName;
+    }
+
+    /// <summary>
+    /// Extracts comparison group information from a method declaration's attributes.
+    /// </summary>
+    /// <param name="methodDeclaration">The method declaration to analyze.</param>
+    /// <returns>The comparison group name, or null if no comparison attribute is found.</returns>
+    private static string? ExtractComparisonInfo(MethodDeclarationSyntax methodDeclaration)
+    {
+        // Look for SailfishComparison attribute
+        var comparisonAttribute = methodDeclaration.AttributeLists
+            .SelectMany(attrList => attrList.Attributes)
+            .FirstOrDefault(attr =>
+                attr.Name.ToString() == "SailfishComparison" ||
+                attr.Name.ToString() == "SailfishComparisonAttribute");
+
+        if (comparisonAttribute?.ArgumentList?.Arguments == null || comparisonAttribute.ArgumentList.Arguments.Count < 1)
+        {
+            return null;
+        }
+
+        try
+        {
+            // Extract comparison group (first and only argument)
+            var groupArgument = comparisonAttribute.ArgumentList.Arguments[0];
+            return ExtractStringLiteralValue(groupArgument.Expression);
+        }
+        catch (ArgumentException ex)
+        {
+            // If we can't parse the attribute arguments due to invalid argument format, return null
+            Debug.WriteLine($"[Sailfish.TestAdapter] Failed to parse SailfishComparison attribute arguments: {ex.Message}");
+            return null;
+        }
+        catch (InvalidOperationException ex)
+        {
+            // If we can't access the expression due to invalid syntax tree state, return null
+            Debug.WriteLine($"[Sailfish.TestAdapter] Failed to access SailfishComparison attribute expression: {ex.Message}");
+            return null;
+        }
+    }
+
+    /// <summary>
+    /// Extracts a string literal value from an expression.
+    /// </summary>
+    /// <param name="expression">The expression to extract from.</param>
+    /// <returns>The string value, or null if not a string literal.</returns>
+    private static string? ExtractStringLiteralValue(ExpressionSyntax expression)
+    {
+        if (expression is LiteralExpressionSyntax literal && literal.Token.IsKind(Microsoft.CodeAnalysis.CSharp.SyntaxKind.StringLiteralToken))
+        {
+            return literal.Token.ValueText;
+        }
+        return null;
+    }
+
+    /// <summary>
+    /// Extracts an enum value from an expression.
+    /// </summary>
+    /// <param name="expression">The expression to extract from.</param>
+    /// <returns>The enum value as a string, or null if not an enum member access.</returns>
+    private static string? ExtractEnumValue(ExpressionSyntax expression)
+    {
+        if (expression is MemberAccessExpressionSyntax memberAccess)
+        {
+            return memberAccess.Name.Identifier.ValueText;
+        }
+        return null;
     }
 }
