@@ -12,8 +12,9 @@ This proposal outlines a comprehensive enhancement project to elevate Sailfish's
 - **Test Integration**: Excellent integration with test frameworks and IDEs
 - **Statistical Analysis**: Sophisticated statistical tests (T-test, Mann-Whitney U, Wilcoxon, Kolmogorov-Smirnov)
 - **Outlier Detection**: Tukey's method implementation with configurable thresholds
+- **Method Comparisons**: Built-in baseline comparisons via `[SailfishComparison]` attribute with N×N comparison matrices
 - **Complexity Analysis**: Unique ScaleFish algorithmic complexity detection (not available in Benchmark.NET)
-- **Comparison Analysis**: SailDiff provides sophisticated before/after analysis with confidence intervals
+- **Comparison Analysis**: SailDiff provides sophisticated temporal and method-based analysis with confidence intervals
 - **Variable Parameterization**: Robust support for test parameterization
 - **Tracking & Persistence**: Comprehensive result tracking and historical analysis
 - **User Experience**: Clean attribute-based API and good developer ergonomics
@@ -26,7 +27,7 @@ This proposal outlines a comprehensive enhancement project to elevate Sailfish's
 | **Environment Control** | JIT warmup, GC control, process priority | Basic warmup only | High |
 | **Diagnostics** | Memory allocation, GC pressure, threading stats | Complexity analysis (ScaleFish) only | Medium |
 | **Timing Precision** | Multiple timing mechanisms, sophisticated overhead estimation | Basic Stopwatch + overhead estimation | Medium |
-| **Baseline Comparisons** | Built-in relative performance ratios | External SailDiff only | Medium |
+| **Method Comparisons** | Built-in relative performance ratios | ✅ **N×N comparison matrices via [SailfishComparison]** | **Sailfish Superior** |
 | **Adaptive Execution** | Statistical convergence detection | Fixed iteration counts | High |
 | **Outlier Detection** | Tukey's method | ✅ **Tukey's method implemented** | **None** |
 | **Statistical Tests** | Basic t-tests | ✅ **T-test, Mann-Whitney, Wilcoxon, K-S tests** | **Sailfish Superior** |
@@ -96,36 +97,43 @@ public void StartSailfishMethodExecutionTimer()
 - **Timestamp Precision**: Nanosecond-level timing for micro-benchmarks
 - **Clock Drift Compensation**: Account for system clock variations
 
-### 5. Built-in Baseline Support
+### 5. Enhanced Method Comparison Features
 
-**New Attributes:**
+**Current Implementation:**
 ```csharp
-[SailfishMethod(Baseline = true)]
-public async Task BaselineMethod() { }
+[SailfishMethod]
+[SailfishComparison("SortingAlgorithms")]
+public void BubbleSort() { /* implementation */ }
 
 [SailfishMethod]
-public async Task ComparisonMethod() { }
+[SailfishComparison("SortingAlgorithms")]
+public void QuickSort() { /* implementation */ }
 ```
 
-**Features:**
-- **Relative Ratios**: Automatic calculation of performance ratios
+**✅ Already Available:**
+- **N×N Comparison Matrices**: All methods compared against each other
+- **Statistical Significance**: Powered by SailDiff statistical analysis
+- **Flexible Grouping**: Multiple comparison groups per test class
+- **Integrated Results**: Comparisons shown in test output and markdown/CSV
+
+**Potential Enhancements:**
+- **Performance Ratio Display**: More prominent relative performance indicators
 - **Regression Thresholds**: Configurable performance regression alerts
-- **Multi-Baseline**: Support multiple baselines per test class
 
 ## Implementation Roadmap
 
-### Phase 1: Statistical Foundation (6-8 weeks)
+### Phase 1: Statistical Foundation (4-6 weeks)
 1. **Enhanced Statistical Engine**
    - Implement adaptive sampling algorithms
    - ✅ **Leverage existing outlier detection** (Tukey's method already implemented)
    - ✅ **Integrate existing confidence interval calculations** into execution engine
    - Add statistical convergence detection
 
-2. **Built-in Baseline Support**
-   - ✅ **Leverage existing statistical test infrastructure**
-   - Implement baseline attribute support
-   - Add automatic ratio calculations
-   - Create regression detection alerts
+2. **Enhanced Timing Precision**
+   - ✅ **Enhance existing overhead calibration system**
+   - Add multiple timing source options
+   - Implement nanosecond-level precision
+   - Add clock drift compensation
 
 ### Phase 2: Environment Control & Diagnostics (8-10 weeks)
 1. **Environment Control Framework**
@@ -140,18 +148,18 @@ public async Task ComparisonMethod() { }
    - Create memory pressure metrics
    - Add thread pool monitoring and contention detection
 
-### Phase 3: Advanced Precision & Specialized Diagnostics (6-8 weeks)
-1. **Enhanced Timing Precision**
-   - ✅ **Enhance existing overhead calibration system**
-   - Add multiple timing source options
-   - Implement nanosecond-level precision
-   - Add clock drift compensation
-
-2. **JIT & Compilation Diagnostics**
+### Phase 3: Specialized Diagnostics & Advanced Features (6-8 weeks)
+1. **JIT & Compilation Diagnostics**
    - Track JIT compilation events and inlining decisions
    - Monitor compilation overhead and optimization effects
    - Create JIT-aware warmup strategies
    - Provide compilation event correlation
+
+2. **Enhanced Method Comparison Features**
+   - ✅ **Build on existing [SailfishComparison] infrastructure**
+   - Add more prominent performance ratio displays
+   - Implement configurable regression thresholds
+   - Enhance comparison result visualization
 
 3. **Enhanced Reporting**
    - Integrate diagnostic data into results
@@ -240,7 +248,7 @@ public class StatisticalSummary
 
 ### Quantitative Metrics
 - **Measurement Precision**: 50% reduction in coefficient of variation through adaptive sampling
-- **Baseline Adoption**: 90% of users adopt built-in baseline comparisons over external SailDiff
+- **Timing Accuracy**: 25% improvement in micro-benchmark precision through enhanced timing
 - **Diagnostic Coverage**: 75% of performance issues identifiable through enhanced diagnostics
 - **User Adoption**: 25% increase in enterprise usage within 6 months
 - **Performance**: <15% overhead increase for enhanced measurement (leveraging existing infrastructure)
@@ -259,7 +267,7 @@ Based on impact analysis and current Sailfish capabilities, here are the enhance
 
 #### 1. Adaptive Sampling & Statistical Convergence
 **Impact**: Transforms measurement reliability from fixed to statistically-driven
-**Effort**: Medium (6-8 weeks)
+**Effort**: Medium (4-6 weeks)
 **Why First**: Addresses the core limitation in measurement precision without requiring infrastructure changes
 
 - Implement coefficient of variation-based convergence detection
@@ -267,15 +275,15 @@ Based on impact analysis and current Sailfish capabilities, here are the enhance
 - Integrate with existing statistical analysis pipeline
 - Maintain backward compatibility with fixed sample sizes
 
-#### 2. Built-in Baseline Comparisons
-**Impact**: Eliminates external dependency for most common use case
-**Effort**: Low-Medium (3-4 weeks)
-**Why Second**: High user value, leverages existing statistical infrastructure
+#### 2. Enhanced Timing Precision
+**Impact**: Improves measurement accuracy across all test scenarios
+**Effort**: Medium (4-6 weeks)
+**Why Second**: Builds on existing solid foundation, affects all measurements
 
-- Add `[SailfishBaseline]` attribute support
-- Implement automatic ratio calculations during execution
-- Integrate with existing SailDiff statistical tests
-- Provide regression threshold alerts
+- Add multiple timing source options (QueryPerformanceCounter, RDTSC)
+- Enhance existing overhead calibration system
+- Implement nanosecond-level precision for micro-benchmarks
+- Add clock drift compensation
 
 ### ⚡ **Tier 2: High Impact (Next Phase)**
 
@@ -301,15 +309,15 @@ Based on impact analysis and current Sailfish capabilities, here are the enhance
 
 ### 🔧 **Tier 3: Medium Impact (Future Enhancements)**
 
-#### 5. Enhanced Timing Precision
-**Impact**: Improves micro-benchmark accuracy
-**Effort**: Medium (4-6 weeks)
-**Why Fifth**: Incremental improvement to existing solid foundation
+#### 5. Enhanced Method Comparison Features
+**Impact**: Improves usability of existing comparison system
+**Effort**: Low-Medium (3-4 weeks)
+**Why Fifth**: Builds on existing [SailfishComparison] infrastructure
 
-- Add multiple timing source options (QueryPerformanceCounter, RDTSC)
-- Enhance existing overhead calibration system
-- Implement nanosecond-level precision for micro-benchmarks
-- Add clock drift compensation
+- Add more prominent performance ratio displays
+- Implement configurable regression thresholds for method comparisons
+- Enhance comparison result visualization and reporting
+- Improve integration with markdown/CSV output formats
 
 #### 6. JIT & Compilation Diagnostics
 **Impact**: Provides deep performance insights
@@ -328,9 +336,9 @@ Based on impact analysis and current Sailfish capabilities, here are the enhance
 **Phase 3 (Months 7-9)**: Tier 3 items - Advanced precision and specialized diagnostics
 
 **Success Metrics by Tier:**
-- **Tier 1**: 50% reduction in measurement variability, 90% user adoption of baseline comparisons
+- **Tier 1**: 50% reduction in measurement variability, 25% improvement in timing precision
 - **Tier 2**: 30% reduction in measurement noise, 75% of performance issues identifiable through diagnostics
-- **Tier 3**: 25% improvement in micro-benchmark precision, 60% adoption of advanced timing features
+- **Tier 3**: Enhanced user experience with method comparisons, 60% adoption of advanced diagnostic features
 
 ## Conclusion
 
