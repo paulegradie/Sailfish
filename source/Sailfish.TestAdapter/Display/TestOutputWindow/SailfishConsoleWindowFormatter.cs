@@ -64,9 +64,10 @@ internal class SailfishConsoleWindowFormatter : ISailfishConsoleWindowFormatter
 
         var momentTable = new List<Row>
         {
+            new(results.RawExecutionResults.Length, "N"),
             new(Math.Round(results.Mean, 4), "Mean"),
             new(Math.Round(results.Median, 4), "Median"),
-            new(Math.Round(results.StdDev, 4), "StdDev"),
+            new($"±{Math.Round(results.MarginOfError, 4)}", $"{results.ConfidenceLevel:P0} CI"),
             new(Math.Round(results.RawExecutionResults.Min(), 4), "Min"),
             new(Math.Round(results.RawExecutionResults.Max(), 4), "Max")
         };

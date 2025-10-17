@@ -19,13 +19,17 @@ public class TestCaseIteratorTests
 {
     private readonly ILogger mockLogger;
     private readonly IRunSettings mockRunSettings;
+    private readonly IIterationStrategy mockFixedStrategy;
+    private readonly IIterationStrategy mockAdaptiveStrategy;
     private readonly TestCaseIterator testCaseIterator;
 
     public TestCaseIteratorTests()
     {
         mockLogger = Substitute.For<ILogger>();
         mockRunSettings = Substitute.For<IRunSettings>();
-        testCaseIterator = new TestCaseIterator(mockRunSettings, mockLogger);
+        mockFixedStrategy = Substitute.For<IIterationStrategy>();
+        mockAdaptiveStrategy = Substitute.For<IIterationStrategy>();
+        testCaseIterator = new TestCaseIterator(mockRunSettings, mockLogger, mockFixedStrategy, mockAdaptiveStrategy);
     }
 
     [Fact]

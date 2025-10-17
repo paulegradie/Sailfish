@@ -18,11 +18,19 @@ internal class TestCaseIterator : ITestCaseIterator
 {
     private readonly ILogger logger;
     private readonly IRunSettings runSettings;
+    private readonly IIterationStrategy fixedIterationStrategy;
+    private readonly IIterationStrategy adaptiveIterationStrategy;
 
-    public TestCaseIterator(IRunSettings runSettings, ILogger logger)
+    public TestCaseIterator(
+        IRunSettings runSettings,
+        ILogger logger,
+        IIterationStrategy fixedIterationStrategy,
+        IIterationStrategy adaptiveIterationStrategy)
     {
         this.logger = logger;
         this.runSettings = runSettings;
+        this.fixedIterationStrategy = fixedIterationStrategy;
+        this.adaptiveIterationStrategy = adaptiveIterationStrategy;
     }
 
     public async Task<TestCaseExecutionResult> Iterate(
@@ -36,40 +44,49 @@ internal class TestCaseIterator : ITestCaseIterator
 
         if (!disableOverheadEstimation) await overheadEstimator.Estimate();
 
-        var iterations = runSettings.SampleSizeOverride is not null
-            ? Math.Max(runSettings.SampleSizeOverride.Value, 1)
-            : testInstanceContainer.SampleSize;
+        // Determine which strategy to use
+        var executionSettings = testInstanceContainer.ExecutionSettings;
+        var useAdaptive = executionSettings.UseAdaptiveSampling &&
+                          !disableOverheadEstimation;
 
-        testInstanceContainer.CoreInvoker.SetTestCaseStart();
-        for (var i = 0; i < iterations; i++)
+        var strategy = useAdaptive ? adaptiveIterationStrategy : fixedIterationStrategy;
+
+        // Apply sample size override if specified
+        if (runSettings.SampleSizeOverride.HasValue)
         {
-            logger.Log(LogLevel.Information, "      ---- iteration {CurrentIteration} of {TotalIterations}", i + 1, iterations);
-
-            try
+            if (useAdaptive)
             {
-                await testInstanceContainer.CoreInvoker.IterationSetup(cancellationToken).ConfigureAwait(false);
+                executionSettings.MaximumSampleSize = Math.Max(runSettings.SampleSizeOverride.Value,
+                                                              executionSettings.MinimumSampleSize);
             }
-            catch (Exception ex)
+            else
             {
-                return CatchAndReturn(testInstanceContainer, ex);
-            }
-
-
-            await testInstanceContainer.CoreInvoker.ExecutionMethod(cancellationToken).ConfigureAwait(false);
-
-
-            try
-            {
-                await testInstanceContainer.CoreInvoker.IterationTearDown(cancellationToken).ConfigureAwait(false);
-            }
-            catch (Exception ex)
-            {
-                testInstanceContainer.CoreInvoker.SetTestCaseStop();
-                return CatchAndReturn(testInstanceContainer, ex);
+                executionSettings.SampleSize = Math.Max(runSettings.SampleSizeOverride.Value, 1);
             }
         }
 
+        testInstanceContainer.CoreInvoker.SetTestCaseStart();
+
+        var iterationResult = await strategy.ExecuteIterations(
+            testInstanceContainer,
+            executionSettings,
+            cancellationToken);
+
         testInstanceContainer.CoreInvoker.SetTestCaseStop();
+
+        if (!iterationResult.IsSuccess)
+        {
+            return CatchAndReturn(testInstanceContainer,
+                new Exception(iterationResult.ErrorMessage ?? "Iteration failed"));
+        }
+
+        // Log convergence information for adaptive sampling
+        if (useAdaptive && iterationResult.ConvergedEarly)
+        {
+            logger.Log(LogLevel.Information,
+                "      ---- Adaptive sampling completed: {Reason}",
+                iterationResult.ConvergenceReason);
+        }
 
         if (disableOverheadEstimation) return new TestCaseExecutionResult(testInstanceContainer);
 

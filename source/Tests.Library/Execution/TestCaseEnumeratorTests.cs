@@ -95,7 +95,9 @@ public class TestCaseEnumerationTests
             null,
             sampleSizeOverride: 3);
 
-        var iterator = new TestCaseIterator(runSettings, logger);
+        var mockFixedStrategy = Substitute.For<IIterationStrategy>();
+        var mockAdaptiveStrategy = Substitute.For<IIterationStrategy>();
+        var iterator = new TestCaseIterator(runSettings, logger, mockFixedStrategy, mockAdaptiveStrategy);
         var summaryCompiler = new ClassExecutionSummaryCompiler(new StatisticsCompiler(), runSettings); //Substitute.For<IClassExecutionSummaryCompiler>());
         var engine = new SailfishExecutionEngine(logger, consoleWriter, iterator, printer, mediator, summaryCompiler, settings);
         var executionState = new ExecutionState();
