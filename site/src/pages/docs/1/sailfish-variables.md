@@ -448,4 +448,6 @@ When applying a variable attribute, you may choose to specify that variable for 
 [SailfishVariable(scalefish: true, 10, 100, 1000)]
 ```
 
-**NOTE**: When using ScaleFish, variables must be of type `int`. Non-int and complex `Type` variables are not currently supported for complexity estimation.
+{% callout title="ScaleFish constraint" type="warning" %}
+When using ScaleFish, variables must be of type `int`. Non-int and complex `Type` variables are not currently supported for complexity estimation.
+{% /callout %}
