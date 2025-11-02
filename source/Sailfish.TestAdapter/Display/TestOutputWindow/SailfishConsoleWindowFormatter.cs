@@ -87,11 +87,22 @@ internal class SailfishConsoleWindowFormatter : ISailfishConsoleWindowFormatter
             momentTable.Add(new Row(moeDisplay, $"{results.ConfidenceLevel:P0} CI ±"));
         }
 
-        momentTable.AddRange(new[]
+        if (clean.Length > 0)
         {
-            new Row(Math.Round(clean.Min(), 4), "Min"),
-            new Row(Math.Round(clean.Max(), 4), "Max")
-        });
+            momentTable.AddRange(new[]
+            {
+                new Row(Math.Round(clean.Min(), 4), "Min"),
+                new Row(Math.Round(clean.Max(), 4), "Max")
+            });
+        }
+        else
+        {
+            momentTable.AddRange(new[]
+            {
+                new Row("N/A", "Min"),
+                new Row("N/A", "Max")
+            });
+        }
 
         var stringBuilder = new StringBuilder();
 

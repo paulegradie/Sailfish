@@ -73,48 +73,59 @@ internal class AdaptiveIterationStrategy : IIterationStrategy
             }
         }
 
-        // Check convergence after each additional iteration
-        while (iteration < maxIterations)
+        // Perform an initial convergence check after the minimum phase
+        var initialSamples = GetCurrentSamples(testInstanceContainer);
+        convergenceResult = convergenceDetector.CheckConvergence(
+            initialSamples, targetCV, maxCiWidth, confidenceLevel, minIterations);
+
+        if (convergenceResult.HasConverged)
         {
-            // Get current performance data
-            var currentSamples = GetCurrentSamples(testInstanceContainer);
-
-            // Check convergence
-            convergenceResult = convergenceDetector.CheckConvergence(
-                currentSamples, targetCV, maxCiWidth, confidenceLevel, minIterations);
-
-            if (convergenceResult.HasConverged)
+            logger.Log(LogLevel.Information,
+                "      ---- Converged after {TotalIterations} iterations: {Reason}",
+                iteration, convergenceResult.Reason);
+        }
+        else
+        {
+            // Execute more iterations up to the cap, checking convergence AFTER each iteration
+            while (iteration < maxIterations)
             {
                 logger.Log(LogLevel.Information,
-                    "      ---- Converged after {TotalIterations} iterations: {Reason}",
-                    iteration, convergenceResult.Reason);
-                break;
-            }
+                    "      ---- iteration {CurrentIteration} (CV: {CurrentCV:F4}, target: {TargetCV:F4})",
+                    iteration + 1, convergenceResult.CurrentCoefficientOfVariation, targetCV);
 
-            // Execute another iteration
-            logger.Log(LogLevel.Information,
-                "      ---- iteration {CurrentIteration} (CV: {CurrentCV:F4}, target: {TargetCV:F4})",
-                iteration + 1, convergenceResult.CurrentCoefficientOfVariation, targetCV);
-
-            try
-            {
-                await ExecuteSingleIteration(testInstanceContainer, cancellationToken);
-                iteration++;
-            }
-            catch (Exception ex)
-            {
-                return new IterationResult
+                try
                 {
-                    IsSuccess = false,
-                    ErrorMessage = ex.Message,
-                    TotalIterations = iteration
-                };
+                    await ExecuteSingleIteration(testInstanceContainer, cancellationToken);
+                    iteration++;
+                }
+                catch (Exception ex)
+                {
+                    return new IterationResult
+                    {
+                        IsSuccess = false,
+                        ErrorMessage = ex.Message,
+                        TotalIterations = iteration
+                    };
+                }
+
+                // Re-evaluate convergence on the latest samples (including the last allowed iteration)
+                var currentSamples = GetCurrentSamples(testInstanceContainer);
+                convergenceResult = convergenceDetector.CheckConvergence(
+                    currentSamples, targetCV, maxCiWidth, confidenceLevel, minIterations);
+
+                if (convergenceResult.HasConverged)
+                {
+                    logger.Log(LogLevel.Information,
+                        "      ---- Converged after {TotalIterations} iterations: {Reason}",
+                        iteration, convergenceResult.Reason);
+                    break;
+                }
             }
         }
 
         var convergedEarly = convergenceResult?.HasConverged == true && iteration < maxIterations;
 
-        if (!convergedEarly && iteration >= maxIterations)
+        if (convergenceResult?.HasConverged != true && iteration >= maxIterations)
         {
             logger.Log(LogLevel.Warning,
                 "      ---- Reached maximum iterations ({MaxIterations}) without convergence. CV: {CurrentCV:F4}",
