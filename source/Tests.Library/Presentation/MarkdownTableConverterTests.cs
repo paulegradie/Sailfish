@@ -100,7 +100,7 @@ public class MarkdownTableConverterTests
 
         // Act
         var result = markdownTableConverter.ConvertToMarkdownTableString(
-            executionSummaries, 
+            executionSummaries,
             summary => summary.TestClass.Name == "TestClass1");
 
         // Assert
@@ -318,13 +318,13 @@ public class MarkdownTableConverterTests
         var result = Substitute.For<ICompiledTestCaseResult>();
         result.GroupingId.Returns(groupingId);
         result.Exception.Returns((Exception?)null);
-        
+
         var performanceResult = CreateMockPerformanceRunResult();
         result.PerformanceRunResult.Returns(performanceResult);
-        
+
         var testCaseId = CreateMockTestCaseId();
         result.TestCaseId.Returns(testCaseId);
-        
+
         return result;
     }
 
@@ -393,4 +393,209 @@ public class MarkdownTableConverterTests
         mockNextClosestFunction.Name.Returns("Quadratic");
         return new ScaleFishModel(mockFunction, 0.95, mockNextClosestFunction, 0.85);
     }
+
+
+        [Fact]
+        public void ConvertToEnhancedMarkdownTableString_ShouldIncludeHeaderAndGenerated()
+        {
+            // Arrange
+            var executionSummaries = new List<IClassExecutionSummary>
+            {
+                CreateMockExecutionSummary("TestClass1")
+            };
+
+            // Act
+            var result = markdownTableConverter.ConvertToEnhancedMarkdownTableString(executionSummaries);
+
+            // Assert
+            result.ShouldContain("# 📊 Performance Test Results");
+            result.ShouldContain("Generated:");
+        }
+
+        [Fact]
+        public void ConvertToEnhancedMarkdownTableString_ShouldIncludeGroupHeader()
+        {
+            // Arrange
+            var executionSummaries = new List<IClassExecutionSummary>
+            {
+                CreateMockExecutionSummary("TestClass1")
+            };
+
+            // Act
+            var result = markdownTableConverter.ConvertToEnhancedMarkdownTableString(executionSummaries);
+
+            // Assert
+            result.ShouldContain("📈 TestGroup");
+        }
+
+        [Fact]
+        public void ConvertToEnhancedMarkdownTableString_ShouldIncludeCISummary_WithMultiLevelAndAdaptiveFormatting()
+        {
+            // Arrange
+            var ciList = new List<ConfidenceIntervalResult>
+            {
+                new(0.95, 0.12345678, 0, 0),
+                new(0.99, 0.0000000001, 0, 0)
+            };
+
+            var compiled = CreateCompiledResult(
+                groupingId: "GroupA",
+                displayName: "MyTest",
+                mean: 100.0,
+                median: 100.0,
+                stdDev: 1.0,
+                variance: 1.0,
+                sampleSize: 10,
+                confidenceLevel: 0.95,
+                marginOfError: 0.0,
+                confidenceIntervals: ciList);
+
+            var summary = CreateExecutionSummaryFromResults("TestClass1", compiled);
+            var executionSummaries = new List<IClassExecutionSummary> { summary };
+
+            // Act
+            var result = markdownTableConverter.ConvertToEnhancedMarkdownTableString(executionSummaries);
+
+            // Assert
+            result.ShouldContain("- MyTest():");
+            result.ShouldContain("CI ± 0.1235ms");
+            result.ShouldContain("CI ± 0ms");
+        }
+
+        [Fact]
+        public void ConvertToEnhancedMarkdownTableString_ShouldFallbackToSingleLevelCI_WhenNoMultiLevelProvided()
+        {
+            // Arrange: No ConfidenceIntervals provided; use legacy single-level fields
+            var compiled = CreateCompiledResult(
+                groupingId: "GroupA",
+                displayName: "LegacyTest",
+                mean: 100.0,
+                median: 100.0,
+                stdDev: 1.0,
+                variance: 1.0,
+                sampleSize: 10,
+                confidenceLevel: 0.95,
+                marginOfError: 0.004, // Should format to 0.0040 via adaptive formatting
+                confidenceIntervals: Array.Empty<ConfidenceIntervalResult>());
+
+            var summary = CreateExecutionSummaryFromResults("TestClass1", compiled);
+            var executionSummaries = new List<IClassExecutionSummary> { summary };
+
+            // Act
+            var result = markdownTableConverter.ConvertToEnhancedMarkdownTableString(executionSummaries);
+
+            // Assert
+            result.ShouldContain("- LegacyTest():");
+            result.ShouldContain("CI ± 0.0040ms");
+        }
+
+        [Fact]
+        public void ConvertToEnhancedMarkdownTableString_PerformanceSummary_ShouldReportFastestSlowestAndGap()
+        {
+            // Arrange
+            var fast = CreateCompiledResult(
+                groupingId: "GroupX",
+                displayName: "FastMethod",
+                mean: 100.0,
+                median: 100.0,
+                stdDev: 1.0,
+                variance: 1.0,
+                sampleSize: 10);
+
+            var slow = CreateCompiledResult(
+                groupingId: "GroupX",
+                displayName: "SlowMethod",
+                mean: 200.0,
+                median: 200.0,
+                stdDev: 2.0,
+                variance: 4.0,
+                sampleSize: 10);
+
+            var summary = CreateExecutionSummaryFromResults("TestClass1", fast, slow);
+            var executionSummaries = new List<IClassExecutionSummary> { summary };
+
+            // Act
+            var result = markdownTableConverter.ConvertToEnhancedMarkdownTableString(executionSummaries);
+
+            // Assert
+            result.ShouldContain("📊 Performance Summary:");
+            result.ShouldContain("**Fastest:** FastMethod() (100.000ms)");
+            result.ShouldContain("**Slowest:** SlowMethod() (200.000ms)");
+            result.ShouldContain("**Performance Gap:** 100.0% difference");
+        }
+
+        [Fact]
+        public void ConvertToEnhancedMarkdownTableString_TableShouldIncludeSampleSizeInStdDevHeader()
+        {
+            // Arrange
+            var compiled = CreateCompiledResult(
+                groupingId: "GroupB",
+                displayName: "MyTest",
+                mean: 10.0,
+                median: 10.0,
+                stdDev: 1.0,
+                variance: 1.0,
+                sampleSize: 10);
+
+            var summary = CreateExecutionSummaryFromResults("TestClass1", compiled);
+            var executionSummaries = new List<IClassExecutionSummary> { summary };
+
+            // Act
+            var result = markdownTableConverter.ConvertToEnhancedMarkdownTableString(executionSummaries);
+
+            // Assert
+            result.ShouldContain("StdDev (N=10)");
+        }
+
+        private static IClassExecutionSummary CreateExecutionSummaryFromResults(string className, params ICompiledTestCaseResult[] results)
+        {
+            var summary = Substitute.For<IClassExecutionSummary>();
+            var testClass = Substitute.For<Type>();
+            testClass.Name.Returns(className);
+            summary.TestClass.Returns(testClass);
+            summary.CompiledTestCaseResults.Returns(results.ToList());
+            return summary;
+        }
+
+        private static ICompiledTestCaseResult CreateCompiledResult(
+            string groupingId,
+            string displayName,
+            double mean,
+            double median,
+            double stdDev,
+            double variance,
+            int sampleSize,
+            double confidenceLevel = 0.95,
+            double marginOfError = 0.0,
+            IReadOnlyList<ConfidenceIntervalResult>? confidenceIntervals = null)
+        {
+            var perf = new PerformanceRunResult(
+                displayName,
+                mean,
+                stdDev,
+                variance,
+                median,
+                Array.Empty<double>(),
+                sampleSize,
+                0,
+                new double[] { 1.0, 2.0 },
+                Array.Empty<double>(),
+                Array.Empty<double>(),
+                0,
+                0.0,
+                confidenceLevel,
+                0.0,
+                0.0,
+                marginOfError,
+                confidenceIntervals);
+
+            var compiled = Substitute.For<ICompiledTestCaseResult>();
+            compiled.GroupingId.Returns(groupingId);
+            compiled.TestCaseId.Returns(new TestCaseId(displayName));
+            compiled.PerformanceRunResult.Returns(perf);
+            compiled.Exception.Returns((Exception?)null);
+            return compiled;
+        }
+
+
 }
