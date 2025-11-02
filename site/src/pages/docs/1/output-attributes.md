@@ -164,10 +164,11 @@ var runner = SailfishRunner.CreateBuilder()
 
 ## Extensibility
 
-**Note on Extensibility**:
+{% callout title="Extensibility" type="note" %}
 Sailfish exposes notification handlers that you can implement to customize output generation:
 
 - `INotificationHandler<WriteMethodComparisonMarkdownNotification>` for markdown customization
 - `INotificationHandler<WriteMethodComparisonCsvNotification>` for CSV customization
 
 These handlers allow you to customize what is done with the generated content before it's written to files.
+{% /callout %}

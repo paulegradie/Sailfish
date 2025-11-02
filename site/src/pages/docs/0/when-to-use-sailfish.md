@@ -23,5 +23,6 @@ The same can be said for benchmarking. Sometimes you need to measure extremely q
  - **performs statistical analysis and predictive modelling**, leveraging outlier detection and distribution testing to estimate complexity
 
 
-### Tip: Adaptive Sampling
+{% callout title="Tip: Adaptive Sampling" type="tip" %}
 Use [Adaptive Sampling](/docs/1/adaptive-sampling) to achieve consistent precision while minimizing runtime, especially in CI.
+{% /callout %}

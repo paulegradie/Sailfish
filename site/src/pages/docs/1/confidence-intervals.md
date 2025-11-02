@@ -11,7 +11,9 @@ Confidence intervals (CIs) quantify the uncertainty around an estimated mean run
 - Markdown: compact per‑test CI summary
 - CSV: numeric columns CI95_MOE and CI99_MOE
 
-Tip: In some terminals the ± symbol may render as a replacement character due to encoding. This is cosmetic only.
+{% callout title="Terminal encoding" type="note" %}
+In some terminals the ± symbol may render as a replacement character due to encoding. This is cosmetic only.
+{% /callout %}
 
 ## How Sailfish calculates CIs
 Given a set of n cleaned samples with sample standard deviation `s`:
