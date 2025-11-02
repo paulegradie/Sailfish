@@ -8,3 +8,8 @@ title: Essential Information
 # - **Tests are run in-process**
 
 Sailfish applies outlier detection and overhead estimation to run results. It does not perform any optimizations that would result in the tests needing to be run out-of-process.
+
+
+## Confidence Intervals
+
+Sailfish reports 95% and 99% confidence intervals by default for the mean runtime. See [Confidence Intervals](/docs/1/confidence-intervals) for details.

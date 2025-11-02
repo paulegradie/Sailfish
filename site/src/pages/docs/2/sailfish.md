@@ -57,6 +57,8 @@ Descriptive Statistics
 | ---    | ---        |
 | Mean   |     62.411 |
 | Median |     62.986 |
+| 95% CI ± |     11.0496 |
+| 99% CI ± |     14.9900 |
 | StdDev |     1.4544 |
 | Min    |    59.8693 |
 | Max    |    63.4148 |
@@ -69,6 +71,12 @@ Distribution (ms)
 -----------------
 59.8693, 62.5765, 62.986, 63.4148, 63.2082
 ```
+
+Plain-English CI: If you repeated the experiment many times, 95% of such intervals would contain the true average runtime. 99% is wider (more conservative) than 95%.
+
+Adaptive precision: CI margins are formatted with adaptive precision (try 4 decimals → if zero, try 6 → then 8 → then show "0").
+
+Tip: Depending on your terminal or console encoding, the ± symbol may appear as a replacement character. This is cosmetic and does not affect values.
 
 These are the basic descriptive statistics describing your Sailfish test run. Persisted outputs (such as markdown or csv files) will be found the output directory in the calling assembly's **/bin** folder.
 

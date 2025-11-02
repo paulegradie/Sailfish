@@ -42,6 +42,7 @@ public class PerformanceTest
 - **Method comparison matrices**: N×N comparisons between methods in the same comparison group
 - **Statistical analysis**: P-values, significance testing, and performance ratios
 - **Organized sections**: Clear separation between different types of data
+- **Multiple confidence intervals**: Displays 95% and 99% by default with adaptive precision
 
 **Example filename**: `TestSession_abc12345_Results_20250803_103000.md`
 
@@ -83,6 +84,8 @@ public class PerformanceTest
 - **Session-based consolidation**: Single CSV file per test session
 - **Comprehensive data**: All test metrics and comparison results in tabular format
 - **Comment-friendly**: Section headers using `#` comments for clear organization
+- **Multiple confidence intervals**: Includes CI95_MOE and CI99_MOE columns for margin-of-error at 95% and 99% confidence
+
 
 **Example filename**: `TestSession_abc12345_Results_20250803_103000.csv`
 
