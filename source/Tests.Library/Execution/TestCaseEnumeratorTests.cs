@@ -97,6 +97,62 @@ public class TestCaseEnumerationTests
 
         var mockFixedStrategy = Substitute.For<IIterationStrategy>();
         var mockAdaptiveStrategy = Substitute.For<IIterationStrategy>();
+        // Configure iteration strategies to return a successful result
+        mockFixedStrategy.ExecuteIterations(
+            Arg.Any<TestInstanceContainer>(),
+            Arg.Any<IExecutionSettings>(),
+            Arg.Any<CancellationToken>())
+            .Returns(async call =>
+            {
+                var container = call.Arg<TestInstanceContainer>();
+                var exec = call.Arg<IExecutionSettings>();
+                var ct = call.Arg<CancellationToken>();
+
+                for (var i = 0; i < Math.Max(1, exec.SampleSize); i++)
+                {
+                    await container.CoreInvoker.IterationSetup(ct);
+                    await container.CoreInvoker.ExecutionMethod(ct, true);
+                    await container.CoreInvoker.IterationTearDown(ct);
+                }
+
+                return new IterationResult
+                {
+                    IsSuccess = true,
+                    TotalIterations = Math.Max(1, exec.SampleSize),
+                    ConvergedEarly = false,
+                    ErrorMessage = null,
+                    ConvergenceReason = null
+                };
+            });
+
+        mockAdaptiveStrategy.ExecuteIterations(
+            Arg.Any<TestInstanceContainer>(),
+            Arg.Any<IExecutionSettings>(),
+            Arg.Any<CancellationToken>())
+            .Returns(async call =>
+            {
+                var container = call.Arg<TestInstanceContainer>();
+                var exec = call.Arg<IExecutionSettings>();
+                var ct = call.Arg<CancellationToken>();
+
+                for (var i = 0; i < Math.Max(1, exec.SampleSize); i++)
+                {
+                    await container.CoreInvoker.IterationSetup(ct);
+                    await container.CoreInvoker.ExecutionMethod(ct, true);
+                    await container.CoreInvoker.IterationTearDown(ct);
+                }
+
+                return new IterationResult
+                {
+                    IsSuccess = true,
+                    TotalIterations = Math.Max(1, exec.SampleSize),
+
+                    ConvergedEarly = false,
+                    ErrorMessage = null,
+                    ConvergenceReason = null
+                };
+            });
+
         var iterator = new TestCaseIterator(runSettings, logger, mockFixedStrategy, mockAdaptiveStrategy);
         var summaryCompiler = new ClassExecutionSummaryCompiler(new StatisticsCompiler(), runSettings); //Substitute.For<IClassExecutionSummaryCompiler>());
         var engine = new SailfishExecutionEngine(logger, consoleWriter, iterator, printer, mediator, summaryCompiler, settings);

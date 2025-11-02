@@ -1302,23 +1302,73 @@ internal class MethodComparisonBatchProcessor
 
     /// <summary>
     /// Creates a PerformanceRunResult from a TestCompletionQueueMessage.
+    /// Computes CI fields since PerformanceMetrics does not carry them.
     /// </summary>
     private PerformanceRunResult CreatePerformanceRunResultFromMessage(TestCompletionQueueMessage message)
     {
         var metrics = message.PerformanceMetrics;
+
+        var clean = metrics.DataWithOutliersRemoved ?? Array.Empty<double>();
+        var n = clean.Length;
+        var mean = metrics.MeanMs;
+        var stdDev = metrics.StandardDeviation;
+        var standardError = n > 1 ? stdDev / Math.Sqrt(n) : 0;
+        var confidenceLevel = 0.95; // default until plumbed from settings
+
+        double GetTValue(double cl, int dof)
+        {
+            if (dof >= 30)
+            {
+                return cl switch
+                {
+                    0.90 => 1.645,
+                    0.95 => 1.960,
+                    0.99 => 2.576,
+                    0.999 => 3.291,
+                    _ => 1.960
+                };
+            }
+
+            return dof switch
+            {
+                1 => cl >= 0.95 ? 12.706 : 6.314,
+                2 => cl >= 0.95 ? 4.303 : 2.920,
+                3 => cl >= 0.95 ? 3.182 : 2.353,
+                4 => cl >= 0.95 ? 2.776 : 2.132,
+                5 => cl >= 0.95 ? 2.571 : 2.015,
+                6 => cl >= 0.95 ? 2.447 : 1.943,
+                7 => cl >= 0.95 ? 2.365 : 1.895,
+                8 => cl >= 0.95 ? 2.306 : 1.860,
+                9 => cl >= 0.95 ? 2.262 : 1.833,
+                10 => cl >= 0.95 ? 2.228 : 1.812,
+                _ when dof <= 20 => cl >= 0.95 ? 2.086 : 1.725,
+                _ => cl >= 0.95 ? 2.000 : 1.680
+            };
+        }
+
+        var tValue = GetTValue(confidenceLevel, n - 1);
+        var marginOfError = tValue * standardError;
+        var ciLower = mean - marginOfError;
+        var ciUpper = mean + marginOfError;
+
         return new PerformanceRunResult(
             message.TestCaseId,
-            metrics.MeanMs,
-            metrics.StandardDeviation,
+            mean,
+            stdDev,
             metrics.Variance,
             metrics.MedianMs,
-            metrics.RawExecutionResults,
+            metrics.RawExecutionResults ?? Array.Empty<double>(),
             metrics.SampleSize,
             metrics.NumWarmupIterations,
-            metrics.DataWithOutliersRemoved,
-            metrics.UpperOutliers,
-            metrics.LowerOutliers,
-            metrics.TotalNumOutliers);
+            clean,
+            metrics.UpperOutliers ?? Array.Empty<double>(),
+            metrics.LowerOutliers ?? Array.Empty<double>(),
+            metrics.TotalNumOutliers,
+            standardError,
+            confidenceLevel,
+            ciLower,
+            ciUpper,
+            marginOfError);
     }
 
     /// <summary>
@@ -1371,7 +1421,12 @@ internal class MethodComparisonBatchProcessor
             original.DataWithOutliersRemoved,
             original.UpperOutliers,
             original.LowerOutliers,
-            original.TotalNumOutliers);
+            original.TotalNumOutliers,
+            original.StandardError,
+            original.ConfidenceLevel,
+            original.ConfidenceIntervalLower,
+            original.ConfidenceIntervalUpper,
+            original.MarginOfError);
     }
 
     /// <summary>

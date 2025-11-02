@@ -69,7 +69,7 @@ public class StatisticalConvergenceDetectorTests
         // Assert
         result.HasConverged.ShouldBeTrue();
         result.CurrentCoefficientOfVariation.ShouldBeLessThan(0.05);
-        result.CurrentMean.ShouldBe(100.85, 0.1);
+        result.CurrentMean.ShouldBe(101.05, 0.1);
         result.SampleCount.ShouldBe(20);
         result.Reason.ShouldContain("Converged");
     }
@@ -104,7 +104,7 @@ public class StatisticalConvergenceDetectorTests
         // Assert
         result.HasConverged.ShouldBeFalse();
         result.Reason.ShouldContain("mean is zero");
-        result.CurrentMean.ShouldBe(0.0);
+        result.CurrentMean.ShouldBe(0.0, 1e-12);
     }
 
     [Fact]

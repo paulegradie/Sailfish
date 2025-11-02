@@ -62,14 +62,18 @@ internal class SailfishConsoleWindowFormatter : ISailfishConsoleWindowFormatter
         var testCaseName = testCaseResult.TestCaseId;
         var results = testCaseResult.PerformanceRunResult!;
 
+        var clean = results.DataWithOutliersRemoved;
+        var moe = results.MarginOfError;
+        var moeDisplay = FormatAdaptive(moe);
+
         var momentTable = new List<Row>
         {
-            new(results.RawExecutionResults.Length, "N"),
+            new(clean.Length, "N"),
             new(Math.Round(results.Mean, 4), "Mean"),
             new(Math.Round(results.Median, 4), "Median"),
-            new($"±{Math.Round(results.MarginOfError, 4)}", $"{results.ConfidenceLevel:P0} CI"),
-            new(Math.Round(results.RawExecutionResults.Min(), 4), "Min"),
-            new(Math.Round(results.RawExecutionResults.Max(), 4), "Max")
+            new(moeDisplay, $"{results.ConfidenceLevel:P0} CI ±"),
+            new(Math.Round(clean.Min(), 4), "Min"),
+            new(Math.Round(clean.Max(), 4), "Max")
         };
 
         var stringBuilder = new StringBuilder();
@@ -112,4 +116,17 @@ internal class SailfishConsoleWindowFormatter : ISailfishConsoleWindowFormatter
 
         return stringBuilder.ToString();
     }
+
+        private static string FormatAdaptive(double value)
+        {
+            if (value == 0) return "0";
+            var s4 = value.ToString("F4", System.Globalization.CultureInfo.InvariantCulture);
+            if (!s4.Equals("0.0000")) return s4;
+            var s6 = value.ToString("F6", System.Globalization.CultureInfo.InvariantCulture);
+            if (!s6.Equals("0.000000")) return s6;
+            var s8 = value.ToString("F8", System.Globalization.CultureInfo.InvariantCulture);
+            if (!s8.Equals("0.00000000")) return s8;
+            return "0";
+        }
+
 }

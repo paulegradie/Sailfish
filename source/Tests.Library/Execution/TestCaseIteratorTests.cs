@@ -27,8 +27,21 @@ public class TestCaseIteratorTests
     {
         mockLogger = Substitute.For<ILogger>();
         mockRunSettings = Substitute.For<IRunSettings>();
-        mockFixedStrategy = Substitute.For<IIterationStrategy>();
+        // Use real FixedIterationStrategy so iteration progress is logged and CoreInvoker is exercised
+        mockFixedStrategy = new FixedIterationStrategy(mockLogger);
+        // Adaptive strategy is not used in these tests (UseAdaptiveSampling defaults to false),
+        // but configure a safe default in case it's invoked
         mockAdaptiveStrategy = Substitute.For<IIterationStrategy>();
+        mockAdaptiveStrategy.ExecuteIterations(
+            Arg.Any<TestInstanceContainer>(),
+            Arg.Any<IExecutionSettings>(),
+            Arg.Any<CancellationToken>())
+            .Returns(Task.FromResult(new IterationResult
+            {
+                IsSuccess = true,
+                TotalIterations = 1,
+                ConvergedEarly = false
+            }));
         testCaseIterator = new TestCaseIterator(mockRunSettings, mockLogger, mockFixedStrategy, mockAdaptiveStrategy);
     }
 

@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+
 using System.Threading;
 using System.Threading.Tasks;
 using NSubstitute;
@@ -103,7 +105,7 @@ public class IterationStrategyTests
             targetCV: 0.05);
 
         // Setup convergence detector to return converged after minimum samples
-        mockConvergenceDetector.CheckConvergence(Arg.Any<double[]>(), Arg.Any<double>(), Arg.Any<double>(), Arg.Any<int>())
+        mockConvergenceDetector.CheckConvergence(Arg.Any<IReadOnlyList<double>>(), Arg.Any<double>(), Arg.Any<double>(), Arg.Any<double>(), Arg.Any<int>())
             .Returns(new ConvergenceResult
             {
                 HasConverged = true,
@@ -135,7 +137,7 @@ public class IterationStrategyTests
             targetCV: 0.05);
 
         // Setup convergence detector to never converge
-        mockConvergenceDetector.CheckConvergence(Arg.Any<double[]>(), Arg.Any<double>(), Arg.Any<double>(), Arg.Any<int>())
+        mockConvergenceDetector.CheckConvergence(Arg.Any<IReadOnlyList<double>>(), Arg.Any<double>(), Arg.Any<double>(), Arg.Any<double>(), Arg.Any<int>())
             .Returns(new ConvergenceResult
             {
                 HasConverged = false,
@@ -164,7 +166,7 @@ public class IterationStrategyTests
             minSampleSize: 3,
             maxSampleSize: 10);
 
-        mockConvergenceDetector.CheckConvergence(Arg.Any<double[]>(), Arg.Any<double>(), Arg.Any<double>(), Arg.Any<int>())
+        mockConvergenceDetector.CheckConvergence(Arg.Any<IReadOnlyList<double>>(), Arg.Any<double>(), Arg.Any<double>(), Arg.Any<double>(), Arg.Any<int>())
             .Returns(new ConvergenceResult { HasConverged = true });
 
         // Act
@@ -184,7 +186,7 @@ public class IterationStrategyTests
     {
         var mockCoreInvoker = Substitute.For<CoreInvoker>(new object(), typeof(object).GetMethod("ToString")!, new PerformanceTimer());
         var mockExecutionSettings = Substitute.For<IExecutionSettings>();
-        
+
         return TestInstanceContainer.CreateTestInstance(
             new object(),
             typeof(object).GetMethod("ToString")!,

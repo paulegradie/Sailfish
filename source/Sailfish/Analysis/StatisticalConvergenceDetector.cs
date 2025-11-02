@@ -53,7 +53,9 @@ public class StatisticalConvergenceDetector : IStatisticalConvergenceDetector
         var standardDeviation = samplesArray.StandardDeviation();
         
         // Handle edge cases
-        if (mean == 0)
+        // Treat very small means as zero to avoid unstable CV and CI calculations
+        const double NearZero = 1e-9;
+        if (Math.Abs(mean) <= NearZero)
         {
             return new ConvergenceResult
             {

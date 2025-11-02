@@ -207,6 +207,24 @@ public class SailfishConsoleWindowFormatterTests
         output.ShouldContain("Descriptive Statistics");
     }
 
+
+        [Fact]
+        public void FormConsoleWindowMessageForSailfish_PrintsNonZeroCI_ForVisualVerification()
+        {
+            // Arrange
+            var performanceResult = CreatePerformanceRunResult(); // marginOfError = 22.1
+            var compiledResult = CreateCompiledResultWithPerformance(performanceResult);
+            var executionSummary = CreateExecutionSummaryWithCompiledResult(compiledResult);
+            var results = new List<IClassExecutionSummary> { executionSummary };
+
+            // Act
+            var output = _formatter.FormConsoleWindowMessageForSailfish(results);
+
+            // Assert and also print for manual inspection in console logs
+            Console.WriteLine(output);
+            output.ShouldContain("22.1000");
+        }
+
     #endregion
 
     #region Helper Methods

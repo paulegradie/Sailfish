@@ -7,47 +7,68 @@ using Sailfish.Execution;
 
 namespace Sailfish.Contracts.Public.Models;
 
-public class PerformanceRunResult(
-    string displayName,
-    double mean,
-    double stdDev,
-    double variance,
-    double median,
-    double[] rawExecutionResults,
-    int sampleSize,
-    int numWarmupIterations,
-    double[] dataWithOutliersRemoved,
-    double[] upperOutliers,
-    double[] lowerOutliers,
-    int totalNumOutliers,
-    double standardError = 0.0,
-    double confidenceLevel = 0.95,
-    double confidenceIntervalLower = 0.0,
-    double confidenceIntervalUpper = 0.0,
-    double marginOfError = 0.0)
+public class PerformanceRunResult
 {
-    public string DisplayName { get; } = displayName;
-    public double Mean { get; } = mean;
-    public double Median { get; } = median;
-    public double StdDev { get; } = stdDev;
-    public double Variance { get; } = variance;
+    public PerformanceRunResult(
+        string displayName,
+        double mean,
+        double stdDev,
+        double variance,
+        double median,
+        double[] rawExecutionResults,
+        int sampleSize,
+        int numWarmupIterations,
+        double[] dataWithOutliersRemoved,
+        double[] upperOutliers,
+        double[] lowerOutliers,
+        int totalNumOutliers,
+        double standardError = 0.0,
+        double confidenceLevel = 0.95,
+        double confidenceIntervalLower = 0.0,
+        double confidenceIntervalUpper = 0.0,
+        double marginOfError = 0.0)
+    {
+        DisplayName = displayName;
+        Mean = mean;
+        Median = median;
+        StdDev = stdDev;
+        Variance = variance;
+        RawExecutionResults = rawExecutionResults;
+        SampleSize = sampleSize;
+        NumWarmupIterations = numWarmupIterations;
+        DataWithOutliersRemoved = dataWithOutliersRemoved;
+        LowerOutliers = lowerOutliers;
+        UpperOutliers = upperOutliers;
+        TotalNumOutliers = totalNumOutliers;
+        StandardError = standardError;
+        ConfidenceLevel = confidenceLevel;
+        ConfidenceIntervalLower = confidenceIntervalLower;
+        ConfidenceIntervalUpper = confidenceIntervalUpper;
+        MarginOfError = marginOfError;
+    }
 
-    public double[] RawExecutionResults { get; } = rawExecutionResults;
+    public string DisplayName { get; }
+    public double Mean { get; }
+    public double Median { get; }
+    public double StdDev { get; }
+    public double Variance { get; }
 
-    public int SampleSize { get; } = sampleSize;
-    public int NumWarmupIterations { get; } = numWarmupIterations;
+    public double[] RawExecutionResults { get; }
 
-    public double[] DataWithOutliersRemoved { get; } = dataWithOutliersRemoved;
-    public double[] LowerOutliers { get; } = lowerOutliers;
-    public double[] UpperOutliers { get; } = upperOutliers;
-    public int TotalNumOutliers { get; } = totalNumOutliers;
+    public int SampleSize { get; }
+    public int NumWarmupIterations { get; }
+
+    public double[] DataWithOutliersRemoved { get; }
+    public double[] LowerOutliers { get; }
+    public double[] UpperOutliers { get; }
+    public int TotalNumOutliers { get; }
 
     // NEW: Confidence Interval Properties
-    public double StandardError { get; } = standardError;
-    public double ConfidenceLevel { get; } = confidenceLevel;
-    public double ConfidenceIntervalLower { get; } = confidenceIntervalLower;
-    public double ConfidenceIntervalUpper { get; } = confidenceIntervalUpper;
-    public double MarginOfError { get; } = marginOfError;
+    public double StandardError { get; }
+    public double ConfidenceLevel { get; }
+    public double ConfidenceIntervalLower { get; }
+    public double ConfidenceIntervalUpper { get; }
+    public double MarginOfError { get; set; }
     public double ConfidenceIntervalWidth => ConfidenceIntervalUpper - ConfidenceIntervalLower;
 
     public static PerformanceRunResult ConvertFromPerfTimer(TestCaseId testCaseId, PerformanceTimer performanceTimer, IExecutionSettings executionSettings)
@@ -74,9 +95,10 @@ public class PerformanceRunResult(
         var variance = executionIterations.Count > 1 ? cleanData.Variance() : 0;
 
         // Calculate confidence interval
-        var standardError = cleanData.Count > 1 ? stdDev / Math.Sqrt(cleanData.Count) : 0;
+        var n = cleanData.Length;
+        var standardError = n > 1 ? stdDev / Math.Sqrt(n) : 0;
         var confidenceLevel = executionSettings.ConfidenceLevel;
-        var tValue = GetTValue(confidenceLevel, cleanData.Count - 1);
+        var tValue = GetTValue(confidenceLevel, n - 1);
         var marginOfError = tValue * standardError;
         var ciLower = mean - marginOfError;
         var ciUpper = mean + marginOfError;
