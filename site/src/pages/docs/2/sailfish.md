@@ -78,7 +78,9 @@ Plain-English CI: If you repeated the experiment many times, 95% of such interva
 
 Adaptive precision: CI margins are formatted with adaptive precision (try 4 decimals → if zero, try 6 → then 8 → then show "0").
 
-Tip: Depending on your terminal or console encoding, the ± symbol may appear as a replacement character. This is cosmetic and does not affect values.
+{% callout title="Terminal encoding" type="note" %}
+Depending on your terminal or console encoding, the ± symbol may appear as a replacement character. This is cosmetic and does not affect values.
+{% /callout %}
 
 These are the basic descriptive statistics describing your Sailfish test run. Persisted outputs (such as markdown or csv files) will be found the output directory in the calling assembly's **/bin** folder.
 
