@@ -77,3 +77,32 @@ public class AlgorithmComparison
 ### Used by:
 <img src="./assets/OctopusDeploy-logo-RGB.svg" alt="Octopus Deploy" style='width: 500px; background: white; border-radius: 10px' />
 <img src="./assets/empower.svg" alt="Octopus Deploy" style='width: 500px;  height: 150px; object-fit: cover; object-position: center; background: white; border-radius: 10px' />
+
+
+## 📘 Adaptive Sampling
+
+Adaptive sampling lets Sailfish stop collecting samples once results are statistically stable, instead of using a fixed sample size.
+
+- Convergence criteria (defaults):
+  - Coefficient of Variation (CV) ≤ 5%
+  - Relative Confidence Interval width ≤ 20% at 95% confidence
+
+### Attribute-based (per-class)
+```csharp
+[Sailfish(UseAdaptiveSampling = true, TargetCoefficientOfVariation = 0.05, MaximumSampleSize = 1000)]
+public class StableTiming
+{
+    [SailfishMethod]
+    public async Task Work() => await Task.Delay(10);
+}
+```
+
+### Global configuration (all tests in a run)
+```csharp
+var runSettings = RunSettingsBuilder.CreateBuilder()
+    .WithGlobalAdaptiveSampling(targetCoefficientOfVariation: 0.05, maximumSampleSize: 500)
+    // other options like .WithGlobalSampleSize(...), .DisableOverheadEstimation(), etc.
+    .Build();
+```
+
+Note: Global settings act as defaults/overrides and can be combined with attribute settings per class.

@@ -30,5 +30,11 @@ public interface IRunSettings
     ILogger? CustomLogger { get; }
     LogLevel MinimumLogLevel { get; }
 
+
+    // Global adaptive sampling overrides (null = no override)
+    bool? GlobalUseAdaptiveSampling { get; }
+    double? GlobalTargetCoefficientOfVariation { get; }
+    int? GlobalMaximumSampleSize { get; }
+
     string GetRunSettingsTrackingDirectoryPath();
 }

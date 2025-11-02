@@ -33,4 +33,32 @@ internal static class ExecutionExtensionMethods
             ConfidenceLevel = 0.95 // Default confidence level
         };
     }
+
+    public static IExecutionSettings RetrieveExecutionTestSettings(
+        this Type type,
+        int? globalSampleSize,
+        int? globalNumWarmupIterations,
+        bool? globalUseAdaptiveSampling,
+        double? globalTargetCoefficientOfVariation,
+        int? globalMaximumSampleSize)
+    {
+        var settings = type.RetrieveExecutionTestSettings(globalSampleSize, globalNumWarmupIterations);
+        if (globalUseAdaptiveSampling.HasValue)
+        {
+            settings.UseAdaptiveSampling = globalUseAdaptiveSampling.Value;
+        }
+
+        if (globalTargetCoefficientOfVariation.HasValue)
+        {
+            settings.TargetCoefficientOfVariation = globalTargetCoefficientOfVariation.Value;
+        }
+
+        if (globalMaximumSampleSize.HasValue)
+        {
+            settings.MaximumSampleSize = globalMaximumSampleSize.Value;
+        }
+
+        return settings;
+    }
+
 }

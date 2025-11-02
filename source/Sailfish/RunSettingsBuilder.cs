@@ -32,6 +32,12 @@ public class RunSettingsBuilder
     private bool streamTrackingUpdates = true;
     private DateTime? timeStamp;
 
+
+    // Global adaptive sampling overrides
+    private bool? globalUseAdaptiveSampling;
+    private double? globalTargetCoefficientOfVariation;
+    private int? globalMaximumSampleSize;
+
     public static RunSettingsBuilder CreateBuilder()
     {
         return new RunSettingsBuilder();
@@ -214,6 +220,19 @@ public class RunSettingsBuilder
         return this;
     }
 
+    /// <summary>
+    ///     Enables adaptive sampling globally and sets default convergence parameters.
+    ///     Individual [Sailfish] attributes can still override these values per class.
+    /// </summary>
+    public RunSettingsBuilder WithGlobalAdaptiveSampling(double targetCoefficientOfVariation, int maximumSampleSize)
+    {
+        globalUseAdaptiveSampling = true;
+        globalTargetCoefficientOfVariation = targetCoefficientOfVariation;
+        globalMaximumSampleSize = maximumSampleSize;
+        return this;
+    }
+
+
     public RunSettingsBuilder WithGlobalNumWarmupIterations(int numIterations)
     {
         globalNumWarmupIterations = Math.Max(numIterations, 1);
@@ -243,6 +262,9 @@ public class RunSettingsBuilder
             streamTrackingUpdates,
             disableLogging,
             level ?? LogLevel.Verbose,
-            setDebug);
+            setDebug,
+            globalUseAdaptiveSampling,
+            globalTargetCoefficientOfVariation,
+            globalMaximumSampleSize);
     }
 }
