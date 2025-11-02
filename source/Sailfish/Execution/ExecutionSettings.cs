@@ -1,4 +1,6 @@
 ﻿using System.Text.Json.Serialization;
+using System.Collections.Generic;
+
 
 namespace Sailfish.Execution;
 
@@ -18,6 +20,8 @@ public interface IExecutionSettings
     public int MinimumSampleSize { get; set; }
     public int MaximumSampleSize { get; set; }
     public double ConfidenceLevel { get; set; }
+    public IReadOnlyList<double> ReportConfidenceLevels { get; set; }
+
 
     // NEW: Enhanced Statistical Configuration
     public double MaxConfidenceIntervalWidth { get; set; }
@@ -56,6 +60,8 @@ public class ExecutionSettings : IExecutionSettings
     public double ConfidenceLevel { get; set; } = 0.95;
 
     // NEW: Enhanced Statistical Properties
+    public IReadOnlyList<double> ReportConfidenceLevels { get; set; } = new List<double> { 0.95, 0.99 };
+
     public double MaxConfidenceIntervalWidth { get; set; } = 0.20; // 20% relative CI width
     public bool UseRelativeConfidenceInterval { get; set; } = true;
 }

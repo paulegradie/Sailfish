@@ -53,7 +53,7 @@ internal class MethodComparisonProcessor : TestCompletionQueueProcessorBase
     private readonly ISailDiffUnifiedFormatter _unifiedFormatter;
 
     // Track test classes that have already generated markdown to avoid duplicates
-    private readonly HashSet<string> _markdownGeneratedForClasses = new();
+    private readonly HashSet<string> _markdownGeneratedForClasses = [];
 
     /// <summary>
     /// Initializes a new instance of the MethodComparisonProcessor.
@@ -613,7 +613,7 @@ internal class MethodComparisonProcessor : TestCompletionQueueProcessorBase
                 var fallbackBatch = new TestCaseBatch
                 {
                     BatchId = $"Fallback_{className}_{DateTime.UtcNow:yyyyMMdd_HHmmss}",
-                    TestCases = new List<TestCompletionQueueMessage> { triggerMessage }
+                    TestCases = [triggerMessage]
                 };
 
                 Logger.Log(LogLevel.Information,
@@ -1268,8 +1268,8 @@ internal class MethodComparisonBatchProcessor
                 groupName, beforeMethod.TestCaseId, afterMethod.TestCaseId, commonTestCaseId);
 
             var comparisonResult = _sailDiff.ComputeTestCaseDiff(
-                new[] { commonTestCaseId },
-                new[] { commonTestCaseId },
+                [commonTestCaseId],
+                [commonTestCaseId],
                 commonTestCaseId,
                 CreateModifiedClassExecutionSummary(classExecutionSummary, beforeMethod, afterMethod, commonTestCaseId),
                 CreateModifiedPerformanceResult(beforeData, commonTestCaseId));
@@ -1308,48 +1308,19 @@ internal class MethodComparisonBatchProcessor
     {
         var metrics = message.PerformanceMetrics;
 
-        var clean = metrics.DataWithOutliersRemoved ?? Array.Empty<double>();
+        var clean = metrics.DataWithOutliersRemoved ?? [];
         var n = clean.Length;
         var mean = metrics.MeanMs;
         var stdDev = metrics.StandardDeviation;
         var standardError = n > 1 ? stdDev / Math.Sqrt(n) : 0;
-        var confidenceLevel = 0.95; // default until plumbed from settings
 
-        double GetTValue(double cl, int dof)
-        {
-            if (dof >= 30)
-            {
-                return cl switch
-                {
-                    0.90 => 1.645,
-                    0.95 => 1.960,
-                    0.99 => 2.576,
-                    0.999 => 3.291,
-                    _ => 1.960
-                };
-            }
+        // Default report levels when settings are not available from the message
+        var reportLevels = new List<double> { 0.95, 0.99 };
+        var ciList = PerformanceRunResult.ComputeConfidenceIntervals(mean, standardError, n, reportLevels);
 
-            return dof switch
-            {
-                1 => cl >= 0.95 ? 12.706 : 6.314,
-                2 => cl >= 0.95 ? 4.303 : 2.920,
-                3 => cl >= 0.95 ? 3.182 : 2.353,
-                4 => cl >= 0.95 ? 2.776 : 2.132,
-                5 => cl >= 0.95 ? 2.571 : 2.015,
-                6 => cl >= 0.95 ? 2.447 : 1.943,
-                7 => cl >= 0.95 ? 2.365 : 1.895,
-                8 => cl >= 0.95 ? 2.306 : 1.860,
-                9 => cl >= 0.95 ? 2.262 : 1.833,
-                10 => cl >= 0.95 ? 2.228 : 1.812,
-                _ when dof <= 20 => cl >= 0.95 ? 2.086 : 1.725,
-                _ => cl >= 0.95 ? 2.000 : 1.680
-            };
-        }
-
-        var tValue = GetTValue(confidenceLevel, n - 1);
-        var marginOfError = tValue * standardError;
-        var ciLower = mean - marginOfError;
-        var ciUpper = mean + marginOfError;
+        // Primary (legacy) fields use 0.95 by default
+        var primary = ciList.FirstOrDefault(x => Math.Abs(x.ConfidenceLevel - 0.95) < 1e-9)
+                     ?? PerformanceRunResult.ComputeConfidenceIntervals(mean, standardError, n, [0.95]).First();
 
         return new PerformanceRunResult(
             message.TestCaseId,
@@ -1357,18 +1328,19 @@ internal class MethodComparisonBatchProcessor
             stdDev,
             metrics.Variance,
             metrics.MedianMs,
-            metrics.RawExecutionResults ?? Array.Empty<double>(),
+            metrics.RawExecutionResults ?? [],
             metrics.SampleSize,
             metrics.NumWarmupIterations,
             clean,
-            metrics.UpperOutliers ?? Array.Empty<double>(),
-            metrics.LowerOutliers ?? Array.Empty<double>(),
+            metrics.UpperOutliers ?? [],
+            metrics.LowerOutliers ?? [],
             metrics.TotalNumOutliers,
             standardError,
-            confidenceLevel,
-            ciLower,
-            ciUpper,
-            marginOfError);
+            primary.ConfidenceLevel,
+            primary.Lower,
+            primary.Upper,
+            primary.MarginOfError,
+            ciList);
     }
 
     /// <summary>
@@ -1400,7 +1372,7 @@ internal class MethodComparisonBatchProcessor
         return new CombinedClassExecutionSummary(
             originalSummary.TestClass,
             originalSummary.ExecutionSettings,
-            new[] { modifiedCompiledResult });
+            [modifiedCompiledResult]);
     }
 
     /// <summary>

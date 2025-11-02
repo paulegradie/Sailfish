@@ -38,6 +38,18 @@ public class MarkdownTableConverter : IMarkdownTableConverter
         _unifiedFormatter = unifiedFormatter ?? throw new ArgumentNullException(nameof(unifiedFormatter));
     }
 
+    private static string FormatAdaptive(double value)
+    {
+        if (value == 0) return "0";
+        var s4 = value.ToString("F4", System.Globalization.CultureInfo.InvariantCulture);
+        if (!s4.Equals("0.0000")) return s4;
+        var s6 = value.ToString("F6", System.Globalization.CultureInfo.InvariantCulture);
+        if (!s6.Equals("0.000000")) return s6;
+        var s8 = value.ToString("F8", System.Globalization.CultureInfo.InvariantCulture);
+        if (!s8.Equals("0.00000000")) return s8;
+        return "0";
+    }
+
     public string ConvertToMarkdownTableString(
         IEnumerable<IClassExecutionSummary> executionSummaries,
         Func<IClassExecutionSummary, bool> summaryFilter)
@@ -164,6 +176,24 @@ public class MarkdownTableConverter : IMarkdownTableConverter
 
             stringBuilder.AppendLine(table);
             stringBuilder.AppendLine();
+            // Add CI summary lines for each test in the group (95% and 99% if available)
+            foreach (var r in groupResults.Where(gr => gr.PerformanceRunResult != null))
+            {
+                var pr = r.PerformanceRunResult!;
+                if (pr.ConfidenceIntervals != null && pr.ConfidenceIntervals.Count > 0)
+                {
+                    var ciParts = pr.ConfidenceIntervals
+                        .OrderBy(ci => ci.ConfidenceLevel)
+                        .Select(ci => $"{ci.ConfidenceLevel:P0} CI ± {FormatAdaptive(ci.MarginOfError)}ms");
+                    stringBuilder.AppendLine($"- {r.TestCaseId!.DisplayName}: {string.Join(", ", ciParts)}");
+                }
+                else
+                {
+                    stringBuilder.AppendLine($"- {r.TestCaseId!.DisplayName}: {pr.ConfidenceLevel:P0} CI ± {FormatAdaptive(pr.MarginOfError)}ms");
+                }
+            }
+            stringBuilder.AppendLine();
+
         }
     }
 
@@ -206,6 +236,7 @@ public class MarkdownTableConverter : IMarkdownTableConverter
             var methodGroups = testClassComplexityResult
                 .ScaleFishMethodModels
                 .GroupBy(x => x.TestMethodName);
+
             foreach (var methodGroup in methodGroups)
             {
                 tableBuilder.AppendLine($"### {methodGroup.Key}");
@@ -260,6 +291,7 @@ public class MarkdownTableConverter : IMarkdownTableConverter
             var table = group.ToStringTable(
                 typeName,
                 new List<string>
+
                 {
                     "",
                     "ms",

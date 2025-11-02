@@ -37,59 +37,24 @@ public static class FormatExtensionMethods
                 }
 
                 var tr = y.PerformanceRunResult;
-                var clean = tr.DataWithOutliersRemoved ?? System.Array.Empty<double>();
+                var clean = tr.DataWithOutliersRemoved ?? [];
                 var n = clean.Length;
                 var mean = tr.Mean;
                 var stdDev = tr.StdDev;
                 var standardError = n > 1 ? stdDev / System.Math.Sqrt(n) : 0;
-                var confidenceLevel = 0.95; // tracking format doesn't store this; default
-
-                double GetTValue(double cl, int dof)
-                {
-                    if (dof >= 30)
-                    {
-                        return cl switch
-                        {
-                            0.90 => 1.645,
-                            0.95 => 1.960,
-                            0.99 => 2.576,
-                            0.999 => 3.291,
-                            _ => 1.960
-                        };
-                    }
-
-                    return dof switch
-                    {
-                        1 => cl >= 0.95 ? 12.706 : 6.314,
-                        2 => cl >= 0.95 ? 4.303 : 2.920,
-                        3 => cl >= 0.95 ? 3.182 : 2.353,
-                        4 => cl >= 0.95 ? 2.776 : 2.132,
-                        5 => cl >= 0.95 ? 2.571 : 2.015,
-                        6 => cl >= 0.95 ? 2.447 : 1.943,
-                        7 => cl >= 0.95 ? 2.365 : 1.895,
-                        8 => cl >= 0.95 ? 2.306 : 1.860,
-                        9 => cl >= 0.95 ? 2.262 : 1.833,
-                        10 => cl >= 0.95 ? 2.228 : 1.812,
-                        _ when dof <= 20 => cl >= 0.95 ? 2.086 : 1.725,
-                        _ => cl >= 0.95 ? 2.000 : 1.680
-                    };
-                }
-
-                var tValue = GetTValue(confidenceLevel, n - 1);
-                var marginOfError = tValue * standardError;
-                var ciLower = mean - marginOfError;
-                var ciUpper = mean + marginOfError;
+                var ciList = PerformanceRunResult.ComputeConfidenceIntervals(mean, standardError, n, [0.95, 0.99]);
+                var primary = ciList.First(x => System.Math.Abs(x.ConfidenceLevel - 0.95) < 1e-9);
 
                 var perf = new PerformanceRunResult(
                     tr.DisplayName,
                     mean, stdDev, tr.Variance, tr.Median,
-                    tr.RawExecutionResults ?? System.Array.Empty<double>(),
+                    tr.RawExecutionResults ?? [],
                     tr.SampleSize, tr.NumWarmupIterations,
                     clean,
-                    tr.UpperOutliers ?? System.Array.Empty<double>(),
-                    tr.LowerOutliers ?? System.Array.Empty<double>(),
+                    tr.UpperOutliers ?? [],
+                    tr.LowerOutliers ?? [],
                     tr.TotalNumOutliers,
-                    standardError, confidenceLevel, ciLower, ciUpper, marginOfError);
+                    standardError, primary.ConfidenceLevel, primary.Lower, primary.Upper, primary.MarginOfError, ciList);
 
                 return new CompiledTestCaseResult(
                     y.TestCaseId!,

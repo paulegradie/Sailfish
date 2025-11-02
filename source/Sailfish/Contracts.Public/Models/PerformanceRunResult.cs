@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using MathNet.Numerics.Distributions;
 using MathNet.Numerics.Statistics;
 using Sailfish.Analysis;
 using Sailfish.Execution;
@@ -26,7 +27,8 @@ public class PerformanceRunResult
         double confidenceLevel = 0.95,
         double confidenceIntervalLower = 0.0,
         double confidenceIntervalUpper = 0.0,
-        double marginOfError = 0.0)
+        double marginOfError = 0.0,
+        IReadOnlyList<ConfidenceIntervalResult>? confidenceIntervals = null)
     {
         DisplayName = displayName;
         Mean = mean;
@@ -45,6 +47,7 @@ public class PerformanceRunResult
         ConfidenceIntervalLower = confidenceIntervalLower;
         ConfidenceIntervalUpper = confidenceIntervalUpper;
         MarginOfError = marginOfError;
+        ConfidenceIntervals = confidenceIntervals ?? Array.Empty<ConfidenceIntervalResult>();
     }
 
     public string DisplayName { get; }
@@ -71,6 +74,27 @@ public class PerformanceRunResult
     public double MarginOfError { get; set; }
     public double ConfidenceIntervalWidth => ConfidenceIntervalUpper - ConfidenceIntervalLower;
 
+    // Centralized multi-level CIs
+    public IReadOnlyList<ConfidenceIntervalResult> ConfidenceIntervals { get; }
+
+    // Convenience properties for CSV and simple consumers
+    public double CI95MarginOfError => GetMarginFor(0.95);
+    public double CI99MarginOfError => GetMarginFor(0.99);
+
+    private double GetMarginFor(double level)
+    {
+        var ci = ConfidenceIntervals?.FirstOrDefault(x => Math.Abs(x.ConfidenceLevel - level) < 1e-9);
+        if (ci != null) return ci.MarginOfError;
+        // Fallback: if this instance represents the single-level CI and matches the query
+        if (Math.Abs(ConfidenceLevel - level) < 1e-9) return MarginOfError;
+        // As a last resort, compute from SE if possible
+        var n = DataWithOutliersRemoved?.Length ?? 0;
+        if (n <= 1 || StandardError == 0) return 0;
+        var dof = Math.Max(1, n - 1);
+        var t = StudentT.InvCDF(0, 1, dof, 0.5 + level / 2.0);
+        return t * StandardError;
+    }
+
     public static PerformanceRunResult ConvertFromPerfTimer(TestCaseId testCaseId, PerformanceTimer performanceTimer, IExecutionSettings executionSettings)
     {
         var executionIterations = performanceTimer.ExecutionIterationPerformances
@@ -94,55 +118,49 @@ public class PerformanceRunResult
         var stdDev = executionIterations.Count > 1 ? cleanData.StandardDeviation() : 0;
         var variance = executionIterations.Count > 1 ? cleanData.Variance() : 0;
 
-        // Calculate confidence interval
+        // Calculate confidence intervals centrally
         var n = cleanData.Length;
         var standardError = n > 1 ? stdDev / Math.Sqrt(n) : 0;
-        var confidenceLevel = executionSettings.ConfidenceLevel;
-        var tValue = GetTValue(confidenceLevel, n - 1);
-        var marginOfError = tValue * standardError;
-        var ciLower = mean - marginOfError;
-        var ciUpper = mean + marginOfError;
+        var configuredLevels = (executionSettings as ExecutionSettings)?.ReportConfidenceLevels
+                                ?? new List<double> { executionSettings.ConfidenceLevel };
+        var ciList = ComputeConfidenceIntervals(mean, standardError, n, configuredLevels);
+
+        // Preserve single-level fields for backward compatibility (use executionSettings.ConfidenceLevel)
+        var primaryLevel = executionSettings.ConfidenceLevel;
+        var primary = ciList.FirstOrDefault(x => Math.Abs(x.ConfidenceLevel - primaryLevel) < 1e-9)
+                     ?? ComputeConfidenceIntervals(mean, standardError, n, new[] { primaryLevel }).First();
 
         return new PerformanceRunResult(testCaseId.DisplayName,
             mean, stdDev, variance, median, rawExecutionResults,
             executionSettings.SampleSize, executionSettings.NumWarmupIterations, cleanData,
             upperOutliers.ToArray(), lowerOutliers.ToArray(), totalNumOutliers,
-            standardError, confidenceLevel, ciLower, ciUpper, marginOfError);
+            standardError, primary.ConfidenceLevel, primary.Lower, primary.Upper, primary.MarginOfError,
+            ciList);
     }
 
     /// <summary>
-    /// Gets the critical t-value for the specified confidence level and degrees of freedom.
+    /// Centralized CI computation for one or more confidence levels using Student's t distribution.
     /// </summary>
-    private static double GetTValue(double confidenceLevel, int degreesOfFreedom)
+    public static IReadOnlyList<ConfidenceIntervalResult> ComputeConfidenceIntervals(double mean, double standardError, int n, IEnumerable<double> confidenceLevels)
     {
-        // For large samples (df >= 30), use normal approximation
-        if (degreesOfFreedom >= 30)
+        var result = new List<ConfidenceIntervalResult>();
+        if (n <= 1 || standardError == 0)
         {
-            return confidenceLevel switch
+            foreach (var cl in confidenceLevels.Distinct())
             {
-                0.90 => 1.645,
-                0.95 => 1.960,
-                0.99 => 2.576,
-                0.999 => 3.291,
-                _ => 1.960 // Default to 95% CI
-            };
+                result.Add(new ConfidenceIntervalResult(cl, 0, mean, mean));
+            }
+            return result;
         }
 
-        // For small samples, use conservative t-values (simplified lookup table)
-        return degreesOfFreedom switch
+        var dof = Math.Max(1, n - 1);
+        foreach (var cl in confidenceLevels.Distinct().OrderBy(x => x))
         {
-            1 => confidenceLevel >= 0.95 ? 12.706 : 6.314,
-            2 => confidenceLevel >= 0.95 ? 4.303 : 2.920,
-            3 => confidenceLevel >= 0.95 ? 3.182 : 2.353,
-            4 => confidenceLevel >= 0.95 ? 2.776 : 2.132,
-            5 => confidenceLevel >= 0.95 ? 2.571 : 2.015,
-            6 => confidenceLevel >= 0.95 ? 2.447 : 1.943,
-            7 => confidenceLevel >= 0.95 ? 2.365 : 1.895,
-            8 => confidenceLevel >= 0.95 ? 2.306 : 1.860,
-            9 => confidenceLevel >= 0.95 ? 2.262 : 1.833,
-            10 => confidenceLevel >= 0.95 ? 2.228 : 1.812,
-            _ when degreesOfFreedom <= 20 => confidenceLevel >= 0.95 ? 2.086 : 1.725,
-            _ => confidenceLevel >= 0.95 ? 2.000 : 1.680 // Conservative estimate
-        };
+            var t = StudentT.InvCDF(0, 1, dof, 0.5 + cl / 2.0);
+            var moe = t * standardError;
+            result.Add(new ConfidenceIntervalResult(cl, moe, mean - moe, mean + moe));
+        }
+
+        return result;
     }
 }
