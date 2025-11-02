@@ -39,9 +39,11 @@ If using Sailfish as a test project, you can create a `.sailfish.json` file in t
 ```
 
 
-⚠️ If you are using Jetbrains Rider - you will need to [enable VS Test Adapter Support](https://www.jetbrains.com/help/rider/Reference__Options__Tools__Unit_Testing__VSTest.html)
+{% callout title="JetBrains Rider setup" type="warning" %}
+If you are using JetBrains Rider, you need to [enable VS Test Adapter Support](https://www.jetbrains.com/help/rider/Reference__Options__Tools__Unit_Testing__VSTest.html).
 
-**In contrast to test frameworks natively supported by JetBrains Rider, tests from VSTest adapters are only discovered after test projects are build.**
+In contrast to test frameworks natively supported by Rider, tests from VSTest adapters are only discovered after test projects are built.
+{% /callout %}
 
 
 ## Outputs
