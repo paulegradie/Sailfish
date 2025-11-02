@@ -76,8 +76,6 @@ Adaptive sampling is backward-compatible and opt-in.
 - Or enable globally with the builder (recommended for consistent policy)
 - If using `SampleSizeOverride`, note it caps the number of adaptive samples
 
-For an expanded guide, see the repository: [Adaptive Sampling Migration Guide](https://github.com/paulegradie/Sailfish/blob/main/ADAPTIVE_SAMPLING_MIGRATION_GUIDE.md).
-
 ## Best practices
 - Tighten `TargetCoefficientOfVariation` (e.g., 0.02) for highly stable microbenchmarks
 - Raise `MaximumSampleSize` for noisy workloads to allow convergence
