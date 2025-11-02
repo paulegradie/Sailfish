@@ -26,7 +26,10 @@ internal static class TestCasePropertyCloner
 
         var customProperties = typeSrc
             .GetProperties(BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance)
-            .Where(x => x.PropertyDoesNotHaveAnySailfishVariableAttributes())
+            // Exclude all Sailfish variable properties (attribute-based, interface-based, and class-based)
+            .Where(x => x.PropertyDoesNotHaveAnySailfishVariableAttributes()
+                        && !x.IsVariablesProperty()
+                        && !x.IsSailfishVariablesClassProperty())
             .ToList();
 
         foreach (var property in customProperties)
