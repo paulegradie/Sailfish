@@ -21,3 +21,7 @@ The same can be said for benchmarking. Sometimes you need to measure extremely q
  - **has a test adapter** that you can install to make salefish tests behave like NUnit or xUnit in the IDE
 
  - **performs statistical analysis and predictive modelling**, leveraging outlier detection and distribution testing to estimate complexity
+
+
+### Tip: Adaptive Sampling
+Use [Adaptive Sampling](/docs/1/adaptive-sampling) to achieve consistent precision while minimizing runtime, especially in CI.
