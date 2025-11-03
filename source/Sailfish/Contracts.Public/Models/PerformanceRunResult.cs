@@ -89,7 +89,7 @@ public class PerformanceRunResult
         if (Math.Abs(ConfidenceLevel - level) < 1e-9) return MarginOfError;
         // As a last resort, compute from SE if possible
         var n = DataWithOutliersRemoved?.Length ?? 0;
-        if (n <= 1 || StandardError == 0) return 0;
+        if (n <= 1 || StandardError < 0.000000001) return 0;
         var dof = Math.Max(1, n - 1);
         var t = StudentT.InvCDF(0, 1, dof, 0.5 + level / 2.0);
         return t * StandardError;
@@ -144,7 +144,7 @@ public class PerformanceRunResult
     public static IReadOnlyList<ConfidenceIntervalResult> ComputeConfidenceIntervals(double mean, double standardError, int n, IEnumerable<double> confidenceLevels)
     {
         var result = new List<ConfidenceIntervalResult>();
-        if (n <= 1 || standardError == 0)
+        if (n <= 1 || standardError < 0.000000001)
         {
             foreach (var cl in confidenceLevels.Distinct())
             {

@@ -48,9 +48,7 @@ internal class MethodComparisonMarkdownHandler : INotificationHandler<WriteMetho
 
             // Generate filename with timestamp - support both class-based and session-based naming
             var timestamp = notification.Timestamp.ToString("yyyy-MM-dd_HH-mm-ss");
-            var fileName = notification.TestClassName.StartsWith("TestSession_")
-                ? $"{notification.TestClassName}_MethodComparisons_{timestamp}.md"
-                : $"{notification.TestClassName}_MethodComparisons_{timestamp}.md";
+            var fileName = $"{notification.TestClassName}_MethodComparisons_{timestamp}.md";
 
             // Use run settings to get the correct output directory
             var outputDirectory = _runSettings.LocalOutputDirectory ?? DefaultFileSettings.DefaultOutputDirectory;

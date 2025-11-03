@@ -120,6 +120,13 @@ When using `[WriteToMarkdown]`, generates session-based markdown files containin
 
 **Example filename**: `TestSession_abc12345_Results_20250803_103000.md`
 
+{% callout title="See also" type="note" %}
+Format details and troubleshooting:
+- [Markdown Output](/docs/1/markdown-output)
+- [CSV Output](/docs/1/csv-output)
+{% /callout %}
+
+
 ### 3. Consolidated CSV Files
 
 When using `[WriteToCsv]`, generates session-based CSV files containing:
@@ -130,23 +137,9 @@ When using `[WriteToCsv]`, generates session-based CSV files containing:
 
 **Example filename**: `TestSession_abc12345_Results_20250803_103000.csv`
 
-```csv
-# Session Metadata
-SessionId,Timestamp,TotalClasses,TotalTests
-abc12345,2025-08-03T10:30:00Z,1,6
-
-# Individual Test Results
-TestClass,TestMethod,MeanTime,MedianTime,StdDev,SampleSize,ComparisonGroup,Status
-AlgorithmComparison,BubbleSort,45.200,44.100,3.100,100,SortingAlgorithms,Success
-AlgorithmComparison,QuickSort,2.100,2.000,0.300,100,SortingAlgorithms,Success
-AlgorithmComparison,LinqSort,5.800,5.600,0.400,100,SortingAlgorithms,Success
-
-# Method Comparisons
-ComparisonGroup,Method1,Method2,Method1Mean,Method2Mean,PerformanceRatio,ChangeDescription
-SortingAlgorithms,BubbleSort,QuickSort,45.200,2.100,21.5x slower,Regressed
-SortingAlgorithms,BubbleSort,LinqSort,45.200,5.800,7.8x slower,Regressed
-SortingAlgorithms,QuickSort,LinqSort,2.100,5.800,2.8x faster,Improved
-```
+{% callout title="CSV format details" type="note" %}
+See full format and complete examples here: [CSV Output](/docs/1/csv-output)
+{% /callout %}
 
 ## Understanding the Results
 
@@ -271,7 +264,7 @@ The framework uses SailDiff's statistical analysis to determine significance:
 When you have multiple methods in a comparison group, the framework automatically performs N×N comparisons:
 
 - **2 methods**: Each method gets 1 comparison
-- **3 methods**: Each method gets 2 comparisons  
+- **3 methods**: Each method gets 2 comparisons
 - **4 methods**: Each method gets 3 comparisons
 - **N methods**: Each method gets (N-1) comparisons
 
@@ -319,7 +312,7 @@ Make sure compared methods are testing equivalent functionality:
 [SailfishComparison("SortingAlgorithms")]
 public void BubbleSort() { /* sorts _data */ }
 
-[SailfishComparison("SortingAlgorithms")]  
+[SailfishComparison("SortingAlgorithms")]
 public void QuickSort() { /* sorts _data */ }
 
 // Poor: Methods do different things
