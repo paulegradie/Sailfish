@@ -974,9 +974,7 @@ internal class MethodComparisonBatchProcessor
             return;
         }
 
-        _logger.Log(LogLevel.Information,
-            "Processing comparison group '{0}' with {1} methods",
-            groupName, testCases.Count);
+        // Note: Already logged in ProcessBatch, no need to log again here
 
         // For true N×N comparison, each method needs to be compared with every other method
         // We need to ensure each method gets its own perspective on all other methods

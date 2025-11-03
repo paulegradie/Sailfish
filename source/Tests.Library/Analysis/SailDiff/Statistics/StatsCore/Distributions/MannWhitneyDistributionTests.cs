@@ -260,9 +260,17 @@ public class MannWhitneyDistributionTests
         distribution.Mean.ShouldBe(3.0); // 2*3/2 = 3
     }
 
-    // Note: DistributionFunction_WithNaN test is skipped because MannWhitneyDistribution
-    // overrides DistributionFunction without calling base class NaN validation.
-    // This is a known limitation of the current implementation.
+    [Fact]
+    public void DistributionFunction_WithNaN_ShouldThrowArgumentOutOfRangeException()
+    {
+        // Arrange
+        var distribution = new MannWhitneyDistribution(new[] { 1.0, 2.0, 3.0, 4.0 }, 2, 2);
+
+        // Act & Assert
+        var exception = Should.Throw<ArgumentOutOfRangeException>(() =>
+            distribution.DistributionFunction(double.NaN));
+        exception.ParamName.ShouldBe("x");
+    }
 
     [Fact]
     public void InverseDistributionFunction_WithInvalidProbability_ShouldThrowArgumentOutOfRangeException()

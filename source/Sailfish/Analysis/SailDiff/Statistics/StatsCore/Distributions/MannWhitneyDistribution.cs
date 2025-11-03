@@ -71,6 +71,10 @@ internal sealed class MannWhitneyDistribution : UnivariateContinuousDistribution
 
     public override double DistributionFunction(double x)
     {
+        // Validate input before processing (consistent with base class contract)
+        if (double.IsNaN(x))
+            throw new ArgumentOutOfRangeException(nameof(x), "Value cannot be NaN.");
+
         if (Exact) return WilcoxonDistribution.ExactMethod(x, Table!);
         if (x > Mean)
             x -= 0.5;

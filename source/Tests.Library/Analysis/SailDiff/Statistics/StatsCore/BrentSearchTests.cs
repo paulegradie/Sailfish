@@ -164,16 +164,22 @@ public class BrentSearchTests
     }
 
     [Fact]
-    public void FindRoot_WithFunctionReturningNaN_ShouldThrowArithmeticException()
+    public void FindRoot_WithFunctionReturningNaN_ShouldThrowConvergenceException()
     {
-        // Arrange: Function that returns NaN
-        // Math.Sign() throws ArithmeticException when given NaN
-        Func<double, double> function = x => x < 5 ? x - 2.5 : double.NaN;
+        // Arrange: Function that returns valid values at bounds but NaN in the middle
+        // This ensures BrentSearch's NaN detection (not Math.Sign) is triggered
+        // f(0) = -1, f(10) = 1 (valid bracket), but f(x) = NaN for 4 < x < 6
+        Func<double, double> function = x =>
+        {
+            if (x <= 4) return x - 5;  // negative for x < 5
+            if (x >= 6) return x - 5;  // positive for x > 5
+            return double.NaN;         // NaN in the middle where root would be
+        };
 
-        // Act & Assert - Math.Sign throws ArithmeticException for NaN values
-        var exception = Should.Throw<ArithmeticException>(() =>
+        // Act & Assert - BrentSearch should throw ConvergenceException for non-finite function values
+        var exception = Should.Throw<ConvergenceException>(() =>
             BrentSearch.FindRoot(function, 0, 10));
-        exception.Message.ShouldContain("Not-a-Number");
+        exception.Message.ShouldContain("Function evaluation didn't return a finite number");
     }
 
     [Fact]

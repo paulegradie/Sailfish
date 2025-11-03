@@ -894,9 +894,8 @@ public class MethodComparisonProcessorTests
         await processor.ProcessBatch(batch, CancellationToken.None);
 
         // Assert
-        // Should log processing for both groups (2 groups × 2 methods each = 4 total log calls)
-        // Each method in a group gets its own "Processing comparison group" log
-        _logger.Received(4).Log(LogLevel.Information,
+        // Should log processing for both groups (2 groups = 2 log calls)
+        _logger.Received(2).Log(LogLevel.Information,
             Arg.Is<string>(s => s.Contains("Processing comparison group")),
             Arg.Any<object[]>());
     }
@@ -926,9 +925,9 @@ public class MethodComparisonProcessorTests
         await processor.ProcessBatch(batch, CancellationToken.None);
 
         // Assert
-        // Should only process the comparison group (2 methods = 2 log calls)
+        // Should only process the comparison group (1 group = 1 log call)
         // Note: Logger uses template strings with {0} and {1} placeholders
-        _logger.Received(2).Log(LogLevel.Information,
+        _logger.Received(1).Log(LogLevel.Information,
             Arg.Is<string>(s => s.Contains("Processing comparison group") && s.Contains("{1} methods")),
             Arg.Any<object[]>());
     }
