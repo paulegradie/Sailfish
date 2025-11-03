@@ -37,11 +37,15 @@ public class QueueHealthCheckAsyncDisposalTests
         var queueManager = CreateMockQueueManager();
         var healthCheck = new QueueHealthCheck(queueManager, _configuration, _logger);
 
-        // Act & Assert - This should not deadlock
+        // Act
         await healthCheck.DisposeAsync();
-        
-        // Verify that subsequent calls don't throw
+
+        // Assert - Verify that subsequent calls don't throw (idempotent)
         await healthCheck.DisposeAsync();
+
+        // Verify that the object is disposed by checking that operations throw ObjectDisposedException
+        await Should.ThrowAsync<ObjectDisposedException>(() =>
+            healthCheck.StartAsync(CancellationToken.None));
     }
 
     [Fact]
@@ -51,11 +55,15 @@ public class QueueHealthCheckAsyncDisposalTests
         var queueManager = CreateMockQueueManager();
         var healthCheck = new QueueHealthCheck(queueManager, _configuration, _logger);
 
-        // Act & Assert - This should not deadlock
+        // Act
         healthCheck.Dispose();
-        
-        // Verify that subsequent calls don't throw
+
+        // Assert - Verify that subsequent calls don't throw (idempotent)
         healthCheck.Dispose();
+
+        // Verify that the object is disposed by checking that operations throw ObjectDisposedException
+        Should.Throw<ObjectDisposedException>(() =>
+            healthCheck.StartAsync(CancellationToken.None).GetAwaiter().GetResult());
     }
 
     [Fact]
@@ -67,9 +75,11 @@ public class QueueHealthCheckAsyncDisposalTests
 
         // Act
         healthCheck.Dispose();
-        
-        // Assert - Should not throw
         await healthCheck.DisposeAsync();
+
+        // Assert - Verify that the object is disposed
+        await Should.ThrowAsync<ObjectDisposedException>(() =>
+            healthCheck.StartAsync(CancellationToken.None));
     }
 
     [Fact]
@@ -81,31 +91,49 @@ public class QueueHealthCheckAsyncDisposalTests
 
         // Act
         await healthCheck.DisposeAsync();
-        
-        // Assert - Should not throw
         healthCheck.Dispose();
+
+        // Assert - Verify that the object is disposed
+        await Should.ThrowAsync<ObjectDisposedException>(() =>
+            healthCheck.StartAsync(CancellationToken.None));
     }
 
     [Fact]
-    public async Task UsingStatement_ShouldWorkWithoutDeadlock()
+    public void UsingStatement_ShouldWorkWithoutDeadlock()
     {
-        // Arrange & Act & Assert - This should not deadlock
+        // Arrange
         var queueManager = CreateMockQueueManager();
-        using var healthCheck = new QueueHealthCheck(queueManager, _configuration, _logger);
-        
-        // The using statement will call Dispose() automatically
-        // This test verifies that it doesn't deadlock
+        QueueHealthCheck? healthCheck;
+
+        // Act - The using statement will call Dispose() automatically
+        using (healthCheck = new QueueHealthCheck(queueManager, _configuration, _logger))
+        {
+            // This test verifies that it doesn't deadlock
+            healthCheck.ShouldNotBeNull();
+        }
+
+        // Assert - Verify that the object is disposed after the using block
+        Should.Throw<ObjectDisposedException>(() =>
+            healthCheck.StartAsync(CancellationToken.None).GetAwaiter().GetResult());
     }
 
     [Fact]
     public async Task AwaitUsingStatement_ShouldWorkWithoutDeadlock()
     {
-        // Arrange & Act & Assert - This should not deadlock
+        // Arrange
         var queueManager = CreateMockQueueManager();
-        await using var healthCheck = new QueueHealthCheck(queueManager, _configuration, _logger);
-        
-        // The await using statement will call DisposeAsync() automatically
-        // This test verifies that it doesn't deadlock
+        QueueHealthCheck? healthCheck;
+
+        // Act - The await using statement will call DisposeAsync() automatically
+        await using (healthCheck = new QueueHealthCheck(queueManager, _configuration, _logger))
+        {
+            // This test verifies that it doesn't deadlock
+            healthCheck.ShouldNotBeNull();
+        }
+
+        // Assert - Verify that the object is disposed after the await using block
+        await Should.ThrowAsync<ObjectDisposedException>(() =>
+            healthCheck.StartAsync(CancellationToken.None));
     }
 
     private TestCompletionQueueManager CreateMockQueueManager()

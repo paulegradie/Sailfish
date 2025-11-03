@@ -70,8 +70,13 @@ public class TestCaseBatchingServiceTests : IDisposable
         // Arrange
         _batchingService = new TestCaseBatchingService(_logger);
 
-        // Act & Assert - Should not throw
+        // Act
         await _batchingService.StartAsync(CancellationToken.None);
+
+        // Assert
+        _logger.Received(1).Log(LogLevel.Information,
+            "TestCaseBatchingService started with strategy '{0}'",
+            Arg.Any<object[]>());
     }
 
     [Fact]
@@ -97,8 +102,13 @@ public class TestCaseBatchingServiceTests : IDisposable
         _batchingService = new TestCaseBatchingService(_logger);
         await _batchingService.StartAsync(CancellationToken.None);
 
-        // Act & Assert - Should not throw
+        // Act
         await _batchingService.StopAsync(CancellationToken.None);
+
+        // Assert
+        _logger.Received(1).Log(LogLevel.Information,
+            "TestCaseBatchingService stopped. Total batches managed: {0}",
+            Arg.Any<object[]>());
     }
 
     #endregion
@@ -271,8 +281,12 @@ public class TestCaseBatchingServiceTests : IDisposable
         // Arrange
         _batchingService = new TestCaseBatchingService(_logger);
 
-        // Act & Assert - Should not throw
+        // Act
         _batchingService.Dispose();
+
+        // Assert
+        _logger.Received(1).Log(LogLevel.Debug,
+            "TestCaseBatchingService disposed successfully");
     }
 
     // TestCaseBatchingService doesn't implement IAsyncDisposable
@@ -704,8 +718,16 @@ public class TestCaseBatchingServiceTests : IDisposable
         var message = CreateTestMessage();
         await _batchingService.AddTestCaseToBatchAsync(message, CancellationToken.None);
 
-        // Act & Assert - Should not throw
+        // Act
         _batchingService.Dispose();
+
+        // Assert
+        // Should log both stop and dispose messages
+        _logger.Received(1).Log(LogLevel.Information,
+            "TestCaseBatchingService stopped. Total batches managed: {0}",
+            Arg.Any<object[]>());
+        _logger.Received(1).Log(LogLevel.Debug,
+            "TestCaseBatchingService disposed successfully");
     }
 
     #endregion

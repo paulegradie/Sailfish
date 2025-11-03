@@ -60,7 +60,7 @@ public class TestSuiteIsCovered
     {
         var variables = TestCaseVariablesBuilder.Create().AddVariable(new TestCaseVariable(Some.RandomString(), new { })).AddVariable(Some.RandomString(), new { }).Build();
         var testCaseId = TestCaseIdBuilder.Create().WithTestCaseName(Some.RandomString()).WithTestCaseVariables(new List<TestCaseVariable>() { }).Build();
-        TestCaseNameBuilder.Create().WithName(Some.RandomString()).WithParts(new List<string>() { Some.RandomString() }).Build();
+        var testCaseName = TestCaseNameBuilder.Create().WithName(Some.RandomString()).WithParts(new List<string>() { Some.RandomString() }).Build();
 
         var perfRunResultTrackingFormat = PerformanceRunResultTrackingFormatBuilder.Create()
             .WithDisplayName(Some.RandomString())
@@ -98,6 +98,14 @@ public class TestSuiteIsCovered
             .WithSampleSize(3)
             .WithDisableOverheadEstimation(true)
             .Build();
+
+        // Assert - Verify all builders created valid objects
+        variables.ShouldNotBeNull();
+        testCaseId.ShouldNotBeNull();
+        testCaseName.ShouldNotBeNull();
+        perfRunResultTrackingFormat.ShouldNotBeNull();
+        perfRunResult.ShouldNotBeNull();
+        executionSettings.ShouldNotBeNull();
 
         CompiledTestCaseResultTrackingFormatBuilder.Create()
             .WithGroupingId(Some.RandomString())

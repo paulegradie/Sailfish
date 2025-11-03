@@ -98,8 +98,13 @@ public class BatchTimeoutHandlerTests : IDisposable
         // Arrange
         _timeoutHandler = new BatchTimeoutHandler(_batchingService, _mediator, _configuration, _logger);
 
-        // Act & Assert - Should not throw
+        // Act
         await _timeoutHandler.StartAsync(CancellationToken.None);
+
+        // Assert
+        _logger.Received(1).Log(LogLevel.Information,
+            "Batch timeout handler started with monitoring interval of {0} seconds",
+            Arg.Any<object[]>());
     }
 
     [Fact]
@@ -295,7 +300,10 @@ public class BatchTimeoutHandlerTests : IDisposable
         // Arrange
         _timeoutHandler = new BatchTimeoutHandler(_batchingService, _mediator, _configuration, _logger);
 
-        // Act & Assert - Should not throw
+        // Act
+        _timeoutHandler.Dispose();
+
+        // Assert - Verify that subsequent calls don't throw (idempotent)
         _timeoutHandler.Dispose();
     }
 
