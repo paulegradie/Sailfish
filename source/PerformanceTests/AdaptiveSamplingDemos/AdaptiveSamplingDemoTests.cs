@@ -116,7 +116,7 @@ public class WorkloadPatternsDemo
     public async Task CpuIntensiveOperation(CancellationToken cancellationToken)
     {
         // Simulate CPU-intensive work with consistent timing
-        var iterations = 100000;
+        const int iterations = 100000;
         var sum = 0;
         for (int i = 0; i < iterations; i++)
         {

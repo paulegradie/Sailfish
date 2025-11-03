@@ -12,7 +12,7 @@ internal sealed class DoubleArrayCsvConverter : ITypeConverter
 
     public object? ConvertFromString(string? text, IReaderRow row, MemberMapData memberMapData)
     {
-        return text?.Split(Sep).Select(double.Parse).ToArray();
+        return text?.Split(Sep).Select(x => double.Parse(x, CultureInfo.InvariantCulture)).ToArray();
     }
 
     public string? ConvertToString(object? value, IWriterRow row, MemberMapData memberMapData)
