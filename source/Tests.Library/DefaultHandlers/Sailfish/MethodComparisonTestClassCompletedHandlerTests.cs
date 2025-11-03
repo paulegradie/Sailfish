@@ -297,7 +297,7 @@ public class MethodComparisonTestClassCompletedHandlerTests
         return new TestInstanceContainerExternal(
             typeof(TestClass),
             new TestClass(),
-            typeof(TestClass).GetMethods().First(),
+            typeof(TestClass).GetMethod(nameof(TestClass.TestMethod))!,
             TestCaseIdBuilder.Create().Build(),
             Substitute.For<IExecutionSettings>(),
             null,

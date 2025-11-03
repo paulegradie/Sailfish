@@ -56,10 +56,9 @@ public class CsvTestRunCompletedHandlerTests
         await handler.Handle(notification, CancellationToken.None);
 
         // Assert
-        mockLogger.Received().Log(
-            LogLevel.Debug,
-            Arg.Any<string>(),
-            Arg.Any<object[]>());
+        await mockMediator.Received(1).Publish(
+            Arg.Any<WriteMethodComparisonCsvNotification>(),
+            Arg.Any<CancellationToken>());
     }
 
     [Fact]
@@ -109,7 +108,7 @@ public class CsvTestRunCompletedHandlerTests
         // Assert
         mockLogger.Received().Log(
             LogLevel.Debug,
-            Arg.Any<string>(),
+            Arg.Is<string>(s => s.Contains("class", StringComparison.OrdinalIgnoreCase)),
             Arg.Any<object[]>());
     }
 
@@ -222,7 +221,7 @@ public class CsvTestRunCompletedHandlerTests
     }
 
     [Fact]
-    public async Task Handle_WithCancellationDuringPublish_ThrowsOperationCanceledException()
+    public async Task Handle_WithCancellationDuringPublish_DoesNotThrow()
     {
         // Arrange
         var notification = CreateTestNotificationWithWriteToCsv();
