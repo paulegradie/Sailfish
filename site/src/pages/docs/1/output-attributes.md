@@ -46,6 +46,13 @@ public class PerformanceTest
 
 **Example filename**: `TestSession_abc12345_Results_20250803_103000.md`
 
+
+{% callout title="See also" type="note" %}
+Detailed format guides:
+- [Markdown Output](/docs/1/markdown-output)
+- [CSV Output](/docs/1/csv-output)
+{% /callout %}
+
 ## WriteToCsv
 
 The `[WriteToCsv]` attribute generates consolidated CSV files containing both individual test results and method comparison data in a structured, Excel-friendly format.

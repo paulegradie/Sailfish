@@ -12,11 +12,11 @@ const navigation = [
     {
         title: 'Introduction',
         links: [
-            { title: 'When To Use Sailfish', href: '/docs/0/when-to-use-sailfish' },
-            { title: 'Getting started', href: '/docs/0/getting-started' },
-            { title: 'Installation', href: '/docs/0/installation' },
+            { title: 'Getting Started', href: '/docs/0/getting-started' },
             { title: 'Quick Start', href: '/docs/0/quick-start' },
+            { title: 'Installation', href: '/docs/0/installation' },
             { title: 'Essential Information', href: '/docs/0/essential-information' },
+            { title: 'When To Use Sailfish', href: '/docs/0/when-to-use-sailfish' },
             { title: 'License', href: '/docs/0/license' },
         ],
     },
@@ -28,7 +28,16 @@ const navigation = [
             { title: 'Variables', href: '/docs/1/sailfish-variables' },
             { title: 'The Test Lifecycle', href: '/docs/1/sailfish-test-lifecycle' },
             { title: 'Test Dependencies', href: '/docs/1/test-dependencies' },
+            { title: 'Adaptive Sampling', href: '/docs/1/adaptive-sampling' },
+            { title: 'Confidence Intervals', href: '/docs/1/confidence-intervals' },
+        ],
+    },
+    {
+        title: 'Outputs',
+        links: [
             { title: 'Output Attributes', href: '/docs/1/output-attributes' },
+            { title: 'Markdown Output', href: '/docs/1/markdown-output' },
+            { title: 'CSV Output', href: '/docs/1/csv-output' },
         ],
     },
     {

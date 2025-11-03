@@ -282,7 +282,7 @@ internal class QueueHealthCheck : IQueueHealthCheck, IProcessingMetricsCollector
         if (_configuration.BatchCompletionTimeoutMs > 0)
         {
             // Use a monitoring interval that's 1/6 of the batch timeout, but at least 10 seconds and at most 60 seconds
-            var calculatedInterval = TimeSpan.FromMilliseconds(_configuration.BatchCompletionTimeoutMs / 6);
+            var calculatedInterval = TimeSpan.FromMilliseconds(_configuration.BatchCompletionTimeoutMs / 6.0);
             
             if (calculatedInterval < TimeSpan.FromSeconds(10))
                 return TimeSpan.FromSeconds(10);

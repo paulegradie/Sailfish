@@ -18,6 +18,47 @@ Release notes have been moved to [GitHub Releases](https://github.com/paulegradi
 
 - Recent update: Multi-level Confidence Intervals (95% and 99%) now appear in console output, markdown summaries, and CSV (CI95_MOE, CI99_MOE).
 
+### Branch Changeset (pg/cleanup)
+
+Compare on GitHub: https://github.com/paulegradie/Sailfish/compare/main...pg/cleanup
+
+- Documentation
+  - New “Outputs” section in the docs navigation; created Markdown Output page and grouped Output Attributes + CSV Output under Outputs
+  - Homepage quick-links expanded (Getting Started, Quick Start, Outputs, Method Comparisons, Adaptive Sampling)
+  - Added “See also” callouts and cross-links between Method Comparisons and output format guides
+  - Fixed Markdown Output page rendering (tables render as tables; removed unnecessary code fences); reduced redundancy on Method Comparisons
+  - Expanded Required Attributes with Adaptive Sampling parameter docs
+  - Dark mode readability improvement: stronger bold/strong contrast in Prose component
+
+- Runtime/Handlers
+  - Internal refinements to markdown output formatting and models
+  - Touched files: OutputContextAdapter, PerformanceRunResult, MethodComparisonMarkdownHandler
+
+- Test Adapter
+  - Queue stability/health-check refinements
+  - Touched files: BatchTimeoutHandler, QueueHealthCheck
+
+- Tests
+  - Updated tests for CSV and method comparison handlers
+
+Changed files in this branch vs main:
+- site/src/components/Layout.jsx
+- site/src/components/Prose.jsx
+- site/src/pages/docs/1/markdown-output.md
+- site/src/pages/docs/1/method-comparisons.md
+- site/src/pages/docs/1/output-attributes.md
+- site/src/pages/docs/1/required-attributes.md
+- site/src/pages/index.md
+- source/Sailfish.TestAdapter/Queue/Implementation/BatchTimeoutHandler.cs
+- source/Sailfish.TestAdapter/Queue/Implementation/QueueHealthCheck.cs
+- source/Sailfish/Analysis/SailDiff/Formatting/OutputContextAdapter.cs
+- source/Sailfish/Contracts.Public/Models/PerformanceRunResult.cs
+- source/Sailfish/DefaultHandlers/Sailfish/MethodComparisonMarkdownHandler.cs
+- source/Tests.Library/DefaultHandlers/Sailfish/CsvTestRunCompletedHandlerTests.cs
+- source/Tests.Library/DefaultHandlers/Sailfish/MethodComparisonTestClassCompletedHandlerTests.cs
+- source/Tests.Library/DefaultHandlers/Sailfish/MethodComparisonTestRunCompletedHandlerTests.cs
+
+
 ### Latest Releases
 
 For the most up-to-date release information, please visit the [GitHub Releases page](https://github.com/paulegradie/Sailfish/releases).

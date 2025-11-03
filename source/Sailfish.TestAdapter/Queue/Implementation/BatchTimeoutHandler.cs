@@ -97,7 +97,7 @@ internal class BatchTimeoutHandler : IBatchTimeoutHandler, IDisposable
             if (_configuration.BatchCompletionTimeoutMs > 0)
             {
                 // Use a monitoring interval that's 1/4 of the batch timeout, but at least 10 seconds
-                var calculatedInterval = TimeSpan.FromMilliseconds(_configuration.BatchCompletionTimeoutMs / 4);
+                var calculatedInterval = TimeSpan.FromMilliseconds(_configuration.BatchCompletionTimeoutMs / 4.0);
                 monitoringInterval = calculatedInterval < TimeSpan.FromSeconds(10) 
                     ? TimeSpan.FromSeconds(10) 
                     : calculatedInterval;
