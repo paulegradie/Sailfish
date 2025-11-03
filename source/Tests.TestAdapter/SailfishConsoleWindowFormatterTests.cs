@@ -134,9 +134,10 @@ public class SailfishConsoleWindowFormatterTests
         output.ShouldContain("Descriptive Statistics");
         output.ShouldContain("Mean");
         output.ShouldContain("Median");
-        output.ShouldContain("StdDev");
+        output.ShouldContain("CI");
         output.ShouldContain("Min");
         output.ShouldContain("Max");
+        output.ShouldContain("N");
         _logger.Received().Log(LogLevel.Information, Arg.Any<string>(), Arg.Any<object[]>());
     }
 
@@ -206,6 +207,24 @@ public class SailfishConsoleWindowFormatterTests
         output.ShouldContain("Descriptive Statistics");
     }
 
+
+        [Fact]
+        public void FormConsoleWindowMessageForSailfish_PrintsNonZeroCI_ForVisualVerification()
+        {
+            // Arrange
+            var performanceResult = CreatePerformanceRunResult(); // marginOfError = 22.1
+            var compiledResult = CreateCompiledResultWithPerformance(performanceResult);
+            var executionSummary = CreateExecutionSummaryWithCompiledResult(compiledResult);
+            var results = new List<IClassExecutionSummary> { executionSummary };
+
+            // Act
+            var output = _formatter.FormConsoleWindowMessageForSailfish(results);
+
+            // Assert and also print for manual inspection in console logs
+            Console.WriteLine(output);
+            output.ShouldContain("22.1000");
+        }
+
     #endregion
 
     #region Helper Methods
@@ -248,7 +267,12 @@ public class SailfishConsoleWindowFormatterTests
             dataWithOutliersRemoved: new[] { 130.0, 140.0, 150.0, 160.0, 170.0 },
             upperOutliers: Array.Empty<double>(),
             lowerOutliers: Array.Empty<double>(),
-            totalNumOutliers: 0);
+            totalNumOutliers: 0,
+            standardError: 11.3,
+            confidenceLevel: 0.95,
+            confidenceIntervalLower: 128.4,
+            confidenceIntervalUpper: 172.6,
+            marginOfError: 22.1);
     }
 
     private PerformanceRunResult CreatePerformanceRunResultWithUpperOutliers()
@@ -265,7 +289,12 @@ public class SailfishConsoleWindowFormatterTests
             dataWithOutliersRemoved: new[] { 130.0, 140.0, 150.0, 160.0, 170.0 },
             upperOutliers: new[] { 250.0, 300.0 },
             lowerOutliers: Array.Empty<double>(),
-            totalNumOutliers: 2);
+            totalNumOutliers: 2,
+            standardError: 11.3,
+            confidenceLevel: 0.95,
+            confidenceIntervalLower: 128.4,
+            confidenceIntervalUpper: 172.6,
+            marginOfError: 22.1);
     }
 
     private PerformanceRunResult CreatePerformanceRunResultWithLowerOutliers()

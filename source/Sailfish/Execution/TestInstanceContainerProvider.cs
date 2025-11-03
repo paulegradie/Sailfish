@@ -52,7 +52,12 @@ internal class TestInstanceContainerProvider : ITestInstanceContainerProvider
         {
             var testCaseId = DisplayNameHelper.CreateTestCaseId(Test, Method.Name, [], []); // a uniq id
             var instance = typeActivator.CreateDehydratedTestInstance(Test, testCaseId, disabled);
-            var executionSettings = instance.GetType().RetrieveExecutionTestSettings(runSettings.SampleSizeOverride, runSettings.NumWarmupIterationsOverride);
+            var executionSettings = instance.GetType().RetrieveExecutionTestSettings(
+                runSettings.SampleSizeOverride,
+                runSettings.NumWarmupIterationsOverride,
+                runSettings.GlobalUseAdaptiveSampling,
+                runSettings.GlobalTargetCoefficientOfVariation,
+                runSettings.GlobalMaximumSampleSize);
             yield return TestInstanceContainer.CreateTestInstance(instance, Method, [], [], disabled, executionSettings);
         }
         else
@@ -66,7 +71,12 @@ internal class TestInstanceContainerProvider : ITestInstanceContainerProvider
                 var instance = typeActivator.CreateDehydratedTestInstance(Test, testCaseId, disabled);
                 HydrateInstanceTestProperties(instance, nextPropertySet);
 
-                var executionSettings = instance.GetType().RetrieveExecutionTestSettings(runSettings.SampleSizeOverride, runSettings.NumWarmupIterationsOverride);
+                var executionSettings = instance.GetType().RetrieveExecutionTestSettings(
+                    runSettings.SampleSizeOverride,
+                    runSettings.NumWarmupIterationsOverride,
+                    runSettings.GlobalUseAdaptiveSampling,
+                    runSettings.GlobalTargetCoefficientOfVariation,
+                    runSettings.GlobalMaximumSampleSize);
                 yield return TestInstanceContainer.CreateTestInstance(instance, Method, propertyNames, variableValues, disabled, executionSettings);
             }
         }

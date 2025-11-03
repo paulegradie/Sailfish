@@ -31,7 +31,12 @@ internal class ClassExecutionSummaryCompiler(IStatisticsCompiler statsCompiler, 
             compiledResults.Add(compiledResult);
         }
 
-        var executionSettings = testClassResultGroup.TestClass.RetrieveExecutionTestSettings(runSettings.SampleSizeOverride, runSettings.NumWarmupIterationsOverride);
+        var executionSettings = testClassResultGroup.TestClass.RetrieveExecutionTestSettings(
+            runSettings.SampleSizeOverride,
+            runSettings.NumWarmupIterationsOverride,
+            runSettings.GlobalUseAdaptiveSampling,
+            runSettings.GlobalTargetCoefficientOfVariation,
+            runSettings.GlobalMaximumSampleSize);
         return new ClassExecutionSummary(
             testClassResultGroup.TestClass,
             executionSettings,

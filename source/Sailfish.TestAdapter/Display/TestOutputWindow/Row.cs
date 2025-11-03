@@ -1,3 +1,3 @@
 namespace Sailfish.TestAdapter.Display.TestOutputWindow;
 
-public record Row(double Item, string Name);
+public record Row(object Item, string Name);

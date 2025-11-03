@@ -256,5 +256,36 @@ public class ExecutionExtensionMethodsTests
     {
         [SailfishMethod]
         public void TestMethod() { }
+
+    }
+
+    [Fact]
+    public void RetrieveExecutionTestSettings_WithGlobalAdaptiveOverrides_ShouldOverrideAttributeValues()
+    {
+        // Arrange
+        var type = typeof(TestClassWithAdaptiveAttributes);
+
+        // Act
+        var result = type.RetrieveExecutionTestSettings(
+            globalSampleSize: null,
+            globalNumWarmupIterations: null,
+            globalUseAdaptiveSampling: true,
+            globalTargetCoefficientOfVariation: 0.05,
+            globalMaximumSampleSize: 500);
+
+        // Assert
+        result.ShouldNotBeNull();
+        result.UseAdaptiveSampling.ShouldBeTrue();
+        result.TargetCoefficientOfVariation.ShouldBe(0.05);
+        result.MaximumSampleSize.ShouldBe(500);
+    }
+
+    [Sailfish(UseAdaptiveSampling = false, TargetCoefficientOfVariation = 0.10, MaximumSampleSize = 200)]
+    private class TestClassWithAdaptiveAttributes
+    {
+        [SailfishMethod]
+        public void TestMethod() { }
+
+
     }
 }

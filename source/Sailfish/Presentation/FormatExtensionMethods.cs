@@ -19,24 +19,48 @@ public static class FormatExtensionMethods
                 classSummaryTracking.ExecutionSettings.SampleSize,
                 classSummaryTracking.ExecutionSettings.NumWarmupIterations),
             classSummaryTracking.CompiledTestCaseResults.Select(y =>
-                y.Exception is null
-                    ? new CompiledTestCaseResult(
-                        y.TestCaseId!,
-                        y.GroupingId!,
-                        y.PerformanceRunResult is not null
-                            ? new PerformanceRunResult(
-                                y.PerformanceRunResult.DisplayName,
-                                y.PerformanceRunResult.Mean, y.PerformanceRunResult.StdDev, y.PerformanceRunResult.Variance, y.PerformanceRunResult.Median,
-                                y.PerformanceRunResult.RawExecutionResults, y.PerformanceRunResult.SampleSize, y.PerformanceRunResult.NumWarmupIterations,
-                                y.PerformanceRunResult.DataWithOutliersRemoved, y.PerformanceRunResult.UpperOutliers, y.PerformanceRunResult.LowerOutliers,
-                                y.PerformanceRunResult.TotalNumOutliers
-                            )
-                            : null!)
-                    : new CompiledTestCaseResult(
+            {
+                if (y.Exception is not null)
+                {
+                    return new CompiledTestCaseResult(
                         y.TestCaseId!,
                         y.GroupingId,
-                        y.Exception!)
-            ));
+                        y.Exception!);
+                }
+
+                if (y.PerformanceRunResult is null)
+                {
+                    return new CompiledTestCaseResult(
+                        y.TestCaseId!,
+                        y.GroupingId!,
+                        (PerformanceRunResult)null!);
+                }
+
+                var tr = y.PerformanceRunResult;
+                var clean = tr.DataWithOutliersRemoved ?? [];
+                var n = clean.Length;
+                var mean = tr.Mean;
+                var stdDev = tr.StdDev;
+                var standardError = n > 1 ? stdDev / System.Math.Sqrt(n) : 0;
+                var ciList = PerformanceRunResult.ComputeConfidenceIntervals(mean, standardError, n, [0.95, 0.99]);
+                var primary = ciList.First(x => System.Math.Abs(x.ConfidenceLevel - 0.95) < 1e-9);
+
+                var perf = new PerformanceRunResult(
+                    tr.DisplayName,
+                    mean, stdDev, tr.Variance, tr.Median,
+                    tr.RawExecutionResults ?? [],
+                    tr.SampleSize, tr.NumWarmupIterations,
+                    clean,
+                    tr.UpperOutliers ?? [],
+                    tr.LowerOutliers ?? [],
+                    tr.TotalNumOutliers,
+                    standardError, primary.ConfidenceLevel, primary.Lower, primary.Upper, primary.MarginOfError, ciList);
+
+                return new CompiledTestCaseResult(
+                    y.TestCaseId!,
+                    y.GroupingId!,
+                    perf);
+            }));
     }
 
     public static IEnumerable<IClassExecutionSummary> ToSummaryFormat(this IEnumerable<ClassExecutionSummaryTrackingFormat> trackingSummaries)

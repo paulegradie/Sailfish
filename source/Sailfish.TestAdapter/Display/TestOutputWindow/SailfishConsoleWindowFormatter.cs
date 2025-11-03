@@ -62,14 +62,47 @@ internal class SailfishConsoleWindowFormatter : ISailfishConsoleWindowFormatter
         var testCaseName = testCaseResult.TestCaseId;
         var results = testCaseResult.PerformanceRunResult!;
 
+        var clean = results.DataWithOutliersRemoved;
+
         var momentTable = new List<Row>
         {
+            new(clean.Length, "N"),
             new(Math.Round(results.Mean, 4), "Mean"),
-            new(Math.Round(results.Median, 4), "Median"),
-            new(Math.Round(results.StdDev, 4), "StdDev"),
-            new(Math.Round(results.RawExecutionResults.Min(), 4), "Min"),
-            new(Math.Round(results.RawExecutionResults.Max(), 4), "Max")
+            new(Math.Round(results.Median, 4), "Median")
         };
+
+        // Add one or more CI rows
+        if (results.ConfidenceIntervals != null && results.ConfidenceIntervals.Count > 0)
+        {
+            foreach (var ci in results.ConfidenceIntervals.OrderBy(x => x.ConfidenceLevel))
+            {
+                var moeDisplay = FormatAdaptive(ci.MarginOfError);
+                momentTable.Add(new Row(moeDisplay, $"{ci.ConfidenceLevel:P0} CI ±"));
+            }
+        }
+        else
+        {
+            // Fallback to legacy single CI
+            var moeDisplay = FormatAdaptive(results.MarginOfError);
+            momentTable.Add(new Row(moeDisplay, $"{results.ConfidenceLevel:P0} CI ±"));
+        }
+
+        if (clean.Length > 0)
+        {
+            momentTable.AddRange(new[]
+            {
+                new Row(Math.Round(clean.Min(), 4), "Min"),
+                new Row(Math.Round(clean.Max(), 4), "Max")
+            });
+        }
+        else
+        {
+            momentTable.AddRange(new[]
+            {
+                new Row("N/A", "Min"),
+                new Row("N/A", "Max")
+            });
+        }
 
         var stringBuilder = new StringBuilder();
 
@@ -80,8 +113,8 @@ internal class SailfishConsoleWindowFormatter : ISailfishConsoleWindowFormatter
         stringBuilder.AppendLine(textLineStats);
         stringBuilder.AppendLine(string.Join("", Enumerable.Range(0, textLineStats.Length).Select(x => "-")));
         stringBuilder.AppendLine(momentTable.ToStringTable(
-            new[] { "", "" },
-            new[] { "Stat", " Time (ms)" },
+            ["", ""],
+            ["Stat", " Time (ms)"],
             x => x.Name, x => x.Item));
 
         // outliers section
@@ -111,4 +144,17 @@ internal class SailfishConsoleWindowFormatter : ISailfishConsoleWindowFormatter
 
         return stringBuilder.ToString();
     }
+
+        private static string FormatAdaptive(double value)
+        {
+            if (value == 0) return "0";
+            var s4 = value.ToString("F4", System.Globalization.CultureInfo.InvariantCulture);
+            if (!s4.Equals("0.0000")) return s4;
+            var s6 = value.ToString("F6", System.Globalization.CultureInfo.InvariantCulture);
+            if (!s6.Equals("0.000000")) return s6;
+            var s8 = value.ToString("F8", System.Globalization.CultureInfo.InvariantCulture);
+            if (!s8.Equals("0.00000000")) return s8;
+            return "0";
+        }
+
 }

@@ -58,7 +58,30 @@ internal class SailfishModuleRegistrations : IProvideAdditionalRegistrations
         builder.RegisterType<ParameterCombinator>().As<IParameterCombinator>();
         builder.RegisterType<PropertySetGenerator>().As<IPropertySetGenerator>();
         builder.RegisterType<TestInstanceContainerCreator>().As<ITestInstanceContainerCreator>();
-        builder.RegisterType<TestCaseIterator>().As<ITestCaseIterator>();
+        // Register statistical convergence detector
+        builder.RegisterType<StatisticalConvergenceDetector>()
+            .As<IStatisticalConvergenceDetector>()
+            .SingleInstance();
+
+        // Register iteration strategies
+        builder.RegisterType<FixedIterationStrategy>()
+            .As<IIterationStrategy>()
+            .Named<IIterationStrategy>("Fixed")
+            .SingleInstance();
+
+        builder.RegisterType<AdaptiveIterationStrategy>()
+            .As<IIterationStrategy>()
+            .Named<IIterationStrategy>("Adaptive")
+            .SingleInstance();
+
+        // Register TestCaseIterator with strategy dependencies
+        builder.Register(c => new TestCaseIterator(
+            c.Resolve<IRunSettings>(),
+            c.Resolve<ILogger>(),
+            c.ResolveNamed<IIterationStrategy>("Fixed"),
+            c.ResolveNamed<IIterationStrategy>("Adaptive")))
+            .As<ITestCaseIterator>()
+            .SingleInstance();
         builder.RegisterType<StatisticsCompiler>().As<IStatisticsCompiler>();
         builder.RegisterType<ClassExecutionSummaryCompiler>().As<IClassExecutionSummaryCompiler>();
         builder.RegisterType<ExecutionSummaryWriter>().As<IExecutionSummaryWriter>();

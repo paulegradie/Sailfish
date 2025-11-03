@@ -1,31 +1,34 @@
 ﻿## What's Changed in vNEXT_VERSION
 
-- **New Feature**: Transitioned to GitHub Releases for better release management
-    - **Automated Release Creation**: CI/CD pipeline now automatically creates GitHub releases
-    - **Flexible Release Notes**: Support for both manual and auto-generated release notes
-    - **NuGet Package Integration**: Packages are automatically attached to releases
-    - **Better Discoverability**: Releases are prominently displayed on the GitHub repository
+- New: Adaptive Sampling execution strategy
+  - Opt-in via attribute per class or globally via RunSettingsBuilder
+  - Converges based on Coefficient of Variation (CV) threshold and optional relative CI width
+  - Honors MinimumSampleSize and MaximumSampleSize safety caps
+  - Backward compatible: fixed sampling remains default
+  - Docs: See /docs/1/adaptive-sampling and ADAPTIVE_SAMPLING_MIGRATION_GUIDE.md
 
-- **Documentation Update**: Updated release notes page to redirect to GitHub Releases
-    - **Historical Archive**: Previous release notes preserved for reference
-    - **Clear Migration Path**: Users directed to new location for current releases
+- Output improvements
+  - Sample size (N) moved to the top of the descriptive statistics table
+  - Multi-level Confidence Intervals (CI): default reporting includes 95% and 99%
+  - Adaptive precision for CI formatting (try 4 → 6 → 8 decimals; shows 0 if still zero)
+  - Markdown now includes a compact multi-CI summary; CSV adds CI95_MOE and CI99_MOE
 
-- **Developer Experience**: Simplified release workflow eliminates version number lag
-    - **Write During Development**: Create release notes without knowing final version number
-    - **Automatic Version Replacement**: `NEXT_VERSION` placeholder replaced with actual version
-    - **Clean Repository**: Release notes file automatically cleaned up after use
+- Public API additions (non-breaking)
+  - SailfishAttribute: UseAdaptiveSampling, TargetCoefficientOfVariation, MinimumSampleSize, MaximumSampleSize, ConfidenceLevel
+  - IRunSettings: GlobalUseAdaptiveSampling?, GlobalTargetCoefficientOfVariation?, GlobalMaximumSampleSize?
+  - RunSettingsBuilder: WithGlobalAdaptiveSampling(double targetCoefficientOfVariation, int maximumSampleSize)
 
-### Migration Benefits
+- Method comparison and results consistency
+  - Test adapter console shows multiple CI rows when available
+  - Comparison pipeline computes CI fields where missing to keep outputs consistent
 
-This change solves the version lag problem where release notes had to be updated in follow-up PRs after seeing the final version number. Now you can:
+- Documentation & website
+  - New docs page: /docs/1/adaptive-sampling (why, how, configuration, migration)
+  - Homepage “What’s New” announcement and Quick Link
+  - Cross-links from Getting Started, Essential Information, and When to Use Sailfish
 
-1. Write release notes during feature development
-2. Use `NEXT_VERSION` as a placeholder
-3. Commit and push - the CI/CD pipeline handles the rest
-4. No more follow-up PRs needed!
+- Demos & examples
+  - New demo tests under source/PerformanceTests/AdaptiveSamplingDemos showcasing convergence, strict thresholds, and edge cases
 
-### For Users
-
-- Visit [GitHub Releases](https://github.com/paulegradie/Sailfish/releases) for the latest release information
-- Subscribe to release notifications on GitHub to stay updated
-- Download NuGet packages directly from release pages
+- Breaking changes
+  - None expected; changes are additive. Note: internal test adapter Row type widened from double to object for display flexibility.

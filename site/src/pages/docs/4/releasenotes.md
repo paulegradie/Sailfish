@@ -16,6 +16,8 @@ Release notes have been moved to [GitHub Releases](https://github.com/paulegradi
 - **Asset management**: NuGet packages are directly attached to each release
 - **Notifications**: Subscribe to release notifications on GitHub
 
+- Recent update: Multi-level Confidence Intervals (95% and 99%) now appear in console output, markdown summaries, and CSV (CI95_MOE, CI99_MOE).
+
 ### Latest Releases
 
 For the most up-to-date release information, please visit the [GitHub Releases page](https://github.com/paulegradie/Sailfish/releases).

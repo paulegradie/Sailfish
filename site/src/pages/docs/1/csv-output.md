@@ -50,10 +50,10 @@ abc12345,2025-08-03T10:30:00Z,1,6
 
 ```csv
 # Individual Test Results
-TestClass,TestMethod,MeanTime,MedianTime,StdDev,SampleSize,ComparisonGroup,Status
-PerformanceTest,BubbleSort,45.200,44.100,3.100,100,Algorithms,Success
-PerformanceTest,QuickSort,2.100,2.000,0.300,100,Algorithms,Success
-PerformanceTest,RegularMethod,1.000,1.000,0.100,100,,Success
+TestClass,TestMethod,MeanTime,MedianTime,StdDev,SampleSize,ComparisonGroup,Status,CI95_MOE,CI99_MOE
+PerformanceTest,BubbleSort,45.200,44.100,3.100,100,Algorithms,Success,1.2345,1.6789
+PerformanceTest,QuickSort,2.100,2.000,0.300,100,Algorithms,Success,0.1234,0.2345
+PerformanceTest,RegularMethod,1.000,1.000,0.100,100,,Success,0.0500,0.0800
 ```
 
 **Fields:**
@@ -65,6 +65,9 @@ PerformanceTest,RegularMethod,1.000,1.000,0.100,100,,Success
 - **SampleSize**: Number of iterations executed
 - **ComparisonGroup**: Comparison group name (if using `[SailfishComparison]`)
 - **Status**: Test execution status (Success/Failed)
+
+- **CI95_MOE**: Margin of error (ms) at 95% confidence; computed using Student’s t distribution and standard error of the mean. Precision is adaptively formatted in output displays; CSV stores numeric values.
+- **CI99_MOE**: Margin of error (ms) at 99% confidence; computed using Student’s t distribution and standard error of the mean. Precision is adaptively formatted in output displays; CSV stores numeric values.
 
 ### Section 3: Method Comparisons
 
@@ -177,7 +180,7 @@ public class DatabaseQueryPerformance  // Clear class name
     [SailfishMethod]
     [SailfishComparison("QueryTypes")]
     public void SimpleSelect() { }      // Descriptive method name
-    
+
     [SailfishMethod]
     [SailfishComparison("QueryTypes")]
     public void ComplexJoin() { }       // Descriptive method name
@@ -249,7 +252,7 @@ If Excel doesn't import correctly:
 ```yaml
 - name: Run Performance Tests
   run: dotnet test --logger "console;verbosity=detailed"
-  
+
 - name: Upload CSV Results
   uses: actions/upload-artifact@v3
   with:

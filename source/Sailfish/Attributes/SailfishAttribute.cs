@@ -73,4 +73,22 @@ public sealed class SailfishAttribute : Attribute
     ///     Gets/Sets whether to disable overhead estimation for the entire class.
     /// </summary>
     public bool DisableOverheadEstimation { get; set; }
+
+    /// <summary>
+    ///     Gets or sets whether to use adaptive sampling for this test class.
+    ///     When enabled, tests will continue until statistical convergence is achieved.
+    /// </summary>
+    public bool UseAdaptiveSampling { get; set; } = false;
+
+    /// <summary>
+    ///     Gets or sets the target coefficient of variation for convergence detection.
+    ///     Lower values require more statistical precision. Default is 0.05 (5%).
+    /// </summary>
+    public double TargetCoefficientOfVariation { get; set; } = 0.05;
+
+    /// <summary>
+    ///     Gets or sets the maximum number of samples when using adaptive sampling.
+    ///     Prevents infinite loops in case of non-converging tests. Default is 1000.
+    /// </summary>
+    public int MaximumSampleSize { get; set; } = 1000;
 }

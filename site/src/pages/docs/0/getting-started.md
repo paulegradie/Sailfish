@@ -16,3 +16,9 @@ When you install the [Sailfish TestAdapter](https://www.nuget.org/packages/Sailf
 If you don't need a test project, then your application can install the [Sailfish](https://www.nuget.org/packages/Sailfish) nuget package. The library exposes various tools as well as an entry point into the Sailfish execution program. This entry point requires an IRunSettings, which can be created using the [RunSettingsBuilder](https://github.com/paulegradie/Sailfish/blob/main/source/Sailfish/RunSettingsBuilder.cs).
 
 You can optionally place your tests in a separate project, which installs the test adapter. When your application's main project depends on the test project, you get access to the Sailfish library.
+
+
+{% callout title="New: Adaptive Sampling" type="note" %}
+You can enable adaptive sampling per class or globally to stop when results are stable.
+[Learn more →](/docs/1/adaptive-sampling)
+{% /callout %}

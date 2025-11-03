@@ -30,7 +30,10 @@ internal class RunSettings(
     bool streamTrackingUpdates = true,
     bool disableLogging = false,
     LogLevel minimumLogLevel = LogLevel.Verbose,
-    bool debug = false) : IRunSettings
+    bool debug = false,
+    bool? globalUseAdaptiveSampling = null,
+    double? globalTargetCoefficientOfVariation = null,
+    int? globalMaximumSampleSize = null) : IRunSettings
 {
     public IEnumerable<string> TestNames { get; } = testNames;
     public string LocalOutputDirectory { get; } = localOutputDirectory;
@@ -50,6 +53,10 @@ internal class RunSettings(
     public int? NumWarmupIterationsOverride { get; } = numWarmupIterationsOverride;
     public bool Debug { get; } = debug;
     public bool StreamTrackingUpdates { get; } = streamTrackingUpdates;
+    public bool? GlobalUseAdaptiveSampling { get; } = globalUseAdaptiveSampling;
+    public double? GlobalTargetCoefficientOfVariation { get; } = globalTargetCoefficientOfVariation;
+    public int? GlobalMaximumSampleSize { get; } = globalMaximumSampleSize;
+
     public bool DisableLogging { get; } = disableLogging;
     public ILogger? CustomLogger { get; } = customLogger;
     public LogLevel MinimumLogLevel { get; } = minimumLogLevel;
