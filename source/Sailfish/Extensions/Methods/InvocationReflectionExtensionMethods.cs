@@ -109,7 +109,7 @@ internal static class InvocationReflectionExtensionMethods
     /// <summary>
     /// Extension method to invoke a method with optional performance timer support
     /// </summary>
-    public static object? InvokeMethod(this MethodInfo method, object? instance, object[] arguments, PerformanceTimer? performanceTimer = null)
+    public static object? InvokeMethod(this MethodInfo method, object? instance, object[] arguments, PerformanceTimer? performanceTimer)
     {
         if (method == null) throw new ArgumentNullException(nameof(method));
         if (instance == null && !method.IsStatic) throw new ArgumentNullException(nameof(instance));

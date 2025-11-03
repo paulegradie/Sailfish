@@ -101,8 +101,13 @@ public class TestCompletionQueueManagerTests : IDisposable
         _manager = new TestCompletionQueueManager(_queue, _processors, _logger);
         var configuration = new QueueConfiguration { IsEnabled = true };
 
-        // Act & Assert - Should not throw
+        // Act
         await _manager.StartAsync(configuration, CancellationToken.None);
+
+        // Assert
+        _manager.IsRunning.ShouldBeTrue();
+        _logger.Received(1).Log(LogLevel.Information,
+            Arg.Is<string>(s => s.Contains("Test completion queue manager started successfully")));
     }
 
     [Fact]
@@ -166,8 +171,14 @@ public class TestCompletionQueueManagerTests : IDisposable
         // Arrange
         _manager = new TestCompletionQueueManager(_queue, _processors, _logger);
 
-        // Act & Assert - Should not throw
+        // Act
         await _manager.StopAsync(CancellationToken.None);
+
+        // Assert
+        _manager.IsRunning.ShouldBeFalse();
+        // When not running, StopAsync returns early without logging anything
+        _logger.DidNotReceive().Log(LogLevel.Information,
+            Arg.Is<string>(s => s.Contains("Stopping test completion queue manager")));
     }
 
     [Fact]
@@ -300,8 +311,12 @@ public class TestCompletionQueueManagerTests : IDisposable
         // Arrange
         _manager = new TestCompletionQueueManager(_queue, _processors, _logger);
 
-        // Act & Assert - Should not throw
+        // Act
         _manager.Dispose();
+
+        // Assert
+        _logger.Received(1).Log(LogLevel.Information,
+            Arg.Is<string>(s => s.Contains("Test completion queue manager disposed successfully")));
     }
 
     // TestCompletionQueueManager doesn't implement IAsyncDisposable
