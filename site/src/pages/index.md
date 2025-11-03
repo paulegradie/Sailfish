@@ -6,6 +6,15 @@ Sailfish is a .NET library that you can use to write performance tests that are 
 
 This library was built to support and inspire the incorporation of performance testing into test driven development as well as the creation of production ready performance monitoring systems.
 
+
+
+## Build Statuses
+![Build Pipeline v2.2](https://github.com/paulegradie/Sailfish/actions/workflows/build-v2.2.yml/badge.svg)
+
+![Deploy Sailfish Documentation Website](https://github.com/paulegradie/Sailfish/actions/workflows/doc-website.yml/badge.svg)
+
+![Nuget](https://img.shields.io/nuget/dt/Sailfish)
+
 ## What's New
 
 {% callout title="New: Adaptive Sampling" type="note" %}
