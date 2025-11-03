@@ -327,6 +327,11 @@ public void SearchData() { /* searches data - not comparable! */ }
 
 Ensure your sample size is large enough for meaningful statistical analysis:
 
+
+{% callout title="Tip: Adaptive Sampling" type="note" %}
+Instead of guessing a fixed `SampleSize`, enable [Adaptive Sampling](/docs/1/adaptive-sampling). Sailfish stops when results are statistically stable (using coefficient of variation and confidence interval width thresholds), often reducing runtime while preserving rigor. Opt in per class via `[Sailfish]` or set a global policy with `RunSettingsBuilder`.
+{% /callout %}
+
 ```csharp
 [Sailfish(SampleSize = 100)] // Good for most comparisons
 public class PerformanceComparison
