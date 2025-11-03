@@ -15,6 +15,11 @@ const icons = {
   theming: ThemingIcon,
   lightbulb: LightbulbIcon,
   warning: WarningIcon,
+  // Aliases used in content files
+  'book-open': InstallationIcon,
+  zap: PluginsIcon,
+  'document-text': PresetsIcon,
+  'chart-bar': ThemingIcon,
 }
 
 const iconStyles = {
@@ -25,7 +30,7 @@ const iconStyles = {
 
 export function Icon({ color = 'blue', icon, className, ...props }) {
   let id = useId()
-  let IconComponent = icons[icon]
+  let IconComponent = icons[icon] ?? LightbulbIcon
 
   return (
     <svg
