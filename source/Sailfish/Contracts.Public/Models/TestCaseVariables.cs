@@ -127,7 +127,7 @@ public class TestCaseVariables
             // Use regex with word boundaries to ensure we only match property assignments
             var pattern = $@"\b{Regex.Escape(prop.Name)}\s*=\s*{Regex.Escape(propTypeName)}\s*\{{";
             var replacement = $"{prop.Name} = {{";
-            objectString = Regex.Replace(objectString, pattern, replacement);
+            objectString = Regex.Replace(objectString, pattern, replacement, RegexOptions.Compiled, TimeSpan.FromSeconds(5));
         }
 
         return objectString;
