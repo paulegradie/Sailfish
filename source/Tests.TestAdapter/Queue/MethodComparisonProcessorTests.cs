@@ -277,6 +277,168 @@ public class MethodComparisonProcessorTests
 
     #endregion
 
+    #region Comparison Group Extraction Tests
+
+    [Fact]
+    public async Task ProcessTestCompletion_WithComparisonGroupInMetadata_ShouldExtractCorrectly()
+    {
+        // Arrange
+        var message = CreateTestMessage("TestMethod1", "MyComparisonGroup");
+
+        // Act
+        await _processor.ProcessTestCompletion(message, CancellationToken.None);
+
+        // Assert
+        _logger.Received().Log(LogLevel.Information,
+            Arg.Is<string>(s => s.Contains("ComparisonGroup")),
+            Arg.Any<object[]>());
+    }
+
+    [Fact]
+    public async Task ProcessTestCompletion_WithEmptyComparisonGroup_ShouldSkipComparison()
+    {
+        // Arrange
+        var message = CreateTestMessage("TestMethod1", string.Empty);
+
+        // Act
+        await _processor.ProcessTestCompletion(message, CancellationToken.None);
+
+        // Assert
+        _logger.Received().Log(LogLevel.Debug,
+            Arg.Is<string>(s => s.Contains("not a comparison method")),
+            Arg.Any<object[]>());
+    }
+
+    [Fact]
+    public async Task ProcessTestCompletion_WithMultipleTestsInSameGroup_ShouldProcessAll()
+    {
+        // Arrange
+        var message1 = CreateTestMessage("TestMethod1", "Group1");
+        var message2 = CreateTestMessage("TestMethod2", "Group1");
+
+        // Act
+        await _processor.ProcessTestCompletion(message1, CancellationToken.None);
+        await _processor.ProcessTestCompletion(message2, CancellationToken.None);
+
+        // Assert
+        _logger.Received(2).Log(LogLevel.Information,
+            Arg.Is<string>(s => s.Contains("ComparisonGroup")),
+            Arg.Any<object[]>());
+    }
+
+    #endregion
+
+    #region Batch Completion Detection Tests
+
+    [Fact]
+    public async Task ProcessTestCompletion_WhenBatchCompletes_ShouldTriggerBatchProcessing()
+    {
+        // Arrange
+        var message = CreateTestMessage("TestMethod1", "Group1");
+        var batch = CreateTestCaseBatch("Comparison_TestClass1_Group1", new[] { "TestMethod1", "TestMethod2" });
+
+        _batchingService.GetBatchAsync(Arg.Any<string>(), Arg.Any<CancellationToken>())
+            .Returns(batch);
+
+        // Act
+        await _processor.ProcessTestCompletion(message, CancellationToken.None);
+
+        // Assert
+        await _batchingService.Received().GetBatchAsync(Arg.Any<string>(), Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task ProcessTestCompletion_WithInsufficientMethodsForComparison_ShouldLogDebug()
+    {
+        // Arrange
+        var message = CreateTestMessage("TestMethod1", "Group1");
+        var batch = CreateTestCaseBatch("Comparison_TestClass1_Group1", new[] { "TestMethod1" });
+
+        _batchingService.GetBatchAsync(Arg.Any<string>(), Arg.Any<CancellationToken>())
+            .Returns(batch);
+
+        // Act
+        await _processor.ProcessTestCompletion(message, CancellationToken.None);
+
+        // Assert
+        _logger.Received().Log(LogLevel.Debug,
+            Arg.Is<string>(s => s.Contains("insufficient methods")),
+            Arg.Any<object[]>());
+    }
+
+    #endregion
+
+    #region Error Handling Tests
+
+    [Fact]
+    public async Task ProcessCompletedBatchesAsync_WithBatchProcessingError_ShouldContinueProcessing()
+    {
+        // Arrange
+        var batch1 = CreateTestCaseBatch("Group1", new[] { "TestMethod1", "TestMethod2" });
+        var batch2 = CreateTestCaseBatch("Group2", new[] { "TestMethod3", "TestMethod4" });
+
+        _batchingService.GetCompletedBatchesAsync(Arg.Any<CancellationToken>())
+            .Returns(new List<TestCaseBatch> { batch1, batch2 });
+
+        _batchProcessor.When(x => x.ProcessBatch(batch1, Arg.Any<CancellationToken>()))
+            .Do(x => throw new InvalidOperationException("Batch processing error"));
+
+        // Act
+        await _processor.ProcessCompletedBatchesAsync(CancellationToken.None);
+
+        // Assert - Should still attempt to process second batch
+        _logger.Received().Log(LogLevel.Error, Arg.Any<Exception>(), Arg.Any<string>(), Arg.Any<object[]>());
+    }
+
+    [Fact]
+    public async Task ProcessTestCompletion_WithBatchServiceException_ShouldLogError()
+    {
+        // Arrange
+        var message = CreateTestMessage("TestMethod1", "Group1");
+
+        _batchingService.GetBatchAsync(Arg.Any<string>(), Arg.Any<CancellationToken>())
+            .Returns(Task.FromException<TestCaseBatch?>(new InvalidOperationException("Batch service error")));
+
+        // Act
+        await _processor.ProcessTestCompletion(message, CancellationToken.None);
+
+        // Assert
+        _logger.Received().Log(LogLevel.Error, Arg.Any<Exception>(), Arg.Any<string>(), Arg.Any<object[]>());
+    }
+
+    #endregion
+
+    #region Suppression Tests
+
+    [Fact]
+    public async Task ProcessTestCompletion_WithComparisonMethod_ShouldSuppressIndividualOutput()
+    {
+        // Arrange
+        var message = CreateTestMessage("TestMethod1", "Group1");
+
+        // Act
+        await _processor.ProcessTestCompletion(message, CancellationToken.None);
+
+        // Assert
+        message.Metadata.ShouldContainKey("SuppressIndividualOutput");
+        message.Metadata["SuppressIndividualOutput"].ShouldBe(true);
+    }
+
+    [Fact]
+    public async Task ProcessTestCompletion_WithNonComparisonMethod_ShouldNotSuppressOutput()
+    {
+        // Arrange
+        var message = CreateTestMessage("TestMethod1", null);
+
+        // Act
+        await _processor.ProcessTestCompletion(message, CancellationToken.None);
+
+        // Assert
+        message.Metadata.ShouldNotContainKey("SuppressIndividualOutput");
+    }
+
+    #endregion
+
     #region Helper Methods
 
     private TestCompletionQueueMessage CreateTestMessage(string testCaseId, string? comparisonGroup)
