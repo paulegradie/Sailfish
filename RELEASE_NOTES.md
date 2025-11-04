@@ -41,3 +41,30 @@ var run = RunSettingsBuilder.CreateBuilder()
     .WithGlobalOutlierHandling(useConfigurable: true, strategy: OutlierStrategy.RemoveUpper)
     .Build();
 ```
+
+
+### Technical Details
+
+- Outlier detection is strategy-driven (opt-in) using Tukey-style fences; legacy path continues to remove both lower and upper outliers when not enabled
+- Adaptive parameter selection performs a short pilot to classify speed and tune CV/CI budgets; gracefully falls back if classification fails
+- Statistical validation evaluates sample sufficiency, outlier rates, coefficient of variation, and confidence interval width to surface actionable guidance
+- Convergence now uses accurate two-tailed t critical values
+
+### Migration Guide
+
+No breaking changes; defaults preserve legacy behavior. To opt in:
+
+1. Global enable configurable outlier handling
+
+   ```csharp
+   var run = RunSettingsBuilder.CreateBuilder()
+       .WithGlobalOutlierHandling(useConfigurable: true, strategy: OutlierStrategy.RemoveUpper)
+       .Build();
+   ```
+2. Review Markdown output for any validation warnings and adjust sampling parameters as needed
+3. Optional: adopt adaptive sampling (if not already) to target precision budgets automatically
+
+### Links
+
+- Pull Request: https://github.com/paulegradie/Sailfish/pull/211
+- Documentation: /docs/1/outlier-handling
