@@ -147,7 +147,7 @@ public class PerformanceRunResult
         // Preserve single-level fields for backward compatibility (use executionSettings.ConfidenceLevel)
         var primaryLevel = executionSettings.ConfidenceLevel;
         var primary = ciList.FirstOrDefault(x => Math.Abs(x.ConfidenceLevel - primaryLevel) < 1e-9)
-                     ?? ComputeConfidenceIntervals(mean, standardError, n, new[] { primaryLevel }).First();
+                     ?? ComputeConfidenceIntervals(mean, standardError, n, [primaryLevel])[0];
 
         var pr = new PerformanceRunResult(testCaseId.DisplayName,
             mean, stdDev, variance, median, rawExecutionResults,

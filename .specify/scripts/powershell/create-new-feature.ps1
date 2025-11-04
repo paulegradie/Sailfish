@@ -64,20 +64,20 @@ function Get-NextBranchNumber {
         [string]$ShortName,
         [string]$SpecsDir
     )
-    
+
     # Fetch all remotes to get latest branch info (suppress errors if no remotes)
     try {
         git fetch --all --prune 2>$null | Out-Null
     } catch {
         # Ignore fetch errors
     }
-    
-    # Find remote branches matching the pattern using git ls-remote
+
+    # Find ALL remote branches with numeric prefixes (global numbering)
     $remoteBranches = @()
     try {
         $remoteRefs = git ls-remote --heads origin 2>$null
         if ($remoteRefs) {
-            $remoteBranches = $remoteRefs | Where-Object { $_ -match "refs/heads/(\d+)-$([regex]::Escape($ShortName))$" } | ForEach-Object {
+            $remoteBranches = $remoteRefs | Where-Object { $_ -match "refs/heads/(\d+)-" } | ForEach-Object {
                 if ($_ -match "refs/heads/(\d+)-") {
                     [int]$matches[1]
                 }
@@ -86,13 +86,13 @@ function Get-NextBranchNumber {
     } catch {
         # Ignore errors
     }
-    
-    # Check local branches
+
+    # Check ALL local branches with numeric prefixes (global numbering)
     $localBranches = @()
     try {
         $allBranches = git branch 2>$null
         if ($allBranches) {
-            $localBranches = $allBranches | Where-Object { $_ -match "^\*?\s*(\d+)-$([regex]::Escape($ShortName))$" } | ForEach-Object {
+            $localBranches = $allBranches | Where-Object { $_ -match "^\*?\s*(\d+)-" } | ForEach-Object {
                 if ($_ -match "(\d+)-") {
                     [int]$matches[1]
                 }
@@ -101,12 +101,12 @@ function Get-NextBranchNumber {
     } catch {
         # Ignore errors
     }
-    
-    # Check specs directory
+
+    # Check ALL specs directories with numeric prefixes (global numbering)
     $specDirs = @()
     if (Test-Path $SpecsDir) {
         try {
-            $specDirs = Get-ChildItem -Path $SpecsDir -Directory | Where-Object { $_.Name -match "^(\d+)-$([regex]::Escape($ShortName))$" } | ForEach-Object {
+            $specDirs = Get-ChildItem -Path $SpecsDir -Directory | Where-Object { $_.Name -match "^(\d+)-" } | ForEach-Object {
                 if ($_.Name -match "^(\d+)-") {
                     [int]$matches[1]
                 }
@@ -115,7 +115,7 @@ function Get-NextBranchNumber {
             # Ignore errors
         }
     }
-    
+
     # Combine all sources and get the highest number
     $maxNum = 0
     foreach ($num in ($remoteBranches + $localBranches + $specDirs)) {
@@ -123,7 +123,7 @@ function Get-NextBranchNumber {
             $maxNum = $num
         }
     }
-    
+
     # Return next number
     return $maxNum + 1
 }

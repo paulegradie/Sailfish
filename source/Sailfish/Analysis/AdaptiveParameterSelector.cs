@@ -18,6 +18,8 @@ public class AdaptiveParameterSelector
     /// </summary>
     public AdaptiveSamplingConfig Select(IReadOnlyList<double> pilotSamples, IExecutionSettings executionSettings)
     {
+        ArgumentNullException.ThrowIfNull(executionSettings);
+
         if (pilotSamples == null || pilotSamples.Count == 0)
         {
             // Fall back to defaults from executionSettings

@@ -52,7 +52,7 @@ public class StatisticalValidator : IStatisticalValidator
         }
 
         // 3) High coefficient of variation (CV)
-        if (pr.Mean > 0)
+        if (pr.Mean > 0 && settings.TargetCoefficientOfVariation > 0)
         {
             var cv = pr.StdDev / pr.Mean;
             if (cv >= settings.TargetCoefficientOfVariation * 3.0)

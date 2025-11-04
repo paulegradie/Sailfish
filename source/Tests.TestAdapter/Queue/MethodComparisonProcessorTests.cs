@@ -55,17 +55,6 @@ public class MethodComparisonProcessorTests
     #region Constructor Tests
 
     [Fact]
-    public void Constructor_WithNullSailDiff_ShouldThrowArgumentNullException()
-    {
-        // Act & Assert
-        Should.Throw<ArgumentNullException>(() => new MethodComparisonProcessor(_mediator,
-            _batchingService,
-            _batchProcessor,
-            _unifiedFormatter,
-            _logger));
-    }
-
-    [Fact]
     public void Constructor_WithNullMediator_ShouldThrowArgumentNullException()
     {
         // Act & Assert

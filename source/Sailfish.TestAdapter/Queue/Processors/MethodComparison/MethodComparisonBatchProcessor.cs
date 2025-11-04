@@ -15,6 +15,7 @@ using System.Linq;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
+using ConfidenceInterval = Perfolizer.Mathematics.Common.ConfidenceInterval;
 
 namespace Sailfish.TestAdapter.Queue.Processors.MethodComparison;
 
@@ -461,7 +462,8 @@ internal class MethodComparisonBatchProcessor
     {
         var metrics = message.PerformanceMetrics;
 
-        var clean = metrics.DataWithOutliersRemoved ?? [];
+        // Fallback to raw samples if cleaned data is unavailable
+        var clean = metrics.DataWithOutliersRemoved ?? metrics.RawExecutionResults ?? [];
         var n = clean.Length;
         var mean = metrics.MeanMs;
         var stdDev = metrics.StandardDeviation;
@@ -469,11 +471,16 @@ internal class MethodComparisonBatchProcessor
 
         // Default report levels when settings are not available from the message
         var reportLevels = new List<double> { 0.95, 0.99 };
-        var ciList = PerformanceRunResult.ComputeConfidenceIntervals(mean, standardError, n, reportLevels);
+
+        // Guard against n == 0 to prevent ArgumentOutOfRangeException
+        var ciList = n > 0
+            ? PerformanceRunResult.ComputeConfidenceIntervals(mean, standardError, n, reportLevels)
+            : Array.Empty<ConfidenceIntervalResult>();
 
         // Primary (legacy) fields use 0.95 by default
         var primary = ciList.FirstOrDefault(x => Math.Abs(x.ConfidenceLevel - 0.95) < 1e-9)
-                      ?? PerformanceRunResult.ComputeConfidenceIntervals(mean, standardError, n, [0.95]).First();
+                      ?? (n > 0 ? PerformanceRunResult.ComputeConfidenceIntervals(mean, standardError, n, [0.95]).First()
+                                : new ConfidenceIntervalResult(0.95, 0, mean, mean));
 
         return new PerformanceRunResult(
             message.TestCaseId,

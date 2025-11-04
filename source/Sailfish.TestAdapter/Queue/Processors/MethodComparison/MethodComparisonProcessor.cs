@@ -265,11 +265,20 @@ internal class MethodComparisonProcessor : TestCompletionQueueProcessorBase
     {
         try
         {
+            // First try Type.GetType for fully qualified names
+            var type = Type.GetType(className);
+            if (type != null)
+            {
+                return type;
+            }
+
             // Try to find the type in loaded assemblies
             foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies())
             {
                 var types = assembly.GetTypes()
-                    .Where(t => t.Name == className || t.FullName?.EndsWith($".{className}") == true)
+                    .Where(t => t.Name == className ||
+                               t.FullName == className ||
+                               t.FullName?.EndsWith($".{className}") == true)
                     .ToList();
 
                 if (types.Count == 1)
