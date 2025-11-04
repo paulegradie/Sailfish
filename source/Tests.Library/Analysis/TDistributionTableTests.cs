@@ -1,4 +1,5 @@
 using Sailfish.Analysis;
+using System;
 using Shouldly;
 using Xunit;
 
@@ -23,7 +24,7 @@ public class TDistributionTableTests
         var t5 = TDistributionTable.GetCriticalValue(0.95, 5);
         var t30 = TDistributionTable.GetCriticalValue(0.95, 30);
         t30.ShouldBeLessThan(t5);
-  
+
     }
     [Theory]
     [InlineData(0, 0.95)]
@@ -38,6 +39,19 @@ public class TDistributionTableTests
         t.ShouldBeLessThan(100);
     }
 
-}
 
+        [Fact]
+        public void FallbackToNormalApproximation_WhenProbabilityRoundsToOne()
+        {
+            // Arrange: choose a CL so that alpha/2 underflows and 1 - alpha/2 == 1.0
+            var cl = Math.BitDecrement(1.0); // just below 1.0
+
+            // Act
+            var t = TDistributionTable.GetCriticalValue(cl, 30);
+
+            // Assert: should hit fallback path and use the >= 0.999 branch
+            t.ShouldBe(3.291, 1e-9);
+        }
+
+    }
 
