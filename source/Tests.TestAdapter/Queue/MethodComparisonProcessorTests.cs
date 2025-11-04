@@ -11,6 +11,7 @@ using Sailfish.Logging;
 using Sailfish.TestAdapter.Execution;
 using Sailfish.TestAdapter.Queue.Contracts;
 using Sailfish.TestAdapter.Queue.Processors;
+using Sailfish.TestAdapter.Queue.Processors.MethodComparison;
 using Shouldly;
 using Xunit;
 
@@ -44,9 +45,7 @@ public class MethodComparisonProcessorTests
             _logger,
             _unifiedFormatter);
 
-        _processor = new MethodComparisonProcessor(
-            _sailDiff,
-            _mediator,
+        _processor = new MethodComparisonProcessor(_mediator,
             _batchingService,
             _batchProcessor,
             _unifiedFormatter,
@@ -59,9 +58,7 @@ public class MethodComparisonProcessorTests
     public void Constructor_WithNullSailDiff_ShouldThrowArgumentNullException()
     {
         // Act & Assert
-        Should.Throw<ArgumentNullException>(() => new MethodComparisonProcessor(
-            null!,
-            _mediator,
+        Should.Throw<ArgumentNullException>(() => new MethodComparisonProcessor(_mediator,
             _batchingService,
             _batchProcessor,
             _unifiedFormatter,
@@ -72,9 +69,7 @@ public class MethodComparisonProcessorTests
     public void Constructor_WithNullMediator_ShouldThrowArgumentNullException()
     {
         // Act & Assert
-        Should.Throw<ArgumentNullException>(() => new MethodComparisonProcessor(
-            _sailDiff,
-            null!,
+        Should.Throw<ArgumentNullException>(() => new MethodComparisonProcessor(null!,
             _batchingService,
             _batchProcessor,
             _unifiedFormatter,
@@ -85,9 +80,7 @@ public class MethodComparisonProcessorTests
     public void Constructor_WithNullBatchingService_ShouldThrowArgumentNullException()
     {
         // Act & Assert
-        Should.Throw<ArgumentNullException>(() => new MethodComparisonProcessor(
-            _sailDiff,
-            _mediator,
+        Should.Throw<ArgumentNullException>(() => new MethodComparisonProcessor(_mediator,
             null!,
             _batchProcessor,
             _unifiedFormatter,
@@ -98,9 +91,7 @@ public class MethodComparisonProcessorTests
     public void Constructor_WithNullBatchProcessor_ShouldThrowArgumentNullException()
     {
         // Act & Assert
-        Should.Throw<ArgumentNullException>(() => new MethodComparisonProcessor(
-            _sailDiff,
-            _mediator,
+        Should.Throw<ArgumentNullException>(() => new MethodComparisonProcessor(_mediator,
             _batchingService,
             null!,
             _unifiedFormatter,
@@ -111,9 +102,7 @@ public class MethodComparisonProcessorTests
     public void Constructor_WithNullUnifiedFormatter_ShouldThrowArgumentNullException()
     {
         // Act & Assert
-        Should.Throw<ArgumentNullException>(() => new MethodComparisonProcessor(
-            _sailDiff,
-            _mediator,
+        Should.Throw<ArgumentNullException>(() => new MethodComparisonProcessor(_mediator,
             _batchingService,
             _batchProcessor,
             null!,
@@ -124,9 +113,7 @@ public class MethodComparisonProcessorTests
     public void Constructor_WithNullLogger_ShouldThrowArgumentNullException()
     {
         // Act & Assert
-        Should.Throw<ArgumentNullException>(() => new MethodComparisonProcessor(
-            _sailDiff,
-            _mediator,
+        Should.Throw<ArgumentNullException>(() => new MethodComparisonProcessor(_mediator,
             _batchingService,
             _batchProcessor,
             _unifiedFormatter,
