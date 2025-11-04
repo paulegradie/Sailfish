@@ -18,6 +18,24 @@ Release notes have been moved to [GitHub Releases](https://github.com/paulegradi
 
 - Recent update: Multi-level Confidence Intervals (95% and 99%) now appear in console output, markdown summaries, and CSV (CI95_MOE, CI99_MOE).
 
+### Branch Changeset (pg/spec-scalefish)
+
+Compare on GitHub: https://github.com/paulegradie/Sailfish/compare/main...pg/spec-scalefish
+
+- Statistics Engine — Phase 2
+  - Configurable outlier handling with 5 strategies (RemoveUpper, RemoveLower, RemoveAll, DontRemove, Adaptive)
+  - Global outlier configuration via `RunSettingsBuilder.WithGlobalOutlierHandling(...)`
+  - Adaptive parameter selection (pilot-based speed bands) tuning CV/CI budgets
+  - Statistical validation warnings (LOW_SAMPLE_SIZE, EXCESSIVE_OUTLIERS, HIGH_CV, WIDE_CI) surfaced in Markdown output
+  - Accurate two-tailed t‑distribution table for convergence checks
+- Documentation
+  - README updates (outlier handling + global overrides)
+  - New docs page: `/docs/1/outlier-handling` (added under Sailfish Basics)
+- Tests
+  - Integration tests for outlier configuration paths
+  - Unit tests for adaptive selector, validator, and t‑distribution
+- Pull Request: https://github.com/paulegradie/Sailfish/pull/211
+
 ### Branch Changeset (pg/cleanup)
 
 Compare on GitHub: https://github.com/paulegradie/Sailfish/compare/main...pg/cleanup
