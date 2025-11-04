@@ -29,6 +29,25 @@ module.exports = {
         '8xl': '88rem',
         '9xl': '120rem',
       },
+      colors: {
+        primary: {
+          50: '#ECFEFF',
+          300: '#67E8F9',
+          400: '#22D3EE',
+          500: '#06B6D4',
+          600: '#0891B2',
+          800: '#155E75',
+          900: '#164E63',
+        },
+        accent: {
+          400: '#818CF8',
+          500: '#6366F1',
+          600: '#4F46E5',
+        },
+      },
+      borderRadius: {
+        xl: '0.75rem',
+      },
     },
   },
   plugins: [require('@tailwindcss/typography')],
