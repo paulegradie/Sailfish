@@ -23,6 +23,21 @@ public class TDistributionTableTests
         var t5 = TDistributionTable.GetCriticalValue(0.95, 5);
         var t30 = TDistributionTable.GetCriticalValue(0.95, 30);
         t30.ShouldBeLessThan(t5);
+  
     }
+    [Theory]
+    [InlineData(0, 0.95)]
+    [InlineData(-5, 0.95)]
+    [InlineData(1, 0.0)]
+    [InlineData(1, 1.0)]
+    public void InvalidInputs_AreCoerced_ToSafeDefaults(int df, double cl)
+    {
+        // Should not throw and should return a finite value
+        var t = TDistributionTable.GetCriticalValue(cl, df);
+        t.ShouldBeGreaterThan(0);
+        t.ShouldBeLessThan(100);
+    }
+
 }
+
 

@@ -5,12 +5,10 @@ using System.Threading;
 using System.Threading.Tasks;
 using MediatR;
 using NSubstitute;
-using Sailfish.Analysis.SailDiff;
 using Sailfish.Analysis.SailDiff.Formatting;
 using Sailfish.Logging;
 using Sailfish.TestAdapter.Execution;
 using Sailfish.TestAdapter.Queue.Contracts;
-using Sailfish.TestAdapter.Queue.Processors;
 using Sailfish.TestAdapter.Queue.Processors.MethodComparison;
 using Shouldly;
 using Xunit;
@@ -83,15 +81,8 @@ public class MethodComparisonProcessorTests
             _logger));
     }
 
-    [Fact]
-    public void Constructor_WithNullUnifiedFormatter_ShouldThrowArgumentNullException()
-    {
-        // Act & Assert
-        Should.Throw<ArgumentNullException>(() => new MethodComparisonProcessor(_mediator,
-            _batchingService,
-            _batchProcessor,
-            _logger));
-    }
+    // Note: Unified formatter is no longer a constructor dependency on MethodComparisonProcessor.
+    // Keeping constructor validation tests limited to current parameters.
 
     [Fact]
     public void Constructor_WithNullLogger_ShouldThrowArgumentNullException()
