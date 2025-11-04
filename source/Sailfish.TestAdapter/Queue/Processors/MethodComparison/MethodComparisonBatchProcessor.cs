@@ -2,7 +2,6 @@ using MediatR;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel;
 using Sailfish.Analysis.SailDiff;
 using Sailfish.Analysis.SailDiff.Formatting;
-using Sailfish.Attributes;
 using Sailfish.Contracts.Public.Models;
 using Sailfish.Execution;
 using Sailfish.Logging;
@@ -12,10 +11,8 @@ using Sailfish.TestAdapter.Queue.Contracts;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
-using ConfidenceInterval = Perfolizer.Mathematics.Common.ConfidenceInterval;
 
 namespace Sailfish.TestAdapter.Queue.Processors.MethodComparison;
 
@@ -121,7 +118,8 @@ internal class MethodComparisonBatchProcessor
     /// <param name="testCases">The test cases in the comparison group.</param>
     /// <param name="cancellationToken">Cancellation token for the operation.</param>
     /// <returns>A task representing the asynchronous processing operation.</returns>
-    private async Task ProcessComparisonGroup(string groupName, List<TestCompletionQueueMessage> testCases, CancellationToken cancellationToken)
+    private async Task ProcessComparisonGroup(string groupName, List<TestCompletionQueueMessage> testCases,
+        CancellationToken cancellationToken)
     {
         if (testCases.Count < 2)
         {
@@ -179,210 +177,6 @@ internal class MethodComparisonBatchProcessor
         return message.Metadata.TryGetValue("ComparisonRole", out var role) ? role?.ToString() : null;
     }
 
-    private string? GetTestClassNameFromMessage(TestCompletionQueueMessage message)
-    {
-        // Try to extract class name from test case ID (format: ClassName.MethodName)
-        var testCaseId = message.TestCaseId;
-        if (!string.IsNullOrEmpty(testCaseId))
-        {
-            var lastDotIndex = testCaseId.LastIndexOf('.');
-            if (lastDotIndex > 0)
-            {
-                return testCaseId.Substring(0, lastDotIndex);
-            }
-        }
-
-        // Try to get class name from metadata
-        if (message.Metadata.TryGetValue("TestClassName", out var className) && className != null)
-        {
-            return className.ToString();
-        }
-
-        // Try to extract from FullyQualifiedName in metadata
-        if (message.Metadata.TryGetValue("FullyQualifiedName", out var fqnObj) && fqnObj != null)
-        {
-            var fullyQualifiedName = fqnObj.ToString();
-            if (!string.IsNullOrEmpty(fullyQualifiedName))
-            {
-                var lastDotIndex = fullyQualifiedName.LastIndexOf('.');
-                if (lastDotIndex > 0)
-                {
-                    var classAndMethod = fullyQualifiedName.Substring(0, lastDotIndex);
-                    var secondLastDotIndex = classAndMethod.LastIndexOf('.');
-
-                    return secondLastDotIndex >= 0
-                        ? classAndMethod.Substring(secondLastDotIndex + 1)
-                        : classAndMethod;
-                }
-            }
-        }
-
-        return "Unknown";
-    }
-
-    private string? ExtractTestClassName(TestCompletionQueueMessage message)
-    {
-        // Try to extract class name from test case ID (format: ClassName.MethodName)
-        var testCaseId = message.TestCaseId;
-        if (!string.IsNullOrEmpty(testCaseId))
-        {
-            var lastDotIndex = testCaseId.LastIndexOf('.');
-            if (lastDotIndex > 0)
-            {
-                return testCaseId.Substring(0, lastDotIndex);
-            }
-        }
-
-        // Try to get class name from metadata
-        if (message.Metadata.TryGetValue("TestClassName", out var className) && className != null)
-        {
-            return className.ToString();
-        }
-
-        // Try to extract from FullyQualifiedName if available in metadata
-        if (message.Metadata.TryGetValue("FullyQualifiedName", out var fqnObj) && fqnObj != null)
-        {
-            var fullyQualifiedName = fqnObj.ToString();
-            if (!string.IsNullOrEmpty(fullyQualifiedName))
-            {
-                var lastDotIndex = fullyQualifiedName.LastIndexOf('.');
-                if (lastDotIndex > 0)
-                {
-                    var classAndMethod = fullyQualifiedName.Substring(0, lastDotIndex);
-                    var secondLastDotIndex = classAndMethod.LastIndexOf('.');
-
-                    return secondLastDotIndex >= 0
-                        ? classAndMethod.Substring(secondLastDotIndex + 1)
-                        : classAndMethod;
-                }
-            }
-        }
-
-        return "Unknown";
-    }
-
-    /// <summary>
-    /// Determines if a full test class is being executed based on the test cases in the batch.
-    /// </summary>
-    private bool IsFullClassExecution(TestCaseBatch batch)
-    {
-        // Group test cases by class name
-        var classBatches = batch.TestCases
-            .GroupBy(tc => ExtractTestClassName(tc))
-            .ToList();
-
-        // Check each class to see if all its SailfishMethods are present
-        foreach (var classBatch in classBatches)
-        {
-            var className = classBatch.Key;
-            if (string.IsNullOrEmpty(className)) continue;
-
-            var classTestCases = classBatch.ToList();
-
-            try
-            {
-                // Get the test class type using reflection
-                var testClass = GetTestClassType(className);
-                if (testClass == null) continue;
-
-                // Get all methods with SailfishMethodAttribute
-                var sailfishMethods = testClass.GetMethods()
-                    .Where(m => m.GetCustomAttribute<SailfishMethodAttribute>() != null)
-                    .ToList();
-
-                // Get executed method names from test cases
-                var executedMethods = classTestCases
-                    .Select(tc => ExtractMethodName(tc))
-                    .Where(name => !string.IsNullOrEmpty(name))
-                    .Distinct()
-                    .ToList();
-
-                // If we have test cases for all SailfishMethods, it's a full class execution
-                if (sailfishMethods.Count > 0 && sailfishMethods.Count == executedMethods.Count)
-                {
-                    return true;
-                }
-            }
-            catch (Exception ex)
-            {
-                _logger.Log(LogLevel.Warning, ex,
-                    "Failed to determine full class execution for class '{0}': {1}",
-                    className, ex.Message);
-            }
-        }
-
-        return false;
-    }
-
-
-
-    /// <summary>
-    /// Extracts the method name from a test completion message.
-    /// </summary>
-    private string? ExtractMethodName(TestCompletionQueueMessage message)
-    {
-        // Try to get from metadata first
-        if (message.Metadata.TryGetValue("MethodName", out var methodNameObj) && methodNameObj != null)
-        {
-            return methodNameObj.ToString();
-        }
-
-        // Try to extract from FullyQualifiedName in metadata
-        if (message.Metadata.TryGetValue("FullyQualifiedName", out var fqnObj) && fqnObj != null)
-        {
-            var fullyQualifiedName = fqnObj.ToString();
-            if (!string.IsNullOrEmpty(fullyQualifiedName))
-            {
-                var lastDotIndex = fullyQualifiedName.LastIndexOf('.');
-                return lastDotIndex >= 0 && lastDotIndex < fullyQualifiedName.Length - 1
-                    ? fullyQualifiedName.Substring(lastDotIndex + 1)
-                    : null;
-            }
-        }
-
-        // Try to extract from TestCaseId
-        var testCaseId = message.TestCaseId;
-        if (!string.IsNullOrEmpty(testCaseId))
-        {
-            var lastDotIndex = testCaseId.LastIndexOf('.');
-            return lastDotIndex >= 0 && lastDotIndex < testCaseId.Length - 1
-                ? testCaseId.Substring(lastDotIndex + 1)
-                : testCaseId;
-        }
-
-        return null;
-    }
-
-    /// <summary>
-    /// Gets the test class type using reflection.
-    /// </summary>
-    private Type? GetTestClassType(string className)
-    {
-        try
-        {
-            // Try to find the type in loaded assemblies
-            foreach (var assembly in AppDomain.CurrentDomain.GetAssemblies())
-            {
-                var types = assembly.GetTypes()
-                    .Where(t => t.Name == className || t.FullName?.EndsWith($".{className}") == true)
-                    .ToList();
-
-                if (types.Count == 1)
-                {
-                    return types[0];
-                }
-            }
-        }
-        catch (Exception ex)
-        {
-            _logger.Log(LogLevel.Warning, ex,
-                "Failed to get test class type for '{0}': {1}",
-                className, ex.Message);
-        }
-
-        return null;
-    }
-
     /// <summary>
     /// Performs SailDiff comparison between a Before and After method.
     /// </summary>
@@ -430,14 +224,17 @@ internal class MethodComparisonBatchProcessor
 
             _logger.Log(LogLevel.Debug,
                 "SailDiff comparison completed for group '{0}'. Results count: {1}",
-                groupName, comparisonResult?.SailDiffResults?.Count() ?? 0);
+                groupName, comparisonResult?.SailDiffResults?.Count ?? 0);
 
             // Format comparison results from each method's perspective
-            var beforeMethodOutput = FormatComparisonResults(comparisonResult, groupName, beforeMethod.TestCaseId, afterMethod.TestCaseId, beforeMethod.TestCaseId);
-            var afterMethodOutput = FormatComparisonResults(comparisonResult, groupName, beforeMethod.TestCaseId, afterMethod.TestCaseId, afterMethod.TestCaseId);
+            var beforeMethodOutput = FormatComparisonResults(comparisonResult, groupName, beforeMethod.TestCaseId,
+                afterMethod.TestCaseId, beforeMethod.TestCaseId);
+            var afterMethodOutput = FormatComparisonResults(comparisonResult, groupName, beforeMethod.TestCaseId,
+                afterMethod.TestCaseId, afterMethod.TestCaseId);
 
             // Enhance test output messages with perspective-specific results
-            EnhanceTestOutputWithComparison(beforeMethod, afterMethod, beforeMethodOutput, afterMethodOutput, cancellationToken);
+            EnhanceTestOutputWithComparison(beforeMethod, afterMethod, beforeMethodOutput, afterMethodOutput,
+                cancellationToken);
 
             // Note: We don't remove suppression flags or republish here
             // This will be done after ALL comparisons in the group are complete
@@ -475,12 +272,13 @@ internal class MethodComparisonBatchProcessor
         // Guard against n == 0 to prevent ArgumentOutOfRangeException
         var ciList = n > 0
             ? PerformanceRunResult.ComputeConfidenceIntervals(mean, standardError, n, reportLevels)
-            : Array.Empty<ConfidenceIntervalResult>();
+            : [];
 
         // Primary (legacy) fields use 0.95 by default
         var primary = ciList.FirstOrDefault(x => Math.Abs(x.ConfidenceLevel - 0.95) < 1e-9)
-                      ?? (n > 0 ? PerformanceRunResult.ComputeConfidenceIntervals(mean, standardError, n, [0.95]).First()
-                                : new ConfidenceIntervalResult(0.95, 0, mean, mean));
+                      ?? (n > 0
+                          ? PerformanceRunResult.ComputeConfidenceIntervals(mean, standardError, n, [0.95]).First()
+                          : new ConfidenceIntervalResult(0.95, 0, mean, mean));
 
         return new PerformanceRunResult(
             message.TestCaseId,
@@ -579,7 +377,8 @@ internal class MethodComparisonBatchProcessor
 
         _logger.Log(LogLevel.Debug,
             "Created combined class execution summary with {0} results (before: {1}, after: {2})",
-            combinedResults.Count, beforeSummary.CompiledTestCaseResults.Count(), afterSummary.CompiledTestCaseResults.Count());
+            combinedResults.Count, beforeSummary.CompiledTestCaseResults.Count(),
+            afterSummary.CompiledTestCaseResults.Count());
 
         // Create a new combined summary using the before summary as the base
         return new CombinedClassExecutionSummary(
@@ -603,7 +402,8 @@ internal class MethodComparisonBatchProcessor
 
             if (summariesObj is IEnumerable<IClassExecutionSummary> summaries)
             {
-                return summaries.FirstOrDefault() ?? throw new InvalidOperationException("No class execution summary found in collection");
+                return summaries.FirstOrDefault() ??
+                       throw new InvalidOperationException("No class execution summary found in collection");
             }
         }
 
@@ -613,11 +413,13 @@ internal class MethodComparisonBatchProcessor
     /// <summary>
     /// Formats SailDiff comparison results for display from a specific method's perspective using the unified formatter.
     /// </summary>
-    private string FormatComparisonResults(TestCaseSailDiffResult comparisonResult, string groupName, string beforeMethodName, string afterMethodName, string perspectiveMethodName)
+    private string FormatComparisonResults(TestCaseSailDiffResult comparisonResult, string groupName,
+        string beforeMethodName, string afterMethodName, string perspectiveMethodName)
     {
         _logger.Log(LogLevel.Debug,
             "Formatting comparison results for group '{0}' from perspective '{1}'. ComparisonResult is null: {2}, SailDiffResults count: {3}",
-            groupName, ExtractMethodName(perspectiveMethodName), comparisonResult == null, comparisonResult?.SailDiffResults?.Count() ?? 0);
+            groupName, ExtractMethodName(perspectiveMethodName), comparisonResult == null,
+            comparisonResult?.SailDiffResults?.Count() ?? 0);
 
         if (comparisonResult?.SailDiffResults?.Any() != true)
         {
@@ -774,22 +576,6 @@ internal class MethodComparisonBatchProcessor
     }
 
     /// <summary>
-    /// Publishes enhanced framework notifications with comparison results.
-    /// </summary>
-    private async Task PublishEnhancedFrameworkNotifications(
-        TestCompletionQueueMessage beforeMethod,
-        TestCompletionQueueMessage afterMethod,
-        CancellationToken cancellationToken)
-    {
-        // Create and publish enhanced framework notifications
-        var beforeNotification = CreateFrameworkNotification(beforeMethod);
-        var afterNotification = CreateFrameworkNotification(afterMethod);
-
-        await _mediator.Publish(beforeNotification, cancellationToken);
-        await _mediator.Publish(afterNotification, cancellationToken);
-    }
-
-    /// <summary>
     /// Creates a FrameworkTestCaseEndNotification from a TestCompletionQueueMessage.
     /// </summary>
     private FrameworkTestCaseEndNotification CreateFrameworkNotification(TestCompletionQueueMessage message)
@@ -799,11 +585,14 @@ internal class MethodComparisonBatchProcessor
             : string.Empty;
 
         // Use the original TestCase from metadata to ensure framework compatibility
-        var testCase = message.Metadata.TryGetValue("TestCase", out var testCaseObj) && testCaseObj is TestCase originalTestCase
+        var testCase = message.Metadata.TryGetValue("TestCase", out var testCaseObj) &&
+                       testCaseObj is TestCase originalTestCase
             ? originalTestCase
-            : throw new InvalidOperationException($"Original TestCase not found in metadata for test case '{message.TestCaseId}'");
+            : throw new InvalidOperationException(
+                $"Original TestCase not found in metadata for test case '{message.TestCaseId}'");
 
-        var startTime = message.Metadata.TryGetValue("StartTime", out var startTimeObj) && startTimeObj is DateTimeOffset start
+        var startTime = message.Metadata.TryGetValue("StartTime", out var startTimeObj) &&
+                        startTimeObj is DateTimeOffset start
             ? start
             : message.CompletedAt;
 

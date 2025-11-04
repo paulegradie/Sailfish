@@ -48,7 +48,6 @@ public class MethodComparisonProcessorTests
         _processor = new MethodComparisonProcessor(_mediator,
             _batchingService,
             _batchProcessor,
-            _unifiedFormatter,
             _logger);
     }
 
@@ -61,7 +60,6 @@ public class MethodComparisonProcessorTests
         Should.Throw<ArgumentNullException>(() => new MethodComparisonProcessor(null!,
             _batchingService,
             _batchProcessor,
-            _unifiedFormatter,
             _logger));
     }
 
@@ -72,7 +70,6 @@ public class MethodComparisonProcessorTests
         Should.Throw<ArgumentNullException>(() => new MethodComparisonProcessor(_mediator,
             null!,
             _batchProcessor,
-            _unifiedFormatter,
             _logger));
     }
 
@@ -83,7 +80,6 @@ public class MethodComparisonProcessorTests
         Should.Throw<ArgumentNullException>(() => new MethodComparisonProcessor(_mediator,
             _batchingService,
             null!,
-            _unifiedFormatter,
             _logger));
     }
 
@@ -94,7 +90,6 @@ public class MethodComparisonProcessorTests
         Should.Throw<ArgumentNullException>(() => new MethodComparisonProcessor(_mediator,
             _batchingService,
             _batchProcessor,
-            null!,
             _logger));
     }
 
@@ -105,7 +100,6 @@ public class MethodComparisonProcessorTests
         Should.Throw<ArgumentNullException>(() => new MethodComparisonProcessor(_mediator,
             _batchingService,
             _batchProcessor,
-            _unifiedFormatter,
             null!));
     }
 

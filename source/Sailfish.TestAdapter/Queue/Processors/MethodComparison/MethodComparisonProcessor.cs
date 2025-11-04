@@ -1,5 +1,4 @@
 ﻿using MediatR;
-using Sailfish.Analysis.SailDiff.Formatting;
 using Sailfish.Attributes;
 using Sailfish.Contracts.Private;
 using Sailfish.Logging;
@@ -41,7 +40,6 @@ internal class MethodComparisonProcessor : TestCompletionQueueProcessorBase
     private readonly IMediator _mediator;
     private readonly ITestCaseBatchingService _batchingService;
     private readonly MethodComparisonBatchProcessor _batchProcessor;
-    private readonly ISailDiffUnifiedFormatter _unifiedFormatter;
 
     // Track test classes that have already generated markdown to avoid duplicates
     private readonly HashSet<string> _markdownGeneratedForClasses = [];
@@ -52,19 +50,16 @@ internal class MethodComparisonProcessor : TestCompletionQueueProcessorBase
     /// <param name="mediator">The mediator for publishing notifications.</param>
     /// <param name="batchingService">The batching service for grouping test cases.</param>
     /// <param name="batchProcessor">The batch processor for handling comparison groups.</param>
-    /// <param name="unifiedFormatter">The unified formatter for consistent output formatting.</param>
     /// <param name="logger">The logger for diagnostic output.</param>
     public MethodComparisonProcessor(
         IMediator mediator,
         ITestCaseBatchingService batchingService,
         MethodComparisonBatchProcessor batchProcessor,
-        ISailDiffUnifiedFormatter unifiedFormatter,
         ILogger logger) : base(logger)
     {
         _mediator = mediator ?? throw new ArgumentNullException(nameof(mediator));
         _batchingService = batchingService ?? throw new ArgumentNullException(nameof(batchingService));
         _batchProcessor = batchProcessor ?? throw new ArgumentNullException(nameof(batchProcessor));
-        _unifiedFormatter = unifiedFormatter ?? throw new ArgumentNullException(nameof(unifiedFormatter));
     }
 
     /// <summary>
