@@ -190,8 +190,8 @@ public class IterationStrategyTests
         return TestInstanceContainer.CreateTestInstance(
             new object(),
             typeof(object).GetMethod("ToString")!,
-            Array.Empty<string>(),
-            Array.Empty<object>(),
+            [],
+            [],
             false,
             mockExecutionSettings);
     }

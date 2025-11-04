@@ -19,8 +19,8 @@ public class WhenCreatingTestCaseIdsWithASingleVariable : IAsyncLifetime
         testCaseId = DisplayNameHelper.CreateTestCaseId(
             typeof(WhenCreatingTestCaseIdsWithASingleVariable),
             "TestMethod",
-            new[] { VariableName },
-            new object[] { Param });
+            [VariableName],
+            [Param]);
         await Task.Yield();
     }
 
@@ -86,8 +86,8 @@ public class WhenCreatingTestCaseIdsWithASingleVariable : IAsyncLifetime
         var tci = DisplayNameHelper.CreateTestCaseId(
             typeof(WhenCreatingTestCaseIdsWithASingleVariable),
             "TestMethod",
-            new[] { varA, varB },
-            new object[] { 10, 50 });
+            [varA, varB],
+            [10, 50]);
 
         var result = tci.TestCaseVariables.FormVariableSection();
         result.ShouldBe($"({varA}: 10, {varB}: 50)");

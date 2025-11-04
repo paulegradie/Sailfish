@@ -30,7 +30,7 @@ public class WhenSettingSailfishAttributes
         propName.ShouldBe(nameof(testClass.Count));
 
         var variableSet = variables[propName];
-        variableSet.OrderedVariables.ShouldBe(new object[] { 1, 2, 3 });
+        variableSet.OrderedVariables.ShouldBe([1, 2, 3]);
     }
 }
 

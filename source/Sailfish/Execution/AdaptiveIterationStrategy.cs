@@ -75,6 +75,22 @@ internal class AdaptiveIterationStrategy : IIterationStrategy
 
         // Perform an initial convergence check after the minimum phase
         var initialSamples = GetCurrentSamples(testInstanceContainer);
+
+        // NEW: Use a pilot analysis to tune thresholds (without changing min/max iteration counts)
+        // Keeps backward compatibility with existing tests and behavior
+        try
+        {
+            var selector = new AdaptiveParameterSelector();
+            var selected = selector.Select(initialSamples, executionSettings);
+            targetCV = selected.TargetCoefficientOfVariation;
+            maxCiWidth = selected.MaxConfidenceIntervalWidth;
+            logger.Log(LogLevel.Information, "      ---- Adaptive tuning: {Category} -> TargetCV={TargetCV:F3}, MaxCI={MaxCI:F3}", selected.Category, targetCV, maxCiWidth);
+        }
+        catch
+        {
+            // Best-effort; ignore selector failures and proceed with original thresholds
+        }
+
         convergenceResult = convergenceDetector.CheckConvergence(
             initialSamples, targetCV, maxCiWidth, confidenceLevel, minIterations);
 

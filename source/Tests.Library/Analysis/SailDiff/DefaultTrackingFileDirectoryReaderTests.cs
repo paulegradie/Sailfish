@@ -19,7 +19,7 @@ public class DefaultTrackingFileDirectoryReaderTests : IDisposable
         reader = new DefaultTrackingFileDirectoryReader();
         tempDirectory = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
         Directory.CreateDirectory(tempDirectory);
-        createdFiles = new List<string>();
+        createdFiles = [];
     }
 
     public void Dispose()

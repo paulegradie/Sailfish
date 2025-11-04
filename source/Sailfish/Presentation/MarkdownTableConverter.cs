@@ -194,6 +194,19 @@ public class MarkdownTableConverter : IMarkdownTableConverter
             }
             stringBuilder.AppendLine();
 
+            // Append statistical validation warnings (if any)
+            foreach (var r in groupResults.Where(gr => gr.PerformanceRunResult?.Validation?.HasWarnings == true))
+            {
+                var pr = r.PerformanceRunResult!;
+                stringBuilder.AppendLine($"- ⚠️ {r.TestCaseId!.DisplayName} warnings:");
+                foreach (var w in pr.Validation!.Warnings)
+                {
+                    var tag = w.Severity switch { ValidationSeverity.Critical => "❗", ValidationSeverity.Warning => "⚠️", _ => "ℹ️" };
+                    stringBuilder.AppendLine($"  - {tag} {w.Message}");
+                }
+                stringBuilder.AppendLine();
+            }
+
         }
     }
 
@@ -315,6 +328,19 @@ public class MarkdownTableConverter : IMarkdownTableConverter
             );
 
             stringBuilder.AppendLine(table);
+
+            // Append statistical validation warnings (if any)
+            foreach (var r in group.Where(gr => gr.PerformanceRunResult?.Validation?.HasWarnings == true))
+            {
+                var pr = r.PerformanceRunResult!;
+                stringBuilder.AppendLine($"- ⚠️ {r.TestCaseId!.DisplayName} warnings:");
+                foreach (var w in pr.Validation!.Warnings)
+                {
+                    var tag = w.Severity switch { ValidationSeverity.Critical => "❗", ValidationSeverity.Warning => "⚠️", _ => "ℹ️" };
+                    stringBuilder.AppendLine($"  - {tag} {w.Message}");
+                }
+            }
+
         }
     }
 
@@ -327,5 +353,7 @@ public class MarkdownTableConverter : IMarkdownTableConverter
             stringBuilder.AppendLine($"Exception: {exception?.Message}\r");
             if (exception?.StackTrace is not null) stringBuilder.AppendLine($"StackTrace:\r{exception.StackTrace}\r");
         }
+
+
     }
 }

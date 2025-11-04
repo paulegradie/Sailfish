@@ -77,6 +77,10 @@ public class PerformanceRunResult
     // Centralized multi-level CIs
     public IReadOnlyList<ConfidenceIntervalResult> ConfidenceIntervals { get; }
 
+
+    // Statistical validation warnings (optional)
+    public ValidationResult? Validation { get; set; }
+
     // Convenience properties for CSV and simple consumers
     public double CI95MarginOfError => GetMarginFor(0.95);
     public double CI99MarginOfError => GetMarginFor(0.99);
@@ -109,9 +113,24 @@ public class PerformanceRunResult
         IExecutionSettings executionSettings,
         IReadOnlyList<double> executionIterations)
     {
-        var detector = new SailfishOutlierDetector();
+        // Choose outlier handling path: legacy (RemoveAll) vs configurable (settings-driven)
+        ProcessedStatisticalTestData processed;
+        if (executionSettings.UseConfigurableOutlierDetection)
+        {
+            var cfg = new ConfigurableOutlierDetector();
+            processed = cfg.DetectOutliers(executionIterations, executionSettings.OutlierStrategy);
+        }
+        else
+        {
+            var detector = new SailfishOutlierDetector();
+            processed = detector.DetectOutliers(executionIterations);
+        }
 
-        var (rawExecutionResults, cleanData, lowerOutliers, upperOutliers, totalNumOutliers) = detector.DetectOutliers(executionIterations);
+        var rawExecutionResults = processed.OriginalData;
+        var cleanData = processed.DataWithOutliersRemoved;
+        var lowerOutliers = processed.LowerOutliers;
+        var upperOutliers = processed.UpperOutliers;
+        var totalNumOutliers = processed.TotalNumOutliers;
 
         var mean = cleanData.Mean();
         var median = cleanData.Median();
@@ -130,12 +149,25 @@ public class PerformanceRunResult
         var primary = ciList.FirstOrDefault(x => Math.Abs(x.ConfidenceLevel - primaryLevel) < 1e-9)
                      ?? ComputeConfidenceIntervals(mean, standardError, n, new[] { primaryLevel }).First();
 
-        return new PerformanceRunResult(testCaseId.DisplayName,
+        var pr = new PerformanceRunResult(testCaseId.DisplayName,
             mean, stdDev, variance, median, rawExecutionResults,
             executionSettings.SampleSize, executionSettings.NumWarmupIterations, cleanData,
             upperOutliers.ToArray(), lowerOutliers.ToArray(), totalNumOutliers,
             standardError, primary.ConfidenceLevel, primary.Lower, primary.Upper, primary.MarginOfError,
             ciList);
+
+        // Best-effort statistical validation
+        try
+        {
+            var validation = new StatisticalValidator().Validate(pr, executionSettings);
+            pr.Validation = validation;
+        }
+        catch
+        {
+            // ignore validation failures to preserve robustness
+        }
+
+        return pr;
     }
 
     /// <summary>

@@ -159,38 +159,7 @@ public class StatisticalConvergenceDetector : IStatisticalConvergenceDetector
     /// <returns>The critical t-value</returns>
     private static double GetTValue(double confidenceLevel, int degreesOfFreedom)
     {
-        // For large samples (df >= 30), use normal approximation
-        if (degreesOfFreedom >= 30)
-        {
-            return confidenceLevel switch
-            {
-                0.90 => 1.645,
-                0.95 => 1.960,
-                0.99 => 2.576,
-                0.999 => 3.291,
-                _ => 1.960 // Default to 95% CI
-            };
-        }
-
-        // For small samples, use conservative t-values (simplified lookup table)
-        // This is a simplified implementation - in production, you'd want a complete t-table
-        var alpha = 1.0 - confidenceLevel;
-        var twoTailed = alpha / 2.0;
-
-        return degreesOfFreedom switch
-        {
-            1 => confidenceLevel >= 0.95 ? 12.706 : 6.314,
-            2 => confidenceLevel >= 0.95 ? 4.303 : 2.920,
-            3 => confidenceLevel >= 0.95 ? 3.182 : 2.353,
-            4 => confidenceLevel >= 0.95 ? 2.776 : 2.132,
-            5 => confidenceLevel >= 0.95 ? 2.571 : 2.015,
-            6 => confidenceLevel >= 0.95 ? 2.447 : 1.943,
-            7 => confidenceLevel >= 0.95 ? 2.365 : 1.895,
-            8 => confidenceLevel >= 0.95 ? 2.306 : 1.860,
-            9 => confidenceLevel >= 0.95 ? 2.262 : 1.833,
-            10 => confidenceLevel >= 0.95 ? 2.228 : 1.812,
-            _ when degreesOfFreedom <= 20 => confidenceLevel >= 0.95 ? 2.086 : 1.725,
-            _ => confidenceLevel >= 0.95 ? 2.000 : 1.680 // Conservative estimate
-        };
+        // Delegate to central t-distribution provider for accurate critical values
+        return TDistributionTable.GetCriticalValue(confidenceLevel, degreesOfFreedom);
     }
 }

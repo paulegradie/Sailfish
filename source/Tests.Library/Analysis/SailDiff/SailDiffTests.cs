@@ -110,7 +110,7 @@ public class SailDiffTests
             .Returns(dataResponse);
 
         mockStatisticalTestComputer.ComputeTest(Arg.Any<TestData>(), Arg.Any<TestData>(), Arg.Any<SailDiffSettings>())
-            .Returns(new List<SailDiffResult> { CreateSailDiffResult() });
+            .Returns([CreateSailDiffResult()]);
 
         mockSailDiffConsoleWindowMessageFormatter
             .FormConsoleWindowMessageForSailDiff(Arg.Any<IEnumerable<SailDiffResult>>(), Arg.Any<TestIds>(), Arg.Any<SailDiffSettings>(), Arg.Any<CancellationToken>())
@@ -145,7 +145,7 @@ public class SailDiffTests
             .Returns(dataResponse);
 
         mockStatisticalTestComputer.ComputeTest(Arg.Any<TestData>(), Arg.Any<TestData>(), Arg.Any<SailDiffSettings>())
-            .Returns(new List<SailDiffResult> { CreateSailDiffResult() });
+            .Returns([CreateSailDiffResult()]);
 
         mockSailDiffConsoleWindowMessageFormatter
             .FormConsoleWindowMessageForSailDiff(Arg.Any<IEnumerable<SailDiffResult>>(), Arg.Any<TestIds>(), Arg.Any<SailDiffSettings>(), Arg.Any<CancellationToken>())
@@ -180,7 +180,7 @@ public class SailDiffTests
             .Returns(dataResponse);
 
         mockStatisticalTestComputer.ComputeTest(Arg.Any<TestData>(), Arg.Any<TestData>(), Arg.Any<SailDiffSettings>())
-            .Returns(new List<SailDiffResult> { CreateSailDiffResult() });
+            .Returns([CreateSailDiffResult()]);
 
         mockSailDiffConsoleWindowMessageFormatter
             .FormConsoleWindowMessageForSailDiff(Arg.Any<IEnumerable<SailDiffResult>>(), Arg.Any<TestIds>(), Arg.Any<SailDiffSettings>(), Arg.Any<CancellationToken>())
@@ -301,7 +301,7 @@ public class SailDiffTests
             .Returns(dataResponse);
 
         mockStatisticalTestComputer.ComputeTest(Arg.Any<TestData>(), Arg.Any<TestData>(), Arg.Any<SailDiffSettings>())
-            .Returns(new List<SailDiffResult>()); // Empty results
+            .Returns([]); // Empty results
 
         var cancellationToken = CancellationToken.None;
 
@@ -323,7 +323,7 @@ public class SailDiffTests
             CreatePerformanceRunResult("TestMethod2")
         };
 
-        return new TestData(new[] { "TestId1", "TestId2" }, performanceResults);
+        return new TestData(["TestId1", "TestId2"], performanceResults);
     }
 
     private static PerformanceRunResult CreatePerformanceRunResult(string displayName)
@@ -334,12 +334,12 @@ public class SailDiffTests
             1.5,  // stdDev
             3.5,  // variance
             2.0,  // median
-            new[] { 1.0, 2.0, 3.0, 4.0, 5.0 }, // rawExecutionResults
+            [1.0, 2.0, 3.0, 4.0, 5.0], // rawExecutionResults
             5,    // sampleSize
             2,    // numWarmupIterations
-            new[] { 1.0, 2.0, 3.0 }, // dataWithOutliersRemoved
-            new double[0], // upperOutliers
-            new double[0], // lowerOutliers
+            [1.0, 2.0, 3.0], // dataWithOutliersRemoved
+            [], // upperOutliers
+            [], // lowerOutliers
             0);   // totalNumOutliers
     }
 
@@ -373,8 +373,8 @@ public class SailDiffTests
             changeDescription: SailfishChangeDirection.NoChange,
             sampleSizeBefore: 100,
             sampleSizeAfter: 100,
-            rawDataBefore: new[] { 8.0, 9.0, 10.0, 11.0, 12.0 },
-            rawDataAfter: new[] { 10.0, 11.0, 12.0, 13.0, 14.0 },
+            rawDataBefore: [8.0, 9.0, 10.0, 11.0, 12.0],
+            rawDataAfter: [10.0, 11.0, 12.0, 13.0, 14.0],
             additionalResults: new Dictionary<string, object>());
     }
 
@@ -623,8 +623,8 @@ public class SailDiffTests
         mockMediator.Send(Arg.Any<BeforeAndAfterFileLocationRequest>(), Arg.Any<CancellationToken>())
             .Returns(fileLocationResponse);
 
-        var beforeData = new TestData(new[] { "BeforeTest1", "BeforeTest2" }, new List<PerformanceRunResult>());
-        var afterData = new TestData(new[] { "AfterTest1", "AfterTest2" }, new List<PerformanceRunResult>());
+        var beforeData = new TestData(["BeforeTest1", "BeforeTest2"], new List<PerformanceRunResult>());
+        var afterData = new TestData(["AfterTest1", "AfterTest2"], new List<PerformanceRunResult>());
         var dataResponse = new ReadInBeforeAndAfterDataResponse(beforeData, afterData);
         mockMediator.Send(Arg.Any<ReadInBeforeAndAfterDataRequest>(), Arg.Any<CancellationToken>())
             .Returns(dataResponse);

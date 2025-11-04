@@ -49,7 +49,7 @@ public class TestInstanceContainerProviderTests
         var typeActivator = Substitute.For<ITypeActivator>();
 
         var method = GetMethod<ProviderTestClass>(nameof(ProviderTestClass.MethodUnderTest));
-        var provider = new TestInstanceContainerProvider(runSettings, typeActivator, typeof(ProviderTestClass), Array.Empty<PropertySet>(), method);
+        var provider = new TestInstanceContainerProvider(runSettings, typeActivator, typeof(ProviderTestClass), [], method);
 
         // Will be called to create the instance
         typeActivator.CreateDehydratedTestInstance(typeof(ProviderTestClass), Arg.Any<TestCaseId>(), Arg.Any<bool>())
@@ -71,9 +71,9 @@ public class TestInstanceContainerProviderTests
         var runSettings = CreateRunSettings();
         var typeActivator = Substitute.For<ITypeActivator>();
 
-        var ps = new PropertySet(new List<TestCaseVariable> { new("Value", 42) });
+        var ps = new PropertySet([new("Value", 42)]);
         var method = GetMethod<ProviderTestClass>(nameof(ProviderTestClass.MethodUnderTest));
-        var provider = new TestInstanceContainerProvider(runSettings, typeActivator, typeof(ProviderTestClass), new[] { ps }, method);
+        var provider = new TestInstanceContainerProvider(runSettings, typeActivator, typeof(ProviderTestClass), [ps], method);
 
         ProviderTestClass? capturedInstance = null;
         typeActivator.CreateDehydratedTestInstance(typeof(ProviderTestClass), Arg.Any<TestCaseId>(), Arg.Any<bool>())
@@ -97,7 +97,7 @@ public class TestInstanceContainerProviderTests
         var typeActivator = Substitute.For<ITypeActivator>();
 
         var method = GetMethod<DisabledClass>(nameof(DisabledClass.MethodUnderTest));
-        var provider = new TestInstanceContainerProvider(runSettings, typeActivator, typeof(DisabledClass), Array.Empty<PropertySet>(), method);
+        var provider = new TestInstanceContainerProvider(runSettings, typeActivator, typeof(DisabledClass), [], method);
 
         typeActivator.CreateDehydratedTestInstance(typeof(DisabledClass), Arg.Any<TestCaseId>(), Arg.Any<bool>())
             .Returns(ci => new DisabledClass());
@@ -114,8 +114,8 @@ public class TestInstanceContainerProviderTests
         var method = GetMethod<ProviderTestClass>(nameof(ProviderTestClass.MethodUnderTest));
         var sets = new[]
         {
-            new PropertySet(new List<TestCaseVariable> { new("Value", 1) }),
-            new PropertySet(new List<TestCaseVariable> { new("Value", 2) })
+            new PropertySet([new("Value", 1)]),
+            new PropertySet([new("Value", 2)])
         };
         var provider = new TestInstanceContainerProvider(runSettings, typeActivator, typeof(ProviderTestClass), sets, method);
         provider.GetNumberOfPropertySetsInTheQueue().ShouldBe(2);

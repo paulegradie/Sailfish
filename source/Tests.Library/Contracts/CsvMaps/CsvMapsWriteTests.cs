@@ -22,12 +22,12 @@ public class CsvMapsWriteTests
             stdDev: 1.0,
             variance: 1.5,
             median: 1.7,
-            rawExecutionResults: new[] { 1.1, 2.2 },
+            rawExecutionResults: [1.1, 2.2],
             sampleSize: 2,
             numWarmupIterations: 0,
-            dataWithOutliersRemoved: new[] { 1.1, 2.2 },
-            upperOutliers: Array.Empty<double>(),
-            lowerOutliers: Array.Empty<double>(),
+            dataWithOutliersRemoved: [1.1, 2.2],
+            upperOutliers: [],
+            lowerOutliers: [],
             totalNumOutliers: 0,
             standardError: 0.0,
             confidenceLevel: 0.95,
@@ -64,8 +64,8 @@ public class CsvMapsWriteTests
             changeDescription: "Improved",
             sampleSizeBefore: 100,
             sampleSizeAfter: 100,
-            rawDataBefore: new[] { 1.0, 2.0, 3.0 },
-            rawDataAfter: new[] { 1.5, 2.5, 3.5 },
+            rawDataBefore: [1.0, 2.0, 3.0],
+            rawDataAfter: [1.5, 2.5, 3.5],
             additionalResults: new Dictionary<string, object>());
         var result = new TestResultWithOutlierAnalysis(stat, null, null);
         var diff = new SailDiffResult(testCaseId, result);

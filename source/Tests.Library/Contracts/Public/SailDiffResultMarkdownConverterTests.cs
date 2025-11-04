@@ -367,8 +367,8 @@ public class SailDiffResultMarkdownConverterTests
             changeDescription: "Improved",
             sampleSizeBefore: 100,
             sampleSizeAfter: 100,
-            rawDataBefore: new[] { 8.0, 9.0, 10.0, 11.0, 12.0 },
-            rawDataAfter: new[] { 3.0, 4.0, 5.0, 6.0, 7.0 },
+            rawDataBefore: [8.0, 9.0, 10.0, 11.0, 12.0],
+            rawDataAfter: [3.0, 4.0, 5.0, 6.0, 7.0],
             additionalResults: new Dictionary<string, object>());
         var testResultWithOutlierAnalysis = new TestResultWithOutlierAnalysis(statisticalTestResult, null, null);
         return new SailDiffResult(testCaseId, testResultWithOutlierAnalysis);
@@ -387,8 +387,8 @@ public class SailDiffResultMarkdownConverterTests
             changeDescription: "Regressed",
             sampleSizeBefore: 100,
             sampleSizeAfter: 100,
-            rawDataBefore: new[] { 3.0, 4.0, 5.0, 6.0, 7.0 },
-            rawDataAfter: new[] { 8.0, 9.0, 10.0, 11.0, 12.0 },
+            rawDataBefore: [3.0, 4.0, 5.0, 6.0, 7.0],
+            rawDataAfter: [8.0, 9.0, 10.0, 11.0, 12.0],
             additionalResults: new Dictionary<string, object>());
         var testResultWithOutlierAnalysis = new TestResultWithOutlierAnalysis(statisticalTestResult, null, null);
         return new SailDiffResult(testCaseId, testResultWithOutlierAnalysis);
@@ -407,8 +407,8 @@ public class SailDiffResultMarkdownConverterTests
             changeDescription: "No Change",
             sampleSizeBefore: 100,
             sampleSizeAfter: 100,
-            rawDataBefore: new[] { 8.0, 9.0, 10.0, 11.0, 12.0 },
-            rawDataAfter: new[] { 8.1, 9.1, 10.1, 11.1, 12.1 },
+            rawDataBefore: [8.0, 9.0, 10.0, 11.0, 12.0],
+            rawDataAfter: [8.1, 9.1, 10.1, 11.1, 12.1],
             additionalResults: new Dictionary<string, object>());
         var testResultWithOutlierAnalysis = new TestResultWithOutlierAnalysis(statisticalTestResult, null, null);
         return new SailDiffResult(testCaseId, testResultWithOutlierAnalysis);
@@ -426,8 +426,8 @@ public class SailDiffResultMarkdownConverterTests
             changeDescription: "Improved",
             sampleSizeBefore: 100,
             sampleSizeAfter: 100,
-            rawDataBefore: new[] { 8.0, 9.0, 10.0, 11.0, 12.0 },
-            rawDataAfter: new[] { 6.0, 7.0, 8.0, 9.0, 10.0 },
+            rawDataBefore: [8.0, 9.0, 10.0, 11.0, 12.0],
+            rawDataAfter: [6.0, 7.0, 8.0, 9.0, 10.0],
             additionalResults: new Dictionary<string, object>());
     }
 
@@ -443,8 +443,8 @@ public class SailDiffResultMarkdownConverterTests
             changeDescription: "Improved",
             sampleSizeBefore: sampleSize,
             sampleSizeAfter: sampleSize,
-            rawDataBefore: new[] { 8.0, 9.0, 10.0, 11.0, 12.0 },
-            rawDataAfter: new[] { 6.0, 7.0, 8.0, 9.0, 10.0 },
+            rawDataBefore: [8.0, 9.0, 10.0, 11.0, 12.0],
+            rawDataAfter: [6.0, 7.0, 8.0, 9.0, 10.0],
             additionalResults: new Dictionary<string, object>());
     }
 

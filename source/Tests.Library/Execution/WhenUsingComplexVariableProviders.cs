@@ -28,7 +28,7 @@ public class WhenUsingComplexVariableProviders
         // Check simple variable
         var simpleVar = variables["SimpleValue"];
         simpleVar.OrderedVariables.Count().ShouldBe(3);
-        simpleVar.OrderedVariables.ShouldBe(new object[] { 1, 2, 3 });
+        simpleVar.OrderedVariables.ShouldBe([1, 2, 3]);
 
         // Check typed variable
         var typedVar = variables["TypedValue"];

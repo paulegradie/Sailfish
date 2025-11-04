@@ -39,7 +39,7 @@ public class TrackingFileFinderTests
 
         mockTrackingFileDirectoryReader
             .FindTrackingFilesInDirectoryOrderedByLastModified(directory)
-            .Returns(new List<string>());
+            .Returns([]);
 
         // Act
         var result = trackingFileFinder.GetBeforeAndAfterTrackingFiles(directory, beforeTarget, tags);
@@ -336,7 +336,7 @@ public class TrackingFileFinderTests
 
         mockTrackingFileDirectoryReader
             .FindTrackingFilesInDirectoryOrderedByLastModified(directory)
-            .Returns(new List<string>());
+            .Returns([]);
 
         // Act
         trackingFileFinder.GetBeforeAndAfterTrackingFiles(directory, beforeTarget, tags);

@@ -56,7 +56,7 @@ public class MannWhitneyDistributionTests
     public void NumberOfSamples1_ShouldReturnConstructorValue()
     {
         // Arrange & Act
-        var distribution = new MannWhitneyDistribution(new[] { 1.0, 2.0, 3.0, 4.0 }, 2, 2);
+        var distribution = new MannWhitneyDistribution([1.0, 2.0, 3.0, 4.0], 2, 2);
 
         // Assert
         distribution.NumberOfSamples1.ShouldBe(2);
@@ -66,7 +66,7 @@ public class MannWhitneyDistributionTests
     public void NumberOfSamples2_ShouldReturnConstructorValue()
     {
         // Arrange & Act
-        var distribution = new MannWhitneyDistribution(new[] { 1.0, 2.0, 3.0, 4.0 }, 2, 2);
+        var distribution = new MannWhitneyDistribution([1.0, 2.0, 3.0, 4.0], 2, 2);
 
         // Assert
         distribution.NumberOfSamples2.ShouldBe(2);
@@ -76,7 +76,7 @@ public class MannWhitneyDistributionTests
     public void Correction_ShouldDefaultToMidpoint()
     {
         // Arrange & Act
-        var distribution = new MannWhitneyDistribution(new[] { 1.0, 2.0, 3.0, 4.0 }, 2, 2);
+        var distribution = new MannWhitneyDistribution([1.0, 2.0, 3.0, 4.0], 2, 2);
 
         // Assert
         distribution.Correction.ShouldBe(ContinuityCorrection.Midpoint);
@@ -99,7 +99,7 @@ public class MannWhitneyDistributionTests
     public void Support_ShouldReturnInfiniteRange()
     {
         // Arrange
-        var distribution = new MannWhitneyDistribution(new[] { 1.0, 2.0, 3.0, 4.0 }, 2, 2);
+        var distribution = new MannWhitneyDistribution([1.0, 2.0, 3.0, 4.0], 2, 2);
 
         // Act
         var support = distribution.Support;
@@ -141,7 +141,7 @@ public class MannWhitneyDistributionTests
     public void ComplementaryDistributionFunction_WithNaN_ShouldThrowArgumentOutOfRangeException()
     {
         // Arrange
-        var distribution = new MannWhitneyDistribution(new[] { 1.0, 2.0, 3.0, 4.0 }, 2, 2);
+        var distribution = new MannWhitneyDistribution([1.0, 2.0, 3.0, 4.0], 2, 2);
 
         // Act & Assert
         var exception = Should.Throw<ArgumentOutOfRangeException>(() =>
@@ -209,7 +209,7 @@ public class MannWhitneyDistributionTests
     public void ToString_WithDefaultFormat_ShouldReturnFormattedString()
     {
         // Arrange
-        var distribution = new MannWhitneyDistribution(new[] { 1.0, 2.0, 3.0, 4.0 }, 2, 2);
+        var distribution = new MannWhitneyDistribution([1.0, 2.0, 3.0, 4.0], 2, 2);
 
         // Act
         var result = distribution.ToString();
@@ -225,7 +225,7 @@ public class MannWhitneyDistributionTests
     public void ToString_WithCustomFormat_ShouldFormatNumbers()
     {
         // Arrange
-        var distribution = new MannWhitneyDistribution(new[] { 1.0, 2.0, 3.0, 4.0 }, 2, 2);
+        var distribution = new MannWhitneyDistribution([1.0, 2.0, 3.0, 4.0], 2, 2);
 
         // Act
         var result = distribution.ToString("F0", null);
@@ -264,7 +264,7 @@ public class MannWhitneyDistributionTests
     public void DistributionFunction_WithNaN_ShouldThrowArgumentOutOfRangeException()
     {
         // Arrange
-        var distribution = new MannWhitneyDistribution(new[] { 1.0, 2.0, 3.0, 4.0 }, 2, 2);
+        var distribution = new MannWhitneyDistribution([1.0, 2.0, 3.0, 4.0], 2, 2);
 
         // Act & Assert
         var exception = Should.Throw<ArgumentOutOfRangeException>(() =>
@@ -276,7 +276,7 @@ public class MannWhitneyDistributionTests
     public void InverseDistributionFunction_WithInvalidProbability_ShouldThrowArgumentOutOfRangeException()
     {
         // Arrange
-        var distribution = new MannWhitneyDistribution(new[] { 1.0, 2.0, 3.0, 4.0 }, 2, 2);
+        var distribution = new MannWhitneyDistribution([1.0, 2.0, 3.0, 4.0], 2, 2);
 
         // Act & Assert
         var exception = Should.Throw<ArgumentOutOfRangeException>(() =>

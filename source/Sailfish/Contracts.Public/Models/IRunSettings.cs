@@ -1,6 +1,8 @@
 using System;
 using System.Collections.Generic;
 using Sailfish.Analysis.SailDiff;
+using Sailfish.Analysis;
+
 using Sailfish.Extensions.Types;
 using Sailfish.Logging;
 
@@ -35,6 +37,11 @@ public interface IRunSettings
     bool? GlobalUseAdaptiveSampling { get; }
     double? GlobalTargetCoefficientOfVariation { get; }
     int? GlobalMaximumSampleSize { get; }
+
+        // Global outlier handling overrides (null = no override)
+        bool? GlobalUseConfigurableOutlierDetection { get; }
+        OutlierStrategy? GlobalOutlierStrategy { get; }
+
 
     string GetRunSettingsTrackingDirectoryPath();
 }

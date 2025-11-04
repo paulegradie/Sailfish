@@ -53,8 +53,8 @@ public class TableParserExtensionMethodsFixture
             new TwoSampleWilcoxonSignedRankTest(preprocessor),
             new KolmogorovSmirnovTest(preprocessor)
         ).ExecuteStatisticalTest(
-            new double[] { 2, 2, 4, 4, 5, 5, 6, 7, 6 },
-            new double[] { 9, 8, 7, 6, 4, 4, 1, 2, 3, 2 },
+            [2, 2, 4, 4, 5, 5, 6, 7, 6],
+            [9, 8, 7, 6, 4, 4, 1, 2, 3, 2],
             new SailDiffSettings(0.01, 0, false, TestType.Test));
 
         TestCaseId testCaseId = new("MyClass.MySampleTest(N: 2, X: 4)");

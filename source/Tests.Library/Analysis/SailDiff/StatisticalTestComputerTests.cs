@@ -46,12 +46,12 @@ public class StatisticalTestComputerTests
     {
         // Arrange
         var testCaseId = new TestCaseId("TestClass.TestMethod");
-        var beforeData = CreateTestData(testCaseId.DisplayName, new[] { 1.0, 2.0, 3.0, 4.0, 5.0 });
-        var afterData = CreateTestData(testCaseId.DisplayName, new[] { 2.0, 3.0, 4.0, 5.0, 6.0 });
+        var beforeData = CreateTestData(testCaseId.DisplayName, [1.0, 2.0, 3.0, 4.0, 5.0]);
+        var afterData = CreateTestData(testCaseId.DisplayName, [2.0, 3.0, 4.0, 5.0, 6.0]);
         var settings = new SailDiffSettings();
 
-        var aggregatedBefore = CreateAggregatedResult(testCaseId.DisplayName, new[] { 1.0, 2.0, 3.0, 4.0, 5.0 });
-        var aggregatedAfter = CreateAggregatedResult(testCaseId.DisplayName, new[] { 2.0, 3.0, 4.0, 5.0, 6.0 });
+        var aggregatedBefore = CreateAggregatedResult(testCaseId.DisplayName, [1.0, 2.0, 3.0, 4.0, 5.0]);
+        var aggregatedAfter = CreateAggregatedResult(testCaseId.DisplayName, [2.0, 3.0, 4.0, 5.0, 6.0]);
 
         _mockAggregator.Aggregate(Arg.Any<TestCaseId>(), Arg.Any<IReadOnlyCollection<PerformanceRunResult>>())
             .Returns(aggregatedBefore, aggregatedAfter);
@@ -78,22 +78,22 @@ public class StatisticalTestComputerTests
 
         var beforeResults = new List<PerformanceRunResult>
         {
-            CreatePerformanceRunResult(testCaseId1.DisplayName, new[] { 1.0, 2.0, 3.0, 4.0, 5.0 }),
-            CreatePerformanceRunResult(testCaseId2.DisplayName, new[] { 2.0, 3.0, 4.0, 5.0, 6.0 })
+            CreatePerformanceRunResult(testCaseId1.DisplayName, [1.0, 2.0, 3.0, 4.0, 5.0]),
+            CreatePerformanceRunResult(testCaseId2.DisplayName, [2.0, 3.0, 4.0, 5.0, 6.0])
         };
 
         var afterResults = new List<PerformanceRunResult>
         {
-            CreatePerformanceRunResult(testCaseId1.DisplayName, new[] { 3.0, 4.0, 5.0, 6.0, 7.0 }),
-            CreatePerformanceRunResult(testCaseId2.DisplayName, new[] { 4.0, 5.0, 6.0, 7.0, 8.0 })
+            CreatePerformanceRunResult(testCaseId1.DisplayName, [3.0, 4.0, 5.0, 6.0, 7.0]),
+            CreatePerformanceRunResult(testCaseId2.DisplayName, [4.0, 5.0, 6.0, 7.0, 8.0])
         };
 
-        var beforeData = new TestData(new[] { testCaseId1.DisplayName, testCaseId2.DisplayName }, beforeResults);
-        var afterData = new TestData(new[] { testCaseId1.DisplayName, testCaseId2.DisplayName }, afterResults);
+        var beforeData = new TestData([testCaseId1.DisplayName, testCaseId2.DisplayName], beforeResults);
+        var afterData = new TestData([testCaseId1.DisplayName, testCaseId2.DisplayName], afterResults);
         var settings = new SailDiffSettings();
 
         _mockAggregator.Aggregate(Arg.Any<TestCaseId>(), Arg.Any<IReadOnlyCollection<PerformanceRunResult>>())
-            .Returns(x => CreateAggregatedResult(((TestCaseId)x[0]).DisplayName, new[] { 1.0, 2.0, 3.0, 4.0, 5.0 }));
+            .Returns(x => CreateAggregatedResult(((TestCaseId)x[0]).DisplayName, [1.0, 2.0, 3.0, 4.0, 5.0]));
 
         var testResult = CreateTestResultWithOutlierAnalysis();
         _mockStatisticalTestExecutor.ExecuteStatisticalTest(Arg.Any<double[]>(), Arg.Any<double[]>(), Arg.Any<SailDiffSettings>())
@@ -116,12 +116,12 @@ public class StatisticalTestComputerTests
     {
         // Arrange
         var testCaseId = new TestCaseId("TestClass.TestMethod");
-        var beforeData = CreateTestData(testCaseId.DisplayName, new[] { 1.0, 2.0, 3.0, 4.0, 5.0 });
-        var afterData = CreateTestData(testCaseId.DisplayName, new[] { 2.0, 3.0, 4.0, 5.0, 6.0 });
+        var beforeData = CreateTestData(testCaseId.DisplayName, [1.0, 2.0, 3.0, 4.0, 5.0]);
+        var afterData = CreateTestData(testCaseId.DisplayName, [2.0, 3.0, 4.0, 5.0, 6.0]);
         var settings = new SailDiffSettings();
 
-        var aggregatedBefore = CreateAggregatedResult(testCaseId.DisplayName, new[] { 1.0, 2.0, 3.0, 4.0, 5.0 });
-        var aggregatedAfter = CreateAggregatedResult(testCaseId.DisplayName, new[] { 2.0, 3.0, 4.0, 5.0, 6.0 });
+        var aggregatedBefore = CreateAggregatedResult(testCaseId.DisplayName, [1.0, 2.0, 3.0, 4.0, 5.0]);
+        var aggregatedAfter = CreateAggregatedResult(testCaseId.DisplayName, [2.0, 3.0, 4.0, 5.0, 6.0]);
 
         _mockAggregator.Aggregate(Arg.Any<TestCaseId>(), Arg.Any<IReadOnlyCollection<PerformanceRunResult>>())
             .Returns(aggregatedBefore, aggregatedAfter);
@@ -142,12 +142,12 @@ public class StatisticalTestComputerTests
     {
         // Arrange
         var testCaseId = new TestCaseId("TestClass.TestMethod");
-        var beforeData = CreateTestData(testCaseId.DisplayName, new[] { 1.0, 2.0, 3.0 });
-        var afterData = CreateTestData(testCaseId.DisplayName, new[] { 2.0, 3.0, 4.0 });
+        var beforeData = CreateTestData(testCaseId.DisplayName, [1.0, 2.0, 3.0]);
+        var afterData = CreateTestData(testCaseId.DisplayName, [2.0, 3.0, 4.0]);
         var settings = new SailDiffSettings();
 
         _mockAggregator.Aggregate(Arg.Any<TestCaseId>(), Arg.Any<IReadOnlyCollection<PerformanceRunResult>>())
-            .Returns(null, CreateAggregatedResult(testCaseId.DisplayName, new[] { 2.0, 3.0, 4.0 }));
+            .Returns(null, CreateAggregatedResult(testCaseId.DisplayName, [2.0, 3.0, 4.0]));
 
         // Act
         var results = _computer.ComputeTest(beforeData, afterData, settings);
@@ -162,13 +162,13 @@ public class StatisticalTestComputerTests
     {
         // Arrange
         var testCaseId = new TestCaseId("TestClass.TestMethod");
-        var beforeData = CreateTestData(testCaseId.DisplayName, new[] { 1.0, 2.0, 3.0 });
-        var afterData = CreateTestData(testCaseId.DisplayName, new[] { 2.0, 3.0, 4.0 });
+        var beforeData = CreateTestData(testCaseId.DisplayName, [1.0, 2.0, 3.0]);
+        var afterData = CreateTestData(testCaseId.DisplayName, [2.0, 3.0, 4.0]);
         var settings = new SailDiffSettings();
 
         // The aggregator is called twice: first for afterData, then for beforeData
         _mockAggregator.Aggregate(Arg.Any<TestCaseId>(), Arg.Any<IReadOnlyCollection<PerformanceRunResult>>())
-            .Returns(null, CreateAggregatedResult(testCaseId.DisplayName, new[] { 1.0, 2.0, 3.0 }));
+            .Returns(null, CreateAggregatedResult(testCaseId.DisplayName, [1.0, 2.0, 3.0]));
 
         // Act
         var results = _computer.ComputeTest(beforeData, afterData, settings);
@@ -187,12 +187,12 @@ public class StatisticalTestComputerTests
     {
         // Arrange
         var testCaseId = new TestCaseId("TestClass.TestMethod");
-        var beforeData = CreateTestData(testCaseId.DisplayName, new[] { 1.0, 2.0 }); // Only 2 samples
-        var afterData = CreateTestData(testCaseId.DisplayName, new[] { 2.0, 3.0, 4.0, 5.0 });
+        var beforeData = CreateTestData(testCaseId.DisplayName, [1.0, 2.0]); // Only 2 samples
+        var afterData = CreateTestData(testCaseId.DisplayName, [2.0, 3.0, 4.0, 5.0]);
         var settings = new SailDiffSettings();
 
-        var aggregatedBefore = CreateAggregatedResult(testCaseId.DisplayName, new[] { 1.0, 2.0 });
-        var aggregatedAfter = CreateAggregatedResult(testCaseId.DisplayName, new[] { 2.0, 3.0, 4.0, 5.0 });
+        var aggregatedBefore = CreateAggregatedResult(testCaseId.DisplayName, [1.0, 2.0]);
+        var aggregatedAfter = CreateAggregatedResult(testCaseId.DisplayName, [2.0, 3.0, 4.0, 5.0]);
 
         _mockAggregator.Aggregate(Arg.Any<TestCaseId>(), Arg.Any<IReadOnlyCollection<PerformanceRunResult>>())
             .Returns(aggregatedBefore, aggregatedAfter);
@@ -210,12 +210,12 @@ public class StatisticalTestComputerTests
     {
         // Arrange
         var testCaseId = new TestCaseId("TestClass.TestMethod");
-        var beforeData = CreateTestData(testCaseId.DisplayName, new[] { 1.0, 2.0, 3.0, 4.0 });
-        var afterData = CreateTestData(testCaseId.DisplayName, new[] { 2.0, 3.0 }); // Only 2 samples
+        var beforeData = CreateTestData(testCaseId.DisplayName, [1.0, 2.0, 3.0, 4.0]);
+        var afterData = CreateTestData(testCaseId.DisplayName, [2.0, 3.0]); // Only 2 samples
         var settings = new SailDiffSettings();
 
-        var aggregatedBefore = CreateAggregatedResult(testCaseId.DisplayName, new[] { 1.0, 2.0, 3.0, 4.0 });
-        var aggregatedAfter = CreateAggregatedResult(testCaseId.DisplayName, new[] { 2.0, 3.0 });
+        var aggregatedBefore = CreateAggregatedResult(testCaseId.DisplayName, [1.0, 2.0, 3.0, 4.0]);
+        var aggregatedAfter = CreateAggregatedResult(testCaseId.DisplayName, [2.0, 3.0]);
 
         _mockAggregator.Aggregate(Arg.Any<TestCaseId>(), Arg.Any<IReadOnlyCollection<PerformanceRunResult>>())
             .Returns(aggregatedBefore, aggregatedAfter);
@@ -233,12 +233,12 @@ public class StatisticalTestComputerTests
     {
         // Arrange
         var testCaseId = new TestCaseId("TestClass.TestMethod");
-        var beforeData = CreateTestData(testCaseId.DisplayName, new[] { 1.0, 2.0, 3.0 });
-        var afterData = CreateTestData(testCaseId.DisplayName, new[] { 2.0, 3.0, 4.0 });
+        var beforeData = CreateTestData(testCaseId.DisplayName, [1.0, 2.0, 3.0]);
+        var afterData = CreateTestData(testCaseId.DisplayName, [2.0, 3.0, 4.0]);
         var settings = new SailDiffSettings();
 
-        var aggregatedBefore = CreateAggregatedResult(testCaseId.DisplayName, new[] { 1.0, 2.0, 3.0 });
-        var aggregatedAfter = CreateAggregatedResult(testCaseId.DisplayName, new[] { 2.0, 3.0, 4.0 });
+        var aggregatedBefore = CreateAggregatedResult(testCaseId.DisplayName, [1.0, 2.0, 3.0]);
+        var aggregatedAfter = CreateAggregatedResult(testCaseId.DisplayName, [2.0, 3.0, 4.0]);
 
         _mockAggregator.Aggregate(Arg.Any<TestCaseId>(), Arg.Any<IReadOnlyCollection<PerformanceRunResult>>())
             .Returns(aggregatedBefore, aggregatedAfter);
@@ -306,24 +306,24 @@ public class StatisticalTestComputerTests
 
         var beforeResults = new List<PerformanceRunResult>
         {
-            CreatePerformanceRunResult(testCaseId1.DisplayName, new[] { 1.0, 2.0, 3.0, 4.0, 5.0 }),
-            CreatePerformanceRunResult(testCaseId2.DisplayName, new[] { 2.0, 3.0, 4.0, 5.0, 6.0 }),
-            CreatePerformanceRunResult(testCaseId3.DisplayName, new[] { 3.0, 4.0, 5.0, 6.0, 7.0 })
+            CreatePerformanceRunResult(testCaseId1.DisplayName, [1.0, 2.0, 3.0, 4.0, 5.0]),
+            CreatePerformanceRunResult(testCaseId2.DisplayName, [2.0, 3.0, 4.0, 5.0, 6.0]),
+            CreatePerformanceRunResult(testCaseId3.DisplayName, [3.0, 4.0, 5.0, 6.0, 7.0])
         };
 
         var afterResults = new List<PerformanceRunResult>
         {
-            CreatePerformanceRunResult(testCaseId1.DisplayName, new[] { 3.0, 4.0, 5.0, 6.0, 7.0 }),
-            CreatePerformanceRunResult(testCaseId2.DisplayName, new[] { 4.0, 5.0, 6.0, 7.0, 8.0 }),
-            CreatePerformanceRunResult(testCaseId3.DisplayName, new[] { 5.0, 6.0, 7.0, 8.0, 9.0 })
+            CreatePerformanceRunResult(testCaseId1.DisplayName, [3.0, 4.0, 5.0, 6.0, 7.0]),
+            CreatePerformanceRunResult(testCaseId2.DisplayName, [4.0, 5.0, 6.0, 7.0, 8.0]),
+            CreatePerformanceRunResult(testCaseId3.DisplayName, [5.0, 6.0, 7.0, 8.0, 9.0])
         };
 
-        var beforeData = new TestData(new[] { testCaseId1.DisplayName, testCaseId2.DisplayName, testCaseId3.DisplayName }, beforeResults);
-        var afterData = new TestData(new[] { testCaseId1.DisplayName, testCaseId2.DisplayName, testCaseId3.DisplayName }, afterResults);
+        var beforeData = new TestData([testCaseId1.DisplayName, testCaseId2.DisplayName, testCaseId3.DisplayName], beforeResults);
+        var afterData = new TestData([testCaseId1.DisplayName, testCaseId2.DisplayName, testCaseId3.DisplayName], afterResults);
         var settings = new SailDiffSettings(disableOrdering: false);
 
         _mockAggregator.Aggregate(Arg.Any<TestCaseId>(), Arg.Any<IReadOnlyCollection<PerformanceRunResult>>())
-            .Returns(x => CreateAggregatedResult(((TestCaseId)x[0]).DisplayName, new[] { 1.0, 2.0, 3.0, 4.0, 5.0 }));
+            .Returns(x => CreateAggregatedResult(((TestCaseId)x[0]).DisplayName, [1.0, 2.0, 3.0, 4.0, 5.0]));
 
         var testResult = CreateTestResultWithOutlierAnalysis();
         _mockStatisticalTestExecutor.ExecuteStatisticalTest(Arg.Any<double[]>(), Arg.Any<double[]>(), Arg.Any<SailDiffSettings>())
@@ -349,22 +349,22 @@ public class StatisticalTestComputerTests
 
         var beforeResults = new List<PerformanceRunResult>
         {
-            CreatePerformanceRunResult(testCaseId1.DisplayName, new[] { 1.0, 2.0, 3.0, 4.0, 5.0 }),
-            CreatePerformanceRunResult(testCaseId2.DisplayName, new[] { 2.0, 3.0, 4.0, 5.0, 6.0 })
+            CreatePerformanceRunResult(testCaseId1.DisplayName, [1.0, 2.0, 3.0, 4.0, 5.0]),
+            CreatePerformanceRunResult(testCaseId2.DisplayName, [2.0, 3.0, 4.0, 5.0, 6.0])
         };
 
         var afterResults = new List<PerformanceRunResult>
         {
-            CreatePerformanceRunResult(testCaseId1.DisplayName, new[] { 3.0, 4.0, 5.0, 6.0, 7.0 }),
-            CreatePerformanceRunResult(testCaseId2.DisplayName, new[] { 4.0, 5.0, 6.0, 7.0, 8.0 })
+            CreatePerformanceRunResult(testCaseId1.DisplayName, [3.0, 4.0, 5.0, 6.0, 7.0]),
+            CreatePerformanceRunResult(testCaseId2.DisplayName, [4.0, 5.0, 6.0, 7.0, 8.0])
         };
 
-        var beforeData = new TestData(new[] { testCaseId1.DisplayName, testCaseId2.DisplayName }, beforeResults);
-        var afterData = new TestData(new[] { testCaseId1.DisplayName, testCaseId2.DisplayName }, afterResults);
+        var beforeData = new TestData([testCaseId1.DisplayName, testCaseId2.DisplayName], beforeResults);
+        var afterData = new TestData([testCaseId1.DisplayName, testCaseId2.DisplayName], afterResults);
         var settings = new SailDiffSettings(disableOrdering: true);
 
         _mockAggregator.Aggregate(Arg.Any<TestCaseId>(), Arg.Any<IReadOnlyCollection<PerformanceRunResult>>())
-            .Returns(x => CreateAggregatedResult(((TestCaseId)x[0]).DisplayName, new[] { 1.0, 2.0, 3.0, 4.0, 5.0 }));
+            .Returns(x => CreateAggregatedResult(((TestCaseId)x[0]).DisplayName, [1.0, 2.0, 3.0, 4.0, 5.0]));
 
         var testResult = CreateTestResultWithOutlierAnalysis();
         _mockStatisticalTestExecutor.ExecuteStatisticalTest(Arg.Any<double[]>(), Arg.Any<double[]>(), Arg.Any<SailDiffSettings>())
@@ -386,17 +386,17 @@ public class StatisticalTestComputerTests
         var testCaseIds = Enumerable.Range(1, 65).Select(i => new TestCaseId($"TestClass.Method{i:D3}")).ToList();
 
         var beforeResults = testCaseIds.Select(id =>
-            CreatePerformanceRunResult(id.DisplayName, new[] { 1.0, 2.0, 3.0, 4.0, 5.0 })).ToList();
+            CreatePerformanceRunResult(id.DisplayName, [1.0, 2.0, 3.0, 4.0, 5.0])).ToList();
 
         var afterResults = testCaseIds.Select(id =>
-            CreatePerformanceRunResult(id.DisplayName, new[] { 2.0, 3.0, 4.0, 5.0, 6.0 })).ToList();
+            CreatePerformanceRunResult(id.DisplayName, [2.0, 3.0, 4.0, 5.0, 6.0])).ToList();
 
         var beforeData = new TestData(testCaseIds.Select(x => x.DisplayName), beforeResults);
         var afterData = new TestData(testCaseIds.Select(x => x.DisplayName), afterResults);
         var settings = new SailDiffSettings(disableOrdering: false);
 
         _mockAggregator.Aggregate(Arg.Any<TestCaseId>(), Arg.Any<IReadOnlyCollection<PerformanceRunResult>>())
-            .Returns(x => CreateAggregatedResult(((TestCaseId)x[0]).DisplayName, new[] { 1.0, 2.0, 3.0, 4.0, 5.0 }));
+            .Returns(x => CreateAggregatedResult(((TestCaseId)x[0]).DisplayName, [1.0, 2.0, 3.0, 4.0, 5.0]));
 
         var testResult = CreateTestResultWithOutlierAnalysis();
         _mockStatisticalTestExecutor.ExecuteStatisticalTest(Arg.Any<double[]>(), Arg.Any<double[]>(), Arg.Any<SailDiffSettings>())
@@ -421,17 +421,17 @@ public class StatisticalTestComputerTests
         var testCaseIds = Enumerable.Range(1, 10).Select(i => new TestCaseId($"TestClass.Method{i}")).ToList();
 
         var beforeResults = testCaseIds.Select(id =>
-            CreatePerformanceRunResult(id.DisplayName, new[] { 1.0, 2.0, 3.0, 4.0, 5.0 })).ToList();
+            CreatePerformanceRunResult(id.DisplayName, [1.0, 2.0, 3.0, 4.0, 5.0])).ToList();
 
         var afterResults = testCaseIds.Select(id =>
-            CreatePerformanceRunResult(id.DisplayName, new[] { 2.0, 3.0, 4.0, 5.0, 6.0 })).ToList();
+            CreatePerformanceRunResult(id.DisplayName, [2.0, 3.0, 4.0, 5.0, 6.0])).ToList();
 
         var beforeData = new TestData(testCaseIds.Select(x => x.DisplayName), beforeResults);
         var afterData = new TestData(testCaseIds.Select(x => x.DisplayName), afterResults);
         var settings = new SailDiffSettings(maxDegreeOfParallelism: 2);
 
         _mockAggregator.Aggregate(Arg.Any<TestCaseId>(), Arg.Any<IReadOnlyCollection<PerformanceRunResult>>())
-            .Returns(x => CreateAggregatedResult(((TestCaseId)x[0]).DisplayName, new[] { 1.0, 2.0, 3.0, 4.0, 5.0 }));
+            .Returns(x => CreateAggregatedResult(((TestCaseId)x[0]).DisplayName, [1.0, 2.0, 3.0, 4.0, 5.0]));
 
         var testResult = CreateTestResultWithOutlierAnalysis();
         _mockStatisticalTestExecutor.ExecuteStatisticalTest(Arg.Any<double[]>(), Arg.Any<double[]>(), Arg.Any<SailDiffSettings>())
@@ -454,8 +454,8 @@ public class StatisticalTestComputerTests
     {
         // Arrange
         var testCaseId = new TestCaseId("TestClass.TestMethod");
-        var beforeData = CreateTestData(testCaseId.DisplayName, new[] { 1.0, 2.0, 3.0, 4.0, 5.0 });
-        var afterData = new TestData(Array.Empty<string>(), Array.Empty<PerformanceRunResult>());
+        var beforeData = CreateTestData(testCaseId.DisplayName, [1.0, 2.0, 3.0, 4.0, 5.0]);
+        var afterData = new TestData([], []);
         var settings = new SailDiffSettings();
 
         // Act
@@ -473,22 +473,22 @@ public class StatisticalTestComputerTests
 
         var beforeResults = new List<PerformanceRunResult>
         {
-            CreatePerformanceRunResult(testCaseId.DisplayName, new[] { 1.0, 2.0, 3.0, 4.0, 5.0 }),
-            CreatePerformanceRunResult(testCaseId.DisplayName, new[] { 1.5, 2.5, 3.5, 4.5, 5.5 })
+            CreatePerformanceRunResult(testCaseId.DisplayName, [1.0, 2.0, 3.0, 4.0, 5.0]),
+            CreatePerformanceRunResult(testCaseId.DisplayName, [1.5, 2.5, 3.5, 4.5, 5.5])
         };
 
         var afterResults = new List<PerformanceRunResult>
         {
-            CreatePerformanceRunResult(testCaseId.DisplayName, new[] { 2.0, 3.0, 4.0, 5.0, 6.0 }),
-            CreatePerformanceRunResult(testCaseId.DisplayName, new[] { 2.5, 3.5, 4.5, 5.5, 6.5 })
+            CreatePerformanceRunResult(testCaseId.DisplayName, [2.0, 3.0, 4.0, 5.0, 6.0]),
+            CreatePerformanceRunResult(testCaseId.DisplayName, [2.5, 3.5, 4.5, 5.5, 6.5])
         };
 
-        var beforeData = new TestData(new[] { testCaseId.DisplayName, testCaseId.DisplayName }, beforeResults);
-        var afterData = new TestData(new[] { testCaseId.DisplayName, testCaseId.DisplayName }, afterResults);
+        var beforeData = new TestData([testCaseId.DisplayName, testCaseId.DisplayName], beforeResults);
+        var afterData = new TestData([testCaseId.DisplayName, testCaseId.DisplayName], afterResults);
         var settings = new SailDiffSettings();
 
         _mockAggregator.Aggregate(Arg.Any<TestCaseId>(), Arg.Any<IReadOnlyCollection<PerformanceRunResult>>())
-            .Returns(x => CreateAggregatedResult(((TestCaseId)x[0]).DisplayName, new[] { 1.0, 2.0, 3.0, 4.0, 5.0 }));
+            .Returns(x => CreateAggregatedResult(((TestCaseId)x[0]).DisplayName, [1.0, 2.0, 3.0, 4.0, 5.0]));
 
         var testResult = CreateTestResultWithOutlierAnalysis();
         _mockStatisticalTestExecutor.ExecuteStatisticalTest(Arg.Any<double[]>(), Arg.Any<double[]>(), Arg.Any<SailDiffSettings>())
@@ -508,7 +508,7 @@ public class StatisticalTestComputerTests
     private TestData CreateTestData(string displayName, double[] rawData)
     {
         var performanceResult = CreatePerformanceRunResult(displayName, rawData);
-        return new TestData(new[] { displayName }, new[] { performanceResult });
+        return new TestData([displayName], [performanceResult]);
     }
 
     private PerformanceRunResult CreatePerformanceRunResult(string displayName, double[] rawData)
@@ -523,8 +523,8 @@ public class StatisticalTestComputerTests
             .WithVariance(1.0)
             .WithNumWarmupIterations(3)
             .WithDataWithOutliersRemoved(rawData)
-            .WithUpperOutliers(Array.Empty<double>())
-            .WithLowerOutliers(Array.Empty<double>())
+            .WithUpperOutliers([])
+            .WithLowerOutliers([])
             .WithTotalNumOutliers(0)
             .Build();
     }
@@ -533,7 +533,7 @@ public class StatisticalTestComputerTests
     {
         var testCaseId = new TestCaseId(displayName);
         var performanceResult = CreatePerformanceRunResult(displayName, rawData);
-        return AggregatedPerformanceResult.Aggregate(testCaseId, new[] { performanceResult });
+        return AggregatedPerformanceResult.Aggregate(testCaseId, [performanceResult]);
     }
 
     private TestResultWithOutlierAnalysis CreateTestResultWithOutlierAnalysis()
@@ -548,8 +548,8 @@ public class StatisticalTestComputerTests
             changeDescription: "NoChange",
             sampleSizeBefore: 5,
             sampleSizeAfter: 5,
-            rawDataBefore: new[] { 1.0, 2.0, 3.0, 4.0, 5.0 },
-            rawDataAfter: new[] { 2.0, 3.0, 4.0, 5.0, 6.0 },
+            rawDataBefore: [1.0, 2.0, 3.0, 4.0, 5.0],
+            rawDataAfter: [2.0, 3.0, 4.0, 5.0, 6.0],
             additionalResults: new Dictionary<string, object>());
 
         return new TestResultWithOutlierAnalysis(statisticalResult, null, null);

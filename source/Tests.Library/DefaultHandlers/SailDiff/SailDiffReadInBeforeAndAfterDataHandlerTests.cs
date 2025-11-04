@@ -254,13 +254,13 @@ public class SailDiffReadInBeforeAndAfterDataHandlerTests
             .Build();
 
         var executionSummaryTracking = ClassExecutionSummaryTrackingFormatBuilder.Create()
-            .WithCompiledTestCaseResult(new List<CompiledTestCaseResultTrackingFormat> { compiledTestCase })
+            .WithCompiledTestCaseResult([compiledTestCase])
             .Build();
 
         var executionSummary = executionSummaryTracking.ToSummaryFormat();
 
         var dataList = new TrackingFileDataList();
-        dataList.Add(new List<IClassExecutionSummary> { executionSummary });
+        dataList.Add([executionSummary]);
         return dataList;
     }
 }

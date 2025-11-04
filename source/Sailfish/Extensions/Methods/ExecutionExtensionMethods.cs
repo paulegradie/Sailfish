@@ -2,6 +2,8 @@
 using System.Linq;
 using System.Reflection;
 using Sailfish.Attributes;
+using Sailfish.Analysis;
+
 using Sailfish.Execution;
 
 namespace Sailfish.Extensions.Methods;
@@ -58,7 +60,39 @@ internal static class ExecutionExtensionMethods
             settings.MaximumSampleSize = globalMaximumSampleSize.Value;
         }
 
+
         return settings;
     }
+
+
+        public static IExecutionSettings RetrieveExecutionTestSettings(
+            this Type type,
+            int? globalSampleSize,
+            int? globalNumWarmupIterations,
+            bool? globalUseAdaptiveSampling,
+            double? globalTargetCoefficientOfVariation,
+            int? globalMaximumSampleSize,
+            bool? globalUseConfigurableOutlierDetection,
+            OutlierStrategy? globalOutlierStrategy)
+        {
+            var settings = type.RetrieveExecutionTestSettings(
+                globalSampleSize,
+                globalNumWarmupIterations,
+                globalUseAdaptiveSampling,
+                globalTargetCoefficientOfVariation,
+                globalMaximumSampleSize);
+
+            if (globalUseConfigurableOutlierDetection.HasValue)
+            {
+                settings.UseConfigurableOutlierDetection = globalUseConfigurableOutlierDetection.Value;
+            }
+
+            if (globalOutlierStrategy.HasValue)
+            {
+                settings.OutlierStrategy = globalOutlierStrategy.Value;
+            }
+
+            return settings;
+        }
 
 }

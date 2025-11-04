@@ -23,8 +23,8 @@ public class WhenUsingPropertySetGenerator
         var testType = typeof(TestClass);
         var variableProperties = new Dictionary<string, VariableAttributeMeta>
         {
-            ["Property1"] = new VariableAttributeMeta(new object[] { 1, 2 }, false),
-            ["Property2"] = new VariableAttributeMeta(new object[] { "a", "b" }, false)
+            ["Property1"] = new VariableAttributeMeta([1, 2], false),
+            ["Property2"] = new VariableAttributeMeta(["a", "b"], false)
         };
 
         var expectedPropertySets = new List<PropertySet>
@@ -107,8 +107,8 @@ public class WhenUsingPropertySetGenerator
         var testType = typeof(TestClass);
         var variableProperties = new Dictionary<string, VariableAttributeMeta>
         {
-            ["Property1"] = new VariableAttributeMeta(new object[] { 1, 2 }, false),
-            ["Property2"] = new VariableAttributeMeta(new object[] { "a", "b" }, false)
+            ["Property1"] = new VariableAttributeMeta([1, 2], false),
+            ["Property2"] = new VariableAttributeMeta(["a", "b"], false)
         };
 
         iterationVariableRetriever.RetrieveIterationVariables(testType).Returns(variableProperties);

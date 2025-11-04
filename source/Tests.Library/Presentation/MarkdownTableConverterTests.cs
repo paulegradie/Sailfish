@@ -343,12 +343,12 @@ public class MarkdownTableConverterTests
             5.2,
             27.04,
             99.8,
-            new double[] { 95.0, 100.0, 105.0, 98.0, 102.0, 99.0, 101.0, 97.0, 103.0, 100.0 },
+            [95.0, 100.0, 105.0, 98.0, 102.0, 99.0, 101.0, 97.0, 103.0, 100.0],
             10,
             2,
-            new double[] { 95.0, 100.0, 105.0, 98.0, 102.0, 99.0, 101.0, 97.0, 103.0, 100.0 },
-            new double[0],
-            new double[0],
+            [95.0, 100.0, 105.0, 98.0, 102.0, 99.0, 101.0, 97.0, 103.0, 100.0],
+            [],
+            [],
             0);
     }
 
@@ -476,7 +476,7 @@ public class MarkdownTableConverterTests
                 sampleSize: 10,
                 confidenceLevel: 0.95,
                 marginOfError: 0.004, // Should format to 0.0040 via adaptive formatting
-                confidenceIntervals: Array.Empty<ConfidenceIntervalResult>());
+                confidenceIntervals: []);
 
             var summary = CreateExecutionSummaryFromResults("TestClass1", compiled);
             var executionSummaries = new List<IClassExecutionSummary> { summary };
@@ -575,12 +575,12 @@ public class MarkdownTableConverterTests
                 stdDev,
                 variance,
                 median,
-                Array.Empty<double>(),
+                [],
                 sampleSize,
                 0,
-                new double[] { 1.0, 2.0 },
-                Array.Empty<double>(),
-                Array.Empty<double>(),
+                [1.0, 2.0],
+                [],
+                [],
                 0,
                 0.0,
                 confidenceLevel,

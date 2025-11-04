@@ -145,7 +145,7 @@ public class SailDiffGetLatestExecutionSummariesHandlerTests
         var secondSummary = secondSummaryTracking.ToSummaryFormat();
 
         var executionSummaries = new TrackingFileDataList();
-        executionSummaries.Add(new List<IClassExecutionSummary> { firstSummary, secondSummary });
+        executionSummaries.Add([firstSummary, secondSummary]);
 
         mockRunSettings.GetRunSettingsTrackingDirectoryPath().Returns(trackingDirectory);
         mockTrackingFileDirectoryReader
@@ -253,7 +253,7 @@ public class SailDiffGetLatestExecutionSummariesHandlerTests
         var executionSummaryTracking = ClassExecutionSummaryTrackingFormatBuilder.Create().Build();
         var executionSummary = executionSummaryTracking.ToSummaryFormat();
         var dataList = new TrackingFileDataList();
-        dataList.Add(new List<IClassExecutionSummary> { executionSummary });
+        dataList.Add([executionSummary]);
         return dataList;
     }
 

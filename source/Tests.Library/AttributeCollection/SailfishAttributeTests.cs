@@ -228,7 +228,7 @@ public class SailfishAttributeTests
     public void SailfishVariableAttributeSingleBoolValueShouldWork()
     {
         // Arrange & Act
-        var attr = new SailfishVariableAttribute(new bool[] { true });
+        var attr = new SailfishVariableAttribute([true]);
 
         // Assert
         attr.GetVariables().Cast<bool>().ToList().ShouldBeEquivalentTo(new List<bool> { true });

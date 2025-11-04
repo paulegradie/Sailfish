@@ -16,7 +16,7 @@ public class FormatExtensionMethodsTests
     public void ToSummaryFormat_ComputesConfidenceIntervals_AndMapsCoreFields()
     {
         // Arrange: tracking format with clean data (n=4) and stdDev=20 => SE=10
-        var testCaseId = new TestCaseId(new TestCaseName(new[] {"C", "M"}), new TestCaseVariables([]));
+        var testCaseId = new TestCaseId(new TestCaseName(["C", "M"]), new TestCaseVariables([]));
         var tracking = ClassExecutionSummaryTrackingFormatBuilder.Create()
             .WithExecutionSettings(b => b
                 .WithAsCsv(true)
@@ -36,7 +36,7 @@ public class FormatExtensionMethodsTests
                         .WithVariance(400.0)
                         .WithSampleSize(4)
                         .WithNumWarmupIterations(1)
-                        .WithDataWithOutliersRemoved(new[] {100.0, 100.0, 100.0, 100.0})
+                        .WithDataWithOutliersRemoved([100.0, 100.0, 100.0, 100.0])
                         .Build())
             )
             .Build();
@@ -81,29 +81,29 @@ public class FormatExtensionMethodsTests
         {
             DisableOverheadEstimation = true
         };
-        var testCaseId = new TestCaseId(new TestCaseName(new[] {"T", "Method"}), new TestCaseVariables([]));
+        var testCaseId = new TestCaseId(new TestCaseName(["T", "Method"]), new TestCaseVariables([]));
         var perf = new PerformanceRunResult(
             displayName: testCaseId.DisplayName,
             mean: 10,
             stdDev: 2,
             variance: 4,
             median: 10,
-            rawExecutionResults: new[] {10.0, 10.0},
+            rawExecutionResults: [10.0, 10.0],
             sampleSize: 11,
             numWarmupIterations: 7,
-            dataWithOutliersRemoved: new[] {10.0, 10.0},
-            upperOutliers: Array.Empty<double>(),
-            lowerOutliers: Array.Empty<double>(),
+            dataWithOutliersRemoved: [10.0, 10.0],
+            upperOutliers: [],
+            lowerOutliers: [],
             totalNumOutliers: 0,
             standardError: 0,
             confidenceLevel: 0.95,
             confidenceIntervalLower: 10,
             confidenceIntervalUpper: 10,
             marginOfError: 0,
-            confidenceIntervals: Array.Empty<ConfidenceIntervalResult>());
+            confidenceIntervals: []);
 
         var compiled = new CompiledTestCaseResult(testCaseId, groupingId: "GroupA", performanceRunResult: perf);
-        var summary = new ClassExecutionSummary(typeof(FormatExtensionMethodsTests), exec, new[] { compiled });
+        var summary = new ClassExecutionSummary(typeof(FormatExtensionMethodsTests), exec, [compiled]);
 
         // Act
         var tracking = summary.ToTrackingFormat();

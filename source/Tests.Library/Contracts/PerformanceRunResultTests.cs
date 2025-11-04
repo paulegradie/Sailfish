@@ -19,7 +19,7 @@ public class PerformanceRunResultTests
         var n = 1;
 
         // Act
-        var cis = PerformanceRunResult.ComputeConfidenceIntervals(mean, se, n, new[] {0.95, 0.99});
+        var cis = PerformanceRunResult.ComputeConfidenceIntervals(mean, se, n, [0.95, 0.99]);
 
         // Assert
         cis.Count.ShouldBe(2);
@@ -36,7 +36,7 @@ public class PerformanceRunResultTests
         var n = 10;
 
         // Act
-        var cis = PerformanceRunResult.ComputeConfidenceIntervals(mean, se, n, new[] {0.95, 0.99});
+        var cis = PerformanceRunResult.ComputeConfidenceIntervals(mean, se, n, [0.95, 0.99]);
 
         // Assert: 99% CI should have larger margin than 95%
         var ci95 = cis.Single(ci => Math.Abs(ci.ConfidenceLevel - 0.95) < 1e-9);
@@ -57,7 +57,7 @@ public class PerformanceRunResultTests
         timer.ExecutionIterationPerformances.Add(new IterationPerformance(DateTimeOffset.Now, DateTimeOffset.Now, oneSecondTicks));
 
         var exec = new ExecutionSettings(asCsv: false, asConsole: true, asMarkdown: false, sampleSize: 2, numWarmupIterations: 0);
-        var testCaseId = new TestCaseId(new TestCaseName(new[] {"C","M"}), new TestCaseVariables([]));
+        var testCaseId = new TestCaseId(new TestCaseName(["C","M"]), new TestCaseVariables([]));
 
         // Act
         var perf = PerformanceRunResult.ConvertFromPerfTimer(testCaseId, timer, exec);

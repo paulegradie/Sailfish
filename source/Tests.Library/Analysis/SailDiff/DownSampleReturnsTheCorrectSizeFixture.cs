@@ -13,10 +13,10 @@ public class DownSampleFixture : IAsyncLifetime
 
     public Task InitializeAsync()
     {
-        data = new[]
-        {
+        data =
+        [
             100.0, 100, 100, 100, 99, 100, 100, 100, 100, 100, 100, 102, 200, 43, 12, 12, 200, 43, 12, 12
-        };
+        ];
         return Task.CompletedTask;
     }
 

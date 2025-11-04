@@ -29,7 +29,7 @@ public class WhenUsingSailfishVariablesClass
         // Check simple attribute variable
         var simpleVar = variables["SimpleValue"];
         simpleVar.OrderedVariables.Count().ShouldBe(3);
-        simpleVar.OrderedVariables.ShouldBe(new object[] { 1, 2, 3 });
+        simpleVar.OrderedVariables.ShouldBe([1, 2, 3]);
 
         // Check class-based variable
         var classVar = variables["ClassBasedValue"];
@@ -162,11 +162,11 @@ public class TestDataProvider : ISailfishVariablesProvider<TestData>
 {
     public IEnumerable<TestData> Variables()
     {
-        return new[]
-        {
+        return
+        [
             new TestData("Config1", 10),
             new TestData("Config2", 20)
-        };
+        ];
     }
 
     [Fact]

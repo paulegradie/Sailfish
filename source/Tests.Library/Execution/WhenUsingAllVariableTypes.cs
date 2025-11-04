@@ -32,7 +32,7 @@ public class WhenUsingAllVariableTypes
         // Check simple variable
         var simpleVar = variables["SimpleValue"];
         simpleVar.OrderedVariables.Count().ShouldBe(3);
-        simpleVar.OrderedVariables.ShouldBe(new object[] { 1, 2, 3 });
+        simpleVar.OrderedVariables.ShouldBe([1, 2, 3]);
 
         // Check typed variable
         var typedVar = variables["TypedValue"];
@@ -42,7 +42,7 @@ public class WhenUsingAllVariableTypes
         // Check range variable
         var rangeVar = variables["RangeValue"];
         rangeVar.OrderedVariables.Count().ShouldBe(3);
-        rangeVar.OrderedVariables.ShouldBe(new object[] { 10, 12, 14 });
+        rangeVar.OrderedVariables.ShouldBe([10, 12, 14]);
     }
 
     [Fact]
@@ -133,11 +133,11 @@ public class TestTypedVariableProvider : ISailfishVariablesProvider<TestTypedVar
 {
     public IEnumerable<TestTypedVariable> Variables()
     {
-        return new[]
-        {
+        return
+        [
             new TestTypedVariable("Config1", 10),
             new TestTypedVariable("Config2", 20)
-        };
+        ];
     }
 }
 
