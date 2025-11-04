@@ -51,7 +51,7 @@ public class SailDiffConsoleWindowMessageFormatterTests
         var sailDiffResult = new SailDiffResult(testCaseId, testResult);
         var sailDiffResults = new[] { sailDiffResult };
 
-        var testIds = new TestIds(new[] { "Before.Test1" }, new[] { "After.Test1" });
+        var testIds = new TestIds(["Before.Test1"], ["After.Test1"]);
         var settings = new SailDiffSettings(alpha: 0.001, testType: TestType.TwoSampleWilcoxonSignedRankTest);
         var cancellationToken = CancellationToken.None;
 
@@ -112,7 +112,7 @@ public class SailDiffConsoleWindowMessageFormatterTests
             .Returns(expectedMarkdown);
 
         var emptyResults = new List<SailDiffResult>();
-        var testIds = new TestIds(new[] { "Before.Test1" }, new[] { "After.Test1" });
+        var testIds = new TestIds(["Before.Test1"], ["After.Test1"]);
         var settings = new SailDiffSettings(alpha: 0.05, testType: TestType.Test);
 
         // Act
@@ -131,8 +131,8 @@ public class SailDiffConsoleWindowMessageFormatterTests
         // Arrange
         var sailDiffResults = CreateSampleSailDiffResults();
         var testIds = new TestIds(
-            new[] { "Before.Test1", "Before.Test2", "Before.Test3" },
-            new[] { "After.Test1", "After.Test2" });
+            ["Before.Test1", "Before.Test2", "Before.Test3"],
+            ["After.Test1", "After.Test2"]);
         var settings = CreateSampleSailDiffSettings();
 
         // Act
@@ -233,8 +233,8 @@ public class SailDiffConsoleWindowMessageFormatterTests
         // Arrange
         var sailDiffResults = CreateSampleSailDiffResults();
         var testIds = new TestIds(
-            new[] { "Test.With.Dots", "Test(WithParens)", "Test<WithGenerics>" },
-            new[] { "Test_With_Underscores", "Test-With-Dashes" });
+            ["Test.With.Dots", "Test(WithParens)", "Test<WithGenerics>"],
+            ["Test_With_Underscores", "Test-With-Dashes"]);
         var settings = CreateSampleSailDiffSettings();
 
         // Act
@@ -250,7 +250,7 @@ public class SailDiffConsoleWindowMessageFormatterTests
     {
         // Arrange
         var sailDiffResults = CreateSampleSailDiffResults();
-        var testIds = new TestIds(new[] { "BeforeTest" }, new[] { "AfterTest" });
+        var testIds = new TestIds(["BeforeTest"], ["AfterTest"]);
         var settings = new SailDiffSettings(alpha: 0.001, testType: TestType.Test);
 
         
@@ -274,12 +274,12 @@ public class SailDiffConsoleWindowMessageFormatterTests
         var testCaseId = new TestCaseId("SampleTest.Method()");
         var statisticalTestResult = CreateStatisticalTestResult();
         var testResult = new TestResultWithOutlierAnalysis(statisticalTestResult, null, null);
-        return new List<SailDiffResult> { new(testCaseId, testResult) };
+        return [new(testCaseId, testResult)];
     }
 
     private static TestIds CreateSampleTestIds()
     {
-        return new TestIds(new[] { "Before.Test1" }, new[] { "After.Test1" });
+        return new TestIds(["Before.Test1"], ["After.Test1"]);
     }
 
     private static SailDiffSettings CreateSampleSailDiffSettings()
@@ -337,7 +337,7 @@ public class SailDiffConsoleWindowMessageFormatterTests
         var sailDiffResults = CreateSampleSailDiffResults();
         var longBeforeId = "Very.Long.Namespace.With.Many.Parts.TestClass.VeryLongMethodNameThatExceedsNormalLength()";
         var longAfterId = "Another.Very.Long.Namespace.With.Many.Parts.TestClass.AnotherVeryLongMethodName()";
-        var testIds = new TestIds(new[] { longBeforeId }, new[] { longAfterId });
+        var testIds = new TestIds([longBeforeId], [longAfterId]);
         var settings = CreateSampleSailDiffSettings();
 
         // Act
@@ -392,7 +392,7 @@ public class SailDiffConsoleWindowMessageFormatterTests
     {
         // Arrange
         var sailDiffResults = CreateSampleSailDiffResults();
-        var testIds = new TestIds(new[] { "SingleBeforeTest" }, new[] { "SingleAfterTest" });
+        var testIds = new TestIds(["SingleBeforeTest"], ["SingleAfterTest"]);
         var settings = CreateSampleSailDiffSettings();
 
         // Act
@@ -451,8 +451,8 @@ public class SailDiffConsoleWindowMessageFormatterTests
             changeDescription: SailfishChangeDirection.NoChange,
             sampleSizeBefore: 100,
             sampleSizeAfter: 100,
-            rawDataBefore: new[] { 8.0, 9.0, 10.0, 11.0, 12.0 },
-            rawDataAfter: new[] { 10.0, 11.0, 12.0, 13.0, 14.0 },
+            rawDataBefore: [8.0, 9.0, 10.0, 11.0, 12.0],
+            rawDataAfter: [10.0, 11.0, 12.0, 13.0, 14.0],
             additionalResults: new Dictionary<string, object>());
     }
 }

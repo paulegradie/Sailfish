@@ -255,11 +255,11 @@ public class ExecutionSummaryWriterTests
 
     private List<IClassExecutionSummary> CreateMockExecutionSummaries()
     {
-        return new List<IClassExecutionSummary>
-        {
+        return
+        [
             CreateMockExecutionSummary("TestClass1"),
             CreateMockExecutionSummary("TestClass2")
-        };
+        ];
     }
 
     private IClassExecutionSummary CreateMockExecutionSummary(string className)

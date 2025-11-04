@@ -70,7 +70,7 @@ public class ScaleFishConvergenceTests
         var constructor = typeof(TComplexityFunction)
             .GetConstructors(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic)
             .Single();
-        var instance = constructor.Invoke(new object[] { }) as ScaleFishModelFunction;
+        var instance = constructor.Invoke([]) as ScaleFishModelFunction;
         instance.ShouldNotBeNull();
 
         const double scale = 1;

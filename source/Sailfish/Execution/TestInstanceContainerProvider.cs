@@ -57,7 +57,9 @@ internal class TestInstanceContainerProvider : ITestInstanceContainerProvider
                 runSettings.NumWarmupIterationsOverride,
                 runSettings.GlobalUseAdaptiveSampling,
                 runSettings.GlobalTargetCoefficientOfVariation,
-                runSettings.GlobalMaximumSampleSize);
+                runSettings.GlobalMaximumSampleSize,
+                runSettings.GlobalUseConfigurableOutlierDetection,
+                runSettings.GlobalOutlierStrategy);
             yield return TestInstanceContainer.CreateTestInstance(instance, Method, [], [], disabled, executionSettings);
         }
         else
@@ -76,7 +78,9 @@ internal class TestInstanceContainerProvider : ITestInstanceContainerProvider
                     runSettings.NumWarmupIterationsOverride,
                     runSettings.GlobalUseAdaptiveSampling,
                     runSettings.GlobalTargetCoefficientOfVariation,
-                    runSettings.GlobalMaximumSampleSize);
+                    runSettings.GlobalMaximumSampleSize,
+                    runSettings.GlobalUseConfigurableOutlierDetection,
+                    runSettings.GlobalOutlierStrategy);
                 yield return TestInstanceContainer.CreateTestInstance(instance, Method, propertyNames, variableValues, disabled, executionSettings);
             }
         }

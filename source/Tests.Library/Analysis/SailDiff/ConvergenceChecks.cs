@@ -88,7 +88,7 @@ public class ConvergenceChecks
         var bf = GenerateRandomNormalDistribution(30, 10, 10);
         var af = GenerateRandomNormalDistribution(30, 20, 10);
 
-        List<TestResultWithOutlierAnalysis> results = new();
+        List<TestResultWithOutlierAnalysis> results = [];
 
         var test = new MannWhitneyWilcoxonTest(new TestPreprocessor(new SailfishOutlierDetector()));
         for (var i = 0; i < 20; i++) results.Add(test.ExecuteTest(bf, af, new SailDiffSettings(0.0001, 4, false, TestType.WilcoxonRankSumTest)));

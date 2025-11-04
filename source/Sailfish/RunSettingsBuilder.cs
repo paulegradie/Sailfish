@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using Sailfish.Analysis.SailDiff;
+using Sailfish.Analysis;
+
 using Sailfish.Contracts.Public.Models;
 using Sailfish.Extensions.Types;
 using Sailfish.Logging;
@@ -35,6 +37,10 @@ public class RunSettingsBuilder
 
     // Global adaptive sampling overrides
     private bool? globalUseAdaptiveSampling;
+    // Global outlier handling overrides
+    private bool? globalUseConfigurableOutlierDetection;
+    private OutlierStrategy? globalOutlierStrategy;
+
     private double? globalTargetCoefficientOfVariation;
     private int? globalMaximumSampleSize;
 
@@ -232,6 +238,17 @@ public class RunSettingsBuilder
         return this;
     }
 
+        /// <summary>
+        ///     Configures global outlier handling for the current run. When set, these values override per-class defaults.
+        /// </summary>
+        public RunSettingsBuilder WithGlobalOutlierHandling(bool useConfigurable, OutlierStrategy strategy)
+        {
+            globalUseConfigurableOutlierDetection = useConfigurable;
+            globalOutlierStrategy = strategy;
+            return this;
+        }
+
+
 
     public RunSettingsBuilder WithGlobalNumWarmupIterations(int numIterations)
     {
@@ -265,6 +282,8 @@ public class RunSettingsBuilder
             setDebug,
             globalUseAdaptiveSampling,
             globalTargetCoefficientOfVariation,
-            globalMaximumSampleSize);
+            globalMaximumSampleSize,
+            globalUseConfigurableOutlierDetection,
+            globalOutlierStrategy);
     }
 }

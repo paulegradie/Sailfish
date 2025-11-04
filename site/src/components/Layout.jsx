@@ -30,6 +30,7 @@ const navigation = [
             { title: 'Test Dependencies', href: '/docs/1/test-dependencies' },
             { title: 'Adaptive Sampling', href: '/docs/1/adaptive-sampling' },
             { title: 'Confidence Intervals', href: '/docs/1/confidence-intervals' },
+            { title: 'Outlier Handling', href: '/docs/1/outlier-handling' },
         ],
     },
     {

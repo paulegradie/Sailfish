@@ -77,11 +77,11 @@ public class TestCasePropertyClonerVariablesExclusionTests
     {
         public System.Collections.Generic.IEnumerable<SizeVariantData> Variables()
         {
-            return new[]
-            {
+            return
+            [
                 new SizeVariantData("Small", 1),
                 new SizeVariantData("Large", 2)
-            };
+            ];
         }
     }
 }

@@ -105,14 +105,14 @@ public class ScaleFishObservationTests
     public void PropertiesAreInitOnly()
     {
         // Arrange
-        var observation = new ScaleFishObservation("Method", "Property", new ComplexityMeasurement[] { new(1, 100) });
+        var observation = new ScaleFishObservation("Method", "Property", [new(1, 100)]);
 
         // Act & Assert - This test verifies that properties can be set during initialization
-        var newObservation = new ScaleFishObservation("Method", "Property", new ComplexityMeasurement[] { new(1, 100) })
+        var newObservation = new ScaleFishObservation("Method", "Property", [new(1, 100)])
         {
             MethodName = "NewMethod",
             PropertyName = "NewProperty",
-            ComplexityMeasurements = new ComplexityMeasurement[] { new(2, 200) }
+            ComplexityMeasurements = [new(2, 200)]
         };
 
         newObservation.MethodName.ShouldBe("NewMethod");

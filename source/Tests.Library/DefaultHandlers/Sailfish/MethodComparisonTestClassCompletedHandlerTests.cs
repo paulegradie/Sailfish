@@ -231,7 +231,7 @@ public class MethodComparisonTestClassCompletedHandlerTests
     {
         var classExecutionSummary = ClassExecutionSummaryTrackingFormatBuilder.Create()
             .WithTestClass(typeof(TestClass))
-            .WithCompiledTestCaseResult(new List<CompiledTestCaseResultTrackingFormat>())
+            .WithCompiledTestCaseResult([])
             .Build();
 
         return new TestClassCompletedNotification(

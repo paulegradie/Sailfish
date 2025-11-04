@@ -78,10 +78,9 @@ public class TestCaseEnumerationTests
         var mediator = Substitute.For<IMediator>();
         var settings = Substitute.For<IRunSettings>();
 
-        var runSettings = new RunSettings(new[]
-            {
+        var runSettings = new RunSettings([
                 "MinimalTest"
-            },
+            ],
             ".",
             true,
             true,

@@ -33,7 +33,7 @@ public class DoubleArrayCsvConverterTests
         var value = "1.1,2.2,3.3";
         var result = (double[]?)converter.ConvertFromString(value, row: null!, memberMapData: null!);
         result.ShouldNotBeNull();
-        result!.ShouldBe(new[] { 1.1, 2.2, 3.3 });
+        result!.ShouldBe([1.1, 2.2, 3.3]);
     }
 
     [Fact]

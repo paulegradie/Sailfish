@@ -1,5 +1,7 @@
 using System;
 using Sailfish.Attributes;
+using Sailfish.Analysis;
+
 using Sailfish.Extensions.Methods;
 using Shouldly;
 using Xunit;
@@ -288,4 +290,27 @@ public class ExecutionExtensionMethodsTests
 
 
     }
+
+    [Fact]
+    public void RetrieveExecutionTestSettings_WithGlobalOutlierOverrides_ShouldOverrideSettings()
+    {
+        // Arrange
+        var type = typeof(TestClassWithNoAttributes);
+
+        // Act
+        var result = type.RetrieveExecutionTestSettings(
+            globalSampleSize: null,
+            globalNumWarmupIterations: null,
+            globalUseAdaptiveSampling: null,
+            globalTargetCoefficientOfVariation: null,
+            globalMaximumSampleSize: null,
+            globalUseConfigurableOutlierDetection: true,
+            globalOutlierStrategy: OutlierStrategy.RemoveUpper);
+
+        // Assert
+        result.ShouldNotBeNull();
+        result.UseConfigurableOutlierDetection.ShouldBeTrue();
+        result.OutlierStrategy.ShouldBe(OutlierStrategy.RemoveUpper);
+    }
+
 }

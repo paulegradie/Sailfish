@@ -409,8 +409,8 @@ public class ImpactSummaryFormatterTests
                 changeDescription: meanAfter > meanBefore ? "Regressed" : "Improved",
                 sampleSizeBefore: 100,
                 sampleSizeAfter: 100,
-                rawDataBefore: new[] { meanBefore - 0.5, meanBefore, meanBefore + 0.5 },
-                rawDataAfter: new[] { meanAfter - 0.5, meanAfter, meanAfter + 0.5 },
+                rawDataBefore: [meanBefore - 0.5, meanBefore, meanBefore + 0.5],
+                rawDataAfter: [meanAfter - 0.5, meanAfter, meanAfter + 0.5],
                 additionalResults: new Dictionary<string, object>()),
             Metadata = new ComparisonMetadata
             {

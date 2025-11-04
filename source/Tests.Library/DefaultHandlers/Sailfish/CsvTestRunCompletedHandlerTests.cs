@@ -298,7 +298,7 @@ public class CsvTestRunCompletedHandlerTests
                     .Build()))
             .Build();
 
-        return new TestRunCompletedNotification(new[] { classExecutionSummary });
+        return new TestRunCompletedNotification([classExecutionSummary]);
     }
 
     private TestRunCompletedNotification CreateTestNotificationWithoutWriteToCsv()
@@ -315,7 +315,7 @@ public class CsvTestRunCompletedHandlerTests
                     .Build()))
             .Build();
 
-        return new TestRunCompletedNotification(new[] { classExecutionSummary });
+        return new TestRunCompletedNotification([classExecutionSummary]);
     }
 
     private TestRunCompletedNotification CreateTestNotificationWithComparison()
@@ -340,7 +340,7 @@ public class CsvTestRunCompletedHandlerTests
                     .Build()))
             .Build();
 
-        return new TestRunCompletedNotification(new[] { classExecutionSummary });
+        return new TestRunCompletedNotification([classExecutionSummary]);
     }
 
     private TestRunCompletedNotification CreateTestNotificationWithEmptyResults()
@@ -349,7 +349,7 @@ public class CsvTestRunCompletedHandlerTests
             .WithTestClass(typeof(TestClassWithWriteToCsv))
             .Build();
 
-        return new TestRunCompletedNotification(new[] { classExecutionSummary });
+        return new TestRunCompletedNotification([classExecutionSummary]);
     }
 
     private TestRunCompletedNotification CreateTestNotificationWithMultipleClassesWithWriteToCsv()
@@ -378,7 +378,7 @@ public class CsvTestRunCompletedHandlerTests
                     .Build()))
             .Build();
 
-        return new TestRunCompletedNotification(new[] { summary1, summary2 });
+        return new TestRunCompletedNotification([summary1, summary2]);
     }
 
     // Test classes for attribute testing

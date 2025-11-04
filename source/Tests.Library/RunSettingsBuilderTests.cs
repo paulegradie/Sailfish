@@ -1,10 +1,8 @@
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using NSubstitute;
 using Sailfish;
 using Sailfish.Analysis.SailDiff;
-using Sailfish.Contracts.Public.Models;
 using Sailfish.Extensions.Types;
 using Sailfish.Logging;
 using Sailfish.Presentation;
@@ -19,7 +17,7 @@ public class RunSettingsBuilderTests
     public void CreateBuilder_ReturnsNewInstance()
     {
         var builder = RunSettingsBuilder.CreateBuilder();
-        
+
         builder.ShouldNotBeNull();
         builder.ShouldBeOfType<RunSettingsBuilder>();
     }
@@ -29,7 +27,7 @@ public class RunSettingsBuilderTests
     {
         var builder1 = RunSettingsBuilder.CreateBuilder();
         var builder2 = RunSettingsBuilder.CreateBuilder();
-        
+
         builder1.ShouldNotBeSameAs(builder2);
     }
 
@@ -37,9 +35,9 @@ public class RunSettingsBuilderTests
     public void WithMinimumLogLevel_SetsLogLevel_ReturnsThis()
     {
         var builder = RunSettingsBuilder.CreateBuilder();
-        
+
         var result = builder.WithMinimumLogLevel(LogLevel.Error);
-        
+
         result.ShouldBeSameAs(builder);
         var settings = builder.Build();
         settings.MinimumLogLevel.ShouldBe(LogLevel.Error);
@@ -50,9 +48,9 @@ public class RunSettingsBuilderTests
     {
         var builder = RunSettingsBuilder.CreateBuilder();
         var mockLogger = Substitute.For<ILogger>();
-        
+
         var result = builder.WithCustomLogger(mockLogger);
-        
+
         result.ShouldBeSameAs(builder);
         var settings = builder.Build();
         settings.CustomLogger.ShouldBeSameAs(mockLogger);
@@ -62,9 +60,9 @@ public class RunSettingsBuilderTests
     public void DisableLogging_SetsDisableLoggingTrue_ReturnsThis()
     {
         var builder = RunSettingsBuilder.CreateBuilder();
-        
+
         var result = builder.DisableLogging();
-        
+
         result.ShouldBeSameAs(builder);
         var settings = builder.Build();
         settings.DisableLogging.ShouldBeTrue();
@@ -74,9 +72,9 @@ public class RunSettingsBuilderTests
     public void DisableStreamingTrackingUpdates_SetsStreamTrackingUpdatesFalse_ReturnsThis()
     {
         var builder = RunSettingsBuilder.CreateBuilder();
-        
+
         var result = builder.DisableStreamingTrackingUpdates();
-        
+
         result.ShouldBeSameAs(builder);
         var settings = builder.Build();
         settings.StreamTrackingUpdates.ShouldBeFalse();
@@ -86,9 +84,9 @@ public class RunSettingsBuilderTests
     public void WithTestNames_SingleName_AddsToCollection_ReturnsThis()
     {
         var builder = RunSettingsBuilder.CreateBuilder();
-        
+
         var result = builder.WithTestNames("TestClass1");
-        
+
         result.ShouldBeSameAs(builder);
         var settings = builder.Build();
         settings.TestNames.ShouldContain("TestClass1");
@@ -99,9 +97,9 @@ public class RunSettingsBuilderTests
     public void WithTestNames_MultipleNames_AddsAllToCollection_ReturnsThis()
     {
         var builder = RunSettingsBuilder.CreateBuilder();
-        
+
         var result = builder.WithTestNames("TestClass1", "TestClass2", "TestClass3");
-        
+
         result.ShouldBeSameAs(builder);
         var settings = builder.Build();
         settings.TestNames.ShouldContain("TestClass1");
@@ -114,10 +112,10 @@ public class RunSettingsBuilderTests
     public void WithTestNames_MultipleCalls_AccumulatesNames_ReturnsThis()
     {
         var builder = RunSettingsBuilder.CreateBuilder();
-        
+
         builder.WithTestNames("TestClass1")
                .WithTestNames("TestClass2", "TestClass3");
-        
+
         var settings = builder.Build();
         settings.TestNames.Count().ShouldBe(3);
         settings.TestNames.ShouldContain("TestClass1");
@@ -130,9 +128,9 @@ public class RunSettingsBuilderTests
     {
         var builder = RunSettingsBuilder.CreateBuilder();
         var customDir = "custom_output";
-        
+
         var result = builder.WithLocalOutputDirectory(customDir);
-        
+
         result.ShouldBeSameAs(builder);
         var settings = builder.Build();
         settings.LocalOutputDirectory.ShouldBe(customDir);
@@ -142,9 +140,9 @@ public class RunSettingsBuilderTests
     public void CreateTrackingFiles_True_SetsCreateTrackingFilesTrue_ReturnsThis()
     {
         var builder = RunSettingsBuilder.CreateBuilder();
-        
+
         var result = builder.CreateTrackingFiles(true);
-        
+
         result.ShouldBeSameAs(builder);
         var settings = builder.Build();
         settings.CreateTrackingFiles.ShouldBeTrue();
@@ -154,9 +152,9 @@ public class RunSettingsBuilderTests
     public void CreateTrackingFiles_False_SetsCreateTrackingFilesFalse_ReturnsThis()
     {
         var builder = RunSettingsBuilder.CreateBuilder();
-        
+
         var result = builder.CreateTrackingFiles(false);
-        
+
         result.ShouldBeSameAs(builder);
         var settings = builder.Build();
         settings.CreateTrackingFiles.ShouldBeFalse();
@@ -166,9 +164,9 @@ public class RunSettingsBuilderTests
     public void CreateTrackingFiles_DefaultParameter_SetsCreateTrackingFilesTrue_ReturnsThis()
     {
         var builder = RunSettingsBuilder.CreateBuilder();
-        
+
         var result = builder.CreateTrackingFiles();
-        
+
         result.ShouldBeSameAs(builder);
         var settings = builder.Build();
         settings.CreateTrackingFiles.ShouldBeTrue();
@@ -178,9 +176,9 @@ public class RunSettingsBuilderTests
     public void WithSailDiff_NoParameters_EnablesSailDiff_ReturnsThis()
     {
         var builder = RunSettingsBuilder.CreateBuilder();
-        
+
         var result = builder.WithSailDiff();
-        
+
         result.ShouldBeSameAs(builder);
         var settings = builder.Build();
         settings.RunSailDiff.ShouldBeTrue();
@@ -192,9 +190,9 @@ public class RunSettingsBuilderTests
     {
         var builder = RunSettingsBuilder.CreateBuilder();
         var customSettings = new SailDiffSettings(alpha: 0.05, round: 5);
-        
+
         var result = builder.WithSailDiff(customSettings);
-        
+
         result.ShouldBeSameAs(builder);
         var settings = builder.Build();
         settings.RunSailDiff.ShouldBeTrue();
@@ -205,9 +203,9 @@ public class RunSettingsBuilderTests
     public void WithScaleFish_EnablesScaleFish_ReturnsThis()
     {
         var builder = RunSettingsBuilder.CreateBuilder();
-        
+
         var result = builder.WithScaleFish();
-        
+
         result.ShouldBeSameAs(builder);
         var settings = builder.Build();
         settings.RunScaleFish.ShouldBeTrue();
@@ -217,9 +215,9 @@ public class RunSettingsBuilderTests
     public void TestsFromAssembliesContaining_SingleType_AddsToCollection_ReturnsThis()
     {
         var builder = RunSettingsBuilder.CreateBuilder();
-        
+
         var result = builder.TestsFromAssembliesContaining(typeof(string));
-        
+
         result.ShouldBeSameAs(builder);
         var settings = builder.Build();
         settings.TestLocationAnchors.ShouldContain(typeof(string));
@@ -229,9 +227,9 @@ public class RunSettingsBuilderTests
     public void TestsFromAssembliesContaining_MultipleTypes_AddsAllToCollection_ReturnsThis()
     {
         var builder = RunSettingsBuilder.CreateBuilder();
-        
+
         var result = builder.TestsFromAssembliesContaining(typeof(string), typeof(int), typeof(DateTime));
-        
+
         result.ShouldBeSameAs(builder);
         var settings = builder.Build();
         settings.TestLocationAnchors.ShouldContain(typeof(string));
@@ -243,9 +241,9 @@ public class RunSettingsBuilderTests
     public void ProvidersFromAssembliesContaining_SingleType_AddsToCollection_ReturnsThis()
     {
         var builder = RunSettingsBuilder.CreateBuilder();
-        
+
         var result = builder.ProvidersFromAssembliesContaining(typeof(string));
-        
+
         result.ShouldBeSameAs(builder);
         var settings = builder.Build();
         settings.RegistrationProviderAnchors.ShouldContain(typeof(string));
@@ -255,9 +253,9 @@ public class RunSettingsBuilderTests
     public void WithTag_AddsTagToCollection_ReturnsThis()
     {
         var builder = RunSettingsBuilder.CreateBuilder();
-        
+
         var result = builder.WithTag("environment", "test");
-        
+
         result.ShouldBeSameAs(builder);
         var settings = builder.Build();
         settings.Tags["environment"].ShouldBe("test");
@@ -267,10 +265,10 @@ public class RunSettingsBuilderTests
     public void WithTag_MultipleCalls_AccumulatesTags_ReturnsThis()
     {
         var builder = RunSettingsBuilder.CreateBuilder();
-        
+
         builder.WithTag("environment", "test")
                .WithTag("version", "1.0");
-        
+
         var settings = builder.Build();
         settings.Tags["environment"].ShouldBe("test");
         settings.Tags["version"].ShouldBe("1.0");
@@ -281,9 +279,9 @@ public class RunSettingsBuilderTests
     public void WithArg_AddsArgToCollection_ReturnsThis()
     {
         var builder = RunSettingsBuilder.CreateBuilder();
-        
+
         var result = builder.WithArg("config", "debug");
-        
+
         result.ShouldBeSameAs(builder);
         var settings = builder.Build();
         settings.Args["config"].ShouldBe("debug");
@@ -294,9 +292,9 @@ public class RunSettingsBuilderTests
     {
         var builder = RunSettingsBuilder.CreateBuilder();
         var args = new OrderedDictionary { { "arg1", "value1" }, { "arg2", "value2" } };
-        
+
         var result = builder.WithArgs(args);
-        
+
         result.ShouldBeSameAs(builder);
         var settings = builder.Build();
         settings.Args["arg1"].ShouldBe("value1");
@@ -309,9 +307,9 @@ public class RunSettingsBuilderTests
     {
         var builder = RunSettingsBuilder.CreateBuilder();
         var trackingFile = "tracking1.json";
-        
+
         var result = builder.WithProvidedBeforeTrackingFile(trackingFile);
-        
+
         result.ShouldBeSameAs(builder);
         var settings = builder.Build();
         settings.ProvidedBeforeTrackingFiles.ShouldContain(trackingFile);
@@ -322,9 +320,9 @@ public class RunSettingsBuilderTests
     {
         var builder = RunSettingsBuilder.CreateBuilder();
         var trackingFiles = new[] { "tracking1.json", "tracking2.json" };
-        
+
         var result = builder.WithProvidedBeforeTrackingFiles(trackingFiles);
-        
+
         result.ShouldBeSameAs(builder);
         var settings = builder.Build();
         settings.ProvidedBeforeTrackingFiles.ShouldContain("tracking1.json");
@@ -336,9 +334,9 @@ public class RunSettingsBuilderTests
     {
         var builder = RunSettingsBuilder.CreateBuilder();
         var timestamp = new DateTime(2023, 1, 1, 12, 0, 0);
-        
+
         var result = builder.WithTimeStamp(timestamp);
-        
+
         result.ShouldBeSameAs(builder);
         var settings = builder.Build();
         settings.TimeStamp.ShouldBe(timestamp);
@@ -348,9 +346,9 @@ public class RunSettingsBuilderTests
     public void InDebugMode_True_SetsDebugTrue_ReturnsThis()
     {
         var builder = RunSettingsBuilder.CreateBuilder();
-        
+
         var result = builder.InDebugMode(true);
-        
+
         result.ShouldBeSameAs(builder);
         var settings = builder.Build();
         settings.Debug.ShouldBeTrue();
@@ -360,9 +358,9 @@ public class RunSettingsBuilderTests
     public void InDebugMode_False_SetsDebugFalse_ReturnsThis()
     {
         var builder = RunSettingsBuilder.CreateBuilder();
-        
+
         var result = builder.InDebugMode(false);
-        
+
         result.ShouldBeSameAs(builder);
         var settings = builder.Build();
         settings.Debug.ShouldBeFalse();
@@ -372,9 +370,9 @@ public class RunSettingsBuilderTests
     public void InDebugMode_DefaultParameter_SetsDebugFalse_ReturnsThis()
     {
         var builder = RunSettingsBuilder.CreateBuilder();
-        
+
         var result = builder.InDebugMode();
-        
+
         result.ShouldBeSameAs(builder);
         var settings = builder.Build();
         settings.Debug.ShouldBeFalse();
@@ -384,9 +382,9 @@ public class RunSettingsBuilderTests
     public void DisableOverheadEstimation_SetsDisableOverheadEstimationTrue_ReturnsThis()
     {
         var builder = RunSettingsBuilder.CreateBuilder();
-        
+
         var result = builder.DisableOverheadEstimation();
-        
+
         result.ShouldBeSameAs(builder);
         var settings = builder.Build();
         settings.DisableOverheadEstimation.ShouldBeTrue();
@@ -396,9 +394,9 @@ public class RunSettingsBuilderTests
     public void WithAnalysisDisabledGlobally_SetsDisableAnalysisGloballyTrue_ReturnsThis()
     {
         var builder = RunSettingsBuilder.CreateBuilder();
-        
+
         var result = builder.WithAnalysisDisabledGlobally();
-        
+
         result.ShouldBeSameAs(builder);
         var settings = builder.Build();
         settings.DisableAnalysisGlobally.ShouldBeTrue();
@@ -408,9 +406,9 @@ public class RunSettingsBuilderTests
     public void WithGlobalSampleSize_PositiveValue_SetsSampleSize_ReturnsThis()
     {
         var builder = RunSettingsBuilder.CreateBuilder();
-        
+
         var result = builder.WithGlobalSampleSize(50);
-        
+
         result.ShouldBeSameAs(builder);
         var settings = builder.Build();
         settings.SampleSizeOverride.ShouldBe(50);
@@ -420,9 +418,9 @@ public class RunSettingsBuilderTests
     public void WithGlobalSampleSize_ZeroValue_SetsToOne_ReturnsThis()
     {
         var builder = RunSettingsBuilder.CreateBuilder();
-        
+
         var result = builder.WithGlobalSampleSize(0);
-        
+
         result.ShouldBeSameAs(builder);
         var settings = builder.Build();
         settings.SampleSizeOverride.ShouldBe(1);
@@ -432,9 +430,9 @@ public class RunSettingsBuilderTests
     public void WithGlobalSampleSize_NegativeValue_SetsToOne_ReturnsThis()
     {
         var builder = RunSettingsBuilder.CreateBuilder();
-        
+
         var result = builder.WithGlobalSampleSize(-5);
-        
+
         result.ShouldBeSameAs(builder);
         var settings = builder.Build();
         settings.SampleSizeOverride.ShouldBe(1);
@@ -444,9 +442,9 @@ public class RunSettingsBuilderTests
     public void WithGlobalNumWarmupIterations_PositiveValue_SetsWarmupIterations_ReturnsThis()
     {
         var builder = RunSettingsBuilder.CreateBuilder();
-        
+
         var result = builder.WithGlobalNumWarmupIterations(10);
-        
+
         result.ShouldBeSameAs(builder);
         var settings = builder.Build();
         settings.NumWarmupIterationsOverride.ShouldBe(10);
@@ -456,9 +454,9 @@ public class RunSettingsBuilderTests
     public void WithGlobalNumWarmupIterations_ZeroValue_SetsToOne_ReturnsThis()
     {
         var builder = RunSettingsBuilder.CreateBuilder();
-        
+
         var result = builder.WithGlobalNumWarmupIterations(0);
-        
+
         result.ShouldBeSameAs(builder);
         var settings = builder.Build();
         settings.NumWarmupIterationsOverride.ShouldBe(1);
@@ -590,6 +588,7 @@ public class RunSettingsBuilderTests
             .WithAnalysisDisabledGlobally()
             .WithGlobalSampleSize(100)
             .WithGlobalNumWarmupIterations(5)
+            .WithGlobalOutlierHandling(true, Sailfish.Analysis.OutlierStrategy.RemoveUpper)
             .Build();
 
         settings.MinimumLogLevel.ShouldBe(LogLevel.Warning);
@@ -614,6 +613,9 @@ public class RunSettingsBuilderTests
         settings.DisableAnalysisGlobally.ShouldBeTrue();
         settings.SampleSizeOverride.ShouldBe(100);
         settings.NumWarmupIterationsOverride.ShouldBe(5);
+        settings.GlobalUseConfigurableOutlierDetection.ShouldBe(true);
+        settings.GlobalOutlierStrategy.ShouldBe(Sailfish.Analysis.OutlierStrategy.RemoveUpper);
+
     }
 
     [Fact]
@@ -729,4 +731,43 @@ public class RunSettingsBuilderTests
         var settings = builder.Build();
         settings.ProvidedBeforeTrackingFiles.ShouldBeEmpty();
     }
+
+
+    [Fact]
+    public void WithGlobalOutlierHandling_SetsOverrides_ReturnsThis()
+    {
+        var builder = RunSettingsBuilder.CreateBuilder();
+
+        var result = builder.WithGlobalOutlierHandling(true, Sailfish.Analysis.OutlierStrategy.RemoveUpper);
+
+        result.ShouldBeSameAs(builder);
+        var settings = builder.Build();
+        settings.GlobalUseConfigurableOutlierDetection.ShouldBe(true);
+        settings.GlobalOutlierStrategy.ShouldBe(Sailfish.Analysis.OutlierStrategy.RemoveUpper);
+    }
+
+    [Fact]
+    public void WithGlobalOutlierHandling_DisableConfigurable_SetsFalseAndStrategy()
+    {
+        var builder = RunSettingsBuilder.CreateBuilder();
+
+        builder.WithGlobalOutlierHandling(false, Sailfish.Analysis.OutlierStrategy.DontRemove);
+
+        var settings = builder.Build();
+        settings.GlobalUseConfigurableOutlierDetection.ShouldBe(false);
+        settings.GlobalOutlierStrategy.ShouldBe(Sailfish.Analysis.OutlierStrategy.DontRemove);
+    }
+
+    [Fact]
+    public void Build_WithoutGlobalOutlierHandling_LeavesOverridesNull()
+    {
+        var builder = RunSettingsBuilder.CreateBuilder();
+
+        var settings = builder.Build();
+
+        settings.GlobalUseConfigurableOutlierDetection.ShouldBeNull();
+        settings.GlobalOutlierStrategy.ShouldBeNull();
+    }
+
+
 }

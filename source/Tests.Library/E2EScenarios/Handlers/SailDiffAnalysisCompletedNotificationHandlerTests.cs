@@ -28,7 +28,7 @@ public class SailDiffAnalysisCompleteNotificationHandlerTests : IDisposable
 
     public SailDiffAnalysisCompleteNotificationHandlerTests()
     {
-        _tempDirectories = new List<string>();
+        _tempDirectories = [];
     }
 
     [Fact]

@@ -1,11 +1,9 @@
 using System;
 using System.Collections.Generic;
-
 using System.Threading;
 using System.Threading.Tasks;
 using NSubstitute;
 using Sailfish.Analysis;
-using Sailfish.Contracts.Public.Models;
 using Sailfish.Execution;
 using Sailfish.Logging;
 using Shouldly;
@@ -178,6 +176,39 @@ public class IterationStrategyTests
         mockLogger.Received().Log(LogLevel.Information, "      ---- iteration {CurrentIteration} (minimum phase)", 3);
     }
 
+    [Fact]
+    public async Task AdaptiveIterationStrategy_AdaptiveTuning_LogsCategoryAndUsesTunedThresholds()
+    {
+        // Arrange: small min to get pilot samples quickly; default targetCV=0.05, MaxCI=0.20
+        var strategy = new AdaptiveIterationStrategy(mockLogger, mockConvergenceDetector);
+        var container = CreateTestInstanceContainer();
+        var settings = CreateExecutionSettings(useAdaptive: true, minSampleSize: 3, maxSampleSize: 10, targetCV: 0.05);
+
+        // Make the first convergence check report converged to keep test fast
+        mockConvergenceDetector
+            .CheckConvergence(Arg.Any<IReadOnlyList<double>>(), Arg.Any<double>(), Arg.Any<double>(), Arg.Any<double>(), Arg.Any<int>())
+            .Returns(ci => new ConvergenceResult { HasConverged = true, CurrentCoefficientOfVariation = 0.02, Reason = "Converged" });
+
+        // Act
+        var result = await strategy.ExecuteIterations(container, settings, CancellationToken.None);
+
+        // Assert: we should log the adaptive tuning message at least once
+        mockLogger.Received().Log(
+            LogLevel.Information,
+            "      ---- Adaptive tuning: {Category} -> TargetCV={TargetCV:F3}, MaxCI={MaxCI:F3}",
+            Arg.Is<object[]>(vals => vals.Length == 3 && vals[0] is AdaptiveSamplingConfig.SpeedCategory));
+
+        // And the tuned thresholds should be used in the immediate convergence check
+        mockConvergenceDetector.Received().CheckConvergence(
+            Arg.Any<IReadOnlyList<double>>(),
+            Arg.Is<double>(cv => Math.Abs(cv - 0.05) < 1e-6), // CV remains at least the user's 0.05
+            Arg.Is<double>(ci => Math.Abs(ci - 0.12) < 1e-2), // UltraFast => 0.12 should be used (<= default 0.20)
+            Arg.Is<double>(cl => Math.Abs(cl - 0.95) < 1e-6),
+            Arg.Any<int>());
+
+        result.IsSuccess.ShouldBeTrue();
+    }
+
     #endregion
 
     #region Helper Methods
@@ -190,8 +221,8 @@ public class IterationStrategyTests
         return TestInstanceContainer.CreateTestInstance(
             new object(),
             typeof(object).GetMethod("ToString")!,
-            Array.Empty<string>(),
-            Array.Empty<object>(),
+            [],
+            [],
             false,
             mockExecutionSettings);
     }

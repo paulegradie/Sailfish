@@ -346,7 +346,7 @@ public class SailfishOutlierDetectorTests
         }
         
         // Add some outliers
-        data.AddRange(new[] { 200.0, 300.0, 1.0, 2.0 });
+        data.AddRange([200.0, 300.0, 1.0, 2.0]);
 
         // Act
         var result = outlierDetector.DetectOutliers(data);

@@ -294,8 +294,8 @@ public class DetailedTableFormatterTests
                 changeDescription: "Regressed",
                 sampleSizeBefore: 100,
                 sampleSizeAfter: 100,
-                rawDataBefore: new[] { 1.0, 1.5, 2.0 },
-                rawDataAfter: new[] { 2.0, 2.5, 3.0 },
+                rawDataBefore: [1.0, 1.5, 2.0],
+                rawDataAfter: [2.0, 2.5, 3.0],
                 additionalResults: new Dictionary<string, object>()),
             Metadata = new ComparisonMetadata
             {

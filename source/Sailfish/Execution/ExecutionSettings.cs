@@ -1,6 +1,6 @@
 ﻿using System.Text.Json.Serialization;
 using System.Collections.Generic;
-
+using Sailfish.Analysis;
 
 namespace Sailfish.Execution;
 
@@ -26,6 +26,14 @@ public interface IExecutionSettings
     // NEW: Enhanced Statistical Configuration
     public double MaxConfidenceIntervalWidth { get; set; }
     public bool UseRelativeConfidenceInterval { get; set; }
+
+    	// New: Preferred outlier handling strategy (optional)
+    	public OutlierStrategy OutlierStrategy { get; set; }
+
+        // Opt-in to settings-driven outlier handling; false preserves legacy RemoveAll behavior
+        public bool UseConfigurableOutlierDetection { get; set; }
+
+
 }
 
 public class ExecutionSettings : IExecutionSettings
@@ -64,4 +72,12 @@ public class ExecutionSettings : IExecutionSettings
 
     public double MaxConfidenceIntervalWidth { get; set; } = 0.20; // 20% relative CI width
     public bool UseRelativeConfidenceInterval { get; set; } = true;
+
+    	// New: Outlier strategy preference for configurable detection (not yet consumed by defaults)
+    	public OutlierStrategy OutlierStrategy { get; set; } = OutlierStrategy.RemoveUpper;
+
+        // Default false to preserve legacy behavior (RemoveAll via SailfishOutlierDetector)
+        public bool UseConfigurableOutlierDetection { get; set; } = false;
+
+
 }

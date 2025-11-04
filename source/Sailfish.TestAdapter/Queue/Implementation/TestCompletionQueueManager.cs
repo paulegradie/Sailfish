@@ -7,6 +7,7 @@ using Sailfish.TestAdapter.Queue.Configuration;
 using Sailfish.TestAdapter.Queue.Contracts;
 using Sailfish.TestAdapter.Queue.Implementation;
 using Sailfish.TestAdapter.Queue.Processors;
+using Sailfish.TestAdapter.Queue.Processors.MethodComparison;
 
 namespace Sailfish.TestAdapter.Queue.Implementation;
 

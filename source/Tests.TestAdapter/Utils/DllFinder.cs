@@ -11,7 +11,7 @@ public static class DllFinder
     public static string FindThisProjectsDllRecursively()
     {
         var projFile = DirectoryRecursion.RecurseUpwardsUntilFileIsFound(".csproj", Directory.GetFiles(".").First(), 5);
-        var dllName = projFile.Name.Replace("csproj", "dll");
+        var dllName = projFile.Name.Replace(".csproj", ".dll");
         var allDlls = DirectoryRecursion.FindAllFilesRecursively(projFile, dllName, Substitute.For<IMessageLogger>(),
             path => !path.Contains($"{Path.DirectorySeparatorChar}obj{Path.DirectorySeparatorChar}"));
 
@@ -21,7 +21,8 @@ public static class DllFinder
                 x.Contains(Path.Join("bin", "Debug",
                     "net8.0"))); // if this throws - check that you've removed non-target directories in your bin directory or that you've changed the target framework
 #else
-        return allDlls.Single(x => x.Contains(Path.Join("bin", "net8.0", "Release")));
+        // Release build output path order is bin/Release/<tfm>
+        return allDlls.Single(x => x.Contains(Path.Join("bin", "Release", "net8.0")));
 #endif
     }
 }

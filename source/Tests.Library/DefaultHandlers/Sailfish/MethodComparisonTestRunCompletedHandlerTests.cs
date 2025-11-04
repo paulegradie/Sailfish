@@ -286,7 +286,7 @@ public class MethodComparisonTestRunCompletedHandlerTests
                     .Build()))
             .Build();
 
-        return new TestRunCompletedNotification(new[] { classExecutionSummary });
+        return new TestRunCompletedNotification([classExecutionSummary]);
     }
 
     private TestRunCompletedNotification CreateTestNotificationWithoutWriteToMarkdown()
@@ -298,7 +298,7 @@ public class MethodComparisonTestRunCompletedHandlerTests
                 .WithPerformanceRunResult(PerformanceRunResultTrackingFormatBuilder.Create().Build()))
             .Build();
 
-        return new TestRunCompletedNotification(new[] { classExecutionSummary });
+        return new TestRunCompletedNotification([classExecutionSummary]);
     }
 
     private TestRunCompletedNotification CreateTestNotificationWithMultipleClasses()
@@ -317,7 +317,7 @@ public class MethodComparisonTestRunCompletedHandlerTests
                 .WithPerformanceRunResult(PerformanceRunResultTrackingFormatBuilder.Create().Build()))
             .Build();
 
-        return new TestRunCompletedNotification(new[] { summary1, summary2 });
+        return new TestRunCompletedNotification([summary1, summary2]);
     }
 
     private TestRunCompletedNotification CreateTestNotificationWithComparisonMethods()
@@ -340,7 +340,7 @@ public class MethodComparisonTestRunCompletedHandlerTests
                     .Build()))
             .Build();
 
-        return new TestRunCompletedNotification(new[] { classExecutionSummary });
+        return new TestRunCompletedNotification([classExecutionSummary]);
     }
 
     private TestRunCompletedNotification CreateTestNotificationWithNonComparisonMethods()
@@ -356,7 +356,7 @@ public class MethodComparisonTestRunCompletedHandlerTests
                     .Build()))
             .Build();
 
-        return new TestRunCompletedNotification(new[] { classExecutionSummary });
+        return new TestRunCompletedNotification([classExecutionSummary]);
     }
 
     private TestRunCompletedNotification CreateTestNotificationWithEmptyResults()
@@ -365,7 +365,7 @@ public class MethodComparisonTestRunCompletedHandlerTests
             .WithTestClass(typeof(TestClassWithWriteToMarkdown))
             .Build();
 
-        return new TestRunCompletedNotification(new[] { classExecutionSummary });
+        return new TestRunCompletedNotification([classExecutionSummary]);
     }
 
     private TestRunCompletedNotification CreateTestNotificationWithMultipleClassesWithWriteToMarkdown()
@@ -388,7 +388,7 @@ public class MethodComparisonTestRunCompletedHandlerTests
                     .Build()))
             .Build();
 
-        return new TestRunCompletedNotification(new[] { summary1, summary2 });
+        return new TestRunCompletedNotification([summary1, summary2]);
     }
 
     #endregion

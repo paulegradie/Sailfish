@@ -206,8 +206,8 @@ public class TestCaseIteratorTests
         return TestInstanceContainer.CreateTestInstance(
             testInstance,
             method,
-            Array.Empty<string>(),
-            Array.Empty<object>(),
+            [],
+            [],
             false,
             executionSettings);
     }

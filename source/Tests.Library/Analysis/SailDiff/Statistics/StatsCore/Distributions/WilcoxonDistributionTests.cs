@@ -41,8 +41,8 @@ public class WilcoxonDistributionTests
     public void Exact_ShouldReturnConstructorValue()
     {
         // Arrange & Act
-        var exactDist = new WilcoxonDistribution(new[] { 1.0, 2.0, 3.0 }, exact: true);
-        var approxDist = new WilcoxonDistribution(new[] { 1.0, 2.0, 3.0 }, exact: false);
+        var exactDist = new WilcoxonDistribution([1.0, 2.0, 3.0], exact: true);
+        var approxDist = new WilcoxonDistribution([1.0, 2.0, 3.0], exact: false);
 
         // Assert
         exactDist.Exact.ShouldBeTrue();

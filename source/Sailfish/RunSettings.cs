@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.IO;
 using Sailfish.Analysis.SailDiff;
+using Sailfish.Analysis;
+
 using Sailfish.Contracts.Public.Models;
 using Sailfish.Extensions.Types;
 using Sailfish.Logging;
@@ -33,7 +35,9 @@ internal class RunSettings(
     bool debug = false,
     bool? globalUseAdaptiveSampling = null,
     double? globalTargetCoefficientOfVariation = null,
-    int? globalMaximumSampleSize = null) : IRunSettings
+    int? globalMaximumSampleSize = null,
+    bool? globalUseConfigurableOutlierDetection = null,
+    OutlierStrategy? globalOutlierStrategy = null) : IRunSettings
 {
     public IEnumerable<string> TestNames { get; } = testNames;
     public string LocalOutputDirectory { get; } = localOutputDirectory;
@@ -56,6 +60,9 @@ internal class RunSettings(
     public bool? GlobalUseAdaptiveSampling { get; } = globalUseAdaptiveSampling;
     public double? GlobalTargetCoefficientOfVariation { get; } = globalTargetCoefficientOfVariation;
     public int? GlobalMaximumSampleSize { get; } = globalMaximumSampleSize;
+    public bool? GlobalUseConfigurableOutlierDetection { get; } = globalUseConfigurableOutlierDetection;
+    public OutlierStrategy? GlobalOutlierStrategy { get; } = globalOutlierStrategy;
+
 
     public bool DisableLogging { get; } = disableLogging;
     public ILogger? CustomLogger { get; } = customLogger;

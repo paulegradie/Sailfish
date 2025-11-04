@@ -24,11 +24,13 @@ public class TrackingFileDataListExtensionMethodTests
                 new ClassExecutionSummary(
                     typeof(TrackingFileDataListExtensionMethodTests),
                     new ExecutionSettings(),
-                    new[] { new CompiledTestCaseResult(Some.SimpleTestCaseId(), Some.RandomString(), PerformanceRunResultBuilder.Create().Build()) }),
+                    [new CompiledTestCaseResult(Some.SimpleTestCaseId(), Some.RandomString(), PerformanceRunResultBuilder.Create().Build())
+                    ]),
                 new ClassExecutionSummary(
                     typeof(TrackingFileDataListExtensionMethodTests),
                     new ExecutionSettings(),
-                    new[] { new CompiledTestCaseResult(caseId, Some.RandomString(), PerformanceRunResultBuilder.Create().Build()) })
+                    [new CompiledTestCaseResult(caseId, Some.RandomString(), PerformanceRunResultBuilder.Create().Build())
+                    ])
             }
         };
         var result = summaries.FindFirstMatchingTestCaseId(caseId);

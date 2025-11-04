@@ -219,7 +219,7 @@ public class ComplexityComputerTests
         var executionSummary = CreateMockExecutionSummary();
         var executionSummaries = new List<IClassExecutionSummary> { executionSummary };
         
-        var observationSet = new ObservationSetFromSummaries("TestClass", new List<ScaleFishObservation>());
+        var observationSet = new ObservationSetFromSummaries("TestClass", []);
         mockObservationCompiler.CompileObservationSet(executionSummary).Returns(observationSet);
 
         // Act
