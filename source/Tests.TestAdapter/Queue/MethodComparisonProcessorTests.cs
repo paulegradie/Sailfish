@@ -972,6 +972,111 @@ public class MethodComparisonProcessorTests
 
     #endregion
 
+
+        #region Additional Coverage Tests (Markdown + Private Helpers)
+
+        // Nested class so reflection can resolve by simple name "TestClass1"
+        [Sailfish.Attributes.WriteToMarkdown]
+        private class TestClass1 { }
+
+        [Fact]
+        public async Task GenerateMarkdownIfRequested_WithWriteToMarkdown_PublishesMarkdownNotification()
+        {
+            // Arrange: two methods in same comparison group so batch is complete
+            var batch = CreateTestCaseBatchWithMetrics("GroupMarkdown", new[]
+            {
+                ("FastMethod", 50.0, 48.0),
+                ("SlowMethod", 200.0, 195.0)
+            });
+
+            // Processor computes this ID: "Comparison_{Class}_{Group}"
+            _batchingService.GetBatchAsync(
+                Arg.Is<string>(id => id == "Comparison_TestClass1_GroupMarkdown"),
+                Arg.Any<CancellationToken>())
+                .Returns(batch);
+
+            // Trigger processing for one of the messages in the batch
+            var trigger = CreateTestMessage("FastMethod", "GroupMarkdown");
+
+            // Act
+            await _processor.ProcessTestCompletion(trigger, CancellationToken.None);
+
+            // Assert: a markdown generation notification was published with expected content
+            await _mediator.Received().Publish(
+                Arg.Is<Sailfish.Contracts.Private.WriteMethodComparisonMarkdownNotification>(n =>
+                    n.TestClassName == "TestClass1" &&
+                    n.MarkdownContent.Contains("Method Comparison Results") &&
+                    n.MarkdownContent.Contains("Comparison Group: GroupMarkdown") &&
+                    n.MarkdownContent.Contains("Detailed Results")
+                ),
+                Arg.Any<CancellationToken>());
+        }
+
+        [Fact]
+        public void CreatePerformanceSummary_WithTwoMethods_ProducesFastestSlowestAndGap()
+        {
+            // Arrange
+            var methods = new List<TestCompletionQueueMessage>
+            {
+                CreateTestMessageWithMetrics("M1", "G", meanMs: 100, medianMs: 95, sampleSize: 10),
+                CreateTestMessageWithMetrics("M2", "G", meanMs: 200, medianMs: 190, sampleSize: 10)
+            };
+
+            // Use reflection to invoke the private instance method
+            var mi = typeof(MethodComparisonProcessor)
+                .GetMethod("CreatePerformanceSummary", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)!;
+            var summary = (string)mi.Invoke(_processor, new object[] { methods })!;
+
+            // Assert
+            summary.ShouldContain("Performance Summary");
+            summary.ShouldContain("**Fastest:** M1");
+            summary.ShouldContain("**Slowest:** M2");
+        }
+
+        [Fact]
+        public void HasComparisonMetadata_ReturnsTrue_WhenKeyPresent()
+        {
+            var msg = CreateTestMessage("Any", "GroupX");
+            var mi = typeof(MethodComparisonProcessor)
+                .GetMethod("HasComparisonMetadata", System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.NonPublic)!;
+            var result = (bool)mi.Invoke(null, new object[] { msg })!;
+            result.ShouldBeTrue();
+        }
+
+        [Fact]
+        public void HasComparisonMetadata_ReturnsFalse_WhenKeyMissing()
+        {
+            var msg = CreateTestMessage("Any", null);
+            var mi = typeof(MethodComparisonProcessor)
+                .GetMethod("HasComparisonMetadata", System.Reflection.BindingFlags.Static | System.Reflection.BindingFlags.NonPublic)!;
+            var result = (bool)mi.Invoke(null, new object[] { msg })!;
+            result.ShouldBeFalse();
+        }
+
+        [Fact]
+        public void CreateMethodComparisonMarkdown_NoGroups_ReturnsWarning()
+        {
+            // Arrange: batch without ComparisonGroup metadata
+            var noGroupMsg = CreateTestMessage("MethodA", null);
+            var batch = new TestCaseBatch
+            {
+                BatchId = "Comparison_TestClass1_None",
+                TestCases = new List<TestCompletionQueueMessage> { noGroupMsg },
+                Status = BatchStatus.Complete
+            };
+
+            var mi = typeof(MethodComparisonProcessor)
+                .GetMethod("CreateMethodComparisonMarkdown", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)!;
+
+            // Act
+            var markdown = (string)mi.Invoke(_processor, new object[] { batch, typeof(TestClass1) })!;
+
+            // Assert
+            markdown.ShouldContain("No comparison groups found");
+        }
+
+        #endregion
+
     #region Helper Methods
 
     private TestCompletionQueueMessage CreateTestMessage(string testCaseId, string? comparisonGroup)
