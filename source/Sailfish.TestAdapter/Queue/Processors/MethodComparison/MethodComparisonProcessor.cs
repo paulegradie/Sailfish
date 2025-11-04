@@ -97,6 +97,9 @@ internal class MethodComparisonProcessor : TestCompletionQueueProcessorBase
             // Always ensure we're using the comparison batching strategy for comparison methods
             await EnsureComparisonBatchingStrategy();
 
+            // Mark individual output suppressed before batch processing; batch may clear when publishing
+            message.Metadata["SuppressIndividualOutput"] = true;
+
             // Check if this completes a comparison batch
             await CheckAndProcessCompleteBatch(message, cancellationToken);
 
@@ -105,9 +108,6 @@ internal class MethodComparisonProcessor : TestCompletionQueueProcessorBase
             Logger.Log(LogLevel.Information,
                 "Comparison method '{0}' individual output suppressed - will be displayed after batch processing",
                 message.TestCaseId);
-
-            // Mark this message as processed but don't send framework notification yet
-            message.Metadata["SuppressIndividualOutput"] = true;
         }
         else
         {

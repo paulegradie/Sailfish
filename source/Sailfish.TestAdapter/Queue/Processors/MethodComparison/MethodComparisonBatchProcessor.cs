@@ -356,7 +356,8 @@ internal class MethodComparisonBatchProcessor
             original.ConfidenceLevel,
             original.ConfidenceIntervalLower,
             original.ConfidenceIntervalUpper,
-            original.MarginOfError);
+            original.MarginOfError,
+            original.ConfidenceIntervals);
     }
 
     /// <summary>

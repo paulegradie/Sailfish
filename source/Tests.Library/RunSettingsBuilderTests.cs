@@ -588,6 +588,7 @@ public class RunSettingsBuilderTests
             .WithAnalysisDisabledGlobally()
             .WithGlobalSampleSize(100)
             .WithGlobalNumWarmupIterations(5)
+            .WithGlobalOutlierHandling(true, Sailfish.Analysis.OutlierStrategy.RemoveUpper)
             .Build();
 
         settings.MinimumLogLevel.ShouldBe(LogLevel.Warning);
@@ -612,6 +613,9 @@ public class RunSettingsBuilderTests
         settings.DisableAnalysisGlobally.ShouldBeTrue();
         settings.SampleSizeOverride.ShouldBe(100);
         settings.NumWarmupIterationsOverride.ShouldBe(5);
+        settings.GlobalUseConfigurableOutlierDetection.ShouldBe(true);
+        settings.GlobalOutlierStrategy.ShouldBe(Sailfish.Analysis.OutlierStrategy.RemoveUpper);
+
     }
 
     [Fact]
