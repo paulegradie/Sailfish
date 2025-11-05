@@ -18,6 +18,9 @@ using Sailfish.TestAdapter.Queue.Configuration;
 using Sailfish.TestAdapter.Queue.Contracts;
 using Sailfish.TestAdapter.Queue.Implementation;
 using Sailfish.TestAdapter.Registrations;
+using Sailfish.TestAdapter.Execution.EnvironmentHealth;
+using Sailfish.Diagnostics.Environment;
+
 using Sailfish.TestAdapter.TestProperties;
 
 namespace Sailfish.TestAdapter;
@@ -104,6 +107,25 @@ public class TestExecutor : ITestExecutor
 
         try
         {
+            // Environment health check (informational)
+            try
+            {
+                var runner = container.ResolveOptional<EnvironmentHealthCheckRunner>();
+                if (runner != null)
+                {
+                    var ctx = new EnvironmentHealthCheckContext { TestAssemblyPath = testCases.FirstOrDefault()?.Source };
+                    var message = runner.RunAndFormatSummaryAsync(ctx, cancellationTokenSource.Token)
+                        .ConfigureAwait(false)
+                        .GetAwaiter()
+                        .GetResult();
+                    frameworkHandle.SendMessage(TestMessageLevel.Informational, message);
+                }
+            }
+            catch (Exception ex)
+            {
+                frameworkHandle.SendMessage(TestMessageLevel.Warning, $"Environment health check failed: {ex.Message}");
+            }
+
             // Start queue services if enabled
             StartQueueServices(container);
 

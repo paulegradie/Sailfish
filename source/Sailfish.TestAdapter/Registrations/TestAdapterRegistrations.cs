@@ -16,6 +16,9 @@ using Sailfish.TestAdapter.Queue.Contracts;
 using Sailfish.TestAdapter.Queue.Implementation;
 using Sailfish.TestAdapter.Queue.Processors;
 using Sailfish.TestAdapter.Queue.Processors.MethodComparison;
+    using Sailfish.Diagnostics.Environment;
+    using Sailfish.TestAdapter.Execution.EnvironmentHealth;
+
 
 namespace Sailfish.TestAdapter.Registrations;
 
@@ -40,6 +43,9 @@ internal class TestAdapterRegistrations : IProvideAdditionalRegistrations
         builder.RegisterType<AdapterScaleFish>().As<IAdapterScaleFish>();
         builder.RegisterType<TestCaseCountPrinter>().As<ITestCaseCountPrinter>().SingleInstance();
         builder.RegisterType<TestFrameworkWriter>().As<ITestFrameworkWriter>().SingleInstance();
+        builder.RegisterType<EnvironmentHealthChecker>().As<IEnvironmentHealthChecker>().SingleInstance();
+        builder.RegisterType<EnvironmentHealthCheckRunner>().AsSelf().SingleInstance();
+
         builder.RegisterType<SailDiffTestOutputWindowMessageFormatter>().As<ISailDiffTestOutputWindowMessageFormatter>();
         builder.RegisterType<SailfishConsoleWindowFormatter>().As<ISailfishConsoleWindowFormatter>();
 

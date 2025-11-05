@@ -22,18 +22,22 @@ public interface IExecutionSettings
     public double ConfidenceLevel { get; set; }
     public IReadOnlyList<double> ReportConfidenceLevels { get; set; }
 
-
     // NEW: Enhanced Statistical Configuration
     public double MaxConfidenceIntervalWidth { get; set; }
     public bool UseRelativeConfidenceInterval { get; set; }
 
-    	// New: Preferred outlier handling strategy (optional)
-    	public OutlierStrategy OutlierStrategy { get; set; }
+    // New: Preferred outlier handling strategy (optional)
+    public OutlierStrategy OutlierStrategy { get; set; }
 
-        // Opt-in to settings-driven outlier handling; false preserves legacy RemoveAll behavior
-        public bool UseConfigurableOutlierDetection { get; set; }
+    // Opt-in to settings-driven outlier handling; false preserves legacy RemoveAll behavior
+    public bool UseConfigurableOutlierDetection { get; set; }
 
-
+    // NEW: Execution tuning and diagnostics
+    public int OperationsPerInvoke { get; set; }
+    public System.TimeSpan TargetIterationDuration { get; set; }
+    public System.TimeSpan? MaxMeasurementTimePerMethod { get; set; }
+    public bool EnableDefaultDiagnosers { get; set; }
+    public int? Seed { get; set; }
 }
 
 public class ExecutionSettings : IExecutionSettings
@@ -79,5 +83,13 @@ public class ExecutionSettings : IExecutionSettings
         // Default false to preserve legacy behavior (RemoveAll via SailfishOutlierDetector)
         public bool UseConfigurableOutlierDetection { get; set; } = false;
 
+
+
+    // NEW: Execution tuning and diagnostics
+    public int OperationsPerInvoke { get; set; } = 1;
+    public System.TimeSpan TargetIterationDuration { get; set; } = System.TimeSpan.Zero;
+    public System.TimeSpan? MaxMeasurementTimePerMethod { get; set; } = null;
+    public bool EnableDefaultDiagnosers { get; set; } = false;
+    public int? Seed { get; set; } = null;
 
 }

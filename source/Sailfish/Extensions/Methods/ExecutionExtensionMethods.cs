@@ -27,12 +27,20 @@ internal static class ExecutionExtensionMethods
         {
             DisableOverheadEstimation = sailfishAttribute.DisableOverheadEstimation,
 
-            // NEW: Adaptive sampling settings
+            // NEW: Adaptive sampling and statistics
             UseAdaptiveSampling = sailfishAttribute.UseAdaptiveSampling,
             TargetCoefficientOfVariation = sailfishAttribute.TargetCoefficientOfVariation,
             MaximumSampleSize = sailfishAttribute.MaximumSampleSize,
-            MinimumSampleSize = 10, // Default minimum
-            ConfidenceLevel = 0.95 // Default confidence level
+            MinimumSampleSize = sailfishAttribute.MinimumSampleSize,
+            ConfidenceLevel = sailfishAttribute.ConfidenceLevel,
+            MaxConfidenceIntervalWidth = sailfishAttribute.MaxConfidenceIntervalWidth,
+            UseRelativeConfidenceInterval = sailfishAttribute.UseRelativeConfidenceInterval,
+
+            // NEW: Execution tuning and diagnostics
+            OperationsPerInvoke = sailfishAttribute.OperationsPerInvoke,
+            TargetIterationDuration = TimeSpan.FromMilliseconds(sailfishAttribute.TargetIterationDurationMs),
+            MaxMeasurementTimePerMethod = sailfishAttribute.MaxMeasurementTimePerMethodMs > 0 ? TimeSpan.FromMilliseconds(sailfishAttribute.MaxMeasurementTimePerMethodMs) : (TimeSpan?)null,
+            EnableDefaultDiagnosers = sailfishAttribute.EnableDefaultDiagnosers
         };
     }
 
