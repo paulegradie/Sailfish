@@ -17,6 +17,12 @@ This library was built to support and inspire the incorporation of performance t
 
 ## What's New
 
+{% callout title="New: Environment Health Check" type="note" %}
+Quickly validates your benchmarking environment and emits a 0–100 health score with actionable recommendations. Now appears in INF/DBG logs and appended to each test’s Output window.
+[Learn more →](/docs/1/environment-health)
+{% /callout %}
+
+
 {% callout title="New: Adaptive Sampling" type="note" %}
 Sailfish can now automatically stop sampling when results are statistically stable. Cut CI time while preserving rigor.
 [Learn more →](/docs/1/adaptive-sampling)

@@ -34,6 +34,8 @@ public class RunSettingsBuilder
     private bool streamTrackingUpdates = true;
     private DateTime? timeStamp;
 
+    private bool enableEnvironmentHealthCheck = true;
+
 
     // Global adaptive sampling overrides
     private bool? globalUseAdaptiveSampling;
@@ -81,6 +83,15 @@ public class RunSettingsBuilder
     public RunSettingsBuilder DisableStreamingTrackingUpdates()
     {
         streamTrackingUpdates = false;
+        return this;
+    }
+
+    /// <summary>
+    ///     Enables or disables the environment health check for this run (default: true).
+    /// </summary>
+    public RunSettingsBuilder WithEnvironmentHealthCheck(bool enable = true)
+    {
+        enableEnvironmentHealthCheck = enable;
         return this;
     }
 
@@ -284,6 +295,7 @@ public class RunSettingsBuilder
             globalTargetCoefficientOfVariation,
             globalMaximumSampleSize,
             globalUseConfigurableOutlierDetection,
-            globalOutlierStrategy);
+            globalOutlierStrategy,
+            enableEnvironmentHealthCheck);
     }
 }

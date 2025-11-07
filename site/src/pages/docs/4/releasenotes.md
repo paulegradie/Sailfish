@@ -4,6 +4,12 @@ title: Release Notes
 
 ## Current Release Notes
 
+{% callout title="Feature highlight: Environment Health Check" type="note" %}
+Validates your benchmarking environment and appends a health summary to each test’s Output window.
+[Learn more →](/docs/1/environment-health)
+{% /callout %}
+
+
 Release notes have been moved to [GitHub Releases](https://github.com/paulegradie/Sailfish/releases) for better integration with the development workflow.
 
 **[📋 View All Releases →](https://github.com/paulegradie/Sailfish/releases)**

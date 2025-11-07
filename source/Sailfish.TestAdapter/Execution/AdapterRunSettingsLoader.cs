@@ -29,6 +29,9 @@ public static class AdapterRunSettingsLoader
         if (parsedSettings.SailfishSettings.NumWarmupIterationsOverride is not null)
             runSettingsBuilder = runSettingsBuilder.WithGlobalNumWarmupIterations(parsedSettings.SailfishSettings.NumWarmupIterationsOverride.Value);
 
+        if (parsedSettings.SailfishSettings.EnableEnvironmentHealthCheck is not null)
+            runSettingsBuilder = runSettingsBuilder.WithEnvironmentHealthCheck(parsedSettings.SailfishSettings.EnableEnvironmentHealthCheck.Value);
+
         var testSettings = MapToTestSettings(parsedSettings);
         var runSettings = runSettingsBuilder
             .CreateTrackingFiles()

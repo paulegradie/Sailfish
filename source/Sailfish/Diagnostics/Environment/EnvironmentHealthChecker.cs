@@ -10,7 +10,7 @@ namespace Sailfish.Diagnostics.Environment;
 
 public class EnvironmentHealthChecker : IEnvironmentHealthChecker
 {
-    public Task<EnvironmentHealthReport> CheckAsync(EnvironmentHealthCheckContext? context = null, CancellationToken cancellationToken = default)
+    public async Task<EnvironmentHealthReport> CheckAsync(EnvironmentHealthCheckContext? context = null, CancellationToken cancellationToken = default)
     {
         var entries = new List<HealthCheckEntry>
         {
@@ -21,7 +21,18 @@ public class EnvironmentHealthChecker : IEnvironmentHealthChecker
             CheckOsPowerHints()
         };
 
-        return Task.FromResult(new EnvironmentHealthReport(entries));
+        // Background CPU load sampling (best-effort)
+        try
+        {
+            var background = await CheckBackgroundCpuLoadAsync().ConfigureAwait(false);
+            entries.Add(background);
+        }
+        catch
+        {
+            // ignore
+        }
+
+        return new EnvironmentHealthReport(entries);
     }
 
     private static HealthCheckEntry CheckProcessPriority()
@@ -85,13 +96,20 @@ public class EnvironmentHealthChecker : IEnvironmentHealthChecker
     {
         try
         {
-            // Heuristic: High-resolution timer availability differs across platforms. If Windows, assume high-res if QueryPerformanceCounter exists.
-            if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            // Use Stopwatch frequency as a proxy for timer resolution
+            var freq = Stopwatch.Frequency; // ticks per second
+            var isHighRes = Stopwatch.IsHighResolution;
+            var resolutionNs = 1_000_000_000.0 / freq;
+            var details = isHighRes
+                ? $"High-resolution timer: ~{resolutionNs:F0} ns"
+                : $"Timer resolution ~{resolutionNs:F0} ns (low resolution)";
+
+            if (isHighRes && resolutionNs <= 200) // ~<=0.2us
             {
-                // .NET uses QPC under the hood; we can't query resolution directly without interop.
-                return new("Timer", HealthStatus.Pass, "High-resolution timers available (QPC)");
+                return new("Timer", HealthStatus.Pass, details);
             }
-            return new("Timer", HealthStatus.Unknown, "Resolution not verified on this platform");
+
+            return new("Timer", HealthStatus.Warn, details, "Ensure high-resolution timers and minimal system timer coalescing");
         }
         catch (Exception ex)
         {
@@ -105,8 +123,19 @@ public class EnvironmentHealthChecker : IEnvironmentHealthChecker
         {
             if (RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
             {
-                // We are not invoking powercfg. Provide a conservative hint.
-                return new("Power Plan", HealthStatus.Warn, "Not verified", "Use High Performance / Ultimate Performance plan");
+                // Attempt to detect active power scheme via powercfg
+                if (TryGetActivePowerScheme(out var scheme))
+                {
+                    var name = scheme?.ToLowerInvariant() ?? string.Empty;
+                    if (name.Contains("ultimate") || name.Contains("high performance") || name.Contains("high-performance"))
+                    {
+                        return new("Power Plan", HealthStatus.Pass, scheme!);
+                    }
+
+                    return new("Power Plan", HealthStatus.Warn, scheme!, "Switch to High/Ultimate Performance to reduce frequency scaling");
+                }
+
+                return new("Power Plan", HealthStatus.Unknown, "Not verified", "Run 'powercfg /getactivescheme'");
             }
 
             if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
@@ -119,6 +148,76 @@ public class EnvironmentHealthChecker : IEnvironmentHealthChecker
         catch (Exception ex)
         {
             return new("Power Management", HealthStatus.Unknown, ex.Message);
+        }
+    }
+
+    private static bool TryGetActivePowerScheme(out string? scheme)
+    {
+        scheme = null;
+        try
+        {
+            if (!RuntimeInformation.IsOSPlatform(OSPlatform.Windows)) return false;
+            using var proc = new Process
+            {
+                StartInfo = new ProcessStartInfo
+                {
+                    FileName = "powercfg",
+                    Arguments = "/getactivescheme",
+                    RedirectStandardOutput = true,
+                    RedirectStandardError = true,
+                    UseShellExecute = false,
+                    CreateNoWindow = true
+                }
+            };
+            proc.Start();
+            string output = proc.StandardOutput.ReadToEnd();
+            proc.WaitForExit(1000);
+            if (string.IsNullOrWhiteSpace(output)) return false;
+
+            // Expected line: "Power Scheme GUID: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx  (Balanced)"
+            var idx = output.IndexOf('(');
+            var idx2 = output.IndexOf(')');
+            if (idx >= 0 && idx2 > idx)
+            {
+                scheme = output.Substring(idx + 1, idx2 - idx - 1).Trim();
+                return true;
+            }
+
+            scheme = output.Trim();
+            return true;
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
+    private static async Task<HealthCheckEntry> CheckBackgroundCpuLoadAsync()
+    {
+        try
+        {
+            // Best-effort, dependency-free approximation: measure current process CPU over a short interval
+            var p = Process.GetCurrentProcess();
+            var startCpu = p.TotalProcessorTime;
+            var sw = Stopwatch.StartNew();
+            await Task.Delay(500).ConfigureAwait(false);
+            p.Refresh();
+            var endCpu = p.TotalProcessorTime;
+            sw.Stop();
+
+            var cpuMs = (endCpu - startCpu).TotalMilliseconds;
+            var elapsedMs = Math.Max(sw.Elapsed.TotalMilliseconds, 1);
+            var cpuPct = (cpuMs / (System.Environment.ProcessorCount * elapsedMs)) * 100.0;
+
+            // If our process is already consuming a lot of CPU, background load may be low but measurement will still be noisy.
+            // Treat very high process CPU as a warning to close background tasks before benchmarking.
+            var status = cpuPct < 20 ? HealthStatus.Pass : cpuPct < 50 ? HealthStatus.Warn : HealthStatus.Fail;
+            var rec = status == HealthStatus.Fail ? "Close CPU‑intensive processes and idle the machine before running benchmarks" : null;
+            return new("Background CPU (process)", status, $"{cpuPct:F0}%", rec);
+        }
+        catch (Exception ex)
+        {
+            return new("Background CPU", HealthStatus.Unknown, ex.Message);
         }
     }
 

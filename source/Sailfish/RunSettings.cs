@@ -37,7 +37,8 @@ internal class RunSettings(
     double? globalTargetCoefficientOfVariation = null,
     int? globalMaximumSampleSize = null,
     bool? globalUseConfigurableOutlierDetection = null,
-    OutlierStrategy? globalOutlierStrategy = null) : IRunSettings
+    OutlierStrategy? globalOutlierStrategy = null,
+    bool enableEnvironmentHealthCheck = true) : IRunSettings
 {
     public IEnumerable<string> TestNames { get; } = testNames;
     public string LocalOutputDirectory { get; } = localOutputDirectory;
@@ -66,6 +67,8 @@ internal class RunSettings(
 
     public bool DisableLogging { get; } = disableLogging;
     public ILogger? CustomLogger { get; } = customLogger;
+    public bool EnableEnvironmentHealthCheck { get; } = enableEnvironmentHealthCheck;
+
     public LogLevel MinimumLogLevel { get; } = minimumLogLevel;
 
     public string GetRunSettingsTrackingDirectoryPath()

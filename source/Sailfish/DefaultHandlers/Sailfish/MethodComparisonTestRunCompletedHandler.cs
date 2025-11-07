@@ -8,9 +8,9 @@ using System.Threading.Tasks;
 using MediatR;
 using Sailfish.Attributes;
 using Sailfish.Contracts.Private;
-using Sailfish.Contracts.Public.Models;
 using Sailfish.Contracts.Public.Notifications;
 using Sailfish.Contracts.Public.Serialization.Tracking.V1;
+using Sailfish.Diagnostics.Environment;
 using Sailfish.Logging;
 
 namespace Sailfish.DefaultHandlers.Sailfish;
@@ -24,6 +24,8 @@ internal class MethodComparisonTestRunCompletedHandler : INotificationHandler<Te
 {
     private readonly ILogger _logger;
     private readonly IMediator _mediator;
+    private readonly IEnvironmentHealthReportProvider? _healthProvider;
+
 
     /// <summary>
     /// Initializes a new instance of the MethodComparisonTestRunCompletedHandler class.
@@ -34,6 +36,16 @@ internal class MethodComparisonTestRunCompletedHandler : INotificationHandler<Te
     {
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         _mediator = mediator ?? throw new ArgumentNullException(nameof(mediator));
+        _healthProvider = null; // backward compatible path
+    }
+
+    /// <summary>
+    /// Preferred constructor that can optionally receive environment health report provider via DI.
+    /// </summary>
+    public MethodComparisonTestRunCompletedHandler(ILogger logger, IMediator mediator, IEnvironmentHealthReportProvider healthProvider)
+        : this(logger, mediator)
+    {
+        _healthProvider = healthProvider;
     }
 
     /// <summary>
@@ -123,13 +135,50 @@ internal class MethodComparisonTestRunCompletedHandler : INotificationHandler<Te
         sb.AppendLine($"**Generated:** {timestamp:yyyy-MM-dd HH:mm:ss} UTC");
         sb.AppendLine($"**Session ID:** {sessionId}");
         sb.AppendLine($"**Total Test Classes:** {classExecutionSummaries.Count}");
-        
+
         // Count total test cases across all classes
         var totalTestCases = classExecutionSummaries.Sum(summary => summary.CompiledTestCaseResults.Count());
         sb.AppendLine($"**Total Test Cases:** {totalTestCases}");
         sb.AppendLine();
 
+        // Optional environment health section (if available)
+        AppendEnvironmentHealthSection(sb);
+        sb.AppendLine();
+
         // Collect all test results from all classes
+        void AppendEnvironmentHealthSection(StringBuilder sb)
+        {
+            try
+            {
+                var provider = _healthProvider;
+                var report = provider?.Current;
+                if (report is null) return;
+
+                sb.AppendLine("## 🏥 Environment Health Check");
+                sb.AppendLine();
+                sb.AppendLine($"Score: {report.Score}/100 ({report.SummaryLabel})");
+
+                // Show top few entries
+                foreach (var e in report.Entries.Take(6))
+                {
+                    var icon = e.Status switch
+                    {
+                        HealthStatus.Pass => "✅",
+                        HealthStatus.Warn => "⚠️",
+                        HealthStatus.Fail => "❌",
+                        _ => "❓"
+                    };
+                    var rec = string.IsNullOrWhiteSpace(e.Recommendation) ? string.Empty : $" — {e.Recommendation}";
+                    sb.AppendLine($"- {icon} {e.Name}: {e.Status} ({e.Details}){rec}");
+                }
+                sb.AppendLine();
+            }
+            catch (Exception ex)
+            {
+                _logger.Log(LogLevel.Debug, ex, "Failed to append environment health section: {0}", ex.Message);
+            }
+        }
+
         var allTestResults = classExecutionSummaries
             .SelectMany(summary => summary.CompiledTestCaseResults.Select(result => new
             {

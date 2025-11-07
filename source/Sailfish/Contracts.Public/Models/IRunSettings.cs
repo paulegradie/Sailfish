@@ -32,6 +32,8 @@ public interface IRunSettings
     ILogger? CustomLogger { get; }
     LogLevel MinimumLogLevel { get; }
 
+    // Environment health check toggle (default: true)
+    bool EnableEnvironmentHealthCheck { get; }
 
     // Global adaptive sampling overrides (null = no override)
     bool? GlobalUseAdaptiveSampling { get; }
@@ -41,7 +43,6 @@ public interface IRunSettings
         // Global outlier handling overrides (null = no override)
         bool? GlobalUseConfigurableOutlierDetection { get; }
         OutlierStrategy? GlobalOutlierStrategy { get; }
-
 
     string GetRunSettingsTrackingDirectoryPath();
 }

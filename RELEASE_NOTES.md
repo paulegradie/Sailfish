@@ -1,5 +1,13 @@
 ﻿## What's Changed in vNEXT_VERSION
 
+- New: Environment Health Check (default: enabled)
+  - Validates the host at test run start; computes a 0–100 score with a label (Excellent/Good/Fair/Poor)
+  - Publishes a summary in INF/DBG logs and now appends it to the bottom of each test’s Output window
+  - Checks include: Process Priority, GC Mode, CPU Affinity, High‑Resolution Timer, Power Plan, Background CPU load
+  - Global toggle: `RunSettingsBuilder.WithEnvironmentHealthCheck(false)` to disable
+  - Docs: See `/docs/1/environment-health`
+
+
 - New: Configurable Outlier Handling (opt-in, typed)
   - Five strategies: RemoveUpper, RemoveLower, RemoveAll, DontRemove, Adaptive
   - Backward compatible: legacy behavior remains default unless explicitly enabled

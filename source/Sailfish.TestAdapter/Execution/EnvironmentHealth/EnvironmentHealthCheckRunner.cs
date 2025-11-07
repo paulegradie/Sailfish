@@ -15,9 +15,15 @@ internal class EnvironmentHealthCheckRunner
         this.checker = checker;
     }
 
-    public async Task<string> RunAndFormatSummaryAsync(EnvironmentHealthCheckContext? context, CancellationToken token)
+    public async Task<(EnvironmentHealthReport Report, string Summary)> RunAsync(EnvironmentHealthCheckContext? context, CancellationToken token)
     {
         var report = await checker.CheckAsync(context, token).ConfigureAwait(false);
+        var summary = BuildSummaryString(report);
+        return (report, summary);
+    }
+
+    private static string BuildSummaryString(EnvironmentHealthReport report)
+    {
         var sb = new StringBuilder();
         sb.AppendLine($"Sailfish Environment Health: {report.Score}/100 ({report.SummaryLabel})");
         foreach (var e in report.Entries.Take(6))
@@ -26,6 +32,12 @@ internal class EnvironmentHealthCheckRunner
             sb.AppendLine($" - {e.Name}: {e.Status} ({e.Details}){rec}");
         }
         return sb.ToString();
+    }
+
+    public async Task<string> RunAndFormatSummaryAsync(EnvironmentHealthCheckContext? context, CancellationToken token)
+    {
+        var (report, summary) = await RunAsync(context, token).ConfigureAwait(false);
+        return summary;
     }
 }
 

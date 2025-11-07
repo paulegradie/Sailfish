@@ -31,6 +31,7 @@ const navigation = [
             { title: 'Adaptive Sampling', href: '/docs/1/adaptive-sampling' },
             { title: 'Confidence Intervals', href: '/docs/1/confidence-intervals' },
             { title: 'Outlier Handling', href: '/docs/1/outlier-handling' },
+            { title: 'Environment Health Check', href: '/docs/1/environment-health', badge: 'NEW' },
         ],
     },
     {

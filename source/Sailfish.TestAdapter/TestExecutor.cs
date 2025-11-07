@@ -110,15 +110,34 @@ public class TestExecutor : ITestExecutor
             // Environment health check (informational)
             try
             {
-                var runner = container.ResolveOptional<EnvironmentHealthCheckRunner>();
-                if (runner != null)
+                var rs = container.ResolveOptional<Sailfish.Contracts.Public.Models.IRunSettings>();
+                if (rs?.EnableEnvironmentHealthCheck is not false)
                 {
-                    var ctx = new EnvironmentHealthCheckContext { TestAssemblyPath = testCases.FirstOrDefault()?.Source };
-                    var message = runner.RunAndFormatSummaryAsync(ctx, cancellationTokenSource.Token)
-                        .ConfigureAwait(false)
-                        .GetAwaiter()
-                        .GetResult();
-                    frameworkHandle.SendMessage(TestMessageLevel.Informational, message);
+                    var runner = container.ResolveOptional<EnvironmentHealthCheckRunner>();
+                    if (runner != null)
+                    {
+                        var ctx = new EnvironmentHealthCheckContext { TestAssemblyPath = testCases.FirstOrDefault()?.Source };
+                        var result = runner.RunAsync(ctx, cancellationTokenSource.Token)
+                            .ConfigureAwait(false)
+                            .GetAwaiter()
+                            .GetResult();
+
+                        // Publish to test output window
+                        frameworkHandle.SendMessage(TestMessageLevel.Informational, result.Summary);
+
+                        // Store report for downstream markdown output (session consolidated)
+                        var reportProvider = container.ResolveOptional<IEnvironmentHealthReportProvider>();
+                        if (reportProvider is not null)
+                        {
+                            reportProvider.Current = result.Report;
+                        }
+
+
+                        // Also log to Sailfish logger so it appears in standard INF/DBG stream
+                        var logger = container.ResolveOptional<ILogger>();
+                        logger?.Log(LogLevel.Information, result.Summary.TrimEnd());
+
+                    }
                 }
             }
             catch (Exception ex)

@@ -28,7 +28,14 @@ export function Navigation({ navigation, className }) {
                         : 'text-slate-500 before:hidden before:bg-slate-300 hover:text-slate-600 hover:before:block dark:text-slate-400 dark:before:bg-slate-700 dark:hover:text-slate-300'
                     )}
                   >
-                    {link.title}
+                    <span className="inline-flex items-center">
+                      <span>{link.title}</span>
+                      {link.badge && (
+                        <span className="ml-2 rounded border border-primary-500 px-1.5 py-0.5 text-[10px] font-semibold text-primary-500">
+                          {link.badge}
+                        </span>
+                      )}
+                    </span>
                   </Link>
                 </li>
               ))}
