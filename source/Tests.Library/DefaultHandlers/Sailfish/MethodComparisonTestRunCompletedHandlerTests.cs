@@ -1,20 +1,20 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Reflection;
+using System.IO;
+using Sailfish.Diagnostics.Environment;
+using Sailfish.Results;
 using System.Threading;
 using System.Threading.Tasks;
 using MediatR;
 using NSubstitute;
+using Sailfish;
 using Sailfish.Attributes;
 using Sailfish.Contracts.Private;
 using Sailfish.Contracts.Public.Notifications;
-using Sailfish.Contracts.Public.Serialization.Tracking.V1;
 using Sailfish.DefaultHandlers.Sailfish;
 using Sailfish.Logging;
 using Shouldly;
 using Tests.Common.Builders;
-using Tests.Common.Utils;
 using Xunit;
 
 namespace Tests.Library.DefaultHandlers.Sailfish;
@@ -420,9 +420,55 @@ public class MethodComparisonTestRunCompletedHandlerTests
     [WriteToMarkdown]
     private class AnotherTestClassWithWriteToMarkdown
     {
+
+
         public void TestMethod2() { }
     }
 
     #endregion
+
+    [Fact]
+    public async Task Handle_WritesReproducibilityManifest_WhenRunSettingsAndProviderPresent()
+    {
+        // Arrange
+        var tempDir = Path.Combine(Path.GetTempPath(), "Sailfish_ManifestTest_" + Guid.NewGuid().ToString("N"));
+        Directory.CreateDirectory(tempDir);
+
+        var runSettings = RunSettingsBuilder.CreateBuilder()
+            .WithTimeStamp(DateTime.UtcNow)
+            .WithLocalOutputDirectory(tempDir)
+            .WithTag("env", "test")
+            .Build();
+
+        var healthProvider = new EnvironmentHealthReportProvider
+        {
+            Current = new EnvironmentHealthReport(new List<HealthCheckEntry>
+            {
+                new("Build Mode", HealthStatus.Pass, "Release mode")
+            })
+        };
+
+        var manifestProvider = new ReproducibilityManifestProvider();
+
+        var richHandler = new MethodComparisonTestRunCompletedHandler(
+            mockLogger,
+            mockMediator,
+            healthProvider,
+            runSettings,
+            manifestProvider);
+
+        var notification = CreateTestNotificationWithWriteToMarkdown();
+
+        // Act
+        await richHandler.Handle(notification, CancellationToken.None);
+
+        // Assert
+        manifestProvider.Current.ShouldNotBeNull();
+        Directory.GetFiles(tempDir, "Manifest_*.json").Length.ShouldBeGreaterThan(0);
+
+        // Cleanup
+        try { Directory.Delete(tempDir, true); } catch { }
+    }
+
 }
 
