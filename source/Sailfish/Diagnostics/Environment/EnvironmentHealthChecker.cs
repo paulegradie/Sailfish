@@ -96,20 +96,57 @@ public class EnvironmentHealthChecker : IEnvironmentHealthChecker
     {
         try
         {
-            // Use Stopwatch frequency as a proxy for timer resolution
+            // 1) High-resolution performance counter (Stopwatch)
             var freq = Stopwatch.Frequency; // ticks per second
             var isHighRes = Stopwatch.IsHighResolution;
             var resolutionNs = 1_000_000_000.0 / freq;
-            var details = isHighRes
+
+            // 2) Effective OS scheduler quantization for sleeps (cross‑platform)
+            // Measure median elapsed for Thread.Sleep(1) across a small sample to infer the scheduler tick.
+            static double MeasureEffectiveSleepMs(int iterations)
+            {
+                // Warmup one sleep to avoid first-iteration anomalies
+                Thread.Sleep(1);
+                var samples = new double[Math.Max(5, iterations)];
+                for (int i = 0; i < samples.Length; i++)
+                {
+                    var sw = Stopwatch.StartNew();
+                    Thread.Sleep(1);
+                    sw.Stop();
+                    samples[i] = sw.Elapsed.TotalMilliseconds;
+                }
+                Array.Sort(samples);
+                return samples[samples.Length / 2]; // median
+            }
+
+            double sleepMedianMs;
+            try
+            {
+                sleepMedianMs = MeasureEffectiveSleepMs(15);
+            }
+            catch
+            {
+                sleepMedianMs = double.NaN; // best effort only
+            }
+
+            var timerDetails = isHighRes
                 ? $"High-resolution timer: ~{resolutionNs:F0} ns"
                 : $"Timer resolution ~{resolutionNs:F0} ns (low resolution)";
 
+            var sleepDetails = double.IsNaN(sleepMedianMs)
+                ? "Sleep(1) median: n/a"
+                : $"Sleep(1) median ≈ {sleepMedianMs:F1} ms";
+
+            var details = $"{timerDetails}; {sleepDetails}";
+
+            // Preserve original PASS/WARN logic based on Stopwatch; include guidance referencing sleep granularity
             if (isHighRes && resolutionNs <= 200) // ~<=0.2us
             {
                 return new("Timer", HealthStatus.Pass, details);
             }
 
-            return new("Timer", HealthStatus.Warn, details, "Ensure high-resolution timers and minimal system timer coalescing");
+            var recommendation = "Ensure high-resolution timers; sub-tick sleeps will quantize to the OS scheduler tick";
+            return new("Timer", HealthStatus.Warn, details, recommendation);
         }
         catch (Exception ex)
         {
@@ -213,7 +250,7 @@ public class EnvironmentHealthChecker : IEnvironmentHealthChecker
             // Treat very high process CPU as a warning to close background tasks before benchmarking.
             var status = cpuPct < 20 ? HealthStatus.Pass : cpuPct < 50 ? HealthStatus.Warn : HealthStatus.Fail;
             var rec = status == HealthStatus.Fail ? "Close CPU‑intensive processes and idle the machine before running benchmarks" : null;
-            return new("Background CPU (process)", status, $"{cpuPct:F0}%", rec);
+            return new("Background CPU", status, $"{cpuPct:F0}%", rec);
         }
         catch (Exception ex)
         {

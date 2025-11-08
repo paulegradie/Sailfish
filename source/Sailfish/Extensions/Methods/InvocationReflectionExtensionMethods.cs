@@ -32,12 +32,13 @@ internal static class InvocationReflectionExtensionMethods
                 returnType.GetGenericTypeDefinition() == typeof(ValueTask<>));
     }
 
-    internal static async Task TryInvoke(this MethodInfo? method, object instance, CancellationToken cancellationToken, PerformanceTimer? performanceTimer = null)
+    internal static async Task TryInvoke(this MethodInfo? method, object? instance, CancellationToken cancellationToken, PerformanceTimer? performanceTimer = null)
     {
         if (method is null) return;
         var parameters = method.GetParameters().ToList();
         var arguments = new List<object>();
-        var errorMsg = $"The '{method.Name}' method in class '{instance.GetType().Name}' may only receive a single '{nameof(CancellationToken)}' parameter";
+        var className = instance?.GetType().Name ?? method.DeclaringType?.Name ?? "<unknown>";
+        var errorMsg = $"The '{method.Name}' method in class '{className}' may only receive a single '{nameof(CancellationToken)}' parameter";
         switch (parameters.Count)
         {
             case > 1:
@@ -68,7 +69,7 @@ internal static class InvocationReflectionExtensionMethods
             }
             else
             {
-                throw new TestFormatException($"The async '{method.Name}' method in class '{instance.GetType().Name}' may only return '{nameof(Task)}' or '{nameof(ValueTask)}'");
+                throw new TestFormatException($"The async '{method.Name}' method in class '{className}' may only return '{nameof(Task)}' or '{nameof(ValueTask)}'");
             }
         }
         else

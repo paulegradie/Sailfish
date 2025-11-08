@@ -116,4 +116,18 @@ internal class CoreInvoker
     {
         testCasePerformanceTimer.SetTestCaseStop();
     }
+
+
+    internal void SetOverheadDisabled(bool disabled)
+    {
+        testCasePerformanceTimer.OverheadEstimationDisabled = disabled;
+    }
+
+    internal void SetOverheadDiagnostics(int baselineTicks, double driftPercent, int warmups, int samples)
+    {
+        testCasePerformanceTimer.OverheadBaselineTicks = baselineTicks;
+        testCasePerformanceTimer.OverheadDriftPercent = driftPercent;
+        testCasePerformanceTimer.OverheadWarmupCount = warmups;
+        testCasePerformanceTimer.OverheadSampleCount = samples;
+    }
 }

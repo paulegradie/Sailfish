@@ -21,7 +21,7 @@ The current set of checks includes:
 - Process Priority (recommend AboveNormal/High)
 - GC Mode (recommend Server GC)
 - CPU Affinity (recommend pinning to 1 core for microbenchmarks)
-- High‑Resolution Timer availability
+- High‑Resolution Timer availability + Sleep/Delay granularity check
 - Power Plan (recommend High Performance)
 - Background CPU load (process)
 
@@ -38,10 +38,26 @@ Sailfish Environment Health: 87/100 (Excellent)
  - Process Priority: Warn (Normal) — Consider High or AboveNormal to reduce scheduler noise
  - GC Mode: Pass (Server GC enabled)
  - CPU Affinity: Warn (All cores) — Pin to 1 core to minimize cross-core jitter
- - Timer: Pass (High‑resolution timer)
+ - Timer: Pass (High‑resolution timer; Sleep(1) median ≈ 15.6 ms)
  - Power Plan: Pass (High performance)
  - Background CPU (process): Pass (1%)
 ```
+## Timer granularity and short sleeps
+
+On many systems, very short sleeps/await delays are quantized to the OS scheduler tick. Examples:
+
+- Windows (default): ~15.6 ms tick — Sleep(10) often measures ~15–16 ms
+- Linux: commonly ~1-3 ms depending on kernel HZ and power settings
+- macOS: often ~1-2 ms, but can vary with power and coalescing
+
+Sailfish’s health check now reports both:
+- The high-resolution performance counter resolution (Stopwatch)
+- The effective sleep granularity (median of Thread.Sleep(1))
+
+Guidance:
+- For targets below the scheduler tick, prefer CPU-bound waits (busy-wait using Stopwatch) or use durations well above the tick.
+- We do not subtract scheduler latency from your measurements because it reflects real-world behavior when your code uses Sleep/Delay.
+
 
 ## How it works
 - The Test Adapter runs the health check once at test run start and stores the report for the session.

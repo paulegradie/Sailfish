@@ -6,6 +6,7 @@ using MathNet.Numerics.Statistics;
 
 namespace Sailfish.Execution;
 
+[Obsolete("Deprecated. Use HarnessBaselineCalibrator for overhead calibration. Retained for rollback safety.")]
 public class OverheadEstimator
 {
     private const double NumMilliSecondsToWait = 100;

@@ -98,7 +98,6 @@ By default, Sailfish removes both upper and lower outliers (Tukey fences) to pre
 
 To opt into configurable outlier handling per run, enable the flag on ExecutionSettings and choose a strategy:
 
-<augment_code_snippet mode="EXCERPT">
 ````csharp
 var settings = new ExecutionSettings(asCsv: false, asConsole: true, asMarkdown: true, sampleSize: 20, numWarmupIterations: 0)
 {
@@ -109,7 +108,6 @@ var settings = new ExecutionSettings(asCsv: false, asConsole: true, asMarkdown: 
 // When converting programmatically
 var result = PerformanceRunResult.ConvertFromPerfTimer(testCaseId, performanceTimer, settings);
 ````
-</augment_code_snippet>
 
 - Legacy default (no behavior change): UseConfigurableOutlierDetection = false → RemoveAll
 - Strategies:
@@ -122,13 +120,11 @@ var result = PerformanceRunResult.ConvertFromPerfTimer(testCaseId, performanceTi
 
 Global configuration for an entire run via RunSettingsBuilder:
 
-<augment_code_snippet mode="EXCERPT">
 ````csharp
 var run = RunSettingsBuilder.CreateBuilder()
     .WithGlobalOutlierHandling(useConfigurable: true, strategy: OutlierStrategy.RemoveUpper)
     .Build();
 ````
-</augment_code_snippet>
 
 Note: Attribute-level knobs for outlier strategy are not yet exposed; programmatic configuration is available for advanced scenarios and runners that surface ExecutionSettings.
 

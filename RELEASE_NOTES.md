@@ -6,6 +6,14 @@
   - Checks include: Process Priority, GC Mode, CPU Affinity, High‑Resolution Timer, Power Plan, Background CPU load
   - Global toggle: `RunSettingsBuilder.WithEnvironmentHealthCheck(false)` to disable
   - Docs: See `/docs/1/environment-health`
+  - Timer check now reports effective sleep granularity (median of Thread.Sleep(1)) across Windows/macOS/Linux, so short sleeps show as ~OS tick length in outputs
+
+
+
+- UX: Runtime diagnostics in outputs
+  - Per-test overhead diagnostics are now shown in both console logs and the IDE Test Output window (baseline ticks, drift %, and capped-iteration count; when disabled, a one-liner notes no subtraction)
+  - Environment Health includes a timer entry with both high-resolution timer details and effective sleep granularity (median of Thread.Sleep(1))
+  - Docs: See `/docs/1/output-attributes` and `/docs/1/environment-health#timer-granularity-and-short-sleeps`
 
 
 - New: Configurable Outlier Handling (opt-in, typed)

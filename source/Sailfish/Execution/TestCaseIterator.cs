@@ -38,16 +38,19 @@ internal class TestCaseIterator : ITestCaseIterator
         bool disableOverheadEstimation,
         CancellationToken cancellationToken)
     {
-        var overheadEstimator = new OverheadEstimator();
+        var calibrator = new HarnessBaselineCalibrator();
         var warmupResult = await WarmupIterations(testInstanceContainer, cancellationToken);
         if (!warmupResult.IsSuccess) return warmupResult;
 
-        if (!disableOverheadEstimation) await overheadEstimator.Estimate();
+        var beginOverheadTicks = 0;
+        if (!disableOverheadEstimation)
+        {
+            beginOverheadTicks = await calibrator.CalibrateTicksAsync(testInstanceContainer.ExecutionMethod, cancellationToken);
+        }
 
         // Determine which strategy to use
         var executionSettings = testInstanceContainer.ExecutionSettings;
-        var useAdaptive = executionSettings.UseAdaptiveSampling &&
-                          !disableOverheadEstimation;
+        var useAdaptive = executionSettings.UseAdaptiveSampling;
 
         var strategy = useAdaptive ? adaptiveIterationStrategy : fixedIterationStrategy;
 
@@ -88,10 +91,29 @@ internal class TestCaseIterator : ITestCaseIterator
                 iterationResult.ConvergenceReason);
         }
 
-        if (disableOverheadEstimation) return new TestCaseExecutionResult(testInstanceContainer);
+        if (disableOverheadEstimation)
+        {
+            testInstanceContainer.CoreInvoker.SetOverheadDisabled(true);
+            return new TestCaseExecutionResult(testInstanceContainer);
+        }
 
-        await overheadEstimator.Estimate();
-        testInstanceContainer.ApplyOverheadEstimates(overheadEstimator.GetAverageEstimate());
+        var endOverheadTicks = await calibrator.CalibrateTicksAsync(testInstanceContainer.ExecutionMethod, cancellationToken);
+        var driftPct = beginOverheadTicks > 0
+            ? (100.0 * Math.Abs(endOverheadTicks - beginOverheadTicks) / beginOverheadTicks)
+            : 0.0;
+        if (driftPct > 20.0)
+        {
+            logger.Log(LogLevel.Warning, "      ---- Overhead drift detected: {DriftPercent}%", driftPct);
+        }
+        else
+        {
+            logger.Log(LogLevel.Information, "      ---- Overhead baseline: {OverheadTicks} ticks (median), drift {DriftPercent}%", beginOverheadTicks, driftPct);
+        }
+
+        // Persist diagnostics for test output window consumption
+        testInstanceContainer.CoreInvoker.SetOverheadDiagnostics(beginOverheadTicks, driftPct, HarnessBaselineCalibrator.Warmups, HarnessBaselineCalibrator.Samples);
+
+        testInstanceContainer.ApplyOverheadEstimates(beginOverheadTicks);
 
         return new TestCaseExecutionResult(testInstanceContainer);
     }
