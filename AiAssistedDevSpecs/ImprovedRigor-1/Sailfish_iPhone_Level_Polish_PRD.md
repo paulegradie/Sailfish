@@ -236,7 +236,7 @@ P. Adaptive Parameter Selector (file user has open)
 
 ## 13) Next steps (actionable checklist)
 - [ ] Confirm API additions to IExecutionSettings and attributes
-- [ ] Implement EnvironmentHealthChecker + report + console summary
+- [x] Implement EnvironmentHealthChecker + report + console summary (baseline delivered: Build Mode + JIT checks wired to adapter + consolidated markdown; docs + release notes updated)
 - [ ] Add ReproducibilityManifest and persist/print
 - [ ] Implement Consumer.Consume and minimal analyzers (SF1001–SF1003)
 - [ ] Implement OperationsPerInvokeTuner; integrate into TestCaseIterator

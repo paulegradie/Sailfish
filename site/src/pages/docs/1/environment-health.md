@@ -18,6 +18,8 @@ Microbenchmark results are sensitive to OS scheduling, GC settings, and power pl
 
 ## What it checks
 The current set of checks includes:
+- Build Mode (warns in Debug; recommend Release optimizations)
+- JIT (Tiered/OSR) — reports TieredCompilation, QuickJit, QuickJitForLoops, On-Stack Replacement flags; recommend enabling Tiered JIT for representative steady-state performance
 - Process Priority (recommend AboveNormal/High)
 - GC Mode (recommend Server GC)
 - CPU Affinity (recommend pinning to 1 core for microbenchmarks)
@@ -30,11 +32,14 @@ Each check contributes to the health score and may include a brief recommendatio
 ## Where to see it
 - Run-level message: printed near the start of the run in your standard INF/DBG logs.
 - Per-test Output window: appended to the bottom of every test’s output alongside Sailfish’s performance tables (new behavior).
+- Consolidated session markdown: included as a "🏥 Environment Health Check" section near the top of the session file with score and top entries.
 
 Example excerpt:
 
 ```
 Sailfish Environment Health: 87/100 (Excellent)
+ - Build Mode: Warn (Debug) — Use Release (optimized) for stable measurements
+ - JIT (Tiered/OSR): Pass (Tiered=default; QuickJit=default; QuickJitForLoops=default; OSR=default)
  - Process Priority: Warn (Normal) — Consider High or AboveNormal to reduce scheduler noise
  - GC Mode: Pass (Server GC enabled)
  - CPU Affinity: Warn (All cores) — Pin to 1 core to minimize cross-core jitter

@@ -35,5 +35,17 @@ public class EnvironmentHealthCheckerTests
         // One of these depending on OS
         names.Any(n => n is "Power Plan" or "Power Management").ShouldBeTrue();
     }
+
+    [Fact]
+    public async Task Report_Includes_BuildMode_And_JitEntries()
+    {
+        var checker = new EnvironmentHealthChecker();
+        var report = await checker.CheckAsync();
+
+        var names = report.Entries.Select(e => e.Name).ToList();
+        names.ShouldContain("Build Mode");
+        names.ShouldContain("JIT (Tiered/OSR)");
+    }
+
 }
 

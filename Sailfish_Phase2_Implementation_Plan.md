@@ -1,9 +1,9 @@
 # Sailfish Statistical Engine - Phase 2 Implementation Plan
 ## Advanced Statistical Features & Environment Control
 
-**Document Version:** 2.0  
-**Date:** 2025-11-03  
-**Status:** Ready for Implementation  
+**Document Version:** 2.0
+**Date:** 2025-11-08
+**Status:** In Progress
 **Prerequisites:** Phase 1 (Adaptive Sampling & Confidence Intervals) - ✅ COMPLETE
 
 ---
@@ -19,10 +19,26 @@ This document provides a detailed, agent-ready implementation plan for Phase 2 o
 5. **Performance Regression Tests** - Ensure no degradation
 6. **Documentation Updates** - Comprehensive user guides
 
-**Estimated Effort:** 3-5 days (broken into small, agent-friendly tasks)  
+**Estimated Effort:** 3-5 days (broken into small, agent-friendly tasks)
 **Impact:** Medium-High (improves measurement reliability and user experience)
 
 ---
+## ✅ Progress Update (2025-11-08)
+
+- Task 3.2 (Adapter output integration): Added a "Warnings" section to SailfishConsoleWindowFormatter.cs. Validation warnings are now displayed in IDE test output when present.
+- Remaining near-term work for Phase 2 (validation warnings): COMPLETE — markdown integration is done; CSV intentionally excludes warnings (numeric-only export). Proceeding to complete performance tests and migration notes.
+
+- Tier A iPhone-level polish — Environment Health Check ("Sailfish Doctor"): baseline implemented with new probes:
+  - Build Mode (Debug vs Release) detection via DebuggableAttribute
+  - JIT settings (TieredCompilation, QuickJit, QuickJitForLoops, OSR) via COMPlus flags
+  - Summary is surfaced at test session start in the Test Adapter and included in consolidated markdown
+  - Unit test added to verify presence of new entries (Build Mode, JIT)
+
+
+- Documentation & Release Notes updated: Environment Health (Build Mode + JIT) reflected in site docs and RELEASE_NOTES.md; consolidated markdown section documented.
+
+---
+
 
 ## 🎯 Phase 2 Goals
 

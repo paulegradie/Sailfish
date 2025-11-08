@@ -1,7 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
+using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
@@ -14,6 +16,8 @@ public class EnvironmentHealthChecker : IEnvironmentHealthChecker
     {
         var entries = new List<HealthCheckEntry>
         {
+            CheckBuildConfiguration(context),
+            CheckJitSettings(),
             CheckProcessPriority(),
             CheckGcMode(),
             CheckCpuAffinity(),
@@ -34,6 +38,69 @@ public class EnvironmentHealthChecker : IEnvironmentHealthChecker
 
         return new EnvironmentHealthReport(entries);
     }
+
+    private static HealthCheckEntry CheckBuildConfiguration(EnvironmentHealthCheckContext? context)
+    {
+        try
+        {
+            // Prefer the test assembly (represents user code) if provided; otherwise fall back to entry/executing assembly
+            var asm = default(Assembly);
+            var path = context?.TestAssemblyPath;
+            if (!string.IsNullOrWhiteSpace(path) && File.Exists(path))
+            {
+                asm = Assembly.LoadFrom(path);
+            }
+            else
+            {
+                asm = Assembly.GetEntryAssembly() ?? typeof(EnvironmentHealthChecker).Assembly;
+            }
+
+            var dbg = asm.GetCustomAttribute<DebuggableAttribute>();
+            var isDebug = dbg != null && (dbg.DebuggingFlags & DebuggableAttribute.DebuggingModes.DisableOptimizations) != 0;
+            if (isDebug)
+            {
+                return new("Build Mode", HealthStatus.Warn, "Debug", "Use Release (optimized) for stable measurements");
+            }
+
+            return new("Build Mode", HealthStatus.Pass, "Release");
+        }
+        catch (Exception ex)
+        {
+            return new("Build Mode", HealthStatus.Unknown, ex.Message);
+        }
+    }
+
+    private static HealthCheckEntry CheckJitSettings()
+    {
+        try
+        {
+            static string ReadFlag(string name)
+            {
+                var v = System.Environment.GetEnvironmentVariable(name);
+                return string.IsNullOrWhiteSpace(v) ? "default" : v.Trim();
+            }
+
+            var tiered = ReadFlag("COMPlus_TieredCompilation");
+            var quickJit = ReadFlag("COMPlus_TC_QuickJit");
+            var quickJitLoops = ReadFlag("COMPlus_TC_QuickJitForLoops");
+            var osr = ReadFlag("COMPlus_TC_OnStackReplacement");
+
+            var details = $"Tiered={tiered}; QuickJit={quickJit}; QuickJitForLoops={quickJitLoops}; OSR={osr}";
+
+            // If TieredCompilation is explicitly disabled, warn; otherwise pass (defaults generally enable tiering)
+            if (string.Equals(tiered, "0", StringComparison.OrdinalIgnoreCase) || string.Equals(tiered, "false", StringComparison.OrdinalIgnoreCase))
+            {
+                return new("JIT (Tiered/OSR)", HealthStatus.Warn, details, "Enable Tiered JIT for representative steady-state performance");
+            }
+
+            return new("JIT (Tiered/OSR)", HealthStatus.Pass, details);
+        }
+        catch (Exception ex)
+        {
+            return new("JIT (Tiered/OSR)", HealthStatus.Unknown, ex.Message);
+        }
+    }
+
 
     private static HealthCheckEntry CheckProcessPriority()
     {

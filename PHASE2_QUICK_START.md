@@ -1,7 +1,7 @@
 # Phase 2 Quick Start Guide for AI Agents
 
-**Last Updated:** 2025-11-03  
-**Status:** Ready for Implementation
+**Last Updated:** 2025-11-08
+**Status:** In Progress — Validation warnings complete; Env Health Check (Build Mode + JIT) implemented; continuing iPhone‑level polish
 
 ---
 
@@ -13,6 +13,27 @@ You are implementing **Phase 2** of the Sailfish Statistical Engine upgrade:
 - **Goal:** Improve measurement reliability without breaking existing functionality
 
 ---
+## ✅ Progress Update (2025-11-08)
+
+- Added validation warnings display to IDE test output (SailfishConsoleWindowFormatter.cs): prints a "Warnings" section with severity indicators when results include warnings.
+- Build is green; change is backward compatible and isolated to output formatting.
+- Markdown exporter now includes validation warnings under each affected test group; integration tests cover this.
+- CSV output intentionally excludes validation warnings (numeric metrics only); warnings surface in IDE and markdown.
+- Implemented Environment Health Check baseline with new probes:
+  - Build Mode (Debug vs Release) detection
+  - JIT settings (TieredCompilation, QuickJit, QuickJitForLoops, OSR)
+- Integrated summary into Test Adapter output and consolidated markdown
+- Added unit tests verifying presence of new entries (Build Mode, JIT)
+
+- Next focus: pick the next Tier A iPhone‑level polish item (e.g., Reproducibility Manifest or Anti‑DCE guard rails).
+
+
+## 🧭 Handoff
+- Next Agent Prompt: G:/code/Sailfish/AiAssistedDevSpecs/ImprovedRigor-1/NextAgentPrompt-2.1.md
+- Start there for step-by-step instructions, verification commands, and the next Tier A task selection guidance.
+
+---
+
 
 ## 📁 Essential Documents (Read in Order)
 
@@ -167,10 +188,10 @@ public void RemoveUpper_WithUpperOutliers_RemovesOnlyUpper()
     // Arrange
     var data = new[] { 1.0, 2.0, 3.0, 100.0 };
     var detector = new ConfigurableOutlierDetector();
-    
+
     // Act
     var result = detector.DetectOutliers(data, OutlierStrategy.RemoveUpper);
-    
+
     // Assert
     result.UpperOutliers.Should().Contain(100.0);
     result.LowerOutliers.Should().BeEmpty();

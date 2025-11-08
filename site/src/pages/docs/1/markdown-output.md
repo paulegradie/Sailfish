@@ -36,9 +36,9 @@ The generated markdown files use a well-organized, multi-section format:
 
 ```markdown
 # Performance Test Results
-**Session ID:** abc12345  
-**Timestamp:** 2025-08-03T10:30:00Z  
-**Total Classes:** 1  
+**Session ID:** abc12345
+**Timestamp:** 2025-08-03T10:30:00Z
+**Total Classes:** 1
 **Total Tests:** 3
 ```
 
@@ -95,6 +95,12 @@ Markdown files use **session-based consolidation**, meaning:
 - **Complete data**: All test results from the entire session are included
 
 **Example filename**: `TestSession_abc12345_Results_20250803_103000.md`
+
+### 🏥 Environment Health Section (when enabled)
+
+- When the Environment Health Check is enabled, the consolidated session file includes a "🏥 Environment Health Check" section near the top showing the score and the top few entries.
+- Learn more: [/docs/1/environment-health](/docs/1/environment-health)
+
 
 ## GitHub Integration
 

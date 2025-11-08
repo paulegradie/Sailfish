@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
@@ -8,10 +9,13 @@ using System.Threading.Tasks;
 using MediatR;
 using Sailfish.Attributes;
 using Sailfish.Contracts.Private;
+using Sailfish.Contracts.Public.Models;
 using Sailfish.Contracts.Public.Notifications;
 using Sailfish.Contracts.Public.Serialization.Tracking.V1;
 using Sailfish.Diagnostics.Environment;
 using Sailfish.Logging;
+using Sailfish.Presentation;
+using Sailfish.Results;
 
 namespace Sailfish.DefaultHandlers.Sailfish;
 
@@ -25,6 +29,8 @@ internal class MethodComparisonTestRunCompletedHandler : INotificationHandler<Te
     private readonly ILogger _logger;
     private readonly IMediator _mediator;
     private readonly IEnvironmentHealthReportProvider? _healthProvider;
+    private readonly IRunSettings? _runSettings;
+    private readonly IReproducibilityManifestProvider? _manifestProvider;
 
 
     /// <summary>
@@ -37,6 +43,8 @@ internal class MethodComparisonTestRunCompletedHandler : INotificationHandler<Te
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         _mediator = mediator ?? throw new ArgumentNullException(nameof(mediator));
         _healthProvider = null; // backward compatible path
+        _runSettings = null;
+        _manifestProvider = null;
     }
 
     /// <summary>
@@ -46,6 +54,22 @@ internal class MethodComparisonTestRunCompletedHandler : INotificationHandler<Te
         : this(logger, mediator)
     {
         _healthProvider = healthProvider;
+    }
+
+    /// <summary>
+    /// Full-feature constructor including run settings and reproducibility manifest provider.
+    /// Autofac will select this when all dependencies are available.
+    /// </summary>
+    public MethodComparisonTestRunCompletedHandler(
+        ILogger logger,
+        IMediator mediator,
+        IEnvironmentHealthReportProvider healthProvider,
+        IRunSettings runSettings,
+        IReproducibilityManifestProvider manifestProvider)
+        : this(logger, mediator, healthProvider)
+    {
+        _runSettings = runSettings;
+        _manifestProvider = manifestProvider;
     }
 
     /// <summary>
@@ -81,6 +105,25 @@ internal class MethodComparisonTestRunCompletedHandler : INotificationHandler<Te
 
             // Generate consolidated markdown content for the entire session
             var markdownContent = CreateSessionConsolidatedMarkdown(classesWithMarkdown);
+
+            // Build and persist reproducibility manifest next to results (best-effort)
+            try
+            {
+                if (_runSettings != null && _manifestProvider != null)
+                {
+                    var baseManifest = _manifestProvider.Current ?? ReproducibilityManifest.CreateBase(_runSettings, _healthProvider?.Current);
+                    baseManifest.AddMethodSnapshots(classesWithMarkdown);
+                    _manifestProvider.Current = baseManifest;
+
+                    var outputDirectory = _runSettings.LocalOutputDirectory ?? DefaultFileSettings.DefaultOutputDirectory;
+                    ReproducibilityManifest.WriteJson(baseManifest, outputDirectory);
+                    _logger.Log(LogLevel.Information, "Reproducibility manifest written to {0}", outputDirectory);
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.Log(LogLevel.Debug, ex, "Failed to create/write reproducibility manifest: {0}", ex.Message);
+            }
 
             if (!string.IsNullOrEmpty(markdownContent))
             {
@@ -143,6 +186,7 @@ internal class MethodComparisonTestRunCompletedHandler : INotificationHandler<Te
 
         // Optional environment health section (if available)
         AppendEnvironmentHealthSection(sb);
+        AppendReproducibilitySummarySection(sb);
         sb.AppendLine();
 
         // Collect all test results from all classes
@@ -176,6 +220,32 @@ internal class MethodComparisonTestRunCompletedHandler : INotificationHandler<Te
             catch (Exception ex)
             {
                 _logger.Log(LogLevel.Debug, ex, "Failed to append environment health section: {0}", ex.Message);
+            }
+        }
+
+        void AppendReproducibilitySummarySection(StringBuilder sb)
+        {
+            try
+            {
+                var manifest = _manifestProvider?.Current;
+                if (manifest is null) return;
+
+                sb.AppendLine("## 🔁 Reproducibility Summary");
+                sb.AppendLine();
+                sb.AppendLine($"- Sailfish {manifest.SailfishVersion} on {manifest.DotNetRuntime}");
+                sb.AppendLine($"- OS: {manifest.OS} ({manifest.OSArchitecture}/{manifest.ProcessArchitecture})");
+                sb.AppendLine($"- GC: {manifest.GCMode}; JIT: {manifest.Jit}");
+                if (!string.IsNullOrWhiteSpace(manifest.EnvironmentHealthLabel))
+                {
+                    sb.AppendLine($"- Env Health: {manifest.EnvironmentHealthScore}/100 ({manifest.EnvironmentHealthLabel})");
+                }
+                sb.AppendLine($"- Timer: {manifest.Timer}");
+                if (!string.IsNullOrWhiteSpace(manifest.CiSystem)) sb.AppendLine($"- CI: {manifest.CiSystem}");
+                sb.AppendLine();
+            }
+            catch (Exception ex)
+            {
+                _logger.Log(LogLevel.Debug, ex, "Failed to append reproducibility summary: {0}", ex.Message);
             }
         }
 

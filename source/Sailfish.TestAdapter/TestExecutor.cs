@@ -20,6 +20,7 @@ using Sailfish.TestAdapter.Queue.Implementation;
 using Sailfish.TestAdapter.Registrations;
 using Sailfish.TestAdapter.Execution.EnvironmentHealth;
 using Sailfish.Diagnostics.Environment;
+using Sailfish.Results;
 
 using Sailfish.TestAdapter.TestProperties;
 
@@ -136,6 +137,17 @@ public class TestExecutor : ITestExecutor
                         // Also log to Sailfish logger so it appears in standard INF/DBG stream
                         var logger = container.ResolveOptional<ILogger>();
                         logger?.Log(LogLevel.Information, result.Summary.TrimEnd());
+
+                        // Initialize reproducibility manifest base (best-effort)
+                        try
+                        {
+                            var manifestProvider = container.ResolveOptional<IReproducibilityManifestProvider>();
+                            if (manifestProvider != null && rs != null && manifestProvider.Current == null)
+                            {
+                                manifestProvider.Current = ReproducibilityManifest.CreateBase(rs, reportProvider?.Current);
+                            }
+                        }
+                        catch { /* non-fatal */ }
 
                     }
                 }

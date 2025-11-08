@@ -3,12 +3,11 @@
 - New: Environment Health Check (default: enabled)
   - Validates the host at test run start; computes a 0–100 score with a label (Excellent/Good/Fair/Poor)
   - Publishes a summary in INF/DBG logs and now appends it to the bottom of each test’s Output window
-  - Checks include: Process Priority, GC Mode, CPU Affinity, High‑Resolution Timer, Power Plan, Background CPU load
+  - Checks include: Build Mode, JIT (Tiered/OSR), Process Priority, GC Mode, CPU Affinity, High‑Resolution Timer, Power Plan, Background CPU load
   - Global toggle: `RunSettingsBuilder.WithEnvironmentHealthCheck(false)` to disable
   - Docs: See `/docs/1/environment-health`
   - Timer check now reports effective sleep granularity (median of Thread.Sleep(1)) across Windows/macOS/Linux, so short sleeps show as ~OS tick length in outputs
-
-
+  - Build Mode warns in Debug (recommend Release optimizations); JIT details include COMPlus_TieredCompilation, COMPlus_TC_QuickJit, COMPlus_TC_QuickJitForLoops, and COMPlus_TC_OnStackReplacement
 
 - UX: Runtime diagnostics in outputs
   - Per-test overhead diagnostics are now shown in both console logs and the IDE Test Output window (baseline ticks, drift %, and capped-iteration count; when disabled, a one-liner notes no subtraction)

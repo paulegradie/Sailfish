@@ -139,8 +139,27 @@ internal class SailfishConsoleWindowFormatter : ISailfishConsoleWindowFormatter
         const string textLineDist = "Distribution (ms)";
         stringBuilder.AppendLine();
         stringBuilder.AppendLine(textLineDist);
-        stringBuilder.AppendLine(string.Join("", Enumerable.Range(0, textLineDist.Length).Select(x => "-")));
+        stringBuilder.AppendLine(new string('-', textLineDist.Length));
         stringBuilder.AppendLine(string.Join(", ", results.DataWithOutliersRemoved.Select(x => Math.Round(x, 4))));
+
+        // validation warnings (if any)
+        if (results.Validation?.HasWarnings == true)
+        {
+            stringBuilder.AppendLine();
+            const string warningsHeader = "Warnings";
+            stringBuilder.AppendLine(warningsHeader);
+            stringBuilder.AppendLine(new string('-', warningsHeader.Length));
+            foreach (var w in results.Validation!.Warnings)
+            {
+                var tag = w.Severity switch
+                {
+                    ValidationSeverity.Critical => "❗",
+                    ValidationSeverity.Warning => "⚠️",
+                    _ => "ℹ️"
+                };
+                stringBuilder.AppendLine($"{tag} {w.Message}");
+            }
+        }
 
         return stringBuilder.ToString();
     }
