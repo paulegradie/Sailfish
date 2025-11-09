@@ -44,6 +44,15 @@
   - Marked NoInlining; uses Volatile.Write + GC.KeepAlive
   - Docs: See `/docs/1/anti-dce`
 
+
+- New: Anti‑DCE Analyzers (with Code Fixes)
+  - SF1001: Unused return value inside `[SailfishMethod]` — fix wraps the call with `Consumer.Consume(...)`
+  - SF1002: Constant‑only computation detected — fix appends `Consumer.Consume((expr))`
+  - SF1003: Empty loop body in hot path — fix inserts `Consumer.Consume(0);` into the loop body
+  - Packaged with Sailfish: analyzers ship via the Sailfish NuGet (no extra install). Works in VS/Rider and supports Fix All.
+  - Docs: See `/docs/1/anti-dce`
+
+
 - UX: Runtime diagnostics in outputs
   - Per-test overhead diagnostics are now shown in both console logs and the IDE Test Output window (baseline ticks, drift %, and capped-iteration count; when disabled, a one-liner notes no subtraction)
   - Environment Health includes a timer entry with both high-resolution timer details and effective sleep granularity (median of Thread.Sleep(1))
@@ -91,6 +100,8 @@ var run = RunSettingsBuilder.CreateBuilder()
     .WithGlobalOutlierHandling(useConfigurable: true, strategy: OutlierStrategy.RemoveUpper)
     .Build();
 ```
+- Diagnostic IDs: SF1001–SF1003 are the Anti‑DCE rules; global setup property analyzers renumbered to SF1013–SF1015 to avoid collisions.
+
 
 
 ### Technical Details

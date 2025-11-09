@@ -44,6 +44,12 @@ public sealed class ConstantOnlyComputationAnalyzer : AnalyzerBase<ClassDeclarat
 
             if (usesExternalInputs) continue;
 
+            // If the method already consumes a value via Sailfish.Utilities.Consumer.Consume, skip
+            var hasConsumption = method.DescendantNodes().OfType<InvocationExpressionSyntax>()
+                .Select(inv => semanticModel.GetSymbolInfo(inv).Symbol as IMethodSymbol)
+                .Any(sym => sym is not null && sym.Name == "Consume" && sym.ContainingType?.Name == "Consumer" && sym.ContainingNamespace?.ToDisplayString() == "Sailfish.Utilities");
+            if (hasConsumption) continue;
+
             // Look for arithmetic expressions where both operands are constants (literal or const symbol)
             var binaryExprs = method.DescendantNodes().OfType<BinaryExpressionSyntax>()
                 .Where(b => b.IsKind(SyntaxKind.AddExpression)

@@ -46,12 +46,19 @@ These effects are cheap and observable enough to make JIT elimination unlikely w
 
 
 
-## Anti‑DCE Analyzers (coming soon)
+## Anti‑DCE Analyzers
 
-Static analysis rules that help you avoid dead‑code elimination risks in benchmarks:
+Static analysis rules that help you avoid dead‑code elimination risks in benchmarks. Each rule includes a one‑click code fix.
 
-- SF1001: Unobserved result in benchmark method
-- SF1002: Constant‑foldable patterns inside measured code
-- SF1003: Hot loops without `Consumer.Consume(...)` usage
+- SF1001 – Unused return value inside [SailfishMethod]
+  - Warns when a non‑void call result is ignored. Fix wraps the call with `Consumer.Consume(...)`.
+  - Before → `DoWork();`  After → `Consumer.Consume(DoWork());`
+- SF1002 – Constant‑only computation in [SailfishMethod]
+  - Warns on arithmetic that uses only constants/literals. Fix appends `Consumer.Consume((expr));` to make work observable.
+  - Example: `var x = 2 * 1024;` becomes `var x = 2 * 1024; Consumer.Consume((2 * 1024));`
+- SF1003 – Empty loop body inside [SailfishMethod]
+  - Warns on hot loops that perform no observable work. Fix inserts `Consumer.Consume(0);` into the loop body.
 
-These analyzers will ship with configurations and code fixes. Track progress in the Phase 2 Quick Start and release notes.
+Notes:
+- These analyzers run only inside methods marked with `[SailfishMethod]`.
+- You can suppress per occurrence with `#pragma warning disable/restore` or via an `.editorconfig` severity setting if needed.
