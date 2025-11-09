@@ -89,3 +89,8 @@ Keep it enabled for CI and for local baseline/verification runs to catch unstabl
 - In Rider you may need to enable “VS Test Adapter Support” to see custom adapter output.
 {% /callout %}
 
+
+
+## Related
+
+- Reproducibility Manifest: [/docs/1/reproducibility-manifest](/docs/1/reproducibility-manifest)

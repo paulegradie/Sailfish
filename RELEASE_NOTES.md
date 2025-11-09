@@ -9,6 +9,21 @@
   - Timer check now reports effective sleep granularity (median of Thread.Sleep(1)) across Windows/macOS/Linux, so short sleeps show as ~OS tick length in outputs
   - Build Mode warns in Debug (recommend Release optimizations); JIT details include COMPlus_TieredCompilation, COMPlus_TC_QuickJit, COMPlus_TC_QuickJitForLoops, and COMPlus_TC_OnStackReplacement
 
+
+- New: Reproducibility Manifest (best-effort)
+  - Captures environment metadata: .NET runtime, OS and architecture, CPU model (best-effort), GC mode, JIT flags (Tiered/QuickJit/OSR), process priority, CPU affinity, and high-resolution timer
+  - Records Environment Health score/label plus session info (timestamp, session ID, tags, CI)
+  - Includes per-method snapshots: N, warmups, mean, StdDev, and CI margins (95%/99%)
+  - Persisted as `Manifest_<timestamp>.json` in the Run Settings output directory (default: `sailfish_default_output`; Test Adapter can override via `.sailfish.json` -> `GlobalSettings.ResultsDirectory`)
+  - Markdown includes a short "Reproducibility Summary" near the top when available
+  - Docs: See `/docs/1/reproducibility-manifest`
+
+
+- New: Anti‑DCE Consumer API
+  - Add `Sailfish.Utilities.Consumer.Consume<T>(...)` to discourage dead‑code elimination in hot paths during benchmarking
+  - Marked NoInlining; uses Volatile.Write + GC.KeepAlive
+  - Docs: See `/docs/1/anti-dce`
+
 - UX: Runtime diagnostics in outputs
   - Per-test overhead diagnostics are now shown in both console logs and the IDE Test Output window (baseline ticks, drift %, and capped-iteration count; when disabled, a one-liner notes no subtraction)
   - Environment Health includes a timer entry with both high-resolution timer details and effective sleep granularity (median of Thread.Sleep(1))

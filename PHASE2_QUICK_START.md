@@ -1,7 +1,7 @@
 # Phase 2 Quick Start Guide for AI Agents
 
-**Last Updated:** 2025-11-08
-**Status:** In Progress — Validation warnings complete; Env Health Check (Build Mode + JIT) implemented; continuing iPhone‑level polish
+**Last Updated:** 2025-11-09
+**Status:** In Progress — Phase 2 groundwork complete; remaining Tier A “iPhone‑level polish” items: OpsPerInvoke + TargetIterationDuration; Precision/Time budgets; NxN comparisons with FDR + ratio CIs; Seeded run order; Anti‑DCE analyzers; session markdown consolidation.
 
 ---
 
@@ -13,7 +13,7 @@ You are implementing **Phase 2** of the Sailfish Statistical Engine upgrade:
 - **Goal:** Improve measurement reliability without breaking existing functionality
 
 ---
-## ✅ Progress Update (2025-11-08)
+## ✅ Progress Update (2025-11-09)
 
 - Added validation warnings display to IDE test output (SailfishConsoleWindowFormatter.cs): prints a "Warnings" section with severity indicators when results include warnings.
 - Build is green; change is backward compatible and isolated to output formatting.
@@ -25,12 +25,39 @@ You are implementing **Phase 2** of the Sailfish Statistical Engine upgrade:
 - Integrated summary into Test Adapter output and consolidated markdown
 - Added unit tests verifying presence of new entries (Build Mode, JIT)
 
-- Next focus: pick the next Tier A iPhone‑level polish item (e.g., Reproducibility Manifest or Anti‑DCE guard rails).
+- Implemented Reproducibility Manifest (best‑effort)
+  - Writes `Manifest_*.json` in the session output directory
+  - Adds a “Reproducibility Summary” section to consolidated markdown
+  - Unit/integration tests added; all suites passing
+  - Docs: /docs/1/reproducibility-manifest; Release notes updated
+
+- Implemented Anti‑DCE Consumer API
+  - New `Sailfish.Utilities.Consumer.Consume<T>(...)` utility to discourage dead‑code elimination
+  - Marked NoInlining; uses Volatile.Write + GC.KeepAlive
+  - Docs: /docs/1/anti-dce; Release notes updated
+
+- Next focus: Finish Tier A “iPhone‑level polish” items (see list below). All targeted test suites green (Tests.Library, Tests.TestAdapter).
+
+
+## 🔴 Tier A remaining work (must complete before iPhone-level polish sign-off)
+- OperationsPerInvoke + TargetIterationDuration auto-tuning (ExecutionSettings; TestCaseIterator)
+- Precision/Time budgets controller (integrate with Adaptive Sampling)
+- NxN method comparisons with Benjamini–Hochberg FDR and ratio CIs; consolidated markdown/CSV NxN tables
+- Seeded randomized run order; log/persist seed in manifest and outputs
+- Anti‑DCE Roslyn analyzers (minimal SF1001–SF1003)
+- Session-based markdown consolidation polish for method comparisons
 
 
 ## 🧭 Handoff
 - Next Agent Prompt: G:/code/Sailfish/AiAssistedDevSpecs/ImprovedRigor-1/NextAgentPrompt-2.1.md
-- Start there for step-by-step instructions, verification commands, and the next Tier A task selection guidance.
+- Primary objective: finish the Tier A items listed above.
+- Recommended sequence:
+  1) Markdown consolidation + NxN tables with FDR/ratio CIs
+  2) OperationsPerInvoke + TargetIterationDuration
+  3) Precision/Time budgets controller
+  4) Seeded run order (persist seed to manifest)
+  5) Anti‑DCE analyzers (SF1001–SF1003)
+- Use the verification commands in the prompt (adapter + core only).
 
 ---
 
