@@ -137,6 +137,12 @@ public sealed class SailfishAttribute : Attribute
     public int MaxMeasurementTimePerMethodMs { get; set; } = 0;
 
     /// <summary>
+    /// Enable precision/time budget controller that relaxes precision targets slightly to fit the per-method time budget. Default false.
+    /// </summary>
+    public bool UseTimeBudgetController { get; set; } = false;
+
+
+    /// <summary>
     /// Enable lightweight default diagnosers for this class (memory/GC/threading). Default false.
     /// </summary>
     public bool EnableDefaultDiagnosers { get; set; } = false;

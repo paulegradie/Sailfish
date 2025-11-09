@@ -105,6 +105,8 @@ Markdown files use **session-based consolidation**, meaning:
 ### 🧭 Reproducibility Summary (when available)
 
 - A short summary of environment details and a link to `Manifest_*.json` is included near the top of the consolidated file when Run Settings and the manifest provider are available.
+- When seeded randomized run order is enabled, the summary includes the Randomization Seed to support reproducible reruns.
+
 - Learn more: [/docs/1/reproducibility-manifest](/docs/1/reproducibility-manifest)
 
 

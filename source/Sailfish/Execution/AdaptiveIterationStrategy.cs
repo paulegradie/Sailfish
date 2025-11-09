@@ -112,6 +112,26 @@ internal class AdaptiveIterationStrategy : IIterationStrategy
             // Best-effort; ignore selector failures and proceed with original thresholds
         }
 
+
+            // Budget-aware precision controller (opt-in)
+            try
+            {
+                var controller = new PrecisionTimeBudgetController();
+                var adjusted = controller.Adjust(initialSamples, executionSettings, testStart, DateTimeOffset.Now);
+                if (adjusted.TargetCV > targetCV || adjusted.MaxConfidenceIntervalWidth > maxCiWidth)
+                {
+                    logger.Log(LogLevel.Information,
+                        "      ---- Budget controller: remaining={RemainingMs:F1}ms, est/iter={PerIterMs:F2}ms, TargetCV {OldCv:F3}->{NewCv:F3}, MaxCI {OldCi:F3}->{NewCi:F3}",
+                        adjusted.RemainingMs, adjusted.PerIterMs, targetCV, adjusted.TargetCV, maxCiWidth, adjusted.MaxConfidenceIntervalWidth);
+                    targetCV = adjusted.TargetCV;
+                    maxCiWidth = adjusted.MaxConfidenceIntervalWidth;
+                }
+            }
+            catch
+            {
+                // Best-effort; ignore controller failures
+            }
+
         convergenceResult = convergenceDetector.CheckConvergence(
             initialSamples, targetCV, maxCiWidth, confidenceLevel, minIterations);
 

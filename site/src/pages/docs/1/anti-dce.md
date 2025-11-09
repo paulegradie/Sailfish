@@ -44,3 +44,14 @@ These effects are cheap and observable enough to make JIT elimination unlikely w
 - Environment Health: [/docs/1/environment-health](/docs/1/environment-health)
 - Reproducibility Manifest: [/docs/1/reproducibility-manifest](/docs/1/reproducibility-manifest)
 
+
+
+## Anti‑DCE Analyzers (coming soon)
+
+Static analysis rules that help you avoid dead‑code elimination risks in benchmarks:
+
+- SF1001: Unobserved result in benchmark method
+- SF1002: Constant‑foldable patterns inside measured code
+- SF1003: Hot loops without `Consumer.Consume(...)` usage
+
+These analyzers will ship with configurations and code fixes. Track progress in the Phase 2 Quick Start and release notes.

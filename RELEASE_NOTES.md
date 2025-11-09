@@ -26,6 +26,19 @@
   - Docs: See `/docs/1/reproducibility-manifest`
 
 
+- Reproducibility: Randomization Seed surfaced in consolidated markdown
+  - The "Reproducibility Summary" now shows the Randomization Seed (when seeded randomized run order is enabled), improving repeatability of test sessions
+  - Docs: See `/docs/1/markdown-output` and `/docs/1/reproducibility-manifest`
+
+- New: SailDiff runtime input (in‑memory objects)
+  - SailDiff can now analyze `TestData` in memory—ideal for Test Adapter and runtime scenarios
+  - API: `ISailDiff.Analyze(TestData beforeData, TestData afterData, SailDiffSettings settings)`
+  - Docs: See `/docs/2/saildiff`
+
+- Opt‑in: Precision/Time Budget Controller
+  - A budget-aware controller can relax precision thresholds when remaining time is low (backward compatible; off by default)
+
+
 - New: Anti‑DCE Consumer API
   - Add `Sailfish.Utilities.Consumer.Consume<T>(...)` to discourage dead‑code elimination in hot paths during benchmarking
   - Marked NoInlining; uses Volatile.Write + GC.KeepAlive

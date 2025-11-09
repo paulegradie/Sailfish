@@ -1,7 +1,7 @@
 # Phase 2 Quick Start Guide for AI Agents
 
 **Last Updated:** 2025-11-09
-**Status:** In Progress — Tier A polish mostly complete; remaining: OperationsPerInvoke + TargetIterationDuration auto‑tuning; Precision/Time budgets controller; Seeded run order (persist seed in manifest); SailDiff runtime data input.
+**Status:** In Progress — Tier A polish COMPLETE. Next: Tier B (Anti‑DCE analyzers).
 
 ---
 
@@ -33,6 +33,10 @@ You are implementing **Phase 2** of the Sailfish Statistical Engine upgrade:
   - JIT settings (TieredCompilation, QuickJit, QuickJitForLoops, OSR)
 - Integrated summary into Test Adapter output and consolidated markdown
 - Added unit tests verifying presence of new entries (Build Mode, JIT)
+- Precision/Time budgets controller (opt-in) integrated into AdaptiveIterationStrategy; budget-aware precision relaxations; unit tests green
+- SailDiff runtime input support: implemented ISailDiff.Analyze(TestData before, TestData after, SailDiffSettings); publishes notifications; unit tests green
+
+
 
 - Implemented Reproducibility Manifest (best‑effort)
   - Writes `Manifest_*.json` in the session output directory
@@ -45,25 +49,21 @@ You are implementing **Phase 2** of the Sailfish Statistical Engine upgrade:
   - Marked NoInlining; uses Volatile.Write + GC.KeepAlive
   - Docs: /docs/1/anti-dce; Release notes updated
 
-- Next focus: Finish Tier A “iPhone‑level polish” items (see list below). All targeted test suites green (Tests.Library, Tests.TestAdapter).
+- Next focus: Tier B work. Start Anti‑DCE analyzers (SF1001–SF1003). All targeted test suites green (Tests.Library, Tests.TestAdapter).
 
 
-## 🔴 Tier A remaining work (must complete before iPhone-level polish sign-off)
-- OperationsPerInvoke + TargetIterationDuration auto-tuning (ExecutionSettings; TestCaseIterator)
-- Precision/Time budgets controller (integrate with Adaptive Sampling)
-- Seeded randomized run order; log/persist seed in manifest and outputs
-- SailDiff runtime input support (accept in-memory objects in addition to JSON files)
+## ✅ Tier A status
+- None remaining — Tier A “iPhone‑level polish” items are complete.
 
 
 ## 🧭 Handoff
-- Next Agent Prompt: G:/code/Sailfish/AiAssistedDevSpecs/ImprovedRigor-1/NextAgentPrompt-2.2.md
-- Primary objective: finish the Tier A items listed above.
+- Next Agent Prompt: G:/code/Sailfish/AiAssistedDevSpecs/ImprovedRigor-1/NextAgentPrompt-2.3.md
+- Status: Docs updated (SailDiff runtime input; Reproducibility Summary shows Randomization Seed), site anti‑DCE page prepared; release notes appended.
+- Primary objective: begin Tier B — Anti‑DCE analyzers (SF1001–SF1003).
 - Recommended sequence:
-  1) Markdown consolidation + NxN tables with FDR/ratio CIs
-  2) OperationsPerInvoke + TargetIterationDuration
-  3) Precision/Time budgets controller
-  4) Seeded run order (persist seed to manifest)
-  5) Anti‑DCE analyzers (SF1001–SF1003)
+  1) Implement analyzers + tests per AntiDCEAnalyzers-Design-v1.md
+  2) Wire into Sailfish.Analyzers package and CI
+  3) Update docs and release notes
 - Use the verification commands in the prompt (adapter + core only). Do not run PerformanceTests demo projects.
 
 ---

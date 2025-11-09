@@ -29,6 +29,7 @@ Sailfish emits a Reproducibility Manifest alongside your session outputs. The ma
 ### Session info
 - Timestamp (UTC)
 - Session ID (unique per run)
+- Randomization Seed (when seeded randomized run order is enabled)
 - Tags (from Run Settings)
 - CI system detection (e.g., GitHub Actions)
 

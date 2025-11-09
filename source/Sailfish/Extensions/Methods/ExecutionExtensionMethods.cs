@@ -45,7 +45,8 @@ internal static class ExecutionExtensionMethods
             OperationsPerInvoke = sailfishAttribute.OperationsPerInvoke,
             TargetIterationDuration = TimeSpan.FromMilliseconds(sailfishAttribute.TargetIterationDurationMs),
             MaxMeasurementTimePerMethod = sailfishAttribute.MaxMeasurementTimePerMethodMs > 0 ? TimeSpan.FromMilliseconds(sailfishAttribute.MaxMeasurementTimePerMethodMs) : (TimeSpan?)null,
-            EnableDefaultDiagnosers = sailfishAttribute.EnableDefaultDiagnosers
+            EnableDefaultDiagnosers = sailfishAttribute.EnableDefaultDiagnosers,
+            UseTimeBudgetController = sailfishAttribute.UseTimeBudgetController
         };
     }
 

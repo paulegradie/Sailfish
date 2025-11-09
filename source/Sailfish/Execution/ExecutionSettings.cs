@@ -32,6 +32,10 @@ public interface IExecutionSettings
     // Opt-in to settings-driven outlier handling; false preserves legacy RemoveAll behavior
     public bool UseConfigurableOutlierDetection { get; set; }
 
+
+    // Optional: Budget-aware precision controller (opt-in)
+    public bool UseTimeBudgetController { get; set; }
+
     // NEW: Execution tuning and diagnostics
     public int OperationsPerInvoke { get; set; }
     public System.TimeSpan TargetIterationDuration { get; set; }
@@ -79,6 +83,10 @@ public class ExecutionSettings : IExecutionSettings
 
     	// New: Outlier strategy preference for configurable detection (not yet consumed by defaults)
     	public OutlierStrategy OutlierStrategy { get; set; } = OutlierStrategy.RemoveUpper;
+
+    // Enable precision/time budget controller (opt-in)
+    public bool UseTimeBudgetController { get; set; } = false;
+
 
         // Default false to preserve legacy behavior (RemoveAll via SailfishOutlierDetector)
         public bool UseConfigurableOutlierDetection { get; set; } = false;

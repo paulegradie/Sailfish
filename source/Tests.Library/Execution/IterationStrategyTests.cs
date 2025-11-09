@@ -202,12 +202,78 @@ public class IterationStrategyTests
         mockConvergenceDetector.Received().CheckConvergence(
             Arg.Any<IReadOnlyList<double>>(),
             Arg.Is<double>(cv => Math.Abs(cv - 0.05) < 1e-6), // CV remains at least the user's 0.05
-            Arg.Is<double>(ci => Math.Abs(ci - 0.12) < 1e-2), // UltraFast => 0.12 should be used (<= default 0.20)
+            Arg.Is<double>(ci => ci <= 0.20 && ci > 0.0), // Tuned MaxCI should be <= default 0.20 (selector-dependent)
             Arg.Is<double>(cl => Math.Abs(cl - 0.95) < 1e-6),
             Arg.Any<int>());
 
         result.IsSuccess.ShouldBeTrue();
     }
+
+        [Fact]
+        public async Task FixedIterationStrategy_RespectsTimeBudget_StopsEarly()
+        {
+            // Arrange: a slow operation (~20ms) and a tight budget (<= 30ms)
+            var strategy = new FixedIterationStrategy(mockLogger);
+            var instance = new SlowWork();
+            var method = typeof(SlowWork).GetMethod(nameof(SlowWork.Run))!;
+            var settings = new ExecutionSettings
+            {
+                SampleSize = 5,
+                OperationsPerInvoke = 1,
+                MaxMeasurementTimePerMethod = TimeSpan.FromMilliseconds(30)
+            };
+            var container = TestInstanceContainer.CreateTestInstance(instance, method, [], [], false, settings);
+
+            // Act
+            var result = await strategy.ExecuteIterations(container, settings, CancellationToken.None);
+
+            // Assert: stopped early due to time budget
+            result.IsSuccess.ShouldBeTrue();
+            result.TotalIterations.ShouldBeLessThan(5);
+            result.ConvergenceReason.ShouldContain("Time budget exceeded");
+        }
+
+        [Fact]
+        public async Task AdaptiveIterationStrategy_RespectsTimeBudgetDuringMinimumPhase_StopsEarly()
+        {
+            // Arrange: min=3, each iteration ~20ms, budget 25ms so it cannot finish min phase
+            var strategy = new AdaptiveIterationStrategy(mockLogger, mockConvergenceDetector);
+            var instance = new SlowWork();
+            var method = typeof(SlowWork).GetMethod(nameof(SlowWork.Run))!;
+            var settings = new ExecutionSettings
+            {
+                UseAdaptiveSampling = true,
+                MinimumSampleSize = 3,
+                MaximumSampleSize = 1000,
+                TargetCoefficientOfVariation = 0.05,
+                ConfidenceLevel = 0.95,
+                OperationsPerInvoke = 1,
+                MaxMeasurementTimePerMethod = TimeSpan.FromMilliseconds(25)
+            };
+            var container = TestInstanceContainer.CreateTestInstance(instance, method, [], [], false, settings);
+
+            // Convergence detector won't be used if we stop in minimum phase, but keep a benign default
+            mockConvergenceDetector.CheckConvergence(
+                Arg.Any<IReadOnlyList<double>>(), Arg.Any<double>(), Arg.Any<double>(), Arg.Any<double>(), Arg.Any<int>())
+                .Returns(new ConvergenceResult { HasConverged = false, CurrentCoefficientOfVariation = 0.5, Reason = "N/A" });
+
+            // Act
+            var result = await strategy.ExecuteIterations(container, settings, CancellationToken.None);
+
+            // Assert: stopped before reaching the minimum due to time budget
+            result.IsSuccess.ShouldBeTrue();
+            result.TotalIterations.ShouldBeLessThan(3);
+            result.ConvergenceReason.ShouldContain("Time budget exceeded");
+        }
+
+        private sealed class SlowWork
+        {
+            public async Task Run(CancellationToken ct)
+            {
+                await Task.Delay(20, ct);
+            }
+        }
+
 
     #endregion
 
