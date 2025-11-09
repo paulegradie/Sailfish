@@ -470,5 +470,56 @@ public class MethodComparisonTestRunCompletedHandlerTests
         try { Directory.Delete(tempDir, true); } catch { }
     }
 
+	    [Fact]
+	    public async Task Handle_IncludesRandomizationSeed_InReproducibilitySummaryMarkdown()
+	    {
+	        // Arrange
+	        var tempDir = Path.Combine(Path.GetTempPath(), "Sailfish_SeedMarkdownTest_" + Guid.NewGuid().ToString("N"));
+	        Directory.CreateDirectory(tempDir);
+
+	        var runSettings = RunSettingsBuilder.CreateBuilder()
+	            .WithTimeStamp(DateTime.UtcNow)
+	            .WithLocalOutputDirectory(tempDir)
+	            .WithArg("seed", "42")
+	            .Build();
+
+	        var healthProvider = new EnvironmentHealthReportProvider
+	        {
+	            Current = new EnvironmentHealthReport(new List<HealthCheckEntry>
+	            {
+	                new("Build Mode", HealthStatus.Pass, "Release mode")
+	            })
+	        };
+
+	        // Pre-populate manifest so markdown summary can access it immediately
+	        var manifestProvider = new ReproducibilityManifestProvider
+	        {
+	            Current = ReproducibilityManifest.CreateBase(runSettings, healthProvider.Current)
+	        };
+
+	        var richHandler = new MethodComparisonTestRunCompletedHandler(
+	            mockLogger,
+	            mockMediator,
+	            healthProvider,
+	            runSettings,
+	            manifestProvider);
+
+	        var notification = CreateTestNotificationWithWriteToMarkdown();
+
+	        // Act
+	        await richHandler.Handle(notification, CancellationToken.None);
+
+	        // Assert: markdown contains the randomization seed
+	        await mockMediator.Received(1).Publish(
+	            Arg.Is<WriteMethodComparisonMarkdownNotification>(n =>
+	                n.MarkdownContent.IndexOf("Randomization Seed", StringComparison.OrdinalIgnoreCase) >= 0 &&
+	                n.MarkdownContent.Contains("42")),
+	            Arg.Any<CancellationToken>());
+
+	        // Cleanup
+	        try { Directory.Delete(tempDir, true); } catch { }
+	    }
+
+
 }
 

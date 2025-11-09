@@ -105,10 +105,8 @@ internal class MethodComparisonTestRunCompletedHandler : INotificationHandler<Te
                 "Generating consolidated session markdown for {0} test classes with WriteToMarkdown attribute",
                 classesWithMarkdown.Count);
 
-            // Generate consolidated markdown content for the entire session
-            var markdownContent = CreateSessionConsolidatedMarkdown(classesWithMarkdown);
-
             // Build and persist reproducibility manifest next to results (best-effort)
+            // Do this BEFORE generating markdown so the summary can include manifest details (e.g., randomization seed)
             try
             {
                 if (_runSettings != null && _manifestProvider != null)
@@ -126,6 +124,9 @@ internal class MethodComparisonTestRunCompletedHandler : INotificationHandler<Te
             {
                 _logger.Log(LogLevel.Debug, ex, "Failed to create/write reproducibility manifest: {0}", ex.Message);
             }
+
+            // Generate consolidated markdown content for the entire session (after manifest is available)
+            var markdownContent = CreateSessionConsolidatedMarkdown(classesWithMarkdown);
 
             if (!string.IsNullOrEmpty(markdownContent))
             {
@@ -243,6 +244,11 @@ internal class MethodComparisonTestRunCompletedHandler : INotificationHandler<Te
                 }
                 sb.AppendLine($"- Timer: {manifest.Timer}");
                 if (!string.IsNullOrWhiteSpace(manifest.CiSystem)) sb.AppendLine($"- CI: {manifest.CiSystem}");
+                // Randomization seed (if used)
+                if (manifest.Randomization?.Seed is int seedValue)
+                {
+                    sb.AppendLine($"- Randomization Seed: {seedValue}");
+                }
                 sb.AppendLine();
             }
             catch (Exception ex)
