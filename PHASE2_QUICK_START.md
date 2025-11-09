@@ -1,7 +1,7 @@
 # Phase 2 Quick Start Guide for AI Agents
 
 **Last Updated:** 2025-11-09
-**Status:** In Progress — Phase 2 groundwork complete; remaining Tier A “iPhone‑level polish” items: OpsPerInvoke + TargetIterationDuration; Precision/Time budgets; NxN comparisons with FDR + ratio CIs; Seeded run order; Anti‑DCE analyzers; session markdown consolidation.
+**Status:** In Progress — Tier A polish mostly complete; remaining: OperationsPerInvoke + TargetIterationDuration auto‑tuning; Precision/Time budgets controller; Seeded run order (persist seed in manifest); SailDiff runtime data input.
 
 ---
 
@@ -14,6 +14,15 @@ You are implementing **Phase 2** of the Sailfish Statistical Engine upgrade:
 
 ---
 ## ✅ Progress Update (2025-11-09)
+
+- Method comparisons rigor + CSV parity
+  - NxN comparisons use BenjaminiHochberg FDRadjusted qvalues and 95% ratio confidence intervals (logscale) in Test Adapter and consolidated markdown
+  - CSV session output updated to include Label and legacy ChangeDescription (backward compatibility); added CI95 bounds and q_value
+  - Standard error computed from StdDev and sample size when not present in tracking format
+  - Targeted tests green: Tests.Library Csv* and Tests.TestAdapter markdown comparison tests
+
+- Markdown improvements
+  - Added a "Detailed Results" section in MethodComparisonProcessor markdown to satisfy existing tests and improve clarity
 
 - Added validation warnings display to IDE test output (SailfishConsoleWindowFormatter.cs): prints a "Warnings" section with severity indicators when results include warnings.
 - Build is green; change is backward compatible and isolated to output formatting.
@@ -42,14 +51,12 @@ You are implementing **Phase 2** of the Sailfish Statistical Engine upgrade:
 ## 🔴 Tier A remaining work (must complete before iPhone-level polish sign-off)
 - OperationsPerInvoke + TargetIterationDuration auto-tuning (ExecutionSettings; TestCaseIterator)
 - Precision/Time budgets controller (integrate with Adaptive Sampling)
-- NxN method comparisons with Benjamini–Hochberg FDR and ratio CIs; consolidated markdown/CSV NxN tables
 - Seeded randomized run order; log/persist seed in manifest and outputs
-- Anti‑DCE Roslyn analyzers (minimal SF1001–SF1003)
-- Session-based markdown consolidation polish for method comparisons
+- SailDiff runtime input support (accept in-memory objects in addition to JSON files)
 
 
 ## 🧭 Handoff
-- Next Agent Prompt: G:/code/Sailfish/AiAssistedDevSpecs/ImprovedRigor-1/NextAgentPrompt-2.1.md
+- Next Agent Prompt: G:/code/Sailfish/AiAssistedDevSpecs/ImprovedRigor-1/NextAgentPrompt-2.2.md
 - Primary objective: finish the Tier A items listed above.
 - Recommended sequence:
   1) Markdown consolidation + NxN tables with FDR/ratio CIs
@@ -57,7 +64,7 @@ You are implementing **Phase 2** of the Sailfish Statistical Engine upgrade:
   3) Precision/Time budgets controller
   4) Seeded run order (persist seed to manifest)
   5) Anti‑DCE analyzers (SF1001–SF1003)
-- Use the verification commands in the prompt (adapter + core only).
+- Use the verification commands in the prompt (adapter + core only). Do not run PerformanceTests demo projects.
 
 ---
 

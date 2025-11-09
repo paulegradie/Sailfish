@@ -1,4 +1,11 @@
 ﻿## What's Changed in vNEXT_VERSION
+- New: NxN Method Comparisons rigor + CSV parity
+  - Test Adapter and session markdown: NxN comparisons per group with Benjamini–Hochberg FDR–adjusted q-values and 95% ratio confidence intervals (computed on the log scale)
+  - CSV session output updated to include: ComparisonGroup, Method1, Method2, Mean1, Mean2, Ratio, CI95_Lower, CI95_Upper, q_value, Label, ChangeDescription (legacy column retained for backward compatibility)
+  - Label uses Improved/Slower/Similar; legacy ChangeDescription retains Improved/Regressed/No Change for existing parsers
+  - Standard error computed from StdDev and sample size when not present in tracking format
+  - Comparison markdown now includes a "Detailed Results" table to satisfy existing tests and improve clarity
+
 
 - New: Environment Health Check (default: enabled)
   - Validates the host at test run start; computes a 0–100 score with a label (Excellent/Good/Fair/Poor)

@@ -36,6 +36,11 @@ internal static class ExecutionExtensionMethods
             MaxConfidenceIntervalWidth = sailfishAttribute.MaxConfidenceIntervalWidth,
             UseRelativeConfidenceInterval = sailfishAttribute.UseRelativeConfidenceInterval,
 
+            // NEW: Outlier handling
+            OutlierStrategy = sailfishAttribute.OutlierStrategy,
+            UseConfigurableOutlierDetection = sailfishAttribute.UseConfigurableOutlierDetection,
+
+
             // NEW: Execution tuning and diagnostics
             OperationsPerInvoke = sailfishAttribute.OperationsPerInvoke,
             TargetIterationDuration = TimeSpan.FromMilliseconds(sailfishAttribute.TargetIterationDurationMs),

@@ -1,5 +1,7 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
+using Sailfish.Analysis;
+
 
 namespace Sailfish.Attributes;
 
@@ -138,5 +140,17 @@ public sealed class SailfishAttribute : Attribute
     /// Enable lightweight default diagnosers for this class (memory/GC/threading). Default false.
     /// </summary>
     public bool EnableDefaultDiagnosers { get; set; } = false;
+
+    /// <summary>
+    /// Preferred outlier handling strategy when configurable detection is enabled.
+    /// Default is RemoveUpper to preserve typical performance-testing semantics.
+    /// </summary>
+    public OutlierStrategy OutlierStrategy { get; set; } = OutlierStrategy.RemoveUpper;
+
+    /// <summary>
+    /// Opt-in to settings-driven outlier handling for this class. When false (default),
+    /// the legacy SailfishOutlierDetector path is used to preserve backward compatibility.
+    /// </summary>
+    public bool UseConfigurableOutlierDetection { get; set; } = false;
 
 }

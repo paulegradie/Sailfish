@@ -39,6 +39,15 @@ This document provides a detailed, agent-ready implementation plan for Phase 2 o
 
 ---
 
+## ✅ Progress Update (2025-11-09)
+
+- NxN Method Comparisons completed (adapter + consolidated markdown): Benjamini–Hochberg FDR–adjusted q-values and 95% ratio confidence intervals (computed on the log scale)
+- CSV session output parity: added ComparisonGroup, Method1, Method2, Mean1, Mean2, Ratio, CI95_Lower, CI95_Upper, q_value, Label and preserved ChangeDescription for backward compatibility
+- Standard error computed from StdDev and sample size where not present in tracking format
+- TestAdapter comparison markdown now includes a "Detailed Results" table to satisfy existing tests
+- Targeted tests green: Tests.Library Csv* and Tests.TestAdapter comparison markdown tests
+
+
 
 ## 🎯 Phase 2 Goals
 

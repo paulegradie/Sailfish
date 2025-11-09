@@ -1,6 +1,14 @@
 # Context Handoff: Implement WriteToCsv Attribute for Session-Based CSV Generation
 
 ## 🎯 **Mission**
+
+## Status Update (2025-11-09)
+- Session-based CSV generation and comparison rigor implemented.
+- CsvTestRunCompletedHandler now outputs comparison rows with columns: ComparisonGroup, Method1, Method2, Mean1, Mean2, Ratio, CI95_Lower, CI95_Upper, q_value, Label, ChangeDescription (legacy column retained).
+- Ratio CIs computed on log scale; multiple-comparisons corrected with Benjamini–Hochberg FDR.
+- Standard error computed from StdDev and sample size when needed.
+- Verified via Tests.Library CsvTestRunCompletedHandlerTests (green).
+
 Implement session-based CSV generation functionality that mirrors the successful markdown consolidation system we've built. The goal is to enable the `[WriteToCsv]` attribute to generate consolidated CSV files containing performance test results and comparison data.
 
 ## 📋 **Current State & Infrastructure**
@@ -8,7 +16,7 @@ Implement session-based CSV generation functionality that mirrors the successful
 ### ✅ **Successfully Implemented (Reference Architecture)**
 We have a fully working session-based markdown consolidation system that serves as the blueprint:
 
-1. **Session-Based Handler**: `MethodComparisonTestRunCompletedHandler` 
+1. **Session-Based Handler**: `MethodComparisonTestRunCompletedHandler`
    - Location: `source/Sailfish/DefaultHandlers/Sailfish/MethodComparisonTestRunCompletedHandler.cs`
    - Listens for `TestRunCompletedNotification`
    - Generates consolidated files per test session

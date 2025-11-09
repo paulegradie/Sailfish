@@ -532,6 +532,17 @@ internal class MethodComparisonProcessor : TestCompletionQueueProcessorBase
             sb.AppendLine();
             sb.AppendLine("_Cell value is ratio vs. row (col/row). CI is 95% on ratio. 'Improved' means significantly faster; 'Slower' significantly slower; 'Similar' not significant after FDR._");
             sb.AppendLine();
+            // Add detailed results table to satisfy existing tests and provide clarity
+            sb.AppendLine("### Detailed Results");
+            sb.AppendLine();
+            sb.AppendLine("| Method | Mean Time | Median Time | Sample Size |");
+            sb.AppendLine("|--------|-----------|-------------|-------------|");
+            foreach (var s in stats.OrderBy(s => s.Mean))
+            {
+                sb.AppendLine($"| {s.Name} | {s.Mean:F3}ms | {s.Median:F3}ms | {s.N} |");
+            }
+            sb.AppendLine();
+
         }
 
         return sb.ToString();
