@@ -120,6 +120,11 @@ internal class SailfishModuleRegistrations : IProvideAdditionalRegistrations
 
         builder.RegisterType<EnvironmentHealthReportProvider>().As<IEnvironmentHealthReportProvider>().SingleInstance();
 
+            // Timer calibration service and provider
+            builder.RegisterType<TimerCalibrationService>().As<ITimerCalibrationService>().SingleInstance();
+            builder.RegisterType<TimerCalibrationResultProvider>().As<ITimerCalibrationResultProvider>().SingleInstance();
+
+
         // Register enhanced MarkdownTableConverter with unified formatter
         builder.RegisterType<MarkdownTableConverter>().As<IMarkdownTableConverter>().InstancePerDependency();
         builder.RegisterType<TrackingFileParser>().As<ITrackingFileParser>();

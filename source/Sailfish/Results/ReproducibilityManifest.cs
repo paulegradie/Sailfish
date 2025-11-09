@@ -8,6 +8,7 @@ using System.Runtime.InteropServices;
 using System.Text.Json;
 using Sailfish.Contracts.Public.Models;
 using Sailfish.Diagnostics.Environment;
+using Sailfish.Execution;
 
 namespace Sailfish.Results
 {
@@ -32,6 +33,9 @@ namespace Sailfish.Results
         public Dictionary<string, string> Tags { get; init; } = new();
         public string? CiSystem { get; init; }
 
+        // Timer calibration snapshot (captured once per session)
+        public TimerCalibrationSnapshot? TimerCalibration { get; set; }
+
         // Per-method snapshot (captured at session end)
         public List<MethodSnapshot> Methods { get; init; } = new();
         public RandomizationConfig Randomization { get; set; } = new();
@@ -46,7 +50,32 @@ namespace Sailfish.Results
             public double StdDev { get; init; }
             public double? CI95_MarginOfError { get; init; }
             public double? CI99_MarginOfError { get; init; }
+        }
 
+        public sealed class TimerCalibrationSnapshot
+        {
+            public long StopwatchFrequency { get; init; }
+            public double ResolutionNs { get; init; }
+            public int BaselineOverheadTicks { get; init; }
+            public int Warmups { get; init; }
+            public int Samples { get; init; }
+            public double StdDevTicks { get; init; }
+            public long MedianTicks { get; init; }
+            public double RsdPercent { get; init; }
+            public int JitterScore { get; init; }
+
+            public static TimerCalibrationSnapshot From(TimerCalibrationResult r) => new()
+            {
+                StopwatchFrequency = r.StopwatchFrequency,
+                ResolutionNs = r.ResolutionNs,
+                BaselineOverheadTicks = r.BaselineOverheadTicks,
+                Warmups = r.Warmups,
+                Samples = r.Samples,
+                StdDevTicks = r.StdDevTicks,
+                MedianTicks = r.MedianTicks,
+                RsdPercent = r.RsdPercent,
+                JitterScore = r.JitterScore
+            };
         }
 
         public sealed class RandomizationConfig

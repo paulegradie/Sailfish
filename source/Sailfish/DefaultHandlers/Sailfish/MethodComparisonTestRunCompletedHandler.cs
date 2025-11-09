@@ -19,6 +19,8 @@ using Sailfish.Results;
 using MathNet.Numerics.Distributions;
 using Sailfish.Analysis.SailDiff.Statistics;
 
+using Sailfish.Execution;
+
 namespace Sailfish.DefaultHandlers.Sailfish;
 
 /// <summary>
@@ -33,6 +35,8 @@ internal class MethodComparisonTestRunCompletedHandler : INotificationHandler<Te
     private readonly IEnvironmentHealthReportProvider? _healthProvider;
     private readonly IRunSettings? _runSettings;
     private readonly IReproducibilityManifestProvider? _manifestProvider;
+    private readonly ITimerCalibrationResultProvider? _timerProvider;
+
 
 
     /// <summary>
@@ -47,6 +51,7 @@ internal class MethodComparisonTestRunCompletedHandler : INotificationHandler<Te
         _healthProvider = null; // backward compatible path
         _runSettings = null;
         _manifestProvider = null;
+        _timerProvider = null;
     }
 
     /// <summary>
@@ -56,6 +61,20 @@ internal class MethodComparisonTestRunCompletedHandler : INotificationHandler<Te
         : this(logger, mediator)
     {
         _healthProvider = healthProvider;
+    }
+
+    public MethodComparisonTestRunCompletedHandler(
+        ILogger logger,
+        IMediator mediator,
+        IEnvironmentHealthReportProvider healthProvider,
+        IRunSettings runSettings,
+        IReproducibilityManifestProvider manifestProvider,
+        ITimerCalibrationResultProvider timerProvider)
+        : this(logger, mediator, healthProvider)
+    {
+        _runSettings = runSettings;
+        _manifestProvider = manifestProvider;
+        _timerProvider = timerProvider;
     }
 
     /// <summary>
@@ -112,6 +131,18 @@ internal class MethodComparisonTestRunCompletedHandler : INotificationHandler<Te
                 if (_runSettings != null && _manifestProvider != null)
                 {
                     var baseManifest = _manifestProvider.Current ?? ReproducibilityManifest.CreateBase(_runSettings, _healthProvider?.Current);
+
+                    // Attach timer calibration snapshot if available
+                    try
+                    {
+                        var calib = _timerProvider?.Current;
+                        if (calib != null)
+                        {
+                            baseManifest.TimerCalibration = ReproducibilityManifest.TimerCalibrationSnapshot.From(calib);
+                        }
+                    }
+                    catch { /* best-effort */ }
+
                     baseManifest.AddMethodSnapshots(classesWithMarkdown);
                     _manifestProvider.Current = baseManifest;
 
@@ -243,6 +274,15 @@ internal class MethodComparisonTestRunCompletedHandler : INotificationHandler<Te
                     sb.AppendLine($"- Env Health: {manifest.EnvironmentHealthScore}/100 ({manifest.EnvironmentHealthLabel})");
                 }
                 sb.AppendLine($"- Timer: {manifest.Timer}");
+
+                // Timer calibration details if available
+                if (manifest.TimerCalibration is not null)
+                {
+                    var t = manifest.TimerCalibration;
+                    sb.AppendLine($"  - Calibration: freq={t.StopwatchFrequency} Hz, res≈{t.ResolutionNs:F0} ns, baseline={t.MedianTicks} ticks");
+                    sb.AppendLine($"  - Jitter: RSD={t.RsdPercent:F1}% | Score={t.JitterScore}/100 | N={t.Samples} (warmup {t.Warmups})");
+                }
+
                 if (!string.IsNullOrWhiteSpace(manifest.CiSystem)) sb.AppendLine($"- CI: {manifest.CiSystem}");
                 // Randomization seed (if used)
                 if (manifest.Randomization?.Seed is int seedValue)

@@ -31,6 +31,8 @@ Sailfish is a .NET performance testing framework that makes it easy to write, ru
 - Multiple outputs: test logs, Markdown, CSV
 - Easy CI/CD integration
 - Historical analysis with SailDiff
+- Timer calibration with 0–100 Jitter Score; shows in Markdown header, manifest, and Environment Health
+
 - Highly configurable
 
 ## Quick Start

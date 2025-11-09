@@ -35,6 +35,9 @@ public interface IRunSettings
     // Environment health check toggle (default: true)
     bool EnableEnvironmentHealthCheck { get; }
 
+    // Timer calibration toggle (default: true)
+    bool TimerCalibration { get; }
+
     // Global adaptive sampling overrides (null = no override)
     bool? GlobalUseAdaptiveSampling { get; }
     double? GlobalTargetCoefficientOfVariation { get; }

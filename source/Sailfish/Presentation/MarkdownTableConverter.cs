@@ -8,6 +8,8 @@ using Sailfish.Contracts.Public.Models;
 using Sailfish.Execution;
 using Sailfish.Extensions.Methods;
 
+using Sailfish.Results;
+
 namespace Sailfish.Presentation;
 
 public interface IMarkdownTableConverter
@@ -26,16 +28,26 @@ public interface IMarkdownTableConverter
 public class MarkdownTableConverter : IMarkdownTableConverter
 {
     private readonly ISailDiffUnifiedFormatter? _unifiedFormatter;
+    private readonly IReproducibilityManifestProvider? _manifestProvider;
+
 
     public MarkdownTableConverter()
     {
         // Default constructor for backward compatibility
         _unifiedFormatter = null;
+        _manifestProvider = null;
     }
 
     public MarkdownTableConverter(ISailDiffUnifiedFormatter unifiedFormatter)
     {
         _unifiedFormatter = unifiedFormatter ?? throw new ArgumentNullException(nameof(unifiedFormatter));
+        _manifestProvider = null;
+    }
+
+    public MarkdownTableConverter(ISailDiffUnifiedFormatter unifiedFormatter, IReproducibilityManifestProvider manifestProvider)
+    {
+        _unifiedFormatter = unifiedFormatter ?? throw new ArgumentNullException(nameof(unifiedFormatter));
+        _manifestProvider = manifestProvider ?? throw new ArgumentNullException(nameof(manifestProvider));
     }
 
     private static string FormatAdaptive(double value)
@@ -95,6 +107,22 @@ public class MarkdownTableConverter : IMarkdownTableConverter
         stringBuilder.AppendLine("# 📊 Performance Test Results");
         stringBuilder.AppendLine();
         stringBuilder.AppendLine($"**Generated:** {DateTime.UtcNow:yyyy-MM-dd HH:mm:ss} UTC");
+
+        // Optional: timer calibration summary from manifest (session-level)
+        try
+        {
+            var manifest = _manifestProvider?.Current;
+            var t = manifest?.TimerCalibration;
+            if (t is not null)
+            {
+                stringBuilder.AppendLine();
+                stringBuilder.AppendLine("## ⏱️ Timer Calibration");
+                stringBuilder.AppendLine($"- freq={t.StopwatchFrequency} Hz, res≈{t.ResolutionNs:F0} ns, baseline={t.MedianTicks} ticks");
+                stringBuilder.AppendLine($"- Jitter: RSD={t.RsdPercent:F1}% | Score={t.JitterScore}/100 | N={t.Samples} (warmup {t.Warmups})");
+            }
+        }
+        catch { /* best-effort */ }
+
         stringBuilder.AppendLine();
 
         var allExceptions = new List<Exception>();

@@ -26,6 +26,25 @@ Sailfish emits a Reproducibility Manifest alongside your session outputs. The ma
 - Overall Environment Health score (0–100)
 - Summary label (Excellent/Good/Fair/Poor)
 
+
+### Timer calibration snapshot (once per session)
+
+When available, `TimerCalibration` includes:
+- `StopwatchFrequency` (long)
+- `ResolutionNs` (double)
+- `BaselineOverheadTicks` (int)
+- `Warmups` (int)
+- `Samples` (int)
+- `StdDevTicks` (double)
+- `MedianTicks` (long)
+- `RsdPercent` (double)
+- `JitterScore` (int)
+
+Example snippet:
+```json
+"TimerCalibration": { "StopwatchFrequency": 10000000, "ResolutionNs": 100.0, "BaselineOverheadTicks": 3, "Warmups": 5, "Samples": 100, "StdDevTicks": 1.2, "MedianTicks": 12, "RsdPercent": 5.0, "JitterScore": 80 }
+```
+
 ### Session info
 - Timestamp (UTC)
 - Session ID (unique per run)

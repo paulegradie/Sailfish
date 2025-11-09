@@ -109,6 +109,16 @@ Markdown files use **session-based consolidation**, meaning:
 
 - Learn more: [/docs/1/reproducibility-manifest](/docs/1/reproducibility-manifest)
 
+### ⏱️ Timer Calibration (when enabled)
+
+A short header summarizes the timer:
+- Stopwatch Frequency (Hz) and Effective Resolution (ns)
+- BaselineOverheadTicks (no‑op call baseline)
+- JitterScore (0–100) and RSD%
+
+The section is included once per session. Disable via `RunSettingsBuilder.WithTimerCalibration(false)`.
+
+
 
 ## GitHub Integration
 

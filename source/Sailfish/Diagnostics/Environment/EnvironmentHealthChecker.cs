@@ -7,11 +7,23 @@ using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
+using Sailfish.Execution;
 
 namespace Sailfish.Diagnostics.Environment;
 
 public class EnvironmentHealthChecker : IEnvironmentHealthChecker
 {
+    private readonly ITimerCalibrationResultProvider? timerProvider;
+
+    public EnvironmentHealthChecker()
+    {
+    }
+
+    public EnvironmentHealthChecker(ITimerCalibrationResultProvider timerProvider)
+    {
+        this.timerProvider = timerProvider;
+    }
+
     public async Task<EnvironmentHealthReport> CheckAsync(EnvironmentHealthCheckContext? context = null, CancellationToken cancellationToken = default)
     {
         var entries = new List<HealthCheckEntry>
@@ -24,6 +36,14 @@ public class EnvironmentHealthChecker : IEnvironmentHealthChecker
             CheckTimerResolution(),
             CheckOsPowerHints()
         };
+
+        // If we have timer calibration results, include Timer Jitter entry
+        try
+        {
+            var jitter = CheckTimerJitterFromCalibration(timerProvider);
+            if (jitter is not null) entries.Add(jitter);
+        }
+        catch { /* best-effort */ }
 
         // Background CPU load sampling (best-effort)
         try
@@ -200,6 +220,7 @@ public class EnvironmentHealthChecker : IEnvironmentHealthChecker
                 ? $"High-resolution timer: ~{resolutionNs:F0} ns"
                 : $"Timer resolution ~{resolutionNs:F0} ns (low resolution)";
 
+
             var sleepDetails = double.IsNaN(sleepMedianMs)
                 ? "Sleep(1) median: n/a"
                 : $"Sleep(1) median ≈ {sleepMedianMs:F1} ms";
@@ -245,6 +266,7 @@ public class EnvironmentHealthChecker : IEnvironmentHealthChecker
             if (RuntimeInformation.IsOSPlatform(OSPlatform.OSX))
             {
                 return new("Power Management", HealthStatus.Warn, "Not verified", "Disable App Nap and set Energy Saver to prevent sleep");
+
             }
 
             return new("Power Management", HealthStatus.Unknown, "Not verified");
@@ -280,6 +302,7 @@ public class EnvironmentHealthChecker : IEnvironmentHealthChecker
 
             // Expected line: "Power Scheme GUID: xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx  (Balanced)"
             var idx = output.IndexOf('(');
+
             var idx2 = output.IndexOf(')');
             if (idx >= 0 && idx2 > idx)
             {
@@ -335,5 +358,32 @@ public class EnvironmentHealthChecker : IEnvironmentHealthChecker
         }
         return count;
     }
+
+    private static HealthCheckEntry? CheckTimerJitterFromCalibration(ITimerCalibrationResultProvider? provider)
+    {
+        try
+        {
+            var r = provider?.Current;
+            if (r is null) return null;
+
+            // Thresholds based on RSD%
+            var rsd = r.RsdPercent;
+            var status = rsd <= 5.0 ? HealthStatus.Pass : rsd <= 15.0 ? HealthStatus.Warn : HealthStatus.Fail;
+            var details = $"RSD={rsd:F1}% | Median={r.MedianTicks} ticks | N={r.Samples} (warmup {r.Warmups}) | Score={r.JitterScore}/100";
+            string? rec = status switch
+            {
+                HealthStatus.Pass => null,
+                HealthStatus.Warn => "Reduce background noise: close apps, pin to 1 core, use High Performance power plan",
+                HealthStatus.Fail => "Environment jitter is high. Close background tasks, disable power saving, pin CPU affinity, and retry",
+                _ => null
+            };
+            return new("Timer Jitter", status, details, rec);
+        }
+        catch (Exception ex)
+        {
+            return new("Timer Jitter", HealthStatus.Unknown, ex.Message);
+        }
+    }
+
 }
 

@@ -17,6 +17,17 @@
   - Build Mode warns in Debug (recommend Release optimizations); JIT details include COMPlus_TieredCompilation, COMPlus_TC_QuickJit, COMPlus_TC_QuickJitForLoops, and COMPlus_TC_OnStackReplacement
 
 
+- New: Timer Calibration + Jitter Scoring (default: enabled)
+  - Characterizes the high‑resolution timer and baseline overhead; computes dispersion (RSD%) and a 0–100 Jitter Score: `score = clamp(0,100, 100 − 4×RSD%)`
+  - Surfaces in:
+    - Enhanced Markdown header (Timer Calibration)
+    - Reproducibility Manifest (`TimerCalibration` snapshot: StopwatchFrequency, ResolutionNs, BaselineOverheadTicks, Warmups, Samples, StdDevTicks, MedianTicks, RsdPercent, JitterScore)
+    - Environment Health: adds “Timer Jitter” with thresholds — Pass ≤ 5%, Warn ≤ 15%, Fail > 15%
+  - Toggle globally: `RunSettingsBuilder.WithTimerCalibration(false)`
+  - Tests: +11 unit tests covering scoring, boundaries, manifest/markdown integration
+  - Docs updated: README and docs site pages (/docs/1/environment-health, /docs/1/markdown-output, /docs/1/reproducibility-manifest)
+
+
 - New: Reproducibility Manifest (best-effort)
   - Captures environment metadata: .NET runtime, OS and architecture, CPU model (best-effort), GC mode, JIT flags (Tiered/QuickJit/OSR), process priority, CPU affinity, and high-resolution timer
   - Records Environment Health score/label plus session info (timestamp, session ID, tags, CI)

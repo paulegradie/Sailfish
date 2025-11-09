@@ -15,4 +15,7 @@ public class SailfishSettings
 
     [JsonPropertyName("EnableEnvironmentHealthCheck")]
     public bool? EnableEnvironmentHealthCheck { get; set; }
+
+    [JsonPropertyName("TimerCalibration")]
+    public bool? TimerCalibration { get; set; }
 }

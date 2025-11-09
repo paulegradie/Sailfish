@@ -35,7 +35,7 @@ public class RunSettingsBuilder
     private DateTime? timeStamp;
 
     private bool enableEnvironmentHealthCheck = true;
-
+    private bool timerCalibration = true;
 
     // Global adaptive sampling overrides
     private bool? globalUseAdaptiveSampling;
@@ -94,6 +94,15 @@ public class RunSettingsBuilder
         enableEnvironmentHealthCheck = enable;
         return this;
     }
+    /// <summary>
+    ///     Enables or disables timer calibration for this run (default: true).
+    /// </summary>
+    public RunSettingsBuilder WithTimerCalibration(bool enable = true)
+    {
+        timerCalibration = enable;
+        return this;
+    }
+
 
     /// <summary>
     ///     Provide a string array of class names to execute. This will run all test cases in a class decorated with the
@@ -296,6 +305,7 @@ public class RunSettingsBuilder
             globalMaximumSampleSize,
             globalUseConfigurableOutlierDetection,
             globalOutlierStrategy,
-            enableEnvironmentHealthCheck);
+            enableEnvironmentHealthCheck,
+            timerCalibration);
     }
 }

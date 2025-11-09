@@ -16,7 +16,8 @@ internal class ConsoleWriter(IMarkdownTableConverter markdownTableConverter, ILo
 
     public string WriteToConsole(IEnumerable<IClassExecutionSummary> results, OrderedDictionary tags)
     {
-        var markdownStringTable = markdownTableConverter.ConvertToMarkdownTableString(results);
+        // Use enhanced markdown so session-level header (including timer calibration) appears in console as well
+        var markdownStringTable = markdownTableConverter.ConvertToEnhancedMarkdownTableString(results);
 
         if (tags.Count > 0) System.Console.WriteLine($"{Environment.NewLine}Tags:");
         foreach (var entry in tags) logger.Log(LogLevel.Information, $"{entry.Key}: {entry.Value}");

@@ -112,6 +112,36 @@ public class TestExecutor : ITestExecutor
             try
             {
                 var rs = container.ResolveOptional<Sailfish.Contracts.Public.Models.IRunSettings>();
+
+                // 1) Timer Calibration (session-level)
+                try
+                {
+                    if (rs?.TimerCalibration is not false)
+                    {
+                        var timerSvc = container.ResolveOptional<Sailfish.Execution.ITimerCalibrationService>();
+                        var timerProv = container.ResolveOptional<Sailfish.Execution.ITimerCalibrationResultProvider>();
+                        if (timerSvc != null && timerProv != null)
+                        {
+                            var calib = timerSvc.CalibrateAsync(cancellationTokenSource.Token)
+                                .ConfigureAwait(false)
+                                .GetAwaiter()
+                                .GetResult();
+                            timerProv.Current = calib;
+
+                            // Log succinct summary to test output and Sailfish logger
+                            var summary = $"Timer calibration: freq={calib.StopwatchFrequency} Hz, res≈{calib.ResolutionNs:F0} ns, baseline={calib.MedianTicks} ticks, RSD={calib.RsdPercent:F1}%, score={calib.JitterScore}/100";
+                            frameworkHandle.SendMessage(TestMessageLevel.Informational, summary);
+                            var log = container.ResolveOptional<Sailfish.Logging.ILogger>();
+                            log?.Log(Sailfish.Logging.LogLevel.Information, summary);
+                        }
+                    }
+                }
+                catch (Exception tex)
+                {
+                    frameworkHandle.SendMessage(TestMessageLevel.Warning, $"Timer calibration failed: {tex.Message}");
+                }
+
+                // 2) Environment health check (informational)
                 if (rs?.EnableEnvironmentHealthCheck is not false)
                 {
                     var runner = container.ResolveOptional<EnvironmentHealthCheckRunner>();
@@ -146,6 +176,18 @@ public class TestExecutor : ITestExecutor
                             {
                                 manifestProvider.Current = ReproducibilityManifest.CreateBase(rs, reportProvider?.Current);
                             }
+
+                            // If timer calibration ran earlier, attach snapshot to manifest
+                            try
+                            {
+                                var timerProv = container.ResolveOptional<Sailfish.Execution.ITimerCalibrationResultProvider>();
+                                var calib = timerProv?.Current;
+                                if (manifestProvider.Current != null && calib != null)
+                                {
+                                    manifestProvider.Current.TimerCalibration = ReproducibilityManifest.TimerCalibrationSnapshot.From(calib);
+                                }
+                            }
+                            catch { /* best-effort */ }
                         }
                         catch { /* non-fatal */ }
 

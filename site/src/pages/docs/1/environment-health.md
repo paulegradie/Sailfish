@@ -64,6 +64,29 @@ Guidance:
 - We do not subtract scheduler latency from your measurements because it reflects real-world behavior when your code uses Sleep/Delay.
 
 
+
+## Timer Jitter (from Timer Calibration)
+
+When Timer Calibration is enabled (default), the health report includes a Timer Jitter entry based on the dispersion (RSD%) of no‑op timing samples. This yields a 0–100 Jitter Score (higher is better): `score = clamp(0, 100, 100 − 4 × RSD%)`.
+
+Thresholds:
+- Pass: RSD% ≤ 5%
+- Warn: 5% < RSD% ≤ 15%
+- Fail: RSD% > 15%
+
+Toggle (global):
+```csharp
+var run = RunSettingsBuilder.CreateBuilder()
+    .WithTimerCalibration(true) // default: true; set to false to disable
+    .Build();
+```
+
+Also appears in:
+- Consolidated Markdown header as a “Timer Calibration” section
+- Reproducibility Manifest (TimerCalibration snapshot)
+
+See also: [/docs/1/markdown-output](/docs/1/markdown-output), [/docs/1/reproducibility-manifest](/docs/1/reproducibility-manifest)
+
 ## How it works
 - The Test Adapter runs the health check once at test run start and stores the report for the session.
 - The summary is:
