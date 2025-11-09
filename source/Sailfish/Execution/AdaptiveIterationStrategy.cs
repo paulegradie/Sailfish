@@ -49,11 +49,32 @@ internal class AdaptiveIterationStrategy : IIterationStrategy
         var maxCiWidth = executionSettings.MaxConfidenceIntervalWidth;
 
         var iteration = 0;
+        var timer = testInstanceContainer.CoreInvoker.GetPerformanceResults();
+        var timeBudget = executionSettings.MaxMeasurementTimePerMethod;
+        var testStart = timer.GetIterationStartTime();
         ConvergenceResult? convergenceResult = null;
 
         // Execute minimum iterations first
         for (iteration = 0; iteration < minIterations; iteration++)
         {
+            if (timeBudget.HasValue)
+            {
+                var elapsed = DateTimeOffset.Now - testStart;
+                if (elapsed >= timeBudget.Value)
+                {
+                    logger.Log(LogLevel.Warning,
+                        "      ---- Stopping early: MaxMeasurementTimePerMethod {MaxMs} ms exceeded after {ElapsedMs} ms during minimum phase",
+                        timeBudget.Value.TotalMilliseconds, elapsed.TotalMilliseconds);
+                    return new IterationResult
+                    {
+                        IsSuccess = true,
+                        TotalIterations = iteration,
+                        ConvergedEarly = false,
+                        ConvergenceReason = $"Time budget exceeded after {elapsed.TotalMilliseconds:F0} ms"
+                    };
+                }
+            }
+
             logger.Log(LogLevel.Information,
                 "      ---- iteration {CurrentIteration} (minimum phase)",
                 iteration + 1);
@@ -105,6 +126,24 @@ internal class AdaptiveIterationStrategy : IIterationStrategy
             // Execute more iterations up to the cap, checking convergence AFTER each iteration
             while (iteration < maxIterations)
             {
+                if (timeBudget.HasValue)
+                {
+                    var elapsed = DateTimeOffset.Now - testStart;
+                    if (elapsed >= timeBudget.Value)
+                    {
+                        logger.Log(LogLevel.Warning,
+                            "      ---- Stopping early: MaxMeasurementTimePerMethod {MaxMs} ms exceeded after {ElapsedMs} ms",
+                            timeBudget.Value.TotalMilliseconds, elapsed.TotalMilliseconds);
+                        return new IterationResult
+                        {
+                            IsSuccess = true,
+                            TotalIterations = iteration,
+                            ConvergedEarly = false,
+                            ConvergenceReason = $"Time budget exceeded after {elapsed.TotalMilliseconds:F0} ms"
+                        };
+                    }
+                }
+
                 logger.Log(LogLevel.Information,
                     "      ---- iteration {CurrentIteration} (CV: {CurrentCV:F4}, target: {TargetCV:F4})",
                     iteration + 1, convergenceResult.CurrentCoefficientOfVariation, targetCV);
@@ -165,7 +204,15 @@ internal class AdaptiveIterationStrategy : IIterationStrategy
         CancellationToken cancellationToken)
     {
         await testInstanceContainer.CoreInvoker.IterationSetup(cancellationToken).ConfigureAwait(false);
-        await testInstanceContainer.CoreInvoker.ExecutionMethod(cancellationToken).ConfigureAwait(false);
+        var opi = Math.Max(1, testInstanceContainer.ExecutionSettings.OperationsPerInvoke);
+        if (opi > 1)
+        {
+            await testInstanceContainer.CoreInvoker.ExecutionMethodWithOperationsPerInvoke(opi, cancellationToken).ConfigureAwait(false);
+        }
+        else
+        {
+            await testInstanceContainer.CoreInvoker.ExecutionMethod(cancellationToken).ConfigureAwait(false);
+        }
         await testInstanceContainer.CoreInvoker.IterationTearDown(cancellationToken).ConfigureAwait(false);
     }
 

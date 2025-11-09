@@ -35,3 +35,12 @@ Sailfish can now automatically stop sampling when results are statistically stab
 {% quick-link title="Method Comparisons" description="Group methods and compare statistically" icon="chart-bar" href="/docs/1/method-comparisons" /%}
 {% quick-link title="Adaptive Sampling" description="Stop when results are stable—faster CI with statistical rigor" icon="lightbulb" href="/docs/1/adaptive-sampling" /%}
 {% /quick-links %}
+
+
+## Why Sailfish
+
+{% quick-links %}
+{% quick-link title="Statistical Rigor" description="Confidence intervals, outlier handling, adaptive sampling" icon="chart-bar" href="/docs/1/confidence-intervals" /%}
+{% quick-link title="Extensible" description="Plug in providers and extend behaviors for your needs" icon="plugins" href="/docs/3/extensibility" /%}
+{% quick-link title="Production Friendly" description="Outputs you can ship: Markdown and CSV for pipelines" icon="document-text" href="/docs/1/markdown-output" /%}
+{% /quick-links %}

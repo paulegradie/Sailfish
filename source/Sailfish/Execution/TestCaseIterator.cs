@@ -68,6 +68,27 @@ internal class TestCaseIterator : ITestCaseIterator
             }
         }
 
+            // Auto-tune OperationsPerInvoke to reach target iteration duration, if configured
+            if (executionSettings.TargetIterationDuration > TimeSpan.Zero && executionSettings.OperationsPerInvoke <= 1)
+            {
+                try
+                {
+                    var tuner = new OperationsPerInvokeTuner();
+                    var tuned = await tuner.TuneAsync(testInstanceContainer, executionSettings.TargetIterationDuration, logger, cancellationToken).ConfigureAwait(false);
+                    if (tuned > executionSettings.OperationsPerInvoke)
+                    {
+                        logger.Log(LogLevel.Information, "      ---- Using OperationsPerInvoke={OPI} (auto-tuned)", tuned);
+                        executionSettings.OperationsPerInvoke = tuned;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    // Non-fatal: fall back to provided OperationsPerInvoke
+                    logger.Log(LogLevel.Warning, ex, "      ---- Auto-tuning OperationsPerInvoke failed; continuing with OPI={OPI}", executionSettings.OperationsPerInvoke);
+                }
+            }
+
+
         testInstanceContainer.CoreInvoker.SetTestCaseStart();
 
         var iterationResult = await strategy.ExecuteIterations(

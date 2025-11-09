@@ -10,6 +10,12 @@ import { ThemeSelector } from '@/components/ThemeSelector'
 
 const navigation = [
     {
+        title: "",
+        links: [
+            { title: 'Home', href: '/' },
+        ]
+    },
+    {
         title: 'Introduction',
         links: [
             { title: 'Getting Started', href: '/docs/0/getting-started' },
@@ -28,9 +34,9 @@ const navigation = [
             { title: 'Variables', href: '/docs/1/sailfish-variables' },
             { title: 'The Test Lifecycle', href: '/docs/1/sailfish-test-lifecycle' },
             { title: 'Test Dependencies', href: '/docs/1/test-dependencies' },
-            { title: 'Adaptive Sampling', href: '/docs/1/adaptive-sampling', badge: 'NEW'  },
-            { title: 'Confidence Intervals', href: '/docs/1/confidence-intervals', badge: 'NEW'  },
-            { title: 'Outlier Handling', href: '/docs/1/outlier-handling', badge: 'NEW'  },
+            { title: 'Adaptive Sampling', href: '/docs/1/adaptive-sampling', badge: 'NEW' },
+            { title: 'Confidence Intervals', href: '/docs/1/confidence-intervals', badge: 'NEW' },
+            { title: 'Outlier Handling', href: '/docs/1/outlier-handling', badge: 'NEW' },
             { title: 'Environment Health Check', href: '/docs/1/environment-health', badge: 'NEW' },
         ],
     },

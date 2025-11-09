@@ -36,17 +36,46 @@ internal class FixedIterationStrategy : IIterationStrategy
         CancellationToken cancellationToken)
     {
         var iterations = executionSettings.SampleSize;
+        var timer = testInstanceContainer.CoreInvoker.GetPerformanceResults();
+        var timeBudget = executionSettings.MaxMeasurementTimePerMethod;
+        var testStart = timer.GetIterationStartTime();
         
         for (var i = 0; i < iterations; i++)
         {
-            logger.Log(LogLevel.Information, 
-                "      ---- iteration {CurrentIteration} of {TotalIterations}", 
+            if (timeBudget.HasValue)
+            {
+                var elapsed = DateTimeOffset.Now - testStart;
+                if (elapsed >= timeBudget.Value)
+                {
+                    logger.Log(LogLevel.Warning,
+                        "      ---- Stopping early: MaxMeasurementTimePerMethod {MaxMs} ms exceeded after {ElapsedMs} ms",
+                        timeBudget.Value.TotalMilliseconds, elapsed.TotalMilliseconds);
+                    return new IterationResult
+                    {
+                        IsSuccess = true,
+                        TotalIterations = i,
+                        ConvergedEarly = false,
+                        ConvergenceReason = $"Time budget exceeded after {elapsed.TotalMilliseconds:F0} ms"
+                    };
+                }
+            }
+
+            logger.Log(LogLevel.Information,
+                "      ---- iteration {CurrentIteration} of {TotalIterations}",
                 i + 1, iterations);
 
             try
             {
                 await testInstanceContainer.CoreInvoker.IterationSetup(cancellationToken).ConfigureAwait(false);
-                await testInstanceContainer.CoreInvoker.ExecutionMethod(cancellationToken).ConfigureAwait(false);
+                var opi = Math.Max(1, executionSettings.OperationsPerInvoke);
+                if (opi > 1)
+                {
+                    await testInstanceContainer.CoreInvoker.ExecutionMethodWithOperationsPerInvoke(opi, cancellationToken).ConfigureAwait(false);
+                }
+                else
+                {
+                    await testInstanceContainer.CoreInvoker.ExecutionMethod(cancellationToken).ConfigureAwait(false);
+                }
                 await testInstanceContainer.CoreInvoker.IterationTearDown(cancellationToken).ConfigureAwait(false);
             }
             catch (Exception ex)

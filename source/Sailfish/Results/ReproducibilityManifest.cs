@@ -34,6 +34,8 @@ namespace Sailfish.Results
 
         // Per-method snapshot (captured at session end)
         public List<MethodSnapshot> Methods { get; init; } = new();
+        public RandomizationConfig Randomization { get; set; } = new();
+
 
         public sealed class MethodSnapshot
         {
@@ -44,11 +46,20 @@ namespace Sailfish.Results
             public double StdDev { get; init; }
             public double? CI95_MarginOfError { get; init; }
             public double? CI99_MarginOfError { get; init; }
+
+        }
+
+        public sealed class RandomizationConfig
+        {
+            public int? Seed { get; init; }
+            public bool Types { get; init; }
+            public bool Methods { get; init; }
+            public bool PropertySets { get; init; }
         }
 
         public static ReproducibilityManifest CreateBase(IRunSettings runSettings, EnvironmentHealthReport? health)
         {
-            return new ReproducibilityManifest
+            var manifest = new ReproducibilityManifest
             {
                 SailfishVersion = GetInformationalVersion(typeof(ReproducibilityManifest).Assembly),
                 CommitSha = DetectCommitSha(),
@@ -69,6 +80,17 @@ namespace Sailfish.Results
                 Tags = runSettings.Tags.ToDictionary(kv => kv.Key!, kv => kv.Value!)!,
                 CiSystem = DetectCiSystem()
             };
+
+            var seed = TryParseSeed(runSettings.Args);
+            manifest.Randomization = new RandomizationConfig
+            {
+                Seed = seed,
+                Types = seed.HasValue,
+                Methods = seed.HasValue,
+                PropertySets = seed.HasValue
+            };
+
+            return manifest;
         }
 
         public void AddMethodSnapshots(IEnumerable<Sailfish.Contracts.Public.Serialization.Tracking.V1.ClassExecutionSummaryTrackingFormat> classes)
@@ -197,6 +219,26 @@ namespace Sailfish.Results
                 return $"Tiered={tiered}; QuickJit={quickJit}; QuickJitForLoops={quickJitLoops}; OSR={osr}";
             }
             catch { return "Unknown"; }
+        }
+
+        private static int? TryParseSeed(Sailfish.Extensions.Types.OrderedDictionary args)
+        {
+            try
+            {
+                foreach (var kv in args)
+                {
+                    var key = kv.Key;
+                    var value = kv.Value;
+                    if (string.Equals(key, "seed", StringComparison.OrdinalIgnoreCase) ||
+                        string.Equals(key, "randomseed", StringComparison.OrdinalIgnoreCase) ||
+                        string.Equals(key, "rng", StringComparison.OrdinalIgnoreCase))
+                    {
+                        if (int.TryParse(value, out var s)) return s;
+                    }
+                }
+            }
+            catch { /* ignore */ }
+            return null;
         }
 
         private static string? DetectCiSystem()

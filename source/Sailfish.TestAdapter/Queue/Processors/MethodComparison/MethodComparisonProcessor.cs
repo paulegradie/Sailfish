@@ -10,6 +10,8 @@ using System.Reflection;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using Sailfish.Analysis.SailDiff.Statistics;
+
 
 namespace Sailfish.TestAdapter.Queue.Processors.MethodComparison;
 
@@ -455,43 +457,97 @@ internal class MethodComparisonProcessor : TestCompletionQueueProcessorBase
 
             // Add method list
             sb.AppendLine("**Methods in this comparison:**");
-            foreach (var method in methods)
+            foreach (var m in methods)
             {
-                var methodName = ExtractMethodName(method);
-                sb.AppendLine($"- `{methodName}`");
+                sb.AppendLine($"- `{ExtractMethodName(m)}`");
             }
-
             sb.AppendLine();
 
-            // Add performance summary
-            var performanceSummary = CreatePerformanceSummary(methods);
-            if (!string.IsNullOrEmpty(performanceSummary))
+            // Build stats (ordered by mean)
+            var stats = methods.Select(m => new
             {
-                sb.AppendLine(performanceSummary);
+                Id = m.TestCaseId,
+                Name = ExtractMethodName(m),
+                Mean = m.PerformanceMetrics.MeanMs,
+                Median = m.PerformanceMetrics.MedianMs,
+                N = m.PerformanceMetrics.SampleSize,
+                StdDev = m.PerformanceMetrics.StandardDeviation,
+                SE = (m.PerformanceMetrics.SampleSize > 1 && m.PerformanceMetrics.StandardDeviation > 0)
+                    ? m.PerformanceMetrics.StandardDeviation / Math.Sqrt(Math.Max(1, m.PerformanceMetrics.SampleSize))
+                    : 0.0
+            }).OrderBy(s => s.Mean).ToList();
+
+            // Gather pairwise p-values from metadata
+            var pMap = new Dictionary<(string A, string B), double>();
+            foreach (var m in methods)
+            {
+                if (m.Metadata.TryGetValue("PairwisePValues", out var obj) && obj is Dictionary<string, double> dict)
+                {
+                    foreach (var kv in dict)
+                    {
+                        var key = MultipleComparisons.NormalizePair(m.TestCaseId, kv.Key);
+                        var p = kv.Value;
+                        if (!pMap.TryGetValue(key, out var existing) || p < existing)
+                            pMap[key] = p;
+                    }
+                }
+            }
+            var qMap = pMap.Count > 0 ? MultipleComparisons.BenjaminiHochbergAdjust(pMap) : new Dictionary<(string, string), double>();
+
+            // NxN matrix
+            sb.AppendLine("### 🔢 NxN Comparison Matrix (q-values via BH-FDR, α=0.05)");
+            sb.Append("| Method |");
+            foreach (var col in stats)
+            {
+                sb.Append($" {col.Name} |");
+            }
+            sb.AppendLine();
+            sb.Append("|-");
+            foreach (var _ in stats) sb.Append("|-");
+            sb.AppendLine("|");
+
+            for (int i = 0; i < stats.Count; i++)
+            {
+                var row = stats[i];
+                sb.Append($"| {row.Name} |");
+                for (int j = 0; j < stats.Count; j++)
+                {
+                    if (i == j)
+                    {
+                        sb.Append(" — |");
+                        continue;
+                    }
+                    var col = stats[j];
+                    var (ratio, lo, hi) = MultipleComparisons.ComputeRatioCI(row.Mean, row.SE, row.N, col.Mean, col.SE, col.N, 0.95);
+                    var key = MultipleComparisons.NormalizePair(row.Id, col.Id);
+                    qMap.TryGetValue(key, out var q);
+                    var sig = q > 0 && q <= 0.05;
+                    var label = sig ? (ratio < 1.0 ? "Improved" : "Slower") : "Similar";
+                    var cell = $"{FormatRatio(ratio, lo, hi)}{(q > 0 ? $" q={FormatP(q)}" : "")} {label}";
+                    sb.Append($" {cell} |");
+                }
                 sb.AppendLine();
             }
 
-            // Add detailed results table
-            sb.AppendLine("### 📋 Detailed Results");
             sb.AppendLine();
-            sb.AppendLine("| Method | Mean Time | Median Time | Sample Size | Status |");
-            sb.AppendLine("|--------|-----------|-------------|-------------|--------|");
-
-            foreach (var method in methods.OrderBy(m => m.PerformanceMetrics.MeanMs))
-            {
-                var methodName = ExtractMethodName(method);
-                var meanTime = method.PerformanceMetrics.MeanMs;
-                var medianTime = method.PerformanceMetrics.MedianMs;
-                var sampleSize = method.PerformanceMetrics.SampleSize;
-                var status = "✅ Completed";
-
-                sb.AppendLine($"| {methodName} | {meanTime:F3}ms | {medianTime:F3}ms | {sampleSize} | {status} |");
-            }
-
+            sb.AppendLine("_Cell value is ratio vs. row (col/row). CI is 95% on ratio. 'Improved' means significantly faster; 'Slower' significantly slower; 'Similar' not significant after FDR._");
             sb.AppendLine();
         }
 
         return sb.ToString();
+
+        static string FormatRatio(double ratio, double? lo, double? hi)
+        {
+            var r = $"{ratio:0.###}x";
+            if (lo.HasValue && hi.HasValue) return $"{r} [{lo.Value:0.###}–{hi.Value:0.###}]";
+            return r;
+        }
+
+        static string FormatP(double p)
+        {
+            if (p < 1e-3) return p.ToString("0.0e-0");
+            return p.ToString("0.###");
+        }
     }
 
     /// <summary>
