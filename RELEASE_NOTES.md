@@ -6,6 +6,11 @@
   - Standard error computed from StdDev and sample size when not present in tracking format
   - Comparison markdown now includes a "Detailed Results" table to satisfy existing tests and improve clarity
 
+- Internal: Golden/snapshot tests now lock the consolidated session Markdown and CSV formats
+  - Normalization rules ensure cross‑TFM stability (works on .NET 8 and .NET 9)
+  - Docs updated: `/docs/1/markdown-output`, `/docs/1/method-comparisons`, `/docs/1/csv-output`
+
+
 
 - New: Environment Health Check (default: enabled)
   - Validates the host at test run start; computes a 0–100 score with a label (Excellent/Good/Fair/Poor)

@@ -73,18 +73,19 @@ PerformanceTest,RegularMethod,1.000,1.000,0.100,100,,Success,0.0500,0.0800
 
 ```csv
 # Method Comparisons
-ComparisonGroup,Method1,Method2,Method1Mean,Method2Mean,PerformanceRatio,ChangeDescription
-Algorithms,BubbleSort,QuickSort,45.200,2.100,21.5x slower,Regressed
+ComparisonGroup,Method1,Method2,Mean1,Mean2,Ratio,CI95_Lower,CI95_Upper,q_value,Label,ChangeDescription
+Algorithms,BubbleSort,QuickSort,45.200,2.100,21.5,18.3,24.9,0.000,Slower,Regressed
 ```
 
 **Fields:**
 - **ComparisonGroup**: Name of the comparison group
-- **Method1**: First method in the comparison
-- **Method2**: Second method in the comparison
-- **Method1Mean**: Mean execution time of Method1
-- **Method2Mean**: Mean execution time of Method2
-- **PerformanceRatio**: Performance relationship (e.g., "21.5x slower", "2.3x faster")
-- **ChangeDescription**: Statistical significance (Improved/Regressed/No Change)
+- **Method1 / Method2**: Methods being compared
+- **Mean1 / Mean2**: Mean execution times for each method
+- **Ratio**: `Mean1 / Mean2` (unitless). Values > 1 indicate Method 1 is slower; values < 1 indicate faster.
+- **CI95_Lower / CI95_Upper**: 95% confidence interval endpoints for the ratio (computed on the log scale)
+- **q_value**: Benjamini–Hochberg adjusted p-value (multiple comparisons correction)
+- **Label**: One of Improved, Similar, or Slower
+- **ChangeDescription**: Legacy summary for backward compatibility (Improved/Regressed/No Change)
 
 ## Session-Based Consolidation
 
@@ -126,7 +127,7 @@ The CSV format is designed for easy Excel analysis:
 **Comparison Analysis:**
 ```excel
 // Filter Method Comparisons section
-// Sort by PerformanceRatio to find biggest differences
+// Sort by Ratio to find biggest differences
 // Create charts showing performance relationships
 ```
 
@@ -138,11 +139,11 @@ When you have multiple comparison groups, each generates its own set of comparis
 
 ```csv
 # Method Comparisons
-ComparisonGroup,Method1,Method2,Method1Mean,Method2Mean,PerformanceRatio,ChangeDescription
-StringOperations,StringConcat,StringBuilder,15.200,8.100,1.9x slower,Regressed
-StringOperations,StringConcat,StringInterpolation,15.200,12.300,1.2x slower,Regressed
-StringOperations,StringBuilder,StringInterpolation,8.100,12.300,1.5x faster,Improved
-Collections,ListIteration,ArrayIteration,5.400,3.200,1.7x slower,Regressed
+ComparisonGroup,Method1,Method2,Mean1,Mean2,Ratio,CI95_Lower,CI95_Upper,q_value,Label,ChangeDescription
+StringOperations,StringConcat,StringBuilder,15.200,8.100,1.9,1.7,2.2,0.000,Slower,Regressed
+StringOperations,StringConcat,StringInterpolation,15.200,12.300,1.2,1.1,1.4,0.023,Slower,Regressed
+StringOperations,StringBuilder,StringInterpolation,8.100,12.300,0.66,0.60,0.72,0.001,Improved,Improved
+Collections,ListIteration,ArrayIteration,5.400,3.200,1.7,1.5,1.9,0.000,Slower,Regressed
 ```
 
 ### N×N Comparison Matrices

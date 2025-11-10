@@ -235,16 +235,17 @@ P. Adaptive Parameter Selector (file user has open)
 - Statistical misuse: defaults conservative; clear warnings; docs with guidance.
 
 ## 13) Next steps (actionable checklist)
-- [ ] Confirm API additions to IExecutionSettings and attributes
+- [x] Confirm API additions to IExecutionSettings and attributes (confirmed in ExecutionSettings.cs and SailfishAttribute.cs)
 - [x] Implement EnvironmentHealthChecker + report + console summary (baseline delivered: Build Mode + JIT checks wired to adapter + consolidated markdown; docs + release notes updated)
-- [ ] Add ReproducibilityManifest and persist/print
-- [ ] Implement Consumer.Consume and minimal analyzers (SF1001–SF1003)
+- [x] Add ReproducibilityManifest and persist/print
+- [x] Implement Consumer.Consume and minimal analyzers (SF1001–SF1003)
 - [x] Implement OperationsPerInvokeTuner; integrate into TestCaseIterator (implemented; unit+integration tests in 2.7; docs updated: /docs/1/required-attributes and /docs/1/iteration-tuning)
 - [x] Implement BudgetController and honor MaxMeasurementTimePerMethod (implemented; docs added in 2.6)
-- [ ] Apply BH‑FDR in SailDiff; add ratio CI and labels
-- [ ] SeededOrderer with logging + manifest
+- [x] Apply BH‑FDR in SailDiff; add ratio CI and labels
+- [x] SeededOrderer with logging + manifest
 - [x] AdaptiveParameterSelector implementation + tests (file provided)
-- [ ] Update docs and add demos; golden output tests
+- [x] Update docs and add demos
+- [x] Golden output tests (consolidated markdown + CSV)
 
 ## 14) Handoff for agents (copy‑paste)
 - Location: G:/code/Sailfish/AiAssistedDevSpecs/ImprovedRigor-1/Sailfish_iPhone_Level_Polish_PRD.md
