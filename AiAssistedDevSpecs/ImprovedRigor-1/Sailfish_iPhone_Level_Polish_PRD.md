@@ -243,7 +243,7 @@ P. Adaptive Parameter Selector (file user has open)
 - [x] Implement BudgetController and honor MaxMeasurementTimePerMethod (implemented; docs added in 2.6)
 - [ ] Apply BH‑FDR in SailDiff; add ratio CI and labels
 - [ ] SeededOrderer with logging + manifest
-- [ ] AdaptiveParameterSelector implementation + tests (file provided)
+- [x] AdaptiveParameterSelector implementation + tests (file provided)
 - [ ] Update docs and add demos; golden output tests
 
 ## 14) Handoff for agents (copy‑paste)

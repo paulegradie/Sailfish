@@ -195,8 +195,8 @@ public class IterationStrategyTests
         // Assert: we should log the adaptive tuning message at least once
         mockLogger.Received().Log(
             LogLevel.Information,
-            "      ---- Adaptive tuning: {Category} -> TargetCV={TargetCV:F3}, MaxCI={MaxCI:F3}",
-            Arg.Is<object[]>(vals => vals.Length == 3 && vals[0] is AdaptiveSamplingConfig.SpeedCategory));
+            "      ---- Adaptive tuning: {Category} -> MinN={MinN}, TargetCV={TargetCV:F3}, MaxCI={MaxCI:F3}",
+            Arg.Is<object[]>(vals => vals.Length == 4 && vals[0] is AdaptiveSamplingConfig.SpeedCategory));
 
         // And the tuned thresholds should be used in the immediate convergence check
         mockConvergenceDetector.Received().CheckConvergence(
@@ -204,7 +204,7 @@ public class IterationStrategyTests
             Arg.Is<double>(cv => Math.Abs(cv - 0.05) < 1e-6), // CV remains at least the user's 0.05
             Arg.Is<double>(ci => ci <= 0.20 && ci > 0.0), // Tuned MaxCI should be <= default 0.20 (selector-dependent)
             Arg.Is<double>(cl => Math.Abs(cl - 0.95) < 1e-6),
-            Arg.Any<int>());
+            Arg.Is<int>(min => min >= 50));
 
         result.IsSuccess.ShouldBeTrue();
     }

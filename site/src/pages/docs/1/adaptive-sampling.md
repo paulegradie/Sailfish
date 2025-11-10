@@ -37,6 +37,21 @@ See also: [Precision/Time Budget Controller](/docs/1/precision-time-budget)
 Global defaults from RunSettingsBuilder act as overrides/defaults. Individual [Sailfish] attributes can still set different values per class.
 {% /callout %}
 
+## Parameter selection (pilot phase)
+Sailfish runs a short pilot (the minimum phase) and classifies your method by speed using the median iteration time. It then recommends local thresholds for the rest of the run:
+
+- UltraFast (< 50 µs): MinN ≥ 50; TargetCV ≥ max(user, 3%); MaxCI ≤ min(user, 12%)
+- Fast (< 0.5 ms): MinN ≥ 30; TargetCV ≥ max(user, 4%); MaxCI ≤ min(user, 15%)
+- Medium (< 5 ms): MinN ≥ 20; TargetCV ≥ max(user, 5%); MaxCI ≤ min(user, 20%)
+- Slow (< 50 ms): MinN ≥ 15; TargetCV ≥ max(user, 7%); MaxCI ≤ min(user, 25%)
+- VerySlow (≥ 50 ms): MinN ≥ 10; TargetCV ≥ max(user, 10%); MaxCI ≤ min(user, 30%)
+
+Notes:
+- Safety rules: never tighten CV below what you requested; never exceed your MaxCI budget.
+- The recommended MinN is applied as a local floor only for convergence checks; your configured MinimumSampleSize still controls the initial pilot (minimum phase).
+- If classification fails, Sailfish falls back to your configured thresholds.
+
+
 ## How to enable
 
 ### Per-class (attribute-based)

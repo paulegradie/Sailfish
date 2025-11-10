@@ -47,6 +47,7 @@ internal class AdaptiveIterationStrategy : IIterationStrategy
         var targetCV = executionSettings.TargetCoefficientOfVariation;
         var confidenceLevel = executionSettings.ConfidenceLevel;
         var maxCiWidth = executionSettings.MaxConfidenceIntervalWidth;
+        var effectiveMin = minIterations;
 
         var iteration = 0;
         var timer = testInstanceContainer.CoreInvoker.GetPerformanceResults();
@@ -105,7 +106,12 @@ internal class AdaptiveIterationStrategy : IIterationStrategy
             var selected = selector.Select(initialSamples, executionSettings);
             targetCV = selected.TargetCoefficientOfVariation;
             maxCiWidth = selected.MaxConfidenceIntervalWidth;
-            logger.Log(LogLevel.Information, "      ---- Adaptive tuning: {Category} -> TargetCV={TargetCV:F3}, MaxCI={MaxCI:F3}", selected.Category, targetCV, maxCiWidth);
+            effectiveMin = Math.Max(minIterations, selected.RecommendedMinimumSampleSize);
+            logger.Log(LogLevel.Information, "      ---- Adaptive tuning: {Category} -> MinN={MinN}, TargetCV={TargetCV:F3}, MaxCI={MaxCI:F3}", selected.Category, effectiveMin, targetCV, maxCiWidth);
+            if (!string.IsNullOrWhiteSpace(selected.SelectionReason))
+            {
+                logger.Log(LogLevel.Information, "      ---- Reason: {SelectionReason}", selected.SelectionReason);
+            }
         }
         catch
         {
@@ -133,7 +139,7 @@ internal class AdaptiveIterationStrategy : IIterationStrategy
             }
 
         convergenceResult = convergenceDetector.CheckConvergence(
-            initialSamples, targetCV, maxCiWidth, confidenceLevel, minIterations);
+            initialSamples, targetCV, maxCiWidth, confidenceLevel, effectiveMin);
 
         if (convergenceResult.HasConverged)
         {
@@ -186,7 +192,7 @@ internal class AdaptiveIterationStrategy : IIterationStrategy
                 // Re-evaluate convergence on the latest samples (including the last allowed iteration)
                 var currentSamples = GetCurrentSamples(testInstanceContainer);
                 convergenceResult = convergenceDetector.CheckConvergence(
-                    currentSamples, targetCV, maxCiWidth, confidenceLevel, minIterations);
+                    currentSamples, targetCV, maxCiWidth, confidenceLevel, effectiveMin);
 
                 if (convergenceResult.HasConverged)
                 {

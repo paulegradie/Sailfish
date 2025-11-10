@@ -93,6 +93,7 @@
   - Tunes CV/CI budgets accordingly for faster, more reliable convergence
   - Integrated with AdaptiveIterationStrategy
 
+  - Now also recommends a minimum sample size by speed category; AdaptiveIterationStrategy honors it as a local floor for convergence checks and logs it: "Adaptive tuning: {Category} -> MinN={MinN}, TargetCV={TargetCV:F3}, MaxCI={MaxCI:F3}"
 - New: Statistical Validation Warnings
   - Emits warnings for: LOW_SAMPLE_SIZE, EXCESSIVE_OUTLIERS, HIGH_CV, WIDE_CI
   - Displayed in Markdown output alongside result tables
