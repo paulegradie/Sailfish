@@ -17,6 +17,14 @@
   - Build Mode warns in Debug (recommend Release optimizations); JIT details include COMPlus_TieredCompilation, COMPlus_TC_QuickJit, COMPlus_TC_QuickJitForLoops, and COMPlus_TC_OnStackReplacement
 
 
+- New: Iteration Tuning (Operations per Invoke auto‑tuning)
+  - Automatically tunes `OperationsPerInvoke` to reach a target per‑iteration duration when `TargetIterationDurationMs > 0`
+  - Inert when `TargetIterationDurationMs == 0` or when an explicit `OperationsPerInvoke > 1` is set
+  - Improves timer suitability and stability for microbenchmarks by batching multiple operations per measured iteration
+  - Docs: See `/docs/1/iteration-tuning` and `/docs/1/required-attributes#time-budget--iteration-controls`
+
+
+
 - New: Timer Calibration + Jitter Scoring (default: enabled)
   - Characterizes the high‑resolution timer and baseline overhead; computes dispersion (RSD%) and a 0–100 Jitter Score: `score = clamp(0,100, 100 − 4×RSD%)`
   - Surfaces in:

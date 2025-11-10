@@ -166,6 +166,11 @@ Target duration (milliseconds) for a single measured iteration. Use together wit
 - Default: `0` (disabled)
 - Type: `int`
 
+
+{% callout title="Iteration Tuning" type="note" %}
+When `TargetIterationDurationMs > 0` and `OperationsPerInvoke <= 1`, Sailfish will auto‑tune the operations per measured iteration to bring each iteration near the target. If you set `OperationsPerInvoke > 1`, your explicit value is honored and tuning will not run. See [Iteration Tuning](/docs/1/iteration-tuning).
+{% /callout %}
+
 #### MaxMeasurementTimePerMethodMs
 Maximum allowed wall-clock time (milliseconds) for measuring a single test method. When set (>0), it enables time-budget awareness throughout execution.
 

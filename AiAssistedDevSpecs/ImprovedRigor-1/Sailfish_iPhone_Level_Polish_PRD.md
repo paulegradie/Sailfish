@@ -239,7 +239,7 @@ P. Adaptive Parameter Selector (file user has open)
 - [x] Implement EnvironmentHealthChecker + report + console summary (baseline delivered: Build Mode + JIT checks wired to adapter + consolidated markdown; docs + release notes updated)
 - [ ] Add ReproducibilityManifest and persist/print
 - [ ] Implement Consumer.Consume and minimal analyzers (SF1001–SF1003)
-- [ ] Implement OperationsPerInvokeTuner; integrate into TestCaseIterator
+- [x] Implement OperationsPerInvokeTuner; integrate into TestCaseIterator (implemented; unit+integration tests in 2.7; docs updated: /docs/1/required-attributes and /docs/1/iteration-tuning)
 - [x] Implement BudgetController and honor MaxMeasurementTimePerMethod (implemented; docs added in 2.6)
 - [ ] Apply BH‑FDR in SailDiff; add ratio CI and labels
 - [ ] SeededOrderer with logging + manifest
