@@ -516,6 +516,27 @@ public class RunSettingsBuilderTests
     }
 
     [Fact]
+    public void WithSeed_SetsSeed_ReturnsThis()
+    {
+        var builder = RunSettingsBuilder.CreateBuilder();
+
+        var result = builder.WithSeed(12345);
+
+        result.ShouldBeSameAs(builder);
+        var settings = builder.Build();
+        settings.Seed.ShouldBe(12345);
+    }
+
+    [Fact]
+    public void Build_Default_SeedIsNull()
+    {
+        var builder = RunSettingsBuilder.CreateBuilder();
+        var settings = builder.Build();
+        settings.Seed.ShouldBeNull();
+    }
+
+
+    [Fact]
     public void Build_WithoutSailDiffSettings_CreatesDefaultSailDiffSettings()
     {
         var builder = RunSettingsBuilder.CreateBuilder();

@@ -23,6 +23,8 @@ After warmups, Sailfish collects iterations and evaluates convergence when there
 
 See also: [Confidence Intervals](/docs/1/confidence-intervals)
 
+See also: [Precision/Time Budget Controller](/docs/1/precision-time-budget)
+
 ## Defaults and tunables
 - MinimumSampleSize: 10
 - MaximumSampleSize: 1000 (safety cap)

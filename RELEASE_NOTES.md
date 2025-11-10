@@ -46,8 +46,12 @@
   - API: `ISailDiff.Analyze(TestData beforeData, TestData afterData, SailDiffSettings settings)`
   - Docs: See `/docs/2/saildiff`
 
-- Opt‑in: Precision/Time Budget Controller
-  - A budget-aware controller can relax precision thresholds when remaining time is low (backward compatible; off by default)
+- New: Precision/Time Budget Controller (opt-in)
+  - Helps long-running tests finish within a per-method time budget by conservatively relaxing precision targets when enabled (backward compatible; off by default)
+  - Enable (per class): `[Sailfish(UseTimeBudgetController = true, MaxMeasurementTimePerMethodMs = 30_000)]`
+  - Behavior: after the pilot/minimum phase, estimates remaining budget and per-iteration cost; if tight, relaxes CV and CI targets within caps (CV ≤ 0.20; relative CI width ≤ 0.50); never tightens thresholds
+  - Logging: `Budget controller: remaining={RemainingMs:F1}ms, est/iter={PerIterMs:F2}ms, TargetCV {OldCv:F3}->{NewCv:F3}, MaxCI {OldCi:F3}->{NewCi:F3}`
+  - Docs: `/docs/1/precision-time-budget`
 
 
 - New: Anti‑DCE Consumer API

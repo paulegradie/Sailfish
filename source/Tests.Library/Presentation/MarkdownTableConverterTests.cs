@@ -651,6 +651,40 @@ public class MarkdownTableConverterTests
             md.ShouldNotContain("## ⏱️ Timer Calibration");
         }
 
+        [Fact]
+        public void EnhancedMarkdown_Includes_Seed_WhenManifestHasRandomizationSeed()
+        {
+            var manifestProvider = new TestManifestProvider
+            {
+                Current = new Sailfish.Results.ReproducibilityManifest
+                {
+                    Randomization = new Sailfish.Results.ReproducibilityManifest.RandomizationConfig
+                    {
+                        Seed = 123
+                    }
+                }
+            };
+            var converter = new MarkdownTableConverter(mockUnifiedFormatter, manifestProvider);
+            var summaries = new List<IClassExecutionSummary> { CreateMockExecutionSummary("SeededClass") };
+
+            var md = converter.ConvertToEnhancedMarkdownTableString(summaries);
+
+            md.ShouldContain("Seed: 123");
+        }
+
+        [Fact]
+        public void EnhancedMarkdown_Excludes_Seed_WhenManifestHasNoSeed()
+        {
+            var manifestProvider = new TestManifestProvider { Current = new Sailfish.Results.ReproducibilityManifest() };
+            var converter = new MarkdownTableConverter(mockUnifiedFormatter, manifestProvider);
+            var summaries = new List<IClassExecutionSummary> { CreateMockExecutionSummary("NoSeedClass") };
+
+            var md = converter.ConvertToEnhancedMarkdownTableString(summaries);
+
+            md.ShouldNotContain("Seed:");
+        }
+
+
 
 
         [Fact]

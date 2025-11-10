@@ -37,6 +37,10 @@ public class RunSettingsBuilder
     private bool enableEnvironmentHealthCheck = true;
     private bool timerCalibration = true;
 
+
+    // Optional deterministic randomization seed for reproducible ordering
+    private int? seed;
+
     // Global adaptive sampling overrides
     private bool? globalUseAdaptiveSampling;
     // Global outlier handling overrides
@@ -228,6 +232,15 @@ public class RunSettingsBuilder
         return this;
     }
 
+    /// <summary>
+    ///     Sets a deterministic randomization seed for reproducible ordering of tests, methods, and property sets.
+    /// </summary>
+    public RunSettingsBuilder WithSeed(int seed)
+    {
+        this.seed = seed;
+        return this;
+    }
+
     public RunSettingsBuilder DisableOverheadEstimation()
     {
         disableOverheadEstimation = true;
@@ -306,6 +319,7 @@ public class RunSettingsBuilder
             globalUseConfigurableOutlierDetection,
             globalOutlierStrategy,
             enableEnvironmentHealthCheck,
-            timerCalibration);
+            timerCalibration,
+            seed: seed);
     }
 }

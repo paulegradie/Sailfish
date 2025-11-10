@@ -20,6 +20,8 @@ public interface IRunSettings
     IEnumerable<Type> RegistrationProviderAnchors { get; }
     OrderedDictionary Tags { get; }
     OrderedDictionary Args { get; }
+    // Optional deterministic randomization seed for reproducible ordering
+    int? Seed { get; }
     IEnumerable<string> ProvidedBeforeTrackingFiles { get; }
     DateTime TimeStamp { get; }
     bool DisableOverheadEstimation { get; }

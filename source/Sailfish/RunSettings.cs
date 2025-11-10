@@ -39,7 +39,8 @@ internal class RunSettings(
     bool? globalUseConfigurableOutlierDetection = null,
     OutlierStrategy? globalOutlierStrategy = null,
     bool enableEnvironmentHealthCheck = true,
-    bool timerCalibration = true) : IRunSettings
+    bool timerCalibration = true,
+    int? seed = null) : IRunSettings
 {
     public IEnumerable<string> TestNames { get; } = testNames;
     public string LocalOutputDirectory { get; } = localOutputDirectory;
@@ -51,6 +52,7 @@ internal class RunSettings(
     public IEnumerable<Type> RegistrationProviderAnchors { get; } = registrationProviderAnchors;
     public OrderedDictionary Tags { get; } = tags;
     public OrderedDictionary Args { get; } = args;
+    public int? Seed { get; } = seed;
     public IEnumerable<string> ProvidedBeforeTrackingFiles { get; } = providedBeforeTrackingFiles;
     public DateTime TimeStamp { get; } = timeStamp ?? DateTime.Now.ToUniversalTime();
     public bool DisableOverheadEstimation { get; } = disableOverheadEstimation;

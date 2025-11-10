@@ -48,6 +48,37 @@ public class ReproducibilityManifestTests
     }
 
     [Fact]
+    public void CreateBase_SetsRandomizationSeed_WhenSeedProvided()
+    {
+        var runSettings = Sailfish.RunSettingsBuilder.CreateBuilder()
+            .WithSeed(42)
+            .Build();
+
+        var manifest = ReproducibilityManifest.CreateBase(runSettings, null);
+
+        manifest.Randomization.ShouldNotBeNull();
+        manifest.Randomization.Seed.ShouldBe(42);
+        manifest.Randomization.Types.ShouldBeTrue();
+        manifest.Randomization.Methods.ShouldBeTrue();
+        manifest.Randomization.PropertySets.ShouldBeTrue();
+    }
+
+    [Fact]
+    public void CreateBase_LeavesRandomizationUnset_WhenNoSeed()
+    {
+        var runSettings = Sailfish.RunSettingsBuilder.CreateBuilder().Build();
+
+        var manifest = ReproducibilityManifest.CreateBase(runSettings, null);
+
+        manifest.Randomization.ShouldNotBeNull();
+        manifest.Randomization.Seed.ShouldBeNull();
+        manifest.Randomization.Types.ShouldBeFalse();
+        manifest.Randomization.Methods.ShouldBeFalse();
+        manifest.Randomization.PropertySets.ShouldBeFalse();
+    }
+
+
+    [Fact]
     public void AddMethodSnapshots_MapsFields_AndComputesApproximateCIMargins()
     {
         // Arrange: build tracking formats with n=4, mean=100, stddev=20

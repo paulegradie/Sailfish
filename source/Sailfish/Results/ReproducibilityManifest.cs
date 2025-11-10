@@ -110,7 +110,7 @@ namespace Sailfish.Results
                 CiSystem = DetectCiSystem()
             };
 
-            var seed = TryParseSeed(runSettings.Args);
+            var seed = runSettings.Seed ?? TryParseSeed(runSettings.Args);
             manifest.Randomization = new RandomizationConfig
             {
                 Seed = seed,

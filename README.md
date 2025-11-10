@@ -32,6 +32,8 @@ Sailfish is a .NET performance testing framework that makes it easy to write, ru
 - Easy CI/CD integration
 - Historical analysis with SailDiff
 - Timer calibration with 0–100 Jitter Score; shows in Markdown header, manifest, and Environment Health
+- Seeded run order (opt‑in): Deterministic ordering across classes, methods, and variable sets when a seed is provided; seed appears in Markdown header and manifest
+
 
 - Highly configurable
 
@@ -129,6 +131,18 @@ var run = RunSettingsBuilder.CreateBuilder()
 ````
 
 Note: Attribute-level knobs for outlier strategy are not yet exposed; programmatic configuration is available for advanced scenarios and runners that surface ExecutionSettings.
+
+## Reproducible Run Order (Seed)
+Set a seed to make run order deterministic across test classes, methods, and variable sets:
+
+````csharp
+var run = RunSettingsBuilder.CreateBuilder()
+    .WithSeed(12345) // deterministic ordering across classes, methods, and variable sets
+    .Build();
+````
+
+- Legacy fallback: `.WithArg("seed", "12345")` is still honored if `Seed` is null
+- The seed is surfaced in the Markdown header and in the Reproducibility Manifest
 
 ## Installation
 Install via NuGet:

@@ -57,7 +57,7 @@ internal class SailfishExecutor
         {
             // Optional seeded randomization of test class execution order for reproducibility
             var testsList = testInitializationResult.Tests.ToList();
-            var seed = TryParseSeed(runSettings.Args);
+            var seed = runSettings.Seed ?? TryParseSeed(runSettings.Args);
             if (seed.HasValue)
             {
                 var rng = new Random(seed.Value);

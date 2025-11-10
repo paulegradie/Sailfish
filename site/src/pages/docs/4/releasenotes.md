@@ -9,6 +9,11 @@ Captures timer resolution and baseline overhead, computes a 0–100 Jitter Score
 {% /callout %}
 
 
+{% callout title="Feature highlight: Precision/Time Budget Controller" type="note" %}
+Helps tests finish within per-method time budgets by conservatively relaxing precision targets when enabled. [Learn more →](/docs/1/precision-time-budget)
+{% /callout %}
+
+
 {% callout title="Feature highlight: Environment Health Check" type="note" %}
 Validates your benchmarking environment and appends a health summary to each test’s Output window.
 [Learn more →](/docs/1/environment-health)

@@ -240,7 +240,7 @@ P. Adaptive Parameter Selector (file user has open)
 - [ ] Add ReproducibilityManifest and persist/print
 - [ ] Implement Consumer.Consume and minimal analyzers (SF1001–SF1003)
 - [ ] Implement OperationsPerInvokeTuner; integrate into TestCaseIterator
-- [ ] Implement BudgetController and honor MaxMeasurementTimePerMethod
+- [x] Implement BudgetController and honor MaxMeasurementTimePerMethod (implemented; docs added in 2.6)
 - [ ] Apply BH‑FDR in SailDiff; add ratio CI and labels
 - [ ] SeededOrderer with logging + manifest
 - [ ] AdaptiveParameterSelector implementation + tests (file provided)

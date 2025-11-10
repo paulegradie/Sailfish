@@ -34,7 +34,7 @@ internal class TestInstanceContainerCreator(
         if (propertyTensorFilter is not null) variableSets = variableSets.Where(propertyTensorFilter);
 
         // Determine optional randomization seed (global) for reproducible ordering
-        var seed = TryParseSeed(runSettings.Args);
+        var seed = runSettings.Seed ?? TryParseSeed(runSettings.Args);
 
         // Randomize property set order if a seed is provided
         var variableSetsList = variableSets.ToList();

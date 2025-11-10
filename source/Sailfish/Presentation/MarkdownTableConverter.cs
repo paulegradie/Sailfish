@@ -108,6 +108,19 @@ public class MarkdownTableConverter : IMarkdownTableConverter
         stringBuilder.AppendLine();
         stringBuilder.AppendLine($"**Generated:** {DateTime.UtcNow:yyyy-MM-dd HH:mm:ss} UTC");
 
+
+        // Optional: seed used for deterministic randomization (session-level)
+        try
+        {
+            var manifestForSeed = _manifestProvider?.Current;
+            var seed = manifestForSeed?.Randomization?.Seed;
+            if (seed.HasValue)
+            {
+                stringBuilder.AppendLine($"Seed: {seed.Value}");
+            }
+        }
+        catch { /* best-effort */ }
+
         // Optional: timer calibration summary from manifest (session-level)
         try
         {
