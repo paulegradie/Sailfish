@@ -1,6 +1,6 @@
 # Sailfish
 
-[![Build Pipeline v2.2](https://github.com/paulegradie/Sailfish/actions/workflows/build-v2.2.yml/badge.svg)](https://github.com/paulegradie/Sailfish/actions/workflows/build-v2.2.yml)
+[![Build Pipeline v3.0](https://github.com/paulegradie/Sailfish/actions/workflows/build-v3.0.yml/badge.svg)](https://github.com/paulegradie/Sailfish/actions/workflows/build-v3.0.yml)
 ![NuGet](https://img.shields.io/nuget/dt/Sailfish)
 [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=sailfish_library&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=sailfish_library)
 [![codecov](https://codecov.io/gh/paulegradie/Sailfish/graph/badge.svg?token=UN17VRVD0N)](https://codecov.io/gh/paulegradie/Sailfish)
