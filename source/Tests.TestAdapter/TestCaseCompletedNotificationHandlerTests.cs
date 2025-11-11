@@ -55,7 +55,7 @@ public class TestCaseCompletedNotificationHandlerTests
                 methodInfo,
                 TestCaseIdBuilder.Create().Build(),
                 Substitute.For<IExecutionSettings>(),
-                null,
+                null!,
                 false
             ),
             new List<dynamic>()
@@ -86,7 +86,7 @@ public class TestCaseCompletedNotificationHandlerTests
 
         var notification = new TestCaseCompletedNotification(
             summaryTrackingFormat,
-            null,
+            null!,
             new List<dynamic>()
         );
 

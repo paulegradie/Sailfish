@@ -19,6 +19,8 @@ using Shouldly;
 using Tests.Common.Builders;
 using Tests.Library.TestUtils;
 using Xunit;
+using Xunit.Sdk;
+
 
 namespace Tests.Library.Presentation;
 
@@ -102,7 +104,7 @@ public class CsvOutputGoldenTests
         if (!File.Exists(goldenPath))
         {
             File.WriteAllText(goldenPath, actualNormalized);
-            Assert.True(false, $"Golden file was missing for csv. Created at {goldenPath}. Review and re-run tests.");
+            throw new Xunit.Sdk.XunitException($"Golden file was missing for csv. Created at {goldenPath}. Review and re-run tests.");
         }
 
         var expected = File.ReadAllText(goldenPath);

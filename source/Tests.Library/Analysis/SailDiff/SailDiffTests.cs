@@ -440,7 +440,7 @@ public class SailDiffTests
         // Assert
         await mockMediator.Received().Send(Arg.Any<BeforeAndAfterFileLocationRequest>(), cancellationToken);
         await mockMediator.Received().Send(Arg.Any<ReadInBeforeAndAfterDataRequest>(), cancellationToken);
-        mockStatisticalTestComputer.Received().ComputeTest(dataResponse.BeforeData, dataResponse.AfterData, mockRunSettings.SailDiffSettings);
+        mockStatisticalTestComputer.Received().ComputeTest(dataResponse.BeforeData!, dataResponse.AfterData!, mockRunSettings.SailDiffSettings);
         mockSailDiffConsoleWindowMessageFormatter.Received()
             .FormConsoleWindowMessageForSailDiff(testResults, Arg.Any<TestIds>(), mockRunSettings.SailDiffSettings, cancellationToken);
         mockLogger.Received().Log(LogLevel.Information, expectedMarkdown);

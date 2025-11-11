@@ -109,7 +109,7 @@ internal class TestCaseIterator : ITestCaseIterator
         {
             logger.Log(LogLevel.Information,
                 "      ---- Adaptive sampling completed: {Reason}",
-                iterationResult.ConvergenceReason);
+                iterationResult.ConvergenceReason ?? "unknown");
         }
 
         if (disableOverheadEstimation)

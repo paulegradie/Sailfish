@@ -3,6 +3,10 @@ title: Release Notes
 ---
 
 ## Current Release Notes
+{% callout title="Build hygiene: Zero warnings" type="success" %}
+Core library, Test Adapter, and Analyzers all build cleanly on .NET 8 and .NET 9. Analyzer release tracking and test harness updates increased stability.
+{% /callout %}
+
 
 {% callout title="Feature highlight: Timer Calibration + Jitter Score" type="note" %}
 Captures timer resolution and baseline overhead, computes a 0–100 Jitter Score from dispersion, and surfaces it in Markdown, the manifest, and Environment Health (Timer Jitter). [Learn more →](/docs/1/markdown-output)

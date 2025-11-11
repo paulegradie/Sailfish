@@ -681,7 +681,7 @@ public class TestCaseBatchingServiceTests : IDisposable
         _batchingService = new TestCaseBatchingService(_logger);
         await _batchingService.StartAsync(CancellationToken.None);
         var message = CreateTestMessage();
-        message.PerformanceMetrics = null;
+        message.PerformanceMetrics = null!;
 
         // Act & Assert - Should not throw
         var batchId = await _batchingService.AddTestCaseToBatchAsync(message, CancellationToken.None);

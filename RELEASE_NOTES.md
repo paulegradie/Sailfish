@@ -10,6 +10,13 @@
   - Normalization rules ensure cross‑TFM stability (works on .NET 8 and .NET 9)
   - Docs updated: `/docs/1/markdown-output`, `/docs/1/method-comparisons`, `/docs/1/csv-output`
 
+- Internal: Build hygiene and analyzer/test stability
+  - Solution builds with 0 warnings on .NET 8 and .NET 9
+  - Roslyn analyzer release tracking added (AnalyzerReleases.Shipped.md/Unshipped.md)
+  - Analyzer project targets netstandard2.0 and uses PrivateAssets=all; RS1038 suppressed only where required by design
+  - Analyzer test harness pinned to Microsoft.CodeAnalysis 4.14.0 to eliminate MSB3277 conflicts; legacy CS0618 warnings suppressed in Tests.Analyzers
+  - No runtime behavior changes; user-facing APIs unaffected
+
 
 
 - New: Environment Health Check (default: enabled)

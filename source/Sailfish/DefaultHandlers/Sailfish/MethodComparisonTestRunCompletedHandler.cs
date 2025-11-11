@@ -408,8 +408,8 @@ internal class MethodComparisonTestRunCompletedHandler : INotificationHandler<Te
                     Name = GetMethodName(m.TestCaseId?.DisplayName ?? m.PerformanceRunResult!.DisplayName),
                     Mean = m.PerformanceRunResult!.Mean,
                     StdDev = m.PerformanceRunResult!.StdDev,
-                    N = Math.Max(1, (m.PerformanceRunResult!.DataWithOutliersRemoved?.Length ?? 0) > 0
-                        ? m.PerformanceRunResult!.DataWithOutliersRemoved.Length
+                    N = Math.Max(1, (m.PerformanceRunResult!.DataWithOutliersRemoved?.Length ?? -1) > 0
+                        ? (m.PerformanceRunResult!.DataWithOutliersRemoved?.Length ?? m.PerformanceRunResult!.SampleSize)
                         : m.PerformanceRunResult!.SampleSize)
                 })
                 .Select(x => new

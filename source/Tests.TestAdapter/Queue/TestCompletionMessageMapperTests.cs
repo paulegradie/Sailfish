@@ -324,7 +324,8 @@ public class TestCompletionMessageMapperTests
         // Assert
         result.ShouldNotBeNull();
         var formattedMessage = result.Metadata["FormattedMessage"] as string;
-        formattedMessage.ShouldContain("SailDiff analysis results");
+        formattedMessage.ShouldNotBeNull();
+        formattedMessage!.ShouldContain("SailDiff analysis results");
     }
 
     [Fact]

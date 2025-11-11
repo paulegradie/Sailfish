@@ -41,7 +41,7 @@ internal sealed class TimerCalibrationService : ITimerCalibrationService
     private const int WarmupCount = 16;
     private const int SampleCount = 64;
 
-    public async Task<TimerCalibrationResult> CalibrateAsync(CancellationToken cancellationToken = default)
+    public Task<TimerCalibrationResult> CalibrateAsync(CancellationToken cancellationToken = default)
     {
         // Use a fixed sync no-op probe to keep results comparable across sessions
         var probe = typeof(CalibrationProbes).GetMethod("SyncNoop", BindingFlags.Static | BindingFlags.NonPublic | BindingFlags.Public)
@@ -68,7 +68,7 @@ internal sealed class TimerCalibrationService : ITimerCalibrationService
 
         if (samples.Count == 0)
         {
-            return BuildResult(0, 0, 0.0, 0);
+            return Task.FromResult(BuildResult(0, 0, 0.0, 0));
         }
 
         // Compute median and stddev over raw ticks
@@ -95,7 +95,7 @@ internal sealed class TimerCalibrationService : ITimerCalibrationService
         if (median < 0) median = 0;
         if (median > int.MaxValue) median = int.MaxValue;
 
-        return BuildResult((int)median, stddev, rsdPct, score);
+        return Task.FromResult(BuildResult((int)median, stddev, rsdPct, score));
     }
 
 

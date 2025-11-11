@@ -162,6 +162,11 @@ public class EnvironmentHealthChecker : IEnvironmentHealthChecker
     {
         try
         {
+            if (!(OperatingSystem.IsWindows() || OperatingSystem.IsLinux()))
+            {
+                return new("CPU Affinity", HealthStatus.Unknown, "Not supported on this OS");
+            }
+
             var p = Process.GetCurrentProcess();
             var mask = (ulong)p.ProcessorAffinity;
             var bits = CountBits(mask);

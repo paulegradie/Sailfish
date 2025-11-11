@@ -206,6 +206,10 @@ namespace Sailfish.Results
         {
             try
             {
+                if (!(OperatingSystem.IsWindows() || OperatingSystem.IsLinux()))
+                {
+                    return "Unsupported";
+                }
                 var p = Process.GetCurrentProcess();
                 var mask = (ulong)p.ProcessorAffinity;
                 var cores = CountBits(mask);

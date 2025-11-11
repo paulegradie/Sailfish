@@ -55,7 +55,8 @@ public class IterationStrategyTests
         result.IsSuccess.ShouldBeTrue();
         result.TotalIterations.ShouldBe(5);
         result.ConvergedEarly.ShouldBeFalse();
-        result.ConvergenceReason.ShouldContain("5 fixed iterations");
+        var reason1 = result.ConvergenceReason!;
+        reason1.ShouldContain("5 fixed iterations");
     }
 
     [Fact]
@@ -119,7 +120,8 @@ public class IterationStrategyTests
         result.IsSuccess.ShouldBeTrue();
         result.TotalIterations.ShouldBe(5); // Should stop at minimum
         result.ConvergedEarly.ShouldBeTrue();
-        result.ConvergenceReason.ShouldContain("Converged");
+        var reason2 = result.ConvergenceReason!;
+        reason2.ShouldContain("Converged");
     }
 
     [Fact]
@@ -230,7 +232,8 @@ public class IterationStrategyTests
             // Assert: stopped early due to time budget
             result.IsSuccess.ShouldBeTrue();
             result.TotalIterations.ShouldBeLessThan(5);
-            result.ConvergenceReason.ShouldContain("Time budget exceeded");
+            var reason3 = result.ConvergenceReason!;
+            reason3.ShouldContain("Time budget exceeded");
         }
 
         [Fact]
@@ -263,7 +266,8 @@ public class IterationStrategyTests
             // Assert: stopped before reaching the minimum due to time budget
             result.IsSuccess.ShouldBeTrue();
             result.TotalIterations.ShouldBeLessThan(3);
-            result.ConvergenceReason.ShouldContain("Time budget exceeded");
+            var reason4 = result.ConvergenceReason!;
+            reason4.ShouldContain("Time budget exceeded");
         }
 
         private sealed class SlowWork

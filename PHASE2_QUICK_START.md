@@ -1,7 +1,7 @@
 # Phase 2 Quick Start Guide for AI Agents
 
-**Last Updated:** 2025-11-09
-**Status:** In Progress — Tier A polish COMPLETE. Next: Tier B (Anti‑DCE analyzers).
+**Last Updated:** 2025-11-11
+**Status:** COMPLETE — Phase 2 shipped; solution builds with 0 warnings on .NET 8/9; docs updated. See release notes.
 
 ---
 
@@ -13,6 +13,12 @@ You are implementing **Phase 2** of the Sailfish Statistical Engine upgrade:
 - **Goal:** Improve measurement reliability without breaking existing functionality
 
 ---
+## ✅ Progress Update (2025-11-11)
+
+- Build hygiene: solution builds with 0 warnings on .NET 8 and .NET 9
+- Docs: release notes and site pages updated to reflect Phase 2 completion
+- Planning: Phase 2 status marked COMPLETE in implementation docs
+
 ## ✅ Progress Update (2025-11-09)
 
 - Method comparisons rigor + CSV parity
@@ -49,7 +55,7 @@ You are implementing **Phase 2** of the Sailfish Statistical Engine upgrade:
   - Marked NoInlining; uses Volatile.Write + GC.KeepAlive
   - Docs: /docs/1/anti-dce; Release notes updated
 
-- Next focus: Tier B work. Start Anti‑DCE analyzers (SF1001–SF1003). All targeted test suites green (Tests.Library, Tests.TestAdapter).
+- Tier B complete — Anti‑DCE analyzers (SF1001–SF1003) implemented and documented.
 
 
 ## ✅ Tier A status
@@ -89,7 +95,7 @@ pwd  # Should show: G:/code/Sailfish/source
 ### Step 2: Build and Test
 ```bash
 dotnet build Sailfish.sln
-# Should succeed with ~145 warnings (nullable refs - OK)
+# Should succeed with 0 warnings
 
 dotnet test --no-build
 # All tests should pass
