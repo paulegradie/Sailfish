@@ -57,7 +57,17 @@ public sealed class ConstantOnlyComputationCodeFixProvider : CodeFixProvider
                 SyntaxFactory.MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression, SyntaxFactory.IdentifierName("Consumer"), SyntaxFactory.IdentifierName("Consume")),
                 SyntaxFactory.ArgumentList(SyntaxFactory.SingletonSeparatedList(SyntaxFactory.Argument(Parenthesize(expr))))));
 
-        editor.InsertAfter(statement, consumeInvocation);
+        if (statement.Parent is BlockSyntax)
+        {
+            editor.InsertAfter(statement, consumeInvocation);
+        }
+        else
+        {
+            // Wrap embedded statement (e.g., in if/for/while without braces) in a block so we can add the consume call safely
+            var newBlock = SyntaxFactory.Block(statement, consumeInvocation)
+                .WithTriviaFrom(statement);
+            editor.ReplaceNode(statement, newBlock);
+        }
         return editor.GetChangedDocument();
     }
 

@@ -55,6 +55,14 @@ public sealed class EmptyLoopBodyAnalyzer : AnalyzerBase<ClassDeclarationSyntax>
                             context.ReportDiagnostic(diagnostic);
                         }
                         break;
+                    case ForEachVariableStatementSyntax forEachVarStmt:
+                        if (IsEmpty(forEachVarStmt.Statement))
+                        {
+                            var diagnostic = Diagnostic.Create(Descriptor, forEachVarStmt.ForEachKeyword.GetLocation());
+                            context.ReportDiagnostic(diagnostic);
+                        }
+                        break;
+
                     case WhileStatementSyntax whileStmt:
                         if (IsEmpty(whileStmt.Statement))
                         {

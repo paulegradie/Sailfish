@@ -7,6 +7,8 @@ using Sailfish.Execution;
 using Sailfish.Logging;
 using Shouldly;
 using Xunit;
+using System.Reflection;
+
 
 namespace Tests.Library.Execution;
 
@@ -83,5 +85,24 @@ public class OperationsPerInvokeTunerTests
             return Task.CompletedTask;
         }
     }
+
+    [Fact]
+    public void Median_EvenCount_ReturnsAverage()
+    {
+        var values = new System.Collections.Generic.List<double> { 1.0, 3.0 };
+        var mi = typeof(OperationsPerInvokeTuner).GetMethod("Median", BindingFlags.NonPublic | BindingFlags.Static)!;
+        var result = (double)mi.Invoke(null, new object[] { values })!;
+        result.ShouldBe(2.0, 1e-9);
+    }
+
+    [Fact]
+    public void Median_Empty_ReturnsZero()
+    {
+        var values = new System.Collections.Generic.List<double>();
+        var mi = typeof(OperationsPerInvokeTuner).GetMethod("Median", BindingFlags.NonPublic | BindingFlags.Static)!;
+        var result = (double)mi.Invoke(null, new object[] { values })!;
+        result.ShouldBe(0.0, 1e-9);
+    }
+
 }
 

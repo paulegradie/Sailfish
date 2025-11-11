@@ -76,41 +76,51 @@ public class CsvOutputGoldenTests
     [Fact]
     public async Task Consolidated_Session_Csv_Matches_Golden()
     {
-        CultureInfo.CurrentCulture = CultureInfo.InvariantCulture;
-        CultureInfo.CurrentUICulture = CultureInfo.InvariantCulture;
-
-        var mediator = Substitute.For<IMediator>();
-        string? actualCsv = null;
-        mediator
-            .When(m => m.Publish(Arg.Any<WriteMethodComparisonCsvNotification>(), Arg.Any<CancellationToken>()))
-            .Do(ci => actualCsv = ci.ArgAt<WriteMethodComparisonCsvNotification>(0).CsvContent);
-
-        var logger = new TestLogger();
-        var handler = new CsvTestRunCompletedHandler(logger, mediator);
-
-        var notification = CreateNotification();
-        await handler.Handle(notification, CancellationToken.None);
-
-        await mediator.Received(1).Publish(Arg.Any<WriteMethodComparisonCsvNotification>(), Arg.Any<CancellationToken>());
-        actualCsv.ShouldNotBeNullOrWhiteSpace();
-
-        var actualNormalized = GoldenNormalization.NormalizeCsv(actualCsv!);
-
-        var projectDir = GetProjectDirectory();
-        var goldenDir = Path.Combine(projectDir, "TestResources", "Golden");
-        Directory.CreateDirectory(goldenDir);
-        var goldenPath = Path.Combine(goldenDir, "ConsolidatedSession.csv");
-
-        if (!File.Exists(goldenPath))
+        var originalCulture = CultureInfo.CurrentCulture;
+        var originalUICulture = CultureInfo.CurrentUICulture;
+        try
         {
-            File.WriteAllText(goldenPath, actualNormalized);
-            throw new Xunit.Sdk.XunitException($"Golden file was missing for csv. Created at {goldenPath}. Review and re-run tests.");
+            CultureInfo.CurrentCulture = CultureInfo.InvariantCulture;
+            CultureInfo.CurrentUICulture = CultureInfo.InvariantCulture;
+
+            var mediator = Substitute.For<IMediator>();
+            string? actualCsv = null;
+            mediator
+                .When(m => m.Publish(Arg.Any<WriteMethodComparisonCsvNotification>(), Arg.Any<CancellationToken>()))
+                .Do(ci => actualCsv = ci.ArgAt<WriteMethodComparisonCsvNotification>(0).CsvContent);
+
+            var logger = new TestLogger();
+            var handler = new CsvTestRunCompletedHandler(logger, mediator);
+
+            var notification = CreateNotification();
+            await handler.Handle(notification, CancellationToken.None);
+
+            await mediator.Received(1).Publish(Arg.Any<WriteMethodComparisonCsvNotification>(), Arg.Any<CancellationToken>());
+            actualCsv.ShouldNotBeNullOrWhiteSpace();
+
+            var actualNormalized = GoldenNormalization.NormalizeCsv(actualCsv!);
+
+            var projectDir = GetProjectDirectory();
+            var goldenDir = Path.Combine(projectDir, "TestResources", "Golden");
+            Directory.CreateDirectory(goldenDir);
+            var goldenPath = Path.Combine(goldenDir, "ConsolidatedSession.csv");
+
+            if (!File.Exists(goldenPath))
+            {
+                File.WriteAllText(goldenPath, actualNormalized);
+                throw new Xunit.Sdk.XunitException($"Golden file was missing for csv. Created at {goldenPath}. Review and re-run tests.");
+            }
+
+            var expected = File.ReadAllText(goldenPath);
+            var expectedNormalized = GoldenNormalization.NormalizeCsv(expected);
+
+            actualNormalized.ShouldBe(expectedNormalized);
         }
-
-        var expected = File.ReadAllText(goldenPath);
-        var expectedNormalized = GoldenNormalization.NormalizeCsv(expected);
-
-        actualNormalized.ShouldBe(expectedNormalized);
+        finally
+        {
+            CultureInfo.CurrentCulture = originalCulture;
+            CultureInfo.CurrentUICulture = originalUICulture;
+        }
     }
 
     private static string GetProjectDirectory()

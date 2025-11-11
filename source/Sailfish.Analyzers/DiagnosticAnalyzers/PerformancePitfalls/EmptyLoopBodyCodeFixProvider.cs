@@ -29,7 +29,7 @@ public sealed class EmptyLoopBodyCodeFixProvider : CodeFixProvider
         var diagnostic = context.Diagnostics.First();
         var node = root.FindNode(diagnostic.Location.SourceSpan);
 
-        var loop = node.FirstAncestorOrSelf<SyntaxNode>(n => n is ForStatementSyntax || n is ForEachStatementSyntax || n is WhileStatementSyntax || n is DoStatementSyntax);
+        var loop = node.FirstAncestorOrSelf<SyntaxNode>(n => n is ForStatementSyntax || n is ForEachStatementSyntax || n is ForEachVariableStatementSyntax || n is WhileStatementSyntax || n is DoStatementSyntax);
         if (loop is null) return;
 
         context.RegisterCodeFix(
@@ -67,6 +67,10 @@ public sealed class EmptyLoopBodyCodeFixProvider : CodeFixProvider
             case ForEachStatementSyntax forEachStmt:
                 editor.ReplaceNode(forEachStmt, forEachStmt.WithStatement(MakeBlock(forEachStmt.Statement, consumeStmt)));
                 break;
+            case ForEachVariableStatementSyntax forEachVarStmt:
+                editor.ReplaceNode(forEachVarStmt, forEachVarStmt.WithStatement(MakeBlock(forEachVarStmt.Statement, consumeStmt)));
+                break;
+
             case WhileStatementSyntax whileStmt:
                 editor.ReplaceNode(whileStmt, whileStmt.WithStatement(MakeBlock(whileStmt.Statement, consumeStmt)));
                 break;

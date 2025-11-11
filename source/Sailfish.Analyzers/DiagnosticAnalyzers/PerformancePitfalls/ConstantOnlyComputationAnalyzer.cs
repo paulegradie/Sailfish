@@ -40,7 +40,10 @@ public sealed class ConstantOnlyComputationAnalyzer : AnalyzerBase<ClassDeclarat
             var identifiers = method.DescendantNodes().OfType<IdentifierNameSyntax>();
             var usesExternalInputs = identifiers
                 .Select(id => semanticModel.GetSymbolInfo(id).Symbol)
-                .Any(sym => sym is IParameterSymbol || sym is IFieldSymbol || sym is IPropertySymbol);
+                .Any(sym =>
+                    sym is IParameterSymbol ||
+                    sym is IPropertySymbol ||
+                    (sym is IFieldSymbol field && !field.IsConst));
 
             if (usesExternalInputs) continue;
 

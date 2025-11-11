@@ -38,9 +38,9 @@ public static class DllFinder
         var tfms = new[] { "net9.0", "net8.0" };
         foreach (var tfm in tfms)
         {
-            var rel = allDlls.SingleOrDefault(x => x.Contains(Path.Join("bin", "Release", tfm)));
+            var rel = allDlls.FirstOrDefault(x => x.Contains(Path.Join("bin", "Release", tfm)));
             if (rel is not null) return rel;
-            var dbg = allDlls.SingleOrDefault(x => x.Contains(Path.Join("bin", "Debug", tfm)));
+            var dbg = allDlls.FirstOrDefault(x => x.Contains(Path.Join("bin", "Debug", tfm)));
             if (dbg is not null) return dbg;
         }
 

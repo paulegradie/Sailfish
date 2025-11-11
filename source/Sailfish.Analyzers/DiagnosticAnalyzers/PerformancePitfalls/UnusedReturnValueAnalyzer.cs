@@ -40,9 +40,28 @@ public sealed class UnusedReturnValueAnalyzer : AnalyzerBase<ClassDeclarationSyn
 
             foreach (var exprStmt in body.DescendantNodes().OfType<ExpressionStatementSyntax>())
             {
-                if (exprStmt.Expression is AwaitExpressionSyntax)
+                // Handle awaited expressions: if awaiting a Task<T>/ValueTask<T>, the resulting T is produced and then ignored
+                if (exprStmt.Expression is AwaitExpressionSyntax awaitExpr)
                 {
-                    // Awaited expressions are used
+                    var awaitedExpr = awaitExpr.Expression;
+                    var awaitedType = semanticModel.GetTypeInfo(awaitExpr).Type; // type after await (i.e., T for Task<T>)
+
+                    // If the awaited result type is not void, then a value is produced and discarded in this statement
+                    if (awaitedType is not null && awaitedType.SpecialType != SpecialType.System_Void)
+                    {
+                        IMethodSymbol? awaitedMethod = null;
+                        if (awaitedExpr is InvocationExpressionSyntax awaitedInvocation)
+                        {
+                            var awaitedSymInfo = semanticModel.GetSymbolInfo(awaitedInvocation);
+                            awaitedMethod = awaitedSymInfo.Symbol as IMethodSymbol;
+                        }
+
+                        var diag = Diagnostic.Create(Descriptor, awaitExpr.GetLocation(), awaitedMethod?.Name ?? "awaited expression");
+                        context.ReportDiagnostic(diag);
+                        continue;
+                    }
+
+                    // Otherwise it's an await of Task/ValueTask (no result); nothing to report
                     continue;
                 }
 

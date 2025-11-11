@@ -123,48 +123,58 @@ public class MarkdownOutputGoldenTests
     [Fact]
     public async Task Consolidated_Session_Markdown_Matches_Golden()
     {
-        CultureInfo.CurrentCulture = CultureInfo.InvariantCulture;
-        CultureInfo.CurrentUICulture = CultureInfo.InvariantCulture;
-
-        var (notification, healthProvider, runSettings, manifestProvider, timerProvider) = CreateDeterministicContext();
-
-        var mediator = Substitute.For<IMediator>();
-        string? actualMarkdown = null;
-        mediator
-            .When(m => m.Publish(Arg.Any<WriteMethodComparisonMarkdownNotification>(), Arg.Any<CancellationToken>()))
-            .Do(ci => actualMarkdown = ci.ArgAt<WriteMethodComparisonMarkdownNotification>(0).MarkdownContent);
-
-        var logger = new TestLogger();
-        var handler = new MethodComparisonTestRunCompletedHandler(
-            logger,
-            mediator,
-            healthProvider,
-            runSettings,
-            manifestProvider,
-            timerProvider);
-
-        await handler.Handle(notification, CancellationToken.None);
-
-        await mediator.Received(1).Publish(Arg.Any<WriteMethodComparisonMarkdownNotification>(), Arg.Any<CancellationToken>());
-        actualMarkdown.ShouldNotBeNullOrWhiteSpace();
-
-        var actualNormalized = GoldenNormalization.NormalizeMarkdown(actualMarkdown!);
-
-        var projectDir = GetProjectDirectory();
-        var goldenDir = Path.Combine(projectDir, "TestResources", "Golden");
-        Directory.CreateDirectory(goldenDir);
-        var goldenPath = Path.Combine(goldenDir, "ConsolidatedSession.md");
-
-        if (!File.Exists(goldenPath))
+        var originalCulture = CultureInfo.CurrentCulture;
+        var originalUICulture = CultureInfo.CurrentUICulture;
+        try
         {
-            File.WriteAllText(goldenPath, actualNormalized);
-            throw new Xunit.Sdk.XunitException($"Golden file was missing for markdown. Created at {goldenPath}. Review and re-run tests.");
+            CultureInfo.CurrentCulture = CultureInfo.InvariantCulture;
+            CultureInfo.CurrentUICulture = CultureInfo.InvariantCulture;
+
+            var (notification, healthProvider, runSettings, manifestProvider, timerProvider) = CreateDeterministicContext();
+
+            var mediator = Substitute.For<IMediator>();
+            string? actualMarkdown = null;
+            mediator
+                .When(m => m.Publish(Arg.Any<WriteMethodComparisonMarkdownNotification>(), Arg.Any<CancellationToken>()))
+                .Do(ci => actualMarkdown = ci.ArgAt<WriteMethodComparisonMarkdownNotification>(0).MarkdownContent);
+
+            var logger = new TestLogger();
+            var handler = new MethodComparisonTestRunCompletedHandler(
+                logger,
+                mediator,
+                healthProvider,
+                runSettings,
+                manifestProvider,
+                timerProvider);
+
+            await handler.Handle(notification, CancellationToken.None);
+
+            await mediator.Received(1).Publish(Arg.Any<WriteMethodComparisonMarkdownNotification>(), Arg.Any<CancellationToken>());
+            actualMarkdown.ShouldNotBeNullOrWhiteSpace();
+
+            var actualNormalized = GoldenNormalization.NormalizeMarkdown(actualMarkdown!);
+
+            var projectDir = GetProjectDirectory();
+            var goldenDir = Path.Combine(projectDir, "TestResources", "Golden");
+            Directory.CreateDirectory(goldenDir);
+            var goldenPath = Path.Combine(goldenDir, "ConsolidatedSession.md");
+
+            if (!File.Exists(goldenPath))
+            {
+                File.WriteAllText(goldenPath, actualNormalized);
+                throw new Xunit.Sdk.XunitException($"Golden file was missing for markdown. Created at {goldenPath}. Review and re-run tests.");
+            }
+
+            var expected = File.ReadAllText(goldenPath);
+            var expectedNormalized = GoldenNormalization.NormalizeMarkdown(expected);
+
+            actualNormalized.ShouldBe(expectedNormalized);
         }
-
-        var expected = File.ReadAllText(goldenPath);
-        var expectedNormalized = GoldenNormalization.NormalizeMarkdown(expected);
-
-        actualNormalized.ShouldBe(expectedNormalized);
+        finally
+        {
+            CultureInfo.CurrentCulture = originalCulture;
+            CultureInfo.CurrentUICulture = originalUICulture;
+        }
     }
 
     private static string GetProjectDirectory()

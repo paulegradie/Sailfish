@@ -65,5 +65,44 @@ public class Bench
 ";
         await AnalyzerVerifier<EmptyLoopBodyAnalyzer>.VerifyAnalyzerAsync(source.AddSailfishAttributeDependencies());
     }
+    [Fact]
+    public async Task Flags_EmptyWhileWithSemicolon()
+    {
+        const string source = @"
+[Sailfish]
+public class Bench
+{
+    [SailfishMethod]
+    public void Run()
+    {
+        {|#0:while|} (false) ;
+    }
+}
+";
+        await AnalyzerVerifier<EmptyLoopBodyAnalyzer>.VerifyAnalyzerAsync(
+            source.AddSailfishAttributeDependencies(),
+            new DiagnosticResult(EmptyLoopBodyAnalyzer.Descriptor).WithLocation(0));
+    }
+
+    [Fact]
+    public async Task Flags_EmptyForeachVariableDeconstruction()
+    {
+        const string source = @"
+[Sailfish]
+public class Bench
+{
+    [SailfishMethod]
+    public void Run()
+    {
+        var arr = new (int, int)[] { (1, 2), (3, 4) };
+        {|#0:foreach|} (var (a, b) in arr) { }
+    }
+}
+";
+        await AnalyzerVerifier<EmptyLoopBodyAnalyzer>.VerifyAnalyzerAsync(
+            source.AddSailfishAttributeDependencies(),
+            new DiagnosticResult(EmptyLoopBodyAnalyzer.Descriptor).WithLocation(0));
+    }
+
 }
 

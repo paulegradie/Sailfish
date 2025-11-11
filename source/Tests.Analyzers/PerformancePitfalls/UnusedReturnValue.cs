@@ -50,7 +50,7 @@ public class Bench
     }
 
     [Fact]
-    public async Task DoesNotFlag_AwaitedTaskInvocation()
+    public async Task Flags_Awaited_TaskOfT_Ignored()
     {
         const string source = @"
 [Sailfish]
@@ -59,13 +59,15 @@ public class Bench
     [SailfishMethod]
     public async Task Run()
     {
-        await TaskReturning();
+        {|#0:await TaskReturning()|};
     }
 
     private Task<int> TaskReturning() => Task.FromResult(1);
 }
 ";
-        await AnalyzerVerifier<UnusedReturnValueAnalyzer>.VerifyAnalyzerAsync(source.AddSailfishAttributeDependencies());
+        await AnalyzerVerifier<UnusedReturnValueAnalyzer>.VerifyAnalyzerAsync(
+            source.AddSailfishAttributeDependencies(),
+            new DiagnosticResult(UnusedReturnValueAnalyzer.Descriptor).WithLocation(0).WithArguments("TaskReturning"));
     }
 
     [Fact]
