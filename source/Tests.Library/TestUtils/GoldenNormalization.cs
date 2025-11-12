@@ -25,11 +25,20 @@ public static class GoldenNormalization
         s = Regex.Replace(s, @"(Sailfish\s+<VER>\s+on\s+\.NET)\s+[^\r\n]+", "$1 <VER>", RegexOptions.IgnoreCase);
 
         // OS information (normalize across Windows, Linux, macOS)
-        // Matches patterns like "OS: Microsoft Windows 10.0.19045 (X64/X64)" or "OS: Ubuntu 24.04.3 LTS (X64/X64)"
-        s = Regex.Replace(s, @"- OS: [^\n]+", "- OS: <OS>");
+        // Matches patterns like "- OS: Microsoft Windows 10.0.19045 (X64/X64)" or "- OS: Ubuntu 24.04.3 LTS (X64/X64)"
+        // Use a simple line-by-line approach to ensure we catch the OS line
+        var lines = s.Split('\n');
+        for (int i = 0; i < lines.Length; i++)
+        {
+            if (lines[i].StartsWith("- OS:"))
+            {
+                lines[i] = "- OS: <OS>";
+            }
+        }
+        s = string.Join('\n', lines);
 
         // CI provider information (e.g., "- CI: GitHub Actions")
-        s = Regex.Replace(s, @"- CI: [^\n]+\n?", "");
+        s = Regex.Replace(s, @"- CI: .+\n?", "");
 
         // GUIDs anywhere
         s = Regex.Replace(s, @"[a-f0-9]{8}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{4}-[a-f0-9]{12}", "<GUID>", RegexOptions.IgnoreCase);
