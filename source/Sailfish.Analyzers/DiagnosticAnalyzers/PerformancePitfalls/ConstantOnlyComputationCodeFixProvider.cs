@@ -42,33 +42,50 @@ public sealed class ConstantOnlyComputationCodeFixProvider : CodeFixProvider
 
     private static async Task<Document> InsertConsumeAfterAsync(Document document, StatementSyntax statement, ExpressionSyntax expr, CancellationToken ct)
     {
-        var editor = await DocumentEditor.CreateAsync(document, ct).ConfigureAwait(false);
-        if (editor.OriginalRoot is CompilationUnitSyntax root)
-        {
-            if (!root.Usings.Any(u => u.Name?.ToString() == "Sailfish.Utilities"))
-            {
-                editor.ReplaceNode(root, root.AddUsings(SyntaxFactory.UsingDirective(SyntaxFactory.ParseName("Sailfish.Utilities"))));
-            }
-        }
+        var root = await document.GetSyntaxRootAsync(ct).ConfigureAwait(false) as CompilationUnitSyntax;
+        if (root is null) return document;
 
         // Build: Consumer.Consume((<expr>));
         var consumeInvocation = SyntaxFactory.ExpressionStatement(
             SyntaxFactory.InvocationExpression(
-                SyntaxFactory.MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression, SyntaxFactory.IdentifierName("Consumer"), SyntaxFactory.IdentifierName("Consume")),
-                SyntaxFactory.ArgumentList(SyntaxFactory.SingletonSeparatedList(SyntaxFactory.Argument(Parenthesize(expr))))));
+                SyntaxFactory.MemberAccessExpression(
+                    SyntaxKind.SimpleMemberAccessExpression,
+                    SyntaxFactory.IdentifierName("Consumer"),
+                    SyntaxFactory.IdentifierName("Consume")),
+                SyntaxFactory.ArgumentList(
+                    SyntaxFactory.SingletonSeparatedList(
+                        SyntaxFactory.Argument(Parenthesize(expr))))));
 
-        if (statement.Parent is BlockSyntax)
+        CompilationUnitSyntax newRoot;
+        if (statement.Parent is BlockSyntax block)
         {
-            editor.InsertAfter(statement, consumeInvocation);
+            var statements = block.Statements;
+            var index = statements.IndexOf(statement);
+            var updatedStatements = statements.Insert(index + 1, consumeInvocation);
+            var newBlock = block.WithStatements(updatedStatements);
+            newRoot = (CompilationUnitSyntax)root.ReplaceNode(block, newBlock);
         }
         else
         {
             // Wrap embedded statement (e.g., in if/for/while without braces) in a block so we can add the consume call safely
-            var newBlock = SyntaxFactory.Block(statement, consumeInvocation)
-                .WithTriviaFrom(statement);
-            editor.ReplaceNode(statement, newBlock);
+            var newBlock = SyntaxFactory.Block(statement, consumeInvocation).WithTriviaFrom(statement);
+            newRoot = (CompilationUnitSyntax)root.ReplaceNode(statement, newBlock);
         }
-        return editor.GetChangedDocument();
+
+        // Ensure using Sailfish.Utilities exists
+        if (!newRoot.Usings.Any(u => u.Name?.ToString() == "Sailfish.Utilities"))
+        {
+            var newUsing = SyntaxFactory.UsingDirective(SyntaxFactory.ParseName("Sailfish.Utilities"));
+            // Preserve trivia from the last using directive
+            if (newRoot.Usings.Count > 0)
+            {
+                var lastUsing = newRoot.Usings[newRoot.Usings.Count - 1];
+                newUsing = newUsing.WithTrailingTrivia(lastUsing.GetTrailingTrivia());
+            }
+            newRoot = newRoot.AddUsings(newUsing);
+        }
+
+        return document.WithSyntaxRoot(newRoot);
     }
 
     private static ExpressionSyntax Parenthesize(ExpressionSyntax expr)

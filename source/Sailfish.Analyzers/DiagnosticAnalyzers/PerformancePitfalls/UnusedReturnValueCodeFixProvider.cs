@@ -40,25 +40,38 @@ public sealed class UnusedReturnValueCodeFixProvider : CodeFixProvider
 
     private static async Task<Document> ConsumeInvocationAsync(Document document, ExpressionStatementSyntax exprStmt, InvocationExpressionSyntax invocation, CancellationToken ct)
     {
-        var editor = await DocumentEditor.CreateAsync(document, ct).ConfigureAwait(false);
-
-        // Ensure using Sailfish.Utilities;
-        if (editor.OriginalRoot is CompilationUnitSyntax root)
-        {
-            if (!root.Usings.Any(u => u.Name?.ToString() == "Sailfish.Utilities"))
-            {
-                editor.ReplaceNode(root, root.AddUsings(SyntaxFactory.UsingDirective(SyntaxFactory.ParseName("Sailfish.Utilities"))));
-            }
-        }
+        var root = await document.GetSyntaxRootAsync(ct).ConfigureAwait(false) as CompilationUnitSyntax;
+        if (root is null) return document;
 
         // Build Consumer.Consume(invocation)
         var consumerId = SyntaxFactory.IdentifierName("Consumer");
-        var memberAccess = SyntaxFactory.MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression, consumerId, SyntaxFactory.IdentifierName("Consume"));
-        var newInvocation = SyntaxFactory.InvocationExpression(memberAccess, SyntaxFactory.ArgumentList(SyntaxFactory.SingletonSeparatedList(SyntaxFactory.Argument(invocation))));
+        var memberAccess = SyntaxFactory.MemberAccessExpression(
+            SyntaxKind.SimpleMemberAccessExpression,
+            consumerId,
+            SyntaxFactory.IdentifierName("Consume"));
+        var newInvocation = SyntaxFactory.InvocationExpression(
+            memberAccess,
+            SyntaxFactory.ArgumentList(
+                SyntaxFactory.SingletonSeparatedList(
+                    SyntaxFactory.Argument(invocation))));
         var newExprStmt = exprStmt.WithExpression(newInvocation);
 
-        editor.ReplaceNode(exprStmt, newExprStmt);
-        return editor.GetChangedDocument();
+        var newRoot = root.ReplaceNode(exprStmt, newExprStmt) as CompilationUnitSyntax ?? root;
+
+        // Ensure using Sailfish.Utilities exists
+        if (!newRoot.Usings.Any(u => u.Name?.ToString() == "Sailfish.Utilities"))
+        {
+            var newUsing = SyntaxFactory.UsingDirective(SyntaxFactory.ParseName("Sailfish.Utilities"));
+            // Preserve trivia from the last using directive
+            if (newRoot.Usings.Count > 0)
+            {
+                var lastUsing = newRoot.Usings[newRoot.Usings.Count - 1];
+                newUsing = newUsing.WithTrailingTrivia(lastUsing.GetTrailingTrivia());
+            }
+            newRoot = newRoot.AddUsings(newUsing);
+        }
+
+        return document.WithSyntaxRoot(newRoot);
     }
 }
 

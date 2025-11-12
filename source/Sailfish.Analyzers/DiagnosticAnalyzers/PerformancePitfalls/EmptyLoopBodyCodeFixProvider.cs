@@ -42,44 +42,49 @@ public sealed class EmptyLoopBodyCodeFixProvider : CodeFixProvider
 
     private static async Task<Document> AddConsumeToLoopAsync(Document document, SyntaxNode loop, CancellationToken ct)
     {
-        var editor = await DocumentEditor.CreateAsync(document, ct).ConfigureAwait(false);
-        if (editor.OriginalRoot is CompilationUnitSyntax root)
-        {
-            if (!root.Usings.Any(u => u.Name?.ToString() == "Sailfish.Utilities"))
-            {
-                editor.ReplaceNode(root, root.AddUsings(SyntaxFactory.UsingDirective(SyntaxFactory.ParseName("Sailfish.Utilities"))));
-            }
-        }
+        var root = await document.GetSyntaxRootAsync(ct).ConfigureAwait(false) as CompilationUnitSyntax;
+        if (root is null) return document;
 
         // Build statement: Consumer.Consume(0);
         var consumeStmt = SyntaxFactory.ExpressionStatement(
             SyntaxFactory.InvocationExpression(
-                SyntaxFactory.MemberAccessExpression(SyntaxKind.SimpleMemberAccessExpression,
+                SyntaxFactory.MemberAccessExpression(
+                    SyntaxKind.SimpleMemberAccessExpression,
                     SyntaxFactory.IdentifierName("Consumer"),
                     SyntaxFactory.IdentifierName("Consume")),
-                SyntaxFactory.ArgumentList(SyntaxFactory.SingletonSeparatedList(SyntaxFactory.Argument(SyntaxFactory.LiteralExpression(SyntaxKind.NumericLiteralExpression, SyntaxFactory.Literal(0)))))));
+                SyntaxFactory.ArgumentList(
+                    SyntaxFactory.SingletonSeparatedList(
+                        SyntaxFactory.Argument(
+                            SyntaxFactory.LiteralExpression(
+                                SyntaxKind.NumericLiteralExpression,
+                                SyntaxFactory.Literal(0)))))));
 
-        switch (loop)
+        var newLoop = loop switch
         {
-            case ForStatementSyntax forStmt:
-                editor.ReplaceNode(forStmt, forStmt.WithStatement(MakeBlock(forStmt.Statement, consumeStmt)));
-                break;
-            case ForEachStatementSyntax forEachStmt:
-                editor.ReplaceNode(forEachStmt, forEachStmt.WithStatement(MakeBlock(forEachStmt.Statement, consumeStmt)));
-                break;
-            case ForEachVariableStatementSyntax forEachVarStmt:
-                editor.ReplaceNode(forEachVarStmt, forEachVarStmt.WithStatement(MakeBlock(forEachVarStmt.Statement, consumeStmt)));
-                break;
+            ForStatementSyntax forStmt => forStmt.WithStatement(MakeBlock(forStmt.Statement, consumeStmt)),
+            ForEachStatementSyntax forEachStmt => forEachStmt.WithStatement(MakeBlock(forEachStmt.Statement, consumeStmt)),
+            ForEachVariableStatementSyntax forEachVarStmt => forEachVarStmt.WithStatement(MakeBlock(forEachVarStmt.Statement, consumeStmt)),
+            WhileStatementSyntax whileStmt => whileStmt.WithStatement(MakeBlock(whileStmt.Statement, consumeStmt)),
+            DoStatementSyntax doStmt => doStmt.WithStatement(MakeBlock(doStmt.Statement, consumeStmt)),
+            _ => loop
+        };
 
-            case WhileStatementSyntax whileStmt:
-                editor.ReplaceNode(whileStmt, whileStmt.WithStatement(MakeBlock(whileStmt.Statement, consumeStmt)));
-                break;
-            case DoStatementSyntax doStmt:
-                editor.ReplaceNode(doStmt, doStmt.WithStatement(MakeBlock(doStmt.Statement, consumeStmt)));
-                break;
+        var newRoot = (CompilationUnitSyntax)root.ReplaceNode(loop, newLoop);
+
+        // Ensure using Sailfish.Utilities exists
+        if (!newRoot.Usings.Any(u => u.Name?.ToString() == "Sailfish.Utilities"))
+        {
+            var newUsing = SyntaxFactory.UsingDirective(SyntaxFactory.ParseName("Sailfish.Utilities"));
+            // Preserve trivia from the last using directive
+            if (newRoot.Usings.Count > 0)
+            {
+                var lastUsing = newRoot.Usings[newRoot.Usings.Count - 1];
+                newUsing = newUsing.WithTrailingTrivia(lastUsing.GetTrailingTrivia());
+            }
+            newRoot = newRoot.AddUsings(newUsing);
         }
 
-        return editor.GetChangedDocument();
+        return document.WithSyntaxRoot(newRoot);
     }
 
     private static BlockSyntax MakeBlock(StatementSyntax? originalBody, StatementSyntax consumeStmt)
