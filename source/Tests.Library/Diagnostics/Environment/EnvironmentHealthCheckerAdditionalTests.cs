@@ -172,4 +172,89 @@ public class EnvironmentHealthCheckerAdditionalTests
         }
     }
 
+    [Fact]
+    public void EnvironmentHealthCheckContext_TestAssemblyPath_CanBeSet()
+    {
+        var path = "/some/path/to/assembly.dll";
+        var context = new EnvironmentHealthCheckContext { TestAssemblyPath = path };
+        context.TestAssemblyPath.ShouldBe(path);
+    }
+
+    [Fact]
+    public void EnvironmentHealthCheckContext_TestAssemblyPath_CanBeNull()
+    {
+        var context = new EnvironmentHealthCheckContext { TestAssemblyPath = null };
+        context.TestAssemblyPath.ShouldBeNull();
+    }
+
+    [Fact]
+    public void EnvironmentHealthCheckContext_CanBeCreatedWithoutTestAssemblyPath()
+    {
+        // EnvironmentHealthCheckContext can be created without setting TestAssemblyPath
+        var context = new EnvironmentHealthCheckContext();
+
+        // TestAssemblyPath should be null by default
+        context.TestAssemblyPath.ShouldBeNull();
+    }
+
+    [Fact]
+    public async Task CheckAsync_WithNullContext_Returns_ValidReport()
+    {
+        var checker = new EnvironmentHealthChecker();
+        var report = await checker.CheckAsync(context: null);
+
+        report.ShouldNotBeNull();
+        report.Entries.ShouldNotBeEmpty();
+        report.Score.ShouldBeInRange(0, 100);
+    }
+
+    [Fact]
+    public async Task CheckAsync_WithDefaultCancellationToken_Returns_ValidReport()
+    {
+        var checker = new EnvironmentHealthChecker();
+        var report = await checker.CheckAsync(cancellationToken: default);
+
+        report.ShouldNotBeNull();
+        report.Entries.ShouldNotBeEmpty();
+        report.Score.ShouldBeInRange(0, 100);
+    }
+
+    [Fact]
+    public async Task CheckAsync_WithBothNullContextAndDefaultCancellationToken_Returns_ValidReport()
+    {
+        var checker = new EnvironmentHealthChecker();
+        var report = await checker.CheckAsync(context: null, cancellationToken: default);
+
+        report.ShouldNotBeNull();
+        report.Entries.ShouldNotBeEmpty();
+        report.Score.ShouldBeInRange(0, 100);
+    }
+
+    [Fact]
+    public async Task CheckAsync_WithCancellationToken_Returns_ValidReport()
+    {
+        var checker = new EnvironmentHealthChecker();
+        using var cts = new System.Threading.CancellationTokenSource();
+        var report = await checker.CheckAsync(cancellationToken: cts.Token);
+
+        report.ShouldNotBeNull();
+        report.Entries.ShouldNotBeEmpty();
+        report.Score.ShouldBeInRange(0, 100);
+    }
+
+    [Fact]
+    public void CheckAsync_Implements_IEnvironmentHealthChecker()
+    {
+        var checker = new EnvironmentHealthChecker();
+        checker.ShouldBeAssignableTo<IEnvironmentHealthChecker>();
+    }
+
+    [Fact]
+    public async Task CheckAsync_Returns_EnvironmentHealthReport()
+    {
+        var checker = new EnvironmentHealthChecker();
+        var result = await checker.CheckAsync();
+        result.ShouldBeOfType<EnvironmentHealthReport>();
+    }
+
 }
