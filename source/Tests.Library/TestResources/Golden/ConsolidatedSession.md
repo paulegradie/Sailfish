@@ -14,12 +14,12 @@ Score: 87/100 (Excellent)
 
 ## 🔁 Reproducibility Summary
 
-- Sailfish 0.0.117+0d1c43d1dc6bcfb98dde37331c16d6b858cf2f23 on .NET 8.0.18
-- OS: Microsoft Windows 10.0.19045 (X64/X64)
+- Sailfish <VER> on .NET <VER>
+- OS: <OS>
 - GC: Workstation; JIT: Tiered=default; QuickJit=default; QuickJitForLoops=default; OSR=default
 - Env Health: 87/100 (Excellent)
-- Timer: High-resolution (~100 ns)
-  - Calibration: freq=3000000 Hz, res≈333 ns, baseline=4 ticks
+- Timer: High-resolution (~<NS> ns)
+  - Calibration: freq=<F> Hz, res≈<R> ns, baseline=<B> ticks
   - Jitter: RSD=2.2% | Score=91/100 | N=64 (warmup 16)
 - Randomization Seed: 12345
 
@@ -28,7 +28,7 @@ Score: 87/100 (Excellent)
 
 | Method | Mean Time | Median Time | Sample Size | Status |
 |--------|-----------|-------------|-------------|--------|
-| A(0314405a-5b70-48c3-b682-2977641c17bf: 5) | 100.000ms | 4.000ms | 50 | ✅ Success |
-| B(1839fa1f-63d9-4fd9-bfea-4168eb107d16: 5) | 110.000ms | 4.000ms | 50 | ✅ Success |
-| C(58ccdc8b-8ac4-4f69-ad93-8edfe2addbc2: 5) | 101.000ms | 4.000ms | 50 | ✅ Success |
-| Standalone(1770dca6-72b2-48f3-95a3-a5850b7c2b3b: 5) | 50.000ms | 4.000ms | 50 | ✅ Success |
+| A(<GUID>: 5) | 100.000ms | 4.000ms | 50 | ✅ Success |
+| B(<GUID>: 5) | 110.000ms | 4.000ms | 50 | ✅ Success |
+| C(<GUID>: 5) | 101.000ms | 4.000ms | 50 | ✅ Success |
+| Standalone(<GUID>: 5) | 50.000ms | 4.000ms | 50 | ✅ Success |
