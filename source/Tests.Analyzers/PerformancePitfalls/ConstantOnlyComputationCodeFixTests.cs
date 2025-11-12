@@ -23,7 +23,7 @@ namespace Sailfish.Utilities {
     [Fact]
     public async Task Adds_Consume_After_ConstantExpression_In_Block()
     {
-        const string testCode = "\r\n" +
+        var testCode = ("\r\n" +
             "using Sailfish.AnalyzerTests;\r\n" +
             "[Sailfish]\r\n" +
             "public class Bench\r\n" +
@@ -33,9 +33,9 @@ namespace Sailfish.Utilities {
             "    {\r\n" +
             "        var x = 1 + 2;\r\n" +
             "    }\r\n" +
-            "}\r\n";
+            "}\r\n").NormalizeLineEndings();
 
-        const string fixedCode = "\r\n" +
+        var fixedCode = ("\r\n" +
             "using Sailfish.AnalyzerTests;\r\n" +
             "using Sailfish.Utilities;\r\n" +
             "[Sailfish]\r\n" +
@@ -47,7 +47,7 @@ namespace Sailfish.Utilities {
             "        var x = 1 + 2;\r\n" +
             "        Consumer.Consume((1 + 2));\r\n" +
             "    }\r\n" +
-            "}\r\n";
+            "}\r\n").NormalizeLineEndings();
 
         var test = new CSharpCodeFixTest<ConstantOnlyComputationAnalyzer, ConstantOnlyComputationCodeFixProvider, XUnitVerifier>
         {
@@ -68,7 +68,7 @@ namespace Sailfish.Utilities {
     [Fact]
     public async Task Wraps_Embedded_Statement_And_Adds_Consume()
     {
-        const string testCode = "\r\n" +
+        var testCode = ("\r\n" +
             "using Sailfish.AnalyzerTests;\r\n" +
             "[Sailfish]\r\n" +
             "public class Bench\r\n" +
@@ -79,9 +79,9 @@ namespace Sailfish.Utilities {
             "        if (true)\r\n" +
             "            _ = 3 * 7;\r\n" +
             "    }\r\n" +
-            "}\r\n";
+            "}\r\n").NormalizeLineEndings();
 
-        const string fixedCode = "\r\n" +
+        var fixedCode = ("\r\n" +
             "using Sailfish.AnalyzerTests;\r\n" +
             "using Sailfish.Utilities;\r\n" +
             "[Sailfish]\r\n" +
@@ -96,7 +96,7 @@ namespace Sailfish.Utilities {
             "            Consumer.Consume((3 * 7));\r\n" +
             "        }\r\n" +
             "    }\r\n" +
-            "}\r\n";
+            "}\r\n").NormalizeLineEndings();
 
         var test = new CSharpCodeFixTest<ConstantOnlyComputationAnalyzer, ConstantOnlyComputationCodeFixProvider, XUnitVerifier>
         {

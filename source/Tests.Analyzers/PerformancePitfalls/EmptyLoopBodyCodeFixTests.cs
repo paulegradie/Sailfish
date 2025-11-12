@@ -23,7 +23,7 @@ namespace Sailfish.Utilities {
     [Fact]
     public async Task For_With_Semicolon_Gets_Consume_In_Block()
     {
-        const string testCode = "\r\n" +
+        var testCode = ("\r\n" +
             "using Sailfish.AnalyzerTests;\r\n" +
             "[Sailfish]\r\n" +
             "public class Bench\r\n" +
@@ -33,9 +33,9 @@ namespace Sailfish.Utilities {
             "    {\r\n" +
             "        for (int i = 0; i < 3; i++) ;\r\n" +
             "    }\r\n" +
-            "}\r\n";
+            "}\r\n").NormalizeLineEndings();
 
-        const string fixedCode = "\r\n" +
+        var fixedCode = ("\r\n" +
             "using Sailfish.AnalyzerTests;\r\n" +
             "using Sailfish.Utilities;\r\n" +
             "[Sailfish]\r\n" +
@@ -49,7 +49,7 @@ namespace Sailfish.Utilities {
             "            Consumer.Consume(0);\r\n" +
             "        }\r\n" +
             "    }\r\n" +
-            "}\r\n";
+            "}\r\n").NormalizeLineEndings();
 
         var test = new CSharpCodeFixTest<EmptyLoopBodyAnalyzer, EmptyLoopBodyCodeFixProvider, XUnitVerifier>
         {
@@ -70,7 +70,7 @@ namespace Sailfish.Utilities {
     [Fact]
     public async Task While_With_Semicolon_Gets_Consume_In_Block()
     {
-        const string testCode = "\r\n" +
+        var testCode = ("\r\n" +
             "using Sailfish.AnalyzerTests;\r\n" +
             "[Sailfish]\r\n" +
             "public class Bench\r\n" +
@@ -80,9 +80,9 @@ namespace Sailfish.Utilities {
             "    {\r\n" +
             "        while (false) ;\r\n" +
             "    }\r\n" +
-            "}\r\n";
+            "}\r\n").NormalizeLineEndings();
 
-        const string fixedCode = "\r\n" +
+        var fixedCode = ("\r\n" +
             "using Sailfish.AnalyzerTests;\r\n" +
             "using Sailfish.Utilities;\r\n" +
             "[Sailfish]\r\n" +
@@ -96,7 +96,7 @@ namespace Sailfish.Utilities {
             "            Consumer.Consume(0);\r\n" +
             "        }\r\n" +
             "    }\r\n" +
-            "}\r\n";
+            "}\r\n").NormalizeLineEndings();
 
         var test = new CSharpCodeFixTest<EmptyLoopBodyAnalyzer, EmptyLoopBodyCodeFixProvider, XUnitVerifier>
         {
@@ -117,7 +117,7 @@ namespace Sailfish.Utilities {
     [Fact]
     public async Task ForEachVariable_Deconstruction_Gets_Consume_In_Block()
     {
-        const string testCode = "\r\n" +
+        var testCode = ("\r\n" +
             "using Sailfish.AnalyzerTests;\r\n" +
             "[Sailfish]\r\n" +
             "public class Bench\r\n" +
@@ -127,9 +127,9 @@ namespace Sailfish.Utilities {
             "    {\r\n" +
             "        foreach (var (a, b) in new[] { (1, 2) }) { }\r\n" +
             "    }\r\n" +
-            "}\r\n";
+            "}\r\n").NormalizeLineEndings();
 
-        const string fixedCode = "\r\n" +
+        var fixedCode = ("\r\n" +
             "using Sailfish.AnalyzerTests;\r\n" +
             "using Sailfish.Utilities;\r\n" +
             "[Sailfish]\r\n" +
@@ -142,7 +142,7 @@ namespace Sailfish.Utilities {
             "            Consumer.Consume(0);\r\n" +
             "        }\r\n" +
             "    }\r\n" +
-            "}\r\n";
+            "}\r\n").NormalizeLineEndings();
 
         var test = new CSharpCodeFixTest<EmptyLoopBodyAnalyzer, EmptyLoopBodyCodeFixProvider, XUnitVerifier>
         {

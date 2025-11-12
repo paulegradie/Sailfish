@@ -23,7 +23,7 @@ namespace Sailfish.Utilities {
     [Fact]
     public async Task Invocation_Result_Ignored_Is_Wrapped_In_Consumer()
     {
-        const string testCode = "\r\n" +
+        var testCode = ("\r\n" +
             "using Sailfish.AnalyzerTests;\r\n" +
             "[Sailfish]\r\n" +
             "public class Bench\r\n" +
@@ -35,9 +35,9 @@ namespace Sailfish.Utilities {
             "    {\r\n" +
             "        new C().M();\r\n" +
             "    }\r\n" +
-            "}\r\n";
+            "}\r\n").NormalizeLineEndings();
 
-        const string fixedCode = "\r\n" +
+        var fixedCode = ("\r\n" +
             "using Sailfish.AnalyzerTests;\r\n" +
             "using Sailfish.Utilities;\r\n" +
             "[Sailfish]\r\n" +
@@ -50,7 +50,7 @@ namespace Sailfish.Utilities {
             "    {\r\n" +
             "        Consumer.Consume(new C().M());\r\n" +
             "    }\r\n" +
-            "}\r\n";
+            "}\r\n").NormalizeLineEndings();
 
         var test = new CSharpCodeFixTest<UnusedReturnValueAnalyzer, UnusedReturnValueCodeFixProvider, XUnitVerifier>
         {
