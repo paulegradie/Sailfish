@@ -9,6 +9,8 @@ using System.Text.Json;
 using Sailfish.Contracts.Public.Models;
 using Sailfish.Diagnostics.Environment;
 using Sailfish.Execution;
+using Sailfish.Utilities;
+
 
 namespace Sailfish.Results
 {
@@ -110,7 +112,7 @@ namespace Sailfish.Results
                 CiSystem = DetectCiSystem()
             };
 
-            var seed = runSettings.Seed ?? TryParseSeed(runSettings.Args);
+            var seed = runSettings.Seed ?? SeedParser.TryParseSeed(runSettings.Args);
             manifest.Randomization = new RandomizationConfig
             {
                 Seed = seed,
@@ -254,25 +256,6 @@ namespace Sailfish.Results
             catch { return "Unknown"; }
         }
 
-        private static int? TryParseSeed(Sailfish.Extensions.Types.OrderedDictionary args)
-        {
-            try
-            {
-                foreach (var kv in args)
-                {
-                    var key = kv.Key;
-                    var value = kv.Value;
-                    if (string.Equals(key, "seed", StringComparison.OrdinalIgnoreCase) ||
-                        string.Equals(key, "randomseed", StringComparison.OrdinalIgnoreCase) ||
-                        string.Equals(key, "rng", StringComparison.OrdinalIgnoreCase))
-                    {
-                        if (int.TryParse(value, out var s)) return s;
-                    }
-                }
-            }
-            catch { /* ignore */ }
-            return null;
-        }
 
         private static string? DetectCiSystem()
         {

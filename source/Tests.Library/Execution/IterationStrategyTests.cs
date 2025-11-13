@@ -239,7 +239,7 @@ public class IterationStrategyTests
         [Fact]
         public async Task AdaptiveIterationStrategy_RespectsTimeBudgetDuringMinimumPhase_StopsEarly()
         {
-            // Arrange: min=3, each iteration ~20ms, budget 25ms so it cannot finish min phase
+            // Arrange: min=3, each iteration ~20ms, budget 45ms so it cannot finish min phase
             var strategy = new AdaptiveIterationStrategy(mockLogger, mockConvergenceDetector);
             var instance = new SlowWork();
             var method = typeof(SlowWork).GetMethod(nameof(SlowWork.Run))!;
@@ -251,7 +251,7 @@ public class IterationStrategyTests
                 TargetCoefficientOfVariation = 0.05,
                 ConfidenceLevel = 0.95,
                 OperationsPerInvoke = 1,
-                MaxMeasurementTimePerMethod = TimeSpan.FromMilliseconds(25)
+                MaxMeasurementTimePerMethod = TimeSpan.FromMilliseconds(45)
             };
             var container = TestInstanceContainer.CreateTestInstance(instance, method, [], [], false, settings);
 

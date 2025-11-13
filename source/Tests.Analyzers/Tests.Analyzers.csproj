@@ -29,7 +29,7 @@
         <PackageReference Include="Microsoft.CodeAnalysis.Workspaces.Common" Version="4.8.0" />
     </ItemGroup>
     <ItemGroup>
-        <ProjectReference Include="..\Sailfish.Analyzers\Sailfish.Analyzers.csproj" OutputItemType="Analyzer" />
+        <ProjectReference Include="..\Sailfish.Analyzers\Sailfish.Analyzers.csproj" />
         <ProjectReference Include="..\Sailfish\Sailfish.csproj" IncludeAssets="All" />
     </ItemGroup>
 </Project>

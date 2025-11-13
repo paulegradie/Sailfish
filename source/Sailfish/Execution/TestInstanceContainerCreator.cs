@@ -5,6 +5,7 @@ using System.Reflection;
 using Sailfish.Attributes;
 using Sailfish.Contracts.Public.Models;
 using Sailfish.Extensions.Methods;
+using Sailfish.Utilities;
 
 namespace Sailfish.Execution;
 
@@ -34,7 +35,7 @@ internal class TestInstanceContainerCreator(
         if (propertyTensorFilter is not null) variableSets = variableSets.Where(propertyTensorFilter);
 
         // Determine optional randomization seed (global) for reproducible ordering
-        var seed = runSettings.Seed ?? TryParseSeed(runSettings.Args);
+        var seed = runSettings.Seed ?? SeedParser.TryParseSeed(runSettings.Args);
 
         // Randomize property set order if a seed is provided
         var variableSetsList = variableSets.ToList();
@@ -82,24 +83,5 @@ internal class TestInstanceContainerCreator(
         }
     }
 
-    private static int? TryParseSeed(Sailfish.Extensions.Types.OrderedDictionary args)
-    {
-        try
-        {
-            foreach (var kv in args)
-            {
-                var key = kv.Key;
-                var value = kv.Value;
-                if (string.Equals(key, "seed", StringComparison.OrdinalIgnoreCase) ||
-                    string.Equals(key, "randomseed", StringComparison.OrdinalIgnoreCase) ||
-                    string.Equals(key, "rng", StringComparison.OrdinalIgnoreCase))
-                {
-                    if (int.TryParse(value, out var s)) return s;
-                }
-            }
-        }
-        catch { /* ignore */ }
-        return null;
-    }
 
 }

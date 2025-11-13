@@ -146,57 +146,90 @@ public class TestInstanceContainerCreatorTests
     }
 
     [Fact]
-    public void CreateTestContainerInstanceProviders_WithSeedInArgs_ParsesSeedFromArgs()
+    public void CreateTestContainerInstanceProviders_WithSeedInArgs_ParsesSeedAndProducesDeterministicOrder()
     {
         // Arrange
         var args = new OrderedDictionary { { "seed", "123" } };
         runSettings.Seed.Returns((int?)null);
         runSettings.Args.Returns(args);
         propertySetGenerator.GenerateSailfishVariableSets(Arg.Any<Type>(), out _).Returns(new List<PropertySet>());
+        typeActivator.CreateDehydratedTestInstance(typeof(TestClassWithMethods), Arg.Any<TestCaseId>(), Arg.Any<bool>())
+            .Returns(ci => new TestClassWithMethods());
 
         var creator = new TestInstanceContainerCreator(runSettings, typeActivator, propertySetGenerator);
 
-        // Act
-        var providers = creator.CreateTestContainerInstanceProviders(typeof(TestClassWithMethods));
+        // Act: run twice and ensure deterministic provider ordering
+        var providers1 = creator.CreateTestContainerInstanceProviders(typeof(TestClassWithMethods));
+        var providers2 = creator.CreateTestContainerInstanceProviders(typeof(TestClassWithMethods));
 
-        // Assert
-        providers.ShouldNotBeEmpty();
+        // Assert: providers exist and ordering is deterministic with the same seed
+        providers1.ShouldNotBeEmpty();
+        providers2.ShouldNotBeEmpty();
+        var order1 = providers1.Select(p => p.Method.Name).ToList();
+        var order2 = providers2.Select(p => p.Method.Name).ToList();
+        order1.SequenceEqual(order2).ShouldBeTrue("Same args seed should produce deterministic provider ordering");
+
+        // Additionally, verify that the parsed seed flows into execution settings at provider level
+        var container = providers1[0].ProvideNextTestCaseEnumeratorForClass().Single();
+        container.ExecutionSettings.Seed.ShouldBe(123);
     }
 
     [Fact]
-    public void CreateTestContainerInstanceProviders_WithRandomSeedArg_ParsesSeedFromArgs()
+    public void CreateTestContainerInstanceProviders_WithRandomSeedArg_ParsesSeedAndProducesDeterministicOrder()
     {
         // Arrange
         var args = new OrderedDictionary { { "randomseed", "456" } };
         runSettings.Seed.Returns((int?)null);
         runSettings.Args.Returns(args);
         propertySetGenerator.GenerateSailfishVariableSets(Arg.Any<Type>(), out _).Returns(new List<PropertySet>());
+        typeActivator.CreateDehydratedTestInstance(typeof(TestClassWithMethods), Arg.Any<TestCaseId>(), Arg.Any<bool>())
+            .Returns(ci => new TestClassWithMethods());
 
         var creator = new TestInstanceContainerCreator(runSettings, typeActivator, propertySetGenerator);
 
-        // Act
-        var providers = creator.CreateTestContainerInstanceProviders(typeof(TestClassWithMethods));
+        // Act: run twice and ensure deterministic order with same randomseed
+        var providers1 = creator.CreateTestContainerInstanceProviders(typeof(TestClassWithMethods));
+        var providers2 = creator.CreateTestContainerInstanceProviders(typeof(TestClassWithMethods));
 
         // Assert
-        providers.ShouldNotBeEmpty();
+        providers1.ShouldNotBeEmpty();
+        providers2.ShouldNotBeEmpty();
+        var order1 = providers1.Select(p => p.Method.Name).ToList();
+        var order2 = providers2.Select(p => p.Method.Name).ToList();
+        order1.SequenceEqual(order2).ShouldBeTrue("Same randomseed should produce deterministic provider ordering");
+
+        // Seed should propagate to execution settings
+        var container = providers1[0].ProvideNextTestCaseEnumeratorForClass().Single();
+        container.ExecutionSettings.Seed.ShouldBe(456);
     }
 
     [Fact]
-    public void CreateTestContainerInstanceProviders_WithInvalidSeedInArgs_IgnoresInvalidSeed()
+    public void CreateTestContainerInstanceProviders_WithInvalidSeedInArgs_IgnoresInvalidSeedAndDoesNotSetExecutionSeed()
     {
         // Arrange
         var args = new OrderedDictionary { { "seed", "not-a-number" } };
         runSettings.Seed.Returns((int?)null);
         runSettings.Args.Returns(args);
         propertySetGenerator.GenerateSailfishVariableSets(Arg.Any<Type>(), out _).Returns(new List<PropertySet>());
+        typeActivator.CreateDehydratedTestInstance(typeof(TestClassWithMethods), Arg.Any<TestCaseId>(), Arg.Any<bool>())
+            .Returns(ci => new TestClassWithMethods());
 
         var creator = new TestInstanceContainerCreator(runSettings, typeActivator, propertySetGenerator);
 
-        // Act
-        var providers = creator.CreateTestContainerInstanceProviders(typeof(TestClassWithMethods));
+        // Act: run twice and ensure the (no-seed) behavior is consistent
+        var providers1 = creator.CreateTestContainerInstanceProviders(typeof(TestClassWithMethods));
+        var providers2 = creator.CreateTestContainerInstanceProviders(typeof(TestClassWithMethods));
 
-        // Assert
-        providers.ShouldNotBeEmpty();
+        // Assert: providers exist and order is consistent even without a valid seed
+        providers1.ShouldNotBeEmpty();
+        providers2.ShouldNotBeEmpty();
+        var order1 = providers1.Select(p => p.Method.Name).ToList();
+        var order2 = providers2.Select(p => p.Method.Name).ToList();
+        order1.SequenceEqual(order2).ShouldBeTrue("Invalid seed should be ignored and not affect provider ordering");
+
+        // Execution settings should not receive a seed
+        var container = providers1[0].ProvideNextTestCaseEnumeratorForClass().Single();
+        container.ExecutionSettings.Seed.ShouldBeNull();
     }
 
     // Test classes

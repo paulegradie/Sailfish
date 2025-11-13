@@ -58,6 +58,8 @@ public class EnvironmentHealthCheckerTests
             var report = await checker.CheckAsync();
             var jit = report.Entries.First(e => e.Name == "JIT (Tiered/OSR)");
             jit.Details.ShouldContain("Tiered=");
+            jit.Status.ShouldBe(HealthStatus.Warn);
+
         }
         finally
         {
