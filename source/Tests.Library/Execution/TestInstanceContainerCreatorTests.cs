@@ -100,12 +100,25 @@ public class TestInstanceContainerCreatorTests
 
         // Act
         var providers1 = creator.CreateTestContainerInstanceProviders(typeof(TestClassWithMethods));
-        
-        // Reset and create again with same seed
+
+        // Reset and create again with same seed - need to reset the mock to return fresh list
         runSettings.Seed.Returns(42);
+        propertySetGenerator.GenerateSailfishVariableSets(Arg.Any<Type>(), out _).Returns(
+            new List<PropertySet> { propertySet1, propertySet2, propertySet3 });
         var providers2 = creator.CreateTestContainerInstanceProviders(typeof(TestClassWithMethods));
 
-        // Assert - same seed should produce same order
+        // Assert - same seed should produce same order (deterministic)
+        providers1.Count.ShouldBe(providers2.Count);
+        providers1.Count.ShouldBe(2); // 2 methods (each with 3 property sets)
+
+        // Extract method names and order to verify deterministic behavior
+        var order1 = providers1.Select(p => p.Method.Name).ToList();
+        var order2 = providers2.Select(p => p.Method.Name).ToList();
+
+        // Same seed should produce identical ordering
+        order1.SequenceEqual(order2).ShouldBeTrue("Same seed should produce deterministic ordering");
+
+        // Verify that seed is actually being used (providers should have the same count)
         providers1.Count.ShouldBe(providers2.Count);
     }
 
@@ -124,9 +137,12 @@ public class TestInstanceContainerCreatorTests
 
         // Assert
         providers.ShouldNotBeEmpty();
+        providers.Count.ShouldBe(3); // Three methods total
+
         // Methods should be in order: OrderedMethod1 (Order=1), OrderedMethod2 (Order=2), UnorderedMethod
         providers[0].Method.Name.ShouldBe(nameof(TestClassWithOrderedMethods.OrderedMethod1));
         providers[1].Method.Name.ShouldBe(nameof(TestClassWithOrderedMethods.OrderedMethod2));
+        providers[2].Method.Name.ShouldBe(nameof(TestClassWithOrderedMethods.UnorderedMethod));
     }
 
     [Fact]
