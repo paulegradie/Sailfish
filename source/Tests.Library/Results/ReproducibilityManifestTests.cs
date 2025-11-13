@@ -119,6 +119,47 @@ public class ReproducibilityManifestTests
     }
 
     [Fact]
+    public void AddMethodSnapshots_WithNullDataWithOutliersRemoved_FallsBackToSampleSize()
+    {
+        // Arrange: build tracking format with null DataWithOutliersRemoved but valid SampleSize
+        var testCaseId = TestCaseIdBuilder.Create().WithTestCaseName("MyTest").Build();
+        var perf = PerformanceRunResultTrackingFormatBuilder.Create()
+            .WithDisplayName(testCaseId.DisplayName)
+            .WithMean(100.0)
+            .WithMedian(100.0)
+            .WithStdDev(20.0)
+            .WithNumWarmupIterations(2)
+            .WithSampleSize(5)
+            .WithDataWithOutliersRemoved(null!)
+            .Build();
+
+        var classSummary = ClassExecutionSummaryTrackingFormatBuilder.Create()
+            .WithCompiledTestCaseResult(b => b
+                .WithTestCaseId(testCaseId)
+                .WithPerformanceRunResult(perf))
+            .Build();
+
+        var manifest = new ReproducibilityManifest();
+
+        // Act
+        manifest.AddMethodSnapshots(new[] { classSummary });
+
+        // Assert
+        manifest.Methods.Count.ShouldBe(1);
+        var m = manifest.Methods.Single();
+        m.TestCaseDisplayName.ShouldBe(testCaseId.DisplayName);
+        m.SampleSize.ShouldBe(5); // Should fall back to SampleSize when DataWithOutliersRemoved is null
+        m.NumWarmupIterations.ShouldBe(2);
+        m.Mean.ShouldBe(100.0);
+        m.StdDev.ShouldBe(20.0);
+        m.CI95_MarginOfError.ShouldNotBeNull();
+        m.CI99_MarginOfError.ShouldNotBeNull();
+        // Rough sanity checks: with n=5, se=8.94, t95~2.78 => ~24.9; t99~4.60 => ~41.1
+        m.CI95_MarginOfError!.Value.ShouldBeInRange(20.0, 30.0);
+        m.CI99_MarginOfError!.Value.ShouldBeInRange(35.0, 50.0);
+    }
+
+    [Fact]
     public void WriteJson_WritesIndentedJson_ToSpecifiedDirectory()
     {
         // Arrange

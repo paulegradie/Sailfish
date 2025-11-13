@@ -11,6 +11,7 @@ using Sailfish.Contracts.Public.Models;
 using Sailfish.Contracts.Public.Notifications;
 using Sailfish.Execution;
 using Sailfish.Logging;
+using Sailfish.Presentation;
 using Shouldly;
 using Xunit;
 
@@ -34,13 +35,13 @@ public class SailfishExecutorTests
     {
         // Arrange
         var testType = typeof(object);
-        var testInitResult = new TestInitializationResult(new[] { testType }, new Dictionary<string, List<string>>());
-        var testClassResultGroup = new TestClassResultGroup(testType, new List<CompiledTestCaseResult>());
-        var classExecutionSummary = new ClassExecutionSummary(testType, new ExecutionSettings(), new List<CompiledTestCaseResult>());
+        var testInitResult = TestInitializationResult.CreateSuccess(new[] { testType });
+        var testClassResultGroup = new TestClassResultGroup(testType, new List<TestCaseExecutionResult>());
+        var classExecutionSummary = new ClassExecutionSummary(testType, new ExecutionSettings(), new List<ICompiledTestCaseResult>());
 
         testFilter.FilterAndValidate(Arg.Any<IEnumerable<Type>>(), Arg.Any<IEnumerable<string>>()).Returns(testInitResult);
         sailFishTestExecutor.Execute(Arg.Any<IEnumerable<Type>>(), Arg.Any<CancellationToken>()).Returns(new List<TestClassResultGroup> { testClassResultGroup });
-        classExecutionSummaryCompiler.CompileToSummaries(Arg.Any<IEnumerable<TestClassResultGroup>>()).Returns(new List<ClassExecutionSummary> { classExecutionSummary });
+        classExecutionSummaryCompiler.CompileToSummaries(Arg.Any<IEnumerable<TestClassResultGroup>>()).Returns(new List<IClassExecutionSummary> { classExecutionSummary }.AsEnumerable());
         runSettings.TestNames.Returns(new List<string>());
         runSettings.TestLocationAnchors.Returns(new List<Type>());
         runSettings.Seed.Returns((int?)null);
@@ -56,7 +57,7 @@ public class SailfishExecutorTests
         // Assert
         result.IsValid.ShouldBeTrue();
         result.ExecutionSummaries.ShouldNotBeEmpty();
-        await executionSummaryWriter.Received(1).Write(Arg.Any<IEnumerable<IClassExecutionSummary>>(), Arg.Any<CancellationToken>());
+        await executionSummaryWriter.Received(1).Write(Arg.Any<List<IClassExecutionSummary>>(), Arg.Any<CancellationToken>());
     }
 
     [Fact]
@@ -64,7 +65,7 @@ public class SailfishExecutorTests
     {
         // Arrange
         var errors = new Dictionary<string, List<string>> { { "Error reason", new List<string> { "TestName1", "TestName2" } } };
-        var testInitResult = new TestInitializationResult(new Type[0], errors);
+        var testInitResult = TestInitializationResult.CreateFailure(new Type[0], errors);
 
         testFilter.FilterAndValidate(Arg.Any<IEnumerable<Type>>(), Arg.Any<IEnumerable<string>>()).Returns(testInitResult);
         runSettings.TestNames.Returns(new List<string>());
@@ -87,12 +88,12 @@ public class SailfishExecutorTests
         // Arrange
         var testType1 = typeof(object);
         var testType2 = typeof(string);
-        var testInitResult = new TestInitializationResult(new[] { testType1, testType2 }, new Dictionary<string, List<string>>());
-        var classExecutionSummary = new ClassExecutionSummary(testType1, new ExecutionSettings(), new List<CompiledTestCaseResult>());
+        var testInitResult = TestInitializationResult.CreateSuccess(new[] { testType1, testType2 });
+        var classExecutionSummary = new ClassExecutionSummary(testType1, new ExecutionSettings(), new List<ICompiledTestCaseResult>());
 
         testFilter.FilterAndValidate(Arg.Any<IEnumerable<Type>>(), Arg.Any<IEnumerable<string>>()).Returns(testInitResult);
         sailFishTestExecutor.Execute(Arg.Any<IEnumerable<Type>>(), Arg.Any<CancellationToken>()).Returns(new List<TestClassResultGroup>());
-        classExecutionSummaryCompiler.CompileToSummaries(Arg.Any<IEnumerable<TestClassResultGroup>>()).Returns(new List<ClassExecutionSummary> { classExecutionSummary });
+        classExecutionSummaryCompiler.CompileToSummaries(Arg.Any<IEnumerable<TestClassResultGroup>>()).Returns(new List<IClassExecutionSummary> { classExecutionSummary }.AsEnumerable());
         runSettings.TestNames.Returns(new List<string>());
         runSettings.TestLocationAnchors.Returns(new List<Type>());
         runSettings.Seed.Returns(42);
@@ -115,12 +116,12 @@ public class SailfishExecutorTests
     {
         // Arrange
         var testType = typeof(object);
-        var testInitResult = new TestInitializationResult(new[] { testType }, new Dictionary<string, List<string>>());
-        var classExecutionSummary = new ClassExecutionSummary(testType, new ExecutionSettings(), new List<CompiledTestCaseResult>());
+        var testInitResult = TestInitializationResult.CreateSuccess(new[] { testType });
+        var classExecutionSummary = new ClassExecutionSummary(testType, new ExecutionSettings(), new List<ICompiledTestCaseResult>());
 
         testFilter.FilterAndValidate(Arg.Any<IEnumerable<Type>>(), Arg.Any<IEnumerable<string>>()).Returns(testInitResult);
         sailFishTestExecutor.Execute(Arg.Any<IEnumerable<Type>>(), Arg.Any<CancellationToken>()).Returns(new List<TestClassResultGroup>());
-        classExecutionSummaryCompiler.CompileToSummaries(Arg.Any<IEnumerable<TestClassResultGroup>>()).Returns(new List<ClassExecutionSummary> { classExecutionSummary });
+        classExecutionSummaryCompiler.CompileToSummaries(Arg.Any<IEnumerable<TestClassResultGroup>>()).Returns(new List<IClassExecutionSummary> { classExecutionSummary }.AsEnumerable());
         runSettings.TestNames.Returns(new List<string>());
         runSettings.TestLocationAnchors.Returns(new List<Type>());
         runSettings.Seed.Returns((int?)null);
@@ -142,12 +143,12 @@ public class SailfishExecutorTests
     {
         // Arrange
         var testType = typeof(object);
-        var testInitResult = new TestInitializationResult(new[] { testType }, new Dictionary<string, List<string>>());
-        var classExecutionSummary = new ClassExecutionSummary(testType, new ExecutionSettings(), new List<CompiledTestCaseResult>());
+        var testInitResult = TestInitializationResult.CreateSuccess(new[] { testType });
+        var classExecutionSummary = new ClassExecutionSummary(testType, new ExecutionSettings(), new List<ICompiledTestCaseResult>());
 
         testFilter.FilterAndValidate(Arg.Any<IEnumerable<Type>>(), Arg.Any<IEnumerable<string>>()).Returns(testInitResult);
         sailFishTestExecutor.Execute(Arg.Any<IEnumerable<Type>>(), Arg.Any<CancellationToken>()).Returns(new List<TestClassResultGroup>());
-        classExecutionSummaryCompiler.CompileToSummaries(Arg.Any<IEnumerable<TestClassResultGroup>>()).Returns(new List<ClassExecutionSummary> { classExecutionSummary });
+        classExecutionSummaryCompiler.CompileToSummaries(Arg.Any<IEnumerable<TestClassResultGroup>>()).Returns(new List<IClassExecutionSummary> { classExecutionSummary }.AsEnumerable());
         runSettings.TestNames.Returns(new List<string>());
         runSettings.TestLocationAnchors.Returns(new List<Type>());
         runSettings.Seed.Returns((int?)null);
@@ -169,12 +170,12 @@ public class SailfishExecutorTests
     {
         // Arrange
         var testType = typeof(object);
-        var testInitResult = new TestInitializationResult(new[] { testType }, new Dictionary<string, List<string>>());
-        var classExecutionSummary = new ClassExecutionSummary(testType, new ExecutionSettings(), new List<CompiledTestCaseResult>());
+        var testInitResult = TestInitializationResult.CreateSuccess(new[] { testType });
+        var classExecutionSummary = new ClassExecutionSummary(testType, new ExecutionSettings(), new List<ICompiledTestCaseResult>());
 
         testFilter.FilterAndValidate(Arg.Any<IEnumerable<Type>>(), Arg.Any<IEnumerable<string>>()).Returns(testInitResult);
         sailFishTestExecutor.Execute(Arg.Any<IEnumerable<Type>>(), Arg.Any<CancellationToken>()).Returns(new List<TestClassResultGroup>());
-        classExecutionSummaryCompiler.CompileToSummaries(Arg.Any<IEnumerable<TestClassResultGroup>>()).Returns(new List<ClassExecutionSummary> { classExecutionSummary });
+        classExecutionSummaryCompiler.CompileToSummaries(Arg.Any<IEnumerable<TestClassResultGroup>>()).Returns(new List<IClassExecutionSummary> { classExecutionSummary }.AsEnumerable());
         runSettings.TestNames.Returns(new List<string>());
         runSettings.TestLocationAnchors.Returns(new List<Type>());
         runSettings.Seed.Returns((int?)null);

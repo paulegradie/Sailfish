@@ -131,7 +131,7 @@ namespace Sailfish.Results
                     var pr = m.PerformanceRunResult;
                     if (pr is null) continue;
 
-                    var n = Math.Max(pr.DataWithOutliersRemoved?.Length ?? 0, 0);
+                    var n = Math.Max(pr.DataWithOutliersRemoved?.Length ?? (int?)pr.SampleSize ?? 0, 0);
                     double? moe95 = null;
                     double? moe99 = null;
                     if (n > 1 && pr.StdDev > 0)

@@ -41,8 +41,8 @@ public class TestInstanceContainerCreatorTests
     public void CreateTestContainerInstanceProviders_WithPropertyTensorFilter_FiltersVariableSets()
     {
         // Arrange
-        var propertySet1 = new PropertySet(new Dictionary<string, object> { { "Prop", 1 } });
-        var propertySet2 = new PropertySet(new Dictionary<string, object> { { "Prop", 2 } });
+        var propertySet1 = new PropertySet(new List<TestCaseVariable> { new TestCaseVariable("Prop", 1) });
+        var propertySet2 = new PropertySet(new List<TestCaseVariable> { new TestCaseVariable("Prop", 2) });
         var variableSets = new List<PropertySet> { propertySet1, propertySet2 };
 
         runSettings.Seed.Returns((int?)null);
@@ -54,7 +54,7 @@ public class TestInstanceContainerCreatorTests
         // Act
         var providers = creator.CreateTestContainerInstanceProviders(
             typeof(TestClassWithMethods),
-            propertyTensorFilter: ps => ps.Values.First().Equals(1));
+            propertyTensorFilter: ps => ps.VariableSet.First().Value.Equals(1));
 
         // Assert
         providers.ShouldNotBeEmpty();
@@ -87,9 +87,9 @@ public class TestInstanceContainerCreatorTests
     public void CreateTestContainerInstanceProviders_WithSeed_RandomizesPropertySetOrder()
     {
         // Arrange
-        var propertySet1 = new PropertySet(new Dictionary<string, object> { { "Prop", 1 } });
-        var propertySet2 = new PropertySet(new Dictionary<string, object> { { "Prop", 2 } });
-        var propertySet3 = new PropertySet(new Dictionary<string, object> { { "Prop", 3 } });
+        var propertySet1 = new PropertySet(new List<TestCaseVariable> { new TestCaseVariable("Prop", 1) });
+        var propertySet2 = new PropertySet(new List<TestCaseVariable> { new TestCaseVariable("Prop", 2) });
+        var propertySet3 = new PropertySet(new List<TestCaseVariable> { new TestCaseVariable("Prop", 3) });
         var variableSets = new List<PropertySet> { propertySet1, propertySet2, propertySet3 };
 
         runSettings.Seed.Returns(42);

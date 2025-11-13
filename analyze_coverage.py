@@ -85,7 +85,16 @@ def main():
     for cov_file in coverage_files:
         coverage = parse_coverage_file(cov_file)
         for filename, data in coverage.items():
-            all_coverage[filename] = data
+            if filename in all_coverage:
+                # Accumulate coverage data
+                entry = all_coverage[filename]
+                entry['lines_valid'] += data['lines_valid']
+                entry['lines_covered'] += data['lines_covered']
+                if entry['lines_valid'] > 0:
+                    entry['line_rate'] = entry['lines_covered'] / entry['lines_valid']
+            else:
+                # First time seeing this file
+                all_coverage[filename] = data
 
     # First, show all source files in coverage
     print("\n" + "="*80)
@@ -100,18 +109,24 @@ def main():
     if len(source_files) > 20:
         print(f"... and {len(source_files) - 20} more files")
 
-    # Find all files below 80%
+    # Find all files below 80% that are in PR #213
     below_80_all = []
     for filename, data in all_coverage.items():
-        if filename.endswith('.cs'):
-            line_rate = data['line_rate']
-            if line_rate < 0.80:
-                below_80_all.append({
-                    'filename': filename,
-                    'coverage': line_rate * 100,
-                    'lines_covered': data['lines_covered'],
-                    'lines_valid': data['lines_valid']
-                })
+        if not filename.endswith('.cs'):
+            continue
+
+        normalized = Path(filename).as_posix()
+        if normalized not in PR_FILES:
+            continue
+
+        line_rate = data['line_rate']
+        if line_rate < 0.80:
+            below_80_all.append({
+                'filename': normalized,
+                'coverage': line_rate * 100,
+                'lines_covered': data['lines_covered'],
+                'lines_valid': data['lines_valid']
+            })
 
     # Sort by coverage (lowest first)
     below_80_all.sort(key=lambda x: x['coverage'])
