@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using System.Reflection;
+
 using MediatR;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel;
 using NSubstitute;
@@ -259,6 +261,84 @@ public class TestCompletionMessageMapperTests
         result.TestResult.ExceptionDetails.ShouldNotBeNull();
         result.TestResult.ExceptionType.ShouldNotBeNull();
     }
+
+
+        [Fact]
+        public async Task MapToQueueMessageAsync_AppendsOverheadDiagnostics_WhenBaselineAvailable()
+        {
+            // Arrange
+            var notification = CreateTestNotification();
+            SetupMockDependencies();
+
+            var perfTimer = notification.TestInstanceContainerExternal!.PerformanceTimer;
+            // Helper to set internal-set properties via reflection
+            void SetProp(string name, object? value)
+            {
+                var prop = typeof(PerformanceTimer).GetProperty(name, BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+                prop!.SetValue(perfTimer, value);
+            }
+
+            SetProp("OverheadBaselineTicks", 123);
+            SetProp("OverheadDriftPercent", 2.56);
+            SetProp("OverheadWarmupCount", 3);
+            SetProp("OverheadSampleCount", 64);
+            SetProp("CappedIterationCount", 5);
+
+            // Act
+            var result = await _mapper.MapToQueueMessageAsync(notification, CancellationToken.None);
+
+            // Assert
+            result.ShouldNotBeNull();
+            result.Metadata.ShouldContainKey("FormattedMessage");
+            var formatted = result.Metadata["FormattedMessage"] as string;
+            formatted.ShouldNotBeNull();
+            formatted!.ShouldContain("Formatted console message");
+            formatted.ShouldContain("Diagnostics: Overhead 123 ticks");
+            formatted.ShouldContain("(median of 64 samples; 3 warmup)");
+            formatted.ShouldContain("Drift 2.56%");
+            formatted.ShouldContain("Capped 5 iteration(s).");
+
+            // Logger receives the same diagnostic line
+            _logger.Received().Log(
+                LogLevel.Information,
+                Arg.Is<string>(s => s.Contains("Diagnostics: Overhead 123 ticks")),
+                Arg.Any<object[]>());
+        }
+
+        [Fact]
+        public async Task MapToQueueMessageAsync_AppendsOverheadDisabledMessage_WhenDisabled()
+        {
+            // Arrange
+            var notification = CreateTestNotification();
+            SetupMockDependencies();
+
+            var perfTimer = notification.TestInstanceContainerExternal!.PerformanceTimer;
+            void SetProp(string name, object? value)
+            {
+                var prop = typeof(PerformanceTimer).GetProperty(name, BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic);
+                prop!.SetValue(perfTimer, value);
+            }
+
+            // Ensure baseline is null and disabled flag is set
+            SetProp("OverheadBaselineTicks", null);
+            SetProp("OverheadEstimationDisabled", true);
+
+            // Act
+            var result = await _mapper.MapToQueueMessageAsync(notification, CancellationToken.None);
+
+            // Assert
+            result.ShouldNotBeNull();
+            var formatted = result.Metadata["FormattedMessage"] as string;
+            formatted.ShouldNotBeNull();
+            const string diag = "Diagnostics: Overhead estimation disabled for this test (no subtraction applied).";
+            formatted!.ShouldContain(diag);
+
+            _logger.Received().Log(
+                LogLevel.Information,
+                Arg.Is<string>(s => s.Contains("Overhead estimation disabled")),
+                Arg.Any<object[]>());
+        }
+
 
     #endregion
 
