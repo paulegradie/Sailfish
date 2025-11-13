@@ -1,6 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Reflection;
+using Sailfish.Contracts.Public.Serialization.Tracking.V1;
+
 using Sailfish.Diagnostics.Environment;
 using Sailfish.Results;
 using System.Threading;
@@ -517,8 +520,101 @@ public class MethodComparisonTestRunCompletedHandlerTests
 	            Arg.Any<CancellationToken>());
 
 	        // Cleanup
-	        try { Directory.Delete(tempDir, true); } catch { }
-	    }
+        try { Directory.Delete(tempDir, true); } catch { }
+        }
+
+        #region NxN Matrix (private) tests
+
+        private static T InvokePrivate<T>(object instance, string methodName, params object[] args)
+        {
+            var flags = BindingFlags.Instance | BindingFlags.NonPublic;
+            var mi = instance.GetType().GetMethod(methodName, flags) ?? throw new MissingMethodException(methodName);
+            return (T)mi.Invoke(instance, args)!;
+        }
+
+        [Fact]
+        public void CreateNxNComparisonMatrix_WithSignificantDifference_IncludesHeaderDiagonalCIQAndLabels()
+        {
+            // Arrange: two methods with strong difference and non-zero SE to produce CI and tiny q
+            var methods = new List<CompiledTestCaseResultTrackingFormat>
+            {
+                CompiledTestCaseResultTrackingFormatBuilder.Create()
+                    .WithTestCaseId(TestCaseIdBuilder.Create().WithTestCaseName("Alpha").Build())
+                    .WithPerformanceRunResult(
+                        PerformanceRunResultTrackingFormatBuilder.Create()
+                            .WithMean(10.0)
+                            .WithStdDev(1.0)
+                            .WithSampleSize(100)
+                            .WithDataWithOutliersRemoved(new double[100])
+                            .Build())
+                    .Build(),
+                CompiledTestCaseResultTrackingFormatBuilder.Create()
+                    .WithTestCaseId(TestCaseIdBuilder.Create().WithTestCaseName("Beta").Build())
+                    .WithPerformanceRunResult(
+                        PerformanceRunResultTrackingFormatBuilder.Create()
+                            .WithMean(10.5)
+                            .WithStdDev(1.0)
+                            .WithSampleSize(100)
+                            .WithDataWithOutliersRemoved(new double[100])
+                            .Build())
+                    .Build(),
+            };
+
+            // Act
+            var md = InvokePrivate<string>(handler, "CreateNxNComparisonMatrix", methods);
+
+            // Assert: header, table header with method names, diagonal em dash, CI + q-values and labels
+            md.ShouldContain("### 🔢 NxN Comparison Matrix");
+            md.ShouldContain("| Method | Alpha | Beta |");
+            md.ShouldContain("—"); // diagonal cell marker
+            md.ShouldContain(" ["); // ratio with CI
+            md.ShouldContain(" q="); // q-value present
+            md.ShouldContain("Slower");
+            md.ShouldContain("Improved");
+            md.ShouldContain("Cell value is ratio vs. row"); // footer
+        }
+
+        [Fact]
+        public void CreateNxNComparisonMatrix_WithZeroSE_NoCI_NoQ_LabelSimilar()
+        {
+            // Arrange: two methods with zero SE (no CI) -> no p/q, labeled Similar
+            var methods = new List<CompiledTestCaseResultTrackingFormat>
+            {
+                CompiledTestCaseResultTrackingFormatBuilder.Create()
+                    .WithTestCaseId(TestCaseIdBuilder.Create().WithTestCaseName("Alpha").Build())
+                    .WithPerformanceRunResult(
+                        PerformanceRunResultTrackingFormatBuilder.Create()
+                            .WithMean(10.0)
+                            .WithStdDev(0.0)
+                            .WithSampleSize(1)
+                            .WithDataWithOutliersRemoved(new []{ 1.0 }) // N=1 => SE=0
+                            .Build())
+                    .Build(),
+                CompiledTestCaseResultTrackingFormatBuilder.Create()
+                    .WithTestCaseId(TestCaseIdBuilder.Create().WithTestCaseName("Beta").Build())
+                    .WithPerformanceRunResult(
+                        PerformanceRunResultTrackingFormatBuilder.Create()
+                            .WithMean(20.0)
+                            .WithStdDev(0.0)
+                            .WithSampleSize(1)
+                            .WithDataWithOutliersRemoved(new []{ 1.0 })
+                            .Build())
+                    .Build(),
+            };
+
+            // Act
+            var md = InvokePrivate<string>(handler, "CreateNxNComparisonMatrix", methods);
+
+            // Assert: still a proper table, but cells have no CI and no q-values; label should be Similar
+            md.ShouldContain("| Method | Alpha | Beta |");
+            md.ShouldContain("2x Similar");
+            md.ShouldNotContain(" q=");
+        }
+
+        #endregion
+
+	        
+	    
 
 
 }
