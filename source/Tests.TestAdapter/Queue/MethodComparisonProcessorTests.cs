@@ -1075,6 +1075,76 @@ public class MethodComparisonProcessorTests
             markdown.ShouldContain("No comparison groups found");
         }
 
+
+        [Fact]
+        public void CreateMethodComparisonMarkdown_UsesPairwisePValues_FromMetadata_MinAcrossBothDirections()
+        {
+            // Arrange: two methods in the same group with opposite-direction p-values
+            var group = "GroupPairs";
+            var m1 = CreateTestMessageWithMetrics("MethodA", group, meanMs: 50.0, medianMs: 48.0, sampleSize: 100);
+            var m2 = CreateTestMessageWithMetrics("MethodB", group, meanMs: 100.0, medianMs: 98.0, sampleSize: 100);
+
+            // Provide pairwise p-values from metadata on both methods (different magnitudes)
+            m1.Metadata["PairwisePValues"] = new Dictionary<string, double>
+            {
+                [m2.TestCaseId] = 0.02
+            };
+            m2.Metadata["PairwisePValues"] = new Dictionary<string, double>
+            {
+                [m1.TestCaseId] = 0.01
+            };
+
+            var batch = new TestCaseBatch
+            {
+                BatchId = $"Comparison_TestClass1_{group}",
+                TestCases = new List<TestCompletionQueueMessage> { m1, m2 },
+                Status = BatchStatus.Complete
+            };
+
+            var mi = typeof(MethodComparisonProcessor)
+                .GetMethod("CreateMethodComparisonMarkdown", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)!;
+
+            // Act
+            var markdown = (string)mi.Invoke(_processor, new object[] { batch, typeof(TestClass1) })!;
+
+            // Assert: the smaller p-value (0.01) is chosen when both directions exist (min aggregation)
+            markdown.ShouldContain("NxN Comparison Matrix");
+            markdown.ShouldContain("q=0.01");
+            markdown.ShouldNotContain("q=0.02");
+        }
+
+        [Fact]
+        public void CreateMethodComparisonMarkdown_UsesPairwisePValues_WhenOnlyOneDirectionProvided()
+        {
+            // Arrange: only one method supplies a p-value toward the other
+            var group = "GroupPairsOneWay";
+            var m1 = CreateTestMessageWithMetrics("M1", group, meanMs: 60.0, medianMs: 58.0, sampleSize: 50);
+            var m2 = CreateTestMessageWithMetrics("M2", group, meanMs: 100.0, medianMs: 98.0, sampleSize: 50);
+
+            m1.Metadata["PairwisePValues"] = new Dictionary<string, double>
+            {
+                [m2.TestCaseId] = 0.02
+            };
+            // m2 does not provide a reverse entry
+
+            var batch = new TestCaseBatch
+            {
+                BatchId = $"Comparison_TestClass1_{group}",
+                TestCases = new List<TestCompletionQueueMessage> { m1, m2 },
+                Status = BatchStatus.Complete
+            };
+
+            var mi = typeof(MethodComparisonProcessor)
+                .GetMethod("CreateMethodComparisonMarkdown", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)!;
+
+            // Act
+            var markdown = (string)mi.Invoke(_processor, new object[] { batch, typeof(TestClass1) })!;
+
+            // Assert: the provided one-way p-value flows through to q-values in the matrix
+            markdown.ShouldContain("NxN Comparison Matrix");
+            markdown.ShouldContain("q=0.02");
+        }
+
         #endregion
 
     #region Helper Methods
