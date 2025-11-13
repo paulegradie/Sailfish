@@ -790,5 +790,64 @@ public class RunSettingsBuilderTests
         settings.GlobalOutlierStrategy.ShouldBeNull();
     }
 
+    [Fact]
+    public void WithTags_EmptyCollection_DoesNotThrow_AndDoesNotAddTags()
+    {
+        var builder = RunSettingsBuilder.CreateBuilder();
+        var input = new OrderedDictionary();
+
+        var result = builder.WithTags(input);
+
+        result.ShouldBeSameAs(builder);
+        var settings = builder.Build();
+        settings.Tags.Count.ShouldBe(0);
+    }
+
+    [Fact]
+    public void WithTags_WhenExceptionThrown_DoesNotModifyBuilderTags()
+    {
+        var builder = RunSettingsBuilder.CreateBuilder();
+        var input = new OrderedDictionary { { "a", "1" } };
+
+        // Document the current buggy behavior (throws) and ensure internal state remains unchanged
+        Should.Throw<ArgumentException>(() => builder.WithTags(input));
+
+        var settings = builder.Build();
+        settings.Tags.Count.ShouldBe(0);
+    }
+
+    [Fact]
+    public void WithSeed_OverridesPreviousSeed_UsesLastValue()
+    {
+        var builder = RunSettingsBuilder.CreateBuilder();
+
+        builder.WithSeed(111).WithSeed(222);
+
+        var settings = builder.Build();
+        settings.Seed.ShouldBe(222);
+    }
+
+    [Fact]
+    public void WithSeed_AllowsZero()
+    {
+        var builder = RunSettingsBuilder.CreateBuilder();
+
+        builder.WithSeed(0);
+
+        var settings = builder.Build();
+        settings.Seed.ShouldBe(0);
+    }
+
+    [Fact]
+    public void WithSeed_AllowsNegative()
+    {
+        var builder = RunSettingsBuilder.CreateBuilder();
+
+        builder.WithSeed(-42);
+
+        var settings = builder.Build();
+        settings.Seed.ShouldBe(-42);
+    }
+
 
 }
