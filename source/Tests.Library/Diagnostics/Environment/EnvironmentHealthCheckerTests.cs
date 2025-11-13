@@ -1,3 +1,4 @@
+using System;
 using System.Linq;
 using System.Threading.Tasks;
 using Sailfish.Diagnostics.Environment;
@@ -183,5 +184,93 @@ public class EnvironmentHealthCheckerTests
             var report = await checker.CheckAsync();
             report.Entries.Any(e => e.Name == "Timer Jitter").ShouldBeFalse();
         }
+
+    [Fact]
+    public async Task CheckAsync_WithContext_UsesProvidedTestAssemblyPath()
+    {
+        var checker = new EnvironmentHealthChecker();
+        var context = new EnvironmentHealthCheckContext { TestAssemblyPath = typeof(EnvironmentHealthCheckerTests).Assembly.Location };
+        var report = await checker.CheckAsync(context);
+
+        report.ShouldNotBeNull();
+        var buildMode = report.Entries.First(e => e.Name == "Build Mode");
+        buildMode.ShouldNotBeNull();
+    }
+
+    [Fact]
+    public async Task CheckAsync_WithInvalidTestAssemblyPath_FallsBackToDefaultAssembly()
+    {
+        var checker = new EnvironmentHealthChecker();
+        var context = new EnvironmentHealthCheckContext { TestAssemblyPath = "/nonexistent/path/assembly.dll" };
+        var report = await checker.CheckAsync(context);
+
+        report.ShouldNotBeNull();
+        var buildMode = report.Entries.First(e => e.Name == "Build Mode");
+        buildMode.ShouldNotBeNull();
+    }
+
+    [Fact]
+    public async Task GcMode_ReturnsValidStatus()
+    {
+        var checker = new EnvironmentHealthChecker();
+        var report = await checker.CheckAsync();
+
+        var gcMode = report.Entries.First(e => e.Name == "GC Mode");
+        gcMode.ShouldNotBeNull();
+        gcMode.Status.ShouldBeOneOf(HealthStatus.Pass, HealthStatus.Warn);
+    }
+
+    [Fact]
+    public async Task ProcessPriority_ReturnsValidStatus()
+    {
+        var checker = new EnvironmentHealthChecker();
+        var report = await checker.CheckAsync();
+
+        var priority = report.Entries.First(e => e.Name == "Process Priority");
+        priority.ShouldNotBeNull();
+        priority.Status.ShouldBeOneOf(HealthStatus.Pass, HealthStatus.Warn);
+    }
+
+    [Fact]
+    public async Task Timer_ReturnsValidStatus()
+    {
+        var checker = new EnvironmentHealthChecker();
+        var report = await checker.CheckAsync();
+
+        var timer = report.Entries.First(e => e.Name == "Timer");
+        timer.ShouldNotBeNull();
+        timer.Status.ShouldBeOneOf(HealthStatus.Pass, HealthStatus.Warn);
+        timer.Details.ShouldNotBeNullOrWhiteSpace();
+    }
+
+    [Fact]
+    public async Task BackgroundCpu_ReturnsValidStatus()
+    {
+        var checker = new EnvironmentHealthChecker();
+        var report = await checker.CheckAsync();
+
+        var bgCpu = report.Entries.First(e => e.Name == "Background CPU");
+        bgCpu.ShouldNotBeNull();
+        bgCpu.Status.ShouldBeOneOf(HealthStatus.Pass, HealthStatus.Warn, HealthStatus.Fail);
+    }
+
+    [Fact]
+    public async Task Report_TimerJitter_Boundary_16Percent_Fail()
+    {
+        var provider = new TestTimerProvider
+        {
+            Current = new Sailfish.Execution.TimerCalibrationResult
+            {
+                RsdPercent = 16.0,
+                MedianTicks = 1,
+                Samples = 64,
+                Warmups = 16,
+                JitterScore = 30
+            }
+        };
+        var checker = new EnvironmentHealthChecker(provider);
+        var report = await checker.CheckAsync();
+        report.Entries.Any(e => e.Name == "Timer Jitter" && e.Status == HealthStatus.Fail).ShouldBeTrue();
+    }
 
 }

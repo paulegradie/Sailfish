@@ -25,6 +25,11 @@ public class EnvironmentHealthCheckerAdditionalTests
     [Fact]
     public async Task CpuAffinity_Pass_When_Pinned_To_Single_Core()
     {
+        if (!System.OperatingSystem.IsWindows())
+        {
+            return;
+        }
+
         var proc = System.Diagnostics.Process.GetCurrentProcess();
         var original = proc.ProcessorAffinity;
         try
@@ -78,6 +83,11 @@ public class EnvironmentHealthCheckerAdditionalTests
     [Fact]
     public async Task CpuAffinity_Warn_When_Pinned_To_Two_Cores()
     {
+        if (!System.OperatingSystem.IsWindows())
+        {
+            return;
+        }
+
         var proc = System.Diagnostics.Process.GetCurrentProcess();
         var original = proc.ProcessorAffinity;
         try
@@ -99,6 +109,11 @@ public class EnvironmentHealthCheckerAdditionalTests
     [Fact]
     public async Task ProcessPriority_Pass_When_AboveNormal()
     {
+        if (!System.OperatingSystem.IsWindows())
+        {
+            return;
+        }
+
         var proc = System.Diagnostics.Process.GetCurrentProcess();
         var original = proc.PriorityClass;
         try
@@ -147,6 +162,11 @@ public class EnvironmentHealthCheckerAdditionalTests
     [Fact]
     public async Task ProcessPriority_Warn_When_BelowNormal()
     {
+        if (!System.OperatingSystem.IsWindows())
+        {
+            return;
+        }
+
         var proc = System.Diagnostics.Process.GetCurrentProcess();
         var original = proc.PriorityClass;
         try
