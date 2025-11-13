@@ -60,6 +60,8 @@ internal class TestInstanceContainerProvider : ITestInstanceContainerProvider
                 runSettings.GlobalMaximumSampleSize,
                 runSettings.GlobalUseConfigurableOutlierDetection,
                 runSettings.GlobalOutlierStrategy);
+            var seed = TryParseSeed(runSettings.Args);
+            if (seed.HasValue) executionSettings.Seed = seed;
             yield return TestInstanceContainer.CreateTestInstance(instance, Method, [], [], disabled, executionSettings);
         }
         else
@@ -81,6 +83,8 @@ internal class TestInstanceContainerProvider : ITestInstanceContainerProvider
                     runSettings.GlobalMaximumSampleSize,
                     runSettings.GlobalUseConfigurableOutlierDetection,
                     runSettings.GlobalOutlierStrategy);
+                var seed = TryParseSeed(runSettings.Args);
+                if (seed.HasValue) executionSettings.Seed = seed;
                 yield return TestInstanceContainer.CreateTestInstance(instance, Method, propertyNames, variableValues, disabled, executionSettings);
             }
         }
@@ -100,5 +104,25 @@ internal class TestInstanceContainerProvider : ITestInstanceContainerProvider
             var prop = obj.GetType().GetProperties().Single(x => x.Name == variable.Name);
             prop.SetValue(obj, variable.Value);
         }
+    }
+
+    private static int? TryParseSeed(Sailfish.Extensions.Types.OrderedDictionary args)
+    {
+        try
+        {
+            foreach (var kv in args)
+            {
+                var key = kv.Key;
+                var value = kv.Value;
+                if (string.Equals(key, "seed", StringComparison.OrdinalIgnoreCase) ||
+                    string.Equals(key, "randomseed", StringComparison.OrdinalIgnoreCase) ||
+                    string.Equals(key, "rng", StringComparison.OrdinalIgnoreCase))
+                {
+                    if (int.TryParse(value, out var s)) return s;
+                }
+            }
+        }
+        catch { /* ignore */ }
+        return null;
     }
 }

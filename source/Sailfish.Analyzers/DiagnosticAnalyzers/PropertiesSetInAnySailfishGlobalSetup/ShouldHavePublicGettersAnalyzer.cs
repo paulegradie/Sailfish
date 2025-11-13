@@ -13,7 +13,7 @@ namespace Sailfish.Analyzers.DiagnosticAnalyzers.PropertiesSetInAnySailfishGloba
 public class ShouldHavePublicGettersAnalyzer : AnalyzerBase<ClassDeclarationSyntax>
 {
     public static readonly DiagnosticDescriptor Descriptor = new(
-        "SF1001",
+        "SF1014",
         "Properties assigned in the global setup must have public getters",
         "Property '{0}' must have a public getter when assigned within a method decorated with the SailfishGlobalSetup attribute",
         AnalyzerGroups.EssentialAnalyzers.Category,

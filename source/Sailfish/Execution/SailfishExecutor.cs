@@ -55,7 +55,17 @@ internal class SailfishExecutor
         var testInitializationResult = CollectTests(runSettings.TestNames, runSettings.TestLocationAnchors.ToArray());
         if (testInitializationResult.IsValid)
         {
-            var testClassResultGroups = await sailFishTestExecutor.Execute(testInitializationResult.Tests, cancellationToken).ConfigureAwait(false);
+            // Optional seeded randomization of test class execution order for reproducibility
+            var testsList = testInitializationResult.Tests.ToList();
+            var seed = runSettings.Seed ?? TryParseSeed(runSettings.Args);
+            if (seed.HasValue)
+            {
+                var rng = new Random(seed.Value);
+                testsList = testsList.OrderBy(_ => rng.Next()).ToList();
+                logger.Log(LogLevel.Information, "Randomized test class execution order with seed {Seed}", seed.Value);
+            }
+
+            var testClassResultGroups = await sailFishTestExecutor.Execute(testsList, cancellationToken).ConfigureAwait(false);
             var classExecutionSummaries = classExecutionSummaryCompiler.CompileToSummaries(testClassResultGroups).ToList();
 
             await executionSummaryWriter.Write(classExecutionSummaries, cancellationToken);
@@ -92,6 +102,26 @@ internal class SailfishExecutor
         }
 
         return SailfishRunResult.CreateResult(Array.Empty<IClassExecutionSummary>(), testDiscoveryExceptions);
+    }
+
+    private static int? TryParseSeed(Sailfish.Extensions.Types.OrderedDictionary args)
+    {
+        try
+        {
+            foreach (var kv in args)
+            {
+                var key = kv.Key;
+                var value = kv.Value;
+                if (string.Equals(key, "seed", StringComparison.OrdinalIgnoreCase) ||
+                    string.Equals(key, "randomseed", StringComparison.OrdinalIgnoreCase) ||
+                    string.Equals(key, "rng", StringComparison.OrdinalIgnoreCase))
+                {
+                    if (int.TryParse(value, out var s)) return s;
+                }
+            }
+        }
+        catch { /* ignore */ }
+        return null;
     }
 
     private TestInitializationResult CollectTests(IEnumerable<string> testNames, IEnumerable<Type> locationTypes)

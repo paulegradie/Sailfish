@@ -598,4 +598,102 @@ public class MarkdownTableConverterTests
         }
 
 
+        private sealed class TestManifestProvider : Sailfish.Results.IReproducibilityManifestProvider
+        {
+            public Sailfish.Results.ReproducibilityManifest? Current { get; set; }
+        }
+
+        [Fact]
+        public void EnhancedMarkdown_Includes_TimerCalibration_Header_WhenManifestHasCalibration()
+        {
+            // Arrange manifest with timer calibration
+            var manifestProvider = new TestManifestProvider
+            {
+                Current = new Sailfish.Results.ReproducibilityManifest
+                {
+                    TimerCalibration = new Sailfish.Results.ReproducibilityManifest.TimerCalibrationSnapshot
+                    {
+                        StopwatchFrequency = 3_000_000,
+                        ResolutionNs = 333.3,
+                        MedianTicks = 4,
+                        RsdPercent = 2.2,
+                        JitterScore = 91,
+                        Samples = 64,
+                        Warmups = 16
+                    }
+                }
+            };
+            var converter = new MarkdownTableConverter(mockUnifiedFormatter, manifestProvider);
+            var summaries = new List<IClassExecutionSummary> { CreateMockExecutionSummary("CalibClass") };
+
+            // Act
+            var md = converter.ConvertToEnhancedMarkdownTableString(summaries);
+
+            // Assert
+            md.ShouldContain("## ⏱️ Timer Calibration");
+            md.ShouldContain("freq=3000000 Hz");
+            md.ShouldContain("res≈333 ns");
+            md.ShouldContain("baseline=4 ticks");
+            md.ShouldContain("RSD=2.2%");
+            md.ShouldContain("Score=91/100");
+            md.ShouldContain("N=64 (warmup 16)");
+        }
+
+        [Fact]
+        public void EnhancedMarkdown_Excludes_TimerCalibration_Header_WhenManifestMissingCalibration()
+        {
+            var manifestProvider = new TestManifestProvider { Current = new Sailfish.Results.ReproducibilityManifest() };
+            var converter = new MarkdownTableConverter(mockUnifiedFormatter, manifestProvider);
+            var summaries = new List<IClassExecutionSummary> { CreateMockExecutionSummary("NoCalibClass") };
+
+            var md = converter.ConvertToEnhancedMarkdownTableString(summaries);
+
+            md.ShouldNotContain("## ⏱️ Timer Calibration");
+        }
+
+        [Fact]
+        public void EnhancedMarkdown_Includes_Seed_WhenManifestHasRandomizationSeed()
+        {
+            var manifestProvider = new TestManifestProvider
+            {
+                Current = new Sailfish.Results.ReproducibilityManifest
+                {
+                    Randomization = new Sailfish.Results.ReproducibilityManifest.RandomizationConfig
+                    {
+                        Seed = 123
+                    }
+                }
+            };
+            var converter = new MarkdownTableConverter(mockUnifiedFormatter, manifestProvider);
+            var summaries = new List<IClassExecutionSummary> { CreateMockExecutionSummary("SeededClass") };
+
+            var md = converter.ConvertToEnhancedMarkdownTableString(summaries);
+
+            md.ShouldContain("Seed: 123");
+        }
+
+        [Fact]
+        public void EnhancedMarkdown_Excludes_Seed_WhenManifestHasNoSeed()
+        {
+            var manifestProvider = new TestManifestProvider { Current = new Sailfish.Results.ReproducibilityManifest() };
+            var converter = new MarkdownTableConverter(mockUnifiedFormatter, manifestProvider);
+            var summaries = new List<IClassExecutionSummary> { CreateMockExecutionSummary("NoSeedClass") };
+
+            var md = converter.ConvertToEnhancedMarkdownTableString(summaries);
+
+            md.ShouldNotContain("Seed:");
+        }
+
+
+
+
+        [Fact]
+        public void EnhancedMarkdown_Excludes_TimerCalibration_Header_WhenManifestProviderIsNull()
+        {
+            // Uses fixture converter without manifest provider
+            var summaries = new List<IClassExecutionSummary> { CreateMockExecutionSummary("NoProviderClass") };
+            var md = markdownTableConverter.ConvertToEnhancedMarkdownTableString(summaries);
+            md.ShouldNotContain("## ⏱️ Timer Calibration");
+        }
+
 }

@@ -150,6 +150,49 @@ Tests are discoverable but ignored when set to true. Useful for temporarily disa
 
 ---
 
+## Time Budget & Iteration Controls
+
+These attributes help shape iteration length and enforce optional time limits. They work with both fixed and adaptive sampling.
+
+#### OperationsPerInvoke
+Number of inner operations executed per measured iteration. Useful for microbenchmarks to amortize timer overhead.
+
+- Default: `1`
+- Type: `int`
+
+#### TargetIterationDurationMs
+Target duration (milliseconds) for a single measured iteration. Use together with `OperationsPerInvoke` to steer iteration cost.
+
+- Default: `0` (disabled)
+- Type: `int`
+
+
+{% callout title="Iteration Tuning" type="note" %}
+When `TargetIterationDurationMs > 0` and `OperationsPerInvoke <= 1`, Sailfish will auto‑tune the operations per measured iteration to bring each iteration near the target. If you set `OperationsPerInvoke > 1`, your explicit value is honored and tuning will not run. See [Iteration Tuning](/docs/1/iteration-tuning).
+{% /callout %}
+
+#### MaxMeasurementTimePerMethodMs
+Maximum allowed wall-clock time (milliseconds) for measuring a single test method. When set (>0), it enables time-budget awareness throughout execution.
+
+- Default: `0` (no limit)
+- Type: `int`
+
+#### UseTimeBudgetController
+Enables a controller that, under tight remaining time budgets, relaxes precision targets slightly (within conservative caps) so tests complete within budget. Backward compatible: inert unless both this is `true` and `MaxMeasurementTimePerMethodMs > 0`.
+
+- Default: `false`
+- Type: `bool`
+
+```csharp
+[Sailfish(UseTimeBudgetController = true, MaxMeasurementTimePerMethodMs = 30_000)]
+public class BudgetedClass { }
+```
+
+{% callout title="Learn more" type="note" %}
+See the dedicated page: [Precision/Time Budget Controller](/docs/1/precision-time-budget)
+{% /callout %}
+
+
 ## SailfishMethod Attribute
 
 Apply the [SailfishMethod] attribute to a method you wish to time.

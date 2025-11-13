@@ -20,6 +20,10 @@ using Sailfish.Presentation;
 using Sailfish.Presentation.Console;
 using Sailfish.Presentation.CsvAndJson;
 using Sailfish.Presentation.Markdown;
+using Sailfish.Diagnostics.Environment;
+using Sailfish.Results;
+
+
 
 namespace Sailfish.Registration;
 
@@ -111,6 +115,15 @@ internal class SailfishModuleRegistrations : IProvideAdditionalRegistrations
         // Register enhanced SailDiffResultMarkdownConverter with unified formatter
         builder.RegisterType<SailDiffResultMarkdownConverter>().As<ISailDiffResultMarkdownConverter>();
         builder.RegisterType<SailfishExecutionEngine>().As<ISailfishExecutionEngine>().InstancePerDependency();
+        builder.RegisterType<ReproducibilityManifestProvider>().As<IReproducibilityManifestProvider>().SingleInstance();
+
+
+        builder.RegisterType<EnvironmentHealthReportProvider>().As<IEnvironmentHealthReportProvider>().SingleInstance();
+
+            // Timer calibration service and provider
+            builder.RegisterType<TimerCalibrationService>().As<ITimerCalibrationService>().SingleInstance();
+            builder.RegisterType<TimerCalibrationResultProvider>().As<ITimerCalibrationResultProvider>().SingleInstance();
+
 
         // Register enhanced MarkdownTableConverter with unified formatter
         builder.RegisterType<MarkdownTableConverter>().As<IMarkdownTableConverter>().InstancePerDependency();

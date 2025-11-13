@@ -143,6 +143,22 @@ This flow shows that there are two points at which you can minipulate the data i
 - IRequestHandler<BeforeAndAfterFileLocationRequest, BeforeAndAfterFileLocationResponse>
 - IRequestHandler<ReadInBeforeAndAfterDataCommand, ReadInBeforeAndAfterDataResponse>
 
+
+### Runtime API (in-memory TestData)
+
+In addition to file-based analysis, SailDiff can analyze in-memory `TestData` objects. This is ideal for test adapters and pipelines that already hold results in memory and want to avoid file I/O.
+
+```csharp
+// using Sailfish.Analysis;
+// var sailDiff = serviceProvider.GetRequiredService<ISailDiff>();
+// beforeData/afterData are TestData instances (IDs + PerformanceRunResult list)
+sailDiff.Analyze(beforeData, afterData, new SailDiffSettings());
+```
+
+Notes:
+- Bypasses file I/O; you provide both the test IDs and the `PerformanceRunResult` sequences.
+- The file-based flow remains fully supported. For custom file locations or aggregated inputs, use the MediatR hooks shown below.
+
 ### Reading Tracking Data from a Custom Location
 
 ```csharp

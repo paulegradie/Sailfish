@@ -1,6 +1,6 @@
 # Sailfish
 
-[![Build Pipeline v2.2](https://github.com/paulegradie/Sailfish/actions/workflows/build-v2.2.yml/badge.svg)](https://github.com/paulegradie/Sailfish/actions/workflows/build-v2.2.yml)
+[![Build Pipeline v3.0](https://github.com/paulegradie/Sailfish/actions/workflows/build-v3.0.yml/badge.svg)](https://github.com/paulegradie/Sailfish/actions/workflows/build-v3.0.yml)
 ![NuGet](https://img.shields.io/nuget/dt/Sailfish)
 [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?project=sailfish_library&metric=alert_status)](https://sonarcloud.io/summary/new_code?id=sailfish_library)
 [![codecov](https://codecov.io/gh/paulegradie/Sailfish/graph/badge.svg?token=UN17VRVD0N)](https://codecov.io/gh/paulegradie/Sailfish)
@@ -31,6 +31,10 @@ Sailfish is a .NET performance testing framework that makes it easy to write, ru
 - Multiple outputs: test logs, Markdown, CSV
 - Easy CI/CD integration
 - Historical analysis with SailDiff
+- Timer calibration with 0–100 Jitter Score; shows in Markdown header, manifest, and Environment Health
+- Seeded run order (opt‑in): Deterministic ordering across classes, methods, and variable sets when a seed is provided; seed appears in Markdown header and manifest
+
+
 - Highly configurable
 
 ## Quick Start
@@ -98,7 +102,6 @@ By default, Sailfish removes both upper and lower outliers (Tukey fences) to pre
 
 To opt into configurable outlier handling per run, enable the flag on ExecutionSettings and choose a strategy:
 
-<augment_code_snippet mode="EXCERPT">
 ````csharp
 var settings = new ExecutionSettings(asCsv: false, asConsole: true, asMarkdown: true, sampleSize: 20, numWarmupIterations: 0)
 {
@@ -109,7 +112,6 @@ var settings = new ExecutionSettings(asCsv: false, asConsole: true, asMarkdown: 
 // When converting programmatically
 var result = PerformanceRunResult.ConvertFromPerfTimer(testCaseId, performanceTimer, settings);
 ````
-</augment_code_snippet>
 
 - Legacy default (no behavior change): UseConfigurableOutlierDetection = false → RemoveAll
 - Strategies:
@@ -122,15 +124,25 @@ var result = PerformanceRunResult.ConvertFromPerfTimer(testCaseId, performanceTi
 
 Global configuration for an entire run via RunSettingsBuilder:
 
-<augment_code_snippet mode="EXCERPT">
 ````csharp
 var run = RunSettingsBuilder.CreateBuilder()
     .WithGlobalOutlierHandling(useConfigurable: true, strategy: OutlierStrategy.RemoveUpper)
     .Build();
 ````
-</augment_code_snippet>
 
 Note: Attribute-level knobs for outlier strategy are not yet exposed; programmatic configuration is available for advanced scenarios and runners that surface ExecutionSettings.
+
+## Reproducible Run Order (Seed)
+Set a seed to make run order deterministic across test classes, methods, and variable sets:
+
+````csharp
+var run = RunSettingsBuilder.CreateBuilder()
+    .WithSeed(12345) // deterministic ordering across classes, methods, and variable sets
+    .Build();
+````
+
+- Legacy fallback: `.WithArg("seed", "12345")` is still honored if `Seed` is null
+- The seed is surfaced in the Markdown header and in the Reproducibility Manifest
 
 ## Installation
 Install via NuGet:

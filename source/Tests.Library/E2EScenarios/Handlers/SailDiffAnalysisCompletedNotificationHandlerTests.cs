@@ -107,7 +107,7 @@ public class SailDiffAnalysisCompleteNotificationHandlerTests : IDisposable
         var testResult = CreateTestResultWithOutlierAnalysis();
         SailDiffResult[] results = [new SailDiffResult(testCaseId, testResult)];
 
-        var notification = new SailDiffAnalysisCompleteNotification(results, null);
+        var notification = new SailDiffAnalysisCompleteNotification(results, null!);
 
         // Act
         await handler.Handle(notification, CancellationToken.None);

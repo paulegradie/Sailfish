@@ -2,6 +2,16 @@ namespace Tests.Analyzers.Utils;
 
 public static class TestDependencyExtensionMethods
 {
+    /// <summary>
+    /// Normalizes line endings to the system's default (CRLF on Windows, LF on Unix).
+    /// This is necessary for cross-platform Roslyn code fix tests.
+    /// </summary>
+    public static string NormalizeLineEndings(this string source)
+    {
+        // Replace all line endings with the system default
+        return source.Replace("\r\n", "\n").Replace("\r", "\n").Replace("\n", Environment.NewLine);
+    }
+
     public static string AddSailfishAttributeDependencies(this string testSource)
     {
         return @"

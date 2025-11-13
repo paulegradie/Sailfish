@@ -36,9 +36,9 @@ The generated markdown files use a well-organized, multi-section format:
 
 ```markdown
 # Performance Test Results
-**Session ID:** abc12345  
-**Timestamp:** 2025-08-03T10:30:00Z  
-**Total Classes:** 1  
+**Session ID:** abc12345
+**Timestamp:** 2025-08-03T10:30:00Z
+**Total Classes:** 1
 **Total Tests:** 3
 ```
 
@@ -71,19 +71,17 @@ The generated markdown files use a well-organized, multi-section format:
 
 #### Comparison Group: Algorithms
 
-| Method 1 | Method 2 | Mean 1 (ms) | Mean 2 (ms) | Ratio | P-Value | Significance |
-|----------|----------|-------------|-------------|-------|---------|--------------|
-| BubbleSort | QuickSort | 45.2000 | 2.1000 | 21.5x slower | < 0.001 | ⚠️ Regressed |
+| Method 1 | Method 2 | Mean 1 (ms) | Mean 2 (ms) | Ratio | 95% CI | q-value (FDR) | Label |
+|----------|----------|-------------|-------------|-------|--------|----------------|-------|
+| BubbleSort | QuickSort | 45.2000 | 2.1000 | 21.5 | [18.3, 24.9] | 0.000 | Slower |
 
 **Columns:**
 - **Method 1 / Method 2**: Methods being compared
 - **Mean 1 / Mean 2**: Mean execution times for each method
-- **Ratio**: Performance relationship (e.g., "21.5x slower", "2.3x faster")
-- **P-Value**: Statistical significance of the difference
-- **Significance**: Visual indicator of performance change
-  - ✅ **Improved**: Method 1 is significantly faster
-  - ⚠️ **Regressed**: Method 1 is significantly slower
-  - ➖ **No Change**: No statistically significant difference
+- **Ratio**: `Mean1 / Mean2` (unitless). Values > 1 indicate Method 1 is slower; values < 1 indicate it is faster.
+- **95% CI**: Confidence interval for the ratio computed on the log scale. If the interval crosses 1.0, the label is "Similar".
+- **q-value (FDR)**: Benjamini–Hochberg adjusted p-value accounting for multiple comparisons within the group.
+- **Label**: One of Improved, Similar, or Slower (consolidated outputs use "Slower" rather than "Regressed").
 
 ## Session-Based Consolidation
 
@@ -95,6 +93,30 @@ Markdown files use **session-based consolidation**, meaning:
 - **Complete data**: All test results from the entire session are included
 
 **Example filename**: `TestSession_abc12345_Results_20250803_103000.md`
+
+### 🏥 Environment Health Section (when enabled)
+
+- When the Environment Health Check is enabled, the consolidated session file includes a "🏥 Environment Health Check" section near the top showing the score and the top few entries.
+- Learn more: [/docs/1/environment-health](/docs/1/environment-health)
+
+
+### 🧭 Reproducibility Summary (when available)
+
+- A short summary of environment details and a link to `Manifest_*.json` is included near the top of the consolidated file when Run Settings and the manifest provider are available.
+- When seeded randomized run order is enabled, the summary includes the Randomization Seed to support reproducible reruns.
+
+- Learn more: [/docs/1/reproducibility-manifest](/docs/1/reproducibility-manifest)
+
+### ⏱️ Timer Calibration (when enabled)
+
+A short header summarizes the timer:
+- Stopwatch Frequency (Hz) and Effective Resolution (ns)
+- BaselineOverheadTicks (no‑op call baseline)
+- JitterScore (0–100) and RSD%
+
+The section is included once per session. Disable via `RunSettingsBuilder.WithTimerCalibration(false)`.
+
+
 
 ## GitHub Integration
 
@@ -129,17 +151,17 @@ When you have multiple comparison groups, each generates its own comparison matr
 
 #### Comparison Group: StringOperations
 
-| Method 1 | Method 2 | Mean 1 (ms) | Mean 2 (ms) | Ratio | P-Value | Significance |
-|----------|----------|-------------|-------------|-------|---------|--------------|
-| StringConcat | StringBuilder | 15.2000 | 8.1000 | 1.9x slower | < 0.001 | ⚠️ Regressed |
-| StringConcat | StringInterpolation | 15.2000 | 12.3000 | 1.2x slower | 0.023 | ⚠️ Regressed |
-| StringBuilder | StringInterpolation | 8.1000 | 12.3000 | 1.5x faster | 0.001 | ✅ Improved |
+| Method 1 | Method 2 | Mean 1 (ms) | Mean 2 (ms) | Ratio | 95% CI | q-value (FDR) | Label |
+|----------|----------|-------------|-------------|-------|--------|----------------|-------|
+| StringConcat | StringBuilder | 15.2000 | 8.1000 | 1.9 | [1.7, 2.2] | 0.000 | Slower |
+| StringConcat | StringInterpolation | 15.2000 | 12.3000 | 1.2 | [1.1, 1.4] | 0.023 | Slower |
+| StringBuilder | StringInterpolation | 8.1000 | 12.3000 | 0.66 | [0.60, 0.72] | 0.001 | Improved |
 
 #### Comparison Group: Collections
 
-| Method 1 | Method 2 | Mean 1 (ms) | Mean 2 (ms) | Ratio | P-Value | Significance |
-|----------|----------|-------------|-------------|-------|---------|--------------|
-| ListIteration | ArrayIteration | 5.4000 | 3.2000 | 1.7x slower | < 0.001 | ⚠️ Regressed |
+| Method 1 | Method 2 | Mean 1 (ms) | Mean 2 (ms) | Ratio | 95% CI | q-value (FDR) | Label |
+|----------|----------|-------------|-------------|-------|--------|----------------|-------|
+| ListIteration | ArrayIteration | 5.4000 | 3.2000 | 1.7 | [1.5, 1.9] | 0.000 | Slower |
 
 ### N×N Comparison Matrices
 
@@ -152,6 +174,9 @@ For groups with multiple methods, all pairwise comparisons are included:
 
 ### Adaptive Precision Formatting
 
+{% callout title="Multiple comparisons correction" type="note" %}
+Sailfish applies the Benjamini–Hochberg False Discovery Rate (FDR) procedure to the set of p-values within each comparison group. Consolidated outputs include the adjusted q-value alongside the 95% ratio confidence interval.
+{% /callout %}
 Sailfish uses adaptive precision to ensure readability:
 
 - **Large values (>1ms)**: 4 decimal places (e.g., 45.2000)

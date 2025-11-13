@@ -47,13 +47,35 @@ internal class AdaptiveIterationStrategy : IIterationStrategy
         var targetCV = executionSettings.TargetCoefficientOfVariation;
         var confidenceLevel = executionSettings.ConfidenceLevel;
         var maxCiWidth = executionSettings.MaxConfidenceIntervalWidth;
+        var effectiveMin = minIterations;
 
         var iteration = 0;
+        var timer = testInstanceContainer.CoreInvoker.GetPerformanceResults();
+        var timeBudget = executionSettings.MaxMeasurementTimePerMethod;
+        var testStart = timer.GetIterationStartTime();
         ConvergenceResult? convergenceResult = null;
 
         // Execute minimum iterations first
         for (iteration = 0; iteration < minIterations; iteration++)
         {
+            if (timeBudget.HasValue)
+            {
+                var elapsed = DateTimeOffset.Now - testStart;
+                if (elapsed >= timeBudget.Value)
+                {
+                    logger.Log(LogLevel.Warning,
+                        "      ---- Stopping early: MaxMeasurementTimePerMethod {MaxMs} ms exceeded after {ElapsedMs} ms during minimum phase",
+                        timeBudget.Value.TotalMilliseconds, elapsed.TotalMilliseconds);
+                    return new IterationResult
+                    {
+                        IsSuccess = true,
+                        TotalIterations = iteration,
+                        ConvergedEarly = false,
+                        ConvergenceReason = $"Time budget exceeded after {elapsed.TotalMilliseconds:F0} ms"
+                    };
+                }
+            }
+
             logger.Log(LogLevel.Information,
                 "      ---- iteration {CurrentIteration} (minimum phase)",
                 iteration + 1);
@@ -84,15 +106,40 @@ internal class AdaptiveIterationStrategy : IIterationStrategy
             var selected = selector.Select(initialSamples, executionSettings);
             targetCV = selected.TargetCoefficientOfVariation;
             maxCiWidth = selected.MaxConfidenceIntervalWidth;
-            logger.Log(LogLevel.Information, "      ---- Adaptive tuning: {Category} -> TargetCV={TargetCV:F3}, MaxCI={MaxCI:F3}", selected.Category, targetCV, maxCiWidth);
+            effectiveMin = Math.Max(minIterations, selected.RecommendedMinimumSampleSize);
+            logger.Log(LogLevel.Information, "      ---- Adaptive tuning: {Category} -> MinN={MinN}, TargetCV={TargetCV:F3}, MaxCI={MaxCI:F3}", selected.Category, effectiveMin, targetCV, maxCiWidth);
+            if (!string.IsNullOrWhiteSpace(selected.SelectionReason))
+            {
+                logger.Log(LogLevel.Information, "      ---- Reason: {SelectionReason}", selected.SelectionReason);
+            }
         }
         catch
         {
             // Best-effort; ignore selector failures and proceed with original thresholds
         }
 
+
+            // Budget-aware precision controller (opt-in)
+            try
+            {
+                var controller = new PrecisionTimeBudgetController();
+                var adjusted = controller.Adjust(initialSamples, executionSettings, testStart, DateTimeOffset.Now);
+                if (adjusted.TargetCV > targetCV || adjusted.MaxConfidenceIntervalWidth > maxCiWidth)
+                {
+                    logger.Log(LogLevel.Information,
+                        "      ---- Budget controller: remaining={RemainingMs:F1}ms, est/iter={PerIterMs:F2}ms, TargetCV {OldCv:F3}->{NewCv:F3}, MaxCI {OldCi:F3}->{NewCi:F3}",
+                        adjusted.RemainingMs, adjusted.PerIterMs, targetCV, adjusted.TargetCV, maxCiWidth, adjusted.MaxConfidenceIntervalWidth);
+                    targetCV = adjusted.TargetCV;
+                    maxCiWidth = adjusted.MaxConfidenceIntervalWidth;
+                }
+            }
+            catch
+            {
+                // Best-effort; ignore controller failures
+            }
+
         convergenceResult = convergenceDetector.CheckConvergence(
-            initialSamples, targetCV, maxCiWidth, confidenceLevel, minIterations);
+            initialSamples, targetCV, maxCiWidth, confidenceLevel, effectiveMin);
 
         if (convergenceResult.HasConverged)
         {
@@ -105,6 +152,24 @@ internal class AdaptiveIterationStrategy : IIterationStrategy
             // Execute more iterations up to the cap, checking convergence AFTER each iteration
             while (iteration < maxIterations)
             {
+                if (timeBudget.HasValue)
+                {
+                    var elapsed = DateTimeOffset.Now - testStart;
+                    if (elapsed >= timeBudget.Value)
+                    {
+                        logger.Log(LogLevel.Warning,
+                            "      ---- Stopping early: MaxMeasurementTimePerMethod {MaxMs} ms exceeded after {ElapsedMs} ms",
+                            timeBudget.Value.TotalMilliseconds, elapsed.TotalMilliseconds);
+                        return new IterationResult
+                        {
+                            IsSuccess = true,
+                            TotalIterations = iteration,
+                            ConvergedEarly = false,
+                            ConvergenceReason = $"Time budget exceeded after {elapsed.TotalMilliseconds:F0} ms"
+                        };
+                    }
+                }
+
                 logger.Log(LogLevel.Information,
                     "      ---- iteration {CurrentIteration} (CV: {CurrentCV:F4}, target: {TargetCV:F4})",
                     iteration + 1, convergenceResult.CurrentCoefficientOfVariation, targetCV);
@@ -127,7 +192,7 @@ internal class AdaptiveIterationStrategy : IIterationStrategy
                 // Re-evaluate convergence on the latest samples (including the last allowed iteration)
                 var currentSamples = GetCurrentSamples(testInstanceContainer);
                 convergenceResult = convergenceDetector.CheckConvergence(
-                    currentSamples, targetCV, maxCiWidth, confidenceLevel, minIterations);
+                    currentSamples, targetCV, maxCiWidth, confidenceLevel, effectiveMin);
 
                 if (convergenceResult.HasConverged)
                 {
@@ -165,7 +230,15 @@ internal class AdaptiveIterationStrategy : IIterationStrategy
         CancellationToken cancellationToken)
     {
         await testInstanceContainer.CoreInvoker.IterationSetup(cancellationToken).ConfigureAwait(false);
-        await testInstanceContainer.CoreInvoker.ExecutionMethod(cancellationToken).ConfigureAwait(false);
+        var opi = Math.Max(1, testInstanceContainer.ExecutionSettings.OperationsPerInvoke);
+        if (opi > 1)
+        {
+            await testInstanceContainer.CoreInvoker.ExecutionMethodWithOperationsPerInvoke(opi, cancellationToken).ConfigureAwait(false);
+        }
+        else
+        {
+            await testInstanceContainer.CoreInvoker.ExecutionMethod(cancellationToken).ConfigureAwait(false);
+        }
         await testInstanceContainer.CoreInvoker.IterationTearDown(cancellationToken).ConfigureAwait(false);
     }
 

@@ -570,14 +570,14 @@ public class TestCaseBatchingServiceTests : IDisposable
     }
 
     [Fact]
-    public void Operations_WhenDisposed_ShouldThrowObjectDisposedException()
+    public async Task Operations_WhenDisposed_ShouldThrowObjectDisposedException()
     {
         // Arrange
         _batchingService = new TestCaseBatchingService(_logger);
         _batchingService.Dispose();
 
         // Act & Assert
-        Should.Throw<ObjectDisposedException>(() => _batchingService.StartAsync(CancellationToken.None));
+        await Should.ThrowAsync<ObjectDisposedException>(() => _batchingService.StartAsync(CancellationToken.None));
     }
 
     #endregion
@@ -681,7 +681,7 @@ public class TestCaseBatchingServiceTests : IDisposable
         _batchingService = new TestCaseBatchingService(_logger);
         await _batchingService.StartAsync(CancellationToken.None);
         var message = CreateTestMessage();
-        message.PerformanceMetrics = null;
+        message.PerformanceMetrics = null!;
 
         // Act & Assert - Should not throw
         var batchId = await _batchingService.AddTestCaseToBatchAsync(message, CancellationToken.None);

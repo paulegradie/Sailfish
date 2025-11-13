@@ -38,16 +38,19 @@ internal class TestCaseIterator : ITestCaseIterator
         bool disableOverheadEstimation,
         CancellationToken cancellationToken)
     {
-        var overheadEstimator = new OverheadEstimator();
+        var calibrator = new HarnessBaselineCalibrator();
         var warmupResult = await WarmupIterations(testInstanceContainer, cancellationToken);
         if (!warmupResult.IsSuccess) return warmupResult;
 
-        if (!disableOverheadEstimation) await overheadEstimator.Estimate();
+        var beginOverheadTicks = 0;
+        if (!disableOverheadEstimation)
+        {
+            beginOverheadTicks = await calibrator.CalibrateTicksAsync(testInstanceContainer.ExecutionMethod, cancellationToken);
+        }
 
         // Determine which strategy to use
         var executionSettings = testInstanceContainer.ExecutionSettings;
-        var useAdaptive = executionSettings.UseAdaptiveSampling &&
-                          !disableOverheadEstimation;
+        var useAdaptive = executionSettings.UseAdaptiveSampling;
 
         var strategy = useAdaptive ? adaptiveIterationStrategy : fixedIterationStrategy;
 
@@ -64,6 +67,27 @@ internal class TestCaseIterator : ITestCaseIterator
                 executionSettings.SampleSize = Math.Max(runSettings.SampleSizeOverride.Value, 1);
             }
         }
+
+            // Auto-tune OperationsPerInvoke to reach target iteration duration, if configured
+            if (executionSettings.TargetIterationDuration > TimeSpan.Zero && executionSettings.OperationsPerInvoke <= 1)
+            {
+                try
+                {
+                    var tuner = new OperationsPerInvokeTuner();
+                    var tuned = await tuner.TuneAsync(testInstanceContainer, executionSettings.TargetIterationDuration, logger, cancellationToken).ConfigureAwait(false);
+                    if (tuned > executionSettings.OperationsPerInvoke)
+                    {
+                        logger.Log(LogLevel.Information, "      ---- Using OperationsPerInvoke={OPI} (auto-tuned)", tuned);
+                        executionSettings.OperationsPerInvoke = tuned;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    // Non-fatal: fall back to provided OperationsPerInvoke
+                    logger.Log(LogLevel.Warning, ex, "      ---- Auto-tuning OperationsPerInvoke failed; continuing with OPI={OPI}", executionSettings.OperationsPerInvoke);
+                }
+            }
+
 
         testInstanceContainer.CoreInvoker.SetTestCaseStart();
 
@@ -85,13 +109,32 @@ internal class TestCaseIterator : ITestCaseIterator
         {
             logger.Log(LogLevel.Information,
                 "      ---- Adaptive sampling completed: {Reason}",
-                iterationResult.ConvergenceReason);
+                iterationResult.ConvergenceReason ?? "unknown");
         }
 
-        if (disableOverheadEstimation) return new TestCaseExecutionResult(testInstanceContainer);
+        if (disableOverheadEstimation)
+        {
+            testInstanceContainer.CoreInvoker.SetOverheadDisabled(true);
+            return new TestCaseExecutionResult(testInstanceContainer);
+        }
 
-        await overheadEstimator.Estimate();
-        testInstanceContainer.ApplyOverheadEstimates(overheadEstimator.GetAverageEstimate());
+        var endOverheadTicks = await calibrator.CalibrateTicksAsync(testInstanceContainer.ExecutionMethod, cancellationToken);
+        var driftPct = beginOverheadTicks > 0
+            ? (100.0 * Math.Abs(endOverheadTicks - beginOverheadTicks) / beginOverheadTicks)
+            : 0.0;
+        if (driftPct > 20.0)
+        {
+            logger.Log(LogLevel.Warning, "      ---- Overhead drift detected: {DriftPercent}%", driftPct);
+        }
+        else
+        {
+            logger.Log(LogLevel.Information, "      ---- Overhead baseline: {OverheadTicks} ticks (median), drift {DriftPercent}%", beginOverheadTicks, driftPct);
+        }
+
+        // Persist diagnostics for test output window consumption
+        testInstanceContainer.CoreInvoker.SetOverheadDiagnostics(beginOverheadTicks, driftPct, HarnessBaselineCalibrator.Warmups, HarnessBaselineCalibrator.Samples);
+
+        testInstanceContainer.ApplyOverheadEstimates(beginOverheadTicks);
 
         return new TestCaseExecutionResult(testInstanceContainer);
     }

@@ -1,0 +1,280 @@
+using Sailfish.Diagnostics.Environment;
+using Shouldly;
+using System.Linq;
+using System.Threading.Tasks;
+using Xunit;
+
+namespace Tests.Library.Diagnostics.Environment;
+
+public class EnvironmentHealthCheckerAdditionalTests
+{
+    [Fact]
+    public async Task BuildMode_Uses_TestAssemblyPath_When_Provided()
+    {
+        var checker = new EnvironmentHealthChecker();
+        var ctx = new EnvironmentHealthCheckContext
+        {
+            TestAssemblyPath = typeof(EnvironmentHealthChecker).Assembly.Location
+        };
+
+        var report = await checker.CheckAsync(ctx);
+        var build = report.Entries.First(e => e.Name == "Build Mode");
+        build.ShouldNotBeNull();
+    }
+
+    [Fact]
+    public async Task CpuAffinity_Pass_When_Pinned_To_Single_Core()
+    {
+        if (!System.OperatingSystem.IsWindows())
+        {
+            return;
+        }
+
+        var proc = System.Diagnostics.Process.GetCurrentProcess();
+        var original = proc.ProcessorAffinity;
+        try
+        {
+            // Pin to a single core (bit 0)
+            proc.ProcessorAffinity = (System.IntPtr)1;
+
+            var checker = new EnvironmentHealthChecker();
+            var report = await checker.CheckAsync();
+            var affinity = report.Entries.First(e => e.Name == "CPU Affinity");
+            affinity.Status.ShouldBe(HealthStatus.Pass);
+        }
+        finally
+        {
+            proc.ProcessorAffinity = original;
+        }
+    }
+
+    [Fact]
+    public async Task Jit_Details_Reflect_Environment_Flags()
+    {
+        var priorTiered = System.Environment.GetEnvironmentVariable("COMPlus_TieredCompilation");
+        var priorQuick = System.Environment.GetEnvironmentVariable("COMPlus_TC_QuickJit");
+        var priorLoops = System.Environment.GetEnvironmentVariable("COMPlus_TC_QuickJitForLoops");
+        var priorOsr = System.Environment.GetEnvironmentVariable("COMPlus_TC_OnStackReplacement");
+        try
+        {
+            System.Environment.SetEnvironmentVariable("COMPlus_TieredCompilation", "1");
+            System.Environment.SetEnvironmentVariable("COMPlus_TC_QuickJit", "1");
+            System.Environment.SetEnvironmentVariable("COMPlus_TC_QuickJitForLoops", "0");
+            System.Environment.SetEnvironmentVariable("COMPlus_TC_OnStackReplacement", "0");
+
+            var checker = new EnvironmentHealthChecker();
+            var report = await checker.CheckAsync();
+            var jit = report.Entries.First(e => e.Name == "JIT (Tiered/OSR)");
+            jit.Details.ShouldContain("Tiered=1");
+            jit.Details.ShouldContain("QuickJit=1");
+            jit.Details.ShouldContain("QuickJitForLoops=0");
+            jit.Details.ShouldContain("OSR=0");
+        }
+        finally
+        {
+            System.Environment.SetEnvironmentVariable("COMPlus_TieredCompilation", priorTiered);
+            System.Environment.SetEnvironmentVariable("COMPlus_TC_QuickJit", priorQuick);
+            System.Environment.SetEnvironmentVariable("COMPlus_TC_QuickJitForLoops", priorLoops);
+            System.Environment.SetEnvironmentVariable("COMPlus_TC_OnStackReplacement", priorOsr);
+        }
+    }
+
+
+    [Fact]
+    public async Task CpuAffinity_Warn_When_Pinned_To_Two_Cores()
+    {
+        if (!System.OperatingSystem.IsWindows())
+        {
+            return;
+        }
+
+        var proc = System.Diagnostics.Process.GetCurrentProcess();
+        var original = proc.ProcessorAffinity;
+        try
+        {
+            // Pin to two cores (bits 0 and 1)
+            proc.ProcessorAffinity = (System.IntPtr)3;
+
+            var checker = new EnvironmentHealthChecker();
+            var report = await checker.CheckAsync();
+            var affinity = report.Entries.First(e => e.Name == "CPU Affinity");
+            affinity.Status.ShouldBe(HealthStatus.Warn);
+        }
+        finally
+        {
+            proc.ProcessorAffinity = original;
+        }
+    }
+
+    [Fact]
+    public async Task ProcessPriority_Pass_When_AboveNormal()
+    {
+        if (!System.OperatingSystem.IsWindows())
+        {
+            return;
+        }
+
+        var proc = System.Diagnostics.Process.GetCurrentProcess();
+        var original = proc.PriorityClass;
+        try
+        {
+            try
+            {
+                proc.PriorityClass = System.Diagnostics.ProcessPriorityClass.AboveNormal;
+            }
+            catch (System.ComponentModel.Win32Exception)
+            {
+                // Skip test if we don't have permission to change process priority (common in CI environments)
+                return;
+            }
+
+            var checker = new EnvironmentHealthChecker();
+            var report = await checker.CheckAsync();
+            var entry = report.Entries.First(e => e.Name == "Process Priority");
+            entry.Status.ShouldBe(HealthStatus.Pass);
+        }
+        finally
+        {
+            try { proc.PriorityClass = original; } catch { /* ignore */ }
+        }
+    }
+
+    [Fact]
+    public async Task BuildMode_Unknown_When_Loading_NonDotNet_File()
+    {
+        var checker = new EnvironmentHealthChecker();
+        var sysDir = System.Environment.SystemDirectory;
+        var nonDotNetPath = System.IO.Path.Combine(sysDir, "notepad.exe");
+        if (!System.IO.File.Exists(nonDotNetPath))
+        {
+            // Fall back to an obviously non-.NET file name in system directory to trigger load failure
+            nonDotNetPath = System.IO.Path.Combine(sysDir, "license.rtf");
+        }
+        if (!System.IO.File.Exists(nonDotNetPath)) return; // environment-specific bail out
+
+        var ctx = new EnvironmentHealthCheckContext { TestAssemblyPath = nonDotNetPath };
+        var report = await checker.CheckAsync(ctx);
+        var build = report.Entries.First(e => e.Name == "Build Mode");
+        build.Status.ShouldBe(HealthStatus.Unknown);
+    }
+
+
+    [Fact]
+    public async Task ProcessPriority_Warn_When_BelowNormal()
+    {
+        if (!System.OperatingSystem.IsWindows())
+        {
+            return;
+        }
+
+        var proc = System.Diagnostics.Process.GetCurrentProcess();
+        var original = proc.PriorityClass;
+        try
+        {
+            try
+            {
+                proc.PriorityClass = System.Diagnostics.ProcessPriorityClass.BelowNormal;
+            }
+            catch (System.ComponentModel.Win32Exception)
+            {
+                // Skip test if we don't have permission to change process priority (common in CI environments)
+                return;
+            }
+
+            var checker = new EnvironmentHealthChecker();
+            var report = await checker.CheckAsync();
+            var entry = report.Entries.First(e => e.Name == "Process Priority");
+            entry.Status.ShouldBe(HealthStatus.Warn);
+        }
+        finally
+        {
+            try { proc.PriorityClass = original; } catch { /* ignore */ }
+        }
+    }
+
+    [Fact]
+    public void EnvironmentHealthCheckContext_TestAssemblyPath_CanBeSet()
+    {
+        var path = "/some/path/to/assembly.dll";
+        var context = new EnvironmentHealthCheckContext { TestAssemblyPath = path };
+        context.TestAssemblyPath.ShouldBe(path);
+    }
+
+    [Fact]
+    public void EnvironmentHealthCheckContext_TestAssemblyPath_CanBeNull()
+    {
+        var context = new EnvironmentHealthCheckContext { TestAssemblyPath = null };
+        context.TestAssemblyPath.ShouldBeNull();
+    }
+
+    [Fact]
+    public void EnvironmentHealthCheckContext_CanBeCreatedWithoutTestAssemblyPath()
+    {
+        // EnvironmentHealthCheckContext can be created without setting TestAssemblyPath
+        var context = new EnvironmentHealthCheckContext();
+
+        // TestAssemblyPath should be null by default
+        context.TestAssemblyPath.ShouldBeNull();
+    }
+
+    [Fact]
+    public async Task CheckAsync_WithNullContext_Returns_ValidReport()
+    {
+        var checker = new EnvironmentHealthChecker();
+        var report = await checker.CheckAsync(context: null);
+
+        report.ShouldNotBeNull();
+        report.Entries.ShouldNotBeEmpty();
+        report.Score.ShouldBeInRange(0, 100);
+    }
+
+    [Fact]
+    public async Task CheckAsync_WithDefaultCancellationToken_Returns_ValidReport()
+    {
+        var checker = new EnvironmentHealthChecker();
+        var report = await checker.CheckAsync(cancellationToken: default);
+
+        report.ShouldNotBeNull();
+        report.Entries.ShouldNotBeEmpty();
+        report.Score.ShouldBeInRange(0, 100);
+    }
+
+    [Fact]
+    public async Task CheckAsync_WithBothNullContextAndDefaultCancellationToken_Returns_ValidReport()
+    {
+        var checker = new EnvironmentHealthChecker();
+        var report = await checker.CheckAsync(context: null, cancellationToken: default);
+
+        report.ShouldNotBeNull();
+        report.Entries.ShouldNotBeEmpty();
+        report.Score.ShouldBeInRange(0, 100);
+    }
+
+    [Fact]
+    public async Task CheckAsync_WithCancellationToken_Returns_ValidReport()
+    {
+        var checker = new EnvironmentHealthChecker();
+        using var cts = new System.Threading.CancellationTokenSource();
+        var report = await checker.CheckAsync(cancellationToken: cts.Token);
+
+        report.ShouldNotBeNull();
+        report.Entries.ShouldNotBeEmpty();
+        report.Score.ShouldBeInRange(0, 100);
+    }
+
+    [Fact]
+    public void CheckAsync_Implements_IEnvironmentHealthChecker()
+    {
+        var checker = new EnvironmentHealthChecker();
+        checker.ShouldBeAssignableTo<IEnvironmentHealthChecker>();
+    }
+
+    [Fact]
+    public async Task CheckAsync_Returns_EnvironmentHealthReport()
+    {
+        var checker = new EnvironmentHealthChecker();
+        var result = await checker.CheckAsync();
+        result.ShouldBeOfType<EnvironmentHealthReport>();
+    }
+
+}

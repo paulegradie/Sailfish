@@ -1,7 +1,7 @@
 # Phase 2 Quick Start Guide for AI Agents
 
-**Last Updated:** 2025-11-03  
-**Status:** Ready for Implementation
+**Last Updated:** 2025-11-11
+**Status:** COMPLETE — Phase 2 shipped; solution builds with 0 warnings on .NET 8/9; docs updated. See release notes.
 
 ---
 
@@ -13,6 +13,67 @@ You are implementing **Phase 2** of the Sailfish Statistical Engine upgrade:
 - **Goal:** Improve measurement reliability without breaking existing functionality
 
 ---
+## ✅ Progress Update (2025-11-11)
+
+- Build hygiene: solution builds with 0 warnings on .NET 8 and .NET 9
+- Docs: release notes and site pages updated to reflect Phase 2 completion
+- Planning: Phase 2 status marked COMPLETE in implementation docs
+
+## ✅ Progress Update (2025-11-09)
+
+- Method comparisons rigor + CSV parity
+  - NxN comparisons use BenjaminiHochberg FDRadjusted qvalues and 95% ratio confidence intervals (logscale) in Test Adapter and consolidated markdown
+  - CSV session output updated to include Label and legacy ChangeDescription (backward compatibility); added CI95 bounds and q_value
+  - Standard error computed from StdDev and sample size when not present in tracking format
+  - Targeted tests green: Tests.Library Csv* and Tests.TestAdapter markdown comparison tests
+
+- Markdown improvements
+  - Added a "Detailed Results" section in MethodComparisonProcessor markdown to satisfy existing tests and improve clarity
+
+- Added validation warnings display to IDE test output (SailfishConsoleWindowFormatter.cs): prints a "Warnings" section with severity indicators when results include warnings.
+- Build is green; change is backward compatible and isolated to output formatting.
+- Markdown exporter now includes validation warnings under each affected test group; integration tests cover this.
+- CSV output intentionally excludes validation warnings (numeric metrics only); warnings surface in IDE and markdown.
+- Implemented Environment Health Check baseline with new probes:
+  - Build Mode (Debug vs Release) detection
+  - JIT settings (TieredCompilation, QuickJit, QuickJitForLoops, OSR)
+- Integrated summary into Test Adapter output and consolidated markdown
+- Added unit tests verifying presence of new entries (Build Mode, JIT)
+- Precision/Time budgets controller (opt-in) integrated into AdaptiveIterationStrategy; budget-aware precision relaxations; unit tests green
+- SailDiff runtime input support: implemented ISailDiff.Analyze(TestData before, TestData after, SailDiffSettings); publishes notifications; unit tests green
+
+
+
+- Implemented Reproducibility Manifest (best‑effort)
+  - Writes `Manifest_*.json` in the session output directory
+  - Adds a “Reproducibility Summary” section to consolidated markdown
+  - Unit/integration tests added; all suites passing
+  - Docs: /docs/1/reproducibility-manifest; Release notes updated
+
+- Implemented Anti‑DCE Consumer API
+  - New `Sailfish.Utilities.Consumer.Consume<T>(...)` utility to discourage dead‑code elimination
+  - Marked NoInlining; uses Volatile.Write + GC.KeepAlive
+  - Docs: /docs/1/anti-dce; Release notes updated
+
+- Tier B complete — Anti‑DCE analyzers (SF1001–SF1003) implemented and documented.
+
+
+## ✅ Tier A status
+- None remaining — Tier A “iPhone‑level polish” items are complete.
+
+
+## 🧭 Handoff
+- Next Agent Prompt: G:/code/Sailfish/AiAssistedDevSpecs/ImprovedRigor-1/NextAgentPrompt-2.3.md
+- Status: Docs updated (SailDiff runtime input; Reproducibility Summary shows Randomization Seed), site anti‑DCE page prepared; release notes appended.
+- Primary objective: begin Tier B — Anti‑DCE analyzers (SF1001–SF1003).
+- Recommended sequence:
+  1) Implement analyzers + tests per AntiDCEAnalyzers-Design-v1.md
+  2) Wire into Sailfish.Analyzers package and CI
+  3) Update docs and release notes
+- Use the verification commands in the prompt (adapter + core only). Do not run PerformanceTests demo projects.
+
+---
+
 
 ## 📁 Essential Documents (Read in Order)
 
@@ -34,7 +95,7 @@ pwd  # Should show: G:/code/Sailfish/source
 ### Step 2: Build and Test
 ```bash
 dotnet build Sailfish.sln
-# Should succeed with ~145 warnings (nullable refs - OK)
+# Should succeed with 0 warnings
 
 dotnet test --no-build
 # All tests should pass
@@ -167,10 +228,10 @@ public void RemoveUpper_WithUpperOutliers_RemovesOnlyUpper()
     // Arrange
     var data = new[] { 1.0, 2.0, 3.0, 100.0 };
     var detector = new ConfigurableOutlierDetector();
-    
+
     // Act
     var result = detector.DetectOutliers(data, OutlierStrategy.RemoveUpper);
-    
+
     // Assert
     result.UpperOutliers.Should().Contain(100.0);
     result.LowerOutliers.Should().BeEmpty();

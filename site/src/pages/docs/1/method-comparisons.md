@@ -116,7 +116,7 @@ When using `[WriteToMarkdown]`, generates session-based markdown files containin
 - Session metadata and summary statistics
 - Individual test results for all methods
 - N×N comparison matrices for each comparison group
-- Statistical analysis with p-values and significance testing
+- Statistical analysis with ratio confidence intervals and BH‑FDR–adjusted q‑values; labeled as Improved/Similar/Slower
 
 **Example filename**: `TestSession_abc12345_Results_20250803_103000.md`
 
@@ -124,6 +124,9 @@ When using `[WriteToMarkdown]`, generates session-based markdown files containin
 Format details and troubleshooting:
 - [Markdown Output](/docs/1/markdown-output)
 - [CSV Output](/docs/1/csv-output)
+{% /callout %}
+{% callout title="Label terminology" type="note" %}
+Consolidated outputs (Markdown/CSV) use Improved/Similar/Slower labels and include q-values (BH‑FDR) and 95% ratio CIs. Legacy per‑method IDE output may still show IMPROVED/REGRESSED/NO CHANGE; both refer to the same underlying statistics.
 {% /callout %}
 
 

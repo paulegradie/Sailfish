@@ -1,5 +1,9 @@
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using Sailfish.Diagnostics.Environment;
+
 using System.Threading;
 using System.Threading.Tasks;
 using MediatR;
@@ -19,21 +23,41 @@ internal record FrameworkTestCaseEndNotification(
     Exception? Exception
 ) : INotification;
 
+
+
 internal class FrameworkTestCaseEndNotificationHandler : INotificationHandler<FrameworkTestCaseEndNotification>
 {
     private readonly Dictionary<StatusCode, TestOutcome> outcomeMap = new() { { StatusCode.Success, TestOutcome.Passed }, { StatusCode.Failure, TestOutcome.Failed } };
     private readonly ITestFrameworkWriter testFrameworkWriter;
+    private readonly IEnvironmentHealthReportProvider? healthProvider;
+
 
     public FrameworkTestCaseEndNotificationHandler(ITestFrameworkWriter testFrameworkWriter)
     {
         this.testFrameworkWriter = testFrameworkWriter;
     }
+    public FrameworkTestCaseEndNotificationHandler(ITestFrameworkWriter testFrameworkWriter, IEnvironmentHealthReportProvider healthProvider)
+    {
+        this.testFrameworkWriter = testFrameworkWriter;
+        this.healthProvider = healthProvider;
+    }
+
 
     public async Task Handle(FrameworkTestCaseEndNotification notification, CancellationToken cancellationToken)
     {
         await Task.Yield();
 
         var outcome = outcomeMap[notification.StatusCode];
+
+
+
+        // Append environment health summary (if available) to the end of the per-test output
+        var outputMessage = notification.TestOutputWindowMessage;
+        var report = healthProvider?.Current;
+        if (report is not null)
+        {
+            outputMessage = AppendEnvironmentHealthSummary(outputMessage, report);
+        }
 
         var testResult = ConfigureTestResult(
             notification.TestCase,
@@ -42,10 +66,24 @@ internal class FrameworkTestCaseEndNotificationHandler : INotificationHandler<Fr
             notification.StartTime,
             notification.EndTime,
             notification.Duration,
-            notification.TestOutputWindowMessage);
+            outputMessage);
 
         testFrameworkWriter.RecordEnd(notification.TestCase, outcome);
         testFrameworkWriter.RecordResult(testResult);
+    }
+
+    private static string AppendEnvironmentHealthSummary(string testOutputWindowMessage, EnvironmentHealthReport report)
+    {
+        var sb = new StringBuilder();
+        if (!string.IsNullOrEmpty(testOutputWindowMessage)) sb.AppendLine(testOutputWindowMessage.TrimEnd());
+        sb.AppendLine();
+        sb.AppendLine($"Sailfish Environment Health: {report.Score}/100 ({report.SummaryLabel})");
+        foreach (var e in report.Entries.Take(6))
+        {
+            var rec = string.IsNullOrWhiteSpace(e.Recommendation) ? string.Empty : $" - {e.Recommendation}";
+            sb.AppendLine($" - {e.Name}: {e.Status} ({e.Details}){rec}");
+        }
+        return sb.ToString();
     }
 
     private static TestResult ConfigureTestResult(

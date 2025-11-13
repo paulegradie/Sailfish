@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 
 namespace Sailfish.Execution;
 
@@ -20,6 +21,17 @@ public sealed class PerformanceTimer
 
     public bool IsValid { get; private set; } = true;
 
+    // Overhead calibration diagnostics (populated by the iterator/core invoker)
+    public int? OverheadBaselineTicks { get; internal set; }
+    public double? OverheadDriftPercent { get; internal set; }
+    public int? OverheadWarmupCount { get; internal set; }
+    public int? OverheadSampleCount { get; internal set; }
+
+    // Number of iterations where overhead subtraction was capped by the 80% guardrail
+    public int CappedIterationCount { get; internal set; }
+    public bool OverheadEstimationDisabled { get; internal set; }
+
+
     public void SetAsInvalid()
     {
         IsValid = false;
@@ -27,7 +39,12 @@ public sealed class PerformanceTimer
 
     public void ApplyOverheadEstimate(int overheadEstimate)
     {
-        foreach (var executionIterationPerformance in ExecutionIterationPerformances) executionIterationPerformance.ApplyOverheadEstimate(overheadEstimate);
+        foreach (var executionIterationPerformance in ExecutionIterationPerformances)
+        {
+            executionIterationPerformance.ApplyOverheadEstimate(overheadEstimate);
+        }
+        // accumulate how many iterations were capped by guardrail
+        CappedIterationCount = ExecutionIterationPerformances.Sum(x => x.CappedCount);
     }
 
     public void SetTestCaseStart()

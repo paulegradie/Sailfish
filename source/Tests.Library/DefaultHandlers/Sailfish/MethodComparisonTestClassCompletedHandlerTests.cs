@@ -300,7 +300,7 @@ public class MethodComparisonTestClassCompletedHandlerTests
             typeof(TestClass).GetMethod(nameof(TestClass.TestMethod))!,
             TestCaseIdBuilder.Create().Build(),
             Substitute.For<IExecutionSettings>(),
-            null,
+            new PerformanceTimer(),
             false);
     }
 

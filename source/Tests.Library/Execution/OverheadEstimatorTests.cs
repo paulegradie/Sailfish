@@ -6,6 +6,8 @@ using Shouldly;
 using Xunit;
 
 namespace Tests.Library.Execution;
+#pragma warning disable CS0618 // OverheadEstimator is obsolete in production but intentionally tested here
+
 
 /// <summary>
 /// Comprehensive unit tests for OverheadEstimator.
@@ -202,3 +204,5 @@ public class OverheadEstimatorTests
         result.ShouldBeGreaterThanOrEqualTo(0);
     }
 }
+
+#pragma warning restore CS0618

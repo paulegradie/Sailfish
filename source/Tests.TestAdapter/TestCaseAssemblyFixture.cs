@@ -1,4 +1,5 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
 using System.Linq;
 using NSubstitute;
 using Sailfish.Attributes;
@@ -13,9 +14,9 @@ public class TestCaseAssemblyFixture
 {
     private static string FindSpecificUniqueFile(string fileName)
     {
-        var refFile = Directory.GetFiles(".").First();
-
-        var projFile = DirectoryRecursion.RecurseUpwardsUntilFileIsFound(".csproj", refFile, 10);
+        // Start from the test assembly base directory to be robust under different runners
+        var start = AppContext.BaseDirectory ?? Directory.GetCurrentDirectory();
+        var projFile = DirectoryRecursion.RecurseUpwardsUntilFileIsFound(".csproj", start, 10);
         var file = Directory.GetFiles(Directory.GetParent(projFile.FullName)!.FullName, fileName, SearchOption.AllDirectories).Single();
         return file;
     }

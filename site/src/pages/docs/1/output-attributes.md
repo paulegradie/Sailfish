@@ -179,3 +179,14 @@ Sailfish exposes notification handlers that you can implement to customize outpu
 
 These handlers allow you to customize what is done with the generated content before it's written to files.
 {% /callout %}
+
+## Runtime diagnostics in outputs
+
+Sailfish appends concise diagnostics to test output and logs:
+- Overhead calibration: baseline ticks, drift %, and capped-iteration count
+- Timer granularity note: when effective sleep resolution is coarse (e.g., Windows ~15.6 ms), short sleeps/awaits will read near the tick length
+
+These appear in:
+- Console/INF logs during `dotnet test`
+- IDE Test Output window per test
+- Session markdown includes a summary Environment Health section

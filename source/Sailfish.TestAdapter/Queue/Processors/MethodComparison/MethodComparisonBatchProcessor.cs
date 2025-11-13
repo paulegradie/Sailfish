@@ -226,6 +226,13 @@ internal class MethodComparisonBatchProcessor
                 "SailDiff comparison completed for group '{0}'. Results count: {1}",
                 groupName, comparisonResult?.SailDiffResults?.Count ?? 0);
 
+            // Store pairwise p-value for NxN FDR adjustment later
+            var pNullable = comparisonResult?.SailDiffResults?.FirstOrDefault()?.TestResultsWithOutlierAnalysis?.StatisticalTestResult?.PValue;
+            if (pNullable.HasValue)
+            {
+                UpdatePairwisePValueMetadata(beforeMethod, afterMethod, pNullable.Value);
+            }
+
             // Format comparison results from each method's perspective
             var beforeMethodOutput = FormatComparisonResults(comparisonResult, groupName, beforeMethod.TestCaseId,
                 afterMethod.TestCaseId, beforeMethod.TestCaseId);
@@ -621,4 +628,21 @@ internal class MethodComparisonBatchProcessor
             statusCode,
             exception);
     }
+
+    private static void UpdatePairwisePValueMetadata(TestCompletionQueueMessage a, TestCompletionQueueMessage b, double pValue)
+    {
+        const string Key = "PairwisePValues";
+        static void Update(TestCompletionQueueMessage msg, string otherId, double p)
+        {
+            if (!msg.Metadata.TryGetValue(Key, out var obj) || obj is not Dictionary<string, double> dict)
+            {
+                dict = new Dictionary<string, double>(StringComparer.Ordinal);
+                msg.Metadata[Key] = dict;
+            }
+            dict[otherId] = p;
+        }
+        Update(a, b.TestCaseId, pValue);
+        Update(b, a.TestCaseId, pValue);
+    }
+
 }

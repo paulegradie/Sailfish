@@ -11,6 +11,8 @@ using Sailfish.Contracts.Private;
 using Sailfish.Contracts.Public.Notifications;
 using Sailfish.Contracts.Public.Serialization.Tracking.V1;
 using Sailfish.Logging;
+using MathNet.Numerics.Distributions;
+using Sailfish.Analysis.SailDiff.Statistics;
 
 namespace Sailfish.DefaultHandlers.Sailfish;
 
@@ -165,57 +167,139 @@ internal class CsvTestRunCompletedHandler : INotificationHandler<TestRunComplete
     }
 
     /// <summary>
-    /// Adds the method comparisons section to the CSV content.
+    /// Adds the method comparisons section to the CSV content using NxN matrix with BH-FDR q-values and ratio CIs.
     /// </summary>
     /// <param name="sb">The StringBuilder to append to.</param>
     /// <param name="allTestResults">All test results from the session.</param>
     private void AddMethodComparisonsSection(StringBuilder sb, List<object> allTestResults)
     {
+        // Always include the Method Comparisons section header for visibility (even if none found)
+        sb.AppendLine("# Method Comparisons");
+
         // Group test results by comparison groups across all classes
-        var comparisonGroups = allTestResults
-            .Where(tr => HasComparisonAttribute(((dynamic)tr).TestResult, ((dynamic)tr).TestClass))
-            .GroupBy(tr => GetComparisonGroup(((dynamic)tr).TestResult, ((dynamic)tr).TestClass))
-            .Where(g => !string.IsNullOrEmpty(g.Key))
+        var typed = allTestResults
+            .Select(o =>
+            {
+                dynamic d = o;
+                return new { TestResult = (CompiledTestCaseResultTrackingFormat)d.TestResult, TestClass = (Type)d.TestClass };
+            })
             .ToList();
 
-        if (!comparisonGroups.Any())
+        try
         {
+            var comparisonGroups = typed
+                .Where(tr => HasComparisonAttribute(tr.TestResult, tr.TestClass))
+                .GroupBy(tr => GetComparisonGroup(tr.TestResult, tr.TestClass))
+                .Where(g => !string.IsNullOrEmpty(g.Key))
+                .ToList();
+
+            if (!comparisonGroups.Any())
+            {
+                sb.AppendLine("# No method comparisons found");
+                sb.AppendLine();
+                return;
+            }
+
+            sb.AppendLine("ComparisonGroup,Method1,Method2,Mean1,Mean2,Ratio,CI95_Lower,CI95_Upper,q_value,Label,ChangeDescription");
+
+            foreach (var group in comparisonGroups)
+            {
+                var methods = group.Select(g => g.TestResult).ToList();
+                if (methods.Count < 2) continue;
+
+                // Build stats for each method in the group
+                var stats = methods.Select(m =>
+                {
+                    var pr = m.PerformanceRunResult;
+                    var mean = pr?.Mean ?? 0.0;
+                    var n = pr?.DataWithOutliersRemoved?.Length ?? pr?.SampleSize ?? 0;
+                    var stdDev = pr?.StdDev ?? 0.0;
+                    var se = n > 0 ? stdDev / Math.Sqrt(n) : 0.0;
+                    var name = GetMethodName(m.TestCaseId?.DisplayName ?? "Unknown");
+                    var id = m.TestCaseId?.DisplayName ?? name;
+                    return new { Name = name, Id = id, Mean = mean, SE = se, N = n };
+                })
+                .Where(s => s.Mean > 0)
+                .ToList();
+
+                if (stats.Count < 2) continue;
+
+                // Compute pairwise p-values on log-ratio and apply BH-FDR
+                var pMap = new Dictionary<(string A, string B), double>();
+                for (int i = 0; i < stats.Count; i++)
+                {
+                    for (int j = i + 1; j < stats.Count; j++)
+                    {
+                        var a = stats[i];
+                        var b = stats[j];
+                        var p = ComputeLogRatioPValue(a.Mean, a.SE, a.N, b.Mean, b.SE, b.N);
+                        if (!double.IsNaN(p) && p > 0)
+                        {
+                            pMap[MultipleComparisons.NormalizePair(a.Id, b.Id)] = p;
+                        }
+                    }
+                }
+                Dictionary<(string A, string B), double> qMap = pMap.Count > 0
+                    ? MultipleComparisons.BenjaminiHochbergAdjust(pMap)
+                    : new Dictionary<(string A, string B), double>();
+
+                // Emit one row per unique pair i<j
+                for (int i = 0; i < stats.Count; i++)
+                {
+                    for (int j = i + 1; j < stats.Count; j++)
+                    {
+                        var row = stats[i];
+                        var col = stats[j];
+
+                        var ci = MultipleComparisons.ComputeRatioCI(row.Mean, row.SE, row.N, col.Mean, col.SE, col.N, 0.95);
+                        double ratio = ci.Ratio;
+                        double? lo = ci.Lower;
+                        double? hi = ci.Upper;
+
+                        double q;
+                        qMap.TryGetValue(MultipleComparisons.NormalizePair(row.Id, col.Id), out q);
+                        var sig = q > 0 && q <= 0.05;
+                        var label = sig ? (ratio < 1.0 ? "Improved" : "Slower") : "Similar";
+
+                        var loStr = lo.HasValue ? lo.Value.ToString("0.###") : "";
+                        var hiStr = hi.HasValue ? hi.Value.ToString("0.###") : "";
+                        var qStr = q > 0 ? FormatP(q) : "";
+
+                        var changeDesc = label == "Improved" ? "Improved" : label == "Slower" ? "Regressed" : "No Change";
+                        sb.AppendLine($"{group.Key},{row.Name},{col.Name},{row.Mean:0.###},{col.Mean:0.###},{ratio:0.###},{loStr},{hiStr},{qStr},{label},{changeDesc}");
+                    }
+                }
+            }
+
+            sb.AppendLine();
+        }
+        catch
+        {
+            // If anything goes wrong, at least keep the section header visible
             sb.AppendLine("# No method comparisons found");
+            sb.AppendLine();
             return;
         }
 
-        sb.AppendLine("# Method Comparisons");
-        sb.AppendLine("ComparisonGroup,Method1,Method2,Method1Mean,Method2Mean,PerformanceRatio,ChangeDescription");
-
-        foreach (var group in comparisonGroups)
+        static string FormatP(double p)
         {
-            var methods = group.Select(g => ((dynamic)g).TestResult).ToList();
-            if (methods.Count < 2)
-            {
-                continue; // Skip groups with insufficient methods
-            }
-
-            // Generate NxN comparisons for this group
-            for (int i = 0; i < methods.Count; i++)
-            {
-                for (int j = i + 1; j < methods.Count; j++)
-                {
-                    var method1 = methods[i];
-                    var method2 = methods[j];
-
-                    var method1Name = GetMethodName(method1.TestCaseId?.DisplayName ?? "Unknown");
-                    var method2Name = GetMethodName(method2.TestCaseId?.DisplayName ?? "Unknown");
-                    var method1Mean = method1.PerformanceRunResult?.Mean ?? 0;
-                    var method2Mean = method2.PerformanceRunResult?.Mean ?? 0;
-
-                    var comparison = CalculatePerformanceComparison(method1, method2);
-                    var changeDescription = DetermineChangeDescription(method1Mean, method2Mean);
-
-                    sb.AppendLine($"{group.Key},{method1Name},{method2Name},{method1Mean:F3},{method2Mean:F3},{comparison},{changeDescription}");
-                }
-            }
+            if (p < 1e-3) return p.ToString("0.0e-0");
+            return p.ToString("0.###");
         }
-        sb.AppendLine();
+
+        static double ComputeLogRatioPValue(double meanA, double seA, int nA, double meanB, double seB, int nB)
+        {
+            if (!(meanA > 0) || !(meanB > 0)) return double.NaN;
+            var seLog = Math.Sqrt(SafeDiv(seA, meanA) * SafeDiv(seA, meanA) + SafeDiv(seB, meanB) * SafeDiv(seB, meanB));
+            if (seLog <= 0) return double.NaN;
+            var t = Math.Abs(Math.Log(meanB / meanA)) / seLog;
+            var dof = Math.Max(1, Math.Min(Math.Max(0, nA - 1), Math.Max(0, nB - 1)));
+            var cdf = StudentT.CDF(0, 1, dof, t);
+            var p = 2 * Math.Max(0.0, 1.0 - cdf);
+            return p;
+        }
+
+        static double SafeDiv(double a, double b) => (b == 0) ? 0 : a / b;
     }
 
     /// <summary>
@@ -337,15 +421,18 @@ internal class CsvTestRunCompletedHandler : INotificationHandler<TestRunComplete
             _logger.Log(LogLevel.Debug, "Extracted method name: {0}", methodName);
 
             // Use reflection to find the method and read its SailfishComparison attribute
-            var method = testClass.GetMethod(methodName);
+            var method = testClass.GetMethod(
+                methodName,
+                BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static | BindingFlags.FlattenHierarchy);
             if (method == null)
             {
                 _logger.Log(LogLevel.Debug, "Method '{0}' not found directly, searching all methods", methodName);
 
-                // Try to find method by searching all methods (in case of parameter variations)
-                var allMethods = testClass.GetMethods();
+                // Try to find method by searching all methods (in case of parameter variations or non-public types)
+                var allMethods = testClass.GetMethods(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static | BindingFlags.FlattenHierarchy);
                 method = allMethods.FirstOrDefault(m =>
-                    displayName.StartsWith(m.Name) == true);
+                    string.Equals(m.Name, methodName, StringComparison.Ordinal) ||
+                    displayName.StartsWith(m.Name, StringComparison.Ordinal));
 
                 if (method != null)
                 {

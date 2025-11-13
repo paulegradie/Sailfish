@@ -29,7 +29,7 @@ namespace Sailfish.TestAdapter.Queue.Mapping;
 /// TestCaseCompletedNotification objects and transforms them into TestCompletionQueueMessage
 /// objects suitable for queue processing. This includes performance metrics, test results,
 /// formatted output messages, and metadata required for batching and framework publishing.
-/// 
+///
 /// Key Features:
 /// - Comprehensive data extraction from test completion notifications
 /// - Integration with SailDiff analysis for performance comparison
@@ -37,14 +37,14 @@ namespace Sailfish.TestAdapter.Queue.Mapping;
 /// - Thread-safe operations for concurrent test execution
 /// - Robust error handling and validation
 /// - Support for all existing Sailfish test execution features
-/// 
+///
 /// The mapper generates metadata for various batching strategies:
 /// - Test class and assembly information for class-based batching
 /// - Comparison group identifiers for attribute-based batching
 /// - Custom criteria extraction for flexible batching strategies
 /// - Execution context data for environment-based grouping
 /// - Performance profile information for performance-based batching
-/// 
+///
 /// Thread Safety:
 /// This service is designed to be thread-safe and stateless, allowing concurrent
 /// mapping operations during test execution when multiple test cases complete
@@ -205,6 +205,27 @@ internal class TestCompletionMessageMapper : ITestCompletionMessageMapper
     {
         var classExecutionSummaries = notification.ClassExecutionSummaryTrackingFormat.ToSummaryFormat();
         var testOutputWindowMessage = sailfishConsoleWindowFormatter.FormConsoleWindowMessageForSailfish([classExecutionSummaries]);
+
+            // Append overhead diagnostics if available (non-console, attached to test output)
+            var perfTimer = notification.TestInstanceContainerExternal!.PerformanceTimer;
+            if (perfTimer.OverheadBaselineTicks.HasValue)
+            {
+                var baseline = perfTimer.OverheadBaselineTicks.Value;
+                var drift = perfTimer.OverheadDriftPercent ?? 0.0;
+                var warmups = perfTimer.OverheadWarmupCount ?? 0;
+                var samples = perfTimer.OverheadSampleCount ?? 0;
+                var capped = perfTimer.CappedIterationCount;
+                var diag = $"Diagnostics: Overhead {baseline} ticks (median of {samples} samples; {warmups} warmup). Drift {Math.Round(drift, 2)}%. Capped {capped} iteration(s).";
+                testOutputWindowMessage += "\n" + diag;
+                logger.Log(LogLevel.Information, diag);
+            }
+            else if (perfTimer.OverheadEstimationDisabled)
+            {
+                const string diag = "Diagnostics: Overhead estimation disabled for this test (no subtraction applied).";
+                testOutputWindowMessage += "\n" + diag;
+                logger.Log(LogLevel.Information, diag);
+            }
+
 
         var testCases = notification
             .TestCaseGroup

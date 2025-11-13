@@ -20,6 +20,8 @@ public interface IRunSettings
     IEnumerable<Type> RegistrationProviderAnchors { get; }
     OrderedDictionary Tags { get; }
     OrderedDictionary Args { get; }
+    // Optional deterministic randomization seed for reproducible ordering
+    int? Seed { get; }
     IEnumerable<string> ProvidedBeforeTrackingFiles { get; }
     DateTime TimeStamp { get; }
     bool DisableOverheadEstimation { get; }
@@ -32,6 +34,11 @@ public interface IRunSettings
     ILogger? CustomLogger { get; }
     LogLevel MinimumLogLevel { get; }
 
+    // Environment health check toggle (default: true)
+    bool EnableEnvironmentHealthCheck { get; }
+
+    // Timer calibration toggle (default: true)
+    bool TimerCalibration { get; }
 
     // Global adaptive sampling overrides (null = no override)
     bool? GlobalUseAdaptiveSampling { get; }
@@ -41,7 +48,6 @@ public interface IRunSettings
         // Global outlier handling overrides (null = no override)
         bool? GlobalUseConfigurableOutlierDetection { get; }
         OutlierStrategy? GlobalOutlierStrategy { get; }
-
 
     string GetRunSettingsTrackingDirectoryPath();
 }

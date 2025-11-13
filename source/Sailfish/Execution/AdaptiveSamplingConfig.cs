@@ -24,6 +24,22 @@ public sealed class AdaptiveSamplingConfig
         Category = category;
         TargetCoefficientOfVariation = targetCoefficientOfVariation;
         MaxConfidenceIntervalWidth = maxConfidenceIntervalWidth;
+        RecommendedMinimumSampleSize = 0;
+        SelectionReason = null;
+    }
+
+    public AdaptiveSamplingConfig(
+        SpeedCategory category,
+        double targetCoefficientOfVariation,
+        double maxConfidenceIntervalWidth,
+        int recommendedMinimumSampleSize,
+        string? selectionReason)
+    {
+        Category = category;
+        TargetCoefficientOfVariation = targetCoefficientOfVariation;
+        MaxConfidenceIntervalWidth = maxConfidenceIntervalWidth;
+        RecommendedMinimumSampleSize = Math.Max(0, recommendedMinimumSampleSize);
+        SelectionReason = selectionReason;
     }
 
     public SpeedCategory Category { get; }
@@ -33,5 +49,11 @@ public sealed class AdaptiveSamplingConfig
 
     /// <summary>Recommended relative CI width budget for this speed category.</summary>
     public double MaxConfidenceIntervalWidth { get; }
+
+    /// <summary>Recommended minimum N for convergence gates (local floor only).</summary>
+    public int RecommendedMinimumSampleSize { get; }
+
+    /// <summary>Optional explanation of the selection.</summary>
+    public string? SelectionReason { get; }
 }
 

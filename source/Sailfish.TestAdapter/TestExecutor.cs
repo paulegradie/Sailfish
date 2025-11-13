@@ -18,6 +18,10 @@ using Sailfish.TestAdapter.Queue.Configuration;
 using Sailfish.TestAdapter.Queue.Contracts;
 using Sailfish.TestAdapter.Queue.Implementation;
 using Sailfish.TestAdapter.Registrations;
+using Sailfish.TestAdapter.Execution.EnvironmentHealth;
+using Sailfish.Diagnostics.Environment;
+using Sailfish.Results;
+
 using Sailfish.TestAdapter.TestProperties;
 
 namespace Sailfish.TestAdapter;
@@ -104,6 +108,97 @@ public class TestExecutor : ITestExecutor
 
         try
         {
+            // Environment health check (informational)
+            try
+            {
+                var rs = container.ResolveOptional<Sailfish.Contracts.Public.Models.IRunSettings>();
+
+                // 1) Timer Calibration (session-level)
+                try
+                {
+                    if (rs?.TimerCalibration is not false)
+                    {
+                        var timerSvc = container.ResolveOptional<Sailfish.Execution.ITimerCalibrationService>();
+                        var timerProv = container.ResolveOptional<Sailfish.Execution.ITimerCalibrationResultProvider>();
+                        if (timerSvc != null && timerProv != null)
+                        {
+                            var calib = timerSvc.CalibrateAsync(cancellationTokenSource.Token)
+                                .ConfigureAwait(false)
+                                .GetAwaiter()
+                                .GetResult();
+                            timerProv.Current = calib;
+
+                            // Log succinct summary to test output and Sailfish logger
+                            var summary = $"Timer calibration: freq={calib.StopwatchFrequency} Hz, res≈{calib.ResolutionNs:F0} ns, baseline={calib.MedianTicks} ticks, RSD={calib.RsdPercent:F1}%, score={calib.JitterScore}/100";
+                            frameworkHandle.SendMessage(TestMessageLevel.Informational, summary);
+                            var log = container.ResolveOptional<Sailfish.Logging.ILogger>();
+                            log?.Log(Sailfish.Logging.LogLevel.Information, summary);
+                        }
+                    }
+                }
+                catch (Exception tex)
+                {
+                    frameworkHandle.SendMessage(TestMessageLevel.Warning, $"Timer calibration failed: {tex.Message}");
+                }
+
+                // 2) Environment health check (informational)
+                if (rs?.EnableEnvironmentHealthCheck is not false)
+                {
+                    var runner = container.ResolveOptional<EnvironmentHealthCheckRunner>();
+                    if (runner != null)
+                    {
+                        var ctx = new EnvironmentHealthCheckContext { TestAssemblyPath = testCases.FirstOrDefault()?.Source };
+                        var result = runner.RunAsync(ctx, cancellationTokenSource.Token)
+                            .ConfigureAwait(false)
+                            .GetAwaiter()
+                            .GetResult();
+
+                        // Publish to test output window
+                        frameworkHandle.SendMessage(TestMessageLevel.Informational, result.Summary);
+
+                        // Store report for downstream markdown output (session consolidated)
+                        var reportProvider = container.ResolveOptional<IEnvironmentHealthReportProvider>();
+                        if (reportProvider is not null)
+                        {
+                            reportProvider.Current = result.Report;
+                        }
+
+
+                        // Also log to Sailfish logger so it appears in standard INF/DBG stream
+                        var logger = container.ResolveOptional<ILogger>();
+                        logger?.Log(LogLevel.Information, result.Summary.TrimEnd());
+
+                        // Initialize reproducibility manifest base (best-effort)
+                        try
+                        {
+                            var manifestProvider = container.ResolveOptional<IReproducibilityManifestProvider>();
+                            if (manifestProvider != null && rs != null && manifestProvider.Current == null)
+                            {
+                                manifestProvider.Current = ReproducibilityManifest.CreateBase(rs, reportProvider?.Current);
+                            }
+
+                            // If timer calibration ran earlier, attach snapshot to manifest
+                            try
+                            {
+                                var timerProv = container.ResolveOptional<Sailfish.Execution.ITimerCalibrationResultProvider>();
+                                var calib = timerProv?.Current;
+                                if (manifestProvider.Current != null && calib != null)
+                                {
+                                    manifestProvider.Current.TimerCalibration = ReproducibilityManifest.TimerCalibrationSnapshot.From(calib);
+                                }
+                            }
+                            catch { /* best-effort */ }
+                        }
+                        catch { /* non-fatal */ }
+
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                frameworkHandle.SendMessage(TestMessageLevel.Warning, $"Environment health check failed: {ex.Message}");
+            }
+
             // Start queue services if enabled
             StartQueueServices(container);
 

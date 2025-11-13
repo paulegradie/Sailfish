@@ -13,7 +13,7 @@ namespace Sailfish.Analyzers.DiagnosticAnalyzers.PropertiesSetInAnySailfishGloba
 public class ShouldBePublicAnalyzer : AnalyzerBase<ClassDeclarationSyntax>
 {
     public static readonly DiagnosticDescriptor Descriptor = new(
-        "SF1000",
+        "SF1013",
         "Properties initialized in the global setup must be public",
         "Property '{0}' must be public when assigned within a method decorated with the SailfishGlobalSetup attribute",
         AnalyzerGroups.EssentialAnalyzers.Category,

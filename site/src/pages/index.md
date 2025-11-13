@@ -17,6 +17,12 @@ This library was built to support and inspire the incorporation of performance t
 
 ## What's New
 
+{% callout title="New: Environment Health Check" type="note" %}
+Quickly validates your benchmarking environment and emits a 0–100 health score with actionable recommendations. Now appears in INF/DBG logs and appended to each test’s Output window.
+[Learn more →](/docs/1/environment-health)
+{% /callout %}
+
+
 {% callout title="New: Adaptive Sampling" type="note" %}
 Sailfish can now automatically stop sampling when results are statistically stable. Cut CI time while preserving rigor.
 [Learn more →](/docs/1/adaptive-sampling)
@@ -28,4 +34,13 @@ Sailfish can now automatically stop sampling when results are statistically stab
 {% quick-link title="Outputs" description="Markdown & CSV format guides" icon="document-text" href="/docs/1/output-attributes" /%}
 {% quick-link title="Method Comparisons" description="Group methods and compare statistically" icon="chart-bar" href="/docs/1/method-comparisons" /%}
 {% quick-link title="Adaptive Sampling" description="Stop when results are stable—faster CI with statistical rigor" icon="lightbulb" href="/docs/1/adaptive-sampling" /%}
+{% /quick-links %}
+
+
+## Why Sailfish
+
+{% quick-links %}
+{% quick-link title="Statistical Rigor" description="Confidence intervals, outlier handling, adaptive sampling" icon="chart-bar" href="/docs/1/confidence-intervals" /%}
+{% quick-link title="Extensible" description="Plug in providers and extend behaviors for your needs" icon="plugins" href="/docs/3/extensibility" /%}
+{% quick-link title="Production Friendly" description="Outputs you can ship: Markdown and CSV for pipelines" icon="document-text" href="/docs/1/markdown-output" /%}
 {% /quick-links %}

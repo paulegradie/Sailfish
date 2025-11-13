@@ -12,4 +12,10 @@ public class SailfishSettings
 
     [JsonPropertyName("SampleSizeOverride")]
     public int? SampleSizeOverride { get; set; }
+
+    [JsonPropertyName("EnableEnvironmentHealthCheck")]
+    public bool? EnableEnvironmentHealthCheck { get; set; }
+
+    [JsonPropertyName("TimerCalibration")]
+    public bool? TimerCalibration { get; set; }
 }

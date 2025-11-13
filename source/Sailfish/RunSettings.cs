@@ -37,7 +37,10 @@ internal class RunSettings(
     double? globalTargetCoefficientOfVariation = null,
     int? globalMaximumSampleSize = null,
     bool? globalUseConfigurableOutlierDetection = null,
-    OutlierStrategy? globalOutlierStrategy = null) : IRunSettings
+    OutlierStrategy? globalOutlierStrategy = null,
+    bool enableEnvironmentHealthCheck = true,
+    bool timerCalibration = true,
+    int? seed = null) : IRunSettings
 {
     public IEnumerable<string> TestNames { get; } = testNames;
     public string LocalOutputDirectory { get; } = localOutputDirectory;
@@ -49,6 +52,7 @@ internal class RunSettings(
     public IEnumerable<Type> RegistrationProviderAnchors { get; } = registrationProviderAnchors;
     public OrderedDictionary Tags { get; } = tags;
     public OrderedDictionary Args { get; } = args;
+    public int? Seed { get; } = seed;
     public IEnumerable<string> ProvidedBeforeTrackingFiles { get; } = providedBeforeTrackingFiles;
     public DateTime TimeStamp { get; } = timeStamp ?? DateTime.Now.ToUniversalTime();
     public bool DisableOverheadEstimation { get; } = disableOverheadEstimation;
@@ -66,6 +70,9 @@ internal class RunSettings(
 
     public bool DisableLogging { get; } = disableLogging;
     public ILogger? CustomLogger { get; } = customLogger;
+    public bool EnableEnvironmentHealthCheck { get; } = enableEnvironmentHealthCheck;
+    public bool TimerCalibration { get; } = timerCalibration;
+
     public LogLevel MinimumLogLevel { get; } = minimumLogLevel;
 
     public string GetRunSettingsTrackingDirectoryPath()

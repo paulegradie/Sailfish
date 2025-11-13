@@ -47,7 +47,32 @@ internal class SailDiff : ISailDiffInternal, ISailDiff
 
     public void Analyze(TestData beforeData, TestData afterData, SailDiffSettings settings)
     {
-        throw new NotImplementedException();
+        if (beforeData is null || afterData is null)
+        {
+            logger.Log(LogLevel.Warning, "Failed to retrieve tracking data... aborting the test operation");
+            return;
+        }
+
+        var testResults = statisticalTestComputer.ComputeTest(beforeData, afterData, settings);
+        if (!testResults.Any())
+        {
+            logger.Log(LogLevel.Information, "No prior test results found for the current set");
+            return;
+        }
+
+        var testIds = new TestIds(beforeData.TestIds, afterData.TestIds);
+        var resultsAsMarkdown = sailDiffConsoleWindowMessageFormatter.FormConsoleWindowMessageForSailDiff(
+            testResults,
+            testIds,
+            settings,
+            CancellationToken.None);
+
+        logger.Log(LogLevel.Information, resultsAsMarkdown);
+
+        // Publish notification for subscribers (e.g., adapters/formatters)
+        mediator.Publish(new SailDiffAnalysisCompleteNotification(testResults, resultsAsMarkdown), CancellationToken.None)
+            .GetAwaiter()
+            .GetResult();
     }
 
     public async Task Analyze(CancellationToken cancellationToken)

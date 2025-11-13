@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
@@ -11,7 +12,14 @@ using Sailfish.Contracts.Private;
 using Sailfish.Contracts.Public.Models;
 using Sailfish.Contracts.Public.Notifications;
 using Sailfish.Contracts.Public.Serialization.Tracking.V1;
+using Sailfish.Diagnostics.Environment;
 using Sailfish.Logging;
+using Sailfish.Presentation;
+using Sailfish.Results;
+using MathNet.Numerics.Distributions;
+using Sailfish.Analysis.SailDiff.Statistics;
+
+using Sailfish.Execution;
 
 namespace Sailfish.DefaultHandlers.Sailfish;
 
@@ -24,6 +32,12 @@ internal class MethodComparisonTestRunCompletedHandler : INotificationHandler<Te
 {
     private readonly ILogger _logger;
     private readonly IMediator _mediator;
+    private readonly IEnvironmentHealthReportProvider? _healthProvider;
+    private readonly IRunSettings? _runSettings;
+    private readonly IReproducibilityManifestProvider? _manifestProvider;
+    private readonly ITimerCalibrationResultProvider? _timerProvider;
+
+
 
     /// <summary>
     /// Initializes a new instance of the MethodComparisonTestRunCompletedHandler class.
@@ -34,6 +48,49 @@ internal class MethodComparisonTestRunCompletedHandler : INotificationHandler<Te
     {
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         _mediator = mediator ?? throw new ArgumentNullException(nameof(mediator));
+        _healthProvider = null; // backward compatible path
+        _runSettings = null;
+        _manifestProvider = null;
+        _timerProvider = null;
+    }
+
+    /// <summary>
+    /// Preferred constructor that can optionally receive environment health report provider via DI.
+    /// </summary>
+    public MethodComparisonTestRunCompletedHandler(ILogger logger, IMediator mediator, IEnvironmentHealthReportProvider healthProvider)
+        : this(logger, mediator)
+    {
+        _healthProvider = healthProvider;
+    }
+
+    public MethodComparisonTestRunCompletedHandler(
+        ILogger logger,
+        IMediator mediator,
+        IEnvironmentHealthReportProvider healthProvider,
+        IRunSettings runSettings,
+        IReproducibilityManifestProvider manifestProvider,
+        ITimerCalibrationResultProvider timerProvider)
+        : this(logger, mediator, healthProvider)
+    {
+        _runSettings = runSettings;
+        _manifestProvider = manifestProvider;
+        _timerProvider = timerProvider;
+    }
+
+    /// <summary>
+    /// Full-feature constructor including run settings and reproducibility manifest provider.
+    /// Autofac will select this when all dependencies are available.
+    /// </summary>
+    public MethodComparisonTestRunCompletedHandler(
+        ILogger logger,
+        IMediator mediator,
+        IEnvironmentHealthReportProvider healthProvider,
+        IRunSettings runSettings,
+        IReproducibilityManifestProvider manifestProvider)
+        : this(logger, mediator, healthProvider)
+    {
+        _runSettings = runSettings;
+        _manifestProvider = manifestProvider;
     }
 
     /// <summary>
@@ -67,7 +124,39 @@ internal class MethodComparisonTestRunCompletedHandler : INotificationHandler<Te
                 "Generating consolidated session markdown for {0} test classes with WriteToMarkdown attribute",
                 classesWithMarkdown.Count);
 
-            // Generate consolidated markdown content for the entire session
+            // Build and persist reproducibility manifest next to results (best-effort)
+            // Do this BEFORE generating markdown so the summary can include manifest details (e.g., randomization seed)
+            try
+            {
+                if (_runSettings != null && _manifestProvider != null)
+                {
+                    var baseManifest = _manifestProvider.Current ?? ReproducibilityManifest.CreateBase(_runSettings, _healthProvider?.Current);
+
+                    // Attach timer calibration snapshot if available
+                    try
+                    {
+                        var calib = _timerProvider?.Current;
+                        if (calib != null)
+                        {
+                            baseManifest.TimerCalibration = ReproducibilityManifest.TimerCalibrationSnapshot.From(calib);
+                        }
+                    }
+                    catch { /* best-effort */ }
+
+                    baseManifest.AddMethodSnapshots(classesWithMarkdown);
+                    _manifestProvider.Current = baseManifest;
+
+                    var outputDirectory = _runSettings.LocalOutputDirectory ?? DefaultFileSettings.DefaultOutputDirectory;
+                    ReproducibilityManifest.WriteJson(baseManifest, outputDirectory);
+                    _logger.Log(LogLevel.Information, "Reproducibility manifest written to {0}", outputDirectory);
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.Log(LogLevel.Debug, ex, "Failed to create/write reproducibility manifest: {0}", ex.Message);
+            }
+
+            // Generate consolidated markdown content for the entire session (after manifest is available)
             var markdownContent = CreateSessionConsolidatedMarkdown(classesWithMarkdown);
 
             if (!string.IsNullOrEmpty(markdownContent))
@@ -123,13 +212,91 @@ internal class MethodComparisonTestRunCompletedHandler : INotificationHandler<Te
         sb.AppendLine($"**Generated:** {timestamp:yyyy-MM-dd HH:mm:ss} UTC");
         sb.AppendLine($"**Session ID:** {sessionId}");
         sb.AppendLine($"**Total Test Classes:** {classExecutionSummaries.Count}");
-        
+
         // Count total test cases across all classes
         var totalTestCases = classExecutionSummaries.Sum(summary => summary.CompiledTestCaseResults.Count());
         sb.AppendLine($"**Total Test Cases:** {totalTestCases}");
         sb.AppendLine();
 
+        // Optional environment health section (if available)
+        AppendEnvironmentHealthSection(sb);
+        AppendReproducibilitySummarySection(sb);
+        sb.AppendLine();
+
         // Collect all test results from all classes
+        void AppendEnvironmentHealthSection(StringBuilder sb)
+        {
+            try
+            {
+                var provider = _healthProvider;
+                var report = provider?.Current;
+                if (report is null) return;
+
+                sb.AppendLine("## 🏥 Environment Health Check");
+                sb.AppendLine();
+                sb.AppendLine($"Score: {report.Score}/100 ({report.SummaryLabel})");
+
+                // Show top few entries
+                foreach (var e in report.Entries.Take(6))
+                {
+                    var icon = e.Status switch
+                    {
+                        HealthStatus.Pass => "✅",
+                        HealthStatus.Warn => "⚠️",
+                        HealthStatus.Fail => "❌",
+                        _ => "❓"
+                    };
+                    var rec = string.IsNullOrWhiteSpace(e.Recommendation) ? string.Empty : $" — {e.Recommendation}";
+                    sb.AppendLine($"- {icon} {e.Name}: {e.Status} ({e.Details}){rec}");
+                }
+                sb.AppendLine();
+            }
+            catch (Exception ex)
+            {
+                _logger.Log(LogLevel.Debug, ex, "Failed to append environment health section: {0}", ex.Message);
+            }
+        }
+
+        void AppendReproducibilitySummarySection(StringBuilder sb)
+        {
+            try
+            {
+                var manifest = _manifestProvider?.Current;
+                if (manifest is null) return;
+
+                sb.AppendLine("## 🔁 Reproducibility Summary");
+                sb.AppendLine();
+                sb.AppendLine($"- Sailfish {manifest.SailfishVersion} on {manifest.DotNetRuntime}");
+                sb.AppendLine($"- OS: {manifest.OS} ({manifest.OSArchitecture}/{manifest.ProcessArchitecture})");
+                sb.AppendLine($"- GC: {manifest.GCMode}; JIT: {manifest.Jit}");
+                if (!string.IsNullOrWhiteSpace(manifest.EnvironmentHealthLabel))
+                {
+                    sb.AppendLine($"- Env Health: {manifest.EnvironmentHealthScore}/100 ({manifest.EnvironmentHealthLabel})");
+                }
+                sb.AppendLine($"- Timer: {manifest.Timer}");
+
+                // Timer calibration details if available
+                if (manifest.TimerCalibration is not null)
+                {
+                    var t = manifest.TimerCalibration;
+                    sb.AppendLine($"  - Calibration: freq={t.StopwatchFrequency} Hz, res≈{t.ResolutionNs:F0} ns, baseline={t.MedianTicks} ticks");
+                    sb.AppendLine($"  - Jitter: RSD={t.RsdPercent:F1}% | Score={t.JitterScore}/100 | N={t.Samples} (warmup {t.Warmups})");
+                }
+
+                if (!string.IsNullOrWhiteSpace(manifest.CiSystem)) sb.AppendLine($"- CI: {manifest.CiSystem}");
+                // Randomization seed (if used)
+                if (manifest.Randomization?.Seed is int seedValue)
+                {
+                    sb.AppendLine($"- Randomization Seed: {seedValue}");
+                }
+                sb.AppendLine();
+            }
+            catch (Exception ex)
+            {
+                _logger.Log(LogLevel.Debug, ex, "Failed to append reproducibility summary: {0}", ex.Message);
+            }
+        }
+
         var allTestResults = classExecutionSummaries
             .SelectMany(summary => summary.CompiledTestCaseResults.Select(result => new
             {
@@ -224,75 +391,125 @@ internal class MethodComparisonTestRunCompletedHandler : INotificationHandler<Te
     }
 
     /// <summary>
-    /// Creates an NxN comparison matrix showing relative performance between all methods in a group.
+    /// Creates an NxN comparison matrix with ratio CIs and BH-FDR adjusted q-values.
+    /// Cell value is ratio vs. row (col/row). 'Improved' = significantly faster.
     /// </summary>
-    /// <param name="methods">The test methods in the comparison group.</param>
-    /// <returns>The formatted NxN comparison matrix as markdown.</returns>
     private string CreateNxNComparisonMatrix(List<CompiledTestCaseResultTrackingFormat> methods)
     {
         if (methods.Count < 2) return string.Empty;
-
         try
         {
-            // Filter to only methods with valid performance results
-            var validMethods = methods.Where(m => m.PerformanceRunResult?.Mean != null).ToList();
-            if (validMethods.Count < 2) return string.Empty;
+            // Build stats from tracking format (use cleaned data length for N when available)
+            var stats = methods
+                .Where(m => m.PerformanceRunResult != null)
+                .Select(m => new
+                {
+                    Id = m.TestCaseId?.DisplayName ?? m.PerformanceRunResult!.DisplayName,
+                    Name = GetMethodName(m.TestCaseId?.DisplayName ?? m.PerformanceRunResult!.DisplayName),
+                    Mean = m.PerformanceRunResult!.Mean,
+                    StdDev = m.PerformanceRunResult!.StdDev,
+                    N = Math.Max(1, (m.PerformanceRunResult!.DataWithOutliersRemoved?.Length ?? -1) > 0
+                        ? (m.PerformanceRunResult!.DataWithOutliersRemoved?.Length ?? m.PerformanceRunResult!.SampleSize)
+                        : m.PerformanceRunResult!.SampleSize)
+                })
+                .Select(x => new
+                {
+                    x.Id,
+                    x.Name,
+                    x.Mean,
+                    x.N,
+                    SE = (x.N > 1 && x.StdDev > 0) ? x.StdDev / Math.Sqrt(x.N) : 0.0
+                })
+                .Where(s => s.Mean > 0)
+                .ToList();
+
+            if (stats.Count < 2) return string.Empty;
+
+            // Compute pairwise p-values on log-ratio and apply BH-FDR
+            var pMap = new Dictionary<(string A, string B), double>();
+            for (int i = 0; i < stats.Count; i++)
+            {
+                for (int j = i + 1; j < stats.Count; j++)
+                {
+                    var a = stats[i];
+                    var b = stats[j];
+                    var p = ComputeLogRatioPValue(a.Mean, a.SE, a.N, b.Mean, b.SE, b.N);
+                    if (!double.IsNaN(p) && p > 0)
+                    {
+                        pMap[MultipleComparisons.NormalizePair(a.Id, b.Id)] = p;
+                    }
+                }
+            }
+            var qMap = pMap.Count > 0
+                ? MultipleComparisons.BenjaminiHochbergAdjust(pMap)
+                : new Dictionary<(string, string), double>();
 
             var sb = new StringBuilder();
-
-            // Create header row
-            sb.Append("|");
-            sb.Append(" ".PadRight(20)); // Empty cell for row headers
-            sb.Append("|");
-            foreach (var method in validMethods)
-            {
-                var methodName = GetMethodName(method.TestCaseId?.DisplayName ?? "Unknown");
-                sb.Append($" {methodName} |");
-            }
+            sb.AppendLine("### 🔢 NxN Comparison Matrix (q-values via BH-FDR, α=0.05)");
+            sb.Append("| Method |");
+            foreach (var col in stats) sb.Append($" {col.Name} |");
+            sb.AppendLine();
+            sb.Append("|-");
+            foreach (var _ in stats) sb.Append("|-|");
             sb.AppendLine();
 
-            // Create separator row
-            sb.Append("|");
-            sb.Append("-".PadRight(20, '-'));
-            sb.Append("|");
-            foreach (var method in validMethods)
+            for (int i = 0; i < stats.Count; i++)
             {
-                var methodName = GetMethodName(method.TestCaseId?.DisplayName ?? "Unknown");
-                sb.Append("-".PadRight(methodName.Length + 2, '-'));
-                sb.Append("|");
-            }
-            sb.AppendLine();
-
-            // Create data rows
-            foreach (var rowMethod in validMethods)
-            {
-                var rowMethodName = GetMethodName(rowMethod.TestCaseId?.DisplayName ?? "Unknown");
-                sb.Append($"| **{rowMethodName}**".PadRight(22));
-                sb.Append("|");
-
-                foreach (var colMethod in validMethods)
+                var row = stats[i];
+                sb.Append($"| {row.Name} |");
+                for (int j = 0; j < stats.Count; j++)
                 {
-                    var colMethodName = GetMethodName(colMethod.TestCaseId?.DisplayName ?? "Unknown");
-                    if (rowMethod.TestCaseId?.DisplayName == colMethod.TestCaseId?.DisplayName)
+                    if (i == j)
                     {
-                        sb.Append(" -".PadRight(colMethodName.Length + 2));
+                        sb.Append(" — |");
+                        continue;
                     }
-                    else
-                    {
-                        var comparison = CalculatePerformanceComparison(rowMethod, colMethod);
-                        sb.Append($" {comparison}".PadRight(colMethodName.Length + 2));
-                    }
-                    sb.Append("|");
+                    var col = stats[j];
+                    var (ratio, lo, hi) = MultipleComparisons.ComputeRatioCI(row.Mean, row.SE, row.N, col.Mean, col.SE, col.N, 0.95);
+                    qMap.TryGetValue(MultipleComparisons.NormalizePair(row.Id, col.Id), out var q);
+                    var sig = q > 0 && q <= 0.05;
+                    var label = sig ? (ratio < 1.0 ? "Improved" : "Slower") : "Similar";
+                    var cell = $"{FormatRatio(ratio, lo, hi)}{(q > 0 ? $" q={FormatP(q)}" : "")} {label}";
+                    sb.Append($" {cell} |");
                 }
                 sb.AppendLine();
             }
 
+            sb.AppendLine();
+            sb.AppendLine("_Cell value is ratio vs. row (col/row). CI is 95% on ratio. 'Improved' means significantly faster; 'Slower' significantly slower; 'Similar' not significant after FDR._");
             return sb.ToString();
+
+            static string FormatRatio(double ratio, double? lo, double? hi)
+            {
+                var r = $"{ratio:0.###}x";
+                if (lo.HasValue && hi.HasValue) return $"{r} [{lo.Value:0.###}–{hi.Value:0.###}]";
+                return r;
+            }
+
+            static string FormatP(double p)
+            {
+                if (p < 1e-3) return p.ToString("0.0e-0");
+                return p.ToString("0.###");
+            }
+
+            static double ComputeLogRatioPValue(double meanA, double seA, int nA, double meanB, double seB, int nB)
+            {
+                if (!(meanA > 0) || !(meanB > 0)) return double.NaN;
+                var seLog = Math.Sqrt(Square(SafeDiv(seA, meanA)) + Square(SafeDiv(seB, meanB)));
+                if (seLog <= 0) return double.NaN;
+                var t = Math.Abs(Math.Log(meanB / meanA)) / seLog;
+                var dof = Math.Max(1, Math.Min(Math.Max(0, nA - 1), Math.Max(0, nB - 1)));
+                var cdf = StudentT.CDF(0, 1, dof, t);
+                var p = 2 * Math.Max(0.0, 1.0 - cdf);
+                return p;
+            }
+
+            static double SafeDiv(double a, double b) => (b == 0) ? 0 : a / b;
+            static double Square(double x) => x * x;
         }
         catch (Exception ex)
         {
-            _logger.Log(LogLevel.Warning, ex,
-                "Failed to create NxN comparison matrix: {0}", ex.Message);
+            _logger.Log(LogLevel.Warning, ex, "Failed to create NxN comparison matrix (FDR/CI): {0}", ex.Message);
             return string.Empty;
         }
     }
@@ -389,15 +606,18 @@ internal class MethodComparisonTestRunCompletedHandler : INotificationHandler<Te
             _logger.Log(LogLevel.Debug, "Extracted method name: {0}", methodName);
 
             // Use reflection to find the method and read its SailfishComparison attribute
-            var method = testClass.GetMethod(methodName);
+            var method = testClass.GetMethod(
+                methodName,
+                BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static | BindingFlags.FlattenHierarchy);
             if (method == null)
             {
                 _logger.Log(LogLevel.Debug, "Method '{0}' not found directly, searching all methods", methodName);
 
-                // Try to find method by searching all methods (in case of parameter variations)
-                var allMethods = testClass.GetMethods();
+                // Try to find method by searching all methods (in case of parameter variations or non-public types)
+                var allMethods = testClass.GetMethods(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static | BindingFlags.FlattenHierarchy);
                 method = allMethods.FirstOrDefault(m =>
-                    displayName.StartsWith(m.Name) == true);
+                    string.Equals(m.Name, methodName, StringComparison.Ordinal) ||
+                    displayName.StartsWith(m.Name, StringComparison.Ordinal));
 
                 if (method != null)
                 {

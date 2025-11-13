@@ -1,0 +1,13 @@
+# Session Metadata
+SessionId,Timestamp,TotalClasses,TotalTests
+<ID8>,<TSZ>,1,4
+
+# Individual Test Results
+TestClass,TestMethod,MeanTime,MedianTime,StdDev,SampleSize,ComparisonGroup,Status
+CsvGoldenClass,A,80.000,4.000,3.500,40,,Success
+CsvGoldenClass,B,100.000,4.000,4.000,40,,Success
+CsvGoldenClass,C,82.000,4.000,3.600,40,,Success
+CsvGoldenClass,Solo,33.000,4.000,1.200,40,,Success
+
+# Method Comparisons
+# No method comparisons found

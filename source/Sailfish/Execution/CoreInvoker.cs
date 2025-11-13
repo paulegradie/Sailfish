@@ -78,6 +78,31 @@ internal class CoreInvoker
         await mainMethod.TryInvoke(instance, cancellationToken, timed ? testCasePerformanceTimer : null).ConfigureAwait(false);
     }
 
+        public async Task ExecutionMethodWithOperationsPerInvoke(int operationsPerInvoke, CancellationToken cancellationToken)
+        {
+            if (operationsPerInvoke <= 1)
+            {
+                await ExecutionMethod(cancellationToken).ConfigureAwait(false);
+                return;
+            }
+
+            // Aggregate timing over multiple operations within a single measured iteration
+            testCasePerformanceTimer.StartSailfishMethodExecutionTimer();
+            try
+            {
+                for (var i = 0; i < operationsPerInvoke; i++)
+                {
+                    // Invoke without per-call timing; we capture the aggregate
+                    await mainMethod.TryInvoke(instance, cancellationToken, null).ConfigureAwait(false);
+                }
+            }
+            finally
+            {
+                testCasePerformanceTimer.StopSailfishMethodExecutionTimer();
+            }
+        }
+
+
     public async Task IterationTearDown(CancellationToken cancellationToken)
     {
         await InvokeLifecycleMethods<SailfishIterationTeardownAttribute>(iterationTeardown, cancellationToken).ConfigureAwait(false);
@@ -115,5 +140,19 @@ internal class CoreInvoker
     public void SetTestCaseStop()
     {
         testCasePerformanceTimer.SetTestCaseStop();
+    }
+
+
+    internal void SetOverheadDisabled(bool disabled)
+    {
+        testCasePerformanceTimer.OverheadEstimationDisabled = disabled;
+    }
+
+    internal void SetOverheadDiagnostics(int baselineTicks, double driftPercent, int warmups, int samples)
+    {
+        testCasePerformanceTimer.OverheadBaselineTicks = baselineTicks;
+        testCasePerformanceTimer.OverheadDriftPercent = driftPercent;
+        testCasePerformanceTimer.OverheadWarmupCount = warmups;
+        testCasePerformanceTimer.OverheadSampleCount = samples;
     }
 }

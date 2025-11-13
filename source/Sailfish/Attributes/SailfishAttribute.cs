@@ -1,5 +1,7 @@
 ﻿using System;
 using System.ComponentModel.DataAnnotations;
+using Sailfish.Analysis;
+
 
 namespace Sailfish.Attributes;
 
@@ -91,4 +93,70 @@ public sealed class SailfishAttribute : Attribute
     ///     Prevents infinite loops in case of non-converging tests. Default is 1000.
     /// </summary>
     public int MaximumSampleSize { get; set; } = 1000;
+
+    // --- Additional execution/statistics knobs (opt-in at class level) ---
+
+    /// <summary>
+    /// Minimum sample size when using adaptive sampling (default 10).
+    /// </summary>
+    [Range(1, int.MaxValue)]
+    public int MinimumSampleSize { get; set; } = 10;
+
+    /// <summary>
+    /// Confidence level used for interval estimation (default 0.95 => 95%).
+    /// </summary>
+    public double ConfidenceLevel { get; set; } = 0.95;
+
+    /// <summary>
+    /// Maximum allowed confidence interval width. Interpreted as relative width when UseRelativeConfidenceInterval=true.
+    /// Default 0.20 (20%).
+    /// </summary>
+    public double MaxConfidenceIntervalWidth { get; set; } = 0.20;
+
+    /// <summary>
+    /// If true (default), MaxConfidenceIntervalWidth is interpreted as a relative width (e.g., 20%).
+    /// </summary>
+    public bool UseRelativeConfidenceInterval { get; set; } = true;
+
+    /// <summary>
+    /// Number of operations invoked per measured iteration. Default 1. Used to amortize timer overhead for microbenchmarks.
+    /// </summary>
+    [Range(1, int.MaxValue)]
+    public int OperationsPerInvoke { get; set; } = 1;
+
+    /// <summary>
+    /// Target duration per measured iteration in milliseconds (0 disables targeting). Useful for auto-tuning OperationsPerInvoke.
+    /// </summary>
+    [Range(0, int.MaxValue)]
+    public int TargetIterationDurationMs { get; set; } = 0;
+
+    /// <summary>
+    /// Maximum measurement time per method in milliseconds (0 disables limit).
+    /// </summary>
+    [Range(0, int.MaxValue)]
+    public int MaxMeasurementTimePerMethodMs { get; set; } = 0;
+
+    /// <summary>
+    /// Enable precision/time budget controller that relaxes precision targets slightly to fit the per-method time budget. Default false.
+    /// </summary>
+    public bool UseTimeBudgetController { get; set; } = false;
+
+
+    /// <summary>
+    /// Enable lightweight default diagnosers for this class (memory/GC/threading). Default false.
+    /// </summary>
+    public bool EnableDefaultDiagnosers { get; set; } = false;
+
+    /// <summary>
+    /// Preferred outlier handling strategy when configurable detection is enabled.
+    /// Default is RemoveUpper to preserve typical performance-testing semantics.
+    /// </summary>
+    public OutlierStrategy OutlierStrategy { get; set; } = OutlierStrategy.RemoveUpper;
+
+    /// <summary>
+    /// Opt-in to settings-driven outlier handling for this class. When false (default),
+    /// the legacy SailfishOutlierDetector path is used to preserve backward compatibility.
+    /// </summary>
+    public bool UseConfigurableOutlierDetection { get; set; } = false;
+
 }

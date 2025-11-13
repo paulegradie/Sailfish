@@ -34,6 +34,12 @@ public class RunSettingsBuilder
     private bool streamTrackingUpdates = true;
     private DateTime? timeStamp;
 
+    private bool enableEnvironmentHealthCheck = true;
+    private bool timerCalibration = true;
+
+
+    // Optional deterministic randomization seed for reproducible ordering
+    private int? seed;
 
     // Global adaptive sampling overrides
     private bool? globalUseAdaptiveSampling;
@@ -83,6 +89,24 @@ public class RunSettingsBuilder
         streamTrackingUpdates = false;
         return this;
     }
+
+    /// <summary>
+    ///     Enables or disables the environment health check for this run (default: true).
+    /// </summary>
+    public RunSettingsBuilder WithEnvironmentHealthCheck(bool enable = true)
+    {
+        enableEnvironmentHealthCheck = enable;
+        return this;
+    }
+    /// <summary>
+    ///     Enables or disables timer calibration for this run (default: true).
+    /// </summary>
+    public RunSettingsBuilder WithTimerCalibration(bool enable = true)
+    {
+        timerCalibration = enable;
+        return this;
+    }
+
 
     /// <summary>
     ///     Provide a string array of class names to execute. This will run all test cases in a class decorated with the
@@ -208,6 +232,15 @@ public class RunSettingsBuilder
         return this;
     }
 
+    /// <summary>
+    ///     Sets a deterministic randomization seed for reproducible ordering of tests, methods, and property sets.
+    /// </summary>
+    public RunSettingsBuilder WithSeed(int seed)
+    {
+        this.seed = seed;
+        return this;
+    }
+
     public RunSettingsBuilder DisableOverheadEstimation()
     {
         disableOverheadEstimation = true;
@@ -284,6 +317,9 @@ public class RunSettingsBuilder
             globalTargetCoefficientOfVariation,
             globalMaximumSampleSize,
             globalUseConfigurableOutlierDetection,
-            globalOutlierStrategy);
+            globalOutlierStrategy,
+            enableEnvironmentHealthCheck,
+            timerCalibration,
+            seed: seed);
     }
 }
