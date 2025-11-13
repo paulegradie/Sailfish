@@ -335,7 +335,7 @@ public class SailfishExecutorTests
         logger.Received().Log(
             LogLevel.Error,
             Arg.Is<string>(s => s.Contains("errors encountered while discovering tests")),
-            Arg.Is<object[]>(os => os.Length == 1 && Equals(os[0], 2)));
+            Arg.Is<object[]>(os => os.Length == 1 && Equals(os[0], errors.Count)));
 
         // Assert reason and individual names were logged
         logger.Received().Log(LogLevel.Error, Arg.Is<string>(s => s.Contains("{Reason}")), Arg.Any<object[]>());
