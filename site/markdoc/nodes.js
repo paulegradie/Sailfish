@@ -1,7 +1,7 @@
 import { nodes as defaultNodes } from '@markdoc/markdoc'
+import Link from 'next/link'
 
 import { Fence } from '@/components/Fence'
-import { Link } from '@/components/MarkdocLink'
 
 const nodes = {
   document: {
@@ -27,6 +27,11 @@ const nodes = {
   },
   link: {
     render: Link,
+    attributes: {
+      href: {
+        type: String,
+      },
+    },
   },
 }
 
