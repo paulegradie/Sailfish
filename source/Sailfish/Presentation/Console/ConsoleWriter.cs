@@ -9,10 +9,16 @@ using Sailfish.Logging;
 
 namespace Sailfish.Presentation.Console;
 
-internal class ConsoleWriter(IMarkdownTableConverter markdownTableConverter, ILogger logger) : IConsoleWriter
+internal class ConsoleWriter : IConsoleWriter
 {
-    private readonly ILogger _logger = logger;
-    private readonly IMarkdownTableConverter _markdownTableConverter = markdownTableConverter;
+    private readonly ILogger _logger;
+    private readonly IMarkdownTableConverter _markdownTableConverter;
+
+    public ConsoleWriter(IMarkdownTableConverter markdownTableConverter, ILogger logger)
+    {
+        _logger = logger;
+        _markdownTableConverter = markdownTableConverter;
+    }
 
     public string WriteToConsole(IEnumerable<IClassExecutionSummary> results, OrderedDictionary tags)
     {

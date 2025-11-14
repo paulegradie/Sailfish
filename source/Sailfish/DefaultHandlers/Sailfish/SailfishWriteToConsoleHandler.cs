@@ -7,10 +7,16 @@ using Sailfish.Presentation.Console;
 
 namespace Sailfish.DefaultHandlers.Sailfish;
 
-internal class WriteToConsoleHandler(IConsoleWriter consoleWriter, IRunSettings runSettings) : INotificationHandler<WriteToConsoleNotification>
+internal class WriteToConsoleHandler : INotificationHandler<WriteToConsoleNotification>
 {
-    private readonly IConsoleWriter _consoleWriter = consoleWriter;
-    private readonly IRunSettings _runSettings = runSettings;
+    private readonly IConsoleWriter _consoleWriter;
+    private readonly IRunSettings _runSettings;
+
+    public WriteToConsoleHandler(IConsoleWriter consoleWriter, IRunSettings runSettings)
+    {
+        _consoleWriter = consoleWriter;
+        _runSettings = runSettings;
+    }
 
     public Task Handle(WriteToConsoleNotification notification, CancellationToken cancellationToken)
     {

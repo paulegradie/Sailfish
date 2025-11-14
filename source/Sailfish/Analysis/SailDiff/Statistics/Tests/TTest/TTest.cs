@@ -9,9 +9,14 @@ namespace Sailfish.Analysis.SailDiff.Statistics.Tests.TTest;
 
 public interface ITTest : ITest;
 
-public class Test(ITestPreprocessor preprocessor) : ITTest
+public class Test : ITTest
 {
-    private readonly ITestPreprocessor _preprocessor = preprocessor;
+    private readonly ITestPreprocessor _preprocessor;
+
+    public Test(ITestPreprocessor preprocessor)
+    {
+        _preprocessor = preprocessor;
+    }
 
     public TestResultWithOutlierAnalysis ExecuteTest(double[] before, double[] after, SailDiffSettings settings)
     {

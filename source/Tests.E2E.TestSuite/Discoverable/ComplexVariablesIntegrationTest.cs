@@ -61,8 +61,15 @@ public class TestConfigurationProvider : ISailfishVariablesProvider<TestConfigur
 }
 
 // Data type for test configurations
-public record TestConfiguration(string Name, int Timeout, bool IsEnabled) : ITestConfiguration
+public record TestConfiguration : ITestConfiguration
 {
+    public TestConfiguration(string Name, int Timeout, bool IsEnabled)
+    {
+        this.Name = Name;
+        this.Timeout = Timeout;
+        this.IsEnabled = IsEnabled;
+    }
+
     public int CompareTo(object? obj)
     {
         if (obj is not TestConfiguration other) return 1;
@@ -71,5 +78,16 @@ public record TestConfiguration(string Name, int Timeout, bool IsEnabled) : ITes
         if (nameComparison != 0) return nameComparison;
 
         return Timeout.CompareTo(other.Timeout);
+    }
+
+    public string Name { get; init; }
+    public int Timeout { get; init; }
+    public bool IsEnabled { get; init; }
+
+    public void Deconstruct(out string Name, out int Timeout, out bool IsEnabled)
+    {
+        Name = this.Name;
+        Timeout = this.Timeout;
+        IsEnabled = this.IsEnabled;
     }
 }

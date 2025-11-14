@@ -17,18 +17,26 @@ public interface IScaleFish
     void Analyze(ClassExecutionSummaryTrackingFormat summaryTrackingFormat);
 }
 
-internal class ScaleFish(
-    IMediator mediator,
-    IRunSettings runSettings,
-    IComplexityComputer complexityComputer,
-    IMarkdownTableConverter markdownTableConverter,
-    IConsoleWriter consoleWriter) : IScaleFish, IScaleFishInternal
+internal class ScaleFish : IScaleFish, IScaleFishInternal
 {
-    private readonly IComplexityComputer _complexityComputer = complexityComputer;
-    private readonly IConsoleWriter _consoleWriter = consoleWriter;
-    private readonly IMarkdownTableConverter _markdownTableConverter = markdownTableConverter;
-    private readonly IMediator _mediator = mediator;
-    private readonly IRunSettings _runSettings = runSettings;
+    private readonly IComplexityComputer _complexityComputer;
+    private readonly IConsoleWriter _consoleWriter;
+    private readonly IMarkdownTableConverter _markdownTableConverter;
+    private readonly IMediator _mediator;
+    private readonly IRunSettings _runSettings;
+
+    public ScaleFish(IMediator mediator,
+        IRunSettings runSettings,
+        IComplexityComputer complexityComputer,
+        IMarkdownTableConverter markdownTableConverter,
+        IConsoleWriter consoleWriter)
+    {
+        _complexityComputer = complexityComputer;
+        _consoleWriter = consoleWriter;
+        _markdownTableConverter = markdownTableConverter;
+        _mediator = mediator;
+        _runSettings = runSettings;
+    }
 
     public void Analyze(ClassExecutionSummaryTrackingFormat summaryTrackingFormat)
     {

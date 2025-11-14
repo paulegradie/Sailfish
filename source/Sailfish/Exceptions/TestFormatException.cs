@@ -2,4 +2,9 @@
 
 namespace Sailfish.Exceptions;
 
-public class TestFormatException(string? message) : Exception(message);
+public class TestFormatException : Exception
+{
+    public TestFormatException(string? message) : base(message)
+    {
+    }
+}

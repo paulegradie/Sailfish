@@ -9,10 +9,16 @@ using Sailfish.Presentation.CsvAndJson;
 
 namespace Sailfish.DefaultHandlers.Sailfish;
 
-internal class SailfishWriteToCsvHandler(IPerformanceRunResultFileWriter performanceRunResultFileWriter, IRunSettings runSettings) : INotificationHandler<WriteToCsvNotification>
+internal class SailfishWriteToCsvHandler : INotificationHandler<WriteToCsvNotification>
 {
-    private readonly IPerformanceRunResultFileWriter _performanceRunResultFileWriter = performanceRunResultFileWriter;
-    private readonly IRunSettings _runSettings = runSettings;
+    private readonly IPerformanceRunResultFileWriter _performanceRunResultFileWriter;
+    private readonly IRunSettings _runSettings;
+
+    public SailfishWriteToCsvHandler(IPerformanceRunResultFileWriter performanceRunResultFileWriter, IRunSettings runSettings)
+    {
+        _performanceRunResultFileWriter = performanceRunResultFileWriter;
+        _runSettings = runSettings;
+    }
 
     public async Task Handle(WriteToCsvNotification notification, CancellationToken cancellationToken)
     {

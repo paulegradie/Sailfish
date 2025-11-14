@@ -1,6 +1,11 @@
 namespace Sailfish.Execution;
 
-public class DurationConversion(double duration)
+public class DurationConversion
 {
-    public double Duration { get; set; } = duration;
+    public DurationConversion(double duration)
+    {
+        Duration = duration;
+    }
+
+    public double Duration { get; set; }
 }

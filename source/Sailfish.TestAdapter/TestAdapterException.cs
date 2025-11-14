@@ -2,4 +2,9 @@ using System;
 
 namespace Sailfish.TestAdapter;
 
-public class TestAdapterException(string? message = null, Exception? exception = null) : Exception(message, exception);
+public class TestAdapterException : Exception
+{
+    public TestAdapterException(string? message = null, Exception? exception = null) : base(message, exception)
+    {
+    }
+}

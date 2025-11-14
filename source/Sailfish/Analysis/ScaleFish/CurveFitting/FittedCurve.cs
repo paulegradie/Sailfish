@@ -1,7 +1,13 @@
 namespace Sailfish.Analysis.ScaleFish.CurveFitting;
 
-public class FittedCurve(double scale, double bias)
+public class FittedCurve
 {
-    public double Scale { get; set; } = scale;
-    public double Bias { get; set; } = bias;
+    public FittedCurve(double scale, double bias)
+    {
+        Scale = scale;
+        Bias = bias;
+    }
+
+    public double Scale { get; set; }
+    public double Bias { get; set; }
 }

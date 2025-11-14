@@ -512,56 +512,156 @@ public static class QueueExtensions
 /// <summary>
 /// Represents the current status of a test completion queue.
 /// </summary>
-/// <param name="IsRunning">Indicates whether the queue is currently running and operational.</param>
-/// <param name="IsCompleted">Indicates whether the queue has been marked as complete.</param>
-/// <param name="QueueDepth">The current number of messages waiting in the queue.</param>
-/// <param name="StatusTimestamp">The timestamp when this status was captured.</param>
 /// <remarks>
 /// This record provides a snapshot of the queue's operational state at a specific point in time.
 /// It is used by monitoring and diagnostic operations to assess queue health and performance.
 /// </remarks>
-public record QueueStatus(
-    bool IsRunning,
-    bool IsCompleted,
-    int QueueDepth,
-    DateTime StatusTimestamp
-);
+public record QueueStatus
+{
+    /// <summary>
+    /// Represents the current status of a test completion queue.
+    /// </summary>
+    /// <param name="IsRunning">Indicates whether the queue is currently running and operational.</param>
+    /// <param name="IsCompleted">Indicates whether the queue has been marked as complete.</param>
+    /// <param name="QueueDepth">The current number of messages waiting in the queue.</param>
+    /// <param name="StatusTimestamp">The timestamp when this status was captured.</param>
+    /// <remarks>
+    /// This record provides a snapshot of the queue's operational state at a specific point in time.
+    /// It is used by monitoring and diagnostic operations to assess queue health and performance.
+    /// </remarks>
+    public QueueStatus(bool IsRunning,
+        bool IsCompleted,
+        int QueueDepth,
+        DateTime StatusTimestamp)
+    {
+        this.IsRunning = IsRunning;
+        this.IsCompleted = IsCompleted;
+        this.QueueDepth = QueueDepth;
+        this.StatusTimestamp = StatusTimestamp;
+    }
+
+    /// <summary>Indicates whether the queue is currently running and operational.</summary>
+    public bool IsRunning { get; init; }
+
+    /// <summary>Indicates whether the queue has been marked as complete.</summary>
+    public bool IsCompleted { get; init; }
+
+    /// <summary>The current number of messages waiting in the queue.</summary>
+    public int QueueDepth { get; init; }
+
+    /// <summary>The timestamp when this status was captured.</summary>
+    public DateTime StatusTimestamp { get; init; }
+
+    public void Deconstruct(out bool IsRunning, out bool IsCompleted, out int QueueDepth, out DateTime StatusTimestamp)
+    {
+        IsRunning = this.IsRunning;
+        IsCompleted = this.IsCompleted;
+        QueueDepth = this.QueueDepth;
+        StatusTimestamp = this.StatusTimestamp;
+    }
+}
 
 /// <summary>
 /// Represents comprehensive diagnostic information about a test completion queue.
 /// </summary>
-/// <param name="Status">The current status of the queue.</param>
-/// <param name="Uptime">The uptime of the queue service, or null if uptime tracking is not available.</param>
-/// <param name="QueueType">The type name of the queue implementation.</param>
-/// <param name="AdditionalInfo">Additional diagnostic information specific to the queue implementation.</param>
 /// <remarks>
 /// This record provides detailed diagnostic information that can be used for troubleshooting,
 /// monitoring, and performance analysis of the queue system. The additional information
 /// dictionary can contain implementation-specific diagnostic data. The Uptime field will be
 /// null when the queue implementation does not track start time for uptime calculation.
 /// </remarks>
-public record QueueDiagnosticInfo(
-    QueueStatus Status,
-    TimeSpan? Uptime,
-    string QueueType,
-    Dictionary<string, object> AdditionalInfo
-);
+public record QueueDiagnosticInfo
+{
+    /// <summary>
+    /// Represents comprehensive diagnostic information about a test completion queue.
+    /// </summary>
+    /// <param name="Status">The current status of the queue.</param>
+    /// <param name="Uptime">The uptime of the queue service, or null if uptime tracking is not available.</param>
+    /// <param name="QueueType">The type name of the queue implementation.</param>
+    /// <param name="AdditionalInfo">Additional diagnostic information specific to the queue implementation.</param>
+    /// <remarks>
+    /// This record provides detailed diagnostic information that can be used for troubleshooting,
+    /// monitoring, and performance analysis of the queue system. The additional information
+    /// dictionary can contain implementation-specific diagnostic data. The Uptime field will be
+    /// null when the queue implementation does not track start time for uptime calculation.
+    /// </remarks>
+    public QueueDiagnosticInfo(QueueStatus Status,
+        TimeSpan? Uptime,
+        string QueueType,
+        Dictionary<string, object> AdditionalInfo)
+    {
+        this.Status = Status;
+        this.Uptime = Uptime;
+        this.QueueType = QueueType;
+        this.AdditionalInfo = AdditionalInfo;
+    }
+
+    /// <summary>The current status of the queue.</summary>
+    public QueueStatus Status { get; init; }
+
+    /// <summary>The uptime of the queue service, or null if uptime tracking is not available.</summary>
+    public TimeSpan? Uptime { get; init; }
+
+    /// <summary>The type name of the queue implementation.</summary>
+    public string QueueType { get; init; }
+
+    /// <summary>Additional diagnostic information specific to the queue implementation.</summary>
+    public Dictionary<string, object> AdditionalInfo { get; init; }
+
+    public void Deconstruct(out QueueStatus Status, out TimeSpan? Uptime, out string QueueType, out Dictionary<string, object> AdditionalInfo)
+    {
+        Status = this.Status;
+        Uptime = this.Uptime;
+        QueueType = this.QueueType;
+        AdditionalInfo = this.AdditionalInfo;
+    }
+}
 
 /// <summary>
 /// Represents the result of a health check operation on a test completion queue.
 /// </summary>
-/// <param name="IsHealthy">Indicates whether the queue is in a healthy state.</param>
-/// <param name="Status">A human-readable status description.</param>
-/// <param name="Details">Additional details about the health check result.</param>
 /// <remarks>
 /// This record provides a standardized format for health check results that can be used
 /// by monitoring systems, alerting mechanisms, and diagnostic tools. The details dictionary
 /// contains specific information about the queue's operational state.
 /// </remarks>
-public record QueueHealthCheckResult(
-    bool IsHealthy,
-    string Status,
-    Dictionary<string, object> Details
-);
+public record QueueHealthCheckResult
+{
+    /// <summary>
+    /// Represents the result of a health check operation on a test completion queue.
+    /// </summary>
+    /// <param name="IsHealthy">Indicates whether the queue is in a healthy state.</param>
+    /// <param name="Status">A human-readable status description.</param>
+    /// <param name="Details">Additional details about the health check result.</param>
+    /// <remarks>
+    /// This record provides a standardized format for health check results that can be used
+    /// by monitoring systems, alerting mechanisms, and diagnostic tools. The details dictionary
+    /// contains specific information about the queue's operational state.
+    /// </remarks>
+    public QueueHealthCheckResult(bool IsHealthy,
+        string Status,
+        Dictionary<string, object> Details)
+    {
+        this.IsHealthy = IsHealthy;
+        this.Status = Status;
+        this.Details = Details;
+    }
+
+    /// <summary>Indicates whether the queue is in a healthy state.</summary>
+    public bool IsHealthy { get; init; }
+
+    /// <summary>A human-readable status description.</summary>
+    public string Status { get; init; }
+
+    /// <summary>Additional details about the health check result.</summary>
+    public Dictionary<string, object> Details { get; init; }
+
+    public void Deconstruct(out bool IsHealthy, out string Status, out Dictionary<string, object> Details)
+    {
+        IsHealthy = this.IsHealthy;
+        Status = this.Status;
+        Details = this.Details;
+    }
+}
 
 #endregion

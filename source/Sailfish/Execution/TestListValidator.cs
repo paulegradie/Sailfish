@@ -12,9 +12,14 @@ internal interface ITestListValidator
     TestInitializationResult ValidateTests(IEnumerable<string> testsRequestedByUser, IEnumerable<Type> filteredTestNames);
 }
 
-internal class TestListValidator(ILogger logger) : ITestListValidator
+internal class TestListValidator : ITestListValidator
 {
-    private readonly ILogger _logger = logger;
+    private readonly ILogger _logger;
+
+    public TestListValidator(ILogger logger)
+    {
+        _logger = logger;
+    }
 
     public TestInitializationResult ValidateTests(IEnumerable<string> testsRequestedByUser, IEnumerable<Type> filteredTestNames)
     {

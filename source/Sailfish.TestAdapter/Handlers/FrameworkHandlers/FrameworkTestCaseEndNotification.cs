@@ -13,17 +13,44 @@ using Sailfish.TestAdapter.Display.VSTestFramework;
 
 namespace Sailfish.TestAdapter.Handlers.FrameworkHandlers;
 
-internal record FrameworkTestCaseEndNotification(
-    string TestOutputWindowMessage,
-    DateTimeOffset StartTime,
-    DateTimeOffset EndTime,
-    double Duration,
-    TestCase TestCase,
-    StatusCode StatusCode,
-    Exception? Exception
-) : INotification;
+internal record FrameworkTestCaseEndNotification : INotification
+{
+    public FrameworkTestCaseEndNotification(string TestOutputWindowMessage,
+        DateTimeOffset StartTime,
+        DateTimeOffset EndTime,
+        double Duration,
+        TestCase TestCase,
+        StatusCode StatusCode,
+        Exception? Exception)
+    {
+        this.TestOutputWindowMessage = TestOutputWindowMessage;
+        this.StartTime = StartTime;
+        this.EndTime = EndTime;
+        this.Duration = Duration;
+        this.TestCase = TestCase;
+        this.StatusCode = StatusCode;
+        this.Exception = Exception;
+    }
 
+    public string TestOutputWindowMessage { get; init; }
+    public DateTimeOffset StartTime { get; init; }
+    public DateTimeOffset EndTime { get; init; }
+    public double Duration { get; init; }
+    public TestCase TestCase { get; init; }
+    public StatusCode StatusCode { get; init; }
+    public Exception? Exception { get; init; }
 
+    public void Deconstruct(out string TestOutputWindowMessage, out DateTimeOffset StartTime, out DateTimeOffset EndTime, out double Duration, out TestCase TestCase, out StatusCode StatusCode, out Exception? Exception)
+    {
+        TestOutputWindowMessage = this.TestOutputWindowMessage;
+        StartTime = this.StartTime;
+        EndTime = this.EndTime;
+        Duration = this.Duration;
+        TestCase = this.TestCase;
+        StatusCode = this.StatusCode;
+        Exception = this.Exception;
+    }
+}
 
 internal class FrameworkTestCaseEndNotificationHandler : INotificationHandler<FrameworkTestCaseEndNotification>
 {

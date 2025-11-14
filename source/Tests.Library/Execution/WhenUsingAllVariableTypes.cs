@@ -140,8 +140,14 @@ public class TestTypedVariableProvider : ISailfishVariablesProvider<TestTypedVar
 }
 
 // Test data type for typed variables
-public record TestTypedVariable(string Name, int Value) : ITestTypedVariable
+public record TestTypedVariable : ITestTypedVariable
 {
+    public TestTypedVariable(string Name, int Value)
+    {
+        this.Name = Name;
+        this.Value = Value;
+    }
+
     public int CompareTo(object? obj)
     {
         if (obj is not TestTypedVariable other) return 1;
@@ -150,6 +156,15 @@ public record TestTypedVariable(string Name, int Value) : ITestTypedVariable
         if (nameComparison != 0) return nameComparison;
 
         return Value.CompareTo(other.Value);
+    }
+
+    public string Name { get; init; }
+    public int Value { get; init; }
+
+    public void Deconstruct(out string Name, out int Value)
+    {
+        Name = this.Name;
+        Value = this.Value;
     }
 }
 

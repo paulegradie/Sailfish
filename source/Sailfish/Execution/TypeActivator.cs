@@ -13,9 +13,14 @@ public interface ITypeActivator
     object CreateDehydratedTestInstance(Type test, TestCaseId testCaseId, bool disabled = false);
 }
 
-public class TypeActivator(ILifetimeScope lifetimeScope) : ITypeActivator
+public class TypeActivator : ITypeActivator
 {
-    private readonly ILifetimeScope _lifetimeScope = lifetimeScope;
+    private readonly ILifetimeScope _lifetimeScope;
+
+    public TypeActivator(ILifetimeScope lifetimeScope)
+    {
+        _lifetimeScope = lifetimeScope;
+    }
 
     public object CreateDehydratedTestInstance(Type test, TestCaseId testCaseId, bool disabled)
     {

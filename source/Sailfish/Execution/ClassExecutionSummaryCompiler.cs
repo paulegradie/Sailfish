@@ -12,10 +12,16 @@ internal interface IClassExecutionSummaryCompiler
     IEnumerable<IClassExecutionSummary> CompileToSummaries(IEnumerable<TestClassResultGroup> results);
 }
 
-internal class ClassExecutionSummaryCompiler(IStatisticsCompiler statsCompiler, IRunSettings runSettings) : IClassExecutionSummaryCompiler
+internal class ClassExecutionSummaryCompiler : IClassExecutionSummaryCompiler
 {
-    private readonly IRunSettings _runSettings = runSettings;
-    private readonly IStatisticsCompiler _statsCompiler = statsCompiler;
+    private readonly IRunSettings _runSettings;
+    private readonly IStatisticsCompiler _statsCompiler;
+
+    public ClassExecutionSummaryCompiler(IStatisticsCompiler statsCompiler, IRunSettings runSettings)
+    {
+        _runSettings = runSettings;
+        _statsCompiler = statsCompiler;
+    }
 
     public IEnumerable<IClassExecutionSummary> CompileToSummaries(IEnumerable<TestClassResultGroup> rawExecutionResults)
     {

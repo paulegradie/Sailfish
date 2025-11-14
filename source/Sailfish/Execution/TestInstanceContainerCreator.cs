@@ -17,14 +17,20 @@ internal interface ITestInstanceContainerCreator
         Func<MethodInfo, bool>? instanceContainerFilter = null);
 }
 
-internal class TestInstanceContainerCreator(
-    IRunSettings runSettings,
-    ITypeActivator typeActivator,
-    IPropertySetGenerator propertySetGenerator) : ITestInstanceContainerCreator
+internal class TestInstanceContainerCreator : ITestInstanceContainerCreator
 {
-    private readonly IPropertySetGenerator _propertySetGenerator = propertySetGenerator;
-    private readonly IRunSettings _runSettings = runSettings;
-    private readonly ITypeActivator _typeActivator = typeActivator;
+    private readonly IPropertySetGenerator _propertySetGenerator;
+    private readonly IRunSettings _runSettings;
+    private readonly ITypeActivator _typeActivator;
+
+    public TestInstanceContainerCreator(IRunSettings runSettings,
+        ITypeActivator typeActivator,
+        IPropertySetGenerator propertySetGenerator)
+    {
+        _propertySetGenerator = propertySetGenerator;
+        _runSettings = runSettings;
+        _typeActivator = typeActivator;
+    }
 
     public List<TestInstanceContainerProvider> CreateTestContainerInstanceProviders(
         Type testType,

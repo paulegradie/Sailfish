@@ -11,9 +11,14 @@ public interface ITrackingFileSerialization
     IEnumerable<ClassExecutionSummaryTrackingFormat>? Deserialize(string serialized);
 }
 
-public class TrackingFileSerialization(ILogger logger) : ITrackingFileSerialization
+public class TrackingFileSerialization : ITrackingFileSerialization
 {
-    private readonly ILogger _logger = logger;
+    private readonly ILogger _logger;
+
+    public TrackingFileSerialization(ILogger logger)
+    {
+        _logger = logger;
+    }
 
     public string Serialize(IEnumerable<ClassExecutionSummaryTrackingFormat> executionSummaries)
     {

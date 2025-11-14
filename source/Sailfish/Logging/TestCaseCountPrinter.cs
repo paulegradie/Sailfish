@@ -19,9 +19,9 @@ internal interface ITestCaseCountPrinter
     void PrintCaseUpdate(string displayName);
 }
 
-internal class TestCaseCountPrinter(ILogger logger) : ITestCaseCountPrinter
+internal class TestCaseCountPrinter : ITestCaseCountPrinter
 {
-    private readonly ILogger _logger = logger;
+    private readonly ILogger _logger;
     private int _currentMethod = 1;
     private int _currentTestCase = 1;
 
@@ -29,6 +29,11 @@ internal class TestCaseCountPrinter(ILogger logger) : ITestCaseCountPrinter
     private int _testCaseTotal;
     private int _testMethodTotal = 1;
     private int _testTypeTotal = 1;
+
+    public TestCaseCountPrinter(ILogger logger)
+    {
+        _logger = logger;
+    }
 
     public void SetTestCaseTotal(int count)
     {

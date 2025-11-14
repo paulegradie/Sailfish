@@ -13,10 +13,16 @@ public interface IStatisticalTestComputer
     List<SailDiffResult> ComputeTest(TestData beforeTestData, TestData afterTestData, SailDiffSettings settings);
 }
 
-public class StatisticalTestComputer(IStatisticalTestExecutor statisticalTestExecutor, IPerformanceRunResultAggregator aggregator) : IStatisticalTestComputer
+public class StatisticalTestComputer : IStatisticalTestComputer
 {
-    private readonly IPerformanceRunResultAggregator _aggregator = aggregator;
-    private readonly IStatisticalTestExecutor _statisticalTestExecutor = statisticalTestExecutor;
+    private readonly IPerformanceRunResultAggregator _aggregator;
+    private readonly IStatisticalTestExecutor _statisticalTestExecutor;
+
+    public StatisticalTestComputer(IStatisticalTestExecutor statisticalTestExecutor, IPerformanceRunResultAggregator aggregator)
+    {
+        _aggregator = aggregator;
+        _statisticalTestExecutor = statisticalTestExecutor;
+    }
 
     /// <summary>
     ///     Compute a statistical test using the given TestData and SailDiffSettings

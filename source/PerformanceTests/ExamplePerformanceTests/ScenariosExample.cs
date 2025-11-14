@@ -85,7 +85,39 @@ public class ScenariosExample
         Console.WriteLine($"Completed operation for {scenario.InnerScenario.Name}");
     }
 
-    record MyScenario(string ConnStr, int Port, InnerScenario InnerScenario);
+    record MyScenario
+    {
+        public MyScenario(string ConnStr, int Port, InnerScenario InnerScenario)
+        {
+            this.ConnStr = ConnStr;
+            this.Port = Port;
+            this.InnerScenario = InnerScenario;
+        }
 
-    record InnerScenario(string Name);
+        public string ConnStr { get; init; }
+        public int Port { get; init; }
+        public InnerScenario InnerScenario { get; init; }
+
+        public void Deconstruct(out string ConnStr, out int Port, out InnerScenario InnerScenario)
+        {
+            ConnStr = this.ConnStr;
+            Port = this.Port;
+            InnerScenario = this.InnerScenario;
+        }
+    }
+
+    record InnerScenario
+    {
+        public InnerScenario(string Name)
+        {
+            this.Name = Name;
+        }
+
+        public string Name { get; init; }
+
+        public void Deconstruct(out string Name)
+        {
+            Name = this.Name;
+        }
+    }
 }

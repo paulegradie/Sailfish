@@ -9,9 +9,14 @@ using Xunit.Abstractions;
 
 namespace Tests.Library.Execution;
 
-public class WhenCompilingIterationVariables(ITestOutputHelper testOutputHelper)
+public class WhenCompilingIterationVariables
 {
-    private readonly ITestOutputHelper _testOutputHelper = testOutputHelper;
+    private readonly ITestOutputHelper _testOutputHelper;
+
+    public WhenCompilingIterationVariables(ITestOutputHelper testOutputHelper)
+    {
+        _testOutputHelper = testOutputHelper;
+    }
 
     [Fact]
     public void AllCombinationsAreFound_TwoProperties()

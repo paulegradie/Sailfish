@@ -10,12 +10,17 @@ public interface IComplexityComputer
     IEnumerable<ScalefishClassModel> AnalyzeComplexity(List<IClassExecutionSummary> executionSummaries);
 }
 
-public class ComplexityComputer(
-    IComplexityEstimator complexityEstimator,
-    IScalefishObservationCompiler scalefishObservationCompiler) : IComplexityComputer
+public class ComplexityComputer : IComplexityComputer
 {
-    private readonly IComplexityEstimator _complexityEstimator = complexityEstimator ?? throw new ArgumentNullException(nameof(complexityEstimator));
-    private readonly IScalefishObservationCompiler _scalefishObservationCompiler = scalefishObservationCompiler ?? throw new ArgumentNullException(nameof(scalefishObservationCompiler));
+    private readonly IComplexityEstimator _complexityEstimator;
+    private readonly IScalefishObservationCompiler _scalefishObservationCompiler;
+
+    public ComplexityComputer(IComplexityEstimator complexityEstimator,
+        IScalefishObservationCompiler scalefishObservationCompiler)
+    {
+        _complexityEstimator = complexityEstimator ?? throw new ArgumentNullException(nameof(complexityEstimator));
+        _scalefishObservationCompiler = scalefishObservationCompiler ?? throw new ArgumentNullException(nameof(scalefishObservationCompiler));
+    }
 
     public IEnumerable<ScalefishClassModel> AnalyzeComplexity(List<IClassExecutionSummary> executionSummaries)
     {

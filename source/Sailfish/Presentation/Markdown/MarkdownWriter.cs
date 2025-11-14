@@ -12,9 +12,14 @@ internal interface IMarkdownWriter
     Task WriteEnhanced(IEnumerable<IClassExecutionSummary> result, string filePath, CancellationToken cancellationToken);
 }
 
-internal class MarkdownWriter(IMarkdownTableConverter markdownTableConverter) : IMarkdownWriter
+internal class MarkdownWriter : IMarkdownWriter
 {
-    private readonly IMarkdownTableConverter _markdownTableConverter = markdownTableConverter;
+    private readonly IMarkdownTableConverter _markdownTableConverter;
+
+    public MarkdownWriter(IMarkdownTableConverter markdownTableConverter)
+    {
+        _markdownTableConverter = markdownTableConverter;
+    }
 
     public async Task Write(IEnumerable<IClassExecutionSummary> results, string filePath, CancellationToken cancellationToken)
     {

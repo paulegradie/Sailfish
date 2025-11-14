@@ -11,69 +11,101 @@ using Sailfish.Presentation;
 
 namespace Sailfish;
 
-internal class RunSettings(
-    IEnumerable<string> testNames,
-    string localOutputDirectory,
-    bool createTrackingFiles,
-    bool useSailDiff,
-    bool useScaleFish,
-    SailDiffSettings sailDiffSettings,
-    OrderedDictionary tags,
-    OrderedDictionary args,
-    IEnumerable<string> providedBeforeTrackingFiles,
-    IEnumerable<Type> testLocationAnchors,
-    IEnumerable<Type> registrationProviderAnchors,
-    ILogger? customLogger,
-    bool disableOverheadEstimation = false,
-    DateTime? timeStamp = null,
-    int? sampleSizeOverride = null,
-    int? numWarmupIterationsOverride = null,
-    bool disableAnalysisGlobally = false,
-    bool streamTrackingUpdates = true,
-    bool disableLogging = false,
-    LogLevel minimumLogLevel = LogLevel.Verbose,
-    bool debug = false,
-    bool? globalUseAdaptiveSampling = null,
-    double? globalTargetCoefficientOfVariation = null,
-    int? globalMaximumSampleSize = null,
-    bool? globalUseConfigurableOutlierDetection = null,
-    OutlierStrategy? globalOutlierStrategy = null,
-    bool enableEnvironmentHealthCheck = true,
-    bool timerCalibration = true,
-    int? seed = null) : IRunSettings
+internal class RunSettings : IRunSettings
 {
-    public IEnumerable<string> TestNames { get; } = testNames;
-    public string LocalOutputDirectory { get; } = localOutputDirectory;
-    public bool CreateTrackingFiles { get; } = createTrackingFiles;
-    public bool RunSailDiff { get; } = useSailDiff;
-    public bool RunScaleFish { get; } = useScaleFish;
-    public SailDiffSettings SailDiffSettings { get; } = sailDiffSettings;
-    public IEnumerable<Type> TestLocationAnchors { get; } = testLocationAnchors;
-    public IEnumerable<Type> RegistrationProviderAnchors { get; } = registrationProviderAnchors;
-    public OrderedDictionary Tags { get; } = tags;
-    public OrderedDictionary Args { get; } = args;
-    public int? Seed { get; } = seed;
-    public IEnumerable<string> ProvidedBeforeTrackingFiles { get; } = providedBeforeTrackingFiles;
-    public DateTime TimeStamp { get; } = timeStamp ?? DateTime.Now.ToUniversalTime();
-    public bool DisableOverheadEstimation { get; } = disableOverheadEstimation;
-    public bool DisableAnalysisGlobally { get; } = disableAnalysisGlobally;
-    public int? SampleSizeOverride { get; } = sampleSizeOverride;
-    public int? NumWarmupIterationsOverride { get; } = numWarmupIterationsOverride;
-    public bool Debug { get; } = debug;
-    public bool StreamTrackingUpdates { get; } = streamTrackingUpdates;
-    public bool? GlobalUseAdaptiveSampling { get; } = globalUseAdaptiveSampling;
-    public double? GlobalTargetCoefficientOfVariation { get; } = globalTargetCoefficientOfVariation;
-    public int? GlobalMaximumSampleSize { get; } = globalMaximumSampleSize;
-    public bool? GlobalUseConfigurableOutlierDetection { get; } = globalUseConfigurableOutlierDetection;
-    public OutlierStrategy? GlobalOutlierStrategy { get; } = globalOutlierStrategy;
+    public RunSettings(IEnumerable<string> testNames,
+        string localOutputDirectory,
+        bool createTrackingFiles,
+        bool useSailDiff,
+        bool useScaleFish,
+        SailDiffSettings sailDiffSettings,
+        OrderedDictionary tags,
+        OrderedDictionary args,
+        IEnumerable<string> providedBeforeTrackingFiles,
+        IEnumerable<Type> testLocationAnchors,
+        IEnumerable<Type> registrationProviderAnchors,
+        ILogger? customLogger,
+        bool disableOverheadEstimation = false,
+        DateTime? timeStamp = null,
+        int? sampleSizeOverride = null,
+        int? numWarmupIterationsOverride = null,
+        bool disableAnalysisGlobally = false,
+        bool streamTrackingUpdates = true,
+        bool disableLogging = false,
+        LogLevel minimumLogLevel = LogLevel.Verbose,
+        bool debug = false,
+        bool? globalUseAdaptiveSampling = null,
+        double? globalTargetCoefficientOfVariation = null,
+        int? globalMaximumSampleSize = null,
+        bool? globalUseConfigurableOutlierDetection = null,
+        OutlierStrategy? globalOutlierStrategy = null,
+        bool enableEnvironmentHealthCheck = true,
+        bool timerCalibration = true,
+        int? seed = null)
+    {
+        TestNames = testNames;
+        LocalOutputDirectory = localOutputDirectory;
+        CreateTrackingFiles = createTrackingFiles;
+        RunSailDiff = useSailDiff;
+        RunScaleFish = useScaleFish;
+        SailDiffSettings = sailDiffSettings;
+        TestLocationAnchors = testLocationAnchors;
+        RegistrationProviderAnchors = registrationProviderAnchors;
+        Tags = tags;
+        Args = args;
+        Seed = seed;
+        ProvidedBeforeTrackingFiles = providedBeforeTrackingFiles;
+        TimeStamp = timeStamp ?? DateTime.Now.ToUniversalTime();
+        DisableOverheadEstimation = disableOverheadEstimation;
+        DisableAnalysisGlobally = disableAnalysisGlobally;
+        SampleSizeOverride = sampleSizeOverride;
+        NumWarmupIterationsOverride = numWarmupIterationsOverride;
+        Debug = debug;
+        StreamTrackingUpdates = streamTrackingUpdates;
+        GlobalUseAdaptiveSampling = globalUseAdaptiveSampling;
+        GlobalTargetCoefficientOfVariation = globalTargetCoefficientOfVariation;
+        GlobalMaximumSampleSize = globalMaximumSampleSize;
+        GlobalUseConfigurableOutlierDetection = globalUseConfigurableOutlierDetection;
+        GlobalOutlierStrategy = globalOutlierStrategy;
+        DisableLogging = disableLogging;
+        CustomLogger = customLogger;
+        EnableEnvironmentHealthCheck = enableEnvironmentHealthCheck;
+        TimerCalibration = timerCalibration;
+        MinimumLogLevel = minimumLogLevel;
+    }
+
+    public IEnumerable<string> TestNames { get; }
+    public string LocalOutputDirectory { get; }
+    public bool CreateTrackingFiles { get; }
+    public bool RunSailDiff { get; }
+    public bool RunScaleFish { get; }
+    public SailDiffSettings SailDiffSettings { get; }
+    public IEnumerable<Type> TestLocationAnchors { get; }
+    public IEnumerable<Type> RegistrationProviderAnchors { get; }
+    public OrderedDictionary Tags { get; }
+    public OrderedDictionary Args { get; }
+    public int? Seed { get; }
+    public IEnumerable<string> ProvidedBeforeTrackingFiles { get; }
+    public DateTime TimeStamp { get; }
+    public bool DisableOverheadEstimation { get; }
+    public bool DisableAnalysisGlobally { get; }
+    public int? SampleSizeOverride { get; }
+    public int? NumWarmupIterationsOverride { get; }
+    public bool Debug { get; }
+    public bool StreamTrackingUpdates { get; }
+    public bool? GlobalUseAdaptiveSampling { get; }
+    public double? GlobalTargetCoefficientOfVariation { get; }
+    public int? GlobalMaximumSampleSize { get; }
+    public bool? GlobalUseConfigurableOutlierDetection { get; }
+    public OutlierStrategy? GlobalOutlierStrategy { get; }
 
 
-    public bool DisableLogging { get; } = disableLogging;
-    public ILogger? CustomLogger { get; } = customLogger;
-    public bool EnableEnvironmentHealthCheck { get; } = enableEnvironmentHealthCheck;
-    public bool TimerCalibration { get; } = timerCalibration;
+    public bool DisableLogging { get; }
+    public ILogger? CustomLogger { get; }
+    public bool EnableEnvironmentHealthCheck { get; }
+    public bool TimerCalibration { get; }
 
-    public LogLevel MinimumLogLevel { get; } = minimumLogLevel;
+    public LogLevel MinimumLogLevel { get; }
 
     public string GetRunSettingsTrackingDirectoryPath()
     {

@@ -55,4 +55,17 @@ public class MyDataContainer
     }
 };
 
-public record Scenario(string Name);
+public record Scenario
+{
+    public Scenario(string Name)
+    {
+        this.Name = Name;
+    }
+
+    public string Name { get; init; }
+
+    public void Deconstruct(out string Name)
+    {
+        Name = this.Name;
+    }
+}

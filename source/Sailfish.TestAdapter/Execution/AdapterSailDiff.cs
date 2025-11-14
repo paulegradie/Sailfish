@@ -106,7 +106,25 @@ internal class AdapterSailDiff : IAdapterSailDiff
     }
 }
 
-internal record TestCaseSailDiffResult(
-    List<SailDiffResult> SailDiffResults,
-    TestIds TestIds,
-    SailDiffSettings TestSettings);
+internal record TestCaseSailDiffResult
+{
+    public TestCaseSailDiffResult(List<SailDiffResult> SailDiffResults,
+        TestIds TestIds,
+        SailDiffSettings TestSettings)
+    {
+        this.SailDiffResults = SailDiffResults;
+        this.TestIds = TestIds;
+        this.TestSettings = TestSettings;
+    }
+
+    public List<SailDiffResult> SailDiffResults { get; init; }
+    public TestIds TestIds { get; init; }
+    public SailDiffSettings TestSettings { get; init; }
+
+    public void Deconstruct(out List<SailDiffResult> SailDiffResults, out TestIds TestIds, out SailDiffSettings TestSettings)
+    {
+        SailDiffResults = this.SailDiffResults;
+        TestIds = this.TestIds;
+        TestSettings = this.TestSettings;
+    }
+}

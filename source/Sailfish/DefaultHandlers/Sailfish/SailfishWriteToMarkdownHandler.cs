@@ -9,10 +9,16 @@ using Sailfish.Presentation.Markdown;
 
 namespace Sailfish.DefaultHandlers.Sailfish;
 
-internal class SailfishWriteToMarkdownHandler(IMarkdownWriter markdownWriter, IRunSettings runSettings) : INotificationHandler<WriteToMarkDownNotification>
+internal class SailfishWriteToMarkdownHandler : INotificationHandler<WriteToMarkDownNotification>
 {
-    private readonly IMarkdownWriter _markdownWriter = markdownWriter;
-    private readonly IRunSettings _runSettings = runSettings;
+    private readonly IMarkdownWriter _markdownWriter;
+    private readonly IRunSettings _runSettings;
+
+    public SailfishWriteToMarkdownHandler(IMarkdownWriter markdownWriter, IRunSettings runSettings)
+    {
+        _markdownWriter = markdownWriter;
+        _runSettings = runSettings;
+    }
 
     public async Task Handle(WriteToMarkDownNotification notification, CancellationToken cancellationToken)
     {
