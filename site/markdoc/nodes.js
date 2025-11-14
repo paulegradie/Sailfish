@@ -1,6 +1,7 @@
 import { nodes as defaultNodes } from '@markdoc/markdoc'
 
 import { Fence } from '@/components/Fence'
+import { Link } from '@/components/MarkdocLink'
 
 const nodes = {
   document: {
@@ -23,6 +24,9 @@ const nodes = {
         type: String,
       },
     },
+  },
+  link: {
+    render: Link,
   },
 }
 
