@@ -87,8 +87,8 @@ public class MethodComparisonBatchProcessorAccumulateAndPublishTests
             new ProcessedStatisticalTestData(new[] { 9.0, 10.0, 11.0 }, new[] { 9.0, 10.0, 11.0 }, Array.Empty<double>(), Array.Empty<double>(), 0),
             new ProcessedStatisticalTestData(new[] { 11.0, 12.0, 13.0 }, new[] { 11.0, 12.0, 13.0 }, Array.Empty<double>(), Array.Empty<double>(), 0));
 
-        var diff = new Sailfish.Contracts.Public.Models.SailDiffResult(new TestCaseId("Dummy"), withOutliers);
-        return new TestCaseSailDiffResult(new List<Sailfish.Contracts.Public.Models.SailDiffResult> { diff }, new TestIds(new[] { "A" }, new[] { "B" }), new Sailfish.Analysis.SailDiff.SailDiffSettings());
+        var diff = new SailDiffResult(new TestCaseId("Dummy"), withOutliers);
+        return new TestCaseSailDiffResult(new List<SailDiffResult> { diff }, new TestIds(new[] { "A" }, new[] { "B" }), new Sailfish.Analysis.SailDiff.SailDiffSettings());
     }
 
     private static void AttachClassExecutionSummary(params TestCompletionQueueMessage[] messages)
@@ -171,7 +171,7 @@ public class MethodComparisonBatchProcessorAccumulateAndPublishTests
             .ReturnsForAnyArgs(CreateFakeDiff());
 
         _formatter.Format(default!, default!)
-            .ReturnsForAnyArgs(new Sailfish.Analysis.SailDiff.Formatting.SailDiffFormattedOutput
+            .ReturnsForAnyArgs(new SailDiffFormattedOutput
             {
                 FullOutput = "\n📊 COMPARISON RESULTS: MOCK\n"
             });
@@ -215,7 +215,7 @@ public class MethodComparisonBatchProcessorAccumulateAndPublishTests
         _sailDiff.ComputeTestCaseDiff(default!, default!, default!, default!, default!)
             .ReturnsForAnyArgs(CreateFakeDiff());
         _formatter.Format(default!, default!)
-            .ReturnsForAnyArgs(new Sailfish.Analysis.SailDiff.Formatting.SailDiffFormattedOutput
+            .ReturnsForAnyArgs(new SailDiffFormattedOutput
             {
                 FullOutput = "\n📊 COMPARISON RESULTS: MOCK\n"
             });

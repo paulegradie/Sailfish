@@ -19,7 +19,7 @@ internal class FixedIterationStrategy : IIterationStrategy
     /// <param name="logger">Logger for iteration progress</param>
     public FixedIterationStrategy(ILogger logger)
     {
-        this._logger = logger;
+        _logger = logger;
     }
 
     /// <summary>

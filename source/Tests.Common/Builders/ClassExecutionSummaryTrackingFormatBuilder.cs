@@ -15,13 +15,13 @@ public class ClassExecutionSummaryTrackingFormatBuilder
 
     public ClassExecutionSummaryTrackingFormatBuilder WithTestClass(Type testClass)
     {
-        this._testClass = testClass;
+        _testClass = testClass;
         return this;
     }
 
     public ClassExecutionSummaryTrackingFormatBuilder WithExecutionSettings(ExecutionSettingsTrackingFormat executionSettings)
     {
-        this._executionSettings = executionSettings;
+        _executionSettings = executionSettings;
         return this;
     }
 
@@ -35,7 +35,7 @@ public class ClassExecutionSummaryTrackingFormatBuilder
 
     public ClassExecutionSummaryTrackingFormatBuilder WithCompiledTestCaseResult(List<CompiledTestCaseResultTrackingFormat> compiledTestCaseResults)
     {
-        this._compiledTestCaseResults = compiledTestCaseResults;
+        _compiledTestCaseResults = compiledTestCaseResults;
         return this;
     }
 

@@ -35,7 +35,7 @@ public class ComplexVariablesIntegrationTest
 
         // Simulate some work
         Console.WriteLine($"Testing with buffer: {BufferSize}, config: {Configuration.Name}, timeout: {Configuration.Timeout}");
-        System.Threading.Thread.Sleep(1);
+        Thread.Sleep(1);
     }
 }
 

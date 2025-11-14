@@ -9,7 +9,7 @@ internal class TestFrameworkWriter : ITestFrameworkWriter
 
     public TestFrameworkWriter(IFrameworkHandle frameworkHandle)
     {
-        this._frameworkHandle = frameworkHandle;
+        _frameworkHandle = frameworkHandle;
     }
 
     public void RecordStart(TestCase testCase)

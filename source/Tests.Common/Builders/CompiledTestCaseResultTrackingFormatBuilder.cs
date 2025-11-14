@@ -17,25 +17,25 @@ public class CompiledTestCaseResultTrackingFormatBuilder
 
     public CompiledTestCaseResultTrackingFormatBuilder WithGroupingId(string? groupingId)
     {
-        this._groupingId = groupingId;
+        _groupingId = groupingId;
         return this;
     }
 
     public CompiledTestCaseResultTrackingFormatBuilder WithPerformanceRunResult(PerformanceRunResultTrackingFormat? performanceRunResult)
     {
-        this._performanceRunResult = performanceRunResult;
+        _performanceRunResult = performanceRunResult;
         return this;
     }
 
     public CompiledTestCaseResultTrackingFormatBuilder WithException(Exception? exception)
     {
-        this._exception = exception;
+        _exception = exception;
         return this;
     }
 
     public CompiledTestCaseResultTrackingFormatBuilder WithTestCaseId(TestCaseId? testCaseId)
     {
-        this._testCaseId = testCaseId;
+        _testCaseId = testCaseId;
         return this;
     }
 

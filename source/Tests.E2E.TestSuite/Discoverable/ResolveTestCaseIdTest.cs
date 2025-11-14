@@ -12,7 +12,7 @@ public class ResolveTestCaseIdTest
 
     public ResolveTestCaseIdTest(TestCaseId testCaseId)
     {
-        this._testCaseId = testCaseId;
+        _testCaseId = testCaseId;
     }
 
     [SailfishMethod]
@@ -29,7 +29,7 @@ public class ResolveTestCaseIdTestMultipleCtorArgs
 
     public ResolveTestCaseIdTestMultipleCtorArgs(ExampleDependencyForAltRego dep, TestCaseId testCaseId)
     {
-        this._testCaseId = testCaseId;
+        _testCaseId = testCaseId;
     }
 
     [SailfishMethod]

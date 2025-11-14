@@ -11,7 +11,7 @@ public class PerfTestWithISailfishFixture : ISailfishFixture<SailfishDependencie
 
     public PerfTestWithISailfishFixture(SailfishDependencies sailfishDependencies)
     {
-        this._sailfishDependencies = sailfishDependencies;
+        _sailfishDependencies = sailfishDependencies;
     }
 
     [SailfishVariable(1, 2, 3)]

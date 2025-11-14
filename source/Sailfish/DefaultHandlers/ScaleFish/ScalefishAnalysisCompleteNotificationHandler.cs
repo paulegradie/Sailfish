@@ -17,7 +17,7 @@ internal class ScaleFishAnalysisCompleteNotificationHandler : INotificationHandl
 
     public ScaleFishAnalysisCompleteNotificationHandler(IRunSettings runSettings)
     {
-        this._runSettings = runSettings;
+        _runSettings = runSettings;
     }
 
     public async Task Handle(ScaleFishAnalysisCompleteNotification notification, CancellationToken cancellationToken)

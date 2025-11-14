@@ -25,8 +25,8 @@ public class SailDiffConsoleWindowMessageFormatter : ISailDiffConsoleWindowMessa
         ISailDiffResultMarkdownConverter sailDiffResultMarkdownConverter,
         ILogger logger)
     {
-        this._sailDiffResultMarkdownConverter = sailDiffResultMarkdownConverter;
-        this._logger = logger;
+        _sailDiffResultMarkdownConverter = sailDiffResultMarkdownConverter;
+        _logger = logger;
     }
 
     public string FormConsoleWindowMessageForSailDiff(

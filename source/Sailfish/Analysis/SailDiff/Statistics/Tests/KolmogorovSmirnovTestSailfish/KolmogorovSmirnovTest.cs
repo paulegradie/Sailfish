@@ -16,7 +16,7 @@ public class KolmogorovSmirnovTest : IKolmogorovSmirnovTest
 
     public KolmogorovSmirnovTest(ITestPreprocessor preprocessor)
     {
-        this._preprocessor = preprocessor;
+        _preprocessor = preprocessor;
     }
 
     public TestResultWithOutlierAnalysis ExecuteTest(double[] before, double[] after, SailDiffSettings settings)

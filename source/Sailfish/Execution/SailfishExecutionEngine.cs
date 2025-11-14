@@ -58,13 +58,13 @@ internal class SailfishExecutionEngine : ISailfishExecutionEngine
         IClassExecutionSummaryCompiler classExecutionSummaryCompiler,
         IRunSettings runSettings)
     {
-        this._classExecutionSummaryCompiler = classExecutionSummaryCompiler;
-        this._logger = logger;
-        this._consoleWriter = consoleWriter;
-        this._mediator = mediator;
-        this._runSettings = runSettings;
-        this._testCaseCountPrinter = testCaseCountPrinter;
-        this._testCaseIterator = testCaseIterator;
+        _classExecutionSummaryCompiler = classExecutionSummaryCompiler;
+        _logger = logger;
+        _consoleWriter = consoleWriter;
+        _mediator = mediator;
+        _runSettings = runSettings;
+        _testCaseCountPrinter = testCaseCountPrinter;
+        _testCaseIterator = testCaseIterator;
     }
 
     public async Task<List<TestCaseExecutionResult>> ActivateContainer(

@@ -32,11 +32,11 @@ internal class TestAdapterExecutionProgram : ITestAdapterExecutionProgram
         ISailfishConsoleWindowFormatter sailfishConsoleWindowFormatter,
         ITestCaseCountPrinter testCaseCountPrinter)
     {
-        this._testAdapterExecutionEngine = testAdapterExecutionEngine;
-        this._mediator = mediator;
-        this._logger = logger;
-        this._sailfishConsoleWindowFormatter = sailfishConsoleWindowFormatter;
-        this._testCaseCountPrinter = testCaseCountPrinter;
+        _testAdapterExecutionEngine = testAdapterExecutionEngine;
+        _mediator = mediator;
+        _logger = logger;
+        _sailfishConsoleWindowFormatter = sailfishConsoleWindowFormatter;
+        _testCaseCountPrinter = testCaseCountPrinter;
     }
 
     public async Task Run(List<TestCase> testCases, CancellationToken cancellationToken)

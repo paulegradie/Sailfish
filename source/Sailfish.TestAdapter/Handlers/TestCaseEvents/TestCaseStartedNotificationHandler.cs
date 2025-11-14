@@ -15,7 +15,7 @@ internal class TestCaseStartedNotificationHandler : INotificationHandler<TestCas
 
     public TestCaseStartedNotificationHandler(ITestFrameworkWriter testFrameworkWriter)
     {
-        this._testFrameworkWriter = testFrameworkWriter;
+        _testFrameworkWriter = testFrameworkWriter;
     }
 
     public async Task Handle(TestCaseStartedNotification notification, CancellationToken cancellationToken)

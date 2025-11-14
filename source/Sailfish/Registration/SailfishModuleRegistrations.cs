@@ -33,7 +33,7 @@ internal class SailfishModuleRegistrations : IProvideAdditionalRegistrations
 
     public SailfishModuleRegistrations(IRunSettings runSettings)
     {
-        this._runSettings = runSettings;
+        _runSettings = runSettings;
     }
 
     public void Load(ContainerBuilder builder)

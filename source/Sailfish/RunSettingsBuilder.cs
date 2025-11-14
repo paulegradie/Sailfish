@@ -237,7 +237,7 @@ public class RunSettingsBuilder
     /// </summary>
     public RunSettingsBuilder WithSeed(int seed)
     {
-        this._seed = seed;
+        _seed = seed;
         return this;
     }
 

@@ -12,8 +12,8 @@ public class TestRunCompletedNotificationHandler : INotificationHandler<TestRunC
 
     public TestRunCompletedNotificationHandler(ICloudWriter cloudWriter, IRunSettings runSettings)
     {
-        this._cloudWriter = cloudWriter;
-        this._runSettings = runSettings;
+        _cloudWriter = cloudWriter;
+        _runSettings = runSettings;
     }
 
     public async Task Handle(TestRunCompletedNotification notification, CancellationToken cancellationToken)

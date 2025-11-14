@@ -31,9 +31,9 @@ internal class TestInstanceContainerProvider : ITestInstanceContainerProvider
     {
         Method = method;
         Test = test;
-        this._propertySets = propertySets;
-        this._runSettings = runSettings;
-        this._typeActivator = typeActivator;
+        _propertySets = propertySets;
+        _runSettings = runSettings;
+        _typeActivator = typeActivator;
     }
 
     public MethodInfo Method { get; }
@@ -106,7 +106,7 @@ internal class TestInstanceContainerProvider : ITestInstanceContainerProvider
         }
     }
 
-    private static int? TryParseSeed(Sailfish.Extensions.Types.OrderedDictionary args)
+    private static int? TryParseSeed(Extensions.Types.OrderedDictionary args)
     {
         try
         {

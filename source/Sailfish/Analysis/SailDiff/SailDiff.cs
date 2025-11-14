@@ -36,12 +36,12 @@ internal class SailDiff : ISailDiffInternal, ISailDiff
         ISailDiffConsoleWindowMessageFormatter sailDiffConsoleWindowMessageFormatter,
         IConsoleWriter consoleWriter)
     {
-        this._consoleWriter = consoleWriter;
-        this._logger = logger;
-        this._mediator = mediator;
-        this._runSettings = runSettings;
-        this._sailDiffConsoleWindowMessageFormatter = sailDiffConsoleWindowMessageFormatter;
-        this._statisticalTestComputer = statisticalTestComputer;
+        _consoleWriter = consoleWriter;
+        _logger = logger;
+        _mediator = mediator;
+        _runSettings = runSettings;
+        _sailDiffConsoleWindowMessageFormatter = sailDiffConsoleWindowMessageFormatter;
+        _statisticalTestComputer = statisticalTestComputer;
     }
 
     public void Analyze(TestData beforeData, TestData afterData, SailDiffSettings settings)

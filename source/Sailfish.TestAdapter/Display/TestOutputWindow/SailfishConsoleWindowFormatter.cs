@@ -21,7 +21,7 @@ internal class SailfishConsoleWindowFormatter : ISailfishConsoleWindowFormatter
 
     public SailfishConsoleWindowFormatter(ILogger logger)
     {
-        this._logger = logger;
+        _logger = logger;
     }
 
     public string FormConsoleWindowMessageForSailfish(IEnumerable<IClassExecutionSummary> results, OrderedDictionary? tags = null)

@@ -14,7 +14,7 @@ public class TestWithStringVariable
 
     public TestWithStringVariable(Configuration configuration)
     {
-        this._configuration = configuration;
+        _configuration = configuration;
     }
 
     [SailfishVariable(ScenarioA, ScenarioB)]

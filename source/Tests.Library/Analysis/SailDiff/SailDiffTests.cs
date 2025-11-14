@@ -98,7 +98,7 @@ public class SailDiffTests
                 Arg.Is<CancellationToken>(ct => ct == CancellationToken.None));
 
         await _mockMediator.Received(1).Publish(
-            Arg.Is<Sailfish.Contracts.Public.Notifications.SailDiffAnalysisCompleteNotification>(n =>
+            Arg.Is<SailDiffAnalysisCompleteNotification>(n =>
                 n.TestCaseResults.SequenceEqual(testResults) && n.ResultsAsMarkdown == expectedMarkdown),
             Arg.Is<CancellationToken>(ct => ct == CancellationToken.None));
     }

@@ -31,11 +31,11 @@ internal class AdapterScaleFish : IAdapterScaleFish
         IMarkdownTableConverter markdownTableConverter,
         ILogger logger)
     {
-        this._mediator = mediator;
-        this._runSettings = runSettings;
-        this._complexityComputer = complexityComputer;
-        this._markdownTableConverter = markdownTableConverter;
-        this._logger = logger;
+        _mediator = mediator;
+        _runSettings = runSettings;
+        _complexityComputer = complexityComputer;
+        _markdownTableConverter = markdownTableConverter;
+        _logger = logger;
     }
 
     public async Task Analyze(CancellationToken cancellationToken)

@@ -18,7 +18,7 @@ internal class ExecutionSummaryWriter : IExecutionSummaryWriter
 
     public ExecutionSummaryWriter(IMediator mediator)
     {
-        this._mediator = mediator;
+        _mediator = mediator;
     }
 
     public async Task Write(

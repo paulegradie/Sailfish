@@ -31,10 +31,10 @@ internal class TestAdapterExecutionEngine : ITestAdapterExecutionEngine
         ISailfishExecutionEngine engine,
         ILogger logger)
     {
-        this._classExecutionSummaryCompiler = classExecutionSummaryCompiler;
-        this._engine = engine;
-        this._logger = logger;
-        this._testInstanceContainerCreator = testInstanceContainerCreator;
+        _classExecutionSummaryCompiler = classExecutionSummaryCompiler;
+        _engine = engine;
+        _logger = logger;
+        _testInstanceContainerCreator = testInstanceContainerCreator;
     }
 
     public async Task<List<IClassExecutionSummary>> Execute(

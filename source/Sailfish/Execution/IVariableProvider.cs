@@ -35,7 +35,7 @@ internal class AttributeVariableProvider : IVariableProvider
 
     public AttributeVariableProvider(ISailfishVariableAttribute attribute)
     {
-        this._attribute = attribute ?? throw new ArgumentNullException(nameof(attribute));
+        _attribute = attribute ?? throw new ArgumentNullException(nameof(attribute));
     }
 
     public IEnumerable<object> GetVariables()
@@ -58,7 +58,7 @@ internal class TypedVariableProvider : IVariableProvider
 
     public TypedVariableProvider(Type propertyType)
     {
-        this._propertyType = propertyType ?? throw new ArgumentNullException(nameof(propertyType));
+        _propertyType = propertyType ?? throw new ArgumentNullException(nameof(propertyType));
     }
 
     public IEnumerable<object> GetVariables()
@@ -128,7 +128,7 @@ internal class SailfishVariablesClassProvider : IVariableProvider
 
     public SailfishVariablesClassProvider(Type propertyType)
     {
-        this._propertyType = propertyType ?? throw new ArgumentNullException(nameof(propertyType));
+        _propertyType = propertyType ?? throw new ArgumentNullException(nameof(propertyType));
     }
 
     public IEnumerable<object> GetVariables()

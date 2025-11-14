@@ -20,7 +20,7 @@ internal class SailDiffAnalysisCompleteNotificationHandler : INotificationHandle
 
     public SailDiffAnalysisCompleteNotificationHandler(IRunSettings runSettings)
     {
-        this._runSettings = runSettings;
+        _runSettings = runSettings;
     }
 
     public async Task Handle(SailDiffAnalysisCompleteNotification notification, CancellationToken cancellationToken)

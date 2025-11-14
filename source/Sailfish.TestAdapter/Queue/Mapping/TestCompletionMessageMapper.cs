@@ -85,12 +85,12 @@ internal class TestCompletionMessageMapper : ITestCompletionMessageMapper
         IRunSettings runSettings,
         IMediator mediator)
     {
-        this._logger = logger ?? throw new ArgumentNullException(nameof(logger));
-        this._sailfishConsoleWindowFormatter = sailfishConsoleWindowFormatter ?? throw new ArgumentNullException(nameof(sailfishConsoleWindowFormatter));
-        this._sailDiffTestOutputWindowMessageFormatter = sailDiffTestOutputWindowMessageFormatter ?? throw new ArgumentNullException(nameof(sailDiffTestOutputWindowMessageFormatter));
-        this._sailDiff = sailDiff ?? throw new ArgumentNullException(nameof(sailDiff));
-        this._runSettings = runSettings ?? throw new ArgumentNullException(nameof(runSettings));
-        this._mediator = mediator ?? throw new ArgumentNullException(nameof(mediator));
+        _logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        _sailfishConsoleWindowFormatter = sailfishConsoleWindowFormatter ?? throw new ArgumentNullException(nameof(sailfishConsoleWindowFormatter));
+        _sailDiffTestOutputWindowMessageFormatter = sailDiffTestOutputWindowMessageFormatter ?? throw new ArgumentNullException(nameof(sailDiffTestOutputWindowMessageFormatter));
+        _sailDiff = sailDiff ?? throw new ArgumentNullException(nameof(sailDiff));
+        _runSettings = runSettings ?? throw new ArgumentNullException(nameof(runSettings));
+        _mediator = mediator ?? throw new ArgumentNullException(nameof(mediator));
     }
 
     #endregion

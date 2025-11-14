@@ -25,8 +25,8 @@ internal class AdaptiveIterationStrategy : IIterationStrategy
         ILogger logger,
         IStatisticalConvergenceDetector convergenceDetector)
     {
-        this._logger = logger;
-        this._convergenceDetector = convergenceDetector;
+        _logger = logger;
+        _convergenceDetector = convergenceDetector;
     }
 
     /// <summary>

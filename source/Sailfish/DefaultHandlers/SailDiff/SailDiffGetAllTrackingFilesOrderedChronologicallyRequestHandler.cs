@@ -20,9 +20,9 @@ internal class SailDiffGetAllTrackingFilesOrderedChronologicallyRequestHandler :
         ITrackingFileDirectoryReader trackingFileDirectoryReader,
         ITrackingFileParser trackingFileParser)
     {
-        this._runSettings = runSettings;
-        this._trackingFileDirectoryReader = trackingFileDirectoryReader;
-        this._trackingFileParser = trackingFileParser;
+        _runSettings = runSettings;
+        _trackingFileDirectoryReader = trackingFileDirectoryReader;
+        _trackingFileParser = trackingFileParser;
     }
 
     public async Task<GetAllTrackingDataOrderedChronologicallyResponse> Handle(

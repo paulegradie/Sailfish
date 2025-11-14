@@ -27,13 +27,13 @@ internal class CoreInvoker
     {
         _globalSetup = instance.FindMethodsDecoratedWithAttribute<SailfishGlobalSetupAttribute>();
         _globalTeardown = instance.FindMethodsDecoratedWithAttribute<SailfishGlobalTeardownAttribute>();
-        this._instance = instance;
+        _instance = instance;
         _iterationSetup = instance.FindMethodsDecoratedWithAttribute<SailfishIterationSetupAttribute>();
         _iterationTeardown = instance.FindMethodsDecoratedWithAttribute<SailfishIterationTeardownAttribute>();
         _mainMethod = method;
         _methodSetup = instance.FindMethodsDecoratedWithAttribute<SailfishMethodSetupAttribute>();
         _methodTeardown = instance.FindMethodsDecoratedWithAttribute<SailfishMethodTeardownAttribute>();
-        this._testCasePerformanceTimer = testCasePerformanceTimer;
+        _testCasePerformanceTimer = testCasePerformanceTimer;
     }
 
     public int OverheadEstimate { get; set; }

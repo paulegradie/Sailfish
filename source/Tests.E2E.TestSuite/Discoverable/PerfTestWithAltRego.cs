@@ -10,7 +10,7 @@ public class PerfTestWithAltRego
 
     public PerfTestWithAltRego(ExampleDependencyForAltRego dep)
     {
-        this._dep = dep;
+        _dep = dep;
     }
 
     [SailfishVariable(1, 2)]

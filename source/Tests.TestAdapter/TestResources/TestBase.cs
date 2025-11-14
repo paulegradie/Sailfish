@@ -6,6 +6,6 @@ public class TestBase
 
     public TestBase(GenericDependency<AnyType> dep)
     {
-        this._dep = dep;
+        _dep = dep;
     }
 }

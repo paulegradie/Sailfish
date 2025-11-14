@@ -18,9 +18,9 @@ public class AllTheFeatures
 
     public AllTheFeatures(SomethingIRegistered dep, SomethingYouRegistered reg, MyClient client)
     {
-        this._dep = dep;
-        this._reg = reg;
-        this._client = client;
+        _dep = dep;
+        _reg = reg;
+        _client = client;
     }
 
     [SailfishRangeVariable(true, 10, 3, 2)]

@@ -26,8 +26,8 @@ internal class TrackingFileParser : ITrackingFileParser
 
     public TrackingFileParser(ITrackingFileSerialization trackingFileSerialization, ILogger logger)
     {
-        this._logger = logger;
-        this._trackingFileSerialization = trackingFileSerialization;
+        _logger = logger;
+        _trackingFileSerialization = trackingFileSerialization;
     }
 
     public async Task<bool> TryParse(string trackingFile, TrackingFileDataList data, CancellationToken cancellationToken)

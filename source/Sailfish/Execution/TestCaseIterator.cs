@@ -27,10 +27,10 @@ internal class TestCaseIterator : ITestCaseIterator
         IIterationStrategy fixedIterationStrategy,
         IIterationStrategy adaptiveIterationStrategy)
     {
-        this._logger = logger;
-        this._runSettings = runSettings;
-        this._fixedIterationStrategy = fixedIterationStrategy;
-        this._adaptiveIterationStrategy = adaptiveIterationStrategy;
+        _logger = logger;
+        _runSettings = runSettings;
+        _fixedIterationStrategy = fixedIterationStrategy;
+        _adaptiveIterationStrategy = adaptiveIterationStrategy;
     }
 
     public async Task<TestCaseExecutionResult> Iterate(

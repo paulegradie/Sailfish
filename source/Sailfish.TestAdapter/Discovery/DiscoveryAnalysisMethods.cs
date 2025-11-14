@@ -190,7 +190,7 @@ public static class DiscoveryAnalysisMethods
     /// <returns>The string value, or null if not a string literal.</returns>
     private static string? ExtractStringLiteralValue(ExpressionSyntax expression)
     {
-        if (expression is LiteralExpressionSyntax literal && literal.Token.IsKind(Microsoft.CodeAnalysis.CSharp.SyntaxKind.StringLiteralToken))
+        if (expression is LiteralExpressionSyntax literal && literal.Token.IsKind(SyntaxKind.StringLiteralToken))
         {
             return literal.Token.ValueText;
         }

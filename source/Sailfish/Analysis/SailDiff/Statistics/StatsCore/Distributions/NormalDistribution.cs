@@ -11,8 +11,8 @@ internal sealed class NormalDistribution : UnivariateContinuousDistribution, IFo
 
     public NormalDistribution(double mean, double stdDev)
     {
-        this.Mean = mean;
-        this._stdDev = stdDev;
+        Mean = mean;
+        _stdDev = stdDev;
         _variance = stdDev * stdDev;
         _lnconstant = -Math.Log(2.5066282746310007 * stdDev);
     }

@@ -16,7 +16,7 @@ public class IsASailfishTestTypeExtensionMethodsTests
         {
             MetadataReference.CreateFromFile(typeof(object).Assembly.Location),
             MetadataReference.CreateFromFile(typeof(Enumerable).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(System.Attribute).Assembly.Location)
+            MetadataReference.CreateFromFile(typeof(Attribute).Assembly.Location)
         };
         var compilation = CSharpCompilation.Create("TestAsm", new[] { tree }, refs, new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
         var model = compilation.GetSemanticModel(tree);

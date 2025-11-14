@@ -13,7 +13,7 @@ public class EnvironmentHealthCheckRunnerTests
     private sealed class StubChecker : IEnvironmentHealthChecker
     {
         private readonly EnvironmentHealthReport _report;
-        public StubChecker(EnvironmentHealthReport report) => this._report = report;
+        public StubChecker(EnvironmentHealthReport report) => _report = report;
         public Task<EnvironmentHealthReport> CheckAsync(EnvironmentHealthCheckContext? context = null, CancellationToken cancellationToken = default)
             => Task.FromResult(_report);
     }

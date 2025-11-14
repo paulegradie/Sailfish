@@ -28,7 +28,7 @@ internal class TestAdapterRegistrations : IProvideAdditionalRegistrations
 
     public TestAdapterRegistrations(IFrameworkHandle? frameworkHandle)
     {
-        this._frameworkHandle = frameworkHandle;
+        _frameworkHandle = frameworkHandle;
     }
 
     public void Load(ContainerBuilder builder)

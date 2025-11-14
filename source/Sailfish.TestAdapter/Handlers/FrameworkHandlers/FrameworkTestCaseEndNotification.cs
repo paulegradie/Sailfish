@@ -34,12 +34,12 @@ internal class FrameworkTestCaseEndNotificationHandler : INotificationHandler<Fr
 
     public FrameworkTestCaseEndNotificationHandler(ITestFrameworkWriter testFrameworkWriter)
     {
-        this._testFrameworkWriter = testFrameworkWriter;
+        _testFrameworkWriter = testFrameworkWriter;
     }
     public FrameworkTestCaseEndNotificationHandler(ITestFrameworkWriter testFrameworkWriter, IEnvironmentHealthReportProvider healthProvider)
     {
-        this._testFrameworkWriter = testFrameworkWriter;
-        this._healthProvider = healthProvider;
+        _testFrameworkWriter = testFrameworkWriter;
+        _healthProvider = healthProvider;
     }
 
 

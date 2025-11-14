@@ -18,37 +18,37 @@ public class ExecutionSettingsTrackingFormatBuilder
 
     public ExecutionSettingsTrackingFormatBuilder WithAsCsv(bool asCsv)
     {
-        this._asCsv = asCsv;
+        _asCsv = asCsv;
         return this;
     }
 
     public ExecutionSettingsTrackingFormatBuilder WithAsConsole(bool asConsole)
     {
-        this._asConsole = asConsole;
+        _asConsole = asConsole;
         return this;
     }
 
     public ExecutionSettingsTrackingFormatBuilder WithAsMarkdown(bool asMarkdown)
     {
-        this._asMarkdown = asMarkdown;
+        _asMarkdown = asMarkdown;
         return this;
     }
 
     public ExecutionSettingsTrackingFormatBuilder WithNumWarmupIterations(int numWarmupIterations)
     {
-        this._numWarmupIterations = numWarmupIterations;
+        _numWarmupIterations = numWarmupIterations;
         return this;
     }
 
     public ExecutionSettingsTrackingFormatBuilder WithSampleSize(int sampleSize)
     {
-        this._sampleSize = sampleSize;
+        _sampleSize = sampleSize;
         return this;
     }
 
     public ExecutionSettingsTrackingFormatBuilder WithDisableOverheadEstimation(bool disableOverheadEstimation)
     {
-        this._disableOverheadEstimation = disableOverheadEstimation;
+        _disableOverheadEstimation = disableOverheadEstimation;
         return this;
     }
 

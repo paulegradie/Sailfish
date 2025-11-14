@@ -103,15 +103,15 @@ internal class TestCaseCompletedNotificationHandler : INotificationHandler<TestC
         ITestCompletionQueuePublisher? queuePublisher = null,
         ITestCaseBatchingService? batchingService = null)
     {
-        this._sailfishConsoleWindowFormatter = sailfishConsoleWindowFormatter;
-        this._sailDiffTestOutputWindowMessageFormatter = sailDiffTestOutputWindowMessageFormatter;
-        this._runSettings = runSettings;
-        this._mediator = mediator;
-        this._sailDiff = sailDiff;
-        this._logger = logger;
-        this._queueConfiguration = queueConfiguration;
-        this._queuePublisher = queuePublisher;
-        this._batchingService = batchingService;
+        _sailfishConsoleWindowFormatter = sailfishConsoleWindowFormatter;
+        _sailDiffTestOutputWindowMessageFormatter = sailDiffTestOutputWindowMessageFormatter;
+        _runSettings = runSettings;
+        _mediator = mediator;
+        _sailDiff = sailDiff;
+        _logger = logger;
+        _queueConfiguration = queueConfiguration;
+        _queuePublisher = queuePublisher;
+        _batchingService = batchingService;
     }
 
     #endregion

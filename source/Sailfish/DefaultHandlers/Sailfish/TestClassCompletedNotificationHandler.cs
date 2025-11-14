@@ -20,9 +20,9 @@ public class TestClassCompletedNotificationHandler : INotificationHandler<TestCl
 
     public TestClassCompletedNotificationHandler(ITrackingFileSerialization trackingFileSerialization, IRunSettings runSettings, ILogger logger)
     {
-        this._logger = logger;
-        this._runSettings = runSettings;
-        this._trackingFileSerialization = trackingFileSerialization;
+        _logger = logger;
+        _runSettings = runSettings;
+        _trackingFileSerialization = trackingFileSerialization;
     }
 
     public async Task Handle(TestClassCompletedNotification notification, CancellationToken cancellationToken)

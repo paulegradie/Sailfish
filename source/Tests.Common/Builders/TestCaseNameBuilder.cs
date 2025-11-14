@@ -11,14 +11,14 @@ public class TestCaseNameBuilder
 
     public TestCaseNameBuilder WithName(string name)
     {
-        this._name = name;
+        _name = name;
         _parts = null;
         return this;
     }
 
     public TestCaseNameBuilder WithParts(IReadOnlyList<string> parts)
     {
-        this._parts = parts;
+        _parts = parts;
         _name = string.Join(".", parts);
         return this;
     }

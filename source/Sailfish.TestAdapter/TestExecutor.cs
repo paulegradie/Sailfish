@@ -44,7 +44,7 @@ public class TestExecutor : ITestExecutor
 
     public TestExecutor(ITestExecution testExecution)
     {
-        this._testExecution = testExecution;
+        _testExecution = testExecution;
     }
 
     public void RunTests(IEnumerable<string>? sources, IRunContext? runContext, IFrameworkHandle? frameworkHandle)
@@ -131,8 +131,8 @@ public class TestExecutor : ITestExecutor
                             // Log succinct summary to test output and Sailfish logger
                             var summary = $"Timer calibration: freq={calib.StopwatchFrequency} Hz, res≈{calib.ResolutionNs:F0} ns, baseline={calib.MedianTicks} ticks, RSD={calib.RsdPercent:F1}%, score={calib.JitterScore}/100";
                             frameworkHandle.SendMessage(TestMessageLevel.Informational, summary);
-                            var log = container.ResolveOptional<Sailfish.Logging.ILogger>();
-                            log?.Log(Sailfish.Logging.LogLevel.Information, summary);
+                            var log = container.ResolveOptional<ILogger>();
+                            log?.Log(LogLevel.Information, summary);
                         }
                     }
                 }

@@ -124,7 +124,7 @@ namespace Sailfish.Results
             return manifest;
         }
 
-        public void AddMethodSnapshots(IEnumerable<Sailfish.Contracts.Public.Serialization.Tracking.V1.ClassExecutionSummaryTrackingFormat> classes)
+        public void AddMethodSnapshots(IEnumerable<Contracts.Public.Serialization.Tracking.V1.ClassExecutionSummaryTrackingFormat> classes)
         {
             foreach (var cls in classes)
             {
@@ -167,9 +167,9 @@ namespace Sailfish.Results
 
         public static void WriteJson(ReproducibilityManifest manifest, string outputDirectory, string? fileName = null)
         {
-            if (string.IsNullOrWhiteSpace(outputDirectory)) outputDirectory = Sailfish.Presentation.DefaultFileSettings.DefaultOutputDirectory;
+            if (string.IsNullOrWhiteSpace(outputDirectory)) outputDirectory = Presentation.DefaultFileSettings.DefaultOutputDirectory;
             if (!Directory.Exists(outputDirectory)) Directory.CreateDirectory(outputDirectory);
-            fileName ??= $"Manifest_{manifest.TimestampUtc.ToString(Sailfish.Presentation.DefaultFileSettings.SortableFormat)}.json";
+            fileName ??= $"Manifest_{manifest.TimestampUtc.ToString(Presentation.DefaultFileSettings.SortableFormat)}.json";
             var path = Path.Combine(outputDirectory, fileName);
             var json = JsonSerializer.Serialize(manifest, new JsonSerializerOptions { WriteIndented = true });
             File.WriteAllText(path, json);
@@ -195,7 +195,7 @@ namespace Sailfish.Results
 
         private static string BuildSessionId(IRunSettings runSettings)
         {
-            var ts = runSettings.TimeStamp.ToUniversalTime().ToString(Sailfish.Presentation.DefaultFileSettings.SortableFormat);
+            var ts = runSettings.TimeStamp.ToUniversalTime().ToString(Presentation.DefaultFileSettings.SortableFormat);
             return $"{ts}-{Guid.NewGuid().ToString("N")[..8]}";
         }
 

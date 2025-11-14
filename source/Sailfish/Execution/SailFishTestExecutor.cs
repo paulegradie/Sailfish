@@ -28,10 +28,10 @@ internal class SailFishTestExecutor : ISailFishTestExecutor
         ITestInstanceContainerCreator testInstanceContainerCreator,
         ISailfishExecutionEngine engine)
     {
-        this._engine = engine;
-        this._logger = logger;
-        this._testCaseCountPrinter = testCaseCountPrinter;
-        this._testInstanceContainerCreator = testInstanceContainerCreator;
+        _engine = engine;
+        _logger = logger;
+        _testCaseCountPrinter = testCaseCountPrinter;
+        _testInstanceContainerCreator = testInstanceContainerCreator;
     }
 
     public async Task<List<TestClassResultGroup>> Execute(

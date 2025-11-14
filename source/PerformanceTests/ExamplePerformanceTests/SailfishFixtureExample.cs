@@ -22,7 +22,7 @@ public sealed class SailfishFixtureExample : TestBase
 
     public SailfishFixtureExample(SailfishFixture sailfishFixture, WebApplicationFactory<DemoApp> factory) : base(factory)
     {
-        this._sailfishFixture = sailfishFixture;
+        _sailfishFixture = sailfishFixture;
     }
 
     [SailfishVariable(1, 10)]

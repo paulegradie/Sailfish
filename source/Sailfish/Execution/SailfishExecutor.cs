@@ -38,16 +38,16 @@ internal class SailfishExecutor
         IRunSettings runSettings,
         ILogger logger)
     {
-        this._classExecutionSummaryCompiler = classExecutionSummaryCompiler;
-        this._executionSummaryWriter = executionSummaryWriter;
-        this._logger = logger;
-        this._mediator = mediator;
-        this._runSettings = runSettings;
-        this._sailDiff = sailDiff;
-        this._sailFishTestExecutor = sailFishTestExecutor;
-        this._scaleFish = scaleFish;
-        this._testCollector = testCollector;
-        this._testFilter = testFilter;
+        _classExecutionSummaryCompiler = classExecutionSummaryCompiler;
+        _executionSummaryWriter = executionSummaryWriter;
+        _logger = logger;
+        _mediator = mediator;
+        _runSettings = runSettings;
+        _sailDiff = sailDiff;
+        _sailFishTestExecutor = sailFishTestExecutor;
+        _scaleFish = scaleFish;
+        _testCollector = testCollector;
+        _testFilter = testFilter;
     }
 
     public async Task<SailfishRunResult> Run(CancellationToken cancellationToken)
@@ -104,7 +104,7 @@ internal class SailfishExecutor
         return SailfishRunResult.CreateResult(Array.Empty<IClassExecutionSummary>(), testDiscoveryExceptions);
     }
 
-    private static int? TryParseSeed(Sailfish.Extensions.Types.OrderedDictionary args)
+    private static int? TryParseSeed(Extensions.Types.OrderedDictionary args)
     {
         try
         {

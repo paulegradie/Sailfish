@@ -38,11 +38,11 @@ internal class AdapterSailDiff : IAdapterSailDiff
         IStatisticalTestComputer statisticalTestComputer,
         ILogger logger)
     {
-        this._mediator = mediator;
-        this._runSettings = runSettings;
-        this._sailDiffConsoleWindowMessageFormatter = sailDiffConsoleWindowMessageFormatter;
-        this._statisticalTestComputer = statisticalTestComputer;
-        this._logger = logger;
+        _mediator = mediator;
+        _runSettings = runSettings;
+        _sailDiffConsoleWindowMessageFormatter = sailDiffConsoleWindowMessageFormatter;
+        _statisticalTestComputer = statisticalTestComputer;
+        _logger = logger;
     }
 
     public async Task Analyze(CancellationToken cancellationToken)

@@ -16,7 +16,7 @@ public class ExamplePerformanceTestFull : TestBase
 
     public ExamplePerformanceTestFull(WebApplicationFactory<DemoApp> factory, ILogger logger) : base(factory)
     {
-        this._logger = logger;
+        _logger = logger;
     }
 
     [SailfishVariable(200, 300)]

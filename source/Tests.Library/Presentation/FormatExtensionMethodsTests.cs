@@ -59,7 +59,7 @@ public class FormatExtensionMethodsTests
         perf.Median.ShouldBe(100.0);
         perf.StdDev.ShouldBe(20.0);
         perf.DataWithOutliersRemoved.Length.ShouldBe(4);
-        System.Math.Abs(perf.StandardError - 10.0).ShouldBeLessThan(1e-6);
+        Math.Abs(perf.StandardError - 10.0).ShouldBeLessThan(1e-6);
 
         // CI list should include 0.95 and 0.99
         perf.ConfidenceIntervals.ShouldNotBeNull();

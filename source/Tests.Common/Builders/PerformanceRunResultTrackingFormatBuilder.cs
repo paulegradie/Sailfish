@@ -24,73 +24,73 @@ public class PerformanceRunResultTrackingFormatBuilder
 
     public PerformanceRunResultTrackingFormatBuilder WithDisplayName(string displayName)
     {
-        this._displayName = displayName;
+        _displayName = displayName;
         return this;
     }
 
     public PerformanceRunResultTrackingFormatBuilder WithMean(double mean)
     {
-        this._mean = mean;
+        _mean = mean;
         return this;
     }
 
     public PerformanceRunResultTrackingFormatBuilder WithMedian(double median)
     {
-        this._median = median;
+        _median = median;
         return this;
     }
 
     public PerformanceRunResultTrackingFormatBuilder WithStdDev(double stdDev)
     {
-        this._stdDev = stdDev;
+        _stdDev = stdDev;
         return this;
     }
 
     public PerformanceRunResultTrackingFormatBuilder WithVariance(double variance)
     {
-        this._variance = variance;
+        _variance = variance;
         return this;
     }
 
     public PerformanceRunResultTrackingFormatBuilder WithRawExecutionResults(double[] rawExecutionResults)
     {
-        this._rawExecutionResults = rawExecutionResults;
+        _rawExecutionResults = rawExecutionResults;
         return this;
     }
 
     public PerformanceRunResultTrackingFormatBuilder WithSampleSize(int sampleSize)
     {
-        this._sampleSize = sampleSize;
+        _sampleSize = sampleSize;
         return this;
     }
 
     public PerformanceRunResultTrackingFormatBuilder WithNumWarmupIterations(int numWarmupIterations)
     {
-        this._numWarmupIterations = numWarmupIterations;
+        _numWarmupIterations = numWarmupIterations;
         return this;
     }
 
     public PerformanceRunResultTrackingFormatBuilder WithDataWithOutliersRemoved(double[] dataWithOutliersRemoved)
     {
-        this._dataWithOutliersRemoved = dataWithOutliersRemoved;
+        _dataWithOutliersRemoved = dataWithOutliersRemoved;
         return this;
     }
 
     public PerformanceRunResultTrackingFormatBuilder WithLowerOutliers(double[] lowerOutliers)
     {
-        this._lowerOutliers = lowerOutliers;
+        _lowerOutliers = lowerOutliers;
         return this;
     }
 
     public PerformanceRunResultTrackingFormatBuilder WithUpperOutliers(double[] upperOutliers)
     {
-        this._upperOutliers = upperOutliers;
+        _upperOutliers = upperOutliers;
         return this;
     }
 
     public PerformanceRunResultTrackingFormatBuilder WithTotalNumOutliers(int totalNumOutliers)
     {
-        this._totalNumOutliers = totalNumOutliers;
+        _totalNumOutliers = totalNumOutliers;
         return this;
     }
 

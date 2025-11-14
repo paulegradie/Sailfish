@@ -20,7 +20,7 @@ public class EnvironmentHealthChecker : IEnvironmentHealthChecker
 
     public EnvironmentHealthChecker(ITimerCalibrationResultProvider timerProvider)
     {
-        this._timerProvider = timerProvider;
+        _timerProvider = timerProvider;
     }
 
     public async Task<EnvironmentHealthReport> CheckAsync(EnvironmentHealthCheckContext? context = null, CancellationToken cancellationToken = default)

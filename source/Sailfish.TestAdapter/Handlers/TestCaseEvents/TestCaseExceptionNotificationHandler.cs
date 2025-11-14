@@ -16,8 +16,8 @@ internal class TestCaseExceptionNotificationHandler : INotificationHandler<TestC
 
     public TestCaseExceptionNotificationHandler(ITestFrameworkWriter testFrameworkWriter, ILogger logger)
     {
-        this._testFrameworkWriter = testFrameworkWriter;
-        this._logger = logger;
+        _testFrameworkWriter = testFrameworkWriter;
+        _logger = logger;
     }
 
     public async Task Handle(TestCaseExceptionNotification notification, CancellationToken cancellationToken)

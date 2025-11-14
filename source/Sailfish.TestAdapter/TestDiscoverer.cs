@@ -28,7 +28,7 @@ public class TestDiscoverer : ITestDiscoverer
 
     public TestDiscoverer(ITestDiscovery discovery)
     {
-        this._discovery = discovery;
+        _discovery = discovery;
     }
 
     public void DiscoverTests(IEnumerable<string> sources, IDiscoveryContext discoveryContext, IMessageLogger logger, ITestCaseDiscoverySink discoverySink)

@@ -17,8 +17,8 @@ internal class SailDiffReadInBeforeAndAfterDataHandler : IRequestHandler<ReadInB
 
     public SailDiffReadInBeforeAndAfterDataHandler(ITrackingFileParser trackingFileParser, ILogger logger)
     {
-        this._trackingFileParser = trackingFileParser;
-        this._logger = logger;
+        _trackingFileParser = trackingFileParser;
+        _logger = logger;
     }
 
     public async Task<ReadInBeforeAndAfterDataResponse> Handle(ReadInBeforeAndAfterDataRequest request, CancellationToken cancellationToken)

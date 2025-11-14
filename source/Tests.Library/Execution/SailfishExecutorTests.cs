@@ -280,7 +280,7 @@ public class SailfishExecutorTests
         var args = new Sailfish.Extensions.Types.OrderedDictionary();
         args.Add(key, "987");
 
-        var method = typeof(Sailfish.Execution.SailfishExecutor)
+        var method = typeof(SailfishExecutor)
             .GetMethod("TryParseSeed", BindingFlags.Static | BindingFlags.NonPublic);
         method.ShouldNotBeNull();
 
@@ -294,7 +294,7 @@ public class SailfishExecutorTests
     [Fact]
     public void TryParseSeed_ReturnsNull_WhenMissingOrInvalid()
     {
-        var method = typeof(Sailfish.Execution.SailfishExecutor)
+        var method = typeof(SailfishExecutor)
             .GetMethod("TryParseSeed", BindingFlags.Static | BindingFlags.NonPublic);
         method.ShouldNotBeNull();
 

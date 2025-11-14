@@ -25,10 +25,10 @@ public class StatisticalTestExecutor : IStatisticalTestExecutor
         ITwoSampleWilcoxonSignedRankTest twoSampWilcoxonSignedRankTestSailfish,
         IKolmogorovSmirnovTest kolmogorovSmirnovTestSailfish)
     {
-        this._kolmogorovSmirnovTestSailfish = kolmogorovSmirnovTestSailfish;
-        this._mannWhitneyWilcoxonTestSailfish = mannWhitneyWilcoxonTestSailfish;
-        this._ttest = ttest;
-        this._twoSampWilcoxonSignedRankTestSailfish = twoSampWilcoxonSignedRankTestSailfish;
+        _kolmogorovSmirnovTestSailfish = kolmogorovSmirnovTestSailfish;
+        _mannWhitneyWilcoxonTestSailfish = mannWhitneyWilcoxonTestSailfish;
+        _ttest = ttest;
+        _twoSampWilcoxonSignedRankTestSailfish = twoSampWilcoxonSignedRankTestSailfish;
     }
 
     public TestResultWithOutlierAnalysis ExecuteStatisticalTest(

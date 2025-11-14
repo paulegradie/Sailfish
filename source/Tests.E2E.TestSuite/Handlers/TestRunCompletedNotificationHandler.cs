@@ -10,7 +10,7 @@ public class TestRunCompletedNotificationHandler : INotificationHandler<TestRunC
 
     public TestRunCompletedNotificationHandler(IRunSettings runSettings)
     {
-        this._runSettings = runSettings;
+        _runSettings = runSettings;
     }
 
     public async Task Handle(TestRunCompletedNotification notification, CancellationToken cancellationToken)

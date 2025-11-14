@@ -72,14 +72,14 @@ public class OperationsPerInvokeTunerTests
     private sealed class DelayWork
     {
         private readonly int _ms;
-        public DelayWork(int ms) => this._ms = ms;
+        public DelayWork(int ms) => _ms = ms;
         public Task Run(CancellationToken ct)
         {
             var sw = System.Diagnostics.Stopwatch.StartNew();
             while (sw.ElapsedMilliseconds < _ms)
             {
                 if (ct.IsCancellationRequested) break;
-                System.Threading.Thread.SpinWait(1000);
+                Thread.SpinWait(1000);
             }
             return Task.CompletedTask;
         }

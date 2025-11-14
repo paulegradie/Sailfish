@@ -24,73 +24,73 @@ public class PerformanceRunResultBuilder
 
     public PerformanceRunResultBuilder WithDisplayName(string displayName)
     {
-        this._displayName = displayName;
+        _displayName = displayName;
         return this;
     }
 
     public PerformanceRunResultBuilder WithMean(double mean)
     {
-        this._mean = mean;
+        _mean = mean;
         return this;
     }
 
     public PerformanceRunResultBuilder WithStdDev(double stdDev)
     {
-        this._stdDev = stdDev;
+        _stdDev = stdDev;
         return this;
     }
 
     public PerformanceRunResultBuilder WithVariance(double variance)
     {
-        this._variance = variance;
+        _variance = variance;
         return this;
     }
 
     public PerformanceRunResultBuilder WithMedian(double median)
     {
-        this._median = median;
+        _median = median;
         return this;
     }
 
     public PerformanceRunResultBuilder WithRawExecutionResults(double[] rawExecutionResults)
     {
-        this._rawExecutionResults = rawExecutionResults;
+        _rawExecutionResults = rawExecutionResults;
         return this;
     }
 
     public PerformanceRunResultBuilder WithSampleSize(int sampleSize)
     {
-        this._sampleSize = sampleSize;
+        _sampleSize = sampleSize;
         return this;
     }
 
     public PerformanceRunResultBuilder WithNumWarmupIterations(int numWarmupIterations)
     {
-        this._numWarmupIterations = numWarmupIterations;
+        _numWarmupIterations = numWarmupIterations;
         return this;
     }
 
     public PerformanceRunResultBuilder WithDataWithOutliersRemoved(double[] dataWithOutliersRemoved)
     {
-        this._dataWithOutliersRemoved = dataWithOutliersRemoved;
+        _dataWithOutliersRemoved = dataWithOutliersRemoved;
         return this;
     }
 
     public PerformanceRunResultBuilder WithUpperOutliers(double[] upperOutliers)
     {
-        this._upperOutliers = upperOutliers;
+        _upperOutliers = upperOutliers;
         return this;
     }
 
     public PerformanceRunResultBuilder WithLowerOutliers(double[] lowerOutliers)
     {
-        this._lowerOutliers = lowerOutliers;
+        _lowerOutliers = lowerOutliers;
         return this;
     }
 
     public PerformanceRunResultBuilder WithTotalNumOutliers(int totalNumOutliers)
     {
-        this._totalNumOutliers = totalNumOutliers;
+        _totalNumOutliers = totalNumOutliers;
         return this;
     }
 

@@ -146,7 +146,7 @@ public record TestTypedVariable(string Name, int Value) : ITestTypedVariable
     {
         if (obj is not TestTypedVariable other) return 1;
 
-        var nameComparison = string.Compare(Name, other.Name, System.StringComparison.Ordinal);
+        var nameComparison = string.Compare(Name, other.Name, StringComparison.Ordinal);
         if (nameComparison != 0) return nameComparison;
 
         return Value.CompareTo(other.Value);

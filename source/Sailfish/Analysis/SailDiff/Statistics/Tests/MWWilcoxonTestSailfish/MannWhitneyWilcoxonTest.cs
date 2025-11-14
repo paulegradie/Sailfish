@@ -20,7 +20,7 @@ public class MannWhitneyWilcoxonTest : IMannWhitneyWilcoxonTest
 
     public MannWhitneyWilcoxonTest(ITestPreprocessor preprocessor)
     {
-        this._preprocessor = preprocessor;
+        _preprocessor = preprocessor;
     }
 
     public TestResultWithOutlierAnalysis ExecuteTest(double[] before, double[] after, SailDiffSettings settings)

@@ -12,7 +12,7 @@ internal class EnvironmentHealthCheckRunner
 
     public EnvironmentHealthCheckRunner(IEnvironmentHealthChecker checker)
     {
-        this._checker = checker;
+        _checker = checker;
     }
 
     public async Task<(EnvironmentHealthReport Report, string Summary)> RunAsync(EnvironmentHealthCheckContext? context, CancellationToken token)
