@@ -337,4 +337,105 @@ public class TestCompletionQueueManagerTests : IDisposable
     }
 
     #endregion
+
+    #region Exception Tests
+
+    [Fact]
+    public async Task StartAsync_AfterDispose_ShouldThrowObjectDisposedException()
+    {
+        // Arrange
+        _manager = new TestCompletionQueueManager(_queue, _processors, _logger);
+        var configuration = new QueueConfiguration { IsEnabled = true };
+        _manager.Dispose();
+
+        // Act & Assert
+        await Should.ThrowAsync<ObjectDisposedException>(() =>
+            _manager.StartAsync(configuration, CancellationToken.None));
+    }
+
+    [Fact]
+    public async Task StopAsync_AfterDispose_ShouldThrowObjectDisposedException()
+    {
+        // Arrange
+        _manager = new TestCompletionQueueManager(_queue, _processors, _logger);
+        _manager.Dispose();
+
+        // Act & Assert
+        await Should.ThrowAsync<ObjectDisposedException>(() =>
+            _manager.StopAsync(CancellationToken.None));
+    }
+
+    [Fact]
+    public async Task CompleteAsync_AfterDispose_ShouldThrowObjectDisposedException()
+    {
+        // Arrange
+        _manager = new TestCompletionQueueManager(_queue, _processors, _logger);
+        _manager.Dispose();
+
+        // Act & Assert
+        await Should.ThrowAsync<ObjectDisposedException>(() =>
+            _manager.CompleteAsync(CancellationToken.None));
+    }
+
+    [Fact]
+    public async Task StopAsync_WhenNotRunning_ShouldThrowInvalidOperationException()
+    {
+        // Arrange
+        _manager = new TestCompletionQueueManager(_queue, _processors, _logger);
+
+        // Act & Assert
+        var exception = await Should.ThrowAsync<InvalidOperationException>(() =>
+            _manager.StopAsync(CancellationToken.None));
+        exception.Message.ShouldContain("not running");
+    }
+
+    [Fact]
+    public async Task StartAsync_WhenQueueStartFails_ShouldLogErrorAndRethrow()
+    {
+        // Arrange
+        _manager = new TestCompletionQueueManager(_queue, _processors, _logger);
+        var configuration = new QueueConfiguration { IsEnabled = true };
+        var exception = new InvalidOperationException("Queue start failed");
+        _queue.StartAsync(Arg.Any<CancellationToken>())
+            .Returns(Task.FromException(exception));
+
+        // Act & Assert
+        await Should.ThrowAsync<InvalidOperationException>(() =>
+            _manager.StartAsync(configuration, CancellationToken.None));
+
+        _logger.Received().Log(LogLevel.Error, Arg.Any<Exception>(), Arg.Any<string>(), Arg.Any<object[]>());
+    }
+
+    [Fact]
+    public async Task StopAsync_WhenQueueStopFails_ShouldLogErrorAndRethrow()
+    {
+        // Arrange
+        _manager = new TestCompletionQueueManager(_queue, _processors, _logger);
+        var configuration = new QueueConfiguration { IsEnabled = true };
+        await _manager.StartAsync(configuration, CancellationToken.None);
+
+        var exception = new InvalidOperationException("Queue stop failed");
+        _queue.StopAsync(Arg.Any<CancellationToken>())
+            .Returns(Task.FromException(exception));
+
+        // Act & Assert
+        await Should.ThrowAsync<InvalidOperationException>(() =>
+            _manager.StopAsync(CancellationToken.None));
+
+        _logger.Received().Log(LogLevel.Error, Arg.Any<Exception>(), Arg.Any<string>(), Arg.Any<object[]>());
+    }
+
+    [Fact]
+    public void Dispose_MultipleTimes_ShouldBeIdempotent()
+    {
+        // Arrange
+        _manager = new TestCompletionQueueManager(_queue, _processors, _logger);
+
+        // Act & Assert - Should not throw
+        _manager.Dispose();
+        _manager.Dispose();
+        _manager.Dispose();
+    }
+
+    #endregion
 }

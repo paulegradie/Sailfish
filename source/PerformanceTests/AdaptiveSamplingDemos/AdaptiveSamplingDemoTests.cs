@@ -118,7 +118,7 @@ public class WorkloadPatternsDemo
         // Simulate CPU-intensive work with consistent timing
         const int iterations = 100000;
         var sum = 0;
-        for (int i = 0; i < iterations; i++)
+        for (var i = 0; i < iterations; i++)
         {
             sum += i * 2;
             if (i % 10000 == 0 && cancellationToken.IsCancellationRequested)
@@ -141,7 +141,7 @@ public class WorkloadPatternsDemo
     {
         // Simulate memory allocation patterns
         var arrays = new int[10][];
-        for (int i = 0; i < 10; i++)
+        for (var i = 0; i < 10; i++)
         {
             arrays[i] = new int[1000];
             Array.Fill(arrays[i], i);

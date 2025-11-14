@@ -296,7 +296,7 @@ public class SailDiffConsoleWindowMessageFormatterTests
             .Returns(expectedMarkdown);
 
         var results = new List<SailDiffResult>();
-        for (int i = 1; i <= 3; i++)
+        for (var i = 1; i <= 3; i++)
         {
             var testCaseId = new TestCaseId($"TestClass.TestMethod{i}()");
             var statisticalTestResult = CreateStatisticalTestResult();

@@ -230,7 +230,7 @@ public class BatchTimeoutHandlerTests : IDisposable
 
         // Act & Assert - Catch any exceptions to debug
         Exception? caughtException = null;
-        int result = 0;
+        var result = 0;
         try
         {
             result = await _timeoutHandler.ProcessTimedOutBatchesAsync(CancellationToken.None);
@@ -316,6 +316,109 @@ public class BatchTimeoutHandlerTests : IDisposable
 
         // Act & Assert - Should not throw
         _timeoutHandler.Dispose();
+    }
+
+    #endregion
+
+    #region Exception Tests
+
+    [Fact]
+    public async Task StartAsync_AfterDispose_ShouldThrowObjectDisposedException()
+    {
+        // Arrange
+        _timeoutHandler = new BatchTimeoutHandler(_batchingService, _mediator, _configuration, _logger);
+        _timeoutHandler.Dispose();
+
+        // Act & Assert
+        await Should.ThrowAsync<ObjectDisposedException>(() =>
+            _timeoutHandler.StartAsync(CancellationToken.None));
+    }
+
+    [Fact]
+    public async Task StopAsync_AfterDispose_ShouldNotThrow()
+    {
+        // Arrange
+        _timeoutHandler = new BatchTimeoutHandler(_batchingService, _mediator, _configuration, _logger);
+        _timeoutHandler.Dispose();
+
+        // Act & Assert - Should not throw (StopAsync checks _isDisposed and returns early)
+        await _timeoutHandler.StopAsync(CancellationToken.None);
+    }
+
+    [Fact]
+    public async Task ProcessTimedOutBatchesAsync_AfterDispose_ShouldThrowObjectDisposedException()
+    {
+        // Arrange
+        _timeoutHandler = new BatchTimeoutHandler(_batchingService, _mediator, _configuration, _logger);
+        _timeoutHandler.Dispose();
+
+        // Act & Assert
+        await Should.ThrowAsync<ObjectDisposedException>(() =>
+            _timeoutHandler.ProcessTimedOutBatchesAsync(CancellationToken.None));
+    }
+
+    [Fact]
+    public async Task ProcessTimedOutBatchesAsync_WithBatchMissingTestCaseMetadata_ShouldHandleGracefully()
+    {
+        // Arrange
+        _timeoutHandler = new BatchTimeoutHandler(_batchingService, _mediator, _configuration, _logger);
+        var timedOutBatch = CreateTestBatch("batch1", DateTime.UtcNow.AddMinutes(-10));
+        timedOutBatch.CompletionTimeout = null;
+
+        // Remove TestCase metadata to trigger exception path
+        timedOutBatch.TestCases.First().Metadata.Clear();
+
+        _batchingService.GetPendingBatchesAsync(Arg.Any<CancellationToken>())
+            .Returns(new List<TestCaseBatch> { timedOutBatch });
+
+        // Act
+        var result = await _timeoutHandler.ProcessTimedOutBatchesAsync(CancellationToken.None);
+
+        // Assert - Should process 0 batches due to error, but not throw
+        result.ShouldBe(0);
+        _logger.Received().Log(LogLevel.Error, Arg.Any<Exception>(), Arg.Any<string>(), Arg.Any<object[]>());
+    }
+
+    [Fact]
+    public async Task StopAsync_WithExceptionDuringProcessing_ShouldLogAndRethrow()
+    {
+        // Arrange
+        _timeoutHandler = new BatchTimeoutHandler(_batchingService, _mediator, _configuration, _logger);
+        await _timeoutHandler.StartAsync(CancellationToken.None);
+
+        // Setup batching service to throw during GetPendingBatchesAsync
+        _batchingService.GetPendingBatchesAsync(Arg.Any<CancellationToken>())
+            .Returns(Task.FromException<IEnumerable<TestCaseBatch>>(new InvalidOperationException("Service error")));
+
+        // Act & Assert
+        await Should.ThrowAsync<InvalidOperationException>(() =>
+            _timeoutHandler.StopAsync(CancellationToken.None));
+
+        _logger.Received().Log(LogLevel.Error, Arg.Any<Exception>(), Arg.Any<string>(), Arg.Any<object[]>());
+    }
+
+    [Fact]
+    public async Task ProcessTimedOutBatchesAsync_WithMultipleBatchesAndOneFailure_ShouldContinueProcessing()
+    {
+        // Arrange
+        _timeoutHandler = new BatchTimeoutHandler(_batchingService, _mediator, _configuration, _logger);
+
+        var batch1 = CreateTestBatch("batch1", DateTime.UtcNow.AddMinutes(-10));
+        batch1.CompletionTimeout = null;
+        batch1.TestCases.First().Metadata.Clear(); // This will cause failure
+
+        var batch2 = CreateTestBatch("batch2", DateTime.UtcNow.AddMinutes(-10));
+        batch2.CompletionTimeout = null;
+
+        _batchingService.GetPendingBatchesAsync(Arg.Any<CancellationToken>())
+            .Returns(new List<TestCaseBatch> { batch1, batch2 });
+
+        // Act
+        var result = await _timeoutHandler.ProcessTimedOutBatchesAsync(CancellationToken.None);
+
+        // Assert - Should process 1 batch successfully despite first batch failing
+        result.ShouldBe(1);
+        await _mediator.Received(1).Publish(Arg.Any<FrameworkTestCaseEndNotification>(), Arg.Any<CancellationToken>());
     }
 
     #endregion

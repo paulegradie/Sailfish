@@ -257,7 +257,7 @@ public class DetailedTableFormatter : IDetailedTableFormatter
 
         // Calculate column widths
         var columnWidths = new int[headers.Length];
-        for (int i = 0; i < headers.Length; i++)
+        for (var i = 0; i < headers.Length; i++)
         {
             columnWidths[i] = Math.Max(headers[i].Length, rows.Max(row => row[i].Length));
         }
@@ -266,7 +266,7 @@ public class DetailedTableFormatter : IDetailedTableFormatter
 
         // Header row
         sb.Append("| ");
-        for (int i = 0; i < headers.Length; i++)
+        for (var i = 0; i < headers.Length; i++)
         {
             sb.Append(headers[i].PadRight(columnWidths[i]));
             sb.Append(" | ");
@@ -275,7 +275,7 @@ public class DetailedTableFormatter : IDetailedTableFormatter
 
         // Separator row
         sb.Append("| ");
-        for (int i = 0; i < headers.Length; i++)
+        for (var i = 0; i < headers.Length; i++)
         {
             sb.Append(new string('-', columnWidths[i]));
             sb.Append(" | ");
@@ -286,7 +286,7 @@ public class DetailedTableFormatter : IDetailedTableFormatter
         foreach (var row in rows)
         {
             sb.Append("| ");
-            for (int i = 0; i < row.Length; i++)
+            for (var i = 0; i < row.Length; i++)
             {
                 sb.Append(row[i].PadRight(columnWidths[i]));
                 sb.Append(" | ");

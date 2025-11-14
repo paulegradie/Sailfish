@@ -375,7 +375,7 @@ public static class QueueExtensions
         var retryDelay = delay ?? TimeSpan.FromMilliseconds(100);
         Exception? lastException = null;
 
-        for (int attempt = 0; attempt <= maxRetries; attempt++)
+        for (var attempt = 0; attempt <= maxRetries; attempt++)
         {
             try
             {

@@ -1,10 +1,10 @@
-using System.Collections.Generic;
 using Sailfish.Analysis.SailDiff.Formatting;
 using Sailfish.Contracts.Public.Models;
 using Shouldly;
+using System.Collections.Generic;
 using Xunit;
 
-namespace Sailfish.Tests.Unit.Analysis.SailDiff.Formatting;
+namespace Tests.Library.Analysis.SailDiff.Formatting;
 
 public class ImpactSummaryFormatterTests
 {

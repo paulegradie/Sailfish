@@ -32,7 +32,7 @@ public class MethodComparisonExample
     {
         // Initialize test data
         _data.Clear();
-        for (int i = 0; i < 1000; i++)
+        for (var i = 0; i < 1000; i++)
         {
             _data.Add(i);
         }
@@ -58,7 +58,7 @@ public class MethodComparisonExample
     public void CalculateSumWithLoop()
     {
         var sum = 0;
-        for (int i = 0; i < _data.Count; i++)
+        for (var i = 0; i < _data.Count; i++)
         {
             sum += _data[i];
         }
@@ -76,9 +76,9 @@ public class MethodComparisonExample
         var array = _data.ToArray();
 
         // Simple bubble sort implementation
-        for (int i = 0; i < array.Length - 1; i++)
+        for (var i = 0; i < array.Length - 1; i++)
         {
-            for (int j = 0; j < array.Length - i - 1; j++)
+            for (var j = 0; j < array.Length - i - 1; j++)
             {
                 if (array[j] > array[j + 1])
                 {

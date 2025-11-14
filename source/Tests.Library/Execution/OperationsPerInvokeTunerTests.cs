@@ -3,6 +3,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using NSubstitute;
 using Sailfish.Execution;
+using Sailfish.Execution.Tuning;
 using Sailfish.Logging;
 using Shouldly;
 using Xunit;

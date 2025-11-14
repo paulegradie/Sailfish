@@ -199,7 +199,7 @@ public class EnvironmentHealthChecker : IEnvironmentHealthChecker
                 // Warmup one sleep to avoid first-iteration anomalies
                 Thread.Sleep(1);
                 var samples = new double[Math.Max(5, iterations)];
-                for (int i = 0; i < samples.Length; i++)
+                for (var i = 0; i < samples.Length; i++)
                 {
                     var sw = Stopwatch.StartNew();
                     Thread.Sleep(1);
@@ -300,7 +300,7 @@ public class EnvironmentHealthChecker : IEnvironmentHealthChecker
                 }
             };
             proc.Start();
-            string output = proc.StandardOutput.ReadToEnd();
+            var output = proc.StandardOutput.ReadToEnd();
             proc.WaitForExit(1000);
             if (string.IsNullOrWhiteSpace(output)) return false;
 
@@ -374,11 +374,12 @@ public class EnvironmentHealthChecker : IEnvironmentHealthChecker
             var rsd = r.RsdPercent;
             var status = rsd <= 5.0 ? HealthStatus.Pass : rsd <= 15.0 ? HealthStatus.Warn : HealthStatus.Fail;
             var details = $"RSD={rsd:F1}% | Median={r.MedianTicks} ticks | N={r.Samples} (warmup {r.Warmups}) | Score={r.JitterScore}/100";
-            string? rec = status switch
+            var rec = status switch
             {
                 HealthStatus.Pass => null,
                 HealthStatus.Warn => "Reduce background noise: close apps, pin to 1 core, use High Performance power plan",
-                HealthStatus.Fail => "Environment jitter is high. Close background tasks, disable power saving, pin CPU affinity, and retry"
+                HealthStatus.Fail => "Environment jitter is high. Close background tasks, disable power saving, pin CPU affinity, and retry",
+                HealthStatus.Unknown => "Failed to identity health status"
             };
             return new("Timer Jitter", status, details, rec);
         }

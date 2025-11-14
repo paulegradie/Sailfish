@@ -30,8 +30,8 @@ namespace Sailfish.Analysis.SailDiff.Statistics
             var q = new double[m];
 
             // BH: q(i) = min_{j>=i} (m/j * p(j)) with monotonicity enforcement from the end
-            double minQ = 1.0;
-            for (int i = m - 1; i >= 0; i--)
+            var minQ = 1.0;
+            for (var i = m - 1; i >= 0; i--)
             {
                 var rank = i + 1; // 1-based rank in ascending p
                 var bh = (m / (double)rank) * items[i].P;
@@ -41,7 +41,7 @@ namespace Sailfish.Analysis.SailDiff.Statistics
 
             // Write back using normalized pair keys to ensure (A,B)==(B,A)
             var result = new Dictionary<(string A, string B), double>(pValues.Count);
-            for (int i = 0; i < m; i++)
+            for (var i = 0; i < m; i++)
             {
                 result[items[i].Key] = q[i];
             }

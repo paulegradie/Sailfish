@@ -426,9 +426,9 @@ internal class MethodComparisonTestRunCompletedHandler : INotificationHandler<Te
 
             // Compute pairwise p-values on log-ratio and apply BH-FDR
             var pMap = new Dictionary<(string A, string B), double>();
-            for (int i = 0; i < stats.Count; i++)
+            for (var i = 0; i < stats.Count; i++)
             {
-                for (int j = i + 1; j < stats.Count; j++)
+                for (var j = i + 1; j < stats.Count; j++)
                 {
                     var a = stats[i];
                     var b = stats[j];
@@ -452,11 +452,11 @@ internal class MethodComparisonTestRunCompletedHandler : INotificationHandler<Te
             foreach (var _ in stats) sb.Append("|-|");
             sb.AppendLine();
 
-            for (int i = 0; i < stats.Count; i++)
+            for (var i = 0; i < stats.Count; i++)
             {
                 var row = stats[i];
                 sb.Append($"| {row.Name} |");
-                for (int j = 0; j < stats.Count; j++)
+                for (var j = 0; j < stats.Count; j++)
                 {
                     if (i == j)
                     {

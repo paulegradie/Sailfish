@@ -227,7 +227,7 @@ public class DefaultTrackingFileDirectoryReaderTests : IDisposable
     {
         // Arrange
         var trackingFiles = new List<string>();
-        for (int i = 0; i < 100; i++)
+        for (var i = 0; i < 100; i++)
         {
             var file = CreateTrackingFileWithDelay($"test{i:D3}", TimeSpan.FromMilliseconds(i * 10));
             trackingFiles.Add(file);
@@ -241,7 +241,7 @@ public class DefaultTrackingFileDirectoryReaderTests : IDisposable
         result.Count.ShouldBe(100);
         
         // Verify descending order (most recent first)
-        for (int i = 0; i < result.Count - 1; i++)
+        for (var i = 0; i < result.Count - 1; i++)
         {
             var currentFileTime = File.GetLastWriteTimeUtc(result[i]);
             var nextFileTime = File.GetLastWriteTimeUtc(result[i + 1]);

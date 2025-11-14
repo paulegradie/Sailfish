@@ -340,7 +340,7 @@ public class SailfishOutlierDetectorTests
         var data = new List<double>();
         
         // Add normal data
-        for (int i = 0; i < 1000; i++)
+        for (var i = 0; i < 1000; i++)
         {
             data.Add(100 + random.NextDouble() * 10);
         }

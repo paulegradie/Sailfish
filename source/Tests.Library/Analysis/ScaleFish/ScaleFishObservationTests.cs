@@ -127,7 +127,7 @@ public class ScaleFishObservationTests
         var methodName = "TestMethod";
         var propertyName = "TestProperty";
         var measurements = new ComplexityMeasurement[100];
-        for (int i = 0; i < 100; i++)
+        for (var i = 0; i < 100; i++)
         {
             measurements[i] = new ComplexityMeasurement(i, i * 10);
         }

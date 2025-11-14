@@ -41,6 +41,7 @@ internal class MethodComparisonTestClassCompletedHandler : INotificationHandler<
     /// <returns>A task representing the asynchronous markdown generation operation.</returns>
     public async Task Handle(TestClassCompletedNotification notification, CancellationToken cancellationToken)
     {
+        await Task.CompletedTask;
         try
         {
             var testClass = notification.ClassExecutionSummaryTrackingFormat.TestClass;

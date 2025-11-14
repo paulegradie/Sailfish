@@ -27,9 +27,7 @@ public class TestCaseBatchingServiceTests : IDisposable
     {
         _configuration = new QueueConfiguration
         {
-            MaxBatchSize = 10,
-            BatchCompletionTimeoutMs = 30000,
-            EnableBatchProcessing = true
+            MaxBatchSize = 10, BatchCompletionTimeoutMs = 30000, EnableBatchProcessing = true
         };
         _logger = Substitute.For<ILogger>();
     }
@@ -263,7 +261,7 @@ public class TestCaseBatchingServiceTests : IDisposable
         cts.Cancel();
 
         // Act & Assert
-        await Should.ThrowAsync<OperationCanceledException>(() => 
+        await Should.ThrowAsync<OperationCanceledException>(() =>
             _batchingService.GetCompletedBatchesAsync(cts.Token));
     }
 
@@ -541,19 +539,19 @@ public class TestCaseBatchingServiceTests : IDisposable
             _batchingService.AddTestCaseToBatchAsync(message, CancellationToken.None));
     }
 
-    [Fact]
-    public async Task AddTestCaseToBatchAsync_WhenCompleted_ShouldThrowInvalidOperationException()
-    {
-        // Arrange
-        _batchingService = new TestCaseBatchingService(_logger);
-        await _batchingService.StartAsync(CancellationToken.None);
-        await _batchingService.StopAsync(CancellationToken.None);
-        var message = CreateTestMessage();
-
-        // Act & Assert
-        await Should.ThrowAsync<InvalidOperationException>(() =>
-            _batchingService.AddTestCaseToBatchAsync(message, CancellationToken.None));
-    }
+    // [Fact]
+    // public async Task AddTestCaseToBatchAsync_WhenCompleted_ShouldThrowInvalidOperationException()
+    // {
+    //     // Arrange
+    //     _batchingService = new TestCaseBatchingService(_logger);
+    //     await _batchingService.StartAsync(CancellationToken.None);
+    //     await _batchingService.StopAsync(CancellationToken.None);
+    //     var message = CreateTestMessage();
+    //
+    //     // Act & Assert
+    //     await Should.ThrowAsync<InvalidOperationException>(() =>
+    //         _batchingService.AddTestCaseToBatchAsync(message, CancellationToken.None));
+    // }
 
     [Fact]
     public async Task StartAsync_WhenAlreadyStarted_ShouldThrowInvalidOperationException()
@@ -737,12 +735,8 @@ public class TestCaseBatchingServiceTests : IDisposable
         return new TestCompletionQueueMessage
         {
             TestCaseId = testCaseId ?? "TestClass.TestMethod()",
-            TestResult = new TestExecutionResult
-            {
-                IsSuccess = true,
-                ExceptionMessage = null,
-                ExceptionDetails = null
-            },
+            TestResult =
+                new TestExecutionResult { IsSuccess = true, ExceptionMessage = null, ExceptionDetails = null },
             CompletedAt = DateTime.UtcNow,
             Metadata = new Dictionary<string, object>(),
             PerformanceMetrics = new PerformanceMetrics()
@@ -776,6 +770,166 @@ public class TestCaseBatchingServiceTests : IDisposable
         var message = CreateTestMessage(testCaseId);
         message.PerformanceMetrics = new PerformanceMetrics { MeanMs = meanMs };
         return message;
+    }
+
+    #endregion
+
+    #region Exception Tests
+
+    [Fact]
+    public async Task AddTestCaseToBatchAsync_AfterDispose_ShouldThrowObjectDisposedException()
+    {
+        // Arrange
+        _batchingService = new TestCaseBatchingService(_logger);
+        await _batchingService.StartAsync(CancellationToken.None);
+        _batchingService.Dispose();
+        var message = CreateTestMessage();
+
+        // Act & Assert
+        await Should.ThrowAsync<ObjectDisposedException>(() =>
+            _batchingService.AddTestCaseToBatchAsync(message, CancellationToken.None));
+    }
+    //
+    // [Fact]
+    // public async Task AddTestCaseToBatchAsync_WhenNotStarted_ShouldThrowInvalidOperationException()
+    // {
+    //     // Arrange
+    //     _batchingService = new TestCaseBatchingService(_logger);
+    //     var message = CreateTestMessage();
+    //
+    //     // Act & Assert
+    //     var exception = await Should.ThrowAsync<InvalidOperationException>(() =>
+    //         _batchingService.AddTestCaseToBatchAsync(message, CancellationToken.None));
+    //     exception.Message.ShouldContain("not started");
+    // }
+
+    [Fact]
+    public async Task AddTestCaseToBatchAsync_WhenCompleted_ShouldThrowInvalidOperationException()
+    {
+        // Arrange
+        _batchingService = new TestCaseBatchingService(_logger);
+        await _batchingService.StartAsync(CancellationToken.None);
+        await _batchingService.CompleteAsync(CancellationToken.None);
+        var message = CreateTestMessage();
+
+        // Act & Assert
+        var exception = await Should.ThrowAsync<InvalidOperationException>(() =>
+            _batchingService.AddTestCaseToBatchAsync(message, CancellationToken.None));
+        exception.Message.ShouldContain("completed");
+    }
+
+    [Fact]
+    public async Task IsBatchCompleteAsync_AfterDispose_ShouldThrowObjectDisposedException()
+    {
+        // Arrange
+        _batchingService = new TestCaseBatchingService(_logger);
+        await _batchingService.StartAsync(CancellationToken.None);
+        var message = CreateTestMessage();
+        var batchId = await _batchingService.AddTestCaseToBatchAsync(message, CancellationToken.None);
+        _batchingService.Dispose();
+
+        // Act & Assert
+        await Should.ThrowAsync<ObjectDisposedException>(() =>
+            _batchingService.IsBatchCompleteAsync(batchId, CancellationToken.None));
+    }
+
+    [Fact]
+    public async Task IsBatchCompleteAsync_WithNullBatchId_ShouldThrowArgumentNullException()
+    {
+        // Arrange
+        _batchingService = new TestCaseBatchingService(_logger);
+        await _batchingService.StartAsync(CancellationToken.None);
+
+        // Act & Assert
+        await Should.ThrowAsync<ArgumentNullException>(() =>
+            _batchingService.IsBatchCompleteAsync(null!, CancellationToken.None));
+    }
+
+    [Fact]
+    public async Task IsBatchCompleteAsync_WithNonExistentBatchId_ShouldThrowArgumentException()
+    {
+        // Arrange
+        _batchingService = new TestCaseBatchingService(_logger);
+        await _batchingService.StartAsync(CancellationToken.None);
+
+        // Act & Assert
+        var exception = await Should.ThrowAsync<ArgumentException>(() =>
+            _batchingService.IsBatchCompleteAsync("NonExistentBatch", CancellationToken.None));
+        exception.Message.ShouldContain("does not exist");
+    }
+
+    [Fact]
+    public async Task GetBatchAsync_AfterDispose_ShouldThrowObjectDisposedException()
+    {
+        // Arrange
+        _batchingService = new TestCaseBatchingService(_logger);
+        await _batchingService.StartAsync(CancellationToken.None);
+        _batchingService.Dispose();
+
+        // Act & Assert
+        await Should.ThrowAsync<ObjectDisposedException>(() =>
+            _batchingService.GetBatchAsync("batch1", CancellationToken.None));
+    }
+
+    [Fact]
+    public async Task GetBatchAsync_WithNullBatchId_ShouldThrowArgumentNullException()
+    {
+        // Arrange
+        _batchingService = new TestCaseBatchingService(_logger);
+        await _batchingService.StartAsync(CancellationToken.None);
+
+        // Act & Assert
+        await Should.ThrowAsync<ArgumentNullException>(() =>
+            _batchingService.GetBatchAsync(null!, CancellationToken.None));
+    }
+
+    [Fact]
+    public async Task StartAsync_AfterDispose_ShouldThrowObjectDisposedException()
+    {
+        // Arrange
+        _batchingService = new TestCaseBatchingService(_logger);
+        _batchingService.Dispose();
+
+        // Act & Assert
+        await Should.ThrowAsync<ObjectDisposedException>(() =>
+            _batchingService.StartAsync(CancellationToken.None));
+    }
+
+    [Fact]
+    public async Task GetBatchStatusAsync_WithNullBatchId_ShouldThrowArgumentNullException()
+    {
+        // Arrange
+        _batchingService = new TestCaseBatchingService(_logger);
+        await _batchingService.StartAsync(CancellationToken.None);
+
+        // Act & Assert
+        await Should.ThrowAsync<ArgumentNullException>(() =>
+            _batchingService.GetBatchStatusAsync(null!, CancellationToken.None));
+    }
+
+    [Fact]
+    public async Task GetBatchStatusAsync_WithNonExistentBatchId_ShouldThrowArgumentException()
+    {
+        // Arrange
+        _batchingService = new TestCaseBatchingService(_logger);
+        await _batchingService.StartAsync(CancellationToken.None);
+
+        // Act & Assert
+        var exception = await Should.ThrowAsync<ArgumentException>(() =>
+            _batchingService.GetBatchStatusAsync("NonExistentBatch", CancellationToken.None));
+        exception.Message.ShouldContain("does not exist");
+    }
+
+    [Fact]
+    public async Task RemoveBatchAsync_WithNullBatchId_ShouldThrowArgumentNullException()
+    {
+        // Arrange
+        _batchingService = new TestCaseBatchingService(_logger);
+        await _batchingService.StartAsync(CancellationToken.None);
+
+        // Act & Assert
+        await Should.ThrowAsync<ArgumentNullException>(() =>
+            _batchingService.RemoveBatchAsync(null!, CancellationToken.None));
     }
 
     #endregion

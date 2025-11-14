@@ -163,9 +163,9 @@ public class MethodComparisonTestClassCompletedHandlerMarkdownTests
             .WithTestCaseId(TestCaseIdBuilder.Create().WithTestCaseName("Foo").Build())
             .Build();
 
-        string? g1 = InvokePrivate<string?>(handler, "GetComparisonGroup", sum);
-        string? g2 = InvokePrivate<string?>(handler, "GetComparisonGroup", sort);
-        string? g3 = InvokePrivate<string?>(handler, "GetComparisonGroup", none);
+        var g1 = InvokePrivate<string?>(handler, "GetComparisonGroup", sum);
+        var g2 = InvokePrivate<string?>(handler, "GetComparisonGroup", sort);
+        var g3 = InvokePrivate<string?>(handler, "GetComparisonGroup", none);
 
         g1.ShouldBe("SumCalculation");
         g2.ShouldBe("SortingAlgorithm");

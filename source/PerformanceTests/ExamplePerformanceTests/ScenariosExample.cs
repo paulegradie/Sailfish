@@ -53,7 +53,7 @@ public class ScenariosExample
         // Simulate different operations based on scenario type with varying complexity based on N variable
         var operationCount = N == "wow" ? 3 : 1; // Use the N variable to control operation complexity
 
-        for (int i = 0; i < operationCount; i++)
+        for (var i = 0; i < operationCount; i++)
         {
             await SimulateScenarioOperation(scenario, cancellationToken);
         }

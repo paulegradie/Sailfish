@@ -79,7 +79,7 @@ public class MarkdownOutputGoldenTests
 
         // Build deterministic execution summaries: one class with WriteToMarkdown attribute
         var dataLen = 50;
-        double[] zeros = Enumerable.Repeat(0.0, dataLen).ToArray();
+        var zeros = Enumerable.Repeat(0.0, dataLen).ToArray();
 
         var classSummary = ClassExecutionSummaryTrackingFormatBuilder.Create()
             .WithTestClass(typeof(TestTypes.MarkdownGoldenClass))

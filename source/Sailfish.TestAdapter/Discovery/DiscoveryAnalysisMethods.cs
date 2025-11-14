@@ -196,18 +196,4 @@ public static class DiscoveryAnalysisMethods
         }
         return null;
     }
-
-    /// <summary>
-    /// Extracts an enum value from an expression.
-    /// </summary>
-    /// <param name="expression">The expression to extract from.</param>
-    /// <returns>The enum value as a string, or null if not an enum member access.</returns>
-    private static string? ExtractEnumValue(ExpressionSyntax expression)
-    {
-        if (expression is MemberAccessExpressionSyntax memberAccess)
-        {
-            return memberAccess.Name.Identifier.ValueText;
-        }
-        return null;
-    }
 }

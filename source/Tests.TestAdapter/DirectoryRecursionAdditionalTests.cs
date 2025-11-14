@@ -129,7 +129,7 @@ public class DirectoryRecursionAdditionalTests : IDisposable
     {
         // Arrange
         var deepDir = _tempDirectory;
-        for (int i = 0; i < 5; i++)
+        for (var i = 0; i < 5; i++)
         {
             deepDir = Path.Combine(deepDir, $"level{i}");
             Directory.CreateDirectory(deepDir);

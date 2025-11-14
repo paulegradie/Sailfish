@@ -408,7 +408,7 @@ internal class TestCompletionQueueConsumer : IDisposable, IAsyncDisposable
         const int maxRetries = 3;
         const int baseDelayMs = 100;
 
-        for (int attempt = 1; attempt <= maxRetries; attempt++)
+        for (var attempt = 1; attempt <= maxRetries; attempt++)
         {
             try
             {

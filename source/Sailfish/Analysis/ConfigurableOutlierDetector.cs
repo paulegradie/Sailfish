@@ -36,7 +36,7 @@ public class ConfigurableOutlierDetector : IOutlierDetector
             ? ChooseAdaptive(lowerOutliers.Length, upperOutliers.Length)
             : strategy;
 
-        double[] filtered = effective switch
+        var filtered = effective switch
         {
             OutlierStrategy.DontRemove => [.. originalData],
             OutlierStrategy.RemoveUpper => originalData.Where(x => !Above(x, detector.UpperFence)).ToArray(),

@@ -177,7 +177,7 @@ public class OverheadEstimatorTests
         var estimator = new OverheadEstimator();
 
         // Act & Assert
-        for (int i = 0; i < 3; i++)
+        for (var i = 0; i < 3; i++)
         {
             await Should.NotThrowAsync(async () => await estimator.Estimate());
             var estimate = estimator.GetAverageEstimate();

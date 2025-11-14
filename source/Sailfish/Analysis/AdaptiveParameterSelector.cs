@@ -15,6 +15,7 @@ public class AdaptiveParameterSelector
     /// Classify pilot samples and return recommended adaptive sampling configuration.
     /// Does not mutate execution settings; intended to be used to tune local thresholds.
     /// </summary>
+    /// <exception cref="ArgumentOutOfRangeException"></exception>
     public AdaptiveSamplingConfig Select(IReadOnlyList<double> pilotSamples, IExecutionSettings executionSettings)
     {
         ArgumentNullException.ThrowIfNull(executionSettings);
@@ -60,7 +61,8 @@ public class AdaptiveParameterSelector
             AdaptiveSamplingConfig.SpeedCategory.Fast => 30,
             AdaptiveSamplingConfig.SpeedCategory.Medium => 20,
             AdaptiveSamplingConfig.SpeedCategory.Slow => 15,
-            AdaptiveSamplingConfig.SpeedCategory.VerySlow => 10
+            AdaptiveSamplingConfig.SpeedCategory.VerySlow => 10,
+            _ => throw new ArgumentOutOfRangeException()
         };
 
         var reason = $"{category}: recommended MinN={recommendedMin} based on pilot median {medianNs / 1000.0:F1}\u00B5s to stabilize CV";

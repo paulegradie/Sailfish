@@ -31,7 +31,7 @@ public class CsvOutputGoldenTests
     private static TestRunCompletedNotification CreateNotification()
     {
         var dataLen = 40;
-        double[] zeros = Enumerable.Repeat(0.0, dataLen).ToArray();
+        var zeros = Enumerable.Repeat(0.0, dataLen).ToArray();
 
         var classSummary = ClassExecutionSummaryTrackingFormatBuilder.Create()
             .WithTestClass(typeof(TestTypes.CsvGoldenClass))

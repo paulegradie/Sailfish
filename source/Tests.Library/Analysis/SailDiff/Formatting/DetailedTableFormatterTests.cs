@@ -1,11 +1,11 @@
-using System.Collections.Generic;
-using System.Linq;
 using Sailfish.Analysis.SailDiff.Formatting;
 using Sailfish.Contracts.Public.Models;
 using Shouldly;
+using System.Collections.Generic;
+using System.Linq;
 using Xunit;
 
-namespace Sailfish.Tests.Unit.Analysis.SailDiff.Formatting;
+namespace Tests.Library.Analysis.SailDiff.Formatting;
 
 public class DetailedTableFormatterTests
 {
