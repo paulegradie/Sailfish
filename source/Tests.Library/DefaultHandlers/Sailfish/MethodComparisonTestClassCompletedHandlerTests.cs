@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using MediatR;
@@ -14,7 +13,6 @@ using Sailfish.Execution;
 using Sailfish.Logging;
 using Shouldly;
 using Tests.Common.Builders;
-using Tests.Common.Utils;
 using Xunit;
 
 namespace Tests.Library.DefaultHandlers.Sailfish;

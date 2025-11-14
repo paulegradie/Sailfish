@@ -1,4 +1,3 @@
-using System;
 using Sailfish.Attributes;
 using Sailfish.Analysis;
 

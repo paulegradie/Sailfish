@@ -4,7 +4,6 @@ using PerformanceTests.ExamplePerformanceTests;
 using Sailfish;
 using Sailfish.Logging;
 using Serilog.Events;
-using System;
 
 var settings = RunSettingsBuilder
     .CreateBuilder()

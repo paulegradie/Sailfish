@@ -7,19 +7,15 @@ using System.Threading;
 using System.Threading.Tasks;
 using MediatR;
 using NSubstitute;
-using Sailfish;
 using Sailfish.Contracts.Private;
 using Sailfish.Contracts.Public.Notifications;
 using Sailfish.Contracts.Public.Serialization.Tracking.V1;
 using Sailfish.DefaultHandlers.Sailfish;
-using Sailfish.Diagnostics.Environment;
 using Sailfish.Logging;
-using Sailfish.Results;
 using Shouldly;
 using Tests.Common.Builders;
 using Tests.Library.TestUtils;
 using Xunit;
-using Xunit.Sdk;
 
 
 namespace Tests.Library.Presentation;

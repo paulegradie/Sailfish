@@ -1,6 +1,4 @@
 using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using MediatR;
@@ -9,9 +7,7 @@ using NSubstitute.ExceptionExtensions;
 using Sailfish.Attributes;
 using Sailfish.Contracts.Private;
 using Sailfish.Contracts.Public.Notifications;
-using Sailfish.Contracts.Public.Serialization.Tracking.V1;
 using Sailfish.DefaultHandlers.Sailfish;
-using Sailfish.Execution;
 using Sailfish.Logging;
 using Shouldly;
 using Tests.Common.Builders;

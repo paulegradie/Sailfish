@@ -4,7 +4,6 @@ using System.Linq;
 using NSubstitute;
 using Sailfish.Analysis.SailDiff.Formatting;
 using Sailfish.Analysis.ScaleFish;
-using Sailfish.Analysis.ScaleFish.CurveFitting;
 using Sailfish.Contracts.Public.Models;
 using Sailfish.Execution;
 using Sailfish.Presentation;

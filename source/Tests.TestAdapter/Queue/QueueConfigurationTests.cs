@@ -1,4 +1,3 @@
-using System.Linq;
 using Sailfish.Logging;
 using Sailfish.TestAdapter.Queue.Configuration;
 using Shouldly;

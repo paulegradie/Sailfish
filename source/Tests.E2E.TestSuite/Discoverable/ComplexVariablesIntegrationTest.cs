@@ -1,7 +1,5 @@
 ﻿using Sailfish.Attributes;
 using Sailfish.Contracts.Public.Variables;
-using System;
-using System.Collections.Generic;
 
 namespace Tests.E2E.TestSuite.Discoverable;
 

@@ -1,5 +1,4 @@
 using System;
-using System.Globalization;
 
 namespace Sailfish.Analysis.SailDiff.Formatting;
 

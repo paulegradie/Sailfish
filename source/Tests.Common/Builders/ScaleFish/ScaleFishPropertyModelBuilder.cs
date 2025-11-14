@@ -1,5 +1,4 @@
 ﻿using Sailfish.Analysis.ScaleFish;
-using System;
 using Tests.Common.Utils;
 
 namespace Tests.Common.Builders.ScaleFish;

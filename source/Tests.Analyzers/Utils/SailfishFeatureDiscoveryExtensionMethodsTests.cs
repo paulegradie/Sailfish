@@ -1,10 +1,7 @@
-using System.Collections.Generic;
-using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Sailfish.Analyzers.Utils.TreeParsingExtensionMethods;
-using Tests.Analyzers.Utils;
 using Xunit;
 
 namespace Tests.Analyzers.Utils;

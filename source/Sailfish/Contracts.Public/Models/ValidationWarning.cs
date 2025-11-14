@@ -1,5 +1,3 @@
-using System;
-
 namespace Sailfish.Contracts.Public.Models;
 
 public record ValidationWarning(string Code, string Message, ValidationSeverity Severity, string? Details = null)

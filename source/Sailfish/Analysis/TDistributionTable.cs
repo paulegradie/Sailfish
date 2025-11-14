@@ -1,4 +1,3 @@
-using System;
 using Sailfish.Analysis.SailDiff.Statistics.StatsCore.Distributions;
 
 namespace Sailfish.Analysis

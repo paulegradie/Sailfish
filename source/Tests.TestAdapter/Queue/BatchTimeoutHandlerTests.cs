@@ -5,8 +5,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using MediatR;
 using NSubstitute;
-using Sailfish.Contracts.Public.Models;
-using Sailfish.Execution;
 using Sailfish.Logging;
 using Sailfish.TestAdapter.Handlers.FrameworkHandlers;
 using Sailfish.TestAdapter.Queue.Configuration;

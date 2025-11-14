@@ -1,13 +1,10 @@
 using System;
 using System.Linq;
 using Microsoft.CodeAnalysis;
-using Microsoft.VisualStudio.TestPlatform.ObjectModel;
 using NSubstitute;
-using Sailfish.Attributes;
 using Sailfish.TestAdapter;
 using Sailfish.TestAdapter.Discovery;
 using Sailfish.TestAdapter.TestProperties;
-using Sailfish.TestAdapter.Execution;
 using Shouldly;
 using Xunit;
 

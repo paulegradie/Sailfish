@@ -1,7 +1,3 @@
-using System.Globalization;
-using CsvHelper;
-using CsvHelper.Configuration;
-using CsvHelper.TypeConversion;
 using Sailfish.Contracts.Private.CsvMaps.Converters;
 using Shouldly;
 using Xunit;

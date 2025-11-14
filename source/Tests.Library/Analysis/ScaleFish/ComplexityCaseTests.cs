@@ -1,5 +1,4 @@
 using System.Collections.Generic;
-using System.Reflection;
 using Sailfish.Analysis.ScaleFish;
 using Shouldly;
 using Xunit;

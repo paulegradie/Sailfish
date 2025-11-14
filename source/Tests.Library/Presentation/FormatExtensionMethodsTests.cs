@@ -5,7 +5,6 @@ using Xunit;
 using Sailfish.Presentation;
 using Sailfish.Execution;
 using Sailfish.Contracts.Public.Models;
-using Sailfish.Contracts.Public.Serialization.Tracking.V1;
 using Tests.Common.Builders;
 
 namespace Tests.Library.Presentation;

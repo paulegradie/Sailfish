@@ -1,7 +1,6 @@
 using System.Collections.Generic;
 using System.Text;
 using System.Threading;
-using Sailfish.Analysis.SailDiff.Formatting;
 using Sailfish.Contracts.Public;
 using Sailfish.Contracts.Public.Models;
 using Sailfish.Logging;

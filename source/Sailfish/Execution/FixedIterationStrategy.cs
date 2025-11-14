@@ -1,7 +1,6 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
-using Sailfish.Contracts.Public.Models;
 using Sailfish.Logging;
 
 namespace Sailfish.Execution;

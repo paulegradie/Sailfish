@@ -1,7 +1,5 @@
 using Sailfish.Attributes;
 using Sailfish.Registration;
-using System.Threading;
-using System.Threading.Tasks;
 using Tests.E2E.TestSuite.Utils;
 
 namespace Tests.E2E.TestSuite.Discoverable;
