@@ -42,7 +42,6 @@ internal class HarnessBaselineCalibrator
             samples.Add(sw.ElapsedTicks);
         }
 
-        if (samples.Count == 0) return 0;
         var median = Median(samples);
 
         // Clamp to int range and non-negative
@@ -72,6 +71,7 @@ internal class HarnessBaselineCalibrator
 
     private static long Median(IReadOnlyList<long> values)
     {
+        if (values.Count == 0) return 0;
         var ordered = values.OrderBy(v => v).ToArray();
         var n = ordered.Length;
         if (n % 2 == 1) return ordered[n / 2];

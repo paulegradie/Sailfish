@@ -16,11 +16,11 @@ public interface IMannWhitneyWilcoxonTest : ITest;
 public class MannWhitneyWilcoxonTest : IMannWhitneyWilcoxonTest
 {
     private const int MaxArraySize = 10;
-    private readonly ITestPreprocessor preprocessor;
+    private readonly ITestPreprocessor _preprocessor;
 
     public MannWhitneyWilcoxonTest(ITestPreprocessor preprocessor)
     {
-        this.preprocessor = preprocessor;
+        this._preprocessor = preprocessor;
     }
 
     public TestResultWithOutlierAnalysis ExecuteTest(double[] before, double[] after, SailDiffSettings settings)
@@ -37,7 +37,7 @@ public class MannWhitneyWilcoxonTest : IMannWhitneyWilcoxonTest
                 new ParallelOptions { MaxDegreeOfParallelism = 5 },
                 _ =>
                 {
-                    var (p1, p2) = preprocessor.PreprocessJointlyWithDownSample(before, after, settings.UseOutlierDetection, maxArraySize: MaxArraySize);
+                    var (p1, p2) = _preprocessor.PreprocessJointlyWithDownSample(before, after, settings.UseOutlierDetection, maxArraySize: MaxArraySize);
 
                     var sample1 = p1.OutlierAnalysis?.DataWithOutliersRemoved ?? p1.RawData;
                     var sample2 = p2.OutlierAnalysis?.DataWithOutliersRemoved ?? p2.RawData;
@@ -82,7 +82,7 @@ public class MannWhitneyWilcoxonTest : IMannWhitneyWilcoxonTest
                 after,
                 additionalResults);
 
-            var (rep1, rep2) = preprocessor.PreprocessJointlyWithDownSample(before, after, settings.UseOutlierDetection, maxArraySize: MaxArraySize);
+            var (rep1, rep2) = _preprocessor.PreprocessJointlyWithDownSample(before, after, settings.UseOutlierDetection, maxArraySize: MaxArraySize);
             return new TestResultWithOutlierAnalysis(testResults, rep1.OutlierAnalysis, rep2.OutlierAnalysis);
         }
         catch (Exception ex)

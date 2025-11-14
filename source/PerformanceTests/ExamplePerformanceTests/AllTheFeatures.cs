@@ -12,15 +12,15 @@ namespace PerformanceTests.ExamplePerformanceTests;
 [Sailfish(SampleSize = 2, NumWarmupIterations = 1, DisableOverheadEstimation = false, Disabled = false)]
 public class AllTheFeatures
 {
-    private readonly MyClient client;
-    private readonly SomethingIRegistered dep;
-    private readonly SomethingYouRegistered reg;
+    private readonly MyClient _client;
+    private readonly SomethingIRegistered _dep;
+    private readonly SomethingYouRegistered _reg;
 
     public AllTheFeatures(SomethingIRegistered dep, SomethingYouRegistered reg, MyClient client)
     {
-        this.dep = dep;
-        this.reg = reg;
-        this.client = client;
+        this._dep = dep;
+        this._reg = reg;
+        this._client = client;
     }
 
     [SailfishRangeVariable(true, 10, 3, 2)]
@@ -40,7 +40,7 @@ public class AllTheFeatures
     {
         var wait = Delay - Multiplier * Multiplier;
         await Task.Delay(Math.Max(0, wait), ct);
-        reg.Noop();
+        _reg.Noop();
     }
 
     [SailfishMethodSetup(nameof(FasterMethod))]
@@ -58,7 +58,7 @@ public class AllTheFeatures
     public async Task FasterMethod(CancellationToken ct)
     {
         await Task.Delay(Delay, ct);
-        reg.Noop();
+        _reg.Noop();
     }
 
     [SailfishMethod(Disabled = true)]
@@ -70,18 +70,18 @@ public class AllTheFeatures
 
 public class MyClient : ISailfishDependency
 {
-    private readonly HttpClient client;
+    private readonly HttpClient _client;
 
     public MyClient()
     {
         // const string apikey = "API-123445";
         // const string url = "http://localhost:1234";
-        client = new HttpClient();
+        _client = new HttpClient();
     }
 
     public async Task Get()
     {
-        client.CancelPendingRequests();
+        _client.CancelPendingRequests();
         await Task.Yield();
     }
 }

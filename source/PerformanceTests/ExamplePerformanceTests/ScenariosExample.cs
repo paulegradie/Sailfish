@@ -19,7 +19,7 @@ public class ScenariosExample
     private const string ScenarioA = "ScenarioA";
     private const string ScenarioB = "ScenarioB";
     private const string ScenarioC = "ScenarioC";
-    private Dictionary<string, MyScenario> scenarioMap = null!;
+    private Dictionary<string, MyScenario> _scenarioMap = null!;
 
     /// <summary>
     /// Controls the complexity of operations - "wow" triggers multiple operations per test
@@ -36,7 +36,7 @@ public class ScenariosExample
     [SailfishGlobalSetup]
     public void GlobalSetup()
     {
-        scenarioMap = new Dictionary<string, MyScenario>
+        _scenarioMap = new Dictionary<string, MyScenario>
         {
             { ScenarioA, new MyScenario("ftp://test.example.com", 21, new InnerScenario("FTP_Transfer")) },
             { ScenarioB, new MyScenario("https://api.example.com", 443, new InnerScenario("HTTPS_API")) },
@@ -47,7 +47,7 @@ public class ScenariosExample
     [SailfishMethod]
     public async Task TestMethod(CancellationToken cancellationToken) // token is injected when requested
     {
-        var scenario = scenarioMap[Scenario];
+        var scenario = _scenarioMap[Scenario];
         Console.WriteLine($"Testing scenario: {scenario.InnerScenario.Name} on {scenario.ConnStr}:{scenario.Port}");
 
         // Simulate different operations based on scenario type with varying complexity based on N variable

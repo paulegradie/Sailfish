@@ -16,22 +16,22 @@ namespace Tests.Library.Analysis.SailDiff;
 
 public class SailDiffConsoleWindowMessageFormatterTests
 {
-    private readonly ISailDiffResultMarkdownConverter mockMarkdownConverter;
-    private readonly ILogger mockLogger;
-    private readonly SailDiffConsoleWindowMessageFormatter formatter;
+    private readonly ISailDiffResultMarkdownConverter _mockMarkdownConverter;
+    private readonly ILogger _mockLogger;
+    private readonly SailDiffConsoleWindowMessageFormatter _formatter;
 
     public SailDiffConsoleWindowMessageFormatterTests()
     {
-        mockMarkdownConverter = Substitute.For<ISailDiffResultMarkdownConverter>();
-        mockLogger = Substitute.For<ILogger>();
-        formatter = new SailDiffConsoleWindowMessageFormatter(mockMarkdownConverter, mockLogger);
+        _mockMarkdownConverter = Substitute.For<ISailDiffResultMarkdownConverter>();
+        _mockLogger = Substitute.For<ILogger>();
+        _formatter = new SailDiffConsoleWindowMessageFormatter(_mockMarkdownConverter, _mockLogger);
     }
 
     [Fact]
     public void Constructor_WithValidDependencies_ShouldCreateInstance()
     {
         // Arrange & Act
-        var instance = new SailDiffConsoleWindowMessageFormatter(mockMarkdownConverter, mockLogger);
+        var instance = new SailDiffConsoleWindowMessageFormatter(_mockMarkdownConverter, _mockLogger);
 
         // Assert
         instance.ShouldNotBeNull();
@@ -42,7 +42,7 @@ public class SailDiffConsoleWindowMessageFormatterTests
     {
         // Arrange
         const string expectedMarkdown = "| Test | Before | After |\n|------|--------|-------|";
-        mockMarkdownConverter.ConvertToEnhancedMarkdownTable(Arg.Any<IEnumerable<SailDiffResult>>(), OutputContext.Console)
+        _mockMarkdownConverter.ConvertToEnhancedMarkdownTable(Arg.Any<IEnumerable<SailDiffResult>>(), OutputContext.Console)
             .Returns(expectedMarkdown);
 
         var testCaseId = new TestCaseId("TestClass.TestMethod()");
@@ -56,7 +56,7 @@ public class SailDiffConsoleWindowMessageFormatterTests
         var cancellationToken = CancellationToken.None;
 
         // Act
-        var result = formatter.FormConsoleWindowMessageForSailDiff(sailDiffResults, testIds, settings, cancellationToken);
+        var result = _formatter.FormConsoleWindowMessageForSailDiff(sailDiffResults, testIds, settings, cancellationToken);
 
         // Assert
         result.ShouldNotBeNull();
@@ -78,10 +78,10 @@ public class SailDiffConsoleWindowMessageFormatterTests
         var settings = CreateSampleSailDiffSettings();
 
         // Act
-        formatter.FormConsoleWindowMessageForSailDiff(sailDiffResults, testIds, settings, CancellationToken.None);
+        _formatter.FormConsoleWindowMessageForSailDiff(sailDiffResults, testIds, settings, CancellationToken.None);
 
         // Assert
-        mockMarkdownConverter.Received(1).ConvertToEnhancedMarkdownTable(sailDiffResults, OutputContext.Console);
+        _mockMarkdownConverter.Received(1).ConvertToEnhancedMarkdownTable(sailDiffResults, OutputContext.Console);
     }
 
     [Fact]
@@ -89,7 +89,7 @@ public class SailDiffConsoleWindowMessageFormatterTests
     {
         // Arrange
         const string expectedMarkdown = "markdown content";
-        mockMarkdownConverter.ConvertToEnhancedMarkdownTable(Arg.Any<IEnumerable<SailDiffResult>>(), OutputContext.Console)
+        _mockMarkdownConverter.ConvertToEnhancedMarkdownTable(Arg.Any<IEnumerable<SailDiffResult>>(), OutputContext.Console)
             .Returns(expectedMarkdown);
 
         var sailDiffResults = CreateSampleSailDiffResults();
@@ -97,10 +97,10 @@ public class SailDiffConsoleWindowMessageFormatterTests
         var settings = CreateSampleSailDiffSettings();
 
         // Act
-        var result = formatter.FormConsoleWindowMessageForSailDiff(sailDiffResults, testIds, settings, CancellationToken.None);
+        var result = _formatter.FormConsoleWindowMessageForSailDiff(sailDiffResults, testIds, settings, CancellationToken.None);
 
         // Assert
-        mockLogger.Received(1).Log(LogLevel.Information, result);
+        _mockLogger.Received(1).Log(LogLevel.Information, result);
     }
 
     [Fact]
@@ -108,7 +108,7 @@ public class SailDiffConsoleWindowMessageFormatterTests
     {
         // Arrange
         const string expectedMarkdown = "";
-        mockMarkdownConverter.ConvertToEnhancedMarkdownTable(Arg.Any<IEnumerable<SailDiffResult>>(), OutputContext.Console)
+        _mockMarkdownConverter.ConvertToEnhancedMarkdownTable(Arg.Any<IEnumerable<SailDiffResult>>(), OutputContext.Console)
             .Returns(expectedMarkdown);
 
         var emptyResults = new List<SailDiffResult>();
@@ -116,7 +116,7 @@ public class SailDiffConsoleWindowMessageFormatterTests
         var settings = new SailDiffSettings(alpha: 0.05, testType: TestType.Test);
 
         // Act
-        var result = formatter.FormConsoleWindowMessageForSailDiff(emptyResults, testIds, settings, CancellationToken.None);
+        var result = _formatter.FormConsoleWindowMessageForSailDiff(emptyResults, testIds, settings, CancellationToken.None);
 
         // Assert
         result.ShouldContain("Test results comparing:");
@@ -136,7 +136,7 @@ public class SailDiffConsoleWindowMessageFormatterTests
         var settings = CreateSampleSailDiffSettings();
 
         // Act
-        var result = formatter.FormConsoleWindowMessageForSailDiff(sailDiffResults, testIds, settings, CancellationToken.None);
+        var result = _formatter.FormConsoleWindowMessageForSailDiff(sailDiffResults, testIds, settings, CancellationToken.None);
 
         // Assert
         result.ShouldContain("Before: Before.Test1, Before.Test2, Before.Test3");
@@ -163,7 +163,7 @@ public class SailDiffConsoleWindowMessageFormatterTests
             var settings = new SailDiffSettings(testType: testType);
 
             // Act
-            var result = formatter.FormConsoleWindowMessageForSailDiff(sailDiffResults, testIds, settings, CancellationToken.None);
+            var result = _formatter.FormConsoleWindowMessageForSailDiff(sailDiffResults, testIds, settings, CancellationToken.None);
 
             // Assert
             result.ShouldContain($"{expectedName} results comparing:");
@@ -184,7 +184,7 @@ public class SailDiffConsoleWindowMessageFormatterTests
             var settings = new SailDiffSettings(alpha: alpha);
 
             // Act
-            var result = formatter.FormConsoleWindowMessageForSailDiff(sailDiffResults, testIds, settings, CancellationToken.None);
+            var result = _formatter.FormConsoleWindowMessageForSailDiff(sailDiffResults, testIds, settings, CancellationToken.None);
 
             // Assert
             result.ShouldContain($"Note: Changes are significant if the PValue is less than {alpha}");
@@ -200,7 +200,7 @@ public class SailDiffConsoleWindowMessageFormatterTests
         var settings = CreateSampleSailDiffSettings();
 
         // Act
-        var result = formatter.FormConsoleWindowMessageForSailDiff(sailDiffResults, testIds, settings, CancellationToken.None);
+        var result = _formatter.FormConsoleWindowMessageForSailDiff(sailDiffResults, testIds, settings, CancellationToken.None);
 
         // Assert
         result.ShouldContain("Before: ");
@@ -217,11 +217,11 @@ public class SailDiffConsoleWindowMessageFormatterTests
         var settings = CreateSampleSailDiffSettings();
         string? loggedValue = null;
 
-        mockLogger.When(x => x.Log(LogLevel.Information, Arg.Any<string>()))
+        _mockLogger.When(x => x.Log(LogLevel.Information, Arg.Any<string>()))
             .Do(callInfo => loggedValue = callInfo.ArgAt<string>(1));
 
         // Act
-        var result = formatter.FormConsoleWindowMessageForSailDiff(sailDiffResults, testIds, settings, CancellationToken.None);
+        var result = _formatter.FormConsoleWindowMessageForSailDiff(sailDiffResults, testIds, settings, CancellationToken.None);
 
         // Assert
         result.ShouldBe(loggedValue);
@@ -238,7 +238,7 @@ public class SailDiffConsoleWindowMessageFormatterTests
         var settings = CreateSampleSailDiffSettings();
 
         // Act
-        var result = formatter.FormConsoleWindowMessageForSailDiff(sailDiffResults, testIds, settings, CancellationToken.None);
+        var result = _formatter.FormConsoleWindowMessageForSailDiff(sailDiffResults, testIds, settings, CancellationToken.None);
 
         // Assert
         result.ShouldContain("Before: Test.With.Dots, Test(WithParens), Test<WithGenerics>");
@@ -255,7 +255,7 @@ public class SailDiffConsoleWindowMessageFormatterTests
 
         
         // Act
-        var result = formatter.FormConsoleWindowMessageForSailDiff(sailDiffResults, testIds, settings, CancellationToken.None);
+        var result = _formatter.FormConsoleWindowMessageForSailDiff(sailDiffResults, testIds, settings, CancellationToken.None);
 
         // Assert
         var lines = result.Split('\n');
@@ -292,7 +292,7 @@ public class SailDiffConsoleWindowMessageFormatterTests
     {
         // Arrange
         const string expectedMarkdown = "multiple results markdown";
-        mockMarkdownConverter.ConvertToEnhancedMarkdownTable(Arg.Any<IEnumerable<SailDiffResult>>(), OutputContext.Console)
+        _mockMarkdownConverter.ConvertToEnhancedMarkdownTable(Arg.Any<IEnumerable<SailDiffResult>>(), OutputContext.Console)
             .Returns(expectedMarkdown);
 
         var results = new List<SailDiffResult>();
@@ -308,11 +308,11 @@ public class SailDiffConsoleWindowMessageFormatterTests
         var settings = CreateSampleSailDiffSettings();
 
         // Act
-        var result = formatter.FormConsoleWindowMessageForSailDiff(results, testIds, settings, CancellationToken.None);
+        var result = _formatter.FormConsoleWindowMessageForSailDiff(results, testIds, settings, CancellationToken.None);
 
         // Assert
         result.ShouldContain(expectedMarkdown);
-        mockMarkdownConverter.Received(1).ConvertToEnhancedMarkdownTable(Arg.Is<IEnumerable<SailDiffResult>>(
+        _mockMarkdownConverter.Received(1).ConvertToEnhancedMarkdownTable(Arg.Is<IEnumerable<SailDiffResult>>(
             r => r.ToList().Count == 3), OutputContext.Console);
     }
 
@@ -326,7 +326,7 @@ public class SailDiffConsoleWindowMessageFormatterTests
         var cancellationToken = new CancellationToken(canceled: true);
 
         // Act & Assert
-        Should.NotThrow(() => formatter.FormConsoleWindowMessageForSailDiff(
+        Should.NotThrow(() => _formatter.FormConsoleWindowMessageForSailDiff(
             sailDiffResults, testIds, settings, cancellationToken));
     }
 
@@ -341,7 +341,7 @@ public class SailDiffConsoleWindowMessageFormatterTests
         var settings = CreateSampleSailDiffSettings();
 
         // Act
-        var result = formatter.FormConsoleWindowMessageForSailDiff(sailDiffResults, testIds, settings, CancellationToken.None);
+        var result = _formatter.FormConsoleWindowMessageForSailDiff(sailDiffResults, testIds, settings, CancellationToken.None);
 
         // Assert
         result.ShouldContain($"Before: {longBeforeId}");
@@ -360,16 +360,16 @@ public class SailDiffConsoleWindowMessageFormatterTests
         var settings = CreateSampleSailDiffSettings();
 
         const string expectedMarkdown = "exception result markdown";
-        mockMarkdownConverter.ConvertToEnhancedMarkdownTable(Arg.Any<IEnumerable<SailDiffResult>>(), OutputContext.Console)
+        _mockMarkdownConverter.ConvertToEnhancedMarkdownTable(Arg.Any<IEnumerable<SailDiffResult>>(), OutputContext.Console)
             .Returns(expectedMarkdown);
 
         // Act
-        var result = formatter.FormConsoleWindowMessageForSailDiff(sailDiffResults, testIds, settings, CancellationToken.None);
+        var result = _formatter.FormConsoleWindowMessageForSailDiff(sailDiffResults, testIds, settings, CancellationToken.None);
 
         // Assert
         result.ShouldNotBeNull();
         result.ShouldContain(expectedMarkdown);
-        mockMarkdownConverter.Received(1).ConvertToEnhancedMarkdownTable(sailDiffResults, OutputContext.Console);
+        _mockMarkdownConverter.Received(1).ConvertToEnhancedMarkdownTable(sailDiffResults, OutputContext.Console);
     }
 
     [Fact]
@@ -381,7 +381,7 @@ public class SailDiffConsoleWindowMessageFormatterTests
         var settings = new SailDiffSettings(alpha: 0.00001);
 
         // Act
-        var result = formatter.FormConsoleWindowMessageForSailDiff(sailDiffResults, testIds, settings, CancellationToken.None);
+        var result = _formatter.FormConsoleWindowMessageForSailDiff(sailDiffResults, testIds, settings, CancellationToken.None);
 
         // Assert
         result.ShouldContain("Note: Changes are significant if the PValue is less than 1E-05");
@@ -396,7 +396,7 @@ public class SailDiffConsoleWindowMessageFormatterTests
         var settings = CreateSampleSailDiffSettings();
 
         // Act
-        var result = formatter.FormConsoleWindowMessageForSailDiff(sailDiffResults, testIds, settings, CancellationToken.None);
+        var result = _formatter.FormConsoleWindowMessageForSailDiff(sailDiffResults, testIds, settings, CancellationToken.None);
 
         // Assert
         result.ShouldContain("Before: SingleBeforeTest");
@@ -414,7 +414,7 @@ public class SailDiffConsoleWindowMessageFormatterTests
         var settings = CreateSampleSailDiffSettings();
 
         // Act
-        var result = formatter.FormConsoleWindowMessageForSailDiff(sailDiffResults, testIds, settings, CancellationToken.None);
+        var result = _formatter.FormConsoleWindowMessageForSailDiff(sailDiffResults, testIds, settings, CancellationToken.None);
 
         // Assert
         result.ShouldContain("-----------------------------------\r\n");
@@ -424,7 +424,7 @@ public class SailDiffConsoleWindowMessageFormatterTests
     public void FormConsoleWindowMessageForSailDiff_WithNullMarkdownResult_ShouldHandleGracefully()
     {
         // Arrange
-        mockMarkdownConverter.ConvertToEnhancedMarkdownTable(Arg.Any<IEnumerable<SailDiffResult>>(), OutputContext.Console)
+        _mockMarkdownConverter.ConvertToEnhancedMarkdownTable(Arg.Any<IEnumerable<SailDiffResult>>(), OutputContext.Console)
             .Returns((string?)null);
 
         var sailDiffResults = CreateSampleSailDiffResults();
@@ -432,7 +432,7 @@ public class SailDiffConsoleWindowMessageFormatterTests
         var settings = CreateSampleSailDiffSettings();
 
         // Act
-        var result = formatter.FormConsoleWindowMessageForSailDiff(sailDiffResults, testIds, settings, CancellationToken.None);
+        var result = _formatter.FormConsoleWindowMessageForSailDiff(sailDiffResults, testIds, settings, CancellationToken.None);
 
         // Assert
         result.ShouldNotBeNull();

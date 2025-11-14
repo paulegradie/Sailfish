@@ -13,7 +13,7 @@ public interface ITrackingFileSerialization
 
 public class TrackingFileSerialization(ILogger logger) : ITrackingFileSerialization
 {
-    private readonly ILogger logger = logger;
+    private readonly ILogger _logger = logger;
 
     public string Serialize(IEnumerable<ClassExecutionSummaryTrackingFormat> executionSummaries)
     {
@@ -28,7 +28,7 @@ public class TrackingFileSerialization(ILogger logger) : ITrackingFileSerializat
         }
         catch (JsonException ex)
         {
-            logger.Log(LogLevel.Warning, "Failed to deserialize file content", ex);
+            _logger.Log(LogLevel.Warning, "Failed to deserialize file content", ex);
             return null;
         }
     }

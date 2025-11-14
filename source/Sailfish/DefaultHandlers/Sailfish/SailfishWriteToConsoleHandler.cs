@@ -9,12 +9,12 @@ namespace Sailfish.DefaultHandlers.Sailfish;
 
 internal class WriteToConsoleHandler(IConsoleWriter consoleWriter, IRunSettings runSettings) : INotificationHandler<WriteToConsoleNotification>
 {
-    private readonly IConsoleWriter consoleWriter = consoleWriter;
-    private readonly IRunSettings runSettings = runSettings;
+    private readonly IConsoleWriter _consoleWriter = consoleWriter;
+    private readonly IRunSettings _runSettings = runSettings;
 
     public Task Handle(WriteToConsoleNotification notification, CancellationToken cancellationToken)
     {
-        consoleWriter.WriteToConsole(notification.Content, runSettings.Tags);
+        _consoleWriter.WriteToConsole(notification.Content, _runSettings.Tags);
         return Task.CompletedTask;
     }
 }

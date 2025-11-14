@@ -69,8 +69,8 @@ public class FormatExtensionMethodsTests
         perf.ConfidenceIntervals.Any(ci => Math.Abs(ci.ConfidenceLevel - 0.99) < 1e-9).ShouldBeTrue();
 
         // Convenience properties should be non-zero for n>1
-        perf.CI95MarginOfError.ShouldBeGreaterThan(0);
-        perf.CI99MarginOfError.ShouldBeGreaterThan(0);
+        perf.Ci95MarginOfError.ShouldBeGreaterThan(0);
+        perf.Ci99MarginOfError.ShouldBeGreaterThan(0);
     }
 
     [Fact]

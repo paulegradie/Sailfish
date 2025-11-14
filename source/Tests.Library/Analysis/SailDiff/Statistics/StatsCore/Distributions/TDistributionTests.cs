@@ -6,7 +6,7 @@ using Xunit;
 
 namespace Tests.Library.Analysis.SailDiff.Statistics.StatsCore.Distributions;
 
-public class TDistributionTests
+public class DistributionTests
 {
     [Fact]
     public void Constructor_WithValidDegreesOfFreedom_ShouldCreateInstance()

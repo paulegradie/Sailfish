@@ -35,7 +35,7 @@ public enum OutputContext
     /// <summary>
     /// IDE test output window - supports emojis, colors, and rich formatting
     /// </summary>
-    IDE,
+    Ide,
 
     /// <summary>
     /// Markdown files - GitHub-compatible markdown with tables
@@ -50,7 +50,7 @@ public enum OutputContext
     /// <summary>
     /// CSV export - structured data for analysis tools
     /// </summary>
-    CSV
+    Csv
 }
 
 /// <summary>

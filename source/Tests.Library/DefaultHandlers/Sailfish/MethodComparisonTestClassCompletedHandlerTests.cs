@@ -21,15 +21,15 @@ namespace Tests.Library.DefaultHandlers.Sailfish;
 
 public class MethodComparisonTestClassCompletedHandlerTests
 {
-    private readonly ILogger mockLogger;
-    private readonly IMediator mockMediator;
-    private readonly MethodComparisonTestClassCompletedHandler handler;
+    private readonly ILogger _mockLogger;
+    private readonly IMediator _mockMediator;
+    private readonly MethodComparisonTestClassCompletedHandler _handler;
 
     public MethodComparisonTestClassCompletedHandlerTests()
     {
-        mockLogger = Substitute.For<ILogger>();
-        mockMediator = Substitute.For<IMediator>();
-        handler = new MethodComparisonTestClassCompletedHandler(mockLogger, mockMediator);
+        _mockLogger = Substitute.For<ILogger>();
+        _mockMediator = Substitute.For<IMediator>();
+        _handler = new MethodComparisonTestClassCompletedHandler(_mockLogger, _mockMediator);
     }
 
     [Fact]
@@ -37,7 +37,7 @@ public class MethodComparisonTestClassCompletedHandlerTests
     {
         // Act & Assert
         Should.Throw<ArgumentNullException>(() =>
-            new MethodComparisonTestClassCompletedHandler(null!, mockMediator));
+            new MethodComparisonTestClassCompletedHandler(null!, _mockMediator));
     }
 
     [Fact]
@@ -45,7 +45,7 @@ public class MethodComparisonTestClassCompletedHandlerTests
     {
         // Act & Assert
         Should.Throw<ArgumentNullException>(() =>
-            new MethodComparisonTestClassCompletedHandler(mockLogger, null!));
+            new MethodComparisonTestClassCompletedHandler(_mockLogger, null!));
     }
 
     [Fact]
@@ -55,10 +55,10 @@ public class MethodComparisonTestClassCompletedHandlerTests
         var notification = CreateTestNotification();
 
         // Act
-        await handler.Handle(notification, CancellationToken.None);
+        await _handler.Handle(notification, CancellationToken.None);
 
         // Assert
-        mockLogger.Received().Log(
+        _mockLogger.Received().Log(
             LogLevel.Debug,
             Arg.Is<string>(s => s.Contains("TestClassCompletedNotification received")),
             Arg.Any<object[]>());
@@ -71,10 +71,10 @@ public class MethodComparisonTestClassCompletedHandlerTests
         var notification = CreateTestNotification();
 
         // Act
-        await handler.Handle(notification, CancellationToken.None);
+        await _handler.Handle(notification, CancellationToken.None);
 
         // Assert - Handler is disabled, so no markdown notification should be published
-        await mockMediator.DidNotReceive().Publish(
+        await _mockMediator.DidNotReceive().Publish(
             Arg.Any<WriteMethodComparisonMarkdownNotification>(),
             Arg.Any<CancellationToken>());
     }
@@ -86,10 +86,10 @@ public class MethodComparisonTestClassCompletedHandlerTests
         var notification = CreateTestNotification();
 
         // Act
-        await handler.Handle(notification, CancellationToken.None);
+        await _handler.Handle(notification, CancellationToken.None);
 
         // Assert
-        mockLogger.Received().Log(
+        _mockLogger.Received().Log(
             LogLevel.Debug,
             Arg.Is<string>(s => s.Contains("Skipping per-class markdown generation")),
             Arg.Any<object[]>());
@@ -103,7 +103,7 @@ public class MethodComparisonTestClassCompletedHandlerTests
 
         // Act & Assert
         await Should.NotThrowAsync(async () =>
-            await handler.Handle(notification, CancellationToken.None));
+            await _handler.Handle(notification, CancellationToken.None));
     }
 
     [Fact]
@@ -114,7 +114,7 @@ public class MethodComparisonTestClassCompletedHandlerTests
 
         // Act & Assert
         await Should.NotThrowAsync(async () =>
-            await handler.Handle(notification, CancellationToken.None));
+            await _handler.Handle(notification, CancellationToken.None));
     }
 
     [Fact]
@@ -124,10 +124,10 @@ public class MethodComparisonTestClassCompletedHandlerTests
         var notification = CreateTestNotificationWithMultipleResults();
 
         // Act
-        await handler.Handle(notification, CancellationToken.None);
+        await _handler.Handle(notification, CancellationToken.None);
 
         // Assert
-        mockLogger.Received().Log(
+        _mockLogger.Received().Log(
             LogLevel.Debug,
             Arg.Any<string>(),
             Arg.Any<object[]>());
@@ -143,7 +143,7 @@ public class MethodComparisonTestClassCompletedHandlerTests
 
         // Act & Assert - Should not throw even with cancelled token since handler returns early
         await Should.NotThrowAsync(async () =>
-            await handler.Handle(notification, cts.Token));
+            await _handler.Handle(notification, cts.Token));
     }
 
     [Fact]
@@ -151,12 +151,12 @@ public class MethodComparisonTestClassCompletedHandlerTests
     {
         // Arrange
         var notification = CreateTestNotification();
-        mockLogger.When(x => x.Log(Arg.Any<LogLevel>(), Arg.Any<string>(), Arg.Any<object[]>()))
+        _mockLogger.When(x => x.Log(Arg.Any<LogLevel>(), Arg.Any<string>(), Arg.Any<object[]>()))
             .Do(_ => throw new InvalidOperationException("Logging failed"));
 
         // Act & Assert - Handler should catch and handle exceptions
         await Should.NotThrowAsync(async () =>
-            await handler.Handle(notification, CancellationToken.None));
+            await _handler.Handle(notification, CancellationToken.None));
     }
 
     [Fact]
@@ -167,7 +167,7 @@ public class MethodComparisonTestClassCompletedHandlerTests
 
         // Act & Assert
         await Should.NotThrowAsync(async () =>
-            await handler.Handle(notification, CancellationToken.None));
+            await _handler.Handle(notification, CancellationToken.None));
     }
 
     [Fact]
@@ -178,7 +178,7 @@ public class MethodComparisonTestClassCompletedHandlerTests
 
         // Act & Assert
         await Should.NotThrowAsync(async () =>
-            await handler.Handle(notification, CancellationToken.None));
+            await _handler.Handle(notification, CancellationToken.None));
     }
 
     [Fact]
@@ -188,10 +188,10 @@ public class MethodComparisonTestClassCompletedHandlerTests
         var notification = CreateTestNotification();
 
         // Act
-        await handler.Handle(notification, CancellationToken.None);
+        await _handler.Handle(notification, CancellationToken.None);
 
         // Assert - Verify that logging was called with Debug level
-        mockLogger.Received().Log(
+        _mockLogger.Received().Log(
             LogLevel.Debug,
             Arg.Any<string>(),
             Arg.Any<object[]>());

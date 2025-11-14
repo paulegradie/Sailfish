@@ -17,11 +17,11 @@ using Xunit;
 
 namespace Tests.Library.DefaultHandlers.Sailfish;
 
-public class MethodComparisonTestClassCompletedHandler_MarkdownTests
+public class MethodComparisonTestClassCompletedHandlerMarkdownTests
 {
-    private readonly ILogger logger = Substitute.For<ILogger>();
-    private readonly IMediator mediator = Substitute.For<IMediator>();
-    private MethodComparisonTestClassCompletedHandler CreateHandler() => new(logger, mediator);
+    private readonly ILogger _logger = Substitute.For<ILogger>();
+    private readonly IMediator _mediator = Substitute.For<IMediator>();
+    private MethodComparisonTestClassCompletedHandler CreateHandler() => new(_logger, _mediator);
 
     private static T InvokePrivate<T>(object instance, string methodName, params object[] args)
     {
@@ -145,7 +145,7 @@ public class MethodComparisonTestClassCompletedHandler_MarkdownTests
     {
         var handler = CreateHandler();
         await Should.NotThrowAsync(async () => await handler.Handle(null!, CancellationToken.None));
-        logger.Received().Log(
+        _logger.Received().Log(
             LogLevel.Error,
             Arg.Any<Exception>(),
             Arg.Is<string>(s => s.Contains("Failed to generate consolidated markdown")),

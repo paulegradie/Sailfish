@@ -22,15 +22,15 @@ namespace Tests.Library.DefaultHandlers.SailDiff;
 
 public class SailDiffReadInBeforeAndAfterDataHandlerTests
 {
-    private readonly ITrackingFileParser mockTrackingFileParser;
-    private readonly ILogger mockLogger;
-    private readonly SailDiffReadInBeforeAndAfterDataHandler handler;
+    private readonly ITrackingFileParser _mockTrackingFileParser;
+    private readonly ILogger _mockLogger;
+    private readonly SailDiffReadInBeforeAndAfterDataHandler _handler;
 
     public SailDiffReadInBeforeAndAfterDataHandlerTests()
     {
-        mockTrackingFileParser = Substitute.For<ITrackingFileParser>();
-        mockLogger = Substitute.For<ILogger>();
-        handler = new SailDiffReadInBeforeAndAfterDataHandler(mockTrackingFileParser, mockLogger);
+        _mockTrackingFileParser = Substitute.For<ITrackingFileParser>();
+        _mockLogger = Substitute.For<ILogger>();
+        _handler = new SailDiffReadInBeforeAndAfterDataHandler(_mockTrackingFileParser, _mockLogger);
     }
 
     [Fact]
@@ -44,7 +44,7 @@ public class SailDiffReadInBeforeAndAfterDataHandlerTests
         var beforeData = CreateTrackingFileDataListWithData();
         var afterData = CreateTrackingFileDataListWithData();
 
-        mockTrackingFileParser
+        _mockTrackingFileParser
             .TryParseMany(beforeFilePaths, Arg.Any<TrackingFileDataList>(), Arg.Any<CancellationToken>())
             .Returns(callInfo =>
             {
@@ -53,7 +53,7 @@ public class SailDiffReadInBeforeAndAfterDataHandlerTests
                 return true;
             });
 
-        mockTrackingFileParser
+        _mockTrackingFileParser
             .TryParseMany(afterFilePaths, Arg.Any<TrackingFileDataList>(), Arg.Any<CancellationToken>())
             .Returns(callInfo =>
             {
@@ -63,7 +63,7 @@ public class SailDiffReadInBeforeAndAfterDataHandlerTests
             });
 
         // Act
-        var result = await handler.Handle(request, CancellationToken.None);
+        var result = await _handler.Handle(request, CancellationToken.None);
 
         // Assert
         result.ShouldNotBeNull();
@@ -85,12 +85,12 @@ public class SailDiffReadInBeforeAndAfterDataHandlerTests
         var afterFilePaths = new[] { "after.json" };
         var request = new ReadInBeforeAndAfterDataRequest(beforeFilePaths, afterFilePaths);
 
-        mockTrackingFileParser
+        _mockTrackingFileParser
             .TryParseMany(beforeFilePaths, Arg.Any<TrackingFileDataList>(), Arg.Any<CancellationToken>())
             .Returns(false);
 
         // Act
-        var result = await handler.Handle(request, CancellationToken.None);
+        var result = await _handler.Handle(request, CancellationToken.None);
 
         // Assert
         result.ShouldNotBeNull();
@@ -108,7 +108,7 @@ public class SailDiffReadInBeforeAndAfterDataHandlerTests
 
         var beforeData = CreateTrackingFileDataListWithData();
 
-        mockTrackingFileParser
+        _mockTrackingFileParser
             .TryParseMany(beforeFilePaths, Arg.Any<TrackingFileDataList>(), Arg.Any<CancellationToken>())
             .Returns(callInfo =>
             {
@@ -117,12 +117,12 @@ public class SailDiffReadInBeforeAndAfterDataHandlerTests
                 return true;
             });
 
-        mockTrackingFileParser
+        _mockTrackingFileParser
             .TryParseMany(afterFilePaths, Arg.Any<TrackingFileDataList>(), Arg.Any<CancellationToken>())
             .Returns(false);
 
         // Act
-        var result = await handler.Handle(request, CancellationToken.None);
+        var result = await _handler.Handle(request, CancellationToken.None);
 
         // Assert
         result.ShouldNotBeNull();
@@ -140,11 +140,11 @@ public class SailDiffReadInBeforeAndAfterDataHandlerTests
 
         var afterData = CreateTrackingFileDataListWithData();
 
-        mockTrackingFileParser
+        _mockTrackingFileParser
             .TryParseMany(beforeFilePaths, Arg.Any<TrackingFileDataList>(), Arg.Any<CancellationToken>())
             .Returns(true); // Parsing succeeds but data is empty
 
-        mockTrackingFileParser
+        _mockTrackingFileParser
             .TryParseMany(afterFilePaths, Arg.Any<TrackingFileDataList>(), Arg.Any<CancellationToken>())
             .Returns(callInfo =>
             {
@@ -154,7 +154,7 @@ public class SailDiffReadInBeforeAndAfterDataHandlerTests
             });
 
         // Act
-        var result = await handler.Handle(request, CancellationToken.None);
+        var result = await _handler.Handle(request, CancellationToken.None);
 
         // Assert
         result.ShouldNotBeNull();
@@ -172,7 +172,7 @@ public class SailDiffReadInBeforeAndAfterDataHandlerTests
 
         var beforeData = CreateTrackingFileDataListWithData();
 
-        mockTrackingFileParser
+        _mockTrackingFileParser
             .TryParseMany(beforeFilePaths, Arg.Any<TrackingFileDataList>(), Arg.Any<CancellationToken>())
             .Returns(callInfo =>
             {
@@ -181,12 +181,12 @@ public class SailDiffReadInBeforeAndAfterDataHandlerTests
                 return true;
             });
 
-        mockTrackingFileParser
+        _mockTrackingFileParser
             .TryParseMany(afterFilePaths, Arg.Any<TrackingFileDataList>(), Arg.Any<CancellationToken>())
             .Returns(true); // Parsing succeeds but data is empty
 
         // Act
-        var result = await handler.Handle(request, CancellationToken.None);
+        var result = await _handler.Handle(request, CancellationToken.None);
 
         // Assert
         result.ShouldNotBeNull();
@@ -205,7 +205,7 @@ public class SailDiffReadInBeforeAndAfterDataHandlerTests
         var beforeData = CreateTrackingFileDataListWithSpecificData("BeforeTest");
         var afterData = CreateTrackingFileDataListWithSpecificData("AfterTest");
 
-        mockTrackingFileParser
+        _mockTrackingFileParser
             .TryParseMany(beforeFilePaths, Arg.Any<TrackingFileDataList>(), Arg.Any<CancellationToken>())
             .Returns(callInfo =>
             {
@@ -214,7 +214,7 @@ public class SailDiffReadInBeforeAndAfterDataHandlerTests
                 return true;
             });
 
-        mockTrackingFileParser
+        _mockTrackingFileParser
             .TryParseMany(afterFilePaths, Arg.Any<TrackingFileDataList>(), Arg.Any<CancellationToken>())
             .Returns(callInfo =>
             {
@@ -224,7 +224,7 @@ public class SailDiffReadInBeforeAndAfterDataHandlerTests
             });
 
         // Act
-        var result = await handler.Handle(request, CancellationToken.None);
+        var result = await _handler.Handle(request, CancellationToken.None);
 
         // Assert
         result.ShouldNotBeNull();

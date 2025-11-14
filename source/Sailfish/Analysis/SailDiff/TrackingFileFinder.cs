@@ -12,11 +12,11 @@ internal interface ITrackingFileFinder
 
 internal class TrackingFileFinder(ITrackingFileDirectoryReader trackingFileDirectoryReader) : ITrackingFileFinder
 {
-    private readonly ITrackingFileDirectoryReader trackingFileDirectoryReader = trackingFileDirectoryReader;
+    private readonly ITrackingFileDirectoryReader _trackingFileDirectoryReader = trackingFileDirectoryReader;
 
     public BeforeAndAfterTrackingFiles GetBeforeAndAfterTrackingFiles(string directory, string beforeTarget, OrderedDictionary tags)
     {
-        var files = trackingFileDirectoryReader.FindTrackingFilesInDirectoryOrderedByLastModified(directory);
+        var files = _trackingFileDirectoryReader.FindTrackingFilesInDirectoryOrderedByLastModified(directory);
 
         if (tags.Count > 0)
         {

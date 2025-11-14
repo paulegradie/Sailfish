@@ -17,13 +17,13 @@ namespace Tests.Library.Execution;
 /// </summary>
 public class IterationStrategyTests
 {
-    private readonly ILogger mockLogger;
-    private readonly IStatisticalConvergenceDetector mockConvergenceDetector;
+    private readonly ILogger _mockLogger;
+    private readonly IStatisticalConvergenceDetector _mockConvergenceDetector;
 
     public IterationStrategyTests()
     {
-        mockLogger = Substitute.For<ILogger>();
-        mockConvergenceDetector = Substitute.For<IStatisticalConvergenceDetector>();
+        _mockLogger = Substitute.For<ILogger>();
+        _mockConvergenceDetector = Substitute.For<IStatisticalConvergenceDetector>();
     }
 
     #region FixedIterationStrategy Tests
@@ -32,7 +32,7 @@ public class IterationStrategyTests
     public void FixedIterationStrategy_Constructor_WithValidLogger_ShouldCreateInstance()
     {
         // Act
-        var strategy = new FixedIterationStrategy(mockLogger);
+        var strategy = new FixedIterationStrategy(_mockLogger);
 
         // Assert
         strategy.ShouldNotBeNull();
@@ -43,7 +43,7 @@ public class IterationStrategyTests
     public async Task FixedIterationStrategy_ExecuteIterations_WithValidSettings_ShouldCompleteAllIterations()
     {
         // Arrange
-        var strategy = new FixedIterationStrategy(mockLogger);
+        var strategy = new FixedIterationStrategy(_mockLogger);
         var container = CreateTestInstanceContainer();
         var settings = CreateExecutionSettings(sampleSize: 5);
 
@@ -63,7 +63,7 @@ public class IterationStrategyTests
     public async Task FixedIterationStrategy_ExecuteIterations_ShouldLogIterationProgress()
     {
         // Arrange
-        var strategy = new FixedIterationStrategy(mockLogger);
+        var strategy = new FixedIterationStrategy(_mockLogger);
         var container = CreateTestInstanceContainer();
         var settings = CreateExecutionSettings(sampleSize: 3);
 
@@ -71,9 +71,9 @@ public class IterationStrategyTests
         await strategy.ExecuteIterations(container, settings, CancellationToken.None);
 
         // Assert
-        mockLogger.Received().Log(LogLevel.Information, "      ---- iteration {CurrentIteration} of {TotalIterations}", 1, 3);
-        mockLogger.Received().Log(LogLevel.Information, "      ---- iteration {CurrentIteration} of {TotalIterations}", 2, 3);
-        mockLogger.Received().Log(LogLevel.Information, "      ---- iteration {CurrentIteration} of {TotalIterations}", 3, 3);
+        _mockLogger.Received().Log(LogLevel.Information, "      ---- iteration {CurrentIteration} of {TotalIterations}", 1, 3);
+        _mockLogger.Received().Log(LogLevel.Information, "      ---- iteration {CurrentIteration} of {TotalIterations}", 2, 3);
+        _mockLogger.Received().Log(LogLevel.Information, "      ---- iteration {CurrentIteration} of {TotalIterations}", 3, 3);
     }
 
     #endregion
@@ -84,7 +84,7 @@ public class IterationStrategyTests
     public void AdaptiveIterationStrategy_Constructor_WithValidDependencies_ShouldCreateInstance()
     {
         // Act
-        var strategy = new AdaptiveIterationStrategy(mockLogger, mockConvergenceDetector);
+        var strategy = new AdaptiveIterationStrategy(_mockLogger, _mockConvergenceDetector);
 
         // Assert
         strategy.ShouldNotBeNull();
@@ -95,16 +95,16 @@ public class IterationStrategyTests
     public async Task AdaptiveIterationStrategy_ExecuteIterations_WithEarlyConvergence_ShouldStopEarly()
     {
         // Arrange
-        var strategy = new AdaptiveIterationStrategy(mockLogger, mockConvergenceDetector);
+        var strategy = new AdaptiveIterationStrategy(_mockLogger, _mockConvergenceDetector);
         var container = CreateTestInstanceContainer();
         var settings = CreateExecutionSettings(
             useAdaptive: true,
             minSampleSize: 5,
             maxSampleSize: 100,
-            targetCV: 0.05);
+            targetCv: 0.05);
 
         // Setup convergence detector to return converged after minimum samples
-        mockConvergenceDetector.CheckConvergence(Arg.Any<IReadOnlyList<double>>(), Arg.Any<double>(), Arg.Any<double>(), Arg.Any<double>(), Arg.Any<int>())
+        _mockConvergenceDetector.CheckConvergence(Arg.Any<IReadOnlyList<double>>(), Arg.Any<double>(), Arg.Any<double>(), Arg.Any<double>(), Arg.Any<int>())
             .Returns(new ConvergenceResult
             {
                 HasConverged = true,
@@ -128,16 +128,16 @@ public class IterationStrategyTests
     public async Task AdaptiveIterationStrategy_ExecuteIterations_WithoutConvergence_ShouldReachMaximum()
     {
         // Arrange
-        var strategy = new AdaptiveIterationStrategy(mockLogger, mockConvergenceDetector);
+        var strategy = new AdaptiveIterationStrategy(_mockLogger, _mockConvergenceDetector);
         var container = CreateTestInstanceContainer();
         var settings = CreateExecutionSettings(
             useAdaptive: true,
             minSampleSize: 5,
             maxSampleSize: 10,
-            targetCV: 0.05);
+            targetCv: 0.05);
 
         // Setup convergence detector to never converge
-        mockConvergenceDetector.CheckConvergence(Arg.Any<IReadOnlyList<double>>(), Arg.Any<double>(), Arg.Any<double>(), Arg.Any<double>(), Arg.Any<int>())
+        _mockConvergenceDetector.CheckConvergence(Arg.Any<IReadOnlyList<double>>(), Arg.Any<double>(), Arg.Any<double>(), Arg.Any<double>(), Arg.Any<int>())
             .Returns(new ConvergenceResult
             {
                 HasConverged = false,
@@ -159,35 +159,35 @@ public class IterationStrategyTests
     public async Task AdaptiveIterationStrategy_ExecuteIterations_ShouldLogMinimumPhase()
     {
         // Arrange
-        var strategy = new AdaptiveIterationStrategy(mockLogger, mockConvergenceDetector);
+        var strategy = new AdaptiveIterationStrategy(_mockLogger, _mockConvergenceDetector);
         var container = CreateTestInstanceContainer();
         var settings = CreateExecutionSettings(
             useAdaptive: true,
             minSampleSize: 3,
             maxSampleSize: 10);
 
-        mockConvergenceDetector.CheckConvergence(Arg.Any<IReadOnlyList<double>>(), Arg.Any<double>(), Arg.Any<double>(), Arg.Any<double>(), Arg.Any<int>())
+        _mockConvergenceDetector.CheckConvergence(Arg.Any<IReadOnlyList<double>>(), Arg.Any<double>(), Arg.Any<double>(), Arg.Any<double>(), Arg.Any<int>())
             .Returns(new ConvergenceResult { HasConverged = true });
 
         // Act
         await strategy.ExecuteIterations(container, settings, CancellationToken.None);
 
         // Assert
-        mockLogger.Received().Log(LogLevel.Information, "      ---- iteration {CurrentIteration} (minimum phase)", 1);
-        mockLogger.Received().Log(LogLevel.Information, "      ---- iteration {CurrentIteration} (minimum phase)", 2);
-        mockLogger.Received().Log(LogLevel.Information, "      ---- iteration {CurrentIteration} (minimum phase)", 3);
+        _mockLogger.Received().Log(LogLevel.Information, "      ---- iteration {CurrentIteration} (minimum phase)", 1);
+        _mockLogger.Received().Log(LogLevel.Information, "      ---- iteration {CurrentIteration} (minimum phase)", 2);
+        _mockLogger.Received().Log(LogLevel.Information, "      ---- iteration {CurrentIteration} (minimum phase)", 3);
     }
 
     [Fact]
     public async Task AdaptiveIterationStrategy_AdaptiveTuning_LogsCategoryAndUsesTunedThresholds()
     {
         // Arrange: small min to get pilot samples quickly; default targetCV=0.05, MaxCI=0.20
-        var strategy = new AdaptiveIterationStrategy(mockLogger, mockConvergenceDetector);
+        var strategy = new AdaptiveIterationStrategy(_mockLogger, _mockConvergenceDetector);
         var container = CreateTestInstanceContainer();
-        var settings = CreateExecutionSettings(useAdaptive: true, minSampleSize: 3, maxSampleSize: 10, targetCV: 0.05);
+        var settings = CreateExecutionSettings(useAdaptive: true, minSampleSize: 3, maxSampleSize: 10, targetCv: 0.05);
 
         // Make the first convergence check report converged to keep test fast
-        mockConvergenceDetector
+        _mockConvergenceDetector
             .CheckConvergence(Arg.Any<IReadOnlyList<double>>(), Arg.Any<double>(), Arg.Any<double>(), Arg.Any<double>(), Arg.Any<int>())
             .Returns(ci => new ConvergenceResult { HasConverged = true, CurrentCoefficientOfVariation = 0.02, Reason = "Converged" });
 
@@ -195,13 +195,13 @@ public class IterationStrategyTests
         var result = await strategy.ExecuteIterations(container, settings, CancellationToken.None);
 
         // Assert: we should log the adaptive tuning message at least once
-        mockLogger.Received().Log(
+        _mockLogger.Received().Log(
             LogLevel.Information,
             "      ---- Adaptive tuning: {Category} -> MinN={MinN}, TargetCV={TargetCV:F3}, MaxCI={MaxCI:F3}",
             Arg.Is<object[]>(vals => vals.Length == 4 && vals[0] is AdaptiveSamplingConfig.SpeedCategory));
 
         // And the tuned thresholds should be used in the immediate convergence check
-        mockConvergenceDetector.Received().CheckConvergence(
+        _mockConvergenceDetector.Received().CheckConvergence(
             Arg.Any<IReadOnlyList<double>>(),
             Arg.Is<double>(cv => Math.Abs(cv - 0.05) < 1e-6), // CV remains at least the user's 0.05
             Arg.Is<double>(ci => ci <= 0.20 && ci > 0.0), // Tuned MaxCI should be <= default 0.20 (selector-dependent)
@@ -215,7 +215,7 @@ public class IterationStrategyTests
         public async Task FixedIterationStrategy_RespectsTimeBudget_StopsEarly()
         {
             // Arrange: a slow operation (~20ms) and a tight budget (<= 30ms)
-            var strategy = new FixedIterationStrategy(mockLogger);
+            var strategy = new FixedIterationStrategy(_mockLogger);
             var instance = new SlowWork();
             var method = typeof(SlowWork).GetMethod(nameof(SlowWork.Run))!;
             var settings = new ExecutionSettings
@@ -240,7 +240,7 @@ public class IterationStrategyTests
         public async Task AdaptiveIterationStrategy_RespectsTimeBudgetDuringMinimumPhase_StopsEarly()
         {
             // Arrange: min=3, each iteration ~20ms, budget 45ms so it cannot finish min phase
-            var strategy = new AdaptiveIterationStrategy(mockLogger, mockConvergenceDetector);
+            var strategy = new AdaptiveIterationStrategy(_mockLogger, _mockConvergenceDetector);
             var instance = new SlowWork();
             var method = typeof(SlowWork).GetMethod(nameof(SlowWork.Run))!;
             var settings = new ExecutionSettings
@@ -256,7 +256,7 @@ public class IterationStrategyTests
             var container = TestInstanceContainer.CreateTestInstance(instance, method, [], [], false, settings);
 
             // Convergence detector won't be used if we stop in minimum phase, but keep a benign default
-            mockConvergenceDetector.CheckConvergence(
+            _mockConvergenceDetector.CheckConvergence(
                 Arg.Any<IReadOnlyList<double>>(), Arg.Any<double>(), Arg.Any<double>(), Arg.Any<double>(), Arg.Any<int>())
                 .Returns(new ConvergenceResult { HasConverged = false, CurrentCoefficientOfVariation = 0.5, Reason = "N/A" });
 
@@ -302,7 +302,7 @@ public class IterationStrategyTests
         bool useAdaptive = false,
         int minSampleSize = 10,
         int maxSampleSize = 1000,
-        double targetCV = 0.05)
+        double targetCv = 0.05)
     {
         return new ExecutionSettings
         {
@@ -310,7 +310,7 @@ public class IterationStrategyTests
             UseAdaptiveSampling = useAdaptive,
             MinimumSampleSize = minSampleSize,
             MaximumSampleSize = maxSampleSize,
-            TargetCoefficientOfVariation = targetCV,
+            TargetCoefficientOfVariation = targetCv,
             ConfidenceLevel = 0.95
         };
     }

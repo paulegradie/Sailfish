@@ -10,17 +10,17 @@ namespace PerformanceTestingUserInvokedConsoleApp.CustomHandlerOverrideExamples;
 
 public class TestRunCompletedNotificationHandler : INotificationHandler<TestRunCompletedNotification>
 {
-    private readonly ICloudWriter cloudWriter;
-    private readonly IRunSettings runSettings;
+    private readonly ICloudWriter _cloudWriter;
+    private readonly IRunSettings _runSettings;
 
     public TestRunCompletedNotificationHandler(ICloudWriter cloudWriter, IRunSettings runSettings)
     {
-        this.cloudWriter = cloudWriter;
-        this.runSettings = runSettings;
+        this._cloudWriter = cloudWriter;
+        this._runSettings = runSettings;
     }
 
     public async Task Handle(TestRunCompletedNotification notification, CancellationToken cancellationToken)
     {
-        await cloudWriter.WriteToMyCloudStorageContainer(DefaultFileSettings.DefaultTrackingFileName(runSettings.TimeStamp), notification.ClassExecutionSummaries.ToList());
+        await _cloudWriter.WriteToMyCloudStorageContainer(DefaultFileSettings.DefaultTrackingFileName(_runSettings.TimeStamp), notification.ClassExecutionSummaries.ToList());
     }
 }

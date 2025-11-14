@@ -34,8 +34,8 @@ public class ReproducibilityManifestTests
         // Assert
         manifest.ShouldNotBeNull();
         manifest.DotNetRuntime.ShouldNotBeNullOrWhiteSpace();
-        manifest.OS.ShouldNotBeNullOrWhiteSpace();
-        manifest.GCMode.ShouldNotBeNullOrWhiteSpace();
+        manifest.Os.ShouldNotBeNullOrWhiteSpace();
+        manifest.GcMode.ShouldNotBeNullOrWhiteSpace();
         manifest.Jit.ShouldNotBeNullOrWhiteSpace();
         manifest.ProcessPriority.ShouldNotBeNullOrWhiteSpace();
         manifest.Timer.ShouldNotBeNullOrWhiteSpace();
@@ -111,11 +111,11 @@ public class ReproducibilityManifestTests
         m.NumWarmupIterations.ShouldBe(2);
         m.Mean.ShouldBe(100.0);
         m.StdDev.ShouldBe(20.0);
-        m.CI95_MarginOfError.ShouldNotBeNull();
-        m.CI99_MarginOfError.ShouldNotBeNull();
+        m.Ci95MarginOfError.ShouldNotBeNull();
+        m.Ci99MarginOfError.ShouldNotBeNull();
         // Rough sanity checks: with n=4, se=10, t95~3.18 => ~31.8; t99~5.84 => ~58.4
-        m.CI95_MarginOfError!.Value.ShouldBeInRange(28.0, 35.0);
-        m.CI99_MarginOfError!.Value.ShouldBeInRange(50.0, 65.0);
+        m.Ci95MarginOfError!.Value.ShouldBeInRange(28.0, 35.0);
+        m.Ci99MarginOfError!.Value.ShouldBeInRange(50.0, 65.0);
     }
 
     [Fact]
@@ -152,11 +152,11 @@ public class ReproducibilityManifestTests
         m.NumWarmupIterations.ShouldBe(2);
         m.Mean.ShouldBe(100.0);
         m.StdDev.ShouldBe(20.0);
-        m.CI95_MarginOfError.ShouldNotBeNull();
-        m.CI99_MarginOfError.ShouldNotBeNull();
+        m.Ci95MarginOfError.ShouldNotBeNull();
+        m.Ci99MarginOfError.ShouldNotBeNull();
         // Rough sanity checks: with n=5, se=8.94, t95~2.78 => ~24.9; t99~4.60 => ~41.1
-        m.CI95_MarginOfError!.Value.ShouldBeInRange(20.0, 30.0);
-        m.CI99_MarginOfError!.Value.ShouldBeInRange(35.0, 50.0);
+        m.Ci95MarginOfError!.Value.ShouldBeInRange(20.0, 30.0);
+        m.Ci99MarginOfError!.Value.ShouldBeInRange(35.0, 50.0);
     }
 
     [Fact]

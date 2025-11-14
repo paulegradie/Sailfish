@@ -13,9 +13,9 @@ namespace Sailfish.TestAdapter;
 [DefaultExecutorUri(TestExecutor.ExecutorUriString)]
 public class TestDiscoverer : ITestDiscoverer
 {
-    private readonly ITestDiscovery discovery;
+    private readonly ITestDiscovery _discovery;
 
-    private readonly List<string> exclusions =
+    private readonly List<string> _exclusions =
     [
         "Sailfish.TestAdapter.dll",
         "Tests.Library.TestAdapter.dll"
@@ -23,18 +23,18 @@ public class TestDiscoverer : ITestDiscoverer
 
     public TestDiscoverer()
     {
-        discovery = new TestDiscovery();
+        _discovery = new TestDiscovery();
     }
 
     public TestDiscoverer(ITestDiscovery discovery)
     {
-        this.discovery = discovery;
+        this._discovery = discovery;
     }
 
     public void DiscoverTests(IEnumerable<string> sources, IDiscoveryContext discoveryContext, IMessageLogger logger, ITestCaseDiscoverySink discoverySink)
     {
         sources = sources.ToList();
-        var filteredSource = sources.Where(x => !exclusions.Contains(x)).Where(x => x.EndsWith(".dll")).ToArray();
+        var filteredSource = sources.Where(x => !_exclusions.Contains(x)).Where(x => x.EndsWith(".dll")).ToArray();
 
         if (filteredSource.Length == 0)
         {
@@ -45,7 +45,7 @@ public class TestDiscoverer : ITestDiscoverer
         var testCases = new List<TestCase>();
         try
         {
-            var discoveredCases = discovery.DiscoverTests(filteredSource, logger).ToList();
+            var discoveredCases = _discovery.DiscoverTests(filteredSource, logger).ToList();
             testCases.AddRange(discoveredCases);
         }
         catch (Exception ex)

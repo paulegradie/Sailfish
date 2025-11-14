@@ -14,11 +14,11 @@ internal interface IMarkdownWriter
 
 internal class MarkdownWriter(IMarkdownTableConverter markdownTableConverter) : IMarkdownWriter
 {
-    private readonly IMarkdownTableConverter markdownTableConverter = markdownTableConverter;
+    private readonly IMarkdownTableConverter _markdownTableConverter = markdownTableConverter;
 
     public async Task Write(IEnumerable<IClassExecutionSummary> results, string filePath, CancellationToken cancellationToken)
     {
-        var markdownStringTable = markdownTableConverter.ConvertToMarkdownTableString(results, result => result.ExecutionSettings.AsMarkdown);
+        var markdownStringTable = _markdownTableConverter.ConvertToMarkdownTableString(results, result => result.ExecutionSettings.AsMarkdown);
         if (!string.IsNullOrEmpty(markdownStringTable))
         {
             if (Directory.Exists(filePath)) throw new IOException("Cannot write to a directory");
@@ -31,7 +31,7 @@ internal class MarkdownWriter(IMarkdownTableConverter markdownTableConverter) : 
     public async Task WriteEnhanced(IEnumerable<IClassExecutionSummary> results, string filePath, CancellationToken cancellationToken)
     {
         // Try to use enhanced formatting if available
-        var markdownContent = markdownTableConverter.ConvertToEnhancedMarkdownTableString(results, result => result.ExecutionSettings.AsMarkdown);
+        var markdownContent = _markdownTableConverter.ConvertToEnhancedMarkdownTableString(results, result => result.ExecutionSettings.AsMarkdown);
 
         if (!string.IsNullOrEmpty(markdownContent))
         {

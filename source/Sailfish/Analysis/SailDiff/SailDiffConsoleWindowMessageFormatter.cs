@@ -19,15 +19,15 @@ public interface ISailDiffConsoleWindowMessageFormatter
 
 public class SailDiffConsoleWindowMessageFormatter : ISailDiffConsoleWindowMessageFormatter
 {
-    private readonly ILogger logger;
-    private readonly ISailDiffResultMarkdownConverter sailDiffResultMarkdownConverter;
+    private readonly ILogger _logger;
+    private readonly ISailDiffResultMarkdownConverter _sailDiffResultMarkdownConverter;
 
     public SailDiffConsoleWindowMessageFormatter(
         ISailDiffResultMarkdownConverter sailDiffResultMarkdownConverter,
         ILogger logger)
     {
-        this.sailDiffResultMarkdownConverter = sailDiffResultMarkdownConverter;
-        this.logger = logger;
+        this._sailDiffResultMarkdownConverter = sailDiffResultMarkdownConverter;
+        this._logger = logger;
     }
 
     public string FormConsoleWindowMessageForSailDiff(
@@ -40,11 +40,11 @@ public class SailDiffConsoleWindowMessageFormatter : ISailDiffConsoleWindowMessa
         BuildHeader(stringBuilder, testIds.BeforeTestIds, testIds.AfterTestIds, sailDiffSettings);
 
         // Use enhanced formatting for console output
-        var resultsAsMarkdown = sailDiffResultMarkdownConverter.ConvertToEnhancedMarkdownTable(sailDiffResult, Formatting.OutputContext.Console);
+        var resultsAsMarkdown = _sailDiffResultMarkdownConverter.ConvertToEnhancedMarkdownTable(sailDiffResult, Formatting.OutputContext.Console);
 
         stringBuilder.AppendLine(resultsAsMarkdown);
         var result = stringBuilder.ToString();
-        logger.Log(LogLevel.Information, result);
+        _logger.Log(LogLevel.Information, result);
         return result;
     }
 

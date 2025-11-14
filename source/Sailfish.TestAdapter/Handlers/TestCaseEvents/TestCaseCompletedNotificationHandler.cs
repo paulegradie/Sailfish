@@ -61,15 +61,15 @@ internal class TestCaseCompletedNotificationHandler : INotificationHandler<TestC
 {
     #region Private Fields
 
-    private readonly ILogger logger;
-    private readonly IMediator mediator;
-    private readonly IRunSettings runSettings;
-    private readonly IAdapterSailDiff sailDiff;
-    private readonly ISailDiffTestOutputWindowMessageFormatter sailDiffTestOutputWindowMessageFormatter;
-    private readonly ISailfishConsoleWindowFormatter sailfishConsoleWindowFormatter;
-    private readonly QueueConfiguration queueConfiguration;
-    private readonly ITestCompletionQueuePublisher? queuePublisher;
-    private readonly ITestCaseBatchingService? batchingService;
+    private readonly ILogger _logger;
+    private readonly IMediator _mediator;
+    private readonly IRunSettings _runSettings;
+    private readonly IAdapterSailDiff _sailDiff;
+    private readonly ISailDiffTestOutputWindowMessageFormatter _sailDiffTestOutputWindowMessageFormatter;
+    private readonly ISailfishConsoleWindowFormatter _sailfishConsoleWindowFormatter;
+    private readonly QueueConfiguration _queueConfiguration;
+    private readonly ITestCompletionQueuePublisher? _queuePublisher;
+    private readonly ITestCaseBatchingService? _batchingService;
 
     #endregion
 
@@ -103,15 +103,15 @@ internal class TestCaseCompletedNotificationHandler : INotificationHandler<TestC
         ITestCompletionQueuePublisher? queuePublisher = null,
         ITestCaseBatchingService? batchingService = null)
     {
-        this.sailfishConsoleWindowFormatter = sailfishConsoleWindowFormatter;
-        this.sailDiffTestOutputWindowMessageFormatter = sailDiffTestOutputWindowMessageFormatter;
-        this.runSettings = runSettings;
-        this.mediator = mediator;
-        this.sailDiff = sailDiff;
-        this.logger = logger;
-        this.queueConfiguration = queueConfiguration;
-        this.queuePublisher = queuePublisher;
-        this.batchingService = batchingService;
+        this._sailfishConsoleWindowFormatter = sailfishConsoleWindowFormatter;
+        this._sailDiffTestOutputWindowMessageFormatter = sailDiffTestOutputWindowMessageFormatter;
+        this._runSettings = runSettings;
+        this._mediator = mediator;
+        this._sailDiff = sailDiff;
+        this._logger = logger;
+        this._queueConfiguration = queueConfiguration;
+        this._queuePublisher = queuePublisher;
+        this._batchingService = batchingService;
     }
 
     #endregion
@@ -143,9 +143,9 @@ internal class TestCaseCompletedNotificationHandler : INotificationHandler<TestC
         ValidateNotification(notification);
 
         // Route to appropriate processing method based on queue configuration
-        if (queueConfiguration.IsEnabled && queuePublisher != null && batchingService != null)
+        if (_queueConfiguration.IsEnabled && _queuePublisher != null && _batchingService != null)
         {
-            logger.Log(LogLevel.Debug,
+            _logger.Log(LogLevel.Debug,
                 "Queue system is enabled. Processing test case '{0}' through queue.",
                 notification.TestInstanceContainerExternal!.TestCaseId.DisplayName);
 
@@ -153,7 +153,7 @@ internal class TestCaseCompletedNotificationHandler : INotificationHandler<TestC
         }
         else
         {
-            logger.Log(LogLevel.Debug,
+            _logger.Log(LogLevel.Debug,
                 "Queue system is disabled. Using direct framework publishing for test case '{0}'.",
                 notification.TestInstanceContainerExternal!.TestCaseId.DisplayName);
 
@@ -185,34 +185,34 @@ internal class TestCaseCompletedNotificationHandler : INotificationHandler<TestC
             // Create queue message with all test execution data
             var queueMessage = await CreateQueueMessage(notification, cancellationToken);
 
-            logger.Log(LogLevel.Debug,
+            _logger.Log(LogLevel.Debug,
                 "Created queue message for test case '{0}' with {1} metadata entries.",
                 queueMessage.TestCaseId, queueMessage.Metadata.Count);
 
             // Add test case to appropriate batch for cross-test-case analysis
-            var batchId = await batchingService!.AddTestCaseToBatchAsync(queueMessage, cancellationToken);
+            var batchId = await _batchingService!.AddTestCaseToBatchAsync(queueMessage, cancellationToken);
 
-            logger.Log(LogLevel.Debug,
+            _logger.Log(LogLevel.Debug,
                 "Added test case '{0}' to batch '{1}' for cross-test-case analysis.",
                 queueMessage.TestCaseId, batchId);
 
             // Publish message to queue for asynchronous processing
-            await queuePublisher!.PublishTestCompletion(queueMessage, cancellationToken);
+            await _queuePublisher!.PublishTestCompletion(queueMessage, cancellationToken);
 
-            logger.Log(LogLevel.Information,
+            _logger.Log(LogLevel.Information,
                 "Successfully published test case '{0}' to queue for processing.",
                 queueMessage.TestCaseId);
         }
         catch (Exception ex)
         {
-            logger.Log(LogLevel.Error, ex,
+            _logger.Log(LogLevel.Error, ex,
                 "Failed to process test case '{0}' through queue: {1}",
                 notification.TestInstanceContainerExternal!.TestCaseId.DisplayName, ex.Message);
 
             // Fall back to direct publishing if enabled
-            if (queueConfiguration.EnableFallbackPublishing)
+            if (_queueConfiguration.EnableFallbackPublishing)
             {
-                logger.Log(LogLevel.Warning,
+                _logger.Log(LogLevel.Warning,
                     "Falling back to direct framework publishing for test case '{0}' due to queue failure.",
                     notification.TestInstanceContainerExternal.TestCaseId.DisplayName);
 
@@ -220,7 +220,7 @@ internal class TestCaseCompletedNotificationHandler : INotificationHandler<TestC
             }
             else
             {
-                logger.Log(LogLevel.Error,
+                _logger.Log(LogLevel.Error,
                     "Queue processing failed and fallback is disabled. Test case '{0}' results may be lost.",
                     notification.TestInstanceContainerExternal.TestCaseId.DisplayName);
 
@@ -250,7 +250,7 @@ internal class TestCaseCompletedNotificationHandler : INotificationHandler<TestC
     private async Task HandleDirectPublishing(TestCaseCompletedNotification notification, CancellationToken cancellationToken)
     {
         var classExecutionSummaries = notification.ClassExecutionSummaryTrackingFormat.ToSummaryFormat();
-        var testOutputWindowMessage = sailfishConsoleWindowFormatter.FormConsoleWindowMessageForSailfish([classExecutionSummaries]);
+        var testOutputWindowMessage = _sailfishConsoleWindowFormatter.FormConsoleWindowMessageForSailfish([classExecutionSummaries]);
 
         var testCases = notification
             .TestCaseGroup
@@ -273,7 +273,7 @@ internal class TestCaseCompletedNotificationHandler : INotificationHandler<TestC
         var compiledTestCaseResult = classExecutionSummaries.CompiledTestCaseResults.Single();
         if (compiledTestCaseResult.Exception is not null)
         {
-            await mediator.Publish(new FrameworkTestCaseEndNotification(
+            await _mediator.Publish(new FrameworkTestCaseEndNotification(
                 testOutputWindowMessage,
                 notification.TestInstanceContainerExternal.PerformanceTimer!.GetIterationStartTime(),
                 notification.TestInstanceContainerExternal.PerformanceTimer.GetIterationStopTime(),
@@ -288,7 +288,7 @@ internal class TestCaseCompletedNotificationHandler : INotificationHandler<TestC
         var medianTestRuntime = compiledTestCaseResult.PerformanceRunResult?.Median ?? throw new SailfishException("Error computing compiled results");
 
         var preloadedPreviousRuns = await GetLastRun(cancellationToken);
-        if (preloadedPreviousRuns.Count > 0 && !runSettings.DisableAnalysisGlobally)
+        if (preloadedPreviousRuns.Count > 0 && !_runSettings.DisableAnalysisGlobally)
             testOutputWindowMessage = RunSailDiff(
                 notification.TestInstanceContainerExternal.TestCaseId.DisplayName,
                 classExecutionSummaries,
@@ -301,7 +301,7 @@ internal class TestCaseCompletedNotificationHandler : INotificationHandler<TestC
 
         var statusCode = notification.ClassExecutionSummaryTrackingFormat.GetFailedTestCases().Any() ? StatusCode.Failure : StatusCode.Success;
 
-        await mediator.Publish(new FrameworkTestCaseEndNotification(
+        await _mediator.Publish(new FrameworkTestCaseEndNotification(
             testOutputWindowMessage,
             notification.TestInstanceContainerExternal.PerformanceTimer.GetIterationStartTime(),
             notification.TestInstanceContainerExternal.PerformanceTimer.GetIterationStopTime(),
@@ -327,14 +327,14 @@ internal class TestCaseCompletedNotificationHandler : INotificationHandler<TestC
         {
             var groupRef = notification.TestCaseGroup.FirstOrDefault()?.Cast<TestCase>();
             var msg = $"TestInstanceContainer was null for {groupRef?.Type.Name ?? "Unknown Type"}";
-            logger.Log(LogLevel.Error, msg);
+            _logger.Log(LogLevel.Error, msg);
             throw new SailfishException(msg);
         }
 
         if (notification.TestInstanceContainerExternal.PerformanceTimer is null)
         {
             var msg = $"PerformanceTimerResults was null for {notification.TestInstanceContainerExternal.Type.Name}";
-            logger.Log(LogLevel.Error, msg);
+            _logger.Log(LogLevel.Error, msg);
             throw new SailfishException(msg);
         }
     }
@@ -363,7 +363,7 @@ internal class TestCaseCompletedNotificationHandler : INotificationHandler<TestC
     {
         // Process notification data (same as direct publishing logic)
         var classExecutionSummaries = notification.ClassExecutionSummaryTrackingFormat.ToSummaryFormat();
-        var testOutputWindowMessage = sailfishConsoleWindowFormatter.FormConsoleWindowMessageForSailfish([classExecutionSummaries]);
+        var testOutputWindowMessage = _sailfishConsoleWindowFormatter.FormConsoleWindowMessageForSailfish([classExecutionSummaries]);
 
         var testCases = notification
             .TestCaseGroup
@@ -387,7 +387,7 @@ internal class TestCaseCompletedNotificationHandler : INotificationHandler<TestC
 
         // Handle SailDiff analysis if enabled
         var preloadedPreviousRuns = await GetLastRun(cancellationToken);
-        if (preloadedPreviousRuns.Count > 0 && !runSettings.DisableAnalysisGlobally)
+        if (preloadedPreviousRuns.Count > 0 && !_runSettings.DisableAnalysisGlobally)
         {
             testOutputWindowMessage = RunSailDiff(
                 notification.TestInstanceContainerExternal.TestCaseId.DisplayName,
@@ -444,7 +444,7 @@ internal class TestCaseCompletedNotificationHandler : INotificationHandler<TestC
                 ["ClassExecutionSummaries"] = classExecutionSummaries,
                 ["CompiledTestCaseResult"] = compiledTestCaseResult,
                 ["TestCaseGroup"] = notification.TestCaseGroup,
-                ["RunSettings"] = runSettings,
+                ["RunSettings"] = _runSettings,
 
                 // Comparison metadata (if present)
                 ["ComparisonGroup"] = ExtractComparisonGroup(currentTestCase) ?? (object)DBNull.Value,
@@ -452,7 +452,7 @@ internal class TestCaseCompletedNotificationHandler : INotificationHandler<TestC
             }
         };
 
-        logger.Log(LogLevel.Debug,
+        _logger.Log(LogLevel.Debug,
             "Created queue message for test case '{0}': Success={1}, MedianMs={2}, MetadataCount={3}",
             queueMessage.TestCaseId, queueMessage.TestResult.IsSuccess, queueMessage.PerformanceMetrics.MedianMs, queueMessage.Metadata.Count);
 
@@ -468,7 +468,7 @@ internal class TestCaseCompletedNotificationHandler : INotificationHandler<TestC
         var preloadedRun = preloadedLastRunsIfAvailable.FindFirstMatchingTestCaseId(new TestCaseId(testCaseDisplayName));
         if (preloadedRun is null) return testOutputWindowMessage;
 
-        var testCaseResults = sailDiff.ComputeTestCaseDiff(
+        var testCaseResults = _sailDiff.ComputeTestCaseDiff(
             [testCaseDisplayName],
             [testCaseDisplayName],
             testCaseDisplayName,
@@ -483,7 +483,7 @@ internal class TestCaseCompletedNotificationHandler : INotificationHandler<TestC
     {
         if (testCaseResults.SailDiffResults.Count > 0)
         {
-            var sailDiffTestOutputString = sailDiffTestOutputWindowMessageFormatter
+            var sailDiffTestOutputString = _sailDiffTestOutputWindowMessageFormatter
                 .FormTestOutputWindowMessageForSailDiff(
                     testCaseResults.SailDiffResults.Single(),
                     testCaseResults.TestIds,
@@ -501,18 +501,18 @@ internal class TestCaseCompletedNotificationHandler : INotificationHandler<TestC
     private async Task<TrackingFileDataList> GetLastRun(CancellationToken cancellationToken)
     {
         var preloadedLastRunsIfAvailable = new TrackingFileDataList();
-        if (runSettings.DisableAnalysisGlobally || runSettings is { RunScaleFish: false, RunSailDiff: false }) return preloadedLastRunsIfAvailable;
+        if (_runSettings.DisableAnalysisGlobally || _runSettings is { RunScaleFish: false, RunSailDiff: false }) return preloadedLastRunsIfAvailable;
 
         try
         {
-            var response = await mediator.Send(
+            var response = await _mediator.Send(
                 new GetAllTrackingDataOrderedChronologicallyRequest(),
                 cancellationToken);
             preloadedLastRunsIfAvailable.AddRange(response.TrackingData.Skip(1)); // the most recent is the current run
         }
         catch (Exception ex)
         {
-            logger.Log(LogLevel.Warning, ex.Message);
+            _logger.Log(LogLevel.Warning, ex.Message);
         }
 
         return preloadedLastRunsIfAvailable;

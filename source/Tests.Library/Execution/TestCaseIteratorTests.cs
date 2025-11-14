@@ -17,22 +17,22 @@ namespace Tests.Library.Execution;
 /// </summary>
 public class TestCaseIteratorTests
 {
-    private readonly ILogger mockLogger;
-    private readonly IRunSettings mockRunSettings;
-    private readonly IIterationStrategy mockFixedStrategy;
-    private readonly IIterationStrategy mockAdaptiveStrategy;
-    private readonly TestCaseIterator testCaseIterator;
+    private readonly ILogger _mockLogger;
+    private readonly IRunSettings _mockRunSettings;
+    private readonly IIterationStrategy _mockFixedStrategy;
+    private readonly IIterationStrategy _mockAdaptiveStrategy;
+    private readonly TestCaseIterator _testCaseIterator;
 
     public TestCaseIteratorTests()
     {
-        mockLogger = Substitute.For<ILogger>();
-        mockRunSettings = Substitute.For<IRunSettings>();
+        _mockLogger = Substitute.For<ILogger>();
+        _mockRunSettings = Substitute.For<IRunSettings>();
         // Use real FixedIterationStrategy so iteration progress is logged and CoreInvoker is exercised
-        mockFixedStrategy = new FixedIterationStrategy(mockLogger);
+        _mockFixedStrategy = new FixedIterationStrategy(_mockLogger);
         // Adaptive strategy is not used in these tests (UseAdaptiveSampling defaults to false),
         // but configure a safe default in case it's invoked
-        mockAdaptiveStrategy = Substitute.For<IIterationStrategy>();
-        mockAdaptiveStrategy.ExecuteIterations(
+        _mockAdaptiveStrategy = Substitute.For<IIterationStrategy>();
+        _mockAdaptiveStrategy.ExecuteIterations(
             Arg.Any<TestInstanceContainer>(),
             Arg.Any<IExecutionSettings>(),
             Arg.Any<CancellationToken>())
@@ -42,15 +42,15 @@ public class TestCaseIteratorTests
                 TotalIterations = 1,
                 ConvergedEarly = false
             }));
-        testCaseIterator = new TestCaseIterator(mockRunSettings, mockLogger, mockFixedStrategy, mockAdaptiveStrategy);
+        _testCaseIterator = new TestCaseIterator(_mockRunSettings, _mockLogger, _mockFixedStrategy, _mockAdaptiveStrategy);
     }
 
     [Fact]
     public void Constructor_WithValidDependencies_ShouldCreateInstance()
     {
         // Act & Assert
-        testCaseIterator.ShouldNotBeNull();
-        testCaseIterator.ShouldBeAssignableTo<ITestCaseIterator>();
+        _testCaseIterator.ShouldNotBeNull();
+        _testCaseIterator.ShouldBeAssignableTo<ITestCaseIterator>();
     }
 
 
@@ -60,10 +60,10 @@ public class TestCaseIteratorTests
     {
         // Arrange
         var container = CreateTestInstanceContainer();
-        mockRunSettings.SampleSizeOverride.Returns((int?)null);
+        _mockRunSettings.SampleSizeOverride.Returns((int?)null);
 
         // Act
-        var result = await testCaseIterator.Iterate(container, false, CancellationToken.None);
+        var result = await _testCaseIterator.Iterate(container, false, CancellationToken.None);
 
         // Assert
         result.ShouldNotBeNull();
@@ -75,10 +75,10 @@ public class TestCaseIteratorTests
     {
         // Arrange
         var container = CreateTestInstanceContainer();
-        mockRunSettings.SampleSizeOverride.Returns((int?)null);
+        _mockRunSettings.SampleSizeOverride.Returns((int?)null);
 
         // Act
-        var result = await testCaseIterator.Iterate(container, true, CancellationToken.None);
+        var result = await _testCaseIterator.Iterate(container, true, CancellationToken.None);
 
         // Assert
         result.ShouldNotBeNull();
@@ -90,16 +90,16 @@ public class TestCaseIteratorTests
     {
         // Arrange
         var container = CreateTestInstanceContainer();
-        mockRunSettings.SampleSizeOverride.Returns(5);
+        _mockRunSettings.SampleSizeOverride.Returns(5);
 
         // Act
-        var result = await testCaseIterator.Iterate(container, true, CancellationToken.None);
+        var result = await _testCaseIterator.Iterate(container, true, CancellationToken.None);
 
         // Assert
         result.ShouldNotBeNull();
         result.IsSuccess.ShouldBeTrue();
         // Verify that the correct number of iterations were logged
-        mockLogger.Received().Log(LogLevel.Information, "      ---- iteration {CurrentIteration} of {TotalIterations}", 1, 5);
+        _mockLogger.Received().Log(LogLevel.Information, "      ---- iteration {CurrentIteration} of {TotalIterations}", 1, 5);
     }
 
     [Fact]
@@ -107,16 +107,16 @@ public class TestCaseIteratorTests
     {
         // Arrange
         var container = CreateTestInstanceContainer();
-        mockRunSettings.SampleSizeOverride.Returns(0);
+        _mockRunSettings.SampleSizeOverride.Returns(0);
 
         // Act
-        var result = await testCaseIterator.Iterate(container, true, CancellationToken.None);
+        var result = await _testCaseIterator.Iterate(container, true, CancellationToken.None);
 
         // Assert
         result.ShouldNotBeNull();
         result.IsSuccess.ShouldBeTrue();
         // Should use minimum of 1 iteration
-        mockLogger.Received().Log(LogLevel.Information, "      ---- iteration {CurrentIteration} of {TotalIterations}", 1, 1);
+        _mockLogger.Received().Log(LogLevel.Information, "      ---- iteration {CurrentIteration} of {TotalIterations}", 1, 1);
     }
 
     [Fact]
@@ -124,16 +124,16 @@ public class TestCaseIteratorTests
     {
         // Arrange
         var container = CreateTestInstanceContainer();
-        mockRunSettings.SampleSizeOverride.Returns(-5);
+        _mockRunSettings.SampleSizeOverride.Returns(-5);
 
         // Act
-        var result = await testCaseIterator.Iterate(container, true, CancellationToken.None);
+        var result = await _testCaseIterator.Iterate(container, true, CancellationToken.None);
 
         // Assert
         result.ShouldNotBeNull();
         result.IsSuccess.ShouldBeTrue();
         // Should use minimum of 1 iteration
-        mockLogger.Received().Log(LogLevel.Information, "      ---- iteration {CurrentIteration} of {TotalIterations}", 1, 1);
+        _mockLogger.Received().Log(LogLevel.Information, "      ---- iteration {CurrentIteration} of {TotalIterations}", 1, 1);
     }
 
     [Fact]
@@ -141,17 +141,17 @@ public class TestCaseIteratorTests
     {
         // Arrange
         var container = CreateTestInstanceContainer(numWarmupIterations: 2);
-        mockRunSettings.SampleSizeOverride.Returns(1);
+        _mockRunSettings.SampleSizeOverride.Returns(1);
 
         // Act
-        var result = await testCaseIterator.Iterate(container, true, CancellationToken.None);
+        var result = await _testCaseIterator.Iterate(container, true, CancellationToken.None);
 
         // Assert
         result.ShouldNotBeNull();
         result.IsSuccess.ShouldBeTrue();
         // Verify warmup iterations were logged
-        mockLogger.Received().Log(LogLevel.Information, "      ---- warmup iteration {CurrentIteration} of {TotalIterations}", 1, 2);
-        mockLogger.Received().Log(LogLevel.Information, "      ---- warmup iteration {CurrentIteration} of {TotalIterations}", 2, 2);
+        _mockLogger.Received().Log(LogLevel.Information, "      ---- warmup iteration {CurrentIteration} of {TotalIterations}", 1, 2);
+        _mockLogger.Received().Log(LogLevel.Information, "      ---- warmup iteration {CurrentIteration} of {TotalIterations}", 2, 2);
     }
 
 
@@ -163,19 +163,19 @@ public class TestCaseIteratorTests
     {
         // Arrange
         var container = CreateTestInstanceContainer();
-        mockRunSettings.SampleSizeOverride.Returns(3);
+        _mockRunSettings.SampleSizeOverride.Returns(3);
 
         // Act
-        var result = await testCaseIterator.Iterate(container, true, CancellationToken.None);
+        var result = await _testCaseIterator.Iterate(container, true, CancellationToken.None);
 
         // Assert
         result.ShouldNotBeNull();
         result.IsSuccess.ShouldBeTrue();
 
         // Verify all iterations were logged
-        mockLogger.Received().Log(LogLevel.Information, "      ---- iteration {CurrentIteration} of {TotalIterations}", 1, 3);
-        mockLogger.Received().Log(LogLevel.Information, "      ---- iteration {CurrentIteration} of {TotalIterations}", 2, 3);
-        mockLogger.Received().Log(LogLevel.Information, "      ---- iteration {CurrentIteration} of {TotalIterations}", 3, 3);
+        _mockLogger.Received().Log(LogLevel.Information, "      ---- iteration {CurrentIteration} of {TotalIterations}", 1, 3);
+        _mockLogger.Received().Log(LogLevel.Information, "      ---- iteration {CurrentIteration} of {TotalIterations}", 2, 3);
+        _mockLogger.Received().Log(LogLevel.Information, "      ---- iteration {CurrentIteration} of {TotalIterations}", 3, 3);
     }
 
     [Fact]
@@ -183,10 +183,10 @@ public class TestCaseIteratorTests
     {
         // Arrange
         var container = CreateTestInstanceContainer();
-        mockRunSettings.SampleSizeOverride.Returns(1);
+        _mockRunSettings.SampleSizeOverride.Returns(1);
 
         // Act
-        var result = await testCaseIterator.Iterate(container, false, CancellationToken.None);
+        var result = await _testCaseIterator.Iterate(container, false, CancellationToken.None);
 
         // Assert
         result.ShouldNotBeNull();

@@ -9,16 +9,16 @@ namespace Tests.E2E.TestSuite.Handlers;
 
 public class TestRunCompletedNotificationHandler : INotificationHandler<TestRunCompletedNotification>
 {
-    private readonly IRunSettings runSettings;
+    private readonly IRunSettings _runSettings;
 
     public TestRunCompletedNotificationHandler(IRunSettings runSettings)
     {
-        this.runSettings = runSettings;
+        this._runSettings = runSettings;
     }
 
     public async Task Handle(TestRunCompletedNotification notification, CancellationToken cancellationToken)
     {
-        var outputDirectory = runSettings.LocalOutputDirectory;
+        var outputDirectory = _runSettings.LocalOutputDirectory;
         await File.WriteAllTextAsync(Path.Join(outputDirectory, "TestRunCompleted.txt"), "TestRunComplete", cancellationToken);
     }
 }

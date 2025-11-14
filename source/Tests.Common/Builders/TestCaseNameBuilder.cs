@@ -6,31 +6,31 @@ namespace Tests.Common.Builders;
 
 public class TestCaseNameBuilder
 {
-    private string? name;
-    private IReadOnlyList<string>? parts;
+    private string? _name;
+    private IReadOnlyList<string>? _parts;
 
     public static TestCaseNameBuilder Create() => new();
 
     public TestCaseNameBuilder WithName(string name)
     {
-        this.name = name;
-        parts = null;
+        this._name = name;
+        _parts = null;
         return this;
     }
 
     public TestCaseNameBuilder WithParts(IReadOnlyList<string> parts)
     {
-        this.parts = parts;
-        name = string.Join(".", parts);
+        this._parts = parts;
+        _name = string.Join(".", parts);
         return this;
     }
 
     public TestCaseName Build()
     {
-        if (name == null && parts == null) throw new InvalidOperationException("Either Name or Parts must be provided.");
+        if (_name == null && _parts == null) throw new InvalidOperationException("Either Name or Parts must be provided.");
 
-        if (parts != null) return new TestCaseName(parts);
+        if (_parts != null) return new TestCaseName(_parts);
 
-        return new TestCaseName(name!);
+        return new TestCaseName(_name!);
     }
 }

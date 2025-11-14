@@ -21,19 +21,19 @@ namespace Tests.Library.Execution;
 
 public class SailfishExecutorTests
 {
-    private readonly IMediator mediator = Substitute.For<IMediator>();
-    private readonly ISailFishTestExecutor sailFishTestExecutor = Substitute.For<ISailFishTestExecutor>();
-    private readonly ITestCollector testCollector = Substitute.For<ITestCollector>();
-    private readonly ITestFilter testFilter = Substitute.For<ITestFilter>();
+    private readonly IMediator _mediator = Substitute.For<IMediator>();
+    private readonly ISailFishTestExecutor _sailFishTestExecutor = Substitute.For<ISailFishTestExecutor>();
+    private readonly ITestCollector _testCollector = Substitute.For<ITestCollector>();
+    private readonly ITestFilter _testFilter = Substitute.For<ITestFilter>();
 
-    private readonly IClassExecutionSummaryCompiler classExecutionSummaryCompiler =
+    private readonly IClassExecutionSummaryCompiler _classExecutionSummaryCompiler =
         Substitute.For<IClassExecutionSummaryCompiler>();
 
-    private readonly IExecutionSummaryWriter executionSummaryWriter = Substitute.For<IExecutionSummaryWriter>();
-    private readonly ISailDiffInternal sailDiff = Substitute.For<ISailDiffInternal>();
-    private readonly IScaleFishInternal scaleFish = Substitute.For<IScaleFishInternal>();
-    private readonly IRunSettings runSettings = Substitute.For<IRunSettings>();
-    private readonly ILogger logger = Substitute.For<ILogger>();
+    private readonly IExecutionSummaryWriter _executionSummaryWriter = Substitute.For<IExecutionSummaryWriter>();
+    private readonly ISailDiffInternal _sailDiff = Substitute.For<ISailDiffInternal>();
+    private readonly IScaleFishInternal _scaleFish = Substitute.For<IScaleFishInternal>();
+    private readonly IRunSettings _runSettings = Substitute.For<IRunSettings>();
+    private readonly ILogger _logger = Substitute.For<ILogger>();
 
     [Fact]
     public async Task Run_WithValidTests_ReturnsSuccessfulResult()
@@ -45,21 +45,21 @@ public class SailfishExecutorTests
         var classExecutionSummary =
             new ClassExecutionSummary(testType, new ExecutionSettings(), new List<ICompiledTestCaseResult>());
 
-        testFilter.FilterAndValidate(Arg.Any<IEnumerable<Type>>(), Arg.Any<IEnumerable<string>>())
+        _testFilter.FilterAndValidate(Arg.Any<IEnumerable<Type>>(), Arg.Any<IEnumerable<string>>())
             .Returns(testInitResult);
-        sailFishTestExecutor.Execute(Arg.Any<IEnumerable<Type>>(), Arg.Any<CancellationToken>())
+        _sailFishTestExecutor.Execute(Arg.Any<IEnumerable<Type>>(), Arg.Any<CancellationToken>())
             .Returns(new List<TestClassResultGroup> { testClassResultGroup });
-        classExecutionSummaryCompiler.CompileToSummaries(Arg.Any<IEnumerable<TestClassResultGroup>>())
+        _classExecutionSummaryCompiler.CompileToSummaries(Arg.Any<IEnumerable<TestClassResultGroup>>())
             .Returns(new List<IClassExecutionSummary> { classExecutionSummary }.AsEnumerable());
-        runSettings.TestNames.Returns(new List<string>());
-        runSettings.TestLocationAnchors.Returns(new List<Type>());
-        runSettings.Seed.Returns((int?)null);
-        runSettings.Args.Returns(new Sailfish.Extensions.Types.OrderedDictionary());
-        runSettings.RunSailDiff.Returns(false);
-        runSettings.RunScaleFish.Returns(false);
+        _runSettings.TestNames.Returns(new List<string>());
+        _runSettings.TestLocationAnchors.Returns(new List<Type>());
+        _runSettings.Seed.Returns((int?)null);
+        _runSettings.Args.Returns(new Sailfish.Extensions.Types.OrderedDictionary());
+        _runSettings.RunSailDiff.Returns(false);
+        _runSettings.RunScaleFish.Returns(false);
 
-        var executor = new SailfishExecutor(mediator, sailFishTestExecutor, testCollector, testFilter,
-            classExecutionSummaryCompiler, executionSummaryWriter, sailDiff, scaleFish, runSettings, logger);
+        var executor = new SailfishExecutor(_mediator, _sailFishTestExecutor, _testCollector, _testFilter,
+            _classExecutionSummaryCompiler, _executionSummaryWriter, _sailDiff, _scaleFish, _runSettings, _logger);
 
         // Act
         var result = await executor.Run(CancellationToken.None);
@@ -67,7 +67,7 @@ public class SailfishExecutorTests
         // Assert
         result.IsValid.ShouldBeTrue();
         result.ExecutionSummaries.ShouldNotBeEmpty();
-        await executionSummaryWriter.Received(1)
+        await _executionSummaryWriter.Received(1)
             .Write(Arg.Any<List<IClassExecutionSummary>>(), Arg.Any<CancellationToken>());
     }
 
@@ -79,13 +79,13 @@ public class SailfishExecutorTests
             new Dictionary<string, List<string>> { { "Error reason", new List<string> { "TestName1", "TestName2" } } };
         var testInitResult = TestInitializationResult.CreateFailure(new Type[0], errors);
 
-        testFilter.FilterAndValidate(Arg.Any<IEnumerable<Type>>(), Arg.Any<IEnumerable<string>>())
+        _testFilter.FilterAndValidate(Arg.Any<IEnumerable<Type>>(), Arg.Any<IEnumerable<string>>())
             .Returns(testInitResult);
-        runSettings.TestNames.Returns(new List<string>());
-        runSettings.TestLocationAnchors.Returns(new List<Type>());
+        _runSettings.TestNames.Returns(new List<string>());
+        _runSettings.TestLocationAnchors.Returns(new List<Type>());
 
-        var executor = new SailfishExecutor(mediator, sailFishTestExecutor, testCollector, testFilter,
-            classExecutionSummaryCompiler, executionSummaryWriter, sailDiff, scaleFish, runSettings, logger);
+        var executor = new SailfishExecutor(_mediator, _sailFishTestExecutor, _testCollector, _testFilter,
+            _classExecutionSummaryCompiler, _executionSummaryWriter, _sailDiff, _scaleFish, _runSettings, _logger);
 
         // Act
         var result = await executor.Run(CancellationToken.None);
@@ -106,28 +106,28 @@ public class SailfishExecutorTests
         var classExecutionSummary =
             new ClassExecutionSummary(testType1, new ExecutionSettings(), new List<ICompiledTestCaseResult>());
 
-        testFilter.FilterAndValidate(Arg.Any<IEnumerable<Type>>(), Arg.Any<IEnumerable<string>>())
+        _testFilter.FilterAndValidate(Arg.Any<IEnumerable<Type>>(), Arg.Any<IEnumerable<string>>())
             .Returns(testInitResult);
-        sailFishTestExecutor.Execute(Arg.Any<IEnumerable<Type>>(), Arg.Any<CancellationToken>())
+        _sailFishTestExecutor.Execute(Arg.Any<IEnumerable<Type>>(), Arg.Any<CancellationToken>())
             .Returns(new List<TestClassResultGroup>());
-        classExecutionSummaryCompiler.CompileToSummaries(Arg.Any<IEnumerable<TestClassResultGroup>>())
+        _classExecutionSummaryCompiler.CompileToSummaries(Arg.Any<IEnumerable<TestClassResultGroup>>())
             .Returns(new List<IClassExecutionSummary> { classExecutionSummary }.AsEnumerable());
-        runSettings.TestNames.Returns(new List<string>());
-        runSettings.TestLocationAnchors.Returns(new List<Type>());
-        runSettings.Seed.Returns(42);
-        runSettings.Args.Returns(new Sailfish.Extensions.Types.OrderedDictionary());
-        runSettings.RunSailDiff.Returns(false);
-        runSettings.RunScaleFish.Returns(false);
+        _runSettings.TestNames.Returns(new List<string>());
+        _runSettings.TestLocationAnchors.Returns(new List<Type>());
+        _runSettings.Seed.Returns(42);
+        _runSettings.Args.Returns(new Sailfish.Extensions.Types.OrderedDictionary());
+        _runSettings.RunSailDiff.Returns(false);
+        _runSettings.RunScaleFish.Returns(false);
 
-        var executor = new SailfishExecutor(mediator, sailFishTestExecutor, testCollector, testFilter,
-            classExecutionSummaryCompiler, executionSummaryWriter, sailDiff, scaleFish, runSettings, logger);
+        var executor = new SailfishExecutor(_mediator, _sailFishTestExecutor, _testCollector, _testFilter,
+            _classExecutionSummaryCompiler, _executionSummaryWriter, _sailDiff, _scaleFish, _runSettings, _logger);
 
         // Act
         var result = await executor.Run(CancellationToken.None);
 
         // Assert
         result.IsValid.ShouldBeTrue();
-        logger.Received(1).Log(Arg.Any<LogLevel>(), Arg.Any<string>(), Arg.Any<object[]>());
+        _logger.Received(1).Log(Arg.Any<LogLevel>(), Arg.Any<string>(), Arg.Any<object[]>());
     }
 
     [Fact]
@@ -139,27 +139,27 @@ public class SailfishExecutorTests
         var classExecutionSummary =
             new ClassExecutionSummary(testType, new ExecutionSettings(), new List<ICompiledTestCaseResult>());
 
-        testFilter.FilterAndValidate(Arg.Any<IEnumerable<Type>>(), Arg.Any<IEnumerable<string>>())
+        _testFilter.FilterAndValidate(Arg.Any<IEnumerable<Type>>(), Arg.Any<IEnumerable<string>>())
             .Returns(testInitResult);
-        sailFishTestExecutor.Execute(Arg.Any<IEnumerable<Type>>(), Arg.Any<CancellationToken>())
+        _sailFishTestExecutor.Execute(Arg.Any<IEnumerable<Type>>(), Arg.Any<CancellationToken>())
             .Returns(new List<TestClassResultGroup>());
-        classExecutionSummaryCompiler.CompileToSummaries(Arg.Any<IEnumerable<TestClassResultGroup>>())
+        _classExecutionSummaryCompiler.CompileToSummaries(Arg.Any<IEnumerable<TestClassResultGroup>>())
             .Returns(new List<IClassExecutionSummary> { classExecutionSummary }.AsEnumerable());
-        runSettings.TestNames.Returns(new List<string>());
-        runSettings.TestLocationAnchors.Returns(new List<Type>());
-        runSettings.Seed.Returns((int?)null);
-        runSettings.Args.Returns(new Sailfish.Extensions.Types.OrderedDictionary());
-        runSettings.RunSailDiff.Returns(true);
-        runSettings.RunScaleFish.Returns(false);
+        _runSettings.TestNames.Returns(new List<string>());
+        _runSettings.TestLocationAnchors.Returns(new List<Type>());
+        _runSettings.Seed.Returns((int?)null);
+        _runSettings.Args.Returns(new Sailfish.Extensions.Types.OrderedDictionary());
+        _runSettings.RunSailDiff.Returns(true);
+        _runSettings.RunScaleFish.Returns(false);
 
-        var executor = new SailfishExecutor(mediator, sailFishTestExecutor, testCollector, testFilter,
-            classExecutionSummaryCompiler, executionSummaryWriter, sailDiff, scaleFish, runSettings, logger);
+        var executor = new SailfishExecutor(_mediator, _sailFishTestExecutor, _testCollector, _testFilter,
+            _classExecutionSummaryCompiler, _executionSummaryWriter, _sailDiff, _scaleFish, _runSettings, _logger);
 
         // Act
         await executor.Run(CancellationToken.None);
 
         // Assert
-        await sailDiff.Received(1).Analyze(Arg.Any<CancellationToken>());
+        await _sailDiff.Received(1).Analyze(Arg.Any<CancellationToken>());
     }
 
     [Fact]
@@ -171,27 +171,27 @@ public class SailfishExecutorTests
         var classExecutionSummary =
             new ClassExecutionSummary(testType, new ExecutionSettings(), new List<ICompiledTestCaseResult>());
 
-        testFilter.FilterAndValidate(Arg.Any<IEnumerable<Type>>(), Arg.Any<IEnumerable<string>>())
+        _testFilter.FilterAndValidate(Arg.Any<IEnumerable<Type>>(), Arg.Any<IEnumerable<string>>())
             .Returns(testInitResult);
-        sailFishTestExecutor.Execute(Arg.Any<IEnumerable<Type>>(), Arg.Any<CancellationToken>())
+        _sailFishTestExecutor.Execute(Arg.Any<IEnumerable<Type>>(), Arg.Any<CancellationToken>())
             .Returns(new List<TestClassResultGroup>());
-        classExecutionSummaryCompiler.CompileToSummaries(Arg.Any<IEnumerable<TestClassResultGroup>>())
+        _classExecutionSummaryCompiler.CompileToSummaries(Arg.Any<IEnumerable<TestClassResultGroup>>())
             .Returns(new List<IClassExecutionSummary> { classExecutionSummary }.AsEnumerable());
-        runSettings.TestNames.Returns(new List<string>());
-        runSettings.TestLocationAnchors.Returns(new List<Type>());
-        runSettings.Seed.Returns((int?)null);
-        runSettings.Args.Returns(new Sailfish.Extensions.Types.OrderedDictionary());
-        runSettings.RunSailDiff.Returns(false);
-        runSettings.RunScaleFish.Returns(true);
+        _runSettings.TestNames.Returns(new List<string>());
+        _runSettings.TestLocationAnchors.Returns(new List<Type>());
+        _runSettings.Seed.Returns((int?)null);
+        _runSettings.Args.Returns(new Sailfish.Extensions.Types.OrderedDictionary());
+        _runSettings.RunSailDiff.Returns(false);
+        _runSettings.RunScaleFish.Returns(true);
 
-        var executor = new SailfishExecutor(mediator, sailFishTestExecutor, testCollector, testFilter,
-            classExecutionSummaryCompiler, executionSummaryWriter, sailDiff, scaleFish, runSettings, logger);
+        var executor = new SailfishExecutor(_mediator, _sailFishTestExecutor, _testCollector, _testFilter,
+            _classExecutionSummaryCompiler, _executionSummaryWriter, _sailDiff, _scaleFish, _runSettings, _logger);
 
         // Act
         await executor.Run(CancellationToken.None);
 
         // Assert
-        await scaleFish.Received(1).Analyze(Arg.Any<CancellationToken>());
+        await _scaleFish.Received(1).Analyze(Arg.Any<CancellationToken>());
     }
 
     [Fact]
@@ -203,27 +203,27 @@ public class SailfishExecutorTests
         var classExecutionSummary =
             new ClassExecutionSummary(testType, new ExecutionSettings(), new List<ICompiledTestCaseResult>());
 
-        testFilter.FilterAndValidate(Arg.Any<IEnumerable<Type>>(), Arg.Any<IEnumerable<string>>())
+        _testFilter.FilterAndValidate(Arg.Any<IEnumerable<Type>>(), Arg.Any<IEnumerable<string>>())
             .Returns(testInitResult);
-        sailFishTestExecutor.Execute(Arg.Any<IEnumerable<Type>>(), Arg.Any<CancellationToken>())
+        _sailFishTestExecutor.Execute(Arg.Any<IEnumerable<Type>>(), Arg.Any<CancellationToken>())
             .Returns(new List<TestClassResultGroup>());
-        classExecutionSummaryCompiler.CompileToSummaries(Arg.Any<IEnumerable<TestClassResultGroup>>())
+        _classExecutionSummaryCompiler.CompileToSummaries(Arg.Any<IEnumerable<TestClassResultGroup>>())
             .Returns(new List<IClassExecutionSummary> { classExecutionSummary }.AsEnumerable());
-        runSettings.TestNames.Returns(new List<string>());
-        runSettings.TestLocationAnchors.Returns(new List<Type>());
-        runSettings.Seed.Returns((int?)null);
-        runSettings.Args.Returns(new Sailfish.Extensions.Types.OrderedDictionary());
-        runSettings.RunSailDiff.Returns(false);
-        runSettings.RunScaleFish.Returns(false);
+        _runSettings.TestNames.Returns(new List<string>());
+        _runSettings.TestLocationAnchors.Returns(new List<Type>());
+        _runSettings.Seed.Returns((int?)null);
+        _runSettings.Args.Returns(new Sailfish.Extensions.Types.OrderedDictionary());
+        _runSettings.RunSailDiff.Returns(false);
+        _runSettings.RunScaleFish.Returns(false);
 
-        var executor = new SailfishExecutor(mediator, sailFishTestExecutor, testCollector, testFilter,
-            classExecutionSummaryCompiler, executionSummaryWriter, sailDiff, scaleFish, runSettings, logger);
+        var executor = new SailfishExecutor(_mediator, _sailFishTestExecutor, _testCollector, _testFilter,
+            _classExecutionSummaryCompiler, _executionSummaryWriter, _sailDiff, _scaleFish, _runSettings, _logger);
 
         // Act
         await executor.Run(CancellationToken.None);
 
         // Assert
-        await mediator.Received(1).Publish(Arg.Any<TestRunCompletedNotification>(), Arg.Any<CancellationToken>());
+        await _mediator.Received(1).Publish(Arg.Any<TestRunCompletedNotification>(), Arg.Any<CancellationToken>());
     }
 
     [Fact]
@@ -237,31 +237,31 @@ public class SailfishExecutorTests
         var classExecutionSummary =
             new ClassExecutionSummary(t1, new ExecutionSettings(), new List<ICompiledTestCaseResult>());
 
-        testFilter.FilterAndValidate(Arg.Any<IEnumerable<Type>>(), Arg.Any<IEnumerable<string>>())
+        _testFilter.FilterAndValidate(Arg.Any<IEnumerable<Type>>(), Arg.Any<IEnumerable<string>>())
             .Returns(testInitResult);
-        sailFishTestExecutor.Execute(Arg.Any<IEnumerable<Type>>(), Arg.Any<CancellationToken>())
+        _sailFishTestExecutor.Execute(Arg.Any<IEnumerable<Type>>(), Arg.Any<CancellationToken>())
             .Returns(new List<TestClassResultGroup>());
-        classExecutionSummaryCompiler.CompileToSummaries(Arg.Any<IEnumerable<TestClassResultGroup>>())
+        _classExecutionSummaryCompiler.CompileToSummaries(Arg.Any<IEnumerable<TestClassResultGroup>>())
             .Returns(new List<IClassExecutionSummary> { classExecutionSummary }.AsEnumerable());
 
-        runSettings.TestNames.Returns(new List<string>());
-        runSettings.TestLocationAnchors.Returns(new List<Type>());
-        runSettings.Seed.Returns((int?)null);
+        _runSettings.TestNames.Returns(new List<string>());
+        _runSettings.TestLocationAnchors.Returns(new List<Type>());
+        _runSettings.Seed.Returns((int?)null);
         var args = new Sailfish.Extensions.Types.OrderedDictionary();
         args.Add("seed", "123");
-        runSettings.Args.Returns(args);
-        runSettings.RunSailDiff.Returns(false);
-        runSettings.RunScaleFish.Returns(false);
+        _runSettings.Args.Returns(args);
+        _runSettings.RunSailDiff.Returns(false);
+        _runSettings.RunScaleFish.Returns(false);
 
-        var executor = new SailfishExecutor(mediator, sailFishTestExecutor, testCollector, testFilter,
-            classExecutionSummaryCompiler, executionSummaryWriter, sailDiff, scaleFish, runSettings, logger);
+        var executor = new SailfishExecutor(_mediator, _sailFishTestExecutor, _testCollector, _testFilter,
+            _classExecutionSummaryCompiler, _executionSummaryWriter, _sailDiff, _scaleFish, _runSettings, _logger);
 
         // Act
         var result = await executor.Run(CancellationToken.None);
 
         // Assert
         result.IsValid.ShouldBeTrue();
-        logger.Received(1).Log(
+        _logger.Received(1).Log(
             LogLevel.Information,
             Arg.Is<string>(s => s.Contains("Randomized test class execution order with seed")),
             Arg.Is<object[]>(os => os.Length == 1 && Equals(os[0], 123)));
@@ -320,25 +320,25 @@ public class SailfishExecutorTests
         };
         var testInitResult = TestInitializationResult.CreateFailure(Array.Empty<Type>(), errors);
 
-        testFilter.FilterAndValidate(Arg.Any<IEnumerable<Type>>(), Arg.Any<IEnumerable<string>>())
+        _testFilter.FilterAndValidate(Arg.Any<IEnumerable<Type>>(), Arg.Any<IEnumerable<string>>())
             .Returns(testInitResult);
-        runSettings.TestNames.Returns(new List<string>());
-        runSettings.TestLocationAnchors.Returns(new List<Type>());
+        _runSettings.TestNames.Returns(new List<string>());
+        _runSettings.TestLocationAnchors.Returns(new List<Type>());
 
-        var executor = new SailfishExecutor(mediator, sailFishTestExecutor, testCollector, testFilter,
-            classExecutionSummaryCompiler, executionSummaryWriter, sailDiff, scaleFish, runSettings, logger);
+        var executor = new SailfishExecutor(_mediator, _sailFishTestExecutor, _testCollector, _testFilter,
+            _classExecutionSummaryCompiler, _executionSummaryWriter, _sailDiff, _scaleFish, _runSettings, _logger);
 
         // Act
         await executor.Run(CancellationToken.None);
 
         // Assert summary line
-        logger.Received().Log(
+        _logger.Received().Log(
             LogLevel.Error,
             Arg.Is<string>(s => s.Contains("errors encountered while discovering tests")),
             Arg.Is<object[]>(os => os.Length == 1 && Equals(os[0], errors.Count)));
 
         // Assert reason and individual names were logged
-        logger.Received().Log(LogLevel.Error, Arg.Is<string>(s => s.Contains("{Reason}")), Arg.Any<object[]>());
-        logger.Received().Log(LogLevel.Error, Arg.Is<string>(s => s.Contains("--- {TestName}")), Arg.Any<object[]>());
+        _logger.Received().Log(LogLevel.Error, Arg.Is<string>(s => s.Contains("{Reason}")), Arg.Any<object[]>());
+        _logger.Received().Log(LogLevel.Error, Arg.Is<string>(s => s.Contains("--- {TestName}")), Arg.Any<object[]>());
     }
 }

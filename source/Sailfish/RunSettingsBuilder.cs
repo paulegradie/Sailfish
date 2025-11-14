@@ -12,43 +12,43 @@ namespace Sailfish;
 
 public class RunSettingsBuilder
 {
-    private readonly OrderedDictionary args = new();
-    private readonly List<string> names = new();
-    private readonly List<string> providedBeforeTrackingFiles = new();
-    private readonly List<Type> registrationProviderAnchorTypes = new();
-    private readonly OrderedDictionary tags = new();
-    private readonly List<Type> testAssembliesAnchorTypes = new();
-    private bool createTrackingFiles = true;
-    private ILogger? customLogger;
-    private bool disableAnalysisGlobally;
-    private bool disableLogging;
-    private bool disableOverheadEstimation;
-    private int? globalNumWarmupIterations;
-    private int? globalSampleSize;
-    private LogLevel? level;
-    private string? localOutputDir;
-    private bool sailDiff;
-    private bool scaleFish;
-    private SailDiffSettings? sdSettings;
-    private bool setDebug;
-    private bool streamTrackingUpdates = true;
-    private DateTime? timeStamp;
+    private readonly OrderedDictionary _args = new();
+    private readonly List<string> _names = new();
+    private readonly List<string> _providedBeforeTrackingFiles = new();
+    private readonly List<Type> _registrationProviderAnchorTypes = new();
+    private readonly OrderedDictionary _tags = new();
+    private readonly List<Type> _testAssembliesAnchorTypes = new();
+    private bool _createTrackingFiles = true;
+    private ILogger? _customLogger;
+    private bool _disableAnalysisGlobally;
+    private bool _disableLogging;
+    private bool _disableOverheadEstimation;
+    private int? _globalNumWarmupIterations;
+    private int? _globalSampleSize;
+    private LogLevel? _level;
+    private string? _localOutputDir;
+    private bool _sailDiff;
+    private bool _scaleFish;
+    private SailDiffSettings? _sdSettings;
+    private bool _setDebug;
+    private bool _streamTrackingUpdates = true;
+    private DateTime? _timeStamp;
 
-    private bool enableEnvironmentHealthCheck = true;
-    private bool timerCalibration = true;
+    private bool _enableEnvironmentHealthCheck = true;
+    private bool _timerCalibration = true;
 
 
     // Optional deterministic randomization seed for reproducible ordering
-    private int? seed;
+    private int? _seed;
 
     // Global adaptive sampling overrides
-    private bool? globalUseAdaptiveSampling;
+    private bool? _globalUseAdaptiveSampling;
     // Global outlier handling overrides
-    private bool? globalUseConfigurableOutlierDetection;
-    private OutlierStrategy? globalOutlierStrategy;
+    private bool? _globalUseConfigurableOutlierDetection;
+    private OutlierStrategy? _globalOutlierStrategy;
 
-    private double? globalTargetCoefficientOfVariation;
-    private int? globalMaximumSampleSize;
+    private double? _globalTargetCoefficientOfVariation;
+    private int? _globalMaximumSampleSize;
 
     public static RunSettingsBuilder CreateBuilder()
     {
@@ -57,13 +57,13 @@ public class RunSettingsBuilder
 
     public RunSettingsBuilder WithMinimumLogLevel(LogLevel logLevel)
     {
-        level = logLevel;
+        _level = logLevel;
         return this;
     }
 
     public RunSettingsBuilder WithCustomLogger(ILogger logger)
     {
-        customLogger = logger;
+        _customLogger = logger;
         return this;
     }
 
@@ -73,7 +73,7 @@ public class RunSettingsBuilder
     /// </summary>
     public RunSettingsBuilder DisableLogging()
     {
-        disableLogging = true;
+        _disableLogging = true;
         return this;
     }
 
@@ -86,7 +86,7 @@ public class RunSettingsBuilder
     /// </summary>
     public RunSettingsBuilder DisableStreamingTrackingUpdates()
     {
-        streamTrackingUpdates = false;
+        _streamTrackingUpdates = false;
         return this;
     }
 
@@ -95,7 +95,7 @@ public class RunSettingsBuilder
     /// </summary>
     public RunSettingsBuilder WithEnvironmentHealthCheck(bool enable = true)
     {
-        enableEnvironmentHealthCheck = enable;
+        _enableEnvironmentHealthCheck = enable;
         return this;
     }
     /// <summary>
@@ -103,7 +103,7 @@ public class RunSettingsBuilder
     /// </summary>
     public RunSettingsBuilder WithTimerCalibration(bool enable = true)
     {
-        timerCalibration = enable;
+        _timerCalibration = enable;
         return this;
     }
 
@@ -115,7 +115,7 @@ public class RunSettingsBuilder
     /// <param name="testNames"></param>
     public RunSettingsBuilder WithTestNames(params string[] testNames)
     {
-        names.AddRange(testNames);
+        _names.AddRange(testNames);
         return this;
     }
 
@@ -126,7 +126,7 @@ public class RunSettingsBuilder
     /// <returns></returns>
     public RunSettingsBuilder WithLocalOutputDirectory(string localOutputDirectory)
     {
-        localOutputDir = localOutputDirectory;
+        _localOutputDir = localOutputDirectory;
         return this;
     }
 
@@ -138,7 +138,7 @@ public class RunSettingsBuilder
     /// <returns></returns>
     public RunSettingsBuilder CreateTrackingFiles(bool track = true)
     {
-        createTrackingFiles = track;
+        _createTrackingFiles = track;
         return this;
     }
 
@@ -147,7 +147,7 @@ public class RunSettingsBuilder
     /// </summary>
     public RunSettingsBuilder WithSailDiff()
     {
-        sailDiff = true;
+        _sailDiff = true;
         return this;
     }
 
@@ -156,8 +156,8 @@ public class RunSettingsBuilder
     /// </summary>
     public RunSettingsBuilder WithSailDiff(SailDiffSettings settings)
     {
-        sdSettings = settings;
-        sailDiff = true;
+        _sdSettings = settings;
+        _sailDiff = true;
         return this;
     }
 
@@ -166,25 +166,25 @@ public class RunSettingsBuilder
     /// </summary>
     public RunSettingsBuilder WithScaleFish()
     {
-        scaleFish = true;
+        _scaleFish = true;
         return this;
     }
 
     public RunSettingsBuilder TestsFromAssembliesContaining(params Type[] anchorTypes)
     {
-        testAssembliesAnchorTypes.AddRange(anchorTypes);
+        _testAssembliesAnchorTypes.AddRange(anchorTypes);
         return this;
     }
 
     public RunSettingsBuilder ProvidersFromAssembliesContaining(params Type[] anchorTypes)
     {
-        registrationProviderAnchorTypes.AddRange(anchorTypes);
+        _registrationProviderAnchorTypes.AddRange(anchorTypes);
         return this;
     }
 
     public RunSettingsBuilder WithTag(string key, string value)
     {
-        tags.Add(key, value);
+        _tags.Add(key, value);
         return this;
     }
 
@@ -197,38 +197,38 @@ public class RunSettingsBuilder
 
     public RunSettingsBuilder WithArg(string key, string value)
     {
-        args.Add(key, value);
+        _args.Add(key, value);
         return this;
     }
 
     public RunSettingsBuilder WithArgs(OrderedDictionary runArgs)
     {
-        foreach (var runArg in runArgs) args.Add(runArg.Key, runArg.Value);
+        foreach (var runArg in runArgs) _args.Add(runArg.Key, runArg.Value);
 
         return this;
     }
 
     public RunSettingsBuilder WithProvidedBeforeTrackingFile(string trackingFile)
     {
-        providedBeforeTrackingFiles.Add(trackingFile);
+        _providedBeforeTrackingFiles.Add(trackingFile);
         return this;
     }
 
     public RunSettingsBuilder WithProvidedBeforeTrackingFiles(IEnumerable<string> trackingFiles)
     {
-        providedBeforeTrackingFiles.AddRange(trackingFiles);
+        _providedBeforeTrackingFiles.AddRange(trackingFiles);
         return this;
     }
 
     public RunSettingsBuilder WithTimeStamp(DateTime dateTime)
     {
-        timeStamp = dateTime;
+        _timeStamp = dateTime;
         return this;
     }
 
     public RunSettingsBuilder InDebugMode(bool debug = false)
     {
-        setDebug = debug;
+        _setDebug = debug;
         return this;
     }
 
@@ -237,25 +237,25 @@ public class RunSettingsBuilder
     /// </summary>
     public RunSettingsBuilder WithSeed(int seed)
     {
-        this.seed = seed;
+        this._seed = seed;
         return this;
     }
 
     public RunSettingsBuilder DisableOverheadEstimation()
     {
-        disableOverheadEstimation = true;
+        _disableOverheadEstimation = true;
         return this;
     }
 
     public RunSettingsBuilder WithAnalysisDisabledGlobally()
     {
-        disableAnalysisGlobally = true;
+        _disableAnalysisGlobally = true;
         return this;
     }
 
     public RunSettingsBuilder WithGlobalSampleSize(int sampleSize)
     {
-        globalSampleSize = Math.Max(sampleSize, 1);
+        _globalSampleSize = Math.Max(sampleSize, 1);
         return this;
     }
 
@@ -265,9 +265,9 @@ public class RunSettingsBuilder
     /// </summary>
     public RunSettingsBuilder WithGlobalAdaptiveSampling(double targetCoefficientOfVariation, int maximumSampleSize)
     {
-        globalUseAdaptiveSampling = true;
-        globalTargetCoefficientOfVariation = targetCoefficientOfVariation;
-        globalMaximumSampleSize = maximumSampleSize;
+        _globalUseAdaptiveSampling = true;
+        _globalTargetCoefficientOfVariation = targetCoefficientOfVariation;
+        _globalMaximumSampleSize = maximumSampleSize;
         return this;
     }
 
@@ -276,8 +276,8 @@ public class RunSettingsBuilder
         /// </summary>
         public RunSettingsBuilder WithGlobalOutlierHandling(bool useConfigurable, OutlierStrategy strategy)
         {
-            globalUseConfigurableOutlierDetection = useConfigurable;
-            globalOutlierStrategy = strategy;
+            _globalUseConfigurableOutlierDetection = useConfigurable;
+            _globalOutlierStrategy = strategy;
             return this;
         }
 
@@ -285,41 +285,41 @@ public class RunSettingsBuilder
 
     public RunSettingsBuilder WithGlobalNumWarmupIterations(int numIterations)
     {
-        globalNumWarmupIterations = Math.Max(numIterations, 1);
+        _globalNumWarmupIterations = Math.Max(numIterations, 1);
         return this;
     }
 
     public IRunSettings Build()
     {
         return new RunSettings(
-            names,
-            localOutputDir ?? DefaultFileSettings.DefaultOutputDirectory,
-            createTrackingFiles,
-            sailDiff,
-            scaleFish,
-            sdSettings ?? new SailDiffSettings(),
-            tags,
-            args,
-            providedBeforeTrackingFiles,
-            testAssembliesAnchorTypes.Count == 0 ? new[] { GetType() } : testAssembliesAnchorTypes,
-            registrationProviderAnchorTypes.Count == 0 ? new[] { GetType() } : registrationProviderAnchorTypes,
-            customLogger,
-            disableOverheadEstimation,
-            timeStamp,
-            globalSampleSize,
-            globalNumWarmupIterations,
-            disableAnalysisGlobally,
-            streamTrackingUpdates,
-            disableLogging,
-            level ?? LogLevel.Verbose,
-            setDebug,
-            globalUseAdaptiveSampling,
-            globalTargetCoefficientOfVariation,
-            globalMaximumSampleSize,
-            globalUseConfigurableOutlierDetection,
-            globalOutlierStrategy,
-            enableEnvironmentHealthCheck,
-            timerCalibration,
-            seed: seed);
+            _names,
+            _localOutputDir ?? DefaultFileSettings.DefaultOutputDirectory,
+            _createTrackingFiles,
+            _sailDiff,
+            _scaleFish,
+            _sdSettings ?? new SailDiffSettings(),
+            _tags,
+            _args,
+            _providedBeforeTrackingFiles,
+            _testAssembliesAnchorTypes.Count == 0 ? new[] { GetType() } : _testAssembliesAnchorTypes,
+            _registrationProviderAnchorTypes.Count == 0 ? new[] { GetType() } : _registrationProviderAnchorTypes,
+            _customLogger,
+            _disableOverheadEstimation,
+            _timeStamp,
+            _globalSampleSize,
+            _globalNumWarmupIterations,
+            _disableAnalysisGlobally,
+            _streamTrackingUpdates,
+            _disableLogging,
+            _level ?? LogLevel.Verbose,
+            _setDebug,
+            _globalUseAdaptiveSampling,
+            _globalTargetCoefficientOfVariation,
+            _globalMaximumSampleSize,
+            _globalUseConfigurableOutlierDetection,
+            _globalOutlierStrategy,
+            _enableEnvironmentHealthCheck,
+            _timerCalibration,
+            seed: _seed);
     }
 }

@@ -6,10 +6,10 @@ namespace Tests.Common.Builders;
 
 public class CompiledTestCaseResultTrackingFormatBuilder
 {
-    private Exception? exception;
-    private string? groupingId;
-    private PerformanceRunResultTrackingFormat? performanceRunResult;
-    private TestCaseId? testCaseId;
+    private Exception? _exception;
+    private string? _groupingId;
+    private PerformanceRunResultTrackingFormat? _performanceRunResult;
+    private TestCaseId? _testCaseId;
 
     public static CompiledTestCaseResultTrackingFormatBuilder Create()
     {
@@ -18,34 +18,34 @@ public class CompiledTestCaseResultTrackingFormatBuilder
 
     public CompiledTestCaseResultTrackingFormatBuilder WithGroupingId(string? groupingId)
     {
-        this.groupingId = groupingId;
+        this._groupingId = groupingId;
         return this;
     }
 
     public CompiledTestCaseResultTrackingFormatBuilder WithPerformanceRunResult(PerformanceRunResultTrackingFormat? performanceRunResult)
     {
-        this.performanceRunResult = performanceRunResult;
+        this._performanceRunResult = performanceRunResult;
         return this;
     }
 
     public CompiledTestCaseResultTrackingFormatBuilder WithException(Exception? exception)
     {
-        this.exception = exception;
+        this._exception = exception;
         return this;
     }
 
     public CompiledTestCaseResultTrackingFormatBuilder WithTestCaseId(TestCaseId? testCaseId)
     {
-        this.testCaseId = testCaseId;
+        this._testCaseId = testCaseId;
         return this;
     }
 
     public CompiledTestCaseResultTrackingFormat Build()
     {
         return new CompiledTestCaseResultTrackingFormat(
-            groupingId,
-            performanceRunResult ?? PerformanceRunResultTrackingFormatBuilder.Create().Build(),
-            exception,
-            testCaseId);
+            _groupingId,
+            _performanceRunResult ?? PerformanceRunResultTrackingFormatBuilder.Create().Build(),
+            _exception,
+            _testCaseId);
     }
 }

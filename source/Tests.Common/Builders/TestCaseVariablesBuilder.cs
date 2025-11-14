@@ -8,22 +8,22 @@ public class TestCaseVariablesBuilder
     public static TestCaseVariablesBuilder Create() => new();
 
 
-    private readonly List<TestCaseVariable> variables = new();
+    private readonly List<TestCaseVariable> _variables = new();
 
     public TestCaseVariablesBuilder AddVariable(TestCaseVariable variable)
     {
-        variables.Add(variable);
+        _variables.Add(variable);
         return this;
     }
 
     public TestCaseVariablesBuilder AddVariable(string name, object value)
     {
-        variables.Add(new TestCaseVariable(name, value));
+        _variables.Add(new TestCaseVariable(name, value));
         return this;
     }
 
     public TestCaseVariables Build()
     {
-        return new TestCaseVariables(variables);
+        return new TestCaseVariables(_variables);
     }
 }

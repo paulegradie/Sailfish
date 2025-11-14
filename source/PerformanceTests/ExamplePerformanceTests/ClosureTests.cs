@@ -9,7 +9,7 @@ namespace PerformanceTests.ExamplePerformanceTests;
 [Sailfish(SampleSize = 3, Disabled = false, DisableOverheadEstimation = true)]
 public class ScenarioSystem
 {
-    private readonly Random random = new();
+    private readonly Random _random = new();
 
     [SailfishVariable(0, 1, 2)] 
     public int Index { get; set; }

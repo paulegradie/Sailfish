@@ -38,13 +38,13 @@ public class ConsistentPerformanceDemo
 [Sailfish(UseAdaptiveSampling = true, TargetCoefficientOfVariation = 0.25, MaximumSampleSize = 50)]
 public class VariablePerformanceDemo
 {
-    private static int counter = 0;
+    private static int _counter = 0;
 
     [SailfishMethod]
     public async Task HighlyVariableOperation(CancellationToken cancellationToken)
     {
         // Simulate high variability (0-50ms)
-        var delay = (counter++ % 11) * 5; // 0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50ms
+        var delay = (_counter++ % 11) * 5; // 0, 5, 10, 15, 20, 25, 30, 35, 40, 45, 50ms
         await Task.Delay(delay, cancellationToken);
     }
 
@@ -110,7 +110,7 @@ public class StrictConvergenceDemo
 [Sailfish(UseAdaptiveSampling = true, TargetCoefficientOfVariation = 0.05, MaximumSampleSize = 150)]
 public class WorkloadPatternsDemo
 {
-    private static int cpuIntensiveCounter = 0;
+    private static int _cpuIntensiveCounter = 0;
 
     [SailfishMethod]
     public async Task CpuIntensiveOperation(CancellationToken cancellationToken)
@@ -151,7 +151,7 @@ public class WorkloadPatternsDemo
         await Task.Delay(1, cancellationToken);
         
         // Force garbage collection to add some variability
-        if (cpuIntensiveCounter++ % 5 == 0)
+        if (_cpuIntensiveCounter++ % 5 == 0)
         {
             GC.Collect();
             GC.WaitForPendingFinalizers();

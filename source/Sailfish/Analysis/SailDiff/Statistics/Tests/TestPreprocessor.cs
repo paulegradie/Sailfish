@@ -29,13 +29,13 @@ public interface ITestPreprocessor
 public class TestPreprocessor(ISailfishOutlierDetector outlierDetector) : ITestPreprocessor
 {
     private const int MinAnalysisSampSize = 3;
-    private readonly ISailfishOutlierDetector outlierDetector = outlierDetector;
+    private readonly ISailfishOutlierDetector _outlierDetector = outlierDetector;
 
     public PreprocessedData Preprocess(double[] rawData, bool useOutlierDetection)
     {
         if (!useOutlierDetection || rawData.Length < MinAnalysisSampSize) return new PreprocessedData(rawData, null);
 
-        var outlierAnalysis = outlierDetector.DetectOutliers(rawData);
+        var outlierAnalysis = _outlierDetector.DetectOutliers(rawData);
         return new PreprocessedData(rawData, outlierAnalysis);
     }
 
@@ -47,7 +47,7 @@ public class TestPreprocessor(ISailfishOutlierDetector outlierDetector) : ITestP
     {
         if (useOutlierDetection)
         {
-            var outlierAnalysis = outlierDetector.DetectOutliers(rawData);
+            var outlierAnalysis = _outlierDetector.DetectOutliers(rawData);
             var downSampled = DownSampleWithRandomUniform(outlierAnalysis.DataWithOutliersRemoved, minArraySize, maxArraySize, seed);
             return new PreprocessedData(rawData,
                 outlierAnalysis with { OriginalData = rawData, DataWithOutliersRemoved = downSampled });
@@ -67,8 +67,8 @@ public class TestPreprocessor(ISailfishOutlierDetector outlierDetector) : ITestP
     {
         if (useOutlierDetection)
         {
-            var sample1OutlierAnalysis = outlierDetector.DetectOutliers(sample1);
-            var sample2OutlierAnalysis = outlierDetector.DetectOutliers(sample2);
+            var sample1OutlierAnalysis = _outlierDetector.DetectOutliers(sample1);
+            var sample2OutlierAnalysis = _outlierDetector.DetectOutliers(sample2);
 
             var smallestArray = Math.Min(sample1OutlierAnalysis.DataWithOutliersRemoved.Length, sample2OutlierAnalysis.DataWithOutliersRemoved.Length);
             var adjustedMax = Math.Min(smallestArray, maxArraySize);

@@ -11,11 +11,11 @@ namespace Sailfish.TestAdapter.Handlers.TestCaseEvents;
 
 internal class TestCaseStartedNotificationHandler : INotificationHandler<TestCaseStartedNotification>
 {
-    private readonly ITestFrameworkWriter testFrameworkWriter;
+    private readonly ITestFrameworkWriter _testFrameworkWriter;
 
     public TestCaseStartedNotificationHandler(ITestFrameworkWriter testFrameworkWriter)
     {
-        this.testFrameworkWriter = testFrameworkWriter;
+        this._testFrameworkWriter = testFrameworkWriter;
     }
 
     public async Task Handle(TestCaseStartedNotification notification, CancellationToken cancellationToken)
@@ -32,7 +32,7 @@ internal class TestCaseStartedNotificationHandler : INotificationHandler<TestCas
                         .EndsWith(testCase.GetPropertyHelper(SailfishManagedProperty
                             .SailfishDisplayNameDefinitionProperty)));
 
-        testFrameworkWriter.RecordStart(testCase);
+        _testFrameworkWriter.RecordStart(testCase);
         await Task.Yield();
     }
 }

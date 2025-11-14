@@ -267,8 +267,8 @@ internal class MethodComparisonTestRunCompletedHandler : INotificationHandler<Te
                 sb.AppendLine("## 🔁 Reproducibility Summary");
                 sb.AppendLine();
                 sb.AppendLine($"- Sailfish {manifest.SailfishVersion} on {manifest.DotNetRuntime}");
-                sb.AppendLine($"- OS: {manifest.OS} ({manifest.OSArchitecture}/{manifest.ProcessArchitecture})");
-                sb.AppendLine($"- GC: {manifest.GCMode}; JIT: {manifest.Jit}");
+                sb.AppendLine($"- OS: {manifest.Os} ({manifest.OsArchitecture}/{manifest.ProcessArchitecture})");
+                sb.AppendLine($"- GC: {manifest.GcMode}; JIT: {manifest.Jit}");
                 if (!string.IsNullOrWhiteSpace(manifest.EnvironmentHealthLabel))
                 {
                     sb.AppendLine($"- Env Health: {manifest.EnvironmentHealthScore}/100 ({manifest.EnvironmentHealthLabel})");
@@ -465,7 +465,7 @@ internal class MethodComparisonTestRunCompletedHandler : INotificationHandler<Te
                         continue;
                     }
                     var col = stats[j];
-                    var (ratio, lo, hi) = MultipleComparisons.ComputeRatioCI(row.Mean, row.SE, row.N, col.Mean, col.SE, col.N, 0.95);
+                    var (ratio, lo, hi) = MultipleComparisons.ComputeRatioCi(row.Mean, row.SE, row.N, col.Mean, col.SE, col.N, 0.95);
                     qMap.TryGetValue(MultipleComparisons.NormalizePair(row.Id, col.Id), out var q);
                     var sig = q > 0 && q <= 0.05;
                     var label = sig ? (ratio < 1.0 ? "Improved" : "Slower") : "Similar";
@@ -504,7 +504,7 @@ internal class MethodComparisonTestRunCompletedHandler : INotificationHandler<Te
                 return p;
             }
 
-            static double SafeDiv(double a, double b) => (b == 0) ? 0 : a / b;
+            static double SafeDiv(double a, double b) => Math.Abs(b) < double.Epsilon ? 0 : a / b;
             static double Square(double x) => x * x;
         }
         catch (Exception ex)

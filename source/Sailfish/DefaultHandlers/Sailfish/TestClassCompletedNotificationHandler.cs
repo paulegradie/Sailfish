@@ -14,27 +14,27 @@ namespace Sailfish.DefaultHandlers.Sailfish;
 
 public class TestClassCompletedNotificationHandler : INotificationHandler<TestClassCompletedNotification>
 {
-    private readonly ILogger logger;
-    private readonly IRunSettings runSettings;
-    private readonly ITrackingFileSerialization trackingFileSerialization;
+    private readonly ILogger _logger;
+    private readonly IRunSettings _runSettings;
+    private readonly ITrackingFileSerialization _trackingFileSerialization;
 
     public TestClassCompletedNotificationHandler(ITrackingFileSerialization trackingFileSerialization, IRunSettings runSettings, ILogger logger)
     {
-        this.logger = logger;
-        this.runSettings = runSettings;
-        this.trackingFileSerialization = trackingFileSerialization;
+        this._logger = logger;
+        this._runSettings = runSettings;
+        this._trackingFileSerialization = trackingFileSerialization;
     }
 
     public async Task Handle(TestClassCompletedNotification notification, CancellationToken cancellationToken)
     {
-        if (runSettings.StreamTrackingUpdates is false) return;
-        if (runSettings.CreateTrackingFiles is false) return;
+        if (_runSettings.StreamTrackingUpdates is false) return;
+        if (_runSettings.CreateTrackingFiles is false) return;
 
-        var output = runSettings.LocalOutputDirectory ?? DefaultFileSettings.DefaultOutputDirectory;
+        var output = _runSettings.LocalOutputDirectory ?? DefaultFileSettings.DefaultOutputDirectory;
         if (!Directory.Exists(output)) Directory.CreateDirectory(output);
 
-        var trackingDirectory = runSettings.GetRunSettingsTrackingDirectoryPath();
-        var fileName = DefaultFileSettings.AppendTagsToFilename(DefaultFileSettings.DefaultTrackingFileName(runSettings.TimeStamp), runSettings.Tags);
+        var trackingDirectory = _runSettings.GetRunSettingsTrackingDirectoryPath();
+        var fileName = DefaultFileSettings.AppendTagsToFilename(DefaultFileSettings.DefaultTrackingFileName(_runSettings.TimeStamp), _runSettings.Tags);
         var filePath = Path.Join(trackingDirectory, fileName);
 
         await using var fileStream = new FileStream(filePath, FileMode.OpenOrCreate, FileAccess.ReadWrite, FileShare.ReadWrite);
@@ -44,10 +44,10 @@ public class TestClassCompletedNotificationHandler : INotificationHandler<TestCl
 
         var classExecutionSummaryTrackingFormats = string.IsNullOrEmpty(fileContents)
             ? []
-            : trackingFileSerialization.Deserialize(fileContents)?.ToList() ?? [];
+            : _trackingFileSerialization.Deserialize(fileContents)?.ToList() ?? [];
 
         foreach (var failedSummary in notification.ClassExecutionSummaryTrackingFormat.GetFailedTestCases())
-            logger.Log(LogLevel.Warning, failedSummary.Exception!, "Test case exception encountered");
+            _logger.Log(LogLevel.Warning, failedSummary.Exception!, "Test case exception encountered");
 
         var success = notification.ClassExecutionSummaryTrackingFormat.FilterForSuccessfulTestCases();
         if (!success.GetSuccessfulTestCases().Any()) return;
@@ -63,7 +63,7 @@ public class TestClassCompletedNotificationHandler : INotificationHandler<TestCl
             classExecutionSummaryTrackingFormats.Add(success);
         }
 
-        var serialized = trackingFileSerialization.Serialize(classExecutionSummaryTrackingFormats);
+        var serialized = _trackingFileSerialization.Serialize(classExecutionSummaryTrackingFormats);
 
         await using var streamWriter = new StreamWriter(filePath, Encoding.UTF8, new FileStreamOptions
         {

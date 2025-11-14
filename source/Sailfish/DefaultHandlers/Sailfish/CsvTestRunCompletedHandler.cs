@@ -251,7 +251,7 @@ internal class CsvTestRunCompletedHandler : INotificationHandler<TestRunComplete
                         var row = stats[i];
                         var col = stats[j];
 
-                        var ci = MultipleComparisons.ComputeRatioCI(row.Mean, row.SE, row.N, col.Mean, col.SE, col.N, 0.95);
+                        var ci = MultipleComparisons.ComputeRatioCi(row.Mean, row.SE, row.N, col.Mean, col.SE, col.N, 0.95);
                         double ratio = ci.Ratio;
                         double? lo = ci.Lower;
                         double? hi = ci.Upper;
@@ -299,7 +299,7 @@ internal class CsvTestRunCompletedHandler : INotificationHandler<TestRunComplete
             return p;
         }
 
-        static double SafeDiv(double a, double b) => (b == 0) ? 0 : a / b;
+        static double SafeDiv(double a, double b) => Math.Abs(b) < double.Epsilon ? 0 : a / b;
     }
 
     /// <summary>

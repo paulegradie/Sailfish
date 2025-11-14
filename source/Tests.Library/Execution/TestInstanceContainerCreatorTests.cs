@@ -15,19 +15,19 @@ namespace Tests.Library.Execution;
 
 public class TestInstanceContainerCreatorTests
 {
-    private readonly IRunSettings runSettings = Substitute.For<IRunSettings>();
-    private readonly ITypeActivator typeActivator = Substitute.For<ITypeActivator>();
-    private readonly IPropertySetGenerator propertySetGenerator = Substitute.For<IPropertySetGenerator>();
+    private readonly IRunSettings _runSettings = Substitute.For<IRunSettings>();
+    private readonly ITypeActivator _typeActivator = Substitute.For<ITypeActivator>();
+    private readonly IPropertySetGenerator _propertySetGenerator = Substitute.For<IPropertySetGenerator>();
 
     [Fact]
     public void CreateTestContainerInstanceProviders_WithNoVariables_ReturnsSingleProviderPerMethod()
     {
         // Arrange
-        runSettings.Seed.Returns((int?)null);
-        runSettings.Args.Returns(new OrderedDictionary());
-        propertySetGenerator.GenerateSailfishVariableSets(Arg.Any<Type>(), out _).Returns(new List<PropertySet>());
+        _runSettings.Seed.Returns((int?)null);
+        _runSettings.Args.Returns(new OrderedDictionary());
+        _propertySetGenerator.GenerateSailfishVariableSets(Arg.Any<Type>(), out _).Returns(new List<PropertySet>());
 
-        var creator = new TestInstanceContainerCreator(runSettings, typeActivator, propertySetGenerator);
+        var creator = new TestInstanceContainerCreator(_runSettings, _typeActivator, _propertySetGenerator);
 
         // Act
         var providers = creator.CreateTestContainerInstanceProviders(typeof(TestClassWithMethods));
@@ -45,11 +45,11 @@ public class TestInstanceContainerCreatorTests
         var propertySet2 = new PropertySet(new List<TestCaseVariable> { new TestCaseVariable("Prop", 2) });
         var variableSets = new List<PropertySet> { propertySet1, propertySet2 };
 
-        runSettings.Seed.Returns((int?)null);
-        runSettings.Args.Returns(new OrderedDictionary());
-        propertySetGenerator.GenerateSailfishVariableSets(Arg.Any<Type>(), out _).Returns(variableSets);
+        _runSettings.Seed.Returns((int?)null);
+        _runSettings.Args.Returns(new OrderedDictionary());
+        _propertySetGenerator.GenerateSailfishVariableSets(Arg.Any<Type>(), out _).Returns(variableSets);
 
-        var creator = new TestInstanceContainerCreator(runSettings, typeActivator, propertySetGenerator);
+        var creator = new TestInstanceContainerCreator(_runSettings, _typeActivator, _propertySetGenerator);
 
         // Act
         var providers = creator.CreateTestContainerInstanceProviders(
@@ -66,11 +66,11 @@ public class TestInstanceContainerCreatorTests
     public void CreateTestContainerInstanceProviders_WithInstanceContainerFilter_FiltersMethods()
     {
         // Arrange
-        runSettings.Seed.Returns((int?)null);
-        runSettings.Args.Returns(new OrderedDictionary());
-        propertySetGenerator.GenerateSailfishVariableSets(Arg.Any<Type>(), out _).Returns(new List<PropertySet>());
+        _runSettings.Seed.Returns((int?)null);
+        _runSettings.Args.Returns(new OrderedDictionary());
+        _propertySetGenerator.GenerateSailfishVariableSets(Arg.Any<Type>(), out _).Returns(new List<PropertySet>());
 
-        var creator = new TestInstanceContainerCreator(runSettings, typeActivator, propertySetGenerator);
+        var creator = new TestInstanceContainerCreator(_runSettings, _typeActivator, _propertySetGenerator);
         var method1 = typeof(TestClassWithMethods).GetMethod(nameof(TestClassWithMethods.Method1))!;
 
         // Act
@@ -92,18 +92,18 @@ public class TestInstanceContainerCreatorTests
         var propertySet3 = new PropertySet(new List<TestCaseVariable> { new TestCaseVariable("Prop", 3) });
         var variableSets = new List<PropertySet> { propertySet1, propertySet2, propertySet3 };
 
-        runSettings.Seed.Returns(42);
-        runSettings.Args.Returns(new OrderedDictionary());
-        propertySetGenerator.GenerateSailfishVariableSets(Arg.Any<Type>(), out _).Returns(variableSets);
+        _runSettings.Seed.Returns(42);
+        _runSettings.Args.Returns(new OrderedDictionary());
+        _propertySetGenerator.GenerateSailfishVariableSets(Arg.Any<Type>(), out _).Returns(variableSets);
 
-        var creator = new TestInstanceContainerCreator(runSettings, typeActivator, propertySetGenerator);
+        var creator = new TestInstanceContainerCreator(_runSettings, _typeActivator, _propertySetGenerator);
 
         // Act
         var providers1 = creator.CreateTestContainerInstanceProviders(typeof(TestClassWithMethods));
 
         // Reset and create again with same seed - need to reset the mock to return fresh list
-        runSettings.Seed.Returns(42);
-        propertySetGenerator.GenerateSailfishVariableSets(Arg.Any<Type>(), out _).Returns(
+        _runSettings.Seed.Returns(42);
+        _propertySetGenerator.GenerateSailfishVariableSets(Arg.Any<Type>(), out _).Returns(
             new List<PropertySet> { propertySet1, propertySet2, propertySet3 });
         var providers2 = creator.CreateTestContainerInstanceProviders(typeof(TestClassWithMethods));
 
@@ -126,11 +126,11 @@ public class TestInstanceContainerCreatorTests
     public void CreateTestContainerInstanceProviders_WithOrderedMethods_PreservesOrder()
     {
         // Arrange
-        runSettings.Seed.Returns((int?)null);
-        runSettings.Args.Returns(new OrderedDictionary());
-        propertySetGenerator.GenerateSailfishVariableSets(Arg.Any<Type>(), out _).Returns(new List<PropertySet>());
+        _runSettings.Seed.Returns((int?)null);
+        _runSettings.Args.Returns(new OrderedDictionary());
+        _propertySetGenerator.GenerateSailfishVariableSets(Arg.Any<Type>(), out _).Returns(new List<PropertySet>());
 
-        var creator = new TestInstanceContainerCreator(runSettings, typeActivator, propertySetGenerator);
+        var creator = new TestInstanceContainerCreator(_runSettings, _typeActivator, _propertySetGenerator);
 
         // Act
         var providers = creator.CreateTestContainerInstanceProviders(typeof(TestClassWithOrderedMethods));
@@ -150,13 +150,13 @@ public class TestInstanceContainerCreatorTests
     {
         // Arrange
         var args = new OrderedDictionary { { "seed", "123" } };
-        runSettings.Seed.Returns((int?)null);
-        runSettings.Args.Returns(args);
-        propertySetGenerator.GenerateSailfishVariableSets(Arg.Any<Type>(), out _).Returns(new List<PropertySet>());
-        typeActivator.CreateDehydratedTestInstance(typeof(TestClassWithMethods), Arg.Any<TestCaseId>(), Arg.Any<bool>())
+        _runSettings.Seed.Returns((int?)null);
+        _runSettings.Args.Returns(args);
+        _propertySetGenerator.GenerateSailfishVariableSets(Arg.Any<Type>(), out _).Returns(new List<PropertySet>());
+        _typeActivator.CreateDehydratedTestInstance(typeof(TestClassWithMethods), Arg.Any<TestCaseId>(), Arg.Any<bool>())
             .Returns(ci => new TestClassWithMethods());
 
-        var creator = new TestInstanceContainerCreator(runSettings, typeActivator, propertySetGenerator);
+        var creator = new TestInstanceContainerCreator(_runSettings, _typeActivator, _propertySetGenerator);
 
         // Act: run twice and ensure deterministic provider ordering
         var providers1 = creator.CreateTestContainerInstanceProviders(typeof(TestClassWithMethods));
@@ -179,13 +179,13 @@ public class TestInstanceContainerCreatorTests
     {
         // Arrange
         var args = new OrderedDictionary { { "randomseed", "456" } };
-        runSettings.Seed.Returns((int?)null);
-        runSettings.Args.Returns(args);
-        propertySetGenerator.GenerateSailfishVariableSets(Arg.Any<Type>(), out _).Returns(new List<PropertySet>());
-        typeActivator.CreateDehydratedTestInstance(typeof(TestClassWithMethods), Arg.Any<TestCaseId>(), Arg.Any<bool>())
+        _runSettings.Seed.Returns((int?)null);
+        _runSettings.Args.Returns(args);
+        _propertySetGenerator.GenerateSailfishVariableSets(Arg.Any<Type>(), out _).Returns(new List<PropertySet>());
+        _typeActivator.CreateDehydratedTestInstance(typeof(TestClassWithMethods), Arg.Any<TestCaseId>(), Arg.Any<bool>())
             .Returns(ci => new TestClassWithMethods());
 
-        var creator = new TestInstanceContainerCreator(runSettings, typeActivator, propertySetGenerator);
+        var creator = new TestInstanceContainerCreator(_runSettings, _typeActivator, _propertySetGenerator);
 
         // Act: run twice and ensure deterministic order with same randomseed
         var providers1 = creator.CreateTestContainerInstanceProviders(typeof(TestClassWithMethods));
@@ -208,13 +208,13 @@ public class TestInstanceContainerCreatorTests
     {
         // Arrange
         var args = new OrderedDictionary { { "seed", "not-a-number" } };
-        runSettings.Seed.Returns((int?)null);
-        runSettings.Args.Returns(args);
-        propertySetGenerator.GenerateSailfishVariableSets(Arg.Any<Type>(), out _).Returns(new List<PropertySet>());
-        typeActivator.CreateDehydratedTestInstance(typeof(TestClassWithMethods), Arg.Any<TestCaseId>(), Arg.Any<bool>())
+        _runSettings.Seed.Returns((int?)null);
+        _runSettings.Args.Returns(args);
+        _propertySetGenerator.GenerateSailfishVariableSets(Arg.Any<Type>(), out _).Returns(new List<PropertySet>());
+        _typeActivator.CreateDehydratedTestInstance(typeof(TestClassWithMethods), Arg.Any<TestCaseId>(), Arg.Any<bool>())
             .Returns(ci => new TestClassWithMethods());
 
-        var creator = new TestInstanceContainerCreator(runSettings, typeActivator, propertySetGenerator);
+        var creator = new TestInstanceContainerCreator(_runSettings, _typeActivator, _propertySetGenerator);
 
         // Act: run twice and ensure the (no-seed) behavior is consistent
         var providers1 = creator.CreateTestContainerInstanceProviders(typeof(TestClassWithMethods));

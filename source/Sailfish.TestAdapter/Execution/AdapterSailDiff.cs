@@ -25,11 +25,11 @@ internal interface IAdapterSailDiff : ISailDiffInternal
 
 internal class AdapterSailDiff : IAdapterSailDiff
 {
-    private readonly ILogger logger;
-    private readonly IMediator mediator;
-    private readonly IRunSettings runSettings;
-    private readonly ISailDiffConsoleWindowMessageFormatter sailDiffConsoleWindowMessageFormatter;
-    private readonly IStatisticalTestComputer statisticalTestComputer;
+    private readonly ILogger _logger;
+    private readonly IMediator _mediator;
+    private readonly IRunSettings _runSettings;
+    private readonly ISailDiffConsoleWindowMessageFormatter _sailDiffConsoleWindowMessageFormatter;
+    private readonly IStatisticalTestComputer _statisticalTestComputer;
 
     public AdapterSailDiff(
         IMediator mediator,
@@ -38,22 +38,22 @@ internal class AdapterSailDiff : IAdapterSailDiff
         IStatisticalTestComputer statisticalTestComputer,
         ILogger logger)
     {
-        this.mediator = mediator;
-        this.runSettings = runSettings;
-        this.sailDiffConsoleWindowMessageFormatter = sailDiffConsoleWindowMessageFormatter;
-        this.statisticalTestComputer = statisticalTestComputer;
-        this.logger = logger;
+        this._mediator = mediator;
+        this._runSettings = runSettings;
+        this._sailDiffConsoleWindowMessageFormatter = sailDiffConsoleWindowMessageFormatter;
+        this._statisticalTestComputer = statisticalTestComputer;
+        this._logger = logger;
     }
 
     public async Task Analyze(CancellationToken cancellationToken)
     {
-        if (!runSettings.RunSailDiff) return;
+        if (!_runSettings.RunSailDiff) return;
 
-        var beforeAndAfterFileLocations = await mediator
-            .Send(new BeforeAndAfterFileLocationRequest(runSettings.ProvidedBeforeTrackingFiles), cancellationToken)
+        var beforeAndAfterFileLocations = await _mediator
+            .Send(new BeforeAndAfterFileLocationRequest(_runSettings.ProvidedBeforeTrackingFiles), cancellationToken)
             .ConfigureAwait(false);
 
-        var beforeAndAfterData = await mediator
+        var beforeAndAfterData = await _mediator
             .Send(
                 new ReadInBeforeAndAfterDataRequest(beforeAndAfterFileLocations.BeforeFilePaths,
                     beforeAndAfterFileLocations.AfterFilePaths), cancellationToken)
@@ -61,25 +61,25 @@ internal class AdapterSailDiff : IAdapterSailDiff
 
         if (beforeAndAfterData.BeforeData is null || beforeAndAfterData.AfterData is null)
         {
-            logger.Log(LogLevel.Information, "Failed to retrieve tracking data... aborting the test operation");
+            _logger.Log(LogLevel.Information, "Failed to retrieve tracking data... aborting the test operation");
             return;
         }
 
-        var testResults = statisticalTestComputer.ComputeTest(
+        var testResults = _statisticalTestComputer.ComputeTest(
             beforeAndAfterData.BeforeData,
             beforeAndAfterData.AfterData,
-            runSettings.SailDiffSettings);
+            _runSettings.SailDiffSettings);
 
         if (testResults.Count == 0)
         {
-            logger.Log(LogLevel.Information, "No prior test results found for the current set");
+            _logger.Log(LogLevel.Information, "No prior test results found for the current set");
             return;
         }
 
         var testIds = new TestIds(beforeAndAfterData.BeforeData.TestIds, beforeAndAfterData.AfterData.TestIds);
-        var resultsAsMarkdown = sailDiffConsoleWindowMessageFormatter.FormConsoleWindowMessageForSailDiff(testResults, testIds, runSettings.SailDiffSettings, cancellationToken);
+        var resultsAsMarkdown = _sailDiffConsoleWindowMessageFormatter.FormConsoleWindowMessageForSailDiff(testResults, testIds, _runSettings.SailDiffSettings, cancellationToken);
 
-        await mediator
+        await _mediator
             .Publish(new SailDiffAnalysisCompleteNotification(testResults, resultsAsMarkdown), cancellationToken)
             .ConfigureAwait(false);
     }
@@ -100,9 +100,9 @@ internal class AdapterSailDiff : IAdapterSailDiff
             .Select(x => x.PerformanceRunResult!)
             .Where(x => x.DisplayName == currentTestDisplayName));
 
-        var testResults = statisticalTestComputer.ComputeTest(beforeTestData, afterTestData, runSettings.SailDiffSettings);
+        var testResults = _statisticalTestComputer.ComputeTest(beforeTestData, afterTestData, _runSettings.SailDiffSettings);
 
-        return new TestCaseSailDiffResult(testResults, new TestIds(beforeIds, afterIds), runSettings.SailDiffSettings);
+        return new TestCaseSailDiffResult(testResults, new TestIds(beforeIds, afterIds), _runSettings.SailDiffSettings);
     }
 }
 

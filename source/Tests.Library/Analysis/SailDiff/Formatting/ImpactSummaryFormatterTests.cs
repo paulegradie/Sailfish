@@ -35,7 +35,7 @@ public class ImpactSummaryFormatterTests
         var data = CreateSampleComparisonData(meanBefore: 2.0, meanAfter: 1.0, pValue: 0.001);
 
         // Act
-        var result = _formatter.CreateImpactSummary(data, OutputContext.IDE);
+        var result = _formatter.CreateImpactSummary(data, OutputContext.Ide);
 
         // Assert
         result.ShouldContain("🟢"); // Green icon for improvement
@@ -49,7 +49,7 @@ public class ImpactSummaryFormatterTests
         var data = CreateSampleComparisonData(meanBefore: 1.0, meanAfter: 2.0, pValue: 0.001);
 
         // Act
-        var result = _formatter.CreateImpactSummary(data, OutputContext.IDE);
+        var result = _formatter.CreateImpactSummary(data, OutputContext.Ide);
 
         // Assert
         result.ShouldContain("🔴"); // Red icon for regression
@@ -63,7 +63,7 @@ public class ImpactSummaryFormatterTests
         var data = CreateSampleComparisonData(meanBefore: 1.0, meanAfter: 1.0, pValue: 0.5);
 
         // Act
-        var result = _formatter.CreateImpactSummary(data, OutputContext.IDE);
+        var result = _formatter.CreateImpactSummary(data, OutputContext.Ide);
 
         // Assert
         result.ShouldContain("⚪"); // White icon for no change
@@ -76,7 +76,7 @@ public class ImpactSummaryFormatterTests
         var data = CreateSampleComparisonData();
 
         // Act
-        var result = _formatter.CreateImpactSummary(data, OutputContext.IDE);
+        var result = _formatter.CreateImpactSummary(data, OutputContext.Ide);
 
         // Assert
         result.ShouldContain("PrimaryMethod");
@@ -90,7 +90,7 @@ public class ImpactSummaryFormatterTests
         var data = CreateSampleComparisonData(meanBefore: 1.0, meanAfter: 2.0, pValue: 0.001);
 
         // Act
-        var result = _formatter.CreateImpactSummary(data, OutputContext.IDE);
+        var result = _formatter.CreateImpactSummary(data, OutputContext.Ide);
 
         // Assert
         result.ShouldMatch(@"\d+\.\d+%"); // Should contain percentage
@@ -103,7 +103,7 @@ public class ImpactSummaryFormatterTests
         var data = CreateSampleComparisonData(meanBefore: 1.0, meanAfter: 2.0, pValue: 0.001);
 
         // Act
-        var result = _formatter.CreateImpactSummary(data, OutputContext.IDE);
+        var result = _formatter.CreateImpactSummary(data, OutputContext.Ide);
 
         // Assert
         result.ShouldContain("P-Value:");
@@ -117,7 +117,7 @@ public class ImpactSummaryFormatterTests
         var data = CreateSampleComparisonData(meanBefore: 1.5, meanAfter: 2.5, pValue: 0.001);
 
         // Act
-        var result = _formatter.CreateImpactSummary(data, OutputContext.IDE);
+        var result = _formatter.CreateImpactSummary(data, OutputContext.Ide);
 
         // Assert
         result.ShouldContain("Mean:");
@@ -255,7 +255,7 @@ public class ImpactSummaryFormatterTests
         var data = CreateSampleComparisonData();
 
         // Act
-        var result = _formatter.CreateImpactSummary(data, OutputContext.CSV);
+        var result = _formatter.CreateImpactSummary(data, OutputContext.Csv);
 
         // Assert
         result.Split(',').Length.ShouldBeGreaterThan(5); // Should have multiple comma-separated values
@@ -268,7 +268,7 @@ public class ImpactSummaryFormatterTests
         var data = CreateSampleComparisonData();
 
         // Act
-        var result = _formatter.CreateImpactSummary(data, OutputContext.CSV);
+        var result = _formatter.CreateImpactSummary(data, OutputContext.Csv);
 
         // Assert
         result.ShouldContain("PrimaryMethod");
@@ -282,7 +282,7 @@ public class ImpactSummaryFormatterTests
         var data = CreateSampleComparisonData(meanBefore: 1.0, meanAfter: 2.0, pValue: 0.001);
 
         // Act
-        var result = _formatter.CreateImpactSummary(data, OutputContext.CSV);
+        var result = _formatter.CreateImpactSummary(data, OutputContext.Csv);
 
         // Assert
         result.ShouldMatch(@"\d+\.\d+%");
@@ -295,7 +295,7 @@ public class ImpactSummaryFormatterTests
         var data = CreateSampleComparisonData(meanBefore: 1.0, meanAfter: 2.0, pValue: 0.001234);
 
         // Act
-        var result = _formatter.CreateImpactSummary(data, OutputContext.CSV);
+        var result = _formatter.CreateImpactSummary(data, OutputContext.Csv);
 
         // Assert
         result.ShouldContain("0.001234");
@@ -314,7 +314,7 @@ public class ImpactSummaryFormatterTests
         data.PerspectiveMethodName = data.ComparedMethodName;
 
         // Act
-        var result = _formatter.CreateImpactSummary(data, OutputContext.IDE);
+        var result = _formatter.CreateImpactSummary(data, OutputContext.Ide);
 
         // Assert
         result.ShouldNotBeEmpty();
@@ -350,7 +350,7 @@ public class ImpactSummaryFormatterTests
         var data = CreateSampleComparisonData(meanBefore: 0.0, meanAfter: 1.0, pValue: 0.001);
 
         // Act
-        var result = _formatter.CreateImpactSummary(data, OutputContext.IDE);
+        var result = _formatter.CreateImpactSummary(data, OutputContext.Ide);
 
         // Assert
         result.ShouldNotBeEmpty();
@@ -364,7 +364,7 @@ public class ImpactSummaryFormatterTests
         var data = CreateSampleComparisonData(meanBefore: 1.0, meanAfter: 2.0, pValue: 0.000001);
 
         // Act
-        var result = _formatter.CreateImpactSummary(data, OutputContext.IDE);
+        var result = _formatter.CreateImpactSummary(data, OutputContext.Ide);
 
         // Assert
         result.ShouldContain("0.000001");
@@ -377,7 +377,7 @@ public class ImpactSummaryFormatterTests
         var data = CreateSampleComparisonData(meanBefore: 1.0, meanAfter: 1.5, pValue: 0.9);
 
         // Act
-        var result = _formatter.CreateImpactSummary(data, OutputContext.IDE);
+        var result = _formatter.CreateImpactSummary(data, OutputContext.Ide);
 
         // Assert
         result.ShouldContain("⚪"); // White for no significant change

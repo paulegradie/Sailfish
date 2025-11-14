@@ -11,14 +11,14 @@ public class OverheadEstimator
 {
     private const double NumMilliSecondsToWait = 100;
 
-    private readonly List<double> estimates = new();
+    private readonly List<double> _estimates = new();
     private static double TicksPerMillisecond => Stopwatch.Frequency / (double)1_000;
     private static double ExpectedWaitPeriodInTicks => TicksPerMillisecond * NumMilliSecondsToWait;
 
     public int GetAverageEstimate()
     {
-        var result = estimates.Count > 0 ? (int)estimates.Mean() : 0;
-        estimates.Clear();
+        var result = _estimates.Count > 0 ? (int)_estimates.Mean() : 0;
+        _estimates.Clear();
         return result;
     }
 
@@ -66,7 +66,7 @@ public class OverheadEstimator
 
         if (overheadInAverageTicks < 0) return;
         var estimate = (int)Math.Round(overheadInAverageTicks * 0.25, 0);
-        estimates.Add(estimate);
+        _estimates.Add(estimate);
     }
 
 #pragma warning disable CA1822

@@ -36,7 +36,7 @@ public class DetailedTableFormatterTests
         var data = CreateSampleComparisonData();
 
         // Act
-        var result = _formatter.CreateDetailedTable(data, OutputContext.IDE);
+        var result = _formatter.CreateDetailedTable(data, OutputContext.Ide);
 
         // Assert
         result.ShouldContain("📋 DETAILED STATISTICS:");
@@ -49,7 +49,7 @@ public class DetailedTableFormatterTests
         var data = CreateSampleComparisonData();
 
         // Act
-        var result = _formatter.CreateDetailedTable(data, OutputContext.IDE);
+        var result = _formatter.CreateDetailedTable(data, OutputContext.Ide);
 
         // Assert
         result.ShouldContain("Mean");
@@ -91,7 +91,7 @@ public class DetailedTableFormatterTests
         var data = CreateSampleComparisonData();
 
         // Act
-        var result = _formatter.CreateDetailedTable(data, OutputContext.CSV);
+        var result = _formatter.CreateDetailedTable(data, OutputContext.Csv);
 
         // Assert
         result.ShouldContain("PrimaryMethod,ComparedMethod,PrimaryMean,ComparedMean,PrimaryMedian,ComparedMedian,PValue,ChangeDescription,SampleSize");
@@ -112,7 +112,7 @@ public class DetailedTableFormatterTests
         };
 
         // Act
-        var result = _formatter.CreateDetailedTable(comparisons, OutputContext.IDE);
+        var result = _formatter.CreateDetailedTable(comparisons, OutputContext.Ide);
 
         // Assert
         result.ShouldContain("Method1");
@@ -132,7 +132,7 @@ public class DetailedTableFormatterTests
         };
 
         // Act
-        var result = _formatter.CreateDetailedTable(comparisons, OutputContext.IDE);
+        var result = _formatter.CreateDetailedTable(comparisons, OutputContext.Ide);
 
         // Assert
         result.ShouldContain("Comparing: Method1 vs Method2");
@@ -150,7 +150,7 @@ public class DetailedTableFormatterTests
         var emptyComparisons = Enumerable.Empty<SailDiffComparisonData>();
 
         // Act
-        var result = _formatter.CreateDetailedTable(emptyComparisons, OutputContext.IDE);
+        var result = _formatter.CreateDetailedTable(emptyComparisons, OutputContext.Ide);
 
         // Assert
         result.ShouldBeEmpty();
@@ -169,7 +169,7 @@ public class DetailedTableFormatterTests
         data.PerspectiveMethodName = data.ComparedMethodName;
 
         // Act
-        var result = _formatter.CreateDetailedTable(data, OutputContext.IDE);
+        var result = _formatter.CreateDetailedTable(data, OutputContext.Ide);
 
         // Assert
         result.ShouldNotBeEmpty();
@@ -206,7 +206,7 @@ public class DetailedTableFormatterTests
         var data = CreateSampleComparisonData();
 
         // Act
-        var result = _formatter.CreateDetailedTable(data, OutputContext.IDE);
+        var result = _formatter.CreateDetailedTable(data, OutputContext.Ide);
 
         // Assert
         result.ShouldMatch(@"[+-]\d+\.\d+%"); // Should contain percentage with sign
@@ -219,7 +219,7 @@ public class DetailedTableFormatterTests
         var data = CreateSampleComparisonData();
 
         // Act
-        var result = _formatter.CreateDetailedTable(data, OutputContext.IDE);
+        var result = _formatter.CreateDetailedTable(data, OutputContext.Ide);
 
         // Assert
         result.ShouldMatch(@"\d+\.\d{6}"); // Should contain P-value with 6 decimal places
@@ -246,7 +246,7 @@ public class DetailedTableFormatterTests
         var data = CreateSampleComparisonData();
 
         // Act
-        var result = _formatter.CreateDetailedTable(data, OutputContext.CSV);
+        var result = _formatter.CreateDetailedTable(data, OutputContext.Csv);
 
         // Assert
         var lines = result.Split('\n').Where(l => !string.IsNullOrWhiteSpace(l)).ToList();
@@ -264,7 +264,7 @@ public class DetailedTableFormatterTests
         var data = CreateSampleComparisonData();
 
         // Act
-        var result = _formatter.CreateDetailedTable(data, OutputContext.IDE);
+        var result = _formatter.CreateDetailedTable(data, OutputContext.Ide);
 
         // Assert
         result.ShouldContain("Sample Size");

@@ -21,13 +21,13 @@ internal interface ITrackingFileParser
 
 internal class TrackingFileParser : ITrackingFileParser
 {
-    private readonly ILogger logger;
-    private readonly ITrackingFileSerialization trackingFileSerialization;
+    private readonly ILogger _logger;
+    private readonly ITrackingFileSerialization _trackingFileSerialization;
 
     public TrackingFileParser(ITrackingFileSerialization trackingFileSerialization, ILogger logger)
     {
-        this.logger = logger;
-        this.trackingFileSerialization = trackingFileSerialization;
+        this._logger = logger;
+        this._trackingFileSerialization = trackingFileSerialization;
     }
 
     public async Task<bool> TryParse(string trackingFile, TrackingFileDataList data, CancellationToken cancellationToken)
@@ -55,7 +55,7 @@ internal class TrackingFileParser : ITrackingFileParser
             foreach (var trackingFile in trackingFiles)
             {
                 var serialized = await File.ReadAllTextAsync(trackingFile, cancellationToken);
-                var deserializedFile = trackingFileSerialization.Deserialize(serialized)?.ToList();
+                var deserializedFile = _trackingFileSerialization.Deserialize(serialized)?.ToList();
                 if (deserializedFile is null) throw new SerializationException($"Failed to deserialize {trackingFile}");
                 if (!deserializedFile.Any()) continue;
                 try
@@ -73,7 +73,7 @@ internal class TrackingFileParser : ITrackingFileParser
         }
         catch (SerializationException ex)
         {
-            logger.Log(
+            _logger.Log(
                 LogLevel.Warning,
                 $"Failed to deserialize data into {nameof(PerformanceRunResultTrackingFormat)}. Please remove any non-V1 (or corrupt) tracking data from your tracking directory.\n\n",
                 ex);

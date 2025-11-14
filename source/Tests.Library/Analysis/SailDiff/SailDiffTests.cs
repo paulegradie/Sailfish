@@ -21,30 +21,30 @@ namespace Tests.Library.Analysis.SailDiff;
 
 public class SailDiffTests
 {
-    private readonly IMediator mockMediator;
-    private readonly IRunSettings mockRunSettings;
-    private readonly ILogger mockLogger;
-    private readonly IStatisticalTestComputer mockStatisticalTestComputer;
-    private readonly ISailDiffConsoleWindowMessageFormatter mockSailDiffConsoleWindowMessageFormatter;
-    private readonly IConsoleWriter mockConsoleWriter;
-    private readonly Sailfish.Analysis.SailDiff.SailDiff sailDiff;
+    private readonly IMediator _mockMediator;
+    private readonly IRunSettings _mockRunSettings;
+    private readonly ILogger _mockLogger;
+    private readonly IStatisticalTestComputer _mockStatisticalTestComputer;
+    private readonly ISailDiffConsoleWindowMessageFormatter _mockSailDiffConsoleWindowMessageFormatter;
+    private readonly IConsoleWriter _mockConsoleWriter;
+    private readonly Sailfish.Analysis.SailDiff.SailDiff _sailDiff;
 
     public SailDiffTests()
     {
-        mockMediator = Substitute.For<IMediator>();
-        mockRunSettings = Substitute.For<IRunSettings>();
-        mockLogger = Substitute.For<ILogger>();
-        mockStatisticalTestComputer = Substitute.For<IStatisticalTestComputer>();
-        mockSailDiffConsoleWindowMessageFormatter = Substitute.For<ISailDiffConsoleWindowMessageFormatter>();
-        mockConsoleWriter = Substitute.For<IConsoleWriter>();
+        _mockMediator = Substitute.For<IMediator>();
+        _mockRunSettings = Substitute.For<IRunSettings>();
+        _mockLogger = Substitute.For<ILogger>();
+        _mockStatisticalTestComputer = Substitute.For<IStatisticalTestComputer>();
+        _mockSailDiffConsoleWindowMessageFormatter = Substitute.For<ISailDiffConsoleWindowMessageFormatter>();
+        _mockConsoleWriter = Substitute.For<IConsoleWriter>();
 
-        sailDiff = new Sailfish.Analysis.SailDiff.SailDiff(
-            mockMediator,
-            mockRunSettings,
-            mockLogger,
-            mockStatisticalTestComputer,
-            mockSailDiffConsoleWindowMessageFormatter,
-            mockConsoleWriter);
+        _sailDiff = new Sailfish.Analysis.SailDiff.SailDiff(
+            _mockMediator,
+            _mockRunSettings,
+            _mockLogger,
+            _mockStatisticalTestComputer,
+            _mockSailDiffConsoleWindowMessageFormatter,
+            _mockConsoleWriter);
     }
 
     [Fact]
@@ -52,12 +52,12 @@ public class SailDiffTests
     {
         // Arrange & Act
         var instance = new Sailfish.Analysis.SailDiff.SailDiff(
-            mockMediator,
-            mockRunSettings,
-            mockLogger,
-            mockStatisticalTestComputer,
-            mockSailDiffConsoleWindowMessageFormatter,
-            mockConsoleWriter);
+            _mockMediator,
+            _mockRunSettings,
+            _mockLogger,
+            _mockStatisticalTestComputer,
+            _mockSailDiffConsoleWindowMessageFormatter,
+            _mockConsoleWriter);
 
         // Assert
         instance.ShouldNotBeNull();
@@ -74,30 +74,30 @@ public class SailDiffTests
         var settings = CreateSailDiffSettings();
 
         var testResults = new List<SailDiffResult> { CreateSailDiffResult() };
-        mockStatisticalTestComputer
+        _mockStatisticalTestComputer
             .ComputeTest(beforeData, afterData, settings)
             .Returns(testResults);
 
         const string expectedMarkdown = "runtime markdown";
-        mockSailDiffConsoleWindowMessageFormatter
+        _mockSailDiffConsoleWindowMessageFormatter
             .FormConsoleWindowMessageForSailDiff(testResults, Arg.Any<TestIds>(), settings, Arg.Any<CancellationToken>())
             .Returns(expectedMarkdown);
 
         // Act
-        sailDiff.Analyze(beforeData, afterData, settings);
+        _sailDiff.Analyze(beforeData, afterData, settings);
 
         // Assert
-        mockStatisticalTestComputer.Received(1)
+        _mockStatisticalTestComputer.Received(1)
             .ComputeTest(beforeData, afterData, settings);
 
-        mockSailDiffConsoleWindowMessageFormatter.Received(1)
+        _mockSailDiffConsoleWindowMessageFormatter.Received(1)
             .FormConsoleWindowMessageForSailDiff(
                 testResults,
                 Arg.Is<TestIds>(ids => ids.BeforeTestIds.SequenceEqual(beforeData.TestIds) && ids.AfterTestIds.SequenceEqual(afterData.TestIds)),
                 settings,
                 Arg.Is<CancellationToken>(ct => ct == CancellationToken.None));
 
-        await mockMediator.Received(1).Publish(
+        await _mockMediator.Received(1).Publish(
             Arg.Is<Sailfish.Contracts.Public.Notifications.SailDiffAnalysisCompleteNotification>(n =>
                 n.TestCaseResults.SequenceEqual(testResults) && n.ResultsAsMarkdown == expectedMarkdown),
             Arg.Is<CancellationToken>(ct => ct == CancellationToken.None));
@@ -107,48 +107,48 @@ public class SailDiffTests
     public async Task Analyze_WhenRunSailDiffIsFalse_ShouldReturnEarly()
     {
         // Arrange
-        mockRunSettings.RunSailDiff.Returns(false);
+        _mockRunSettings.RunSailDiff.Returns(false);
         var cancellationToken = CancellationToken.None;
 
         // Act
-        await sailDiff.Analyze(cancellationToken);
+        await _sailDiff.Analyze(cancellationToken);
 
         // Assert
-        await mockMediator.DidNotReceive().Send(Arg.Any<BeforeAndAfterFileLocationRequest>(), Arg.Any<CancellationToken>());
+        await _mockMediator.DidNotReceive().Send(Arg.Any<BeforeAndAfterFileLocationRequest>(), Arg.Any<CancellationToken>());
     }
 
     [Fact]
     public async Task Analyze_WhenNoBeforeFilePaths_ShouldLogWarning()
     {
         // Arrange
-        mockRunSettings.RunSailDiff.Returns(true);
-        mockRunSettings.ProvidedBeforeTrackingFiles.Returns(new List<string>());
+        _mockRunSettings.RunSailDiff.Returns(true);
+        _mockRunSettings.ProvidedBeforeTrackingFiles.Returns(new List<string>());
 
         var fileLocationResponse = new BeforeAndAfterFileLocationResponse(
             new List<string>(), // Empty before paths
             new List<string> { "after.json" });
 
-        mockMediator.Send(Arg.Any<BeforeAndAfterFileLocationRequest>(), Arg.Any<CancellationToken>())
+        _mockMediator.Send(Arg.Any<BeforeAndAfterFileLocationRequest>(), Arg.Any<CancellationToken>())
             .Returns(fileLocationResponse);
 
         var dataResponse = CreateReadInBeforeAndAfterDataResponse();
-        mockMediator.Send(Arg.Any<ReadInBeforeAndAfterDataRequest>(), Arg.Any<CancellationToken>())
+        _mockMediator.Send(Arg.Any<ReadInBeforeAndAfterDataRequest>(), Arg.Any<CancellationToken>())
             .Returns(dataResponse);
 
-        mockStatisticalTestComputer.ComputeTest(Arg.Any<TestData>(), Arg.Any<TestData>(), Arg.Any<SailDiffSettings>())
+        _mockStatisticalTestComputer.ComputeTest(Arg.Any<TestData>(), Arg.Any<TestData>(), Arg.Any<SailDiffSettings>())
             .Returns([CreateSailDiffResult()]);
 
-        mockSailDiffConsoleWindowMessageFormatter
+        _mockSailDiffConsoleWindowMessageFormatter
             .FormConsoleWindowMessageForSailDiff(Arg.Any<IEnumerable<SailDiffResult>>(), Arg.Any<TestIds>(), Arg.Any<SailDiffSettings>(), Arg.Any<CancellationToken>())
             .Returns("test markdown");
 
         var cancellationToken = CancellationToken.None;
 
         // Act
-        await sailDiff.Analyze(cancellationToken);
+        await _sailDiff.Analyze(cancellationToken);
 
         // Assert
-        mockLogger.Received().Log(LogLevel.Warning, "{Message}", Arg.Is<object[]>(args =>
+        _mockLogger.Received().Log(LogLevel.Warning, "{Message}", Arg.Is<object[]>(args =>
             args.Length == 1 && args[0].ToString()!.Contains("No 'Before' file locations discovered")));
     }
 
@@ -156,34 +156,34 @@ public class SailDiffTests
     public async Task Analyze_WhenNoAfterFilePaths_ShouldLogWarning()
     {
         // Arrange
-        mockRunSettings.RunSailDiff.Returns(true);
-        mockRunSettings.ProvidedBeforeTrackingFiles.Returns(new List<string>());
+        _mockRunSettings.RunSailDiff.Returns(true);
+        _mockRunSettings.ProvidedBeforeTrackingFiles.Returns(new List<string>());
 
         var fileLocationResponse = new BeforeAndAfterFileLocationResponse(
             new List<string> { "before.json" },
             new List<string>()); // Empty after paths
 
-        mockMediator.Send(Arg.Any<BeforeAndAfterFileLocationRequest>(), Arg.Any<CancellationToken>())
+        _mockMediator.Send(Arg.Any<BeforeAndAfterFileLocationRequest>(), Arg.Any<CancellationToken>())
             .Returns(fileLocationResponse);
 
         var dataResponse = CreateReadInBeforeAndAfterDataResponse();
-        mockMediator.Send(Arg.Any<ReadInBeforeAndAfterDataRequest>(), Arg.Any<CancellationToken>())
+        _mockMediator.Send(Arg.Any<ReadInBeforeAndAfterDataRequest>(), Arg.Any<CancellationToken>())
             .Returns(dataResponse);
 
-        mockStatisticalTestComputer.ComputeTest(Arg.Any<TestData>(), Arg.Any<TestData>(), Arg.Any<SailDiffSettings>())
+        _mockStatisticalTestComputer.ComputeTest(Arg.Any<TestData>(), Arg.Any<TestData>(), Arg.Any<SailDiffSettings>())
             .Returns([CreateSailDiffResult()]);
 
-        mockSailDiffConsoleWindowMessageFormatter
+        _mockSailDiffConsoleWindowMessageFormatter
             .FormConsoleWindowMessageForSailDiff(Arg.Any<IEnumerable<SailDiffResult>>(), Arg.Any<TestIds>(), Arg.Any<SailDiffSettings>(), Arg.Any<CancellationToken>())
             .Returns("test markdown");
 
         var cancellationToken = CancellationToken.None;
 
         // Act
-        await sailDiff.Analyze(cancellationToken);
+        await _sailDiff.Analyze(cancellationToken);
 
         // Assert
-        mockLogger.Received().Log(LogLevel.Warning, "{Message}", Arg.Is<object[]>(args =>
+        _mockLogger.Received().Log(LogLevel.Warning, "{Message}", Arg.Is<object[]>(args =>
             args.Length == 1 && args[0].ToString()!.Contains("No 'After' file locations discovered")));
     }
 
@@ -191,34 +191,34 @@ public class SailDiffTests
     public async Task Analyze_WhenBothBeforeAndAfterFilePathsEmpty_ShouldLogWarningWithBothMessages()
     {
         // Arrange
-        mockRunSettings.RunSailDiff.Returns(true);
-        mockRunSettings.ProvidedBeforeTrackingFiles.Returns(new List<string>());
+        _mockRunSettings.RunSailDiff.Returns(true);
+        _mockRunSettings.ProvidedBeforeTrackingFiles.Returns(new List<string>());
 
         var fileLocationResponse = new BeforeAndAfterFileLocationResponse(
             new List<string>(), // Empty before paths
             new List<string>()); // Empty after paths
 
-        mockMediator.Send(Arg.Any<BeforeAndAfterFileLocationRequest>(), Arg.Any<CancellationToken>())
+        _mockMediator.Send(Arg.Any<BeforeAndAfterFileLocationRequest>(), Arg.Any<CancellationToken>())
             .Returns(fileLocationResponse);
 
         var dataResponse = CreateReadInBeforeAndAfterDataResponse();
-        mockMediator.Send(Arg.Any<ReadInBeforeAndAfterDataRequest>(), Arg.Any<CancellationToken>())
+        _mockMediator.Send(Arg.Any<ReadInBeforeAndAfterDataRequest>(), Arg.Any<CancellationToken>())
             .Returns(dataResponse);
 
-        mockStatisticalTestComputer.ComputeTest(Arg.Any<TestData>(), Arg.Any<TestData>(), Arg.Any<SailDiffSettings>())
+        _mockStatisticalTestComputer.ComputeTest(Arg.Any<TestData>(), Arg.Any<TestData>(), Arg.Any<SailDiffSettings>())
             .Returns([CreateSailDiffResult()]);
 
-        mockSailDiffConsoleWindowMessageFormatter
+        _mockSailDiffConsoleWindowMessageFormatter
             .FormConsoleWindowMessageForSailDiff(Arg.Any<IEnumerable<SailDiffResult>>(), Arg.Any<TestIds>(), Arg.Any<SailDiffSettings>(), Arg.Any<CancellationToken>())
             .Returns("test markdown");
 
         var cancellationToken = CancellationToken.None;
 
         // Act
-        await sailDiff.Analyze(cancellationToken);
+        await _sailDiff.Analyze(cancellationToken);
 
         // Assert
-        mockLogger.Received().Log(LogLevel.Warning, "{Message}", Arg.Is<object[]>(args =>
+        _mockLogger.Received().Log(LogLevel.Warning, "{Message}", Arg.Is<object[]>(args =>
             args.Length == 1 && args[0].ToString()!.Contains("No 'Before' file locations discovered") &&
             args[0].ToString()!.Contains("No 'After' file locations discovered")));
     }
@@ -227,116 +227,116 @@ public class SailDiffTests
     public async Task Analyze_WhenBeforeDataIsNull_ShouldLogWarningAndReturn()
     {
         // Arrange
-        mockRunSettings.RunSailDiff.Returns(true);
-        mockRunSettings.ProvidedBeforeTrackingFiles.Returns(new List<string>());
+        _mockRunSettings.RunSailDiff.Returns(true);
+        _mockRunSettings.ProvidedBeforeTrackingFiles.Returns(new List<string>());
 
         var fileLocationResponse = new BeforeAndAfterFileLocationResponse(
             new List<string> { "before.json" },
             new List<string> { "after.json" });
 
-        mockMediator.Send(Arg.Any<BeforeAndAfterFileLocationRequest>(), Arg.Any<CancellationToken>())
+        _mockMediator.Send(Arg.Any<BeforeAndAfterFileLocationRequest>(), Arg.Any<CancellationToken>())
             .Returns(fileLocationResponse);
 
         var dataResponse = new ReadInBeforeAndAfterDataResponse(null, CreateTestData()); // BeforeData is null
-        mockMediator.Send(Arg.Any<ReadInBeforeAndAfterDataRequest>(), Arg.Any<CancellationToken>())
+        _mockMediator.Send(Arg.Any<ReadInBeforeAndAfterDataRequest>(), Arg.Any<CancellationToken>())
             .Returns(dataResponse);
 
         var cancellationToken = CancellationToken.None;
 
         // Act
-        await sailDiff.Analyze(cancellationToken);
+        await _sailDiff.Analyze(cancellationToken);
 
         // Assert
-        mockLogger.Received().Log(LogLevel.Warning, "Failed to retrieve tracking data... aborting the test operation");
-        mockStatisticalTestComputer.DidNotReceive().ComputeTest(Arg.Any<TestData>(), Arg.Any<TestData>(), Arg.Any<SailDiffSettings>());
+        _mockLogger.Received().Log(LogLevel.Warning, "Failed to retrieve tracking data... aborting the test operation");
+        _mockStatisticalTestComputer.DidNotReceive().ComputeTest(Arg.Any<TestData>(), Arg.Any<TestData>(), Arg.Any<SailDiffSettings>());
     }
 
     [Fact]
     public async Task Analyze_WhenAfterDataIsNull_ShouldLogWarningAndReturn()
     {
         // Arrange
-        mockRunSettings.RunSailDiff.Returns(true);
-        mockRunSettings.ProvidedBeforeTrackingFiles.Returns(new List<string>());
+        _mockRunSettings.RunSailDiff.Returns(true);
+        _mockRunSettings.ProvidedBeforeTrackingFiles.Returns(new List<string>());
 
         var fileLocationResponse = new BeforeAndAfterFileLocationResponse(
             new List<string> { "before.json" },
             new List<string> { "after.json" });
 
-        mockMediator.Send(Arg.Any<BeforeAndAfterFileLocationRequest>(), Arg.Any<CancellationToken>())
+        _mockMediator.Send(Arg.Any<BeforeAndAfterFileLocationRequest>(), Arg.Any<CancellationToken>())
             .Returns(fileLocationResponse);
 
         var dataResponse = new ReadInBeforeAndAfterDataResponse(CreateTestData(), null); // AfterData is null
-        mockMediator.Send(Arg.Any<ReadInBeforeAndAfterDataRequest>(), Arg.Any<CancellationToken>())
+        _mockMediator.Send(Arg.Any<ReadInBeforeAndAfterDataRequest>(), Arg.Any<CancellationToken>())
             .Returns(dataResponse);
 
         var cancellationToken = CancellationToken.None;
 
         // Act
-        await sailDiff.Analyze(cancellationToken);
+        await _sailDiff.Analyze(cancellationToken);
 
         // Assert
-        mockLogger.Received().Log(LogLevel.Warning, "Failed to retrieve tracking data... aborting the test operation");
-        mockStatisticalTestComputer.DidNotReceive().ComputeTest(Arg.Any<TestData>(), Arg.Any<TestData>(), Arg.Any<SailDiffSettings>());
+        _mockLogger.Received().Log(LogLevel.Warning, "Failed to retrieve tracking data... aborting the test operation");
+        _mockStatisticalTestComputer.DidNotReceive().ComputeTest(Arg.Any<TestData>(), Arg.Any<TestData>(), Arg.Any<SailDiffSettings>());
     }
 
     [Fact]
     public async Task Analyze_WhenBothBeforeAndAfterDataAreNull_ShouldLogWarningAndReturn()
     {
         // Arrange
-        mockRunSettings.RunSailDiff.Returns(true);
-        mockRunSettings.ProvidedBeforeTrackingFiles.Returns(new List<string>());
+        _mockRunSettings.RunSailDiff.Returns(true);
+        _mockRunSettings.ProvidedBeforeTrackingFiles.Returns(new List<string>());
 
         var fileLocationResponse = new BeforeAndAfterFileLocationResponse(
             new List<string> { "before.json" },
             new List<string> { "after.json" });
 
-        mockMediator.Send(Arg.Any<BeforeAndAfterFileLocationRequest>(), Arg.Any<CancellationToken>())
+        _mockMediator.Send(Arg.Any<BeforeAndAfterFileLocationRequest>(), Arg.Any<CancellationToken>())
             .Returns(fileLocationResponse);
 
         var dataResponse = new ReadInBeforeAndAfterDataResponse(null, null); // Both are null
-        mockMediator.Send(Arg.Any<ReadInBeforeAndAfterDataRequest>(), Arg.Any<CancellationToken>())
+        _mockMediator.Send(Arg.Any<ReadInBeforeAndAfterDataRequest>(), Arg.Any<CancellationToken>())
             .Returns(dataResponse);
 
         var cancellationToken = CancellationToken.None;
 
         // Act
-        await sailDiff.Analyze(cancellationToken);
+        await _sailDiff.Analyze(cancellationToken);
 
         // Assert
-        mockLogger.Received().Log(LogLevel.Warning, "Failed to retrieve tracking data... aborting the test operation");
-        mockStatisticalTestComputer.DidNotReceive().ComputeTest(Arg.Any<TestData>(), Arg.Any<TestData>(), Arg.Any<SailDiffSettings>());
+        _mockLogger.Received().Log(LogLevel.Warning, "Failed to retrieve tracking data... aborting the test operation");
+        _mockStatisticalTestComputer.DidNotReceive().ComputeTest(Arg.Any<TestData>(), Arg.Any<TestData>(), Arg.Any<SailDiffSettings>());
     }
 
     [Fact]
     public async Task Analyze_WhenNoTestResults_ShouldLogInformationAndReturn()
     {
         // Arrange
-        mockRunSettings.RunSailDiff.Returns(true);
-        mockRunSettings.ProvidedBeforeTrackingFiles.Returns(new List<string>());
-        mockRunSettings.SailDiffSettings.Returns(CreateSailDiffSettings());
+        _mockRunSettings.RunSailDiff.Returns(true);
+        _mockRunSettings.ProvidedBeforeTrackingFiles.Returns(new List<string>());
+        _mockRunSettings.SailDiffSettings.Returns(CreateSailDiffSettings());
 
         var fileLocationResponse = new BeforeAndAfterFileLocationResponse(
             new List<string> { "before.json" },
             new List<string> { "after.json" });
 
-        mockMediator.Send(Arg.Any<BeforeAndAfterFileLocationRequest>(), Arg.Any<CancellationToken>())
+        _mockMediator.Send(Arg.Any<BeforeAndAfterFileLocationRequest>(), Arg.Any<CancellationToken>())
             .Returns(fileLocationResponse);
 
         var dataResponse = CreateReadInBeforeAndAfterDataResponse();
-        mockMediator.Send(Arg.Any<ReadInBeforeAndAfterDataRequest>(), Arg.Any<CancellationToken>())
+        _mockMediator.Send(Arg.Any<ReadInBeforeAndAfterDataRequest>(), Arg.Any<CancellationToken>())
             .Returns(dataResponse);
 
-        mockStatisticalTestComputer.ComputeTest(Arg.Any<TestData>(), Arg.Any<TestData>(), Arg.Any<SailDiffSettings>())
+        _mockStatisticalTestComputer.ComputeTest(Arg.Any<TestData>(), Arg.Any<TestData>(), Arg.Any<SailDiffSettings>())
             .Returns([]); // Empty results
 
         var cancellationToken = CancellationToken.None;
 
         // Act
-        await sailDiff.Analyze(cancellationToken);
+        await _sailDiff.Analyze(cancellationToken);
 
         // Assert
-        mockLogger.Received().Log(LogLevel.Information, "No prior test results found for the current set");
-        mockSailDiffConsoleWindowMessageFormatter.DidNotReceive()
+        _mockLogger.Received().Log(LogLevel.Information, "No prior test results found for the current set");
+        _mockSailDiffConsoleWindowMessageFormatter.DidNotReceive()
             .FormConsoleWindowMessageForSailDiff(Arg.Any<IEnumerable<SailDiffResult>>(), Arg.Any<TestIds>(), Arg.Any<SailDiffSettings>(), Arg.Any<CancellationToken>());
     }
 
@@ -408,60 +408,60 @@ public class SailDiffTests
     public async Task Analyze_SuccessfulExecution_ShouldCompleteAllSteps()
     {
         // Arrange
-        mockRunSettings.RunSailDiff.Returns(true);
-        mockRunSettings.ProvidedBeforeTrackingFiles.Returns(new List<string>());
-        mockRunSettings.SailDiffSettings.Returns(CreateSailDiffSettings());
+        _mockRunSettings.RunSailDiff.Returns(true);
+        _mockRunSettings.ProvidedBeforeTrackingFiles.Returns(new List<string>());
+        _mockRunSettings.SailDiffSettings.Returns(CreateSailDiffSettings());
 
         var fileLocationResponse = new BeforeAndAfterFileLocationResponse(
             new List<string> { "before.json" },
             new List<string> { "after.json" });
 
-        mockMediator.Send(Arg.Any<BeforeAndAfterFileLocationRequest>(), Arg.Any<CancellationToken>())
+        _mockMediator.Send(Arg.Any<BeforeAndAfterFileLocationRequest>(), Arg.Any<CancellationToken>())
             .Returns(fileLocationResponse);
 
         var dataResponse = CreateReadInBeforeAndAfterDataResponse();
-        mockMediator.Send(Arg.Any<ReadInBeforeAndAfterDataRequest>(), Arg.Any<CancellationToken>())
+        _mockMediator.Send(Arg.Any<ReadInBeforeAndAfterDataRequest>(), Arg.Any<CancellationToken>())
             .Returns(dataResponse);
 
         var testResults = new List<SailDiffResult> { CreateSailDiffResult() };
-        mockStatisticalTestComputer.ComputeTest(Arg.Any<TestData>(), Arg.Any<TestData>(), Arg.Any<SailDiffSettings>())
+        _mockStatisticalTestComputer.ComputeTest(Arg.Any<TestData>(), Arg.Any<TestData>(), Arg.Any<SailDiffSettings>())
             .Returns(testResults);
 
         const string expectedMarkdown = "test markdown results";
-        mockSailDiffConsoleWindowMessageFormatter
+        _mockSailDiffConsoleWindowMessageFormatter
             .FormConsoleWindowMessageForSailDiff(Arg.Any<IEnumerable<SailDiffResult>>(), Arg.Any<TestIds>(), Arg.Any<SailDiffSettings>(), Arg.Any<CancellationToken>())
             .Returns(expectedMarkdown);
 
         var cancellationToken = CancellationToken.None;
 
         // Act
-        await sailDiff.Analyze(cancellationToken);
+        await _sailDiff.Analyze(cancellationToken);
 
         // Assert
-        await mockMediator.Received().Send(Arg.Any<BeforeAndAfterFileLocationRequest>(), cancellationToken);
-        await mockMediator.Received().Send(Arg.Any<ReadInBeforeAndAfterDataRequest>(), cancellationToken);
-        mockStatisticalTestComputer.Received().ComputeTest(dataResponse.BeforeData!, dataResponse.AfterData!, mockRunSettings.SailDiffSettings);
-        mockSailDiffConsoleWindowMessageFormatter.Received()
-            .FormConsoleWindowMessageForSailDiff(testResults, Arg.Any<TestIds>(), mockRunSettings.SailDiffSettings, cancellationToken);
-        mockLogger.Received().Log(LogLevel.Information, expectedMarkdown);
-        await mockMediator.Received().Publish(Arg.Any<SailDiffAnalysisCompleteNotification>(), cancellationToken);
+        await _mockMediator.Received().Send(Arg.Any<BeforeAndAfterFileLocationRequest>(), cancellationToken);
+        await _mockMediator.Received().Send(Arg.Any<ReadInBeforeAndAfterDataRequest>(), cancellationToken);
+        _mockStatisticalTestComputer.Received().ComputeTest(dataResponse.BeforeData!, dataResponse.AfterData!, _mockRunSettings.SailDiffSettings);
+        _mockSailDiffConsoleWindowMessageFormatter.Received()
+            .FormConsoleWindowMessageForSailDiff(testResults, Arg.Any<TestIds>(), _mockRunSettings.SailDiffSettings, cancellationToken);
+        _mockLogger.Received().Log(LogLevel.Information, expectedMarkdown);
+        await _mockMediator.Received().Publish(Arg.Any<SailDiffAnalysisCompleteNotification>(), cancellationToken);
     }
 
     [Fact]
     public async Task Analyze_WhenMediatorThrowsExceptionOnFileLocationRequest_ShouldPropagateException()
     {
         // Arrange
-        mockRunSettings.RunSailDiff.Returns(true);
-        mockRunSettings.ProvidedBeforeTrackingFiles.Returns(new List<string>());
+        _mockRunSettings.RunSailDiff.Returns(true);
+        _mockRunSettings.ProvidedBeforeTrackingFiles.Returns(new List<string>());
 
         var expectedException = new InvalidOperationException("Mediator error");
-        mockMediator.Send(Arg.Any<BeforeAndAfterFileLocationRequest>(), Arg.Any<CancellationToken>())
+        _mockMediator.Send(Arg.Any<BeforeAndAfterFileLocationRequest>(), Arg.Any<CancellationToken>())
             .ThrowsAsync(expectedException);
 
         var cancellationToken = CancellationToken.None;
 
         // Act & Assert
-        var exception = await Should.ThrowAsync<InvalidOperationException>(() => sailDiff.Analyze(cancellationToken));
+        var exception = await Should.ThrowAsync<InvalidOperationException>(() => _sailDiff.Analyze(cancellationToken));
         exception.ShouldBe(expectedException);
     }
 
@@ -469,24 +469,24 @@ public class SailDiffTests
     public async Task Analyze_WhenMediatorThrowsExceptionOnDataRequest_ShouldPropagateException()
     {
         // Arrange
-        mockRunSettings.RunSailDiff.Returns(true);
-        mockRunSettings.ProvidedBeforeTrackingFiles.Returns(new List<string>());
+        _mockRunSettings.RunSailDiff.Returns(true);
+        _mockRunSettings.ProvidedBeforeTrackingFiles.Returns(new List<string>());
 
         var fileLocationResponse = new BeforeAndAfterFileLocationResponse(
             new List<string> { "before.json" },
             new List<string> { "after.json" });
 
-        mockMediator.Send(Arg.Any<BeforeAndAfterFileLocationRequest>(), Arg.Any<CancellationToken>())
+        _mockMediator.Send(Arg.Any<BeforeAndAfterFileLocationRequest>(), Arg.Any<CancellationToken>())
             .Returns(fileLocationResponse);
 
         var expectedException = new InvalidOperationException("Data request error");
-        mockMediator.Send(Arg.Any<ReadInBeforeAndAfterDataRequest>(), Arg.Any<CancellationToken>())
+        _mockMediator.Send(Arg.Any<ReadInBeforeAndAfterDataRequest>(), Arg.Any<CancellationToken>())
             .ThrowsAsync(expectedException);
 
         var cancellationToken = CancellationToken.None;
 
         // Act & Assert
-        var exception = await Should.ThrowAsync<InvalidOperationException>(() => sailDiff.Analyze(cancellationToken));
+        var exception = await Should.ThrowAsync<InvalidOperationException>(() => _sailDiff.Analyze(cancellationToken));
         exception.ShouldBe(expectedException);
     }
 
@@ -494,29 +494,29 @@ public class SailDiffTests
     public async Task Analyze_WhenStatisticalTestComputerThrowsException_ShouldPropagateException()
     {
         // Arrange
-        mockRunSettings.RunSailDiff.Returns(true);
-        mockRunSettings.ProvidedBeforeTrackingFiles.Returns(new List<string>());
-        mockRunSettings.SailDiffSettings.Returns(CreateSailDiffSettings());
+        _mockRunSettings.RunSailDiff.Returns(true);
+        _mockRunSettings.ProvidedBeforeTrackingFiles.Returns(new List<string>());
+        _mockRunSettings.SailDiffSettings.Returns(CreateSailDiffSettings());
 
         var fileLocationResponse = new BeforeAndAfterFileLocationResponse(
             new List<string> { "before.json" },
             new List<string> { "after.json" });
 
-        mockMediator.Send(Arg.Any<BeforeAndAfterFileLocationRequest>(), Arg.Any<CancellationToken>())
+        _mockMediator.Send(Arg.Any<BeforeAndAfterFileLocationRequest>(), Arg.Any<CancellationToken>())
             .Returns(fileLocationResponse);
 
         var dataResponse = CreateReadInBeforeAndAfterDataResponse();
-        mockMediator.Send(Arg.Any<ReadInBeforeAndAfterDataRequest>(), Arg.Any<CancellationToken>())
+        _mockMediator.Send(Arg.Any<ReadInBeforeAndAfterDataRequest>(), Arg.Any<CancellationToken>())
             .Returns(dataResponse);
 
         var expectedException = new InvalidOperationException("Statistical computation error");
-        mockStatisticalTestComputer.ComputeTest(Arg.Any<TestData>(), Arg.Any<TestData>(), Arg.Any<SailDiffSettings>())
+        _mockStatisticalTestComputer.ComputeTest(Arg.Any<TestData>(), Arg.Any<TestData>(), Arg.Any<SailDiffSettings>())
             .Throws(expectedException);
 
         var cancellationToken = CancellationToken.None;
 
         // Act & Assert
-        var exception = await Should.ThrowAsync<InvalidOperationException>(() => sailDiff.Analyze(cancellationToken));
+        var exception = await Should.ThrowAsync<InvalidOperationException>(() => _sailDiff.Analyze(cancellationToken));
         exception.ShouldBe(expectedException);
     }
 
@@ -524,34 +524,34 @@ public class SailDiffTests
     public async Task Analyze_WhenFormatterThrowsException_ShouldPropagateException()
     {
         // Arrange
-        mockRunSettings.RunSailDiff.Returns(true);
-        mockRunSettings.ProvidedBeforeTrackingFiles.Returns(new List<string>());
-        mockRunSettings.SailDiffSettings.Returns(CreateSailDiffSettings());
+        _mockRunSettings.RunSailDiff.Returns(true);
+        _mockRunSettings.ProvidedBeforeTrackingFiles.Returns(new List<string>());
+        _mockRunSettings.SailDiffSettings.Returns(CreateSailDiffSettings());
 
         var fileLocationResponse = new BeforeAndAfterFileLocationResponse(
             new List<string> { "before.json" },
             new List<string> { "after.json" });
 
-        mockMediator.Send(Arg.Any<BeforeAndAfterFileLocationRequest>(), Arg.Any<CancellationToken>())
+        _mockMediator.Send(Arg.Any<BeforeAndAfterFileLocationRequest>(), Arg.Any<CancellationToken>())
             .Returns(fileLocationResponse);
 
         var dataResponse = CreateReadInBeforeAndAfterDataResponse();
-        mockMediator.Send(Arg.Any<ReadInBeforeAndAfterDataRequest>(), Arg.Any<CancellationToken>())
+        _mockMediator.Send(Arg.Any<ReadInBeforeAndAfterDataRequest>(), Arg.Any<CancellationToken>())
             .Returns(dataResponse);
 
         var testResults = new List<SailDiffResult> { CreateSailDiffResult() };
-        mockStatisticalTestComputer.ComputeTest(Arg.Any<TestData>(), Arg.Any<TestData>(), Arg.Any<SailDiffSettings>())
+        _mockStatisticalTestComputer.ComputeTest(Arg.Any<TestData>(), Arg.Any<TestData>(), Arg.Any<SailDiffSettings>())
             .Returns(testResults);
 
         var expectedException = new InvalidOperationException("Formatter error");
-        mockSailDiffConsoleWindowMessageFormatter
+        _mockSailDiffConsoleWindowMessageFormatter
             .FormConsoleWindowMessageForSailDiff(Arg.Any<IEnumerable<SailDiffResult>>(), Arg.Any<TestIds>(), Arg.Any<SailDiffSettings>(), Arg.Any<CancellationToken>())
             .Throws(expectedException);
 
         var cancellationToken = CancellationToken.None;
 
         // Act & Assert
-        var exception = await Should.ThrowAsync<InvalidOperationException>(() => sailDiff.Analyze(cancellationToken));
+        var exception = await Should.ThrowAsync<InvalidOperationException>(() => _sailDiff.Analyze(cancellationToken));
         exception.ShouldBe(expectedException);
     }
 
@@ -559,37 +559,37 @@ public class SailDiffTests
     public async Task Analyze_WhenMediatorPublishThrowsException_ShouldPropagateException()
     {
         // Arrange
-        mockRunSettings.RunSailDiff.Returns(true);
-        mockRunSettings.ProvidedBeforeTrackingFiles.Returns(new List<string>());
-        mockRunSettings.SailDiffSettings.Returns(CreateSailDiffSettings());
+        _mockRunSettings.RunSailDiff.Returns(true);
+        _mockRunSettings.ProvidedBeforeTrackingFiles.Returns(new List<string>());
+        _mockRunSettings.SailDiffSettings.Returns(CreateSailDiffSettings());
 
         var fileLocationResponse = new BeforeAndAfterFileLocationResponse(
             new List<string> { "before.json" },
             new List<string> { "after.json" });
 
-        mockMediator.Send(Arg.Any<BeforeAndAfterFileLocationRequest>(), Arg.Any<CancellationToken>())
+        _mockMediator.Send(Arg.Any<BeforeAndAfterFileLocationRequest>(), Arg.Any<CancellationToken>())
             .Returns(fileLocationResponse);
 
         var dataResponse = CreateReadInBeforeAndAfterDataResponse();
-        mockMediator.Send(Arg.Any<ReadInBeforeAndAfterDataRequest>(), Arg.Any<CancellationToken>())
+        _mockMediator.Send(Arg.Any<ReadInBeforeAndAfterDataRequest>(), Arg.Any<CancellationToken>())
             .Returns(dataResponse);
 
         var testResults = new List<SailDiffResult> { CreateSailDiffResult() };
-        mockStatisticalTestComputer.ComputeTest(Arg.Any<TestData>(), Arg.Any<TestData>(), Arg.Any<SailDiffSettings>())
+        _mockStatisticalTestComputer.ComputeTest(Arg.Any<TestData>(), Arg.Any<TestData>(), Arg.Any<SailDiffSettings>())
             .Returns(testResults);
 
-        mockSailDiffConsoleWindowMessageFormatter
+        _mockSailDiffConsoleWindowMessageFormatter
             .FormConsoleWindowMessageForSailDiff(Arg.Any<IEnumerable<SailDiffResult>>(), Arg.Any<TestIds>(), Arg.Any<SailDiffSettings>(), Arg.Any<CancellationToken>())
             .Returns("test markdown");
 
         var expectedException = new InvalidOperationException("Publish error");
-        mockMediator.Publish(Arg.Any<SailDiffAnalysisCompleteNotification>(), Arg.Any<CancellationToken>())
+        _mockMediator.Publish(Arg.Any<SailDiffAnalysisCompleteNotification>(), Arg.Any<CancellationToken>())
             .ThrowsAsync(expectedException);
 
         var cancellationToken = CancellationToken.None;
 
         // Act & Assert
-        var exception = await Should.ThrowAsync<InvalidOperationException>(() => sailDiff.Analyze(cancellationToken));
+        var exception = await Should.ThrowAsync<InvalidOperationException>(() => _sailDiff.Analyze(cancellationToken));
         exception.ShouldBe(expectedException);
     }
 
@@ -597,26 +597,26 @@ public class SailDiffTests
     public async Task Analyze_WithCancellationToken_ShouldPassTokenToAllCalls()
     {
         // Arrange
-        mockRunSettings.RunSailDiff.Returns(true);
-        mockRunSettings.ProvidedBeforeTrackingFiles.Returns(new List<string>());
-        mockRunSettings.SailDiffSettings.Returns(CreateSailDiffSettings());
+        _mockRunSettings.RunSailDiff.Returns(true);
+        _mockRunSettings.ProvidedBeforeTrackingFiles.Returns(new List<string>());
+        _mockRunSettings.SailDiffSettings.Returns(CreateSailDiffSettings());
 
         var fileLocationResponse = new BeforeAndAfterFileLocationResponse(
             new List<string> { "before.json" },
             new List<string> { "after.json" });
 
-        mockMediator.Send(Arg.Any<BeforeAndAfterFileLocationRequest>(), Arg.Any<CancellationToken>())
+        _mockMediator.Send(Arg.Any<BeforeAndAfterFileLocationRequest>(), Arg.Any<CancellationToken>())
             .Returns(fileLocationResponse);
 
         var dataResponse = CreateReadInBeforeAndAfterDataResponse();
-        mockMediator.Send(Arg.Any<ReadInBeforeAndAfterDataRequest>(), Arg.Any<CancellationToken>())
+        _mockMediator.Send(Arg.Any<ReadInBeforeAndAfterDataRequest>(), Arg.Any<CancellationToken>())
             .Returns(dataResponse);
 
         var testResults = new List<SailDiffResult> { CreateSailDiffResult() };
-        mockStatisticalTestComputer.ComputeTest(Arg.Any<TestData>(), Arg.Any<TestData>(), Arg.Any<SailDiffSettings>())
+        _mockStatisticalTestComputer.ComputeTest(Arg.Any<TestData>(), Arg.Any<TestData>(), Arg.Any<SailDiffSettings>())
             .Returns(testResults);
 
-        mockSailDiffConsoleWindowMessageFormatter
+        _mockSailDiffConsoleWindowMessageFormatter
             .FormConsoleWindowMessageForSailDiff(Arg.Any<IEnumerable<SailDiffResult>>(), Arg.Any<TestIds>(), Arg.Any<SailDiffSettings>(), Arg.Any<CancellationToken>())
             .Returns("test markdown");
 
@@ -624,58 +624,58 @@ public class SailDiffTests
         var cancellationToken = cts.Token;
 
         // Act
-        await sailDiff.Analyze(cancellationToken);
+        await _sailDiff.Analyze(cancellationToken);
 
         // Assert
-        await mockMediator.Received().Send(Arg.Any<BeforeAndAfterFileLocationRequest>(), cancellationToken);
-        await mockMediator.Received().Send(Arg.Any<ReadInBeforeAndAfterDataRequest>(), cancellationToken);
-        mockSailDiffConsoleWindowMessageFormatter.Received()
+        await _mockMediator.Received().Send(Arg.Any<BeforeAndAfterFileLocationRequest>(), cancellationToken);
+        await _mockMediator.Received().Send(Arg.Any<ReadInBeforeAndAfterDataRequest>(), cancellationToken);
+        _mockSailDiffConsoleWindowMessageFormatter.Received()
             .FormConsoleWindowMessageForSailDiff(Arg.Any<IEnumerable<SailDiffResult>>(), Arg.Any<TestIds>(), Arg.Any<SailDiffSettings>(), cancellationToken);
-        await mockMediator.Received().Publish(Arg.Any<SailDiffAnalysisCompleteNotification>(), cancellationToken);
+        await _mockMediator.Received().Publish(Arg.Any<SailDiffAnalysisCompleteNotification>(), cancellationToken);
     }
 
     [Fact]
     public async Task Analyze_ShouldCreateCorrectTestIds()
     {
         // Arrange
-        mockRunSettings.RunSailDiff.Returns(true);
-        mockRunSettings.ProvidedBeforeTrackingFiles.Returns(new List<string>());
-        mockRunSettings.SailDiffSettings.Returns(CreateSailDiffSettings());
+        _mockRunSettings.RunSailDiff.Returns(true);
+        _mockRunSettings.ProvidedBeforeTrackingFiles.Returns(new List<string>());
+        _mockRunSettings.SailDiffSettings.Returns(CreateSailDiffSettings());
 
         var fileLocationResponse = new BeforeAndAfterFileLocationResponse(
             new List<string> { "before.json" },
             new List<string> { "after.json" });
 
-        mockMediator.Send(Arg.Any<BeforeAndAfterFileLocationRequest>(), Arg.Any<CancellationToken>())
+        _mockMediator.Send(Arg.Any<BeforeAndAfterFileLocationRequest>(), Arg.Any<CancellationToken>())
             .Returns(fileLocationResponse);
 
         var beforeData = new TestData(["BeforeTest1", "BeforeTest2"], new List<PerformanceRunResult>());
         var afterData = new TestData(["AfterTest1", "AfterTest2"], new List<PerformanceRunResult>());
         var dataResponse = new ReadInBeforeAndAfterDataResponse(beforeData, afterData);
-        mockMediator.Send(Arg.Any<ReadInBeforeAndAfterDataRequest>(), Arg.Any<CancellationToken>())
+        _mockMediator.Send(Arg.Any<ReadInBeforeAndAfterDataRequest>(), Arg.Any<CancellationToken>())
             .Returns(dataResponse);
 
         var testResults = new List<SailDiffResult> { CreateSailDiffResult() };
-        mockStatisticalTestComputer.ComputeTest(Arg.Any<TestData>(), Arg.Any<TestData>(), Arg.Any<SailDiffSettings>())
+        _mockStatisticalTestComputer.ComputeTest(Arg.Any<TestData>(), Arg.Any<TestData>(), Arg.Any<SailDiffSettings>())
             .Returns(testResults);
 
-        mockSailDiffConsoleWindowMessageFormatter
+        _mockSailDiffConsoleWindowMessageFormatter
             .FormConsoleWindowMessageForSailDiff(Arg.Any<IEnumerable<SailDiffResult>>(), Arg.Any<TestIds>(), Arg.Any<SailDiffSettings>(), Arg.Any<CancellationToken>())
             .Returns("test markdown");
 
         var cancellationToken = CancellationToken.None;
 
         // Act
-        await sailDiff.Analyze(cancellationToken);
+        await _sailDiff.Analyze(cancellationToken);
 
         // Assert
-        mockSailDiffConsoleWindowMessageFormatter.Received()
+        _mockSailDiffConsoleWindowMessageFormatter.Received()
             .FormConsoleWindowMessageForSailDiff(
                 testResults,
                 Arg.Is<TestIds>(ids =>
                     ids.BeforeTestIds.SequenceEqual(beforeData.TestIds) &&
                     ids.AfterTestIds.SequenceEqual(afterData.TestIds)),
-                mockRunSettings.SailDiffSettings,
+                _mockRunSettings.SailDiffSettings,
                 cancellationToken);
     }
 
@@ -683,37 +683,37 @@ public class SailDiffTests
     public async Task Analyze_ShouldPublishCorrectNotification()
     {
         // Arrange
-        mockRunSettings.RunSailDiff.Returns(true);
-        mockRunSettings.ProvidedBeforeTrackingFiles.Returns(new List<string>());
-        mockRunSettings.SailDiffSettings.Returns(CreateSailDiffSettings());
+        _mockRunSettings.RunSailDiff.Returns(true);
+        _mockRunSettings.ProvidedBeforeTrackingFiles.Returns(new List<string>());
+        _mockRunSettings.SailDiffSettings.Returns(CreateSailDiffSettings());
 
         var fileLocationResponse = new BeforeAndAfterFileLocationResponse(
             new List<string> { "before.json" },
             new List<string> { "after.json" });
 
-        mockMediator.Send(Arg.Any<BeforeAndAfterFileLocationRequest>(), Arg.Any<CancellationToken>())
+        _mockMediator.Send(Arg.Any<BeforeAndAfterFileLocationRequest>(), Arg.Any<CancellationToken>())
             .Returns(fileLocationResponse);
 
         var dataResponse = CreateReadInBeforeAndAfterDataResponse();
-        mockMediator.Send(Arg.Any<ReadInBeforeAndAfterDataRequest>(), Arg.Any<CancellationToken>())
+        _mockMediator.Send(Arg.Any<ReadInBeforeAndAfterDataRequest>(), Arg.Any<CancellationToken>())
             .Returns(dataResponse);
 
         var testResults = new List<SailDiffResult> { CreateSailDiffResult() };
-        mockStatisticalTestComputer.ComputeTest(Arg.Any<TestData>(), Arg.Any<TestData>(), Arg.Any<SailDiffSettings>())
+        _mockStatisticalTestComputer.ComputeTest(Arg.Any<TestData>(), Arg.Any<TestData>(), Arg.Any<SailDiffSettings>())
             .Returns(testResults);
 
         const string expectedMarkdown = "expected markdown results";
-        mockSailDiffConsoleWindowMessageFormatter
+        _mockSailDiffConsoleWindowMessageFormatter
             .FormConsoleWindowMessageForSailDiff(Arg.Any<IEnumerable<SailDiffResult>>(), Arg.Any<TestIds>(), Arg.Any<SailDiffSettings>(), Arg.Any<CancellationToken>())
             .Returns(expectedMarkdown);
 
         var cancellationToken = CancellationToken.None;
 
         // Act
-        await sailDiff.Analyze(cancellationToken);
+        await _sailDiff.Analyze(cancellationToken);
 
         // Assert
-        await mockMediator.Received().Publish(
+        await _mockMediator.Received().Publish(
             Arg.Is<SailDiffAnalysisCompleteNotification>(notification =>
                 notification.TestCaseResults.SequenceEqual(testResults) &&
                 notification.ResultsAsMarkdown == expectedMarkdown),

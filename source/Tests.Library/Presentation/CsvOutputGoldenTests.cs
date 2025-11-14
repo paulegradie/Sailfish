@@ -77,7 +77,7 @@ public class CsvOutputGoldenTests
     public async Task Consolidated_Session_Csv_Matches_Golden()
     {
         var originalCulture = CultureInfo.CurrentCulture;
-        var originalUICulture = CultureInfo.CurrentUICulture;
+        var originalUiCulture = CultureInfo.CurrentUICulture;
         try
         {
             CultureInfo.CurrentCulture = CultureInfo.InvariantCulture;
@@ -119,7 +119,7 @@ public class CsvOutputGoldenTests
         finally
         {
             CultureInfo.CurrentCulture = originalCulture;
-            CultureInfo.CurrentUICulture = originalUICulture;
+            CultureInfo.CurrentUICulture = originalUiCulture;
         }
     }
 

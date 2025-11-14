@@ -13,7 +13,7 @@ namespace Sailfish.Diagnostics.Environment;
 
 public class EnvironmentHealthChecker : IEnvironmentHealthChecker
 {
-    private readonly ITimerCalibrationResultProvider? timerProvider;
+    private readonly ITimerCalibrationResultProvider? _timerProvider;
 
     public EnvironmentHealthChecker()
     {
@@ -21,7 +21,7 @@ public class EnvironmentHealthChecker : IEnvironmentHealthChecker
 
     public EnvironmentHealthChecker(ITimerCalibrationResultProvider timerProvider)
     {
-        this.timerProvider = timerProvider;
+        this._timerProvider = timerProvider;
     }
 
     public async Task<EnvironmentHealthReport> CheckAsync(EnvironmentHealthCheckContext? context = null, CancellationToken cancellationToken = default)
@@ -40,7 +40,7 @@ public class EnvironmentHealthChecker : IEnvironmentHealthChecker
         // If we have timer calibration results, include Timer Jitter entry
         try
         {
-            var jitter = CheckTimerJitterFromCalibration(timerProvider);
+            var jitter = CheckTimerJitterFromCalibration(_timerProvider);
             if (jitter is not null) entries.Add(jitter);
         }
         catch { /* best-effort */ }
@@ -379,8 +379,7 @@ public class EnvironmentHealthChecker : IEnvironmentHealthChecker
             {
                 HealthStatus.Pass => null,
                 HealthStatus.Warn => "Reduce background noise: close apps, pin to 1 core, use High Performance power plan",
-                HealthStatus.Fail => "Environment jitter is high. Close background tasks, disable power saving, pin CPU affinity, and retry",
-                _ => null
+                HealthStatus.Fail => "Environment jitter is high. Close background tasks, disable power saving, pin CPU affinity, and retry"
             };
             return new("Timer Jitter", status, details, rec);
         }

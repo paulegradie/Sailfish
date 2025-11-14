@@ -8,11 +8,11 @@ namespace Tests.E2E.TestSuite.Discoverable;
 [Sailfish(SampleSize = 1, NumWarmupIterations = 1, Disabled = Constants.Disabled)]
 public class PerfTestWithAltRego
 {
-    private readonly ExampleDependencyForAltRego dep;
+    private readonly ExampleDependencyForAltRego _dep;
 
     public PerfTestWithAltRego(ExampleDependencyForAltRego dep)
     {
-        this.dep = dep;
+        this._dep = dep;
     }
 
     [SailfishVariable(1, 2)]

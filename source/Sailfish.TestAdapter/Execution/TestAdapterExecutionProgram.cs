@@ -18,11 +18,11 @@ public interface ITestAdapterExecutionProgram
 
 internal class TestAdapterExecutionProgram : ITestAdapterExecutionProgram
 {
-    private readonly ILogger logger;
-    private readonly IMediator mediator;
-    private readonly ISailfishConsoleWindowFormatter sailfishConsoleWindowFormatter;
-    private readonly ITestAdapterExecutionEngine testAdapterExecutionEngine;
-    private readonly ITestCaseCountPrinter testCaseCountPrinter;
+    private readonly ILogger _logger;
+    private readonly IMediator _mediator;
+    private readonly ISailfishConsoleWindowFormatter _sailfishConsoleWindowFormatter;
+    private readonly ITestAdapterExecutionEngine _testAdapterExecutionEngine;
+    private readonly ITestCaseCountPrinter _testCaseCountPrinter;
 
     public TestAdapterExecutionProgram(
         IRunSettings runSettings,
@@ -32,26 +32,26 @@ internal class TestAdapterExecutionProgram : ITestAdapterExecutionProgram
         ISailfishConsoleWindowFormatter sailfishConsoleWindowFormatter,
         ITestCaseCountPrinter testCaseCountPrinter)
     {
-        this.testAdapterExecutionEngine = testAdapterExecutionEngine;
-        this.mediator = mediator;
-        this.logger = logger;
-        this.sailfishConsoleWindowFormatter = sailfishConsoleWindowFormatter;
-        this.testCaseCountPrinter = testCaseCountPrinter;
+        this._testAdapterExecutionEngine = testAdapterExecutionEngine;
+        this._mediator = mediator;
+        this._logger = logger;
+        this._sailfishConsoleWindowFormatter = sailfishConsoleWindowFormatter;
+        this._testCaseCountPrinter = testCaseCountPrinter;
     }
 
     public async Task Run(List<TestCase> testCases, CancellationToken cancellationToken)
     {
         if (testCases.Count == 0)
         {
-            logger.Log(LogLevel.Information, "No Sailfish tests were discovered");
+            _logger.Log(LogLevel.Information, "No Sailfish tests were discovered");
             return;
         }
 
-        testCaseCountPrinter.SetTestCaseTotal(testCases.Count);
-        testCaseCountPrinter.PrintDiscoveredTotal();
+        _testCaseCountPrinter.SetTestCaseTotal(testCases.Count);
+        _testCaseCountPrinter.PrintDiscoveredTotal();
 
-        var executionSummaries = await testAdapterExecutionEngine.Execute(testCases, cancellationToken);
-        await mediator
+        var executionSummaries = await _testAdapterExecutionEngine.Execute(testCases, cancellationToken);
+        await _mediator
             .Publish(new TestRunCompletedNotification(executionSummaries.ToTrackingFormat()), cancellationToken)
             .ConfigureAwait(false);
     }

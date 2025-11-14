@@ -459,7 +459,7 @@ internal class MethodComparisonBatchProcessor
         };
 
         // Format using unified formatter for IDE context
-        var formattedOutput = _unifiedFormatter.Format(comparisonData, OutputContext.IDE);
+        var formattedOutput = _unifiedFormatter.Format(comparisonData, OutputContext.Ide);
 
         _logger.Log(LogLevel.Debug,
             "Unified formatter generated output for '{0}' vs '{1}'. Significance: {2}, Change: {3:F1}%",
@@ -516,10 +516,10 @@ internal class MethodComparisonBatchProcessor
     /// </summary>
     private void AccumulateComparisonOutput(TestCompletionQueueMessage method, string newComparisonOutput)
     {
-        const string ComparisonResultsKey = "AccumulatedComparisons";
+        const string comparisonResultsKey = "AccumulatedComparisons";
 
         // Get existing accumulated comparisons
-        if (method.Metadata.TryGetValue(ComparisonResultsKey, out var existingObj) &&
+        if (method.Metadata.TryGetValue(comparisonResultsKey, out var existingObj) &&
             existingObj is List<string> existingComparisons)
         {
             // Add the new comparison to the list
@@ -531,14 +531,14 @@ internal class MethodComparisonBatchProcessor
         else
         {
             // Create new list with the first comparison
-            method.Metadata[ComparisonResultsKey] = new List<string> { newComparisonOutput };
+            method.Metadata[comparisonResultsKey] = new List<string> { newComparisonOutput };
             _logger.Log(LogLevel.Debug,
                 "Created new comparison list for '{0}' with first comparison",
                 method.TestCaseId);
         }
 
         // Update the formatted message with all accumulated comparisons
-        var allComparisons = (List<string>)method.Metadata[ComparisonResultsKey];
+        var allComparisons = (List<string>)method.Metadata[comparisonResultsKey];
         var combinedOutput = string.Join("", allComparisons);
 
         // Check if there's any original non-comparison content to preserve
@@ -631,13 +631,13 @@ internal class MethodComparisonBatchProcessor
 
     private static void UpdatePairwisePValueMetadata(TestCompletionQueueMessage a, TestCompletionQueueMessage b, double pValue)
     {
-        const string Key = "PairwisePValues";
+        const string key = "PairwisePValues";
         static void Update(TestCompletionQueueMessage msg, string otherId, double p)
         {
-            if (!msg.Metadata.TryGetValue(Key, out var obj) || obj is not Dictionary<string, double> dict)
+            if (!msg.Metadata.TryGetValue(key, out var obj) || obj is not Dictionary<string, double> dict)
             {
                 dict = new Dictionary<string, double>(StringComparer.Ordinal);
-                msg.Metadata[Key] = dict;
+                msg.Metadata[key] = dict;
             }
             dict[otherId] = p;
         }

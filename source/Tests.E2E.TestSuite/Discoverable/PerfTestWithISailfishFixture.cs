@@ -9,11 +9,11 @@ namespace Tests.E2E.TestSuite.Discoverable;
 [Sailfish(SampleSize = 1, NumWarmupIterations = 1, Disabled = Constants.Disabled)]
 public class PerfTestWithISailfishFixture : ISailfishFixture<SailfishDependencies>
 {
-    private readonly SailfishDependencies sailfishDependencies;
+    private readonly SailfishDependencies _sailfishDependencies;
 
     public PerfTestWithISailfishFixture(SailfishDependencies sailfishDependencies)
     {
-        this.sailfishDependencies = sailfishDependencies;
+        this._sailfishDependencies = sailfishDependencies;
     }
 
     [SailfishVariable(1, 2, 3)]
@@ -22,14 +22,14 @@ public class PerfTestWithISailfishFixture : ISailfishFixture<SailfishDependencie
     [SailfishMethod]
     public async Task TestA(CancellationToken cancellationToken)
     {
-        sailfishDependencies.ResolveType<ExampleDep>();
+        _sailfishDependencies.ResolveType<ExampleDep>();
         await Task.Delay(10, cancellationToken);
     }
 
     [SailfishMethod]
     public async Task TestB(CancellationToken cancellationToken)
     {
-        sailfishDependencies.ResolveType<ExampleDep>();
+        _sailfishDependencies.ResolveType<ExampleDep>();
         await Task.Delay(14, cancellationToken);
     }
 }

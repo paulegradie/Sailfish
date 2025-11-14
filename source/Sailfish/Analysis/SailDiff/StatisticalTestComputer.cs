@@ -15,8 +15,8 @@ public interface IStatisticalTestComputer
 
 public class StatisticalTestComputer(IStatisticalTestExecutor statisticalTestExecutor, IPerformanceRunResultAggregator aggregator) : IStatisticalTestComputer
 {
-    private readonly IPerformanceRunResultAggregator aggregator = aggregator;
-    private readonly IStatisticalTestExecutor statisticalTestExecutor = statisticalTestExecutor;
+    private readonly IPerformanceRunResultAggregator _aggregator = aggregator;
+    private readonly IStatisticalTestExecutor _statisticalTestExecutor = statisticalTestExecutor;
 
     /// <summary>
     ///     Compute a statistical test using the given TestData and SailDiffSettings
@@ -45,14 +45,14 @@ public class StatisticalTestComputer(IStatisticalTestExecutor statisticalTestExe
             },
             testCaseId =>
             {
-                var afterCompiled = aggregator.Aggregate(
+                var afterCompiled = _aggregator.Aggregate(
                     testCaseId,
                     after
                         .Data
                         .Where(x => new TestCaseId(x.DisplayName).Equals(testCaseId))
                         .ToList());
 
-                var beforeCompiled = aggregator.Aggregate(
+                var beforeCompiled = _aggregator.Aggregate(
                     testCaseId,
                     before
                         .Data
@@ -63,7 +63,7 @@ public class StatisticalTestComputer(IStatisticalTestExecutor statisticalTestExe
 
                 if (beforeCompiled.AggregatedRawExecutionResults.Length < 3 || afterCompiled.AggregatedRawExecutionResults.Length < 3) return;
 
-                var result = statisticalTestExecutor.ExecuteStatisticalTest(
+                var result = _statisticalTestExecutor.ExecuteStatisticalTest(
                     beforeCompiled.AggregatedRawExecutionResults,
                     afterCompiled.AggregatedRawExecutionResults,
                     settings);

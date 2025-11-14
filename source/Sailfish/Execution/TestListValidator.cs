@@ -14,7 +14,7 @@ internal interface ITestListValidator
 
 internal class TestListValidator(ILogger logger) : ITestListValidator
 {
-    private readonly ILogger logger = logger;
+    private readonly ILogger _logger = logger;
 
     public TestInitializationResult ValidateTests(IEnumerable<string> testsRequestedByUser, IEnumerable<Type> filteredTestNames)
     {
@@ -24,7 +24,7 @@ internal class TestListValidator(ILogger logger) : ITestListValidator
 
         if (TestsAreRequestedButFailedToDisambiguate(requestedByUser, testClasses.Select(x => x.FullName ?? x.Name).ToArray(), out var missingTests))
         {
-            logger.Log(
+            _logger.Log(
                 LogLevel.Fatal,
                 "Failed to disambiguate the following tests: {Tests}",
                 requestedByUser.Where(x => !testClasses.Select(x => x.FullName ?? x.Name).Contains(x)));

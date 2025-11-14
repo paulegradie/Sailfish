@@ -11,7 +11,7 @@ public interface ITTest : ITest;
 
 public class Test(ITestPreprocessor preprocessor) : ITTest
 {
-    private readonly ITestPreprocessor preprocessor = preprocessor;
+    private readonly ITestPreprocessor _preprocessor = preprocessor;
 
     public TestResultWithOutlierAnalysis ExecuteTest(double[] before, double[] after, SailDiffSettings settings)
     {
@@ -19,8 +19,8 @@ public class Test(ITestPreprocessor preprocessor) : ITTest
 
         try
         {
-            var preprocessed1 = preprocessor.Preprocess(before, settings.UseOutlierDetection);
-            var preprocessed2 = preprocessor.Preprocess(after, settings.UseOutlierDetection);
+            var preprocessed1 = _preprocessor.Preprocess(before, settings.UseOutlierDetection);
+            var preprocessed2 = _preprocessor.Preprocess(after, settings.UseOutlierDetection);
             var sample1 = preprocessed1.OutlierAnalysis?.DataWithOutliersRemoved ?? preprocessed1.RawData;
             var sample2 = preprocessed2.OutlierAnalysis?.DataWithOutliersRemoved ?? preprocessed2.RawData;
 

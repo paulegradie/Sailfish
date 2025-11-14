@@ -4,18 +4,18 @@ namespace Tests.Common.Builders;
 
 public class PerformanceRunResultTrackingFormatBuilder
 {
-    private double[]? dataWithOutliersRemoved;
-    private string? displayName;
-    private double[]? lowerOutliers;
-    private double? mean;
-    private double? median;
-    private int? numWarmupIterations;
-    private double[]? rawExecutionResults;
-    private int? sampleSize;
-    private double? stdDev;
-    private int? totalNumOutliers;
-    private double[]? upperOutliers;
-    private double? variance;
+    private double[]? _dataWithOutliersRemoved;
+    private string? _displayName;
+    private double[]? _lowerOutliers;
+    private double? _mean;
+    private double? _median;
+    private int? _numWarmupIterations;
+    private double[]? _rawExecutionResults;
+    private int? _sampleSize;
+    private double? _stdDev;
+    private int? _totalNumOutliers;
+    private double[]? _upperOutliers;
+    private double? _variance;
 
     public static PerformanceRunResultTrackingFormatBuilder Create()
     {
@@ -24,91 +24,91 @@ public class PerformanceRunResultTrackingFormatBuilder
 
     public PerformanceRunResultTrackingFormatBuilder WithDisplayName(string displayName)
     {
-        this.displayName = displayName;
+        this._displayName = displayName;
         return this;
     }
 
     public PerformanceRunResultTrackingFormatBuilder WithMean(double mean)
     {
-        this.mean = mean;
+        this._mean = mean;
         return this;
     }
 
     public PerformanceRunResultTrackingFormatBuilder WithMedian(double median)
     {
-        this.median = median;
+        this._median = median;
         return this;
     }
 
     public PerformanceRunResultTrackingFormatBuilder WithStdDev(double stdDev)
     {
-        this.stdDev = stdDev;
+        this._stdDev = stdDev;
         return this;
     }
 
     public PerformanceRunResultTrackingFormatBuilder WithVariance(double variance)
     {
-        this.variance = variance;
+        this._variance = variance;
         return this;
     }
 
     public PerformanceRunResultTrackingFormatBuilder WithRawExecutionResults(double[] rawExecutionResults)
     {
-        this.rawExecutionResults = rawExecutionResults;
+        this._rawExecutionResults = rawExecutionResults;
         return this;
     }
 
     public PerformanceRunResultTrackingFormatBuilder WithSampleSize(int sampleSize)
     {
-        this.sampleSize = sampleSize;
+        this._sampleSize = sampleSize;
         return this;
     }
 
     public PerformanceRunResultTrackingFormatBuilder WithNumWarmupIterations(int numWarmupIterations)
     {
-        this.numWarmupIterations = numWarmupIterations;
+        this._numWarmupIterations = numWarmupIterations;
         return this;
     }
 
     public PerformanceRunResultTrackingFormatBuilder WithDataWithOutliersRemoved(double[] dataWithOutliersRemoved)
     {
-        this.dataWithOutliersRemoved = dataWithOutliersRemoved;
+        this._dataWithOutliersRemoved = dataWithOutliersRemoved;
         return this;
     }
 
     public PerformanceRunResultTrackingFormatBuilder WithLowerOutliers(double[] lowerOutliers)
     {
-        this.lowerOutliers = lowerOutliers;
+        this._lowerOutliers = lowerOutliers;
         return this;
     }
 
     public PerformanceRunResultTrackingFormatBuilder WithUpperOutliers(double[] upperOutliers)
     {
-        this.upperOutliers = upperOutliers;
+        this._upperOutliers = upperOutliers;
         return this;
     }
 
     public PerformanceRunResultTrackingFormatBuilder WithTotalNumOutliers(int totalNumOutliers)
     {
-        this.totalNumOutliers = totalNumOutliers;
+        this._totalNumOutliers = totalNumOutliers;
         return this;
     }
 
     public PerformanceRunResultTrackingFormat Build()
     {
         return new PerformanceRunResultTrackingFormat(
-            displayName ?? TestCaseIdBuilder.Create().Build().DisplayName,
-            mean ?? 5.0,
-            median ?? 4.0,
-            stdDev ?? 2.0,
-            variance ?? 12.0,
-            rawExecutionResults ?? [1.0, 2, 4, 7, 8],
-            sampleSize ?? 3,
-            numWarmupIterations ?? 1,
-            dataWithOutliersRemoved ?? [1.0, 2, 4, 7, 8],
-            upperOutliers ?? [],
-            lowerOutliers ?? [],
-            totalNumOutliers ?? 0
+            _displayName ?? TestCaseIdBuilder.Create().Build().DisplayName,
+            _mean ?? 5.0,
+            _median ?? 4.0,
+            _stdDev ?? 2.0,
+            _variance ?? 12.0,
+            _rawExecutionResults ?? [1.0, 2, 4, 7, 8],
+            _sampleSize ?? 3,
+            _numWarmupIterations ?? 1,
+            _dataWithOutliersRemoved ?? [1.0, 2, 4, 7, 8],
+            _upperOutliers ?? [],
+            _lowerOutliers ?? [],
+            _totalNumOutliers ?? 0
         );
     }
 }

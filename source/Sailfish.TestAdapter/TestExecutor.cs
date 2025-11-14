@@ -31,20 +31,20 @@ public class TestExecutor : ITestExecutor
 {
     public const string ExecutorUriString = "executor://sailfishexecutor/v1";
     public static readonly Uri ExecutorUri = new(ExecutorUriString);
-    private readonly CancellationTokenSource cancellationTokenSource = new();
+    private readonly CancellationTokenSource _cancellationTokenSource = new();
 
-    private readonly object lockObject = new();
-    private readonly ITestExecution testExecution;
+    private readonly object _lockObject = new();
+    private readonly ITestExecution _testExecution;
     public bool Cancelled;
 
     public TestExecutor()
     {
-        testExecution = new TestExecution();
+        _testExecution = new TestExecution();
     }
 
     public TestExecutor(ITestExecution testExecution)
     {
-        this.testExecution = testExecution;
+        this._testExecution = testExecution;
     }
 
     public void RunTests(IEnumerable<string>? sources, IRunContext? runContext, IFrameworkHandle? frameworkHandle)
@@ -71,13 +71,13 @@ public class TestExecutor : ITestExecutor
 
     public void Cancel()
     {
-        lock (lockObject)
+        lock (_lockObject)
         {
-            cancellationTokenSource.Cancel();
+            _cancellationTokenSource.Cancel();
             Cancelled = true;
         }
 
-        cancellationTokenSource.Dispose();
+        _cancellationTokenSource.Dispose();
     }
 
     private void ExecuteTests(List<TestCase> testCases, IFrameworkHandle frameworkHandle)
@@ -95,8 +95,8 @@ public class TestExecutor : ITestExecutor
                     builder,
                     new[] { refTestType },
                     new[] { refTestType },
-                    cancellationTokenSource.Token)
-                .Wait(cancellationTokenSource.Token);
+                    _cancellationTokenSource.Token)
+                .Wait(_cancellationTokenSource.Token);
         }
         catch (Exception ex)
         {
@@ -122,7 +122,7 @@ public class TestExecutor : ITestExecutor
                         var timerProv = container.ResolveOptional<Sailfish.Execution.ITimerCalibrationResultProvider>();
                         if (timerSvc != null && timerProv != null)
                         {
-                            var calib = timerSvc.CalibrateAsync(cancellationTokenSource.Token)
+                            var calib = timerSvc.CalibrateAsync(_cancellationTokenSource.Token)
                                 .ConfigureAwait(false)
                                 .GetAwaiter()
                                 .GetResult();
@@ -148,7 +148,7 @@ public class TestExecutor : ITestExecutor
                     if (runner != null)
                     {
                         var ctx = new EnvironmentHealthCheckContext { TestAssemblyPath = testCases.FirstOrDefault()?.Source };
-                        var result = runner.RunAsync(ctx, cancellationTokenSource.Token)
+                        var result = runner.RunAsync(ctx, _cancellationTokenSource.Token)
                             .ConfigureAwait(false)
                             .GetAwaiter()
                             .GetResult();
@@ -182,7 +182,7 @@ public class TestExecutor : ITestExecutor
                             {
                                 var timerProv = container.ResolveOptional<Sailfish.Execution.ITimerCalibrationResultProvider>();
                                 var calib = timerProv?.Current;
-                                if (manifestProvider.Current != null && calib != null)
+                                if (manifestProvider != null && manifestProvider.Current != null && calib != null)
                                 {
                                     manifestProvider.Current.TimerCalibration = ReproducibilityManifest.TimerCalibrationSnapshot.From(calib);
                                 }
@@ -203,7 +203,7 @@ public class TestExecutor : ITestExecutor
             StartQueueServices(container);
 
             // Execute tests
-            testExecution.ExecuteTests(testCases, container, frameworkHandle, cancellationTokenSource.Token);
+            _testExecution.ExecuteTests(testCases, container, frameworkHandle, _cancellationTokenSource.Token);
         }
         catch (Exception ex)
         {
@@ -261,7 +261,7 @@ public class TestExecutor : ITestExecutor
     {
         try
         {
-            StartQueueServicesAsync(container, cancellationTokenSource.Token)
+            StartQueueServicesAsync(container, _cancellationTokenSource.Token)
                 .ConfigureAwait(false)
                 .GetAwaiter()
                 .GetResult();
@@ -290,7 +290,7 @@ public class TestExecutor : ITestExecutor
     {
         try
         {
-            StopQueueServicesAsync(container, cancellationTokenSource.Token)
+            StopQueueServicesAsync(container, _cancellationTokenSource.Token)
                 .ConfigureAwait(false)
                 .GetAwaiter()
                 .GetResult();

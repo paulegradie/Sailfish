@@ -14,8 +14,8 @@ namespace Sailfish.Execution;
 /// </summary>
 internal class AdaptiveIterationStrategy : IIterationStrategy
 {
-    private readonly ILogger logger;
-    private readonly IStatisticalConvergenceDetector convergenceDetector;
+    private readonly ILogger _logger;
+    private readonly IStatisticalConvergenceDetector _convergenceDetector;
 
     /// <summary>
     /// Initializes a new instance of the AdaptiveIterationStrategy class.
@@ -26,8 +26,8 @@ internal class AdaptiveIterationStrategy : IIterationStrategy
         ILogger logger,
         IStatisticalConvergenceDetector convergenceDetector)
     {
-        this.logger = logger;
-        this.convergenceDetector = convergenceDetector;
+        this._logger = logger;
+        this._convergenceDetector = convergenceDetector;
     }
 
     /// <summary>
@@ -44,7 +44,7 @@ internal class AdaptiveIterationStrategy : IIterationStrategy
     {
         var minIterations = executionSettings.MinimumSampleSize;
         var maxIterations = executionSettings.MaximumSampleSize;
-        var targetCV = executionSettings.TargetCoefficientOfVariation;
+        var targetCv = executionSettings.TargetCoefficientOfVariation;
         var confidenceLevel = executionSettings.ConfidenceLevel;
         var maxCiWidth = executionSettings.MaxConfidenceIntervalWidth;
         var effectiveMin = minIterations;
@@ -63,7 +63,7 @@ internal class AdaptiveIterationStrategy : IIterationStrategy
                 var elapsed = DateTimeOffset.Now - testStart;
                 if (elapsed >= timeBudget.Value)
                 {
-                    logger.Log(LogLevel.Warning,
+                    _logger.Log(LogLevel.Warning,
                         "      ---- Stopping early: MaxMeasurementTimePerMethod {MaxMs} ms exceeded after {ElapsedMs} ms during minimum phase",
                         timeBudget.Value.TotalMilliseconds, elapsed.TotalMilliseconds);
                     return new IterationResult
@@ -76,7 +76,7 @@ internal class AdaptiveIterationStrategy : IIterationStrategy
                 }
             }
 
-            logger.Log(LogLevel.Information,
+            _logger.Log(LogLevel.Information,
                 "      ---- iteration {CurrentIteration} (minimum phase)",
                 iteration + 1);
 
@@ -104,13 +104,13 @@ internal class AdaptiveIterationStrategy : IIterationStrategy
         {
             var selector = new AdaptiveParameterSelector();
             var selected = selector.Select(initialSamples, executionSettings);
-            targetCV = selected.TargetCoefficientOfVariation;
+            targetCv = selected.TargetCoefficientOfVariation;
             maxCiWidth = selected.MaxConfidenceIntervalWidth;
             effectiveMin = Math.Max(minIterations, selected.RecommendedMinimumSampleSize);
-            logger.Log(LogLevel.Information, "      ---- Adaptive tuning: {Category} -> MinN={MinN}, TargetCV={TargetCV:F3}, MaxCI={MaxCI:F3}", selected.Category, effectiveMin, targetCV, maxCiWidth);
+            _logger.Log(LogLevel.Information, "      ---- Adaptive tuning: {Category} -> MinN={MinN}, TargetCV={TargetCV:F3}, MaxCI={MaxCI:F3}", selected.Category, effectiveMin, targetCv, maxCiWidth);
             if (!string.IsNullOrWhiteSpace(selected.SelectionReason))
             {
-                logger.Log(LogLevel.Information, "      ---- Reason: {SelectionReason}", selected.SelectionReason);
+                _logger.Log(LogLevel.Information, "      ---- Reason: {SelectionReason}", selected.SelectionReason);
             }
         }
         catch
@@ -124,12 +124,12 @@ internal class AdaptiveIterationStrategy : IIterationStrategy
             {
                 var controller = new PrecisionTimeBudgetController();
                 var adjusted = controller.Adjust(initialSamples, executionSettings, testStart, DateTimeOffset.Now);
-                if (adjusted.TargetCV > targetCV || adjusted.MaxConfidenceIntervalWidth > maxCiWidth)
+                if (adjusted.TargetCV > targetCv || adjusted.MaxConfidenceIntervalWidth > maxCiWidth)
                 {
-                    logger.Log(LogLevel.Information,
+                    _logger.Log(LogLevel.Information,
                         "      ---- Budget controller: remaining={RemainingMs:F1}ms, est/iter={PerIterMs:F2}ms, TargetCV {OldCv:F3}->{NewCv:F3}, MaxCI {OldCi:F3}->{NewCi:F3}",
-                        adjusted.RemainingMs, adjusted.PerIterMs, targetCV, adjusted.TargetCV, maxCiWidth, adjusted.MaxConfidenceIntervalWidth);
-                    targetCV = adjusted.TargetCV;
+                        adjusted.RemainingMs, adjusted.PerIterMs, targetCv, adjusted.TargetCV, maxCiWidth, adjusted.MaxConfidenceIntervalWidth);
+                    targetCv = adjusted.TargetCV;
                     maxCiWidth = adjusted.MaxConfidenceIntervalWidth;
                 }
             }
@@ -138,12 +138,12 @@ internal class AdaptiveIterationStrategy : IIterationStrategy
                 // Best-effort; ignore controller failures
             }
 
-        convergenceResult = convergenceDetector.CheckConvergence(
-            initialSamples, targetCV, maxCiWidth, confidenceLevel, effectiveMin);
+        convergenceResult = _convergenceDetector.CheckConvergence(
+            initialSamples, targetCv, maxCiWidth, confidenceLevel, effectiveMin);
 
         if (convergenceResult.HasConverged)
         {
-            logger.Log(LogLevel.Information,
+            _logger.Log(LogLevel.Information,
                 "      ---- Converged after {TotalIterations} iterations: {Reason}",
                 iteration, convergenceResult.Reason);
         }
@@ -157,7 +157,7 @@ internal class AdaptiveIterationStrategy : IIterationStrategy
                     var elapsed = DateTimeOffset.Now - testStart;
                     if (elapsed >= timeBudget.Value)
                     {
-                        logger.Log(LogLevel.Warning,
+                        _logger.Log(LogLevel.Warning,
                             "      ---- Stopping early: MaxMeasurementTimePerMethod {MaxMs} ms exceeded after {ElapsedMs} ms",
                             timeBudget.Value.TotalMilliseconds, elapsed.TotalMilliseconds);
                         return new IterationResult
@@ -170,9 +170,9 @@ internal class AdaptiveIterationStrategy : IIterationStrategy
                     }
                 }
 
-                logger.Log(LogLevel.Information,
+                _logger.Log(LogLevel.Information,
                     "      ---- iteration {CurrentIteration} (CV: {CurrentCV:F4}, target: {TargetCV:F4})",
-                    iteration + 1, convergenceResult.CurrentCoefficientOfVariation, targetCV);
+                    iteration + 1, convergenceResult.CurrentCoefficientOfVariation, targetCv);
 
                 try
                 {
@@ -191,12 +191,12 @@ internal class AdaptiveIterationStrategy : IIterationStrategy
 
                 // Re-evaluate convergence on the latest samples (including the last allowed iteration)
                 var currentSamples = GetCurrentSamples(testInstanceContainer);
-                convergenceResult = convergenceDetector.CheckConvergence(
-                    currentSamples, targetCV, maxCiWidth, confidenceLevel, effectiveMin);
+                convergenceResult = _convergenceDetector.CheckConvergence(
+                    currentSamples, targetCv, maxCiWidth, confidenceLevel, effectiveMin);
 
                 if (convergenceResult.HasConverged)
                 {
-                    logger.Log(LogLevel.Information,
+                    _logger.Log(LogLevel.Information,
                         "      ---- Converged after {TotalIterations} iterations: {Reason}",
                         iteration, convergenceResult.Reason);
                     break;
@@ -208,7 +208,7 @@ internal class AdaptiveIterationStrategy : IIterationStrategy
 
         if (convergenceResult?.HasConverged != true && iteration >= maxIterations)
         {
-            logger.Log(LogLevel.Warning,
+            _logger.Log(LogLevel.Warning,
                 "      ---- Reached maximum iterations ({MaxIterations}) without convergence. CV: {CurrentCV:F4}",
                 maxIterations, convergenceResult?.CurrentCoefficientOfVariation ?? 0);
         }

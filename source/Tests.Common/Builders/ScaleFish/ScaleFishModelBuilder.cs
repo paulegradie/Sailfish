@@ -9,42 +9,42 @@ public class ScaleFishModelBuilder :
     ScaleFishModelBuilder.IHaveSecondaryFunction,
     ScaleFishModelBuilder.IHaveSecondaryGoodnessOfFit
 {
-    private ScaleFishModelFunction? primaryFunction;
-    private double? primaryGoodnessOfFit;
-    private ScaleFishModelFunction? secondaryFunction;
-    private double? secondaryGoodnessOfFit;
+    private ScaleFishModelFunction? _primaryFunction;
+    private double? _primaryGoodnessOfFit;
+    private ScaleFishModelFunction? _secondaryFunction;
+    private double? _secondaryGoodnessOfFit;
 
 
     public IHavePrimaryGoodnessOfFit AddPrimaryFunction(ScaleFishModelFunction function)
     {
-        primaryFunction = function;
+        _primaryFunction = function;
         return this;
     }
 
     public ScaleFishModel Build()
     {
         return new ScaleFishModel(
-            primaryFunction ?? new Linear(),
-            primaryGoodnessOfFit ?? 0.98,
-            secondaryFunction ?? new Quadratic(),
-            secondaryGoodnessOfFit ?? 0.95);
+            _primaryFunction ?? new Linear(),
+            _primaryGoodnessOfFit ?? 0.98,
+            _secondaryFunction ?? new Quadratic(),
+            _secondaryGoodnessOfFit ?? 0.95);
     }
 
     public IHaveSecondaryFunction SetPrimaryGoodnessOfFit(double goodnessOfFit)
     {
-        primaryGoodnessOfFit = goodnessOfFit;
+        _primaryGoodnessOfFit = goodnessOfFit;
         return this;
     }
 
     public IHaveSecondaryGoodnessOfFit AddSecondaryFunction(ScaleFishModelFunction function)
     {
-        secondaryFunction = function;
+        _secondaryFunction = function;
         return this;
     }
 
     public IHaveSecondaryGoodnessOfFit SetSecondaryGoodnessOfFit(double goodnessOfFit)
     {
-        secondaryGoodnessOfFit = goodnessOfFit;
+        _secondaryGoodnessOfFit = goodnessOfFit;
         return this;
     }
 

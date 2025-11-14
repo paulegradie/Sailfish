@@ -91,8 +91,8 @@ public sealed class EmptyLoopBodyCodeFixProvider : CodeFixProvider
     {
         if (originalBody is BlockSyntax block)
         {
-            // If it's an empty block, add consume; else append
-            return block.Statements.Count == 0 ? block.AddStatements(consumeStmt) : block.AddStatements(consumeStmt);
+            // Add consume statement to the block
+            return block.AddStatements(consumeStmt);
         }
 
         // Replace empty statement or single statement with a new block containing the consume call and the original if not empty

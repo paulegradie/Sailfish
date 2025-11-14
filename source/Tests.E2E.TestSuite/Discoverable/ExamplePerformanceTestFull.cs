@@ -14,11 +14,11 @@ namespace Tests.E2E.TestSuite.Discoverable;
 [Sailfish(1, 0, Disabled = Constants.Disabled)]
 public class ExamplePerformanceTestFull : TestBase
 {
-    private readonly ILogger logger;
+    private readonly ILogger _logger;
 
     public ExamplePerformanceTestFull(WebApplicationFactory<DemoApp> factory, ILogger logger) : base(factory)
     {
-        this.logger = logger;
+        this._logger = logger;
     }
 
     [SailfishVariable(200, 300)]

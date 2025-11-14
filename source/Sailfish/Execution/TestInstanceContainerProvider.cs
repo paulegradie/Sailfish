@@ -18,9 +18,9 @@ internal interface ITestInstanceContainerProvider
 
 internal class TestInstanceContainerProvider : ITestInstanceContainerProvider
 {
-    private readonly IEnumerable<PropertySet> propertySets;
-    private readonly IRunSettings runSettings;
-    private readonly ITypeActivator typeActivator;
+    private readonly IEnumerable<PropertySet> _propertySets;
+    private readonly IRunSettings _runSettings;
+    private readonly ITypeActivator _typeActivator;
 
     public TestInstanceContainerProvider(
         IRunSettings runSettings,
@@ -31,9 +31,9 @@ internal class TestInstanceContainerProvider : ITestInstanceContainerProvider
     {
         Method = method;
         Test = test;
-        this.propertySets = propertySets;
-        this.runSettings = runSettings;
-        this.typeActivator = typeActivator;
+        this._propertySets = propertySets;
+        this._runSettings = runSettings;
+        this._typeActivator = typeActivator;
     }
 
     public MethodInfo Method { get; }
@@ -42,7 +42,7 @@ internal class TestInstanceContainerProvider : ITestInstanceContainerProvider
 
     public int GetNumberOfPropertySetsInTheQueue()
     {
-        return propertySets.Count();
+        return _propertySets.Count();
     }
 
     public IEnumerable<TestInstanceContainer> ProvideNextTestCaseEnumeratorForClass()
@@ -51,39 +51,39 @@ internal class TestInstanceContainerProvider : ITestInstanceContainerProvider
         if (GetNumberOfPropertySetsInTheQueue() is 0)
         {
             var testCaseId = DisplayNameHelper.CreateTestCaseId(Test, Method.Name, [], []); // a uniq id
-            var instance = typeActivator.CreateDehydratedTestInstance(Test, testCaseId, disabled);
+            var instance = _typeActivator.CreateDehydratedTestInstance(Test, testCaseId, disabled);
             var executionSettings = instance.GetType().RetrieveExecutionTestSettings(
-                runSettings.SampleSizeOverride,
-                runSettings.NumWarmupIterationsOverride,
-                runSettings.GlobalUseAdaptiveSampling,
-                runSettings.GlobalTargetCoefficientOfVariation,
-                runSettings.GlobalMaximumSampleSize,
-                runSettings.GlobalUseConfigurableOutlierDetection,
-                runSettings.GlobalOutlierStrategy);
-            var seed = TryParseSeed(runSettings.Args);
+                _runSettings.SampleSizeOverride,
+                _runSettings.NumWarmupIterationsOverride,
+                _runSettings.GlobalUseAdaptiveSampling,
+                _runSettings.GlobalTargetCoefficientOfVariation,
+                _runSettings.GlobalMaximumSampleSize,
+                _runSettings.GlobalUseConfigurableOutlierDetection,
+                _runSettings.GlobalOutlierStrategy);
+            var seed = TryParseSeed(_runSettings.Args);
             if (seed.HasValue) executionSettings.Seed = seed;
             yield return TestInstanceContainer.CreateTestInstance(instance, Method, [], [], disabled, executionSettings);
         }
         else
         {
-            foreach (var nextPropertySet in propertySets)
+            foreach (var nextPropertySet in _propertySets)
             {
                 var propertyNames = nextPropertySet.GetPropertyNames().ToArray();
                 var variableValues = nextPropertySet.GetPropertyValues().ToArray();
                 var testCaseId = DisplayNameHelper.CreateTestCaseId(Test, Method.Name, propertyNames, variableValues); // a uniq id
 
-                var instance = typeActivator.CreateDehydratedTestInstance(Test, testCaseId, disabled);
+                var instance = _typeActivator.CreateDehydratedTestInstance(Test, testCaseId, disabled);
                 HydrateInstanceTestProperties(instance, nextPropertySet);
 
                 var executionSettings = instance.GetType().RetrieveExecutionTestSettings(
-                    runSettings.SampleSizeOverride,
-                    runSettings.NumWarmupIterationsOverride,
-                    runSettings.GlobalUseAdaptiveSampling,
-                    runSettings.GlobalTargetCoefficientOfVariation,
-                    runSettings.GlobalMaximumSampleSize,
-                    runSettings.GlobalUseConfigurableOutlierDetection,
-                    runSettings.GlobalOutlierStrategy);
-                var seed = TryParseSeed(runSettings.Args);
+                    _runSettings.SampleSizeOverride,
+                    _runSettings.NumWarmupIterationsOverride,
+                    _runSettings.GlobalUseAdaptiveSampling,
+                    _runSettings.GlobalTargetCoefficientOfVariation,
+                    _runSettings.GlobalMaximumSampleSize,
+                    _runSettings.GlobalUseConfigurableOutlierDetection,
+                    _runSettings.GlobalOutlierStrategy);
+                var seed = TryParseSeed(_runSettings.Args);
                 if (seed.HasValue) executionSettings.Seed = seed;
                 yield return TestInstanceContainer.CreateTestInstance(instance, Method, propertyNames, variableValues, disabled, executionSettings);
             }

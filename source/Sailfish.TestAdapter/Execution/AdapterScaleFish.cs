@@ -18,11 +18,11 @@ internal interface IAdapterScaleFish : IScaleFishInternal
 
 internal class AdapterScaleFish : IAdapterScaleFish
 {
-    private readonly IComplexityComputer complexityComputer;
-    private readonly ILogger logger;
-    private readonly IMarkdownTableConverter markdownTableConverter;
-    private readonly IMediator mediator;
-    private readonly IRunSettings runSettings;
+    private readonly IComplexityComputer _complexityComputer;
+    private readonly ILogger _logger;
+    private readonly IMarkdownTableConverter _markdownTableConverter;
+    private readonly IMediator _mediator;
+    private readonly IRunSettings _runSettings;
 
     public AdapterScaleFish(
         IMediator mediator,
@@ -31,33 +31,33 @@ internal class AdapterScaleFish : IAdapterScaleFish
         IMarkdownTableConverter markdownTableConverter,
         ILogger logger)
     {
-        this.mediator = mediator;
-        this.runSettings = runSettings;
-        this.complexityComputer = complexityComputer;
-        this.markdownTableConverter = markdownTableConverter;
-        this.logger = logger;
+        this._mediator = mediator;
+        this._runSettings = runSettings;
+        this._complexityComputer = complexityComputer;
+        this._markdownTableConverter = markdownTableConverter;
+        this._logger = logger;
     }
 
     public async Task Analyze(CancellationToken cancellationToken)
     {
-        if (!runSettings.RunScaleFish) return;
+        if (!_runSettings.RunScaleFish) return;
 
-        var response = await mediator.Send(new GetLatestExecutionSummaryRequest(), cancellationToken);
+        var response = await _mediator.Send(new GetLatestExecutionSummaryRequest(), cancellationToken);
         var executionSummaries = response.LatestExecutionSummaries;
         if (!executionSummaries.Any()) return;
 
         try
         {
-            var complexityResults = complexityComputer.AnalyzeComplexity(executionSummaries).ToList();
+            var complexityResults = _complexityComputer.AnalyzeComplexity(executionSummaries).ToList();
             if (!complexityResults.Any()) return;
 
-            var complexityMarkdown = markdownTableConverter.ConvertScaleFishResultToMarkdown(complexityResults);
-            logger.Log(LogLevel.Information, complexityMarkdown);
-            await mediator.Publish(new ScaleFishAnalysisCompleteNotification(complexityMarkdown, complexityResults), cancellationToken);
+            var complexityMarkdown = _markdownTableConverter.ConvertScaleFishResultToMarkdown(complexityResults);
+            _logger.Log(LogLevel.Information, complexityMarkdown);
+            await _mediator.Publish(new ScaleFishAnalysisCompleteNotification(complexityMarkdown, complexityResults), cancellationToken);
         }
         catch (Exception ex)
         {
-            logger.Log(LogLevel.Error, ex.Message);
+            _logger.Log(LogLevel.Error, ex.Message);
         }
     }
 }

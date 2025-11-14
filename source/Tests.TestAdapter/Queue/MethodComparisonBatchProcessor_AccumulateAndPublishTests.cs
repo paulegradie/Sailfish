@@ -21,7 +21,7 @@ using Xunit;
 
 namespace Tests.TestAdapter.Queue;
 
-public class MethodComparisonBatchProcessor_AccumulateAndPublishTests
+public class MethodComparisonBatchProcessorAccumulateAndPublishTests
 {
     private readonly IAdapterSailDiff _sailDiff = Substitute.For<IAdapterSailDiff>();
     private readonly IMediator _mediator = Substitute.For<IMediator>();

@@ -12,7 +12,7 @@ namespace Sailfish.Execution;
 /// </summary>
 internal class FixedIterationStrategy : IIterationStrategy
 {
-    private readonly ILogger logger;
+    private readonly ILogger _logger;
 
     /// <summary>
     /// Initializes a new instance of the FixedIterationStrategy class.
@@ -20,7 +20,7 @@ internal class FixedIterationStrategy : IIterationStrategy
     /// <param name="logger">Logger for iteration progress</param>
     public FixedIterationStrategy(ILogger logger)
     {
-        this.logger = logger;
+        this._logger = logger;
     }
 
     /// <summary>
@@ -47,7 +47,7 @@ internal class FixedIterationStrategy : IIterationStrategy
                 var elapsed = DateTimeOffset.Now - testStart;
                 if (elapsed >= timeBudget.Value)
                 {
-                    logger.Log(LogLevel.Warning,
+                    _logger.Log(LogLevel.Warning,
                         "      ---- Stopping early: MaxMeasurementTimePerMethod {MaxMs} ms exceeded after {ElapsedMs} ms",
                         timeBudget.Value.TotalMilliseconds, elapsed.TotalMilliseconds);
                     return new IterationResult
@@ -60,7 +60,7 @@ internal class FixedIterationStrategy : IIterationStrategy
                 }
             }
 
-            logger.Log(LogLevel.Information,
+            _logger.Log(LogLevel.Information,
                 "      ---- iteration {CurrentIteration} of {TotalIterations}",
                 i + 1, iterations);
 

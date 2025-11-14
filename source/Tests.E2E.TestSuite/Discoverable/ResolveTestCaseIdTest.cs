@@ -8,33 +8,33 @@ namespace Tests.E2E.TestSuite.Discoverable;
 [Sailfish(3, 0, Disabled = Constants.Disabled)]
 public class ResolveTestCaseIdTest
 {
-    private readonly TestCaseId testCaseId;
+    private readonly TestCaseId _testCaseId;
 
     public ResolveTestCaseIdTest(TestCaseId testCaseId)
     {
-        this.testCaseId = testCaseId;
+        this._testCaseId = testCaseId;
     }
 
     [SailfishMethod]
     public void MainMethod()
     {
-        testCaseId.DisplayName.ShouldBe($"{nameof(ResolveTestCaseIdTest)}.{nameof(MainMethod)}()");
+        _testCaseId.DisplayName.ShouldBe($"{nameof(ResolveTestCaseIdTest)}.{nameof(MainMethod)}()");
     }
 }
 
 [Sailfish]
 public class ResolveTestCaseIdTestMultipleCtorArgs
 {
-    private readonly TestCaseId testCaseId;
+    private readonly TestCaseId _testCaseId;
 
     public ResolveTestCaseIdTestMultipleCtorArgs(ExampleDependencyForAltRego dep, TestCaseId testCaseId)
     {
-        this.testCaseId = testCaseId;
+        this._testCaseId = testCaseId;
     }
 
     [SailfishMethod]
     public void MainMethod()
     {
-        testCaseId.DisplayName.ShouldBe($"{nameof(ResolveTestCaseIdTestMultipleCtorArgs)}.{nameof(MainMethod)}()");
+        _testCaseId.DisplayName.ShouldBe($"{nameof(ResolveTestCaseIdTestMultipleCtorArgs)}.{nameof(MainMethod)}()");
     }
 }

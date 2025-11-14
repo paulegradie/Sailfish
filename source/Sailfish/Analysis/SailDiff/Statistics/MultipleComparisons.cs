@@ -53,7 +53,7 @@ namespace Sailfish.Analysis.SailDiff.Statistics
         /// ratio = meanB / meanA. CI computed on log scale using SEs, then exponentiated.
         /// If inputs are degenerate (means <= 0 or SEs not available), returns ratio with null CI.
         /// </summary>
-        public static (double Ratio, double? Lower, double? Upper) ComputeRatioCI(
+        public static (double Ratio, double? Lower, double? Upper) ComputeRatioCi(
             double meanA, double seA, int nA,
             double meanB, double seB, int nB,
             double confidenceLevel = 0.95)
@@ -96,7 +96,7 @@ namespace Sailfish.Analysis.SailDiff.Statistics
             return p;
         }
 
-        private static double SafeDiv(double a, double b) => (b == 0) ? 0 : a / b;
+        private static double SafeDiv(double a, double b) => Math.Abs(b) < double.Epsilon ? 0 : a / b;
         private static double Square(double x) => x * x;
     }
 }

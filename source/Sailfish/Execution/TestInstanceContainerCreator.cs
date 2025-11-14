@@ -22,20 +22,20 @@ internal class TestInstanceContainerCreator(
     ITypeActivator typeActivator,
     IPropertySetGenerator propertySetGenerator) : ITestInstanceContainerCreator
 {
-    private readonly IPropertySetGenerator propertySetGenerator = propertySetGenerator;
-    private readonly IRunSettings runSettings = runSettings;
-    private readonly ITypeActivator typeActivator = typeActivator;
+    private readonly IPropertySetGenerator _propertySetGenerator = propertySetGenerator;
+    private readonly IRunSettings _runSettings = runSettings;
+    private readonly ITypeActivator _typeActivator = typeActivator;
 
     public List<TestInstanceContainerProvider> CreateTestContainerInstanceProviders(
         Type testType,
         Func<PropertySet, bool>? propertyTensorFilter = null,
         Func<MethodInfo, bool>? instanceContainerFilter = null)
     {
-        var variableSets = propertySetGenerator.GenerateSailfishVariableSets(testType, out _);
+        var variableSets = _propertySetGenerator.GenerateSailfishVariableSets(testType, out _);
         if (propertyTensorFilter is not null) variableSets = variableSets.Where(propertyTensorFilter);
 
         // Determine optional randomization seed (global) for reproducible ordering
-        var seed = runSettings.Seed ?? SeedParser.TryParseSeed(runSettings.Args);
+        var seed = _runSettings.Seed ?? SeedParser.TryParseSeed(_runSettings.Args);
 
         // Randomize property set order if a seed is provided
         var variableSetsList = variableSets.ToList();
@@ -67,8 +67,8 @@ internal class TestInstanceContainerCreator(
 
         return sailfishMethods
             .Select(instanceContainer => new TestInstanceContainerProvider(
-                runSettings,
-                typeActivator,
+                _runSettings,
+                _typeActivator,
                 testType,
                 variableSetsList,
                 instanceContainer))

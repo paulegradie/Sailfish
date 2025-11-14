@@ -24,11 +24,11 @@ internal class ScaleFish(
     IMarkdownTableConverter markdownTableConverter,
     IConsoleWriter consoleWriter) : IScaleFish, IScaleFishInternal
 {
-    private readonly IComplexityComputer complexityComputer = complexityComputer;
-    private readonly IConsoleWriter consoleWriter = consoleWriter;
-    private readonly IMarkdownTableConverter markdownTableConverter = markdownTableConverter;
-    private readonly IMediator mediator = mediator;
-    private readonly IRunSettings runSettings = runSettings;
+    private readonly IComplexityComputer _complexityComputer = complexityComputer;
+    private readonly IConsoleWriter _consoleWriter = consoleWriter;
+    private readonly IMarkdownTableConverter _markdownTableConverter = markdownTableConverter;
+    private readonly IMediator _mediator = mediator;
+    private readonly IRunSettings _runSettings = runSettings;
 
     public void Analyze(ClassExecutionSummaryTrackingFormat summaryTrackingFormat)
     {
@@ -37,23 +37,23 @@ internal class ScaleFish(
 
     public async Task Analyze(CancellationToken cancellationToken)
     {
-        if (!runSettings.RunScaleFish) return;
+        if (!_runSettings.RunScaleFish) return;
 
-        var response = await mediator.Send(new GetLatestExecutionSummaryRequest(), cancellationToken);
+        var response = await _mediator.Send(new GetLatestExecutionSummaryRequest(), cancellationToken);
         var executionSummaries = response.LatestExecutionSummaries;
         if (!executionSummaries.Any()) return;
 
         try
         {
-            var complexityResults = complexityComputer.AnalyzeComplexity(executionSummaries).ToList();
-            var complexityMarkdown = markdownTableConverter.ConvertScaleFishResultToMarkdown(complexityResults);
-            consoleWriter.WriteString(complexityMarkdown);
+            var complexityResults = _complexityComputer.AnalyzeComplexity(executionSummaries).ToList();
+            var complexityMarkdown = _markdownTableConverter.ConvertScaleFishResultToMarkdown(complexityResults);
+            _consoleWriter.WriteString(complexityMarkdown);
 
-            await mediator.Publish(new ScaleFishAnalysisCompleteNotification(complexityMarkdown, complexityResults), cancellationToken).ConfigureAwait(false);
+            await _mediator.Publish(new ScaleFishAnalysisCompleteNotification(complexityMarkdown, complexityResults), cancellationToken).ConfigureAwait(false);
         }
         catch (Exception ex)
         {
-            consoleWriter.WriteString(ex.Message);
+            _consoleWriter.WriteString(ex.Message);
         }
     }
 }

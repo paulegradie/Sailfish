@@ -12,23 +12,23 @@ namespace Sailfish.DefaultHandlers.SailDiff;
 
 internal class SailDiffReadInBeforeAndAfterDataHandler : IRequestHandler<ReadInBeforeAndAfterDataRequest, ReadInBeforeAndAfterDataResponse>
 {
-    private readonly ILogger logger;
-    private readonly ITrackingFileParser trackingFileParser;
+    private readonly ILogger _logger;
+    private readonly ITrackingFileParser _trackingFileParser;
 
     public SailDiffReadInBeforeAndAfterDataHandler(ITrackingFileParser trackingFileParser, ILogger logger)
     {
-        this.trackingFileParser = trackingFileParser;
-        this.logger = logger;
+        this._trackingFileParser = trackingFileParser;
+        this._logger = logger;
     }
 
     public async Task<ReadInBeforeAndAfterDataResponse> Handle(ReadInBeforeAndAfterDataRequest request, CancellationToken cancellationToken)
     {
         var beforeData = new TrackingFileDataList();
-        if (!await trackingFileParser.TryParseMany(request.BeforeFilePaths, beforeData, cancellationToken).ConfigureAwait(false))
+        if (!await _trackingFileParser.TryParseMany(request.BeforeFilePaths, beforeData, cancellationToken).ConfigureAwait(false))
             return new ReadInBeforeAndAfterDataResponse(null, null);
 
         var afterData = new TrackingFileDataList();
-        if (!await trackingFileParser.TryParseMany(request.AfterFilePaths, afterData, cancellationToken).ConfigureAwait(false)) return new ReadInBeforeAndAfterDataResponse(null, null);
+        if (!await _trackingFileParser.TryParseMany(request.AfterFilePaths, afterData, cancellationToken).ConfigureAwait(false)) return new ReadInBeforeAndAfterDataResponse(null, null);
 
         if (!beforeData.Any() || !afterData.Any()) return new ReadInBeforeAndAfterDataResponse(null, null);
 

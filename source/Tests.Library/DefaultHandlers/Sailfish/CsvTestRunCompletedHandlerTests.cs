@@ -21,29 +21,29 @@ namespace Tests.Library.DefaultHandlers.Sailfish;
 
 public class CsvTestRunCompletedHandlerTests
 {
-    private readonly ILogger mockLogger;
-    private readonly IMediator mockMediator;
-    private readonly CsvTestRunCompletedHandler handler;
+    private readonly ILogger _mockLogger;
+    private readonly IMediator _mockMediator;
+    private readonly CsvTestRunCompletedHandler _handler;
 
     public CsvTestRunCompletedHandlerTests()
     {
-        mockLogger = Substitute.For<ILogger>();
-        mockMediator = Substitute.For<IMediator>();
-        handler = new CsvTestRunCompletedHandler(mockLogger, mockMediator);
+        _mockLogger = Substitute.For<ILogger>();
+        _mockMediator = Substitute.For<IMediator>();
+        _handler = new CsvTestRunCompletedHandler(_mockLogger, _mockMediator);
     }
 
     [Fact]
     public void Constructor_ThrowsArgumentNullException_WhenLoggerIsNull()
     {
         // Act & Assert
-        Should.Throw<ArgumentNullException>(() => new CsvTestRunCompletedHandler(null!, mockMediator));
+        Should.Throw<ArgumentNullException>(() => new CsvTestRunCompletedHandler(null!, _mockMediator));
     }
 
     [Fact]
     public void Constructor_ThrowsArgumentNullException_WhenMediatorIsNull()
     {
         // Act & Assert
-        Should.Throw<ArgumentNullException>(() => new CsvTestRunCompletedHandler(mockLogger, null!));
+        Should.Throw<ArgumentNullException>(() => new CsvTestRunCompletedHandler(_mockLogger, null!));
     }
 
     [Fact]
@@ -53,10 +53,10 @@ public class CsvTestRunCompletedHandlerTests
         var notification = CreateTestNotificationWithWriteToCsv();
 
         // Act
-        await handler.Handle(notification, CancellationToken.None);
+        await _handler.Handle(notification, CancellationToken.None);
 
         // Assert
-        await mockMediator.Received(1).Publish(
+        await _mockMediator.Received(1).Publish(
             Arg.Any<WriteMethodComparisonCsvNotification>(),
             Arg.Any<CancellationToken>());
     }
@@ -68,14 +68,14 @@ public class CsvTestRunCompletedHandlerTests
         var notification = CreateTestNotificationWithoutWriteToCsv();
 
         // Act
-        await handler.Handle(notification, CancellationToken.None);
+        await _handler.Handle(notification, CancellationToken.None);
 
         // Assert
-        await mockMediator.DidNotReceive().Publish(
+        await _mockMediator.DidNotReceive().Publish(
             Arg.Any<WriteMethodComparisonCsvNotification>(),
             Arg.Any<CancellationToken>());
 
-        mockLogger.Received().Log(
+        _mockLogger.Received().Log(
             LogLevel.Debug,
             Arg.Is<string>(s => s.Contains("No test classes found with WriteToCsv attribute")),
             Arg.Any<object[]>());
@@ -88,10 +88,10 @@ public class CsvTestRunCompletedHandlerTests
         var notification = CreateTestNotificationWithWriteToCsv();
 
         // Act
-        await handler.Handle(notification, CancellationToken.None);
+        await _handler.Handle(notification, CancellationToken.None);
 
         // Assert
-        await mockMediator.Received(1).Publish(
+        await _mockMediator.Received(1).Publish(
             Arg.Any<WriteMethodComparisonCsvNotification>(),
             Arg.Any<CancellationToken>());
     }
@@ -103,10 +103,10 @@ public class CsvTestRunCompletedHandlerTests
         var notification = CreateTestNotificationWithWriteToCsv();
 
         // Act
-        await handler.Handle(notification, CancellationToken.None);
+        await _handler.Handle(notification, CancellationToken.None);
 
         // Assert
-        mockLogger.Received().Log(
+        _mockLogger.Received().Log(
             LogLevel.Debug,
             Arg.Is<string>(s => s.Contains("class", StringComparison.OrdinalIgnoreCase)),
             Arg.Any<object[]>());
@@ -119,10 +119,10 @@ public class CsvTestRunCompletedHandlerTests
         var notification = CreateTestNotificationWithComparison();
 
         // Act
-        await handler.Handle(notification, CancellationToken.None);
+        await _handler.Handle(notification, CancellationToken.None);
 
         // Assert
-        await mockMediator.Received(1).Publish(
+        await _mockMediator.Received(1).Publish(
             Arg.Is<WriteMethodComparisonCsvNotification>(n =>
                 n.CsvContent.Contains("# Method Comparisons")),
             Arg.Any<CancellationToken>());
@@ -135,10 +135,10 @@ public class CsvTestRunCompletedHandlerTests
         var notification = CreateTestNotificationWithWriteToCsv();
 
         // Act
-        await handler.Handle(notification, CancellationToken.None);
+        await _handler.Handle(notification, CancellationToken.None);
 
         // Assert
-        await mockMediator.Received(1).Publish(
+        await _mockMediator.Received(1).Publish(
             Arg.Is<WriteMethodComparisonCsvNotification>(n =>
                 n.CsvContent.Contains("# Individual Test Results")),
             Arg.Any<CancellationToken>());
@@ -151,10 +151,10 @@ public class CsvTestRunCompletedHandlerTests
         var notification = CreateTestNotificationWithEmptyResults();
 
         // Act
-        await handler.Handle(notification, CancellationToken.None);
+        await _handler.Handle(notification, CancellationToken.None);
 
         // Assert
-        await mockMediator.Received(1).Publish(
+        await _mockMediator.Received(1).Publish(
             Arg.Is<WriteMethodComparisonCsvNotification>(n =>
                 !string.IsNullOrEmpty(n.CsvContent) &&
                 n.CsvContent.Contains("# Session Metadata")),
@@ -166,14 +166,14 @@ public class CsvTestRunCompletedHandlerTests
     {
         // Arrange
         var notification = CreateTestNotificationWithWriteToCsv();
-        mockMediator.Publish(Arg.Any<WriteMethodComparisonCsvNotification>(), Arg.Any<CancellationToken>())
+        _mockMediator.Publish(Arg.Any<WriteMethodComparisonCsvNotification>(), Arg.Any<CancellationToken>())
             .Throws(new InvalidOperationException("Test exception"));
 
         // Act
-        await handler.Handle(notification, CancellationToken.None);
+        await _handler.Handle(notification, CancellationToken.None);
 
         // Assert
-        mockLogger.Received().Log(
+        _mockLogger.Received().Log(
             LogLevel.Error,
             Arg.Any<Exception>(),
             Arg.Any<string>(),
@@ -185,11 +185,11 @@ public class CsvTestRunCompletedHandlerTests
     {
         // Arrange
         var notification = CreateTestNotificationWithWriteToCsv();
-        mockMediator.Publish(Arg.Any<WriteMethodComparisonCsvNotification>(), Arg.Any<CancellationToken>())
+        _mockMediator.Publish(Arg.Any<WriteMethodComparisonCsvNotification>(), Arg.Any<CancellationToken>())
             .Throws(new InvalidOperationException("Mediator error"));
 
         // Act & Assert
-        await Should.NotThrowAsync(async () => await handler.Handle(notification, CancellationToken.None));
+        await Should.NotThrowAsync(async () => await _handler.Handle(notification, CancellationToken.None));
     }
 
     [Fact]
@@ -200,10 +200,10 @@ public class CsvTestRunCompletedHandlerTests
         var cts = new CancellationTokenSource();
 
         // Act
-        await handler.Handle(notification, cts.Token);
+        await _handler.Handle(notification, cts.Token);
 
         // Assert
-        await mockMediator.Received(1).Publish(
+        await _mockMediator.Received(1).Publish(
             Arg.Any<WriteMethodComparisonCsvNotification>(),
             cts.Token);
     }
@@ -217,7 +217,7 @@ public class CsvTestRunCompletedHandlerTests
         cts.Cancel();
 
         // Act & Assert
-        await Should.NotThrowAsync(async () => await handler.Handle(notification, cts.Token));
+        await Should.NotThrowAsync(async () => await _handler.Handle(notification, cts.Token));
     }
 
     [Fact]
@@ -226,11 +226,11 @@ public class CsvTestRunCompletedHandlerTests
         // Arrange
         var notification = CreateTestNotificationWithWriteToCsv();
         var cts = new CancellationTokenSource();
-        mockMediator.Publish(Arg.Any<WriteMethodComparisonCsvNotification>(), Arg.Any<CancellationToken>())
+        _mockMediator.Publish(Arg.Any<WriteMethodComparisonCsvNotification>(), Arg.Any<CancellationToken>())
             .Throws(new OperationCanceledException());
 
         // Act & Assert
-        await Should.NotThrowAsync(async () => await handler.Handle(notification, cts.Token));
+        await Should.NotThrowAsync(async () => await _handler.Handle(notification, cts.Token));
     }
 
     [Fact]
@@ -240,10 +240,10 @@ public class CsvTestRunCompletedHandlerTests
         var notification = CreateTestNotificationWithMultipleClassesWithWriteToCsv();
 
         // Act
-        await handler.Handle(notification, CancellationToken.None);
+        await _handler.Handle(notification, CancellationToken.None);
 
         // Assert
-        await mockMediator.Received(1).Publish(
+        await _mockMediator.Received(1).Publish(
             Arg.Is<WriteMethodComparisonCsvNotification>(n =>
                 !string.IsNullOrEmpty(n.CsvContent) &&
                 n.TestClassName.StartsWith("TestSession_")),
@@ -257,10 +257,10 @@ public class CsvTestRunCompletedHandlerTests
         var notification = CreateTestNotificationWithWriteToCsv();
 
         // Act
-        await handler.Handle(notification, CancellationToken.None);
+        await _handler.Handle(notification, CancellationToken.None);
 
         // Assert
-        await mockMediator.Received(1).Publish(
+        await _mockMediator.Received(1).Publish(
             Arg.Is<WriteMethodComparisonCsvNotification>(n =>
                 n.CsvContent.Contains("# Session Metadata") &&
                 n.CsvContent.Contains("SessionId,Timestamp,TotalClasses,TotalTests")),
@@ -274,10 +274,10 @@ public class CsvTestRunCompletedHandlerTests
         var notification = CreateTestNotificationWithWriteToCsv();
 
         // Act
-        await handler.Handle(notification, CancellationToken.None);
+        await _handler.Handle(notification, CancellationToken.None);
 
         // Assert
-        await mockMediator.Received(1).Publish(
+        await _mockMediator.Received(1).Publish(
             Arg.Is<WriteMethodComparisonCsvNotification>(n =>
                 n.CsvContent.Contains("TestClass,TestMethod,MeanTime,MedianTime,StdDev,SampleSize,ComparisonGroup,Status")),
             Arg.Any<CancellationToken>());

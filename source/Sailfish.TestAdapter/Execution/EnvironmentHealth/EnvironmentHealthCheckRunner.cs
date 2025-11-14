@@ -8,16 +8,16 @@ namespace Sailfish.TestAdapter.Execution.EnvironmentHealth;
 
 internal class EnvironmentHealthCheckRunner
 {
-    private readonly IEnvironmentHealthChecker checker;
+    private readonly IEnvironmentHealthChecker _checker;
 
     public EnvironmentHealthCheckRunner(IEnvironmentHealthChecker checker)
     {
-        this.checker = checker;
+        this._checker = checker;
     }
 
     public async Task<(EnvironmentHealthReport Report, string Summary)> RunAsync(EnvironmentHealthCheckContext? context, CancellationToken token)
     {
-        var report = await checker.CheckAsync(context, token).ConfigureAwait(false);
+        var report = await _checker.CheckAsync(context, token).ConfigureAwait(false);
         var summary = BuildSummaryString(report);
         return (report, summary);
     }

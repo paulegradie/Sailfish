@@ -22,21 +22,21 @@ namespace Tests.Library.DefaultHandlers.SailDiff;
 
 public class SailDiffGetLatestExecutionSummariesHandlerTests
 {
-    private readonly ITrackingFileDirectoryReader mockTrackingFileDirectoryReader;
-    private readonly ITrackingFileParser mockTrackingFileParser;
-    private readonly IRunSettings mockRunSettings;
-    private readonly SailDiffGetLatestExecutionSummariesHandler handler;
+    private readonly ITrackingFileDirectoryReader _mockTrackingFileDirectoryReader;
+    private readonly ITrackingFileParser _mockTrackingFileParser;
+    private readonly IRunSettings _mockRunSettings;
+    private readonly SailDiffGetLatestExecutionSummariesHandler _handler;
 
     public SailDiffGetLatestExecutionSummariesHandlerTests()
     {
-        mockTrackingFileDirectoryReader = Substitute.For<ITrackingFileDirectoryReader>();
-        mockTrackingFileParser = Substitute.For<ITrackingFileParser>();
-        mockRunSettings = Substitute.For<IRunSettings>();
+        _mockTrackingFileDirectoryReader = Substitute.For<ITrackingFileDirectoryReader>();
+        _mockTrackingFileParser = Substitute.For<ITrackingFileParser>();
+        _mockRunSettings = Substitute.For<IRunSettings>();
         
-        handler = new SailDiffGetLatestExecutionSummariesHandler(
-            mockTrackingFileDirectoryReader,
-            mockTrackingFileParser,
-            mockRunSettings);
+        _handler = new SailDiffGetLatestExecutionSummariesHandler(
+            _mockTrackingFileDirectoryReader,
+            _mockTrackingFileParser,
+            _mockRunSettings);
     }
 
     [Fact]
@@ -48,12 +48,12 @@ public class SailDiffGetLatestExecutionSummariesHandlerTests
         var trackingFiles = new List<string> { "latest.json.tracking", "older.json.tracking" };
         var executionSummaries = CreateTrackingFileDataListWithData();
 
-        mockRunSettings.GetRunSettingsTrackingDirectoryPath().Returns(trackingDirectory);
-        mockTrackingFileDirectoryReader
+        _mockRunSettings.GetRunSettingsTrackingDirectoryPath().Returns(trackingDirectory);
+        _mockTrackingFileDirectoryReader
             .FindTrackingFilesInDirectoryOrderedByLastModified(trackingDirectory)
             .Returns(trackingFiles);
 
-        mockTrackingFileParser
+        _mockTrackingFileParser
             .TryParse(trackingFiles.First(), Arg.Any<TrackingFileDataList>(), Arg.Any<CancellationToken>())
             .Returns(callInfo =>
             {
@@ -63,7 +63,7 @@ public class SailDiffGetLatestExecutionSummariesHandlerTests
             });
 
         // Act
-        var result = await handler.Handle(request, CancellationToken.None);
+        var result = await _handler.Handle(request, CancellationToken.None);
 
         // Assert
         result.ShouldNotBeNull();
@@ -71,7 +71,7 @@ public class SailDiffGetLatestExecutionSummariesHandlerTests
         result.LatestExecutionSummaries.Count.ShouldBe(1);
         
         // Verify it used the first (latest) tracking file
-        await mockTrackingFileParser.Received(1)
+        await _mockTrackingFileParser.Received(1)
             .TryParse(trackingFiles.First(), Arg.Any<TrackingFileDataList>(), Arg.Any<CancellationToken>());
     }
 
@@ -83,20 +83,20 @@ public class SailDiffGetLatestExecutionSummariesHandlerTests
         var trackingDirectory = Some.RandomString();
         var emptyTrackingFiles = new List<string>();
 
-        mockRunSettings.GetRunSettingsTrackingDirectoryPath().Returns(trackingDirectory);
-        mockTrackingFileDirectoryReader
+        _mockRunSettings.GetRunSettingsTrackingDirectoryPath().Returns(trackingDirectory);
+        _mockTrackingFileDirectoryReader
             .FindTrackingFilesInDirectoryOrderedByLastModified(trackingDirectory)
             .Returns(emptyTrackingFiles);
 
         // Act
-        var result = await handler.Handle(request, CancellationToken.None);
+        var result = await _handler.Handle(request, CancellationToken.None);
 
         // Assert
         result.ShouldNotBeNull();
         result.LatestExecutionSummaries.ShouldBeEmpty();
         
         // Verify parser was not called since there are no files
-        await mockTrackingFileParser.DidNotReceive()
+        await _mockTrackingFileParser.DidNotReceive()
             .TryParse(Arg.Any<string>(), Arg.Any<TrackingFileDataList>(), Arg.Any<CancellationToken>());
     }
 
@@ -108,17 +108,17 @@ public class SailDiffGetLatestExecutionSummariesHandlerTests
         var trackingDirectory = Some.RandomString();
         var trackingFiles = new List<string> { "corrupted.json.tracking" };
 
-        mockRunSettings.GetRunSettingsTrackingDirectoryPath().Returns(trackingDirectory);
-        mockTrackingFileDirectoryReader
+        _mockRunSettings.GetRunSettingsTrackingDirectoryPath().Returns(trackingDirectory);
+        _mockTrackingFileDirectoryReader
             .FindTrackingFilesInDirectoryOrderedByLastModified(trackingDirectory)
             .Returns(trackingFiles);
 
-        mockTrackingFileParser
+        _mockTrackingFileParser
             .TryParse(trackingFiles.First(), Arg.Any<TrackingFileDataList>(), Arg.Any<CancellationToken>())
             .Returns(false);
 
         // Act
-        var result = await handler.Handle(request, CancellationToken.None);
+        var result = await _handler.Handle(request, CancellationToken.None);
 
         // Assert
         result.ShouldNotBeNull();
@@ -147,12 +147,12 @@ public class SailDiffGetLatestExecutionSummariesHandlerTests
         var executionSummaries = new TrackingFileDataList();
         executionSummaries.Add([firstSummary, secondSummary]);
 
-        mockRunSettings.GetRunSettingsTrackingDirectoryPath().Returns(trackingDirectory);
-        mockTrackingFileDirectoryReader
+        _mockRunSettings.GetRunSettingsTrackingDirectoryPath().Returns(trackingDirectory);
+        _mockTrackingFileDirectoryReader
             .FindTrackingFilesInDirectoryOrderedByLastModified(trackingDirectory)
             .Returns(trackingFiles);
 
-        mockTrackingFileParser
+        _mockTrackingFileParser
             .TryParse(trackingFiles.First(), Arg.Any<TrackingFileDataList>(), Arg.Any<CancellationToken>())
             .Returns(callInfo =>
             {
@@ -162,7 +162,7 @@ public class SailDiffGetLatestExecutionSummariesHandlerTests
             });
 
         // Act
-        var result = await handler.Handle(request, CancellationToken.None);
+        var result = await _handler.Handle(request, CancellationToken.None);
 
         // Assert
         result.ShouldNotBeNull();
@@ -188,12 +188,12 @@ public class SailDiffGetLatestExecutionSummariesHandlerTests
         };
         var executionSummaries = CreateTrackingFileDataListWithData();
 
-        mockRunSettings.GetRunSettingsTrackingDirectoryPath().Returns(trackingDirectory);
-        mockTrackingFileDirectoryReader
+        _mockRunSettings.GetRunSettingsTrackingDirectoryPath().Returns(trackingDirectory);
+        _mockTrackingFileDirectoryReader
             .FindTrackingFilesInDirectoryOrderedByLastModified(trackingDirectory)
             .Returns(trackingFiles);
 
-        mockTrackingFileParser
+        _mockTrackingFileParser
             .TryParse(trackingFiles.First(), Arg.Any<TrackingFileDataList>(), Arg.Any<CancellationToken>())
             .Returns(callInfo =>
             {
@@ -203,20 +203,20 @@ public class SailDiffGetLatestExecutionSummariesHandlerTests
             });
 
         // Act
-        var result = await handler.Handle(request, CancellationToken.None);
+        var result = await _handler.Handle(request, CancellationToken.None);
 
         // Assert
         result.ShouldNotBeNull();
         result.LatestExecutionSummaries.ShouldNotBeEmpty();
         
         // Verify only the first (latest) file was parsed
-        await mockTrackingFileParser.Received(1)
+        await _mockTrackingFileParser.Received(1)
             .TryParse(trackingFiles.First(), Arg.Any<TrackingFileDataList>(), Arg.Any<CancellationToken>());
         
-        await mockTrackingFileParser.DidNotReceive()
+        await _mockTrackingFileParser.DidNotReceive()
             .TryParse(trackingFiles[1], Arg.Any<TrackingFileDataList>(), Arg.Any<CancellationToken>());
         
-        await mockTrackingFileParser.DidNotReceive()
+        await _mockTrackingFileParser.DidNotReceive()
             .TryParse(trackingFiles[2], Arg.Any<TrackingFileDataList>(), Arg.Any<CancellationToken>());
     }
 
@@ -228,12 +228,12 @@ public class SailDiffGetLatestExecutionSummariesHandlerTests
         var trackingDirectory = Some.RandomString();
         var trackingFiles = new List<string> { "empty.json.tracking" };
 
-        mockRunSettings.GetRunSettingsTrackingDirectoryPath().Returns(trackingDirectory);
-        mockTrackingFileDirectoryReader
+        _mockRunSettings.GetRunSettingsTrackingDirectoryPath().Returns(trackingDirectory);
+        _mockTrackingFileDirectoryReader
             .FindTrackingFilesInDirectoryOrderedByLastModified(trackingDirectory)
             .Returns(trackingFiles);
 
-        mockTrackingFileParser
+        _mockTrackingFileParser
             .TryParse(trackingFiles.First(), Arg.Any<TrackingFileDataList>(), Arg.Any<CancellationToken>())
             .Returns(callInfo =>
             {
@@ -245,7 +245,7 @@ public class SailDiffGetLatestExecutionSummariesHandlerTests
         // This test documents a bug in the handler - it should handle empty data gracefully
         // but currently throws InvalidOperationException when calling executionSummaries.First()
         await Should.ThrowAsync<InvalidOperationException>(async () =>
-            await handler.Handle(request, CancellationToken.None));
+            await _handler.Handle(request, CancellationToken.None));
     }
 
     private static TrackingFileDataList CreateTrackingFileDataListWithData()

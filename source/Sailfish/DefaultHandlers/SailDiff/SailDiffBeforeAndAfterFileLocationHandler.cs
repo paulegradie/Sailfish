@@ -14,15 +14,15 @@ namespace Sailfish.DefaultHandlers.SailDiff;
 internal class SailDiffBeforeAndAfterFileLocationHandler(IRunSettings runSettings, ITrackingFileDirectoryReader trackingFileDirectoryReader)
     : IRequestHandler<BeforeAndAfterFileLocationRequest, BeforeAndAfterFileLocationResponse>
 {
-    private readonly IRunSettings runSettings = runSettings;
-    private readonly ITrackingFileDirectoryReader trackingFileDirectoryReader = trackingFileDirectoryReader;
+    private readonly IRunSettings _runSettings = runSettings;
+    private readonly ITrackingFileDirectoryReader _trackingFileDirectoryReader = trackingFileDirectoryReader;
 
     public async Task<BeforeAndAfterFileLocationResponse> Handle(
         BeforeAndAfterFileLocationRequest request,
         CancellationToken cancellationToken)
     {
         await Task.Yield();
-        var trackingFiles = trackingFileDirectoryReader.FindTrackingFilesInDirectoryOrderedByLastModified(runSettings.GetRunSettingsTrackingDirectoryPath());
+        var trackingFiles = _trackingFileDirectoryReader.FindTrackingFilesInDirectoryOrderedByLastModified(_runSettings.GetRunSettingsTrackingDirectoryPath());
         if (trackingFiles.Count == 0) return new BeforeAndAfterFileLocationResponse(new List<string>(), new List<string>());
 
         if (request.ProvidedBeforeTrackingFiles.Any())

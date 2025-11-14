@@ -15,7 +15,7 @@ public interface ITypeActivator
 
 public class TypeActivator(ILifetimeScope lifetimeScope) : ITypeActivator
 {
-    private readonly ILifetimeScope lifetimeScope = lifetimeScope;
+    private readonly ILifetimeScope _lifetimeScope = lifetimeScope;
 
     public object CreateDehydratedTestInstance(Type test, TestCaseId testCaseId, bool disabled)
     {
@@ -24,7 +24,7 @@ public class TypeActivator(ILifetimeScope lifetimeScope) : ITypeActivator
 
         if (ctorArgTypes.Length != ctorArgTypes.Distinct().Count()) throw new SailfishException($"Multiple ctor arguments of the same type were found in {test.Name}");
 
-        var ctorArgs = ctorArgTypes.Where(x => x != typeof(TestCaseId)).Select(x => lifetimeScope.Resolve(x)).ToList();
+        var ctorArgs = ctorArgTypes.Where(x => x != typeof(TestCaseId)).Select(x => _lifetimeScope.Resolve(x)).ToList();
         if (ctorArgTypes.Contains(typeof(TestCaseId)))
         {
             var caseIdIndex = Array.IndexOf(ctorArgTypes, typeof(TestCaseId));

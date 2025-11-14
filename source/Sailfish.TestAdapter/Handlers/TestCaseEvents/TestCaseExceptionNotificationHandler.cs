@@ -11,26 +11,26 @@ namespace Sailfish.TestAdapter.Handlers.TestCaseEvents;
 
 internal class TestCaseExceptionNotificationHandler : INotificationHandler<TestCaseExceptionNotification>
 {
-    private readonly ILogger logger;
-    private readonly ITestFrameworkWriter testFrameworkWriter;
+    private readonly ILogger _logger;
+    private readonly ITestFrameworkWriter _testFrameworkWriter;
 
     public TestCaseExceptionNotificationHandler(ITestFrameworkWriter testFrameworkWriter, ILogger logger)
     {
-        this.testFrameworkWriter = testFrameworkWriter;
-        this.logger = logger;
+        this._testFrameworkWriter = testFrameworkWriter;
+        this._logger = logger;
     }
 
     public async Task Handle(TestCaseExceptionNotification notification, CancellationToken cancellationToken)
     {
         await Task.CompletedTask;
 
-        logger.Log(LogLevel.Error, notification.Exception ?? new TestAdapterException("Undefined Exception"), "Encountered exception during test case execution");
+        _logger.Log(LogLevel.Error, notification.Exception ?? new TestAdapterException("Undefined Exception"), "Encountered exception during test case execution");
         if (notification.TestInstanceContainer is null)
         {
             foreach (var testCase in notification.TestCaseGroup)
             {
-                testFrameworkWriter.RecordEnd(testCase, TestOutcome.Failed);
-                testFrameworkWriter.RecordResult(new TestResult(testCase));
+                _testFrameworkWriter.RecordEnd(testCase, TestOutcome.Failed);
+                _testFrameworkWriter.RecordResult(new TestResult(testCase));
             }
         }
         else
@@ -38,8 +38,8 @@ internal class TestCaseExceptionNotificationHandler : INotificationHandler<TestC
             var currentTestCase = notification
                 .TestInstanceContainer
                 .GetTestCaseFromTestCaseGroupMatchingCurrentContainer(notification.TestCaseGroup.Cast<TestCase>());
-            testFrameworkWriter.RecordEnd(currentTestCase, TestOutcome.Failed);
-            testFrameworkWriter.RecordResult(new TestResult(currentTestCase));
+            _testFrameworkWriter.RecordEnd(currentTestCase, TestOutcome.Failed);
+            _testFrameworkWriter.RecordResult(new TestResult(currentTestCase));
         }
     }
 }

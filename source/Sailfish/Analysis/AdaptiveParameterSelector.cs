@@ -60,8 +60,7 @@ public class AdaptiveParameterSelector
             AdaptiveSamplingConfig.SpeedCategory.Fast => 30,
             AdaptiveSamplingConfig.SpeedCategory.Medium => 20,
             AdaptiveSamplingConfig.SpeedCategory.Slow => 15,
-            AdaptiveSamplingConfig.SpeedCategory.VerySlow => 10,
-            _ => executionSettings.MinimumSampleSize
+            AdaptiveSamplingConfig.SpeedCategory.VerySlow => 10
         };
 
         var reason = $"{category}: recommended MinN={recommendedMin} based on pilot median {medianNs / 1000.0:F1}\u00B5s to stabilize CV";

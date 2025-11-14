@@ -11,13 +11,13 @@ internal interface ITestFilter
 
 internal class TestFilter(ITestListValidator testListValidator) : ITestFilter
 {
-    private readonly ITestListValidator testListValidator = testListValidator;
+    private readonly ITestListValidator _testListValidator = testListValidator;
 
     public TestInitializationResult FilterAndValidate(IEnumerable<Type> tests, IEnumerable<string> testsRequestedByUser)
     {
         var requestedByUser = testsRequestedByUser.ToList();
         var filtered = FilterTests(tests, requestedByUser);
-        var result = testListValidator.ValidateTests(requestedByUser, filtered);
+        var result = _testListValidator.ValidateTests(requestedByUser, filtered);
         return result;
     }
 

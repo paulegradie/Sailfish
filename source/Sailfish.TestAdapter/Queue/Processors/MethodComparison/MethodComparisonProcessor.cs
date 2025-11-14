@@ -518,7 +518,7 @@ internal class MethodComparisonProcessor : TestCompletionQueueProcessorBase
                         continue;
                     }
                     var col = stats[j];
-                    var (ratio, lo, hi) = MultipleComparisons.ComputeRatioCI(row.Mean, row.SE, row.N, col.Mean, col.SE, col.N, 0.95);
+                    var (ratio, lo, hi) = MultipleComparisons.ComputeRatioCi(row.Mean, row.SE, row.N, col.Mean, col.SE, col.N, 0.95);
                     var key = MultipleComparisons.NormalizePair(row.Id, col.Id);
                     qMap.TryGetValue(key, out var q);
                     var sig = q > 0 && q <= 0.05;

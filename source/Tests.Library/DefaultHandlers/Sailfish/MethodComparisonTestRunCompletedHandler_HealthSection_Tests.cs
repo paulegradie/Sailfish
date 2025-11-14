@@ -18,7 +18,7 @@ using Xunit;
 
 namespace Tests.Library.DefaultHandlers.Sailfish;
 
-public class MethodComparisonTestRunCompletedHandler_HealthSection_Tests
+public class MethodComparisonTestRunCompletedHandlerHealthSectionTests
 {
     private sealed class StubProvider : IEnvironmentHealthReportProvider
     {

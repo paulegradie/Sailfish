@@ -13,7 +13,7 @@ public class NonZeroCiDemo
     private static int _counter;
 
     [SailfishMethod]
-    public async Task AlternatingDelaysProduceNonZeroCI(CancellationToken cancellationToken)
+    public async Task AlternatingDelaysProduceNonZeroCi(CancellationToken cancellationToken)
     {
         // Cycle deterministically through three distinct delays to guarantee variance
         var i = Interlocked.Increment(ref _counter) % 3;

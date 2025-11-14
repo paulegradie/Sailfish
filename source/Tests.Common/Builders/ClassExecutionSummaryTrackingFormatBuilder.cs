@@ -6,9 +6,9 @@ namespace Tests.Common.Builders;
 
 public class ClassExecutionSummaryTrackingFormatBuilder
 {
-    private List<CompiledTestCaseResultTrackingFormat> compiledTestCaseResults = new();
-    private ExecutionSettingsTrackingFormat? executionSettings;
-    private Type? testClass;
+    private List<CompiledTestCaseResultTrackingFormat> _compiledTestCaseResults = new();
+    private ExecutionSettingsTrackingFormat? _executionSettings;
+    private Type? _testClass;
 
     public static ClassExecutionSummaryTrackingFormatBuilder Create()
     {
@@ -17,13 +17,13 @@ public class ClassExecutionSummaryTrackingFormatBuilder
 
     public ClassExecutionSummaryTrackingFormatBuilder WithTestClass(Type testClass)
     {
-        this.testClass = testClass;
+        this._testClass = testClass;
         return this;
     }
 
     public ClassExecutionSummaryTrackingFormatBuilder WithExecutionSettings(ExecutionSettingsTrackingFormat executionSettings)
     {
-        this.executionSettings = executionSettings;
+        this._executionSettings = executionSettings;
         return this;
     }
 
@@ -31,13 +31,13 @@ public class ClassExecutionSummaryTrackingFormatBuilder
     {
         var builder = new ExecutionSettingsTrackingFormatBuilder();
         configureAction(builder);
-        executionSettings = builder.Build();
+        _executionSettings = builder.Build();
         return this;
     }
 
     public ClassExecutionSummaryTrackingFormatBuilder WithCompiledTestCaseResult(List<CompiledTestCaseResultTrackingFormat> compiledTestCaseResults)
     {
-        this.compiledTestCaseResults = compiledTestCaseResults;
+        this._compiledTestCaseResults = compiledTestCaseResults;
         return this;
     }
 
@@ -45,19 +45,19 @@ public class ClassExecutionSummaryTrackingFormatBuilder
     {
         var builder = CompiledTestCaseResultTrackingFormatBuilder.Create();
         configureAction(builder);
-        compiledTestCaseResults.Add(builder.Build());
+        _compiledTestCaseResults.Add(builder.Build());
         return this;
     }
 
 
     public ClassExecutionSummaryTrackingFormat Build()
     {
-        if (compiledTestCaseResults.Count == 0) compiledTestCaseResults.Add(CompiledTestCaseResultTrackingFormatBuilder.Create().Build());
+        if (_compiledTestCaseResults.Count == 0) _compiledTestCaseResults.Add(CompiledTestCaseResultTrackingFormatBuilder.Create().Build());
 
         return new ClassExecutionSummaryTrackingFormat(
-            testClass ?? typeof(TestClass),
-            executionSettings ?? ExecutionSettingsTrackingFormatBuilder.Create().Build(),
-            compiledTestCaseResults);
+            _testClass ?? typeof(TestClass),
+            _executionSettings ?? ExecutionSettingsTrackingFormatBuilder.Create().Build(),
+            _compiledTestCaseResults);
     }
 
     public class TestClass

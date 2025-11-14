@@ -54,12 +54,12 @@ internal class TestCompletionMessageMapper : ITestCompletionMessageMapper
 {
     #region Private Fields
 
-    private readonly ILogger logger;
-    private readonly ISailfishConsoleWindowFormatter sailfishConsoleWindowFormatter;
-    private readonly ISailDiffTestOutputWindowMessageFormatter sailDiffTestOutputWindowMessageFormatter;
-    private readonly IAdapterSailDiff sailDiff;
-    private readonly IRunSettings runSettings;
-    private readonly IMediator mediator;
+    private readonly ILogger _logger;
+    private readonly ISailfishConsoleWindowFormatter _sailfishConsoleWindowFormatter;
+    private readonly ISailDiffTestOutputWindowMessageFormatter _sailDiffTestOutputWindowMessageFormatter;
+    private readonly IAdapterSailDiff _sailDiff;
+    private readonly IRunSettings _runSettings;
+    private readonly IMediator _mediator;
 
     #endregion
 
@@ -85,12 +85,12 @@ internal class TestCompletionMessageMapper : ITestCompletionMessageMapper
         IRunSettings runSettings,
         IMediator mediator)
     {
-        this.logger = logger ?? throw new ArgumentNullException(nameof(logger));
-        this.sailfishConsoleWindowFormatter = sailfishConsoleWindowFormatter ?? throw new ArgumentNullException(nameof(sailfishConsoleWindowFormatter));
-        this.sailDiffTestOutputWindowMessageFormatter = sailDiffTestOutputWindowMessageFormatter ?? throw new ArgumentNullException(nameof(sailDiffTestOutputWindowMessageFormatter));
-        this.sailDiff = sailDiff ?? throw new ArgumentNullException(nameof(sailDiff));
-        this.runSettings = runSettings ?? throw new ArgumentNullException(nameof(runSettings));
-        this.mediator = mediator ?? throw new ArgumentNullException(nameof(mediator));
+        this._logger = logger ?? throw new ArgumentNullException(nameof(logger));
+        this._sailfishConsoleWindowFormatter = sailfishConsoleWindowFormatter ?? throw new ArgumentNullException(nameof(sailfishConsoleWindowFormatter));
+        this._sailDiffTestOutputWindowMessageFormatter = sailDiffTestOutputWindowMessageFormatter ?? throw new ArgumentNullException(nameof(sailDiffTestOutputWindowMessageFormatter));
+        this._sailDiff = sailDiff ?? throw new ArgumentNullException(nameof(sailDiff));
+        this._runSettings = runSettings ?? throw new ArgumentNullException(nameof(runSettings));
+        this._mediator = mediator ?? throw new ArgumentNullException(nameof(mediator));
     }
 
     #endregion
@@ -115,7 +115,7 @@ internal class TestCompletionMessageMapper : ITestCompletionMessageMapper
             throw new ArgumentNullException(nameof(notification));
         }
 
-        logger.Log(LogLevel.Debug,
+        _logger.Log(LogLevel.Debug,
             "Starting mapping of test case completion notification to queue message for test: {0}",
             notification.TestInstanceContainerExternal?.TestCaseId?.DisplayName ?? "Unknown");
 
@@ -152,7 +152,7 @@ internal class TestCompletionMessageMapper : ITestCompletionMessageMapper
                 performanceMetrics,
                 batchingMetadata);
 
-            logger.Log(LogLevel.Information,
+            _logger.Log(LogLevel.Information,
                 "Successfully mapped test case '{0}' to queue message with {1} metadata entries",
                 queueMessage.TestCaseId, queueMessage.Metadata.Count);
 
@@ -160,7 +160,7 @@ internal class TestCompletionMessageMapper : ITestCompletionMessageMapper
         }
         catch (Exception ex) when (!(ex is ArgumentNullException || ex is SailfishException || ex is OperationCanceledException))
         {
-            logger.Log(LogLevel.Error, ex,
+            _logger.Log(LogLevel.Error, ex,
                 "Failed to map test case completion notification to queue message for test '{0}': {1}",
                 notification.TestInstanceContainerExternal?.TestCaseId?.DisplayName ?? "Unknown", ex.Message);
 
@@ -184,14 +184,14 @@ internal class TestCompletionMessageMapper : ITestCompletionMessageMapper
         {
             var groupRef = notification.TestCaseGroup.FirstOrDefault()?.Cast<TestCase>();
             var msg = $"TestInstanceContainer was null for {groupRef?.Type.Name ?? "Unknown Type"}";
-            logger.Log(LogLevel.Error, msg);
+            _logger.Log(LogLevel.Error, msg);
             throw new SailfishException(msg);
         }
 
         if (notification.TestInstanceContainerExternal.PerformanceTimer is null)
         {
             var msg = $"PerformanceTimerResults was null for {notification.TestInstanceContainerExternal.Type.Name}";
-            logger.Log(LogLevel.Error, msg);
+            _logger.Log(LogLevel.Error, msg);
             throw new SailfishException(msg);
         }
     }
@@ -204,7 +204,7 @@ internal class TestCompletionMessageMapper : ITestCompletionMessageMapper
     private CoreTestData ExtractCoreTestData(TestCaseCompletedNotification notification)
     {
         var classExecutionSummaries = notification.ClassExecutionSummaryTrackingFormat.ToSummaryFormat();
-        var testOutputWindowMessage = sailfishConsoleWindowFormatter.FormConsoleWindowMessageForSailfish([classExecutionSummaries]);
+        var testOutputWindowMessage = _sailfishConsoleWindowFormatter.FormConsoleWindowMessageForSailfish([classExecutionSummaries]);
 
             // Append overhead diagnostics if available (non-console, attached to test output)
             var perfTimer = notification.TestInstanceContainerExternal!.PerformanceTimer;
@@ -217,13 +217,13 @@ internal class TestCompletionMessageMapper : ITestCompletionMessageMapper
                 var capped = perfTimer.CappedIterationCount;
                 var diag = $"Diagnostics: Overhead {baseline} ticks (median of {samples} samples; {warmups} warmup). Drift {Math.Round(drift, 2)}%. Capped {capped} iteration(s).";
                 testOutputWindowMessage += "\n" + diag;
-                logger.Log(LogLevel.Information, diag);
+                _logger.Log(LogLevel.Information, diag);
             }
             else if (perfTimer.OverheadEstimationDisabled)
             {
                 const string diag = "Diagnostics: Overhead estimation disabled for this test (no subtraction applied).";
                 testOutputWindowMessage += "\n" + diag;
-                logger.Log(LogLevel.Information, diag);
+                _logger.Log(LogLevel.Information, diag);
             }
 
 
@@ -277,7 +277,7 @@ internal class TestCompletionMessageMapper : ITestCompletionMessageMapper
         try
         {
             var preloadedPreviousRuns = await GetLastRunAsync(cancellationToken);
-            if (preloadedPreviousRuns.Count > 0 && !runSettings.DisableAnalysisGlobally)
+            if (preloadedPreviousRuns.Count > 0 && !_runSettings.DisableAnalysisGlobally)
             {
                 return RunSailDiff(
                     testCaseDisplayName,
@@ -295,7 +295,7 @@ internal class TestCompletionMessageMapper : ITestCompletionMessageMapper
         }
         catch (Exception ex)
         {
-            logger.Log(LogLevel.Warning, ex,
+            _logger.Log(LogLevel.Warning, ex,
                 "Failed to process SailDiff analysis for test case '{0}': {1}",
                 testCaseDisplayName, ex.Message);
 
@@ -321,7 +321,7 @@ internal class TestCompletionMessageMapper : ITestCompletionMessageMapper
         var preloadedRun = preloadedLastRunsIfAvailable.FindFirstMatchingTestCaseId(new TestCaseId(testCaseDisplayName));
         if (preloadedRun is null) return testOutputWindowMessage;
 
-        var testCaseResults = sailDiff.ComputeTestCaseDiff(
+        var testCaseResults = _sailDiff.ComputeTestCaseDiff(
             [testCaseDisplayName],
             [testCaseDisplayName],
             testCaseDisplayName,
@@ -341,7 +341,7 @@ internal class TestCompletionMessageMapper : ITestCompletionMessageMapper
     {
         if (testCaseResults.SailDiffResults.Count > 0)
         {
-            var sailDiffTestOutputString = sailDiffTestOutputWindowMessageFormatter
+            var sailDiffTestOutputString = _sailDiffTestOutputWindowMessageFormatter
                 .FormTestOutputWindowMessageForSailDiff(
                     testCaseResults.SailDiffResults.Single(),
                     testCaseResults.TestIds,
@@ -364,12 +364,12 @@ internal class TestCompletionMessageMapper : ITestCompletionMessageMapper
     private async Task<TrackingFileDataList> GetLastRunAsync(CancellationToken cancellationToken)
     {
         var preloadedLastRunsIfAvailable = new TrackingFileDataList();
-        if (runSettings.DisableAnalysisGlobally || runSettings is { RunScaleFish: false, RunSailDiff: false })
+        if (_runSettings.DisableAnalysisGlobally || _runSettings is { RunScaleFish: false, RunSailDiff: false })
             return preloadedLastRunsIfAvailable;
 
         try
         {
-            var response = await mediator.Send(
+            var response = await _mediator.Send(
                 new GetAllTrackingDataOrderedChronologicallyRequest(),
                 cancellationToken);
             preloadedLastRunsIfAvailable.AddRange(response.TrackingData.Skip(1)); // the most recent is the current run
@@ -381,7 +381,7 @@ internal class TestCompletionMessageMapper : ITestCompletionMessageMapper
         }
         catch (Exception ex)
         {
-            logger.Log(LogLevel.Warning, ex,
+            _logger.Log(LogLevel.Warning, ex,
                 "Failed to retrieve previous run data for SailDiff analysis: {0}", ex.Message);
         }
 
@@ -438,7 +438,7 @@ internal class TestCompletionMessageMapper : ITestCompletionMessageMapper
         // Handle cases where performance data might be missing due to exceptions
         if (performanceResult == null || compiledTestCaseResult.Exception != null)
         {
-            logger.Log(LogLevel.Debug,
+            _logger.Log(LogLevel.Debug,
                 "Performance data unavailable for test case '{0}' due to exception or missing results",
                 notification.TestInstanceContainerExternal!.TestCaseId.DisplayName);
 
@@ -511,9 +511,9 @@ internal class TestCompletionMessageMapper : ITestCompletionMessageMapper
             // Execution context information for ByExecutionContext batching
             metadata["ExecutionContext"] = new Dictionary<string, object>
             {
-                ["DisableAnalysisGlobally"] = runSettings.DisableAnalysisGlobally,
-                ["RunScaleFish"] = runSettings.RunScaleFish,
-                ["RunSailDiff"] = runSettings.RunSailDiff,
+                ["DisableAnalysisGlobally"] = _runSettings.DisableAnalysisGlobally,
+                ["RunScaleFish"] = _runSettings.RunScaleFish,
+                ["RunSailDiff"] = _runSettings.RunSailDiff,
                 ["TestExecutionDateTime"] = DateTime.UtcNow
             };
 
@@ -545,13 +545,13 @@ internal class TestCompletionMessageMapper : ITestCompletionMessageMapper
                 metadata["CustomBatchingCriteria"] = customCriteria;
             }
 
-            logger.Log(LogLevel.Debug,
+            _logger.Log(LogLevel.Debug,
                 "Extracted {0} batching metadata entries for test case '{1}'",
                 metadata.Count, currentTestCase.DisplayName);
         }
         catch (Exception ex)
         {
-            logger.Log(LogLevel.Warning, ex,
+            _logger.Log(LogLevel.Warning, ex,
                 "Failed to extract some batching metadata for test case '{0}': {1}",
                 currentTestCase.DisplayName, ex.Message);
 
@@ -588,7 +588,7 @@ internal class TestCompletionMessageMapper : ITestCompletionMessageMapper
         }
         catch (Exception ex)
         {
-            logger.Log(LogLevel.Debug, ex,
+            _logger.Log(LogLevel.Debug, ex,
                 "Failed to extract test class name from test case '{0}': {1}",
                 testCase.DisplayName, ex.Message);
             return "Unknown";
@@ -619,7 +619,7 @@ internal class TestCompletionMessageMapper : ITestCompletionMessageMapper
         }
         catch (Exception ex)
         {
-            logger.Log(LogLevel.Debug, ex,
+            _logger.Log(LogLevel.Debug, ex,
                 "Failed to extract performance profile: {0}", ex.Message);
             return null;
         }
@@ -640,7 +640,7 @@ internal class TestCompletionMessageMapper : ITestCompletionMessageMapper
         }
         catch (Exception ex)
         {
-            logger.Log(LogLevel.Debug, ex,
+            _logger.Log(LogLevel.Debug, ex,
                 "Failed to extract comparison group ID: {0}", ex.Message);
             return null;
         }
@@ -661,7 +661,7 @@ internal class TestCompletionMessageMapper : ITestCompletionMessageMapper
         }
         catch (Exception ex)
         {
-            logger.Log(LogLevel.Debug, ex,
+            _logger.Log(LogLevel.Debug, ex,
                 "Failed to extract comparison role: {0}", ex.Message);
             return null;
         }
@@ -693,7 +693,7 @@ internal class TestCompletionMessageMapper : ITestCompletionMessageMapper
         }
         catch (Exception ex)
         {
-            logger.Log(LogLevel.Debug, ex,
+            _logger.Log(LogLevel.Debug, ex,
                 "Failed to extract custom batching criteria: {0}", ex.Message);
         }
 
@@ -742,7 +742,7 @@ internal class TestCompletionMessageMapper : ITestCompletionMessageMapper
             ["ClassExecutionSummaries"] = coreData.ClassExecutionSummaries,
             ["CompiledTestCaseResult"] = coreData.CompiledTestCaseResult,
             ["TestCaseGroup"] = notification.TestCaseGroup,
-            ["RunSettings"] = runSettings,
+            ["RunSettings"] = _runSettings,
 
             // Notification context
             ["OriginalNotification"] = notification

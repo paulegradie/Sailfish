@@ -54,10 +54,10 @@ public class DetailedTableFormatter : IDetailedTableFormatter
 
         return context switch
         {
-            OutputContext.IDE => CreateIDETable(comparisonList),
+            OutputContext.Ide => CreateIdeTable(comparisonList),
             OutputContext.Markdown => CreateMarkdownTable(comparisonList),
             OutputContext.Console => CreateConsoleTable(comparisonList),
-            OutputContext.CSV => CreateCSVTable(comparisonList),
+            OutputContext.Csv => CreateCsvTable(comparisonList),
             _ => CreateConsoleTable(comparisonList)
         };
     }
@@ -65,7 +65,7 @@ public class DetailedTableFormatter : IDetailedTableFormatter
     /// <summary>
     /// Creates a table formatted for IDE output with enhanced readability.
     /// </summary>
-    private string CreateIDETable(List<SailDiffComparisonData> comparisons)
+    private string CreateIdeTable(List<SailDiffComparisonData> comparisons)
     {
         var sb = new StringBuilder();
         sb.AppendLine();
@@ -217,7 +217,7 @@ public class DetailedTableFormatter : IDetailedTableFormatter
     /// <summary>
     /// Creates a CSV format for data export and analysis.
     /// </summary>
-    private string CreateCSVTable(List<SailDiffComparisonData> comparisons)
+    private string CreateCsvTable(List<SailDiffComparisonData> comparisons)
     {
         var sb = new StringBuilder();
         sb.AppendLine("PrimaryMethod,ComparedMethod,PrimaryMean,ComparedMean,PrimaryMedian,ComparedMedian,PValue,ChangeDescription,SampleSize");
