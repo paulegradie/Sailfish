@@ -451,8 +451,20 @@ internal class TestCompletionQueueConsumer : IDisposable, IAsyncDisposable
                 }
 
                 // Calculate exponential backoff delay
+                // Use CancellationToken.None for the delay to ensure retries complete even if the consumer is stopping
+                // This allows in-flight message processing to complete gracefully
                 var delay = baseDelayMs * (int)Math.Pow(2, attempt - 1);
-                await Task.Delay(delay, cancellationToken).ConfigureAwait(false);
+                try
+                {
+                    await Task.Delay(delay, CancellationToken.None).ConfigureAwait(false);
+                }
+                catch (OperationCanceledException)
+                {
+                    // This should never happen with CancellationToken.None, but handle it just in case
+                    _logger.Log(LogLevel.Warning,
+                        $"Retry delay was cancelled for processor '{processor.GetType().Name}' - aborting retries");
+                    return;
+                }
             }
         }
     }
