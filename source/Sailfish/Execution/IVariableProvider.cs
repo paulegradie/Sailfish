@@ -31,21 +31,21 @@ internal interface IVariableProvider
 /// </summary>
 internal class AttributeVariableProvider : IVariableProvider
 {
-    private readonly ISailfishVariableAttribute attribute;
+    private readonly ISailfishVariableAttribute _attribute;
 
     public AttributeVariableProvider(ISailfishVariableAttribute attribute)
     {
-        this.attribute = attribute ?? throw new ArgumentNullException(nameof(attribute));
+        _attribute = attribute ?? throw new ArgumentNullException(nameof(attribute));
     }
 
     public IEnumerable<object> GetVariables()
     {
-        return attribute.GetVariables();
+        return _attribute.GetVariables();
     }
 
     public bool IsScaleFishVariable()
     {
-        return attribute.IsScaleFishVariable();
+        return _attribute.IsScaleFishVariable();
     }
 }
 
@@ -54,16 +54,16 @@ internal class AttributeVariableProvider : IVariableProvider
 /// </summary>
 internal class TypedVariableProvider : IVariableProvider
 {
-    private readonly Type propertyType;
+    private readonly Type _propertyType;
 
     public TypedVariableProvider(Type propertyType)
     {
-        this.propertyType = propertyType ?? throw new ArgumentNullException(nameof(propertyType));
+        _propertyType = propertyType ?? throw new ArgumentNullException(nameof(propertyType));
     }
 
     public IEnumerable<object> GetVariables()
     {
-        return GetTypedVariables(propertyType);
+        return GetTypedVariables(_propertyType);
     }
 
     public bool IsScaleFishVariable()
@@ -124,16 +124,16 @@ internal class TypedVariableProvider : IVariableProvider
 /// </summary>
 internal class SailfishVariablesClassProvider : IVariableProvider
 {
-    private readonly Type propertyType;
+    private readonly Type _propertyType;
 
     public SailfishVariablesClassProvider(Type propertyType)
     {
-        this.propertyType = propertyType ?? throw new ArgumentNullException(nameof(propertyType));
+        _propertyType = propertyType ?? throw new ArgumentNullException(nameof(propertyType));
     }
 
     public IEnumerable<object> GetVariables()
     {
-        return GetSailfishVariablesClassVariables(propertyType);
+        return GetSailfishVariablesClassVariables(_propertyType);
     }
 
     public bool IsScaleFishVariable()

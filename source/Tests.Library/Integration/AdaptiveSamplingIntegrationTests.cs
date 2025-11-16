@@ -116,13 +116,13 @@ public class LowVariabilityTestClass
 [Sailfish(UseAdaptiveSampling = true, TargetCoefficientOfVariation = 0.05, MaximumSampleSize = 50)]
 public class HighVariabilityTestClass
 {
-    private int counter = 0;
+    private int _counter = 0;
 
     [SailfishMethod]
     public async Task VariableMethod()
     {
         // Simulate a method with high variability (instance-scoped to avoid shared mutable state)
-        var delay = (counter++ % 10) * 5; // 0, 5, 10, 15, 20, 25, 30, 35, 40, 45ms
+        var delay = (_counter++ % 10) * 5; // 0, 5, 10, 15, 20, 25, 30, 35, 40, 45ms
         await Task.Delay(delay);
     }
 }

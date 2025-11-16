@@ -20,14 +20,20 @@ public interface IClassExecutionSummary
     IClassExecutionSummary FilterForFailureTestCases();
 }
 
-internal class ClassExecutionSummary(
-    Type type,
-    IExecutionSettings executionSettings,
-    IEnumerable<ICompiledTestCaseResult> compiledResults) : IClassExecutionSummary
+internal class ClassExecutionSummary : IClassExecutionSummary
 {
-    public Type TestClass { get; } = type;
-    public IExecutionSettings ExecutionSettings { get; } = executionSettings;
-    public IEnumerable<ICompiledTestCaseResult> CompiledTestCaseResults { get; } = compiledResults;
+    public ClassExecutionSummary(Type type,
+        IExecutionSettings executionSettings,
+        IEnumerable<ICompiledTestCaseResult> compiledResults)
+    {
+        TestClass = type;
+        ExecutionSettings = executionSettings;
+        CompiledTestCaseResults = compiledResults;
+    }
+
+    public Type TestClass { get; }
+    public IExecutionSettings ExecutionSettings { get; }
+    public IEnumerable<ICompiledTestCaseResult> CompiledTestCaseResults { get; }
 
     public IEnumerable<ICompiledTestCaseResult> GetSuccessfulTestCases()
     {

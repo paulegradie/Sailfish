@@ -11,13 +11,13 @@ namespace Tests.Library.Analysis;
 /// </summary>
 public class StatisticalConvergenceDetectorTests
 {
-    private readonly StatisticalConvergenceDetector detector = new();
+    private readonly StatisticalConvergenceDetector _detector = new();
 
     [Fact]
     public void CheckConvergence_WithNullSamples_ReturnsFalse()
     {
         // Act
-        var result = detector.CheckConvergence(null!, 0.05, 0.95, 10);
+        var result = _detector.CheckConvergence(null!, 0.05, 0.95, 10);
 
         // Assert
         result.HasConverged.ShouldBeFalse();
@@ -32,7 +32,7 @@ public class StatisticalConvergenceDetectorTests
         var samples = new double[0];
 
         // Act
-        var result = detector.CheckConvergence(samples, 0.05, 0.95, 10);
+        var result = _detector.CheckConvergence(samples, 0.05, 0.95, 10);
 
         // Assert
         result.HasConverged.ShouldBeFalse();
@@ -47,7 +47,7 @@ public class StatisticalConvergenceDetectorTests
         var samples = new[] { 1.0, 2.0, 3.0 };
 
         // Act
-        var result = detector.CheckConvergence(samples, 0.05, 0.95, 10);
+        var result = _detector.CheckConvergence(samples, 0.05, 0.95, 10);
 
         // Assert
         result.HasConverged.ShouldBeFalse();
@@ -64,7 +64,7 @@ public class StatisticalConvergenceDetectorTests
             .ToArray();
 
         // Act
-        var result = detector.CheckConvergence(samples, 0.05, 0.95, 10);
+        var result = _detector.CheckConvergence(samples, 0.05, 0.95, 10);
 
         // Assert
         result.HasConverged.ShouldBeTrue();
@@ -83,7 +83,7 @@ public class StatisticalConvergenceDetectorTests
             .ToArray();
 
         // Act
-        var result = detector.CheckConvergence(samples, 0.05, 0.95, 10);
+        var result = _detector.CheckConvergence(samples, 0.05, 0.95, 10);
 
         // Assert
         result.HasConverged.ShouldBeFalse();
@@ -99,7 +99,7 @@ public class StatisticalConvergenceDetectorTests
         var samples = new[] { -5.0, -3.0, 0.0, 3.0, 5.0, -5.0, -3.0, 0.0, 3.0, 5.0 };
 
         // Act
-        var result = detector.CheckConvergence(samples, 0.05, 0.95, 5);
+        var result = _detector.CheckConvergence(samples, 0.05, 0.95, 5);
 
         // Assert
         result.HasConverged.ShouldBeFalse();
@@ -114,7 +114,7 @@ public class StatisticalConvergenceDetectorTests
         var samples = Enumerable.Repeat(100.0, 15).ToArray();
 
         // Act
-        var result = detector.CheckConvergence(samples, 0.05, 0.95, 10);
+        var result = _detector.CheckConvergence(samples, 0.05, 0.95, 10);
 
         // Assert
         result.HasConverged.ShouldBeTrue();
@@ -132,7 +132,7 @@ public class StatisticalConvergenceDetectorTests
         var samples = new[] { 95.0, 97.0, 98.0, 100.0, 100.0, 100.0, 102.0, 103.0, 105.0, 100.0 };
 
         // Act
-        var result = detector.CheckConvergence(samples, 0.05, 0.95, 5);
+        var result = _detector.CheckConvergence(samples, 0.05, 0.95, 5);
 
         // Assert
         result.SampleCount.ShouldBe(10);
@@ -150,7 +150,7 @@ public class StatisticalConvergenceDetectorTests
             .ToArray();
 
         // Act
-        var result = detector.CheckConvergence(samples, 0.05, 0.95, 10);
+        var result = _detector.CheckConvergence(samples, 0.05, 0.95, 10);
 
         // Assert
         result.SampleCount.ShouldBe(15);
@@ -168,7 +168,7 @@ public class StatisticalConvergenceDetectorTests
             .ToArray();
 
         // Act
-        var result = detector.CheckConvergence(samples, 0.05, 0.95, 10);
+        var result = _detector.CheckConvergence(samples, 0.05, 0.95, 10);
 
         // Assert
         result.SampleCount.ShouldBe(15);

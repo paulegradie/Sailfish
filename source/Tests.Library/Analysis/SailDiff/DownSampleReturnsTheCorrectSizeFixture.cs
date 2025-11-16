@@ -8,12 +8,12 @@ namespace Tests.Library.Analysis.SailDiff;
 
 public class DownSampleFixture : IAsyncLifetime
 {
-    private readonly TestPreprocessor preprocessor = new(new SailfishOutlierDetector());
-    private double[] data = null!;
+    private readonly TestPreprocessor _preprocessor = new(new SailfishOutlierDetector());
+    private double[] _data = null!;
 
     public Task InitializeAsync()
     {
-        data =
+        _data =
         [
             100.0, 100, 100, 100, 99, 100, 100, 100, 100, 100, 100, 102, 200, 43, 12, 12, 200, 43, 12, 12
         ];
@@ -28,42 +28,42 @@ public class DownSampleFixture : IAsyncLifetime
     [Fact]
     public void OutlierAnalysisShouldBeNull()
     {
-        preprocessor.PreprocessWithDownSample(data, false).OutlierAnalysis.ShouldBeNull();
+        _preprocessor.PreprocessWithDownSample(_data, false).OutlierAnalysis.ShouldBeNull();
     }
 
     [Fact]
     public void DownSampleReturnsCorrectSize()
     {
-        preprocessor.PreprocessWithDownSample(data, false, 1, 6).RawData.Length.ShouldBe(6);
+        _preprocessor.PreprocessWithDownSample(_data, false, 1, 6).RawData.Length.ShouldBe(6);
     }
 
     [Fact]
     public void DownSampleReturnsCorrectSizeB()
     {
-        preprocessor.PreprocessWithDownSample(data, false, 3, 8).RawData.Length.ShouldBe(8);
+        _preprocessor.PreprocessWithDownSample(_data, false, 3, 8).RawData.Length.ShouldBe(8);
     }
 
     [Fact]
     public void DownSampleReturnsCorrectSizeC()
     {
-        preprocessor.PreprocessWithDownSample(data, false, 10).RawData.Length.ShouldBe(10);
+        _preprocessor.PreprocessWithDownSample(_data, false, 10).RawData.Length.ShouldBe(10);
     }
 
     [Fact]
     public void DownSampleReturnsCorrectSizeD()
     {
-        preprocessor.PreprocessWithDownSample(data, false, 50).RawData.Length.ShouldBe(data.Length);
+        _preprocessor.PreprocessWithDownSample(_data, false, 50).RawData.Length.ShouldBe(_data.Length);
     }
 
     [Fact]
     public void DownSampleReturnsCorrectSizeE()
     {
-        preprocessor.PreprocessWithDownSample(data, false, 5, 1).RawData.Length.ShouldBe(5);
+        _preprocessor.PreprocessWithDownSample(_data, false, 5, 1).RawData.Length.ShouldBe(5);
     }
 
     [Fact]
     public void DownSampleReturnsCorrectSizeF()
     {
-        preprocessor.PreprocessWithDownSample(data, false, 10).RawData.Length.ShouldBe(10);
+        _preprocessor.PreprocessWithDownSample(_data, false, 10).RawData.Length.ShouldBe(10);
     }
 }

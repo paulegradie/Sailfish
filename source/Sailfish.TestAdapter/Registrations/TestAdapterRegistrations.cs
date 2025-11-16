@@ -24,16 +24,16 @@ namespace Sailfish.TestAdapter.Registrations;
 
 internal class TestAdapterRegistrations : IProvideAdditionalRegistrations
 {
-    private readonly IFrameworkHandle? frameworkHandle;
+    private readonly IFrameworkHandle? _frameworkHandle;
 
     public TestAdapterRegistrations(IFrameworkHandle? frameworkHandle)
     {
-        this.frameworkHandle = frameworkHandle;
+        _frameworkHandle = frameworkHandle;
     }
 
     public void Load(ContainerBuilder builder)
     {
-        if (frameworkHandle is not null) builder.RegisterInstance(frameworkHandle).As<IFrameworkHandle>();
+        if (_frameworkHandle is not null) builder.RegisterInstance(_frameworkHandle).As<IFrameworkHandle>();
 
         builder.RegisterType<TestAdapterExecutionProgram>().As<ITestAdapterExecutionProgram>();
         builder.RegisterType<TestAdapterExecutionEngine>().As<ITestAdapterExecutionEngine>();

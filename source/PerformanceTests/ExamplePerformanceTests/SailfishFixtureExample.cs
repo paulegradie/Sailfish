@@ -16,13 +16,13 @@ namespace PerformanceTests.ExamplePerformanceTests;
 [Sailfish(SampleSize = 3, NumWarmupIterations = 2, DisableOverheadEstimation = false, Disabled = false)]
 public sealed class SailfishFixtureExample : TestBase
 {
-    private readonly SailfishFixture sailfishFixture;
+    private readonly SailfishFixture _sailfishFixture;
 
     public ExampleDep ExampleDep = null!;
 
     public SailfishFixtureExample(SailfishFixture sailfishFixture, WebApplicationFactory<DemoApp> factory) : base(factory)
     {
-        this.sailfishFixture = sailfishFixture;
+        _sailfishFixture = sailfishFixture;
     }
 
     [SailfishVariable(1, 10)]
@@ -40,7 +40,7 @@ public sealed class SailfishFixtureExample : TestBase
     [SailfishMethodSetup(nameof(TestB))]
     public void ResolveSetup()
     {
-        ExampleDep = sailfishFixture.ResolveType<ExampleDep>();
+        ExampleDep = _sailfishFixture.ResolveType<ExampleDep>();
     }
 
     [SailfishMethod]

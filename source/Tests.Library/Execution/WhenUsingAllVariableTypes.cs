@@ -2,11 +2,9 @@
 using System.Linq;
 using Sailfish.Attributes;
 using Sailfish.Contracts.Public.Variables;
-using Sailfish.Exceptions;
 using Sailfish.Execution;
 using Shouldly;
 using System;
-using System.Reflection;
 using Xunit;
 
 namespace Tests.Library.Execution;
@@ -142,16 +140,31 @@ public class TestTypedVariableProvider : ISailfishVariablesProvider<TestTypedVar
 }
 
 // Test data type for typed variables
-public record TestTypedVariable(string Name, int Value) : ITestTypedVariable
+public record TestTypedVariable : ITestTypedVariable
 {
+    public TestTypedVariable(string Name, int Value)
+    {
+        this.Name = Name;
+        this.Value = Value;
+    }
+
     public int CompareTo(object? obj)
     {
         if (obj is not TestTypedVariable other) return 1;
 
-        var nameComparison = string.Compare(Name, other.Name, System.StringComparison.Ordinal);
+        var nameComparison = string.Compare(Name, other.Name, StringComparison.Ordinal);
         if (nameComparison != 0) return nameComparison;
 
         return Value.CompareTo(other.Value);
+    }
+
+    public string Name { get; init; }
+    public int Value { get; init; }
+
+    public void Deconstruct(out string Name, out int Value)
+    {
+        Name = this.Name;
+        Value = this.Value;
     }
 }
 

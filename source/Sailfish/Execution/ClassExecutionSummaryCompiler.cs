@@ -12,10 +12,16 @@ internal interface IClassExecutionSummaryCompiler
     IEnumerable<IClassExecutionSummary> CompileToSummaries(IEnumerable<TestClassResultGroup> results);
 }
 
-internal class ClassExecutionSummaryCompiler(IStatisticsCompiler statsCompiler, IRunSettings runSettings) : IClassExecutionSummaryCompiler
+internal class ClassExecutionSummaryCompiler : IClassExecutionSummaryCompiler
 {
-    private readonly IRunSettings runSettings = runSettings;
-    private readonly IStatisticsCompiler statsCompiler = statsCompiler;
+    private readonly IRunSettings _runSettings;
+    private readonly IStatisticsCompiler _statsCompiler;
+
+    public ClassExecutionSummaryCompiler(IStatisticsCompiler statsCompiler, IRunSettings runSettings)
+    {
+        _runSettings = runSettings;
+        _statsCompiler = statsCompiler;
+    }
 
     public IEnumerable<IClassExecutionSummary> CompileToSummaries(IEnumerable<TestClassResultGroup> rawExecutionResults)
     {
@@ -32,11 +38,11 @@ internal class ClassExecutionSummaryCompiler(IStatisticsCompiler statsCompiler, 
         }
 
         var executionSettings = testClassResultGroup.TestClass.RetrieveExecutionTestSettings(
-            runSettings.SampleSizeOverride,
-            runSettings.NumWarmupIterationsOverride,
-            runSettings.GlobalUseAdaptiveSampling,
-            runSettings.GlobalTargetCoefficientOfVariation,
-            runSettings.GlobalMaximumSampleSize);
+            _runSettings.SampleSizeOverride,
+            _runSettings.NumWarmupIterationsOverride,
+            _runSettings.GlobalUseAdaptiveSampling,
+            _runSettings.GlobalTargetCoefficientOfVariation,
+            _runSettings.GlobalMaximumSampleSize);
         return new ClassExecutionSummary(
             testClassResultGroup.TestClass,
             executionSettings,
@@ -74,6 +80,6 @@ internal class ClassExecutionSummaryCompiler(IStatisticsCompiler statsCompiler, 
 
     private PerformanceRunResult ComputeStatistics(TestCaseExecutionResult result, IExecutionSettings executionSettings)
     {
-        return statsCompiler.Compile(result.TestInstanceContainer?.TestCaseId!, result.PerformanceTimerResults!, executionSettings);
+        return _statsCompiler.Compile(result.TestInstanceContainer?.TestCaseId!, result.PerformanceTimerResults!, executionSettings);
     }
 }

@@ -7,9 +7,9 @@ namespace Sailfish.Logging;
 
 internal class DefaultLogger : ILogger
 {
-    private readonly IEnumerable<LogLevel> allowedLogLevels;
+    private readonly IEnumerable<LogLevel> _allowedLogLevels;
 
-    private readonly Dictionary<LogLevel, ConsoleColor> levelColors = new()
+    private readonly Dictionary<LogLevel, ConsoleColor> _levelColors = new()
     {
         { LogLevel.Verbose, ConsoleColor.Gray }, // Gray for verbose, as it's usually less important
         { LogLevel.Debug, ConsoleColor.Blue }, // Blue for debug, a standard color for debugging information
@@ -19,7 +19,7 @@ internal class DefaultLogger : ILogger
         { LogLevel.Fatal, ConsoleColor.DarkRed } // Dark red for fatal errors, indicating critical problems
     };
 
-    private readonly Dictionary<LogLevel, string> nameMap = new()
+    private readonly Dictionary<LogLevel, string> _nameMap = new()
     {
         { LogLevel.Verbose, "VRB" },
         { LogLevel.Debug, "DBG" },
@@ -31,7 +31,7 @@ internal class DefaultLogger : ILogger
 
     public DefaultLogger(LogLevel minimumLogLevel)
     {
-        allowedLogLevels = new List<LogLevel>
+        _allowedLogLevels = new List<LogLevel>
             {
                 LogLevel.Verbose,
                 LogLevel.Debug,
@@ -69,13 +69,13 @@ internal class DefaultLogger : ILogger
 
     private void JoinAndWriteLines(LogLevel level, IEnumerable<string> lines)
     {
-        if (!allowedLogLevels.Contains(level)) return;
+        if (!_allowedLogLevels.Contains(level)) return;
         foreach (var line in lines)
         {
             var timestamp = $"[{DateTime.Now:HH:mm:ss}";
             Console.Write(timestamp);
-            Console.ForegroundColor = levelColors[level];
-            Console.Write($" {nameMap[level]}");
+            Console.ForegroundColor = _levelColors[level];
+            Console.Write($" {_nameMap[level]}");
             Console.WriteLine($"]: {line}");
             Console.ResetColor();
         }

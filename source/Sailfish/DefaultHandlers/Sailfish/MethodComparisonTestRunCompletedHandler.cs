@@ -1,6 +1,5 @@
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Reflection;
 using System.Text;
@@ -267,8 +266,8 @@ internal class MethodComparisonTestRunCompletedHandler : INotificationHandler<Te
                 sb.AppendLine("## 🔁 Reproducibility Summary");
                 sb.AppendLine();
                 sb.AppendLine($"- Sailfish {manifest.SailfishVersion} on {manifest.DotNetRuntime}");
-                sb.AppendLine($"- OS: {manifest.OS} ({manifest.OSArchitecture}/{manifest.ProcessArchitecture})");
-                sb.AppendLine($"- GC: {manifest.GCMode}; JIT: {manifest.Jit}");
+                sb.AppendLine($"- OS: {manifest.Os} ({manifest.OsArchitecture}/{manifest.ProcessArchitecture})");
+                sb.AppendLine($"- GC: {manifest.GcMode}; JIT: {manifest.Jit}");
                 if (!string.IsNullOrWhiteSpace(manifest.EnvironmentHealthLabel))
                 {
                     sb.AppendLine($"- Env Health: {manifest.EnvironmentHealthScore}/100 ({manifest.EnvironmentHealthLabel})");
@@ -427,9 +426,9 @@ internal class MethodComparisonTestRunCompletedHandler : INotificationHandler<Te
 
             // Compute pairwise p-values on log-ratio and apply BH-FDR
             var pMap = new Dictionary<(string A, string B), double>();
-            for (int i = 0; i < stats.Count; i++)
+            for (var i = 0; i < stats.Count; i++)
             {
-                for (int j = i + 1; j < stats.Count; j++)
+                for (var j = i + 1; j < stats.Count; j++)
                 {
                     var a = stats[i];
                     var b = stats[j];
@@ -453,11 +452,11 @@ internal class MethodComparisonTestRunCompletedHandler : INotificationHandler<Te
             foreach (var _ in stats) sb.Append("|-|");
             sb.AppendLine();
 
-            for (int i = 0; i < stats.Count; i++)
+            for (var i = 0; i < stats.Count; i++)
             {
                 var row = stats[i];
                 sb.Append($"| {row.Name} |");
-                for (int j = 0; j < stats.Count; j++)
+                for (var j = 0; j < stats.Count; j++)
                 {
                     if (i == j)
                     {
@@ -465,7 +464,7 @@ internal class MethodComparisonTestRunCompletedHandler : INotificationHandler<Te
                         continue;
                     }
                     var col = stats[j];
-                    var (ratio, lo, hi) = MultipleComparisons.ComputeRatioCI(row.Mean, row.SE, row.N, col.Mean, col.SE, col.N, 0.95);
+                    var (ratio, lo, hi) = MultipleComparisons.ComputeRatioCi(row.Mean, row.SE, row.N, col.Mean, col.SE, col.N, 0.95);
                     qMap.TryGetValue(MultipleComparisons.NormalizePair(row.Id, col.Id), out var q);
                     var sig = q > 0 && q <= 0.05;
                     var label = sig ? (ratio < 1.0 ? "Improved" : "Slower") : "Similar";
@@ -504,7 +503,7 @@ internal class MethodComparisonTestRunCompletedHandler : INotificationHandler<Te
                 return p;
             }
 
-            static double SafeDiv(double a, double b) => (b == 0) ? 0 : a / b;
+            static double SafeDiv(double a, double b) => Math.Abs(b) < double.Epsilon ? 0 : a / b;
             static double Square(double x) => x * x;
         }
         catch (Exception ex)

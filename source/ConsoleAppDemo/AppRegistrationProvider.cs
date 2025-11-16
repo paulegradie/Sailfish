@@ -5,8 +5,6 @@ using Microsoft.AspNetCore.Mvc.Testing;
 using PerformanceTestingUserInvokedConsoleApp.CustomHandlerOverrideExamples;
 using Sailfish.Contracts.Public.Notifications;
 using Sailfish.Registration;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace PerformanceTestingUserInvokedConsoleApp;
 

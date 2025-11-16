@@ -17,12 +17,9 @@ namespace Sailfish.Attributes;
 /// <remarks>
 ///     Initializes a new instance of the <see cref="SailfishVariableAttribute" /> class with the specified values.
 /// </remarks>
-/// <param name="start">Int value to start the range</param>
-/// <param name="count">Number of values to create</param>
-/// <param name="step">Step between values</param>
 /// <exception cref="SailfishException">Thrown when no values are provided.</exception>
 [AttributeUsage(AttributeTargets.Property)]
-public sealed class SailfishRangeVariableAttribute(int start, int count, int step = 1) : Attribute, ISailfishVariableAttribute
+public sealed class SailfishRangeVariableAttribute : Attribute, ISailfishVariableAttribute
 {
     /// <summary>
     ///     Initializes a new instance of the <see cref="SailfishVariableAttribute" /> class with the specified values and the
@@ -39,9 +36,29 @@ public sealed class SailfishRangeVariableAttribute(int start, int count, int ste
     }
 
     /// <summary>
+    ///     An attribute to decorate a property that will be referenced within the test.
+    ///     A unique execution set of the performance tests is executed for each value provided,
+    ///     where an execution set is the total number of executions specified by the SailfishAttribute.
+    /// </summary>
+    /// <remarks>
+    ///     This attribute should be applied to public properties. It has no effect when applied to fields.
+    /// </remarks>
+    /// <remarks>
+    ///     Initializes a new instance of the <see cref="SailfishVariableAttribute" /> class with the specified values.
+    /// </remarks>
+    /// <param name="start">Int value to start the range</param>
+    /// <param name="count">Number of values to create</param>
+    /// <param name="step">Step between values</param>
+    /// <exception cref="SailfishException">Thrown when no values are provided.</exception>
+    public SailfishRangeVariableAttribute(int start, int count, int step = 1)
+    {
+        N = Range(start, count, step).Cast<object>();
+    }
+
+    /// <summary>
     ///     Gets the list of values used as variables within the test.
     /// </summary>
-    private IEnumerable<object> N { get; } = Range(start, count, step).Cast<object>();
+    private IEnumerable<object> N { get; }
 
     private bool UseScaleFish { get; }
 

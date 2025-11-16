@@ -12,28 +12,28 @@ namespace Sailfish.DefaultHandlers.SailDiff;
 internal class SailDiffGetAllTrackingFilesOrderedChronologicallyRequestHandler : IRequestHandler<GetAllTrackingDataOrderedChronologicallyRequest,
     GetAllTrackingDataOrderedChronologicallyResponse>
 {
-    private readonly IRunSettings runSettings;
-    private readonly ITrackingFileDirectoryReader trackingFileDirectoryReader;
-    private readonly ITrackingFileParser trackingFileParser;
+    private readonly IRunSettings _runSettings;
+    private readonly ITrackingFileDirectoryReader _trackingFileDirectoryReader;
+    private readonly ITrackingFileParser _trackingFileParser;
 
     public SailDiffGetAllTrackingFilesOrderedChronologicallyRequestHandler(IRunSettings runSettings,
         ITrackingFileDirectoryReader trackingFileDirectoryReader,
         ITrackingFileParser trackingFileParser)
     {
-        this.runSettings = runSettings;
-        this.trackingFileDirectoryReader = trackingFileDirectoryReader;
-        this.trackingFileParser = trackingFileParser;
+        _runSettings = runSettings;
+        _trackingFileDirectoryReader = trackingFileDirectoryReader;
+        _trackingFileParser = trackingFileParser;
     }
 
     public async Task<GetAllTrackingDataOrderedChronologicallyResponse> Handle(
         GetAllTrackingDataOrderedChronologicallyRequest request,
         CancellationToken cancellationToken)
     {
-        var trackingFiles = trackingFileDirectoryReader
-            .FindTrackingFilesInDirectoryOrderedByLastModified(runSettings.GetRunSettingsTrackingDirectoryPath(), request.Ascending);
+        var trackingFiles = _trackingFileDirectoryReader
+            .FindTrackingFilesInDirectoryOrderedByLastModified(_runSettings.GetRunSettingsTrackingDirectoryPath(), request.Ascending);
 
         var data = new TrackingFileDataList();
-        await trackingFileParser.TryParseMany(trackingFiles, data, cancellationToken);
+        await _trackingFileParser.TryParseMany(trackingFiles, data, cancellationToken);
 
         return new GetAllTrackingDataOrderedChronologicallyResponse(data);
     }

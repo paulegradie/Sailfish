@@ -4,12 +4,12 @@ namespace Tests.Common.Builders;
 
 public class ExecutionSettingsTrackingFormatBuilder
 {
-    private bool? asConsole;
-    private bool? asCsv;
-    private bool? asMarkdown;
-    private bool? disableOverheadEstimation;
-    private int? numWarmupIterations;
-    private int? sampleSize;
+    private bool? _asConsole;
+    private bool? _asCsv;
+    private bool? _asMarkdown;
+    private bool? _disableOverheadEstimation;
+    private int? _numWarmupIterations;
+    private int? _sampleSize;
 
     public static ExecutionSettingsTrackingFormatBuilder Create()
     {
@@ -18,49 +18,49 @@ public class ExecutionSettingsTrackingFormatBuilder
 
     public ExecutionSettingsTrackingFormatBuilder WithAsCsv(bool asCsv)
     {
-        this.asCsv = asCsv;
+        _asCsv = asCsv;
         return this;
     }
 
     public ExecutionSettingsTrackingFormatBuilder WithAsConsole(bool asConsole)
     {
-        this.asConsole = asConsole;
+        _asConsole = asConsole;
         return this;
     }
 
     public ExecutionSettingsTrackingFormatBuilder WithAsMarkdown(bool asMarkdown)
     {
-        this.asMarkdown = asMarkdown;
+        _asMarkdown = asMarkdown;
         return this;
     }
 
     public ExecutionSettingsTrackingFormatBuilder WithNumWarmupIterations(int numWarmupIterations)
     {
-        this.numWarmupIterations = numWarmupIterations;
+        _numWarmupIterations = numWarmupIterations;
         return this;
     }
 
     public ExecutionSettingsTrackingFormatBuilder WithSampleSize(int sampleSize)
     {
-        this.sampleSize = sampleSize;
+        _sampleSize = sampleSize;
         return this;
     }
 
     public ExecutionSettingsTrackingFormatBuilder WithDisableOverheadEstimation(bool disableOverheadEstimation)
     {
-        this.disableOverheadEstimation = disableOverheadEstimation;
+        _disableOverheadEstimation = disableOverheadEstimation;
         return this;
     }
 
     public ExecutionSettingsTrackingFormat Build()
     {
         return new ExecutionSettingsTrackingFormat(
-            asCsv ?? false,
-            asConsole ?? false,
-            asMarkdown ?? false,
-            numWarmupIterations ?? 1,
-            sampleSize ?? 3,
-            disableOverheadEstimation ?? false
+            _asCsv ?? false,
+            _asConsole ?? false,
+            _asMarkdown ?? false,
+            _numWarmupIterations ?? 1,
+            _sampleSize ?? 3,
+            _disableOverheadEstimation ?? false
         );
     }
 }

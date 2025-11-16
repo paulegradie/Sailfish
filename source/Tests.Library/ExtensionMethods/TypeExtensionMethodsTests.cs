@@ -1,5 +1,4 @@
 using System;
-using System.Reflection;
 using Sailfish.Exceptions;
 using Sailfish.Extensions.Methods;
 using Shouldly;

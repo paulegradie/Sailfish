@@ -5,25 +5,25 @@ namespace Sailfish.TestAdapter.Display.VSTestFramework;
 
 internal class TestFrameworkWriter : ITestFrameworkWriter
 {
-    private readonly IFrameworkHandle frameworkHandle;
+    private readonly IFrameworkHandle _frameworkHandle;
 
     public TestFrameworkWriter(IFrameworkHandle frameworkHandle)
     {
-        this.frameworkHandle = frameworkHandle;
+        _frameworkHandle = frameworkHandle;
     }
 
     public void RecordStart(TestCase testCase)
     {
-        frameworkHandle.RecordStart(testCase);
+        _frameworkHandle.RecordStart(testCase);
     }
 
     public void RecordResult(TestResult testResult)
     {
-        frameworkHandle.RecordResult(testResult);
+        _frameworkHandle.RecordResult(testResult);
     }
 
     public void RecordEnd(TestCase testCase, TestOutcome testOutcome)
     {
-        frameworkHandle.RecordEnd(testCase, testOutcome);
+        _frameworkHandle.RecordEnd(testCase, testOutcome);
     }
 }

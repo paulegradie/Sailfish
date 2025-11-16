@@ -1,13 +1,10 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using MediatR;
 using NSubstitute;
-using Sailfish.Contracts.Public.Models;
-using Sailfish.Contracts.Public.Notifications;
 using Sailfish.Contracts.Public.Serialization.Tracking.V1;
 using Sailfish.DefaultHandlers.Sailfish;
 using Sailfish.Logging;
@@ -17,11 +14,11 @@ using Xunit;
 
 namespace Tests.Library.DefaultHandlers.Sailfish;
 
-public class MethodComparisonTestClassCompletedHandler_MarkdownTests
+public class MethodComparisonTestClassCompletedHandlerMarkdownTests
 {
-    private readonly ILogger logger = Substitute.For<ILogger>();
-    private readonly IMediator mediator = Substitute.For<IMediator>();
-    private MethodComparisonTestClassCompletedHandler CreateHandler() => new(logger, mediator);
+    private readonly ILogger _logger = Substitute.For<ILogger>();
+    private readonly IMediator _mediator = Substitute.For<IMediator>();
+    private MethodComparisonTestClassCompletedHandler CreateHandler() => new(_logger, _mediator);
 
     private static T InvokePrivate<T>(object instance, string methodName, params object[] args)
     {
@@ -145,7 +142,7 @@ public class MethodComparisonTestClassCompletedHandler_MarkdownTests
     {
         var handler = CreateHandler();
         await Should.NotThrowAsync(async () => await handler.Handle(null!, CancellationToken.None));
-        logger.Received().Log(
+        _logger.Received().Log(
             LogLevel.Error,
             Arg.Any<Exception>(),
             Arg.Is<string>(s => s.Contains("Failed to generate consolidated markdown")),
@@ -166,9 +163,9 @@ public class MethodComparisonTestClassCompletedHandler_MarkdownTests
             .WithTestCaseId(TestCaseIdBuilder.Create().WithTestCaseName("Foo").Build())
             .Build();
 
-        string? g1 = InvokePrivate<string?>(handler, "GetComparisonGroup", sum);
-        string? g2 = InvokePrivate<string?>(handler, "GetComparisonGroup", sort);
-        string? g3 = InvokePrivate<string?>(handler, "GetComparisonGroup", none);
+        var g1 = InvokePrivate<string?>(handler, "GetComparisonGroup", sum);
+        var g2 = InvokePrivate<string?>(handler, "GetComparisonGroup", sort);
+        var g3 = InvokePrivate<string?>(handler, "GetComparisonGroup", none);
 
         g1.ShouldBe("SumCalculation");
         g2.ShouldBe("SortingAlgorithm");

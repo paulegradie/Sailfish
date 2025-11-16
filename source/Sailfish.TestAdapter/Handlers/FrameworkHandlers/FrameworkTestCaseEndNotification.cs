@@ -13,33 +13,60 @@ using Sailfish.TestAdapter.Display.VSTestFramework;
 
 namespace Sailfish.TestAdapter.Handlers.FrameworkHandlers;
 
-internal record FrameworkTestCaseEndNotification(
-    string TestOutputWindowMessage,
-    DateTimeOffset StartTime,
-    DateTimeOffset EndTime,
-    double Duration,
-    TestCase TestCase,
-    StatusCode StatusCode,
-    Exception? Exception
-) : INotification;
+internal record FrameworkTestCaseEndNotification : INotification
+{
+    public FrameworkTestCaseEndNotification(string TestOutputWindowMessage,
+        DateTimeOffset StartTime,
+        DateTimeOffset EndTime,
+        double Duration,
+        TestCase TestCase,
+        StatusCode StatusCode,
+        Exception? Exception)
+    {
+        this.TestOutputWindowMessage = TestOutputWindowMessage;
+        this.StartTime = StartTime;
+        this.EndTime = EndTime;
+        this.Duration = Duration;
+        this.TestCase = TestCase;
+        this.StatusCode = StatusCode;
+        this.Exception = Exception;
+    }
 
+    public string TestOutputWindowMessage { get; init; }
+    public DateTimeOffset StartTime { get; init; }
+    public DateTimeOffset EndTime { get; init; }
+    public double Duration { get; init; }
+    public TestCase TestCase { get; init; }
+    public StatusCode StatusCode { get; init; }
+    public Exception? Exception { get; init; }
 
+    public void Deconstruct(out string TestOutputWindowMessage, out DateTimeOffset StartTime, out DateTimeOffset EndTime, out double Duration, out TestCase TestCase, out StatusCode StatusCode, out Exception? Exception)
+    {
+        TestOutputWindowMessage = this.TestOutputWindowMessage;
+        StartTime = this.StartTime;
+        EndTime = this.EndTime;
+        Duration = this.Duration;
+        TestCase = this.TestCase;
+        StatusCode = this.StatusCode;
+        Exception = this.Exception;
+    }
+}
 
 internal class FrameworkTestCaseEndNotificationHandler : INotificationHandler<FrameworkTestCaseEndNotification>
 {
-    private readonly Dictionary<StatusCode, TestOutcome> outcomeMap = new() { { StatusCode.Success, TestOutcome.Passed }, { StatusCode.Failure, TestOutcome.Failed } };
-    private readonly ITestFrameworkWriter testFrameworkWriter;
-    private readonly IEnvironmentHealthReportProvider? healthProvider;
+    private readonly Dictionary<StatusCode, TestOutcome> _outcomeMap = new() { { StatusCode.Success, TestOutcome.Passed }, { StatusCode.Failure, TestOutcome.Failed } };
+    private readonly ITestFrameworkWriter _testFrameworkWriter;
+    private readonly IEnvironmentHealthReportProvider? _healthProvider;
 
 
     public FrameworkTestCaseEndNotificationHandler(ITestFrameworkWriter testFrameworkWriter)
     {
-        this.testFrameworkWriter = testFrameworkWriter;
+        _testFrameworkWriter = testFrameworkWriter;
     }
     public FrameworkTestCaseEndNotificationHandler(ITestFrameworkWriter testFrameworkWriter, IEnvironmentHealthReportProvider healthProvider)
     {
-        this.testFrameworkWriter = testFrameworkWriter;
-        this.healthProvider = healthProvider;
+        _testFrameworkWriter = testFrameworkWriter;
+        _healthProvider = healthProvider;
     }
 
 
@@ -47,13 +74,13 @@ internal class FrameworkTestCaseEndNotificationHandler : INotificationHandler<Fr
     {
         await Task.Yield();
 
-        var outcome = outcomeMap[notification.StatusCode];
+        var outcome = _outcomeMap[notification.StatusCode];
 
 
 
         // Append environment health summary (if available) to the end of the per-test output
         var outputMessage = notification.TestOutputWindowMessage;
-        var report = healthProvider?.Current;
+        var report = _healthProvider?.Current;
         if (report is not null)
         {
             outputMessage = AppendEnvironmentHealthSummary(outputMessage, report);
@@ -68,8 +95,8 @@ internal class FrameworkTestCaseEndNotificationHandler : INotificationHandler<Fr
             notification.Duration,
             outputMessage);
 
-        testFrameworkWriter.RecordEnd(notification.TestCase, outcome);
-        testFrameworkWriter.RecordResult(testResult);
+        _testFrameworkWriter.RecordEnd(notification.TestCase, outcome);
+        _testFrameworkWriter.RecordResult(testResult);
     }
 
     private static string AppendEnvironmentHealthSummary(string testOutputWindowMessage, EnvironmentHealthReport report)

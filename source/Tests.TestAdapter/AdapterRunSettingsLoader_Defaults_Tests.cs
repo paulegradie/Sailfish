@@ -6,7 +6,7 @@ using Xunit;
 
 namespace Tests.TestAdapter;
 
-public class AdapterRunSettingsLoader_Defaults_Tests
+public class AdapterRunSettingsLoaderDefaultsTests
 {
     [Fact]
     public void EnableEnvironmentHealthCheck_Defaults_To_True_When_Not_Specified()

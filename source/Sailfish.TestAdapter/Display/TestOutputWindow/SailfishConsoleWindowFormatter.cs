@@ -17,11 +17,11 @@ internal interface ISailfishConsoleWindowFormatter
 
 internal class SailfishConsoleWindowFormatter : ISailfishConsoleWindowFormatter
 {
-    private readonly ILogger logger;
+    private readonly ILogger _logger;
 
     public SailfishConsoleWindowFormatter(ILogger logger)
     {
-        this.logger = logger;
+        _logger = logger;
     }
 
     public string FormConsoleWindowMessageForSailfish(IEnumerable<IClassExecutionSummary> results, OrderedDictionary? tags = null)
@@ -46,12 +46,12 @@ internal class SailfishConsoleWindowFormatter : ISailfishConsoleWindowFormatter
             exceptionBuilder.AppendLine(compiledResults.Exception.StackTrace);
 
             var exceptionString = exceptionBuilder.ToString();
-            logger.Log(LogLevel.Error, exceptionString);
+            _logger.Log(LogLevel.Error, exceptionString);
             return exceptionString;
         }
 
         var consoleOutputString = FormOutputTable(compiledResults);
-        logger.Log(LogLevel.Information, "{MarkdownTable}", consoleOutputString);
+        _logger.Log(LogLevel.Information, "{MarkdownTable}", consoleOutputString);
         return consoleOutputString;
     }
 

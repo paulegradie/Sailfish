@@ -144,8 +144,14 @@ public class SailfishVariablesClassTestClass
 }
 
 // Test data type
-public record TestData(string Name, int Value) : IComparable
+public record TestData : IComparable
 {
+    public TestData(string Name, int Value)
+    {
+        this.Name = Name;
+        this.Value = Value;
+    }
+
     public int CompareTo(object? obj)
     {
         if (obj is TestData other)
@@ -154,6 +160,15 @@ public record TestData(string Name, int Value) : IComparable
             return nameComparison != 0 ? nameComparison : Value.CompareTo(other.Value);
         }
         return 1;
+    }
+
+    public string Name { get; init; }
+    public int Value { get; init; }
+
+    public void Deconstruct(out string Name, out int Value)
+    {
+        Name = this.Name;
+        Value = this.Value;
     }
 }
 

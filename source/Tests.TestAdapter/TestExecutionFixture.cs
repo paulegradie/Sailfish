@@ -24,21 +24,21 @@ namespace Tests.TestAdapter;
 
 public class TestExecutionFixture
 {
-    private readonly ContainerBuilder builder;
-    private readonly IFrameworkHandle frameworkHandle;
-    private readonly List<TestCase> testCases;
+    private readonly ContainerBuilder _builder;
+    private readonly IFrameworkHandle _frameworkHandle;
+    private readonly List<TestCase> _testCases;
 
     public TestExecutionFixture()
     {
-        frameworkHandle = Substitute.For<IFrameworkHandle>();
-        builder = new ContainerBuilder();
-        builder.RegisterSailfishTypes(Substitute.For<IRunSettings>(), new TestAdapterRegistrations(frameworkHandle));
-        builder.RegisterInstance(RunSettingsBuilder.CreateBuilder().DisableOverheadEstimation().Build());
+        _frameworkHandle = Substitute.For<IFrameworkHandle>();
+        _builder = new ContainerBuilder();
+        _builder.RegisterSailfishTypes(Substitute.For<IRunSettings>(), new TestAdapterRegistrations(_frameworkHandle));
+        _builder.RegisterInstance(RunSettingsBuilder.CreateBuilder().DisableOverheadEstimation().Build());
         var projectDll = DllFinder.FindThisProjectsDllRecursively();
-        testCases = new TestDiscovery().DiscoverTests(new[] { projectDll }, Substitute.For<IMessageLogger>()).ToList();
-        var refTestType = TestExecutor.RetrieveReferenceTypeForTestProject(testCases);
+        _testCases = new TestDiscovery().DiscoverTests(new[] { projectDll }, Substitute.For<IMessageLogger>()).ToList();
+        var refTestType = TestExecutor.RetrieveReferenceTypeForTestProject(_testCases);
         SailfishTypeRegistrationUtility.InvokeRegistrationProviderCallbackMain(
-                builder,
+                _builder,
                 new[] { refTestType },
                 new[] { refTestType },
                 CancellationToken.None)
@@ -48,15 +48,15 @@ public class TestExecutionFixture
     [Fact]
     public void FilteredTestsAreSuccessfullyDiscovered()
     {
-        using var container = builder.Build();
-        Should.NotThrow(() => new TestExecution().ExecuteTests(testCases.Take(1).ToList(), container, frameworkHandle, CancellationToken.None));
+        using var container = _builder.Build();
+        Should.NotThrow(() => new TestExecution().ExecuteTests(_testCases.Take(1).ToList(), container, _frameworkHandle, CancellationToken.None));
     }
 
     [Fact]
     public void TestCasesAreExecutedCorrectly()
     {
-        using var container = builder.Build();
-        Should.NotThrow(() => new TestExecution().ExecuteTests(testCases, container, frameworkHandle, CancellationToken.None));
+        using var container = _builder.Build();
+        Should.NotThrow(() => new TestExecution().ExecuteTests(_testCases, container, _frameworkHandle, CancellationToken.None));
     }
 
     [Fact]
@@ -64,30 +64,30 @@ public class TestExecutionFixture
     {
         var program = Substitute.For<ITestAdapterExecutionProgram>();
         var ct = new CancellationToken();
-        program.Run(testCases, ct).ThrowsForAnyArgs(new Exception("Test"));
+        program.Run(_testCases, ct).ThrowsForAnyArgs(new Exception("Test"));
         var b = new ContainerBuilder();
         b.RegisterInstance(program);
         await using var container = b.Build();
 
         var execution = new TestExecution();
-        Should.Throw<Exception>(() => execution.ExecuteTests(testCases, container, frameworkHandle, ct));
+        Should.Throw<Exception>(() => execution.ExecuteTests(_testCases, container, _frameworkHandle, ct));
     }
 
     [Fact]
     public void StartupExceptionsAreHandled()
     {
         var context = Substitute.For<IRunContext>();
-        using var container = builder.Build();
+        using var container = _builder.Build();
 
         var execution = Substitute.For<ITestExecution>();
         execution
-            .When(x => x.ExecuteTests(Arg.Any<List<TestCase>>(), Arg.Any<IContainer>(), frameworkHandle, Arg.Any<CancellationToken>()))
+            .When(x => x.ExecuteTests(Arg.Any<List<TestCase>>(), Arg.Any<IContainer>(), _frameworkHandle, Arg.Any<CancellationToken>()))
             .Do(call => throw new Exception("Oopsie"));
         var executor = new TestExecutor(execution);
 
-        executor.RunTests(testCases, context, frameworkHandle);
+        executor.RunTests(_testCases, context, _frameworkHandle);
 
-        var calls = frameworkHandle.ReceivedCalls();
+        var calls = _frameworkHandle.ReceivedCalls();
         calls.Count().ShouldBeGreaterThanOrEqualTo(4);
     }
 }

@@ -6,7 +6,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using MediatR;
 using NSubstitute;
-using Sailfish.Contracts.Public.Notifications;
 using Sailfish.TestAdapter.Handlers.FrameworkHandlers;
 using Sailfish.TestAdapter.Queue.Configuration;
 using Sailfish.TestAdapter.Queue.Contracts;
@@ -674,7 +673,7 @@ public class QueueInfrastructureTests
         var tasks = new List<Task<string>>();
 
         // Act - Add multiple test cases concurrently
-        for (int i = 0; i < 10; i++)
+        for (var i = 0; i < 10; i++)
         {
             var message = CreateTestMessage($"ConcurrentTest{i}");
             tasks.Add(batchingService.AddTestCaseToBatchAsync(message));

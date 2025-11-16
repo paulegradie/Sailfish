@@ -3,12 +3,6 @@ using PerformanceTests.ExamplePerformanceTests;
 using Sailfish;
 using Sailfish.Analysis.SailDiff;
 using Sailfish.Analysis.ScaleFish;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 
 Console.Clear();
 Console.WriteLine("\nThis demo shows you how run Scalefish, load a model file, and then use it to make predictions at scale" +

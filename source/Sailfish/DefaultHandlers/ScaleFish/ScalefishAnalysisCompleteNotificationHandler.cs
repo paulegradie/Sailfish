@@ -13,31 +13,31 @@ namespace Sailfish.DefaultHandlers.ScaleFish;
 
 internal class ScaleFishAnalysisCompleteNotificationHandler : INotificationHandler<ScaleFishAnalysisCompleteNotification>
 {
-    private readonly IRunSettings runSettings;
+    private readonly IRunSettings _runSettings;
 
     public ScaleFishAnalysisCompleteNotificationHandler(IRunSettings runSettings)
     {
-        this.runSettings = runSettings;
+        _runSettings = runSettings;
     }
 
     public async Task Handle(ScaleFishAnalysisCompleteNotification notification, CancellationToken cancellationToken)
     {
-        if (!Directory.Exists(runSettings.LocalOutputDirectory)) Directory.CreateDirectory(runSettings.LocalOutputDirectory);
+        if (!Directory.Exists(_runSettings.LocalOutputDirectory)) Directory.CreateDirectory(_runSettings.LocalOutputDirectory);
 
-        await WriteResults(DefaultFileSettings.DefaultScalefishFileName(runSettings.TimeStamp), notification.ScaleFishResultMarkdown, cancellationToken);
-        await WriteModels(DefaultFileSettings.DefaultScalefishModelFileName(runSettings.TimeStamp), notification.TestClassComplexityResults, cancellationToken);
+        await WriteResults(DefaultFileSettings.DefaultScalefishFileName(_runSettings.TimeStamp), notification.ScaleFishResultMarkdown, cancellationToken);
+        await WriteModels(DefaultFileSettings.DefaultScalefishModelFileName(_runSettings.TimeStamp), notification.TestClassComplexityResults, cancellationToken);
     }
 
     private async Task WriteModels(string fileName, List<ScalefishClassModel> models, CancellationToken cancellationToken)
     {
-        var filepath = Path.Join(runSettings.LocalOutputDirectory, DefaultFileSettings.AppendTagsToFilename(fileName, runSettings.Tags));
+        var filepath = Path.Join(_runSettings.LocalOutputDirectory, DefaultFileSettings.AppendTagsToFilename(fileName, _runSettings.Tags));
         var result = SailfishSerializer.Serialize(models);
         await WriteStringToFile(result, filepath, cancellationToken).ConfigureAwait(false);
     }
 
     private async Task WriteResults(string fileName, string result, CancellationToken cancellationToken)
     {
-        var filepath = Path.Join(runSettings.LocalOutputDirectory, DefaultFileSettings.AppendTagsToFilename(fileName, runSettings.Tags));
+        var filepath = Path.Join(_runSettings.LocalOutputDirectory, DefaultFileSettings.AppendTagsToFilename(fileName, _runSettings.Tags));
         await WriteStringToFile(result, filepath, cancellationToken).ConfigureAwait(false);
     }
 

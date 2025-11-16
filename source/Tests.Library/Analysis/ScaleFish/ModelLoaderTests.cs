@@ -2,11 +2,8 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Reflection;
-using System.Runtime.Serialization;
 using NSubstitute;
 using Sailfish.Analysis.ScaleFish;
-using Sailfish.Analysis.ScaleFish.ComplexityFunctions;
 using Shouldly;
 using Xunit;
 

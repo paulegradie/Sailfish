@@ -16,11 +16,11 @@ namespace Sailfish.DefaultHandlers.SailDiff;
 
 internal class SailDiffAnalysisCompleteNotificationHandler : INotificationHandler<SailDiffAnalysisCompleteNotification>
 {
-    private readonly IRunSettings runSettings;
+    private readonly IRunSettings _runSettings;
 
     public SailDiffAnalysisCompleteNotificationHandler(IRunSettings runSettings)
     {
-        this.runSettings = runSettings;
+        _runSettings = runSettings;
     }
 
     public async Task Handle(SailDiffAnalysisCompleteNotification notification, CancellationToken cancellationToken)
@@ -32,9 +32,9 @@ internal class SailDiffAnalysisCompleteNotificationHandler : INotificationHandle
     private async Task WriteMarkdownTable(string markdownTable, CancellationToken cancellationToken)
     {
         var filename = DefaultFileSettings.AppendTagsToFilename(
-            DefaultFileSettings.DefaultSaildiffMarkdownFileName(runSettings.TimeStamp, runSettings.SailDiffSettings.TestType),
-            runSettings.Tags);
-        var filePath = Path.Join(runSettings.LocalOutputDirectory, filename);
+            DefaultFileSettings.DefaultSaildiffMarkdownFileName(_runSettings.TimeStamp, _runSettings.SailDiffSettings.TestType),
+            _runSettings.Tags);
+        var filePath = Path.Join(_runSettings.LocalOutputDirectory, filename);
         if (!string.IsNullOrEmpty(markdownTable))
         {
             var directory = Path.GetDirectoryName(filePath);
@@ -52,10 +52,10 @@ internal class SailDiffAnalysisCompleteNotificationHandler : INotificationHandle
         var fileName = DefaultFileSettings
             .AppendTagsToFilename(
                 DefaultFileSettings.DefaultSaildiffCsvFileName(
-                    runSettings.TimeStamp,
-                    runSettings.SailDiffSettings.TestType),
-                runSettings.Tags);
-        var filePath = Path.Join(runSettings.LocalOutputDirectory, fileName);
+                    _runSettings.TimeStamp,
+                    _runSettings.SailDiffSettings.TestType),
+                _runSettings.Tags);
+        var filePath = Path.Join(_runSettings.LocalOutputDirectory, fileName);
         if (testCaseResults.Count != 0)
         {
             await using var writer = new StreamWriter(filePath);

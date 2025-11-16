@@ -10,19 +10,24 @@ public interface IComplexityComputer
     IEnumerable<ScalefishClassModel> AnalyzeComplexity(List<IClassExecutionSummary> executionSummaries);
 }
 
-public class ComplexityComputer(
-    IComplexityEstimator complexityEstimator,
-    IScalefishObservationCompiler scalefishObservationCompiler) : IComplexityComputer
+public class ComplexityComputer : IComplexityComputer
 {
-    private readonly IComplexityEstimator complexityEstimator = complexityEstimator ?? throw new ArgumentNullException(nameof(complexityEstimator));
-    private readonly IScalefishObservationCompiler scalefishObservationCompiler = scalefishObservationCompiler ?? throw new ArgumentNullException(nameof(scalefishObservationCompiler));
+    private readonly IComplexityEstimator _complexityEstimator;
+    private readonly IScalefishObservationCompiler _scalefishObservationCompiler;
+
+    public ComplexityComputer(IComplexityEstimator complexityEstimator,
+        IScalefishObservationCompiler scalefishObservationCompiler)
+    {
+        _complexityEstimator = complexityEstimator ?? throw new ArgumentNullException(nameof(complexityEstimator));
+        _scalefishObservationCompiler = scalefishObservationCompiler ?? throw new ArgumentNullException(nameof(scalefishObservationCompiler));
+    }
 
     public IEnumerable<ScalefishClassModel> AnalyzeComplexity(List<IClassExecutionSummary> executionSummaries)
     {
         var finalResult = new Dictionary<Type, ComplexityMethodResult>();
         foreach (var testClassSummary in executionSummaries)
         {
-            var observationSet = scalefishObservationCompiler.CompileObservationSet(testClassSummary);
+            var observationSet = _scalefishObservationCompiler.CompileObservationSet(testClassSummary);
             if (observationSet is null) continue;
 
             var resultsByMethod = ComputeComplexityMethodResult(observationSet);
@@ -51,7 +56,7 @@ public class ComplexityComputer(
         var complexityResultMap = new ComplexityProperty();
         foreach (var observationProperty in observationMethodGroup.ToList())
         {
-            var complexityResult = complexityEstimator.EstimateComplexity(observationProperty.ComplexityMeasurements);
+            var complexityResult = _complexityEstimator.EstimateComplexity(observationProperty.ComplexityMeasurements);
             if (complexityResult is not null) complexityResultMap.Add(observationProperty.ToString(), complexityResult);
         }
 

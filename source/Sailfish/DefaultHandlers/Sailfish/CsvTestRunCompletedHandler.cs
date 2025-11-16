@@ -226,9 +226,9 @@ internal class CsvTestRunCompletedHandler : INotificationHandler<TestRunComplete
 
                 // Compute pairwise p-values on log-ratio and apply BH-FDR
                 var pMap = new Dictionary<(string A, string B), double>();
-                for (int i = 0; i < stats.Count; i++)
+                for (var i = 0; i < stats.Count; i++)
                 {
-                    for (int j = i + 1; j < stats.Count; j++)
+                    for (var j = i + 1; j < stats.Count; j++)
                     {
                         var a = stats[i];
                         var b = stats[j];
@@ -239,22 +239,22 @@ internal class CsvTestRunCompletedHandler : INotificationHandler<TestRunComplete
                         }
                     }
                 }
-                Dictionary<(string A, string B), double> qMap = pMap.Count > 0
+                var qMap = pMap.Count > 0
                     ? MultipleComparisons.BenjaminiHochbergAdjust(pMap)
                     : new Dictionary<(string A, string B), double>();
 
                 // Emit one row per unique pair i<j
-                for (int i = 0; i < stats.Count; i++)
+                for (var i = 0; i < stats.Count; i++)
                 {
-                    for (int j = i + 1; j < stats.Count; j++)
+                    for (var j = i + 1; j < stats.Count; j++)
                     {
                         var row = stats[i];
                         var col = stats[j];
 
-                        var ci = MultipleComparisons.ComputeRatioCI(row.Mean, row.SE, row.N, col.Mean, col.SE, col.N, 0.95);
-                        double ratio = ci.Ratio;
-                        double? lo = ci.Lower;
-                        double? hi = ci.Upper;
+                        var ci = MultipleComparisons.ComputeRatioCi(row.Mean, row.SE, row.N, col.Mean, col.SE, col.N, 0.95);
+                        var ratio = ci.Ratio;
+                        var lo = ci.Lower;
+                        var hi = ci.Upper;
 
                         double q;
                         qMap.TryGetValue(MultipleComparisons.NormalizePair(row.Id, col.Id), out q);
@@ -299,7 +299,7 @@ internal class CsvTestRunCompletedHandler : INotificationHandler<TestRunComplete
             return p;
         }
 
-        static double SafeDiv(double a, double b) => (b == 0) ? 0 : a / b;
+        static double SafeDiv(double a, double b) => Math.Abs(b) < double.Epsilon ? 0 : a / b;
     }
 
     /// <summary>

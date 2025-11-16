@@ -21,20 +21,20 @@ internal interface ITestAdapterExecutionEngine
 
 internal class TestAdapterExecutionEngine : ITestAdapterExecutionEngine
 {
-    private readonly IClassExecutionSummaryCompiler classExecutionSummaryCompiler;
-    private readonly ISailfishExecutionEngine engine;
-    private readonly ILogger logger;
-    private readonly ITestInstanceContainerCreator testInstanceContainerCreator;
+    private readonly IClassExecutionSummaryCompiler _classExecutionSummaryCompiler;
+    private readonly ISailfishExecutionEngine _engine;
+    private readonly ILogger _logger;
+    private readonly ITestInstanceContainerCreator _testInstanceContainerCreator;
 
     public TestAdapterExecutionEngine(ITestInstanceContainerCreator testInstanceContainerCreator,
         IClassExecutionSummaryCompiler classExecutionSummaryCompiler,
         ISailfishExecutionEngine engine,
         ILogger logger)
     {
-        this.classExecutionSummaryCompiler = classExecutionSummaryCompiler;
-        this.engine = engine;
-        this.logger = logger;
-        this.testInstanceContainerCreator = testInstanceContainerCreator;
+        _classExecutionSummaryCompiler = classExecutionSummaryCompiler;
+        _engine = engine;
+        _logger = logger;
+        _testInstanceContainerCreator = testInstanceContainerCreator;
     }
 
     public async Task<List<IClassExecutionSummary>> Execute(
@@ -50,7 +50,7 @@ internal class TestAdapterExecutionEngine : ITestAdapterExecutionEngine
             if (testType is null) continue;
 
             // list of methods with their many variable combos. Each element is a container, which represents a SailfishMethod
-            var providerForCurrentTestCases = testInstanceContainerCreator
+            var providerForCurrentTestCases = _testInstanceContainerCreator
                 .CreateTestContainerInstanceProviders(
                     testType,
                     CreatePropertyFilter(GetTestCaseProperties(
@@ -68,7 +68,7 @@ internal class TestAdapterExecutionEngine : ITestAdapterExecutionEngine
                 var providerPropertiesStateKey = testProvider.Test.FullName ??
                                                  throw new SailfishException(
                                                      $"Failed to read the FullName of {testProvider.Test.Name}");
-                var results = await engine.ActivateContainer(
+                var results = await _engine.ActivateContainer(
                     i,
                     totalTestProviderCount,
                     testProvider,
@@ -85,7 +85,7 @@ internal class TestAdapterExecutionEngine : ITestAdapterExecutionEngine
             rawExecutionResults.Add((unsortedTestCaseGroup.Key, new TestClassResultGroup(testType, groupResults)));
         }
 
-        var summaries = classExecutionSummaryCompiler.CompileToSummaries(rawExecutionResults.Select(x => x.Item2)).ToList();
+        var summaries = _classExecutionSummaryCompiler.CompileToSummaries(rawExecutionResults.Select(x => x.Item2)).ToList();
         return summaries;
     }
 
@@ -101,7 +101,7 @@ internal class TestAdapterExecutionEngine : ITestAdapterExecutionEngine
         var assembly = LoadAssemblyFromDll(aTestCase.Source);
         testType = assembly.GetType(testTypeFullName, true, true);
         if (testType is not null) return false;
-        logger.Log(LogLevel.Information, $"Unable to find the following testType: {testTypeFullName}");
+        _logger.Log(LogLevel.Information, $"Unable to find the following testType: {testTypeFullName}");
         return true;
     }
 

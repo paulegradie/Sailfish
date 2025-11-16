@@ -54,10 +54,10 @@ public class DetailedTableFormatter : IDetailedTableFormatter
 
         return context switch
         {
-            OutputContext.IDE => CreateIDETable(comparisonList),
+            OutputContext.Ide => CreateIdeTable(comparisonList),
             OutputContext.Markdown => CreateMarkdownTable(comparisonList),
             OutputContext.Console => CreateConsoleTable(comparisonList),
-            OutputContext.CSV => CreateCSVTable(comparisonList),
+            OutputContext.Csv => CreateCsvTable(comparisonList),
             _ => CreateConsoleTable(comparisonList)
         };
     }
@@ -65,7 +65,7 @@ public class DetailedTableFormatter : IDetailedTableFormatter
     /// <summary>
     /// Creates a table formatted for IDE output with enhanced readability.
     /// </summary>
-    private string CreateIDETable(List<SailDiffComparisonData> comparisons)
+    private string CreateIdeTable(List<SailDiffComparisonData> comparisons)
     {
         var sb = new StringBuilder();
         sb.AppendLine();
@@ -217,7 +217,7 @@ public class DetailedTableFormatter : IDetailedTableFormatter
     /// <summary>
     /// Creates a CSV format for data export and analysis.
     /// </summary>
-    private string CreateCSVTable(List<SailDiffComparisonData> comparisons)
+    private string CreateCsvTable(List<SailDiffComparisonData> comparisons)
     {
         var sb = new StringBuilder();
         sb.AppendLine("PrimaryMethod,ComparedMethod,PrimaryMean,ComparedMean,PrimaryMedian,ComparedMedian,PValue,ChangeDescription,SampleSize");
@@ -257,7 +257,7 @@ public class DetailedTableFormatter : IDetailedTableFormatter
 
         // Calculate column widths
         var columnWidths = new int[headers.Length];
-        for (int i = 0; i < headers.Length; i++)
+        for (var i = 0; i < headers.Length; i++)
         {
             columnWidths[i] = Math.Max(headers[i].Length, rows.Max(row => row[i].Length));
         }
@@ -266,7 +266,7 @@ public class DetailedTableFormatter : IDetailedTableFormatter
 
         // Header row
         sb.Append("| ");
-        for (int i = 0; i < headers.Length; i++)
+        for (var i = 0; i < headers.Length; i++)
         {
             sb.Append(headers[i].PadRight(columnWidths[i]));
             sb.Append(" | ");
@@ -275,7 +275,7 @@ public class DetailedTableFormatter : IDetailedTableFormatter
 
         // Separator row
         sb.Append("| ");
-        for (int i = 0; i < headers.Length; i++)
+        for (var i = 0; i < headers.Length; i++)
         {
             sb.Append(new string('-', columnWidths[i]));
             sb.Append(" | ");
@@ -286,7 +286,7 @@ public class DetailedTableFormatter : IDetailedTableFormatter
         foreach (var row in rows)
         {
             sb.Append("| ");
-            for (int i = 0; i < row.Length; i++)
+            for (var i = 0; i < row.Length; i++)
             {
                 sb.Append(row[i].PadRight(columnWidths[i]));
                 sb.Append(" | ");

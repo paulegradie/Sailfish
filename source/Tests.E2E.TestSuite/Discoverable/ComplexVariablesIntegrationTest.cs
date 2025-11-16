@@ -1,7 +1,5 @@
 ﻿using Sailfish.Attributes;
 using Sailfish.Contracts.Public.Variables;
-using System;
-using System.Collections.Generic;
 
 namespace Tests.E2E.TestSuite.Discoverable;
 
@@ -37,7 +35,7 @@ public class ComplexVariablesIntegrationTest
 
         // Simulate some work
         Console.WriteLine($"Testing with buffer: {BufferSize}, config: {Configuration.Name}, timeout: {Configuration.Timeout}");
-        System.Threading.Thread.Sleep(1);
+        Thread.Sleep(1);
     }
 }
 
@@ -63,8 +61,15 @@ public class TestConfigurationProvider : ISailfishVariablesProvider<TestConfigur
 }
 
 // Data type for test configurations
-public record TestConfiguration(string Name, int Timeout, bool IsEnabled) : ITestConfiguration
+public record TestConfiguration : ITestConfiguration
 {
+    public TestConfiguration(string Name, int Timeout, bool IsEnabled)
+    {
+        this.Name = Name;
+        this.Timeout = Timeout;
+        this.IsEnabled = IsEnabled;
+    }
+
     public int CompareTo(object? obj)
     {
         if (obj is not TestConfiguration other) return 1;
@@ -73,5 +78,16 @@ public record TestConfiguration(string Name, int Timeout, bool IsEnabled) : ITes
         if (nameComparison != 0) return nameComparison;
 
         return Timeout.CompareTo(other.Timeout);
+    }
+
+    public string Name { get; init; }
+    public int Timeout { get; init; }
+    public bool IsEnabled { get; init; }
+
+    public void Deconstruct(out string Name, out int Timeout, out bool IsEnabled)
+    {
+        Name = this.Name;
+        Timeout = this.Timeout;
+        IsEnabled = this.IsEnabled;
     }
 }

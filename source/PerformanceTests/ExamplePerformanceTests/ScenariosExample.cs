@@ -19,7 +19,7 @@ public class ScenariosExample
     private const string ScenarioA = "ScenarioA";
     private const string ScenarioB = "ScenarioB";
     private const string ScenarioC = "ScenarioC";
-    private Dictionary<string, MyScenario> scenarioMap = null!;
+    private Dictionary<string, MyScenario> _scenarioMap = null!;
 
     /// <summary>
     /// Controls the complexity of operations - "wow" triggers multiple operations per test
@@ -36,7 +36,7 @@ public class ScenariosExample
     [SailfishGlobalSetup]
     public void GlobalSetup()
     {
-        scenarioMap = new Dictionary<string, MyScenario>
+        _scenarioMap = new Dictionary<string, MyScenario>
         {
             { ScenarioA, new MyScenario("ftp://test.example.com", 21, new InnerScenario("FTP_Transfer")) },
             { ScenarioB, new MyScenario("https://api.example.com", 443, new InnerScenario("HTTPS_API")) },
@@ -47,13 +47,13 @@ public class ScenariosExample
     [SailfishMethod]
     public async Task TestMethod(CancellationToken cancellationToken) // token is injected when requested
     {
-        var scenario = scenarioMap[Scenario];
+        var scenario = _scenarioMap[Scenario];
         Console.WriteLine($"Testing scenario: {scenario.InnerScenario.Name} on {scenario.ConnStr}:{scenario.Port}");
 
         // Simulate different operations based on scenario type with varying complexity based on N variable
         var operationCount = N == "wow" ? 3 : 1; // Use the N variable to control operation complexity
 
-        for (int i = 0; i < operationCount; i++)
+        for (var i = 0; i < operationCount; i++)
         {
             await SimulateScenarioOperation(scenario, cancellationToken);
         }
@@ -85,7 +85,39 @@ public class ScenariosExample
         Console.WriteLine($"Completed operation for {scenario.InnerScenario.Name}");
     }
 
-    record MyScenario(string ConnStr, int Port, InnerScenario InnerScenario);
+    record MyScenario
+    {
+        public MyScenario(string ConnStr, int Port, InnerScenario InnerScenario)
+        {
+            this.ConnStr = ConnStr;
+            this.Port = Port;
+            this.InnerScenario = InnerScenario;
+        }
 
-    record InnerScenario(string Name);
+        public string ConnStr { get; init; }
+        public int Port { get; init; }
+        public InnerScenario InnerScenario { get; init; }
+
+        public void Deconstruct(out string ConnStr, out int Port, out InnerScenario InnerScenario)
+        {
+            ConnStr = this.ConnStr;
+            Port = this.Port;
+            InnerScenario = this.InnerScenario;
+        }
+    }
+
+    record InnerScenario
+    {
+        public InnerScenario(string Name)
+        {
+            this.Name = Name;
+        }
+
+        public string Name { get; init; }
+
+        public void Deconstruct(out string Name)
+        {
+            Name = this.Name;
+        }
+    }
 }

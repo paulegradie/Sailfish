@@ -13,7 +13,7 @@ namespace Tests.Library.Execution;
 
 public class ClassExecutionSummaryTests
 {
-    private readonly ClassExecutionSummary testSummary;
+    private readonly ClassExecutionSummary _testSummary;
 
     public ClassExecutionSummaryTests()
     {
@@ -27,20 +27,20 @@ public class ClassExecutionSummaryTests
             new CompiledTestCaseResult(failedTestCaseId, string.Empty, new Exception())
         };
 
-        testSummary = new ClassExecutionSummary(typeof(MinimalTest), new ExecutionSettings(), results);
+        _testSummary = new ClassExecutionSummary(typeof(MinimalTest), new ExecutionSettings(), results);
     }
 
     [Fact]
     public void GetSuccessfulTestCasesReturnsCasesCorrectly()
     {
-        var results = testSummary.GetSuccessfulTestCases().ToList();
+        var results = _testSummary.GetSuccessfulTestCases().ToList();
         results.Count.ShouldBe(1);
     }
 
     [Fact]
     public void GetFailedTestCasesReturnsCasesCorrectly()
     {
-        var results = testSummary.GetFailedTestCases().ToList();
+        var results = _testSummary.GetFailedTestCases().ToList();
         results.Count.ShouldBe(1);
     }
 }

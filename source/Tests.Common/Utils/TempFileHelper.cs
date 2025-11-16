@@ -1,6 +1,4 @@
-﻿using System.IO;
-
-namespace Tests.Common.Utils;
+﻿namespace Tests.Common.Utils;
 
 public static class TempFileHelper
 {

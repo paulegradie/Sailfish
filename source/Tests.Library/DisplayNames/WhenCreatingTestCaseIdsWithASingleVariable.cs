@@ -12,11 +12,11 @@ public class WhenCreatingTestCaseIdsWithASingleVariable : IAsyncLifetime
     private const string VariableName = "YoMamma";
     private const string MethodName = "TestMethod";
     private const int Param = 1;
-    private TestCaseId testCaseId = null!;
+    private TestCaseId _testCaseId = null!;
 
     public async Task InitializeAsync()
     {
-        testCaseId = DisplayNameHelper.CreateTestCaseId(
+        _testCaseId = DisplayNameHelper.CreateTestCaseId(
             typeof(WhenCreatingTestCaseIdsWithASingleVariable),
             "TestMethod",
             [VariableName],
@@ -32,25 +32,25 @@ public class WhenCreatingTestCaseIdsWithASingleVariable : IAsyncLifetime
     [Fact]
     public void DisplayNameIsFormedCorrectly()
     {
-        testCaseId.DisplayName.ShouldBe($"{nameof(WhenCreatingTestCaseIdsWithASingleVariable)}.{MethodName}({VariableName}: {Param})");
+        _testCaseId.DisplayName.ShouldBe($"{nameof(WhenCreatingTestCaseIdsWithASingleVariable)}.{MethodName}({VariableName}: {Param})");
     }
 
     [Fact]
     public void NamePropertyOfTestCaseNameIsCorrect()
     {
-        testCaseId.TestCaseName.Name.ShouldBe($"{nameof(WhenCreatingTestCaseIdsWithASingleVariable)}.{MethodName}");
+        _testCaseId.TestCaseName.Name.ShouldBe($"{nameof(WhenCreatingTestCaseIdsWithASingleVariable)}.{MethodName}");
     }
 
     [Fact]
     public void PartsPropertyOfTestCaseNameIsCorrect()
     {
-        testCaseId.TestCaseName.Parts.ShouldBeEquivalentTo(new[] { nameof(WhenCreatingTestCaseIdsWithASingleVariable), MethodName });
+        _testCaseId.TestCaseName.Parts.ShouldBeEquivalentTo(new[] { nameof(WhenCreatingTestCaseIdsWithASingleVariable), MethodName });
     }
 
     [Fact]
     public void VariablesPropertyOfTestCaseVariablesShouldBeCorrect()
     {
-        var variables = testCaseId.TestCaseVariables.Variables.ToList();
+        var variables = _testCaseId.TestCaseVariables.Variables.ToList();
         variables.Count.ShouldBe(1);
         variables.Single().Name.ShouldBe(VariableName);
         variables.Single().Value.ShouldBe(1);
@@ -59,13 +59,13 @@ public class WhenCreatingTestCaseIdsWithASingleVariable : IAsyncLifetime
     [Fact]
     public void TestCaseVariablesFormVariableSectionShouldBeCorrect()
     {
-        testCaseId.TestCaseVariables.FormVariableSection().ShouldBe($"({VariableName}: {Param})");
+        _testCaseId.TestCaseVariables.FormVariableSection().ShouldBe($"({VariableName}: {Param})");
     }
 
     [Fact]
     public void TestCaseVariablesGetVariableIndexShouldBeCorrect()
     {
-        var result = testCaseId.TestCaseVariables.GetVariableIndex(0);
+        var result = _testCaseId.TestCaseVariables.GetVariableIndex(0);
         result.ShouldNotBeNull();
         result.Name.ShouldBe(VariableName);
         result.Value.ShouldBe(1);
@@ -74,7 +74,7 @@ public class WhenCreatingTestCaseIdsWithASingleVariable : IAsyncLifetime
     [Fact]
     public void TestCaseVariablesGetVariableIndexShouldBeNullWhenNonExist()
     {
-        var result = testCaseId.TestCaseVariables.GetVariableIndex(1);
+        var result = _testCaseId.TestCaseVariables.GetVariableIndex(1);
         result.ShouldBeNull();
     }
 

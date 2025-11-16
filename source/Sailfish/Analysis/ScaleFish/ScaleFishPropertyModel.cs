@@ -9,10 +9,16 @@ public interface IScaleFishPropertyModels
     ScaleFishModel ScaleFishModel { get; set; }
 }
 
-public class ScaleFishPropertyModel(string propertyName, ScaleFishModel scaleFishModel) : IScaleFishPropertyModels
+public class ScaleFishPropertyModel : IScaleFishPropertyModels
 {
-    public string PropertyName { get; set; } = propertyName;
-    public ScaleFishModel ScaleFishModel { get; set; } = scaleFishModel;
+    public ScaleFishPropertyModel(string propertyName, ScaleFishModel scaleFishModel)
+    {
+        PropertyName = propertyName;
+        ScaleFishModel = scaleFishModel;
+    }
+
+    public string PropertyName { get; set; }
+    public ScaleFishModel ScaleFishModel { get; set; }
 
     public static IEnumerable<ScaleFishPropertyModel> ParseResult(Dictionary<string, ScaleFishModel> rawResult)
     {

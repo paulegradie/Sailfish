@@ -1,5 +1,8 @@
-using System;
-
 namespace ModelPredictions;
 
-public class TestException(string? message) : Exception(message);
+public class TestException : Exception
+{
+    public TestException(string? message) : base(message)
+    {
+    }
+}

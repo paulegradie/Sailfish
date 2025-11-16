@@ -7,19 +7,15 @@ using System.Threading;
 using System.Threading.Tasks;
 using MediatR;
 using NSubstitute;
-using Sailfish;
 using Sailfish.Contracts.Private;
 using Sailfish.Contracts.Public.Notifications;
 using Sailfish.Contracts.Public.Serialization.Tracking.V1;
 using Sailfish.DefaultHandlers.Sailfish;
-using Sailfish.Diagnostics.Environment;
 using Sailfish.Logging;
-using Sailfish.Results;
 using Shouldly;
 using Tests.Common.Builders;
 using Tests.Library.TestUtils;
 using Xunit;
-using Xunit.Sdk;
 
 
 namespace Tests.Library.Presentation;
@@ -35,7 +31,7 @@ public class CsvOutputGoldenTests
     private static TestRunCompletedNotification CreateNotification()
     {
         var dataLen = 40;
-        double[] zeros = Enumerable.Repeat(0.0, dataLen).ToArray();
+        var zeros = Enumerable.Repeat(0.0, dataLen).ToArray();
 
         var classSummary = ClassExecutionSummaryTrackingFormatBuilder.Create()
             .WithTestClass(typeof(TestTypes.CsvGoldenClass))
@@ -77,7 +73,7 @@ public class CsvOutputGoldenTests
     public async Task Consolidated_Session_Csv_Matches_Golden()
     {
         var originalCulture = CultureInfo.CurrentCulture;
-        var originalUICulture = CultureInfo.CurrentUICulture;
+        var originalUiCulture = CultureInfo.CurrentUICulture;
         try
         {
             CultureInfo.CurrentCulture = CultureInfo.InvariantCulture;
@@ -119,7 +115,7 @@ public class CsvOutputGoldenTests
         finally
         {
             CultureInfo.CurrentCulture = originalCulture;
-            CultureInfo.CurrentUICulture = originalUICulture;
+            CultureInfo.CurrentUICulture = originalUiCulture;
         }
     }
 

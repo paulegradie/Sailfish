@@ -1,5 +1,8 @@
-using System;
-
 namespace Sailfish.Analyzers.Utils;
 
-public class SailfishAnalyzerException(string? message) : Exception(message);
+public class SailfishAnalyzerException : Exception
+{
+    public SailfishAnalyzerException(string? message) : base(message)
+    {
+    }
+}

@@ -2,8 +2,14 @@
 
 namespace Sailfish.Contracts.Public.Models;
 
-public class TestIds(IEnumerable<string> beforeTestIds, IEnumerable<string> afterTestIds)
+public class TestIds
 {
-    public IEnumerable<string> BeforeTestIds { get; set; } = beforeTestIds;
-    public IEnumerable<string> AfterTestIds { get; set; } = afterTestIds;
+    public TestIds(IEnumerable<string> beforeTestIds, IEnumerable<string> afterTestIds)
+    {
+        BeforeTestIds = beforeTestIds;
+        AfterTestIds = afterTestIds;
+    }
+
+    public IEnumerable<string> BeforeTestIds { get; set; }
+    public IEnumerable<string> AfterTestIds { get; set; }
 }

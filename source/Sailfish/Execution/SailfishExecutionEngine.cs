@@ -41,13 +41,13 @@ internal interface ISailfishExecutionEngine
 
 internal class SailfishExecutionEngine : ISailfishExecutionEngine
 {
-    private readonly IClassExecutionSummaryCompiler classExecutionSummaryCompiler;
-    private readonly IConsoleWriter consoleWriter;
-    private readonly ILogger logger;
-    private readonly IMediator mediator;
-    private readonly IRunSettings runSettings;
-    private readonly ITestCaseCountPrinter testCaseCountPrinter;
-    private readonly ITestCaseIterator testCaseIterator;
+    private readonly IClassExecutionSummaryCompiler _classExecutionSummaryCompiler;
+    private readonly IConsoleWriter _consoleWriter;
+    private readonly ILogger _logger;
+    private readonly IMediator _mediator;
+    private readonly IRunSettings _runSettings;
+    private readonly ITestCaseCountPrinter _testCaseCountPrinter;
+    private readonly ITestCaseIterator _testCaseIterator;
 
     public SailfishExecutionEngine(
         ILogger logger,
@@ -58,13 +58,13 @@ internal class SailfishExecutionEngine : ISailfishExecutionEngine
         IClassExecutionSummaryCompiler classExecutionSummaryCompiler,
         IRunSettings runSettings)
     {
-        this.classExecutionSummaryCompiler = classExecutionSummaryCompiler;
-        this.logger = logger;
-        this.consoleWriter = consoleWriter;
-        this.mediator = mediator;
-        this.runSettings = runSettings;
-        this.testCaseCountPrinter = testCaseCountPrinter;
-        this.testCaseIterator = testCaseIterator;
+        _classExecutionSummaryCompiler = classExecutionSummaryCompiler;
+        _logger = logger;
+        _consoleWriter = consoleWriter;
+        _mediator = mediator;
+        _runSettings = runSettings;
+        _testCaseCountPrinter = testCaseCountPrinter;
+        _testCaseIterator = testCaseIterator;
     }
 
     public async Task<List<TestCaseExecutionResult>> ActivateContainer(
@@ -122,13 +122,13 @@ internal class SailfishExecutionEngine : ISailfishExecutionEngine
         }
         catch (Exception ex)
         {
-            await mediator.Publish(
+            await _mediator.Publish(
                 new TestCaseExceptionNotification(testCaseEnumerator.Current.ToExternal(), testCaseGroup, ex),
                 cancellationToken);
             await DisposeOfTestInstance(testCaseEnumerator.Current);
             testCaseEnumerator.Dispose();
             var msg = $"Error resolving test from {testProvider.Test.FullName}";
-            logger.Log(LogLevel.Fatal, ex, msg);
+            _logger.Log(LogLevel.Fatal, ex, msg);
 
             var testCaseEnumerationException = new TestCaseEnumerationException(ex,
                 $"Failed to create test cases for {testProvider.Test.FullName}");
@@ -139,7 +139,7 @@ internal class SailfishExecutionEngine : ISailfishExecutionEngine
 
         if (testProvider.IsDisabled())
         {
-            await mediator.Publish(
+            await _mediator.Publish(
                 new TestCaseDisabledNotification(testCaseEnumerator.Current.ToExternal(), testCaseGroup, true),
                 cancellationToken);
             testCaseEnumerator.Dispose();
@@ -157,8 +157,8 @@ internal class SailfishExecutionEngine : ISailfishExecutionEngine
                     savedState?.ApplyPropertiesAndFieldsTo(testCase.Instance);
                 }
 
-                await mediator.Publish(new TestCaseStartedNotification(testCase.ToExternal(), testCaseGroup), cancellationToken);
-                testCaseCountPrinter.PrintCaseUpdate(testCase.TestCaseId.DisplayName);
+                await _mediator.Publish(new TestCaseStartedNotification(testCase.ToExternal(), testCaseGroup), cancellationToken);
+                _testCaseCountPrinter.PrintCaseUpdate(testCase.TestCaseId.DisplayName);
 
                 if (ShouldCallGlobalSetup(testProviderIndex, currentVariableSetIndex))
                 {
@@ -178,7 +178,7 @@ internal class SailfishExecutionEngine : ISailfishExecutionEngine
 
                 if (testCase.Disabled)
                 {
-                    await mediator.Publish(
+                    await _mediator.Publish(
                         new TestCaseDisabledNotification(testCase.ToExternal(), testCaseGroup, false),
                         cancellationToken);
 
@@ -222,12 +222,12 @@ internal class SailfishExecutionEngine : ISailfishExecutionEngine
                         return await CatchAndReturn(ex, testCase, testCaseGroup, cancellationToken);
                     }
 
-                var testCaseSummary = classExecutionSummaryCompiler.CompileToSummaries([
+                var testCaseSummary = _classExecutionSummaryCompiler.CompileToSummaries([
                     new TestClassResultGroup(
                         executionResult.TestInstanceContainer!.Type,
                         [executionResult])
                 ]);
-                await mediator.Publish(new TestClassCompletedNotification(testCaseSummary.ToTrackingFormat().Single(), testCase.ToExternal(), testCaseGroup), cancellationToken);
+                await _mediator.Publish(new TestClassCompletedNotification(testCaseSummary.ToTrackingFormat().Single(), testCase.ToExternal(), testCaseGroup), cancellationToken);
 
                 results.Add(executionResult);
 
@@ -259,10 +259,10 @@ internal class SailfishExecutionEngine : ISailfishExecutionEngine
         }
         catch (Exception ex)
         {
-            await mediator.Publish(new TestCaseExceptionNotification(instanceContainerEnumerator.Current.ToExternal(), testCaseGroup, ex), ct);
+            await _mediator.Publish(new TestCaseExceptionNotification(instanceContainerEnumerator.Current.ToExternal(), testCaseGroup, ex), ct);
             await DisposeOfTestInstance(instanceContainerEnumerator.Current);
             continueIterating = true;
-            consoleWriter.WriteString(ex.Message);
+            _consoleWriter.WriteString(ex.Message);
         }
 
         return continueIterating;
@@ -276,7 +276,7 @@ internal class SailfishExecutionEngine : ISailfishExecutionEngine
             ex = new NullReferenceException(ex.Message + Environment.NewLine + $"Null variable or property encountered in method: {testCase.ExecutionMethod.Name}");
         }
 
-        await mediator.Publish(new TestCaseExceptionNotification(testCase.ToExternal(), testCaseGroup, ex), cancellationToken);
+        await _mediator.Publish(new TestCaseExceptionNotification(testCase.ToExternal(), testCaseGroup, ex), cancellationToken);
         return [new TestCaseExecutionResult(testCase, ex)];
     }
 
@@ -288,15 +288,15 @@ internal class SailfishExecutionEngine : ISailfishExecutionEngine
         TestCaseExecutionResult testCaseExecutionResult;
         try // this is not great flow control - this is where we catch SailfishMethod exceptions
         {
-            testCaseExecutionResult = await testCaseIterator.Iterate(
+            testCaseExecutionResult = await _testCaseIterator.Iterate(
                 testInstanceContainer,
-                runSettings.DisableOverheadEstimation ||
+                _runSettings.DisableOverheadEstimation ||
                 ShouldDisableOverheadEstimationFromTypeOrMethod(testInstanceContainer),
                 cancellationToken);
 
             if (!testCaseExecutionResult.IsSuccess)
             {
-                await mediator.Publish(new TestCaseExceptionNotification(testInstanceContainer.ToExternal(), testCaseGroup, testCaseExecutionResult.Exception), cancellationToken);
+                await _mediator.Publish(new TestCaseExceptionNotification(testInstanceContainer.ToExternal(), testCaseGroup, testCaseExecutionResult.Exception), cancellationToken);
                 return new TestCaseExecutionResult(testInstanceContainer,
                     testCaseExecutionResult.Exception!.InnerException ?? testCaseExecutionResult.Exception);
             }
@@ -306,7 +306,7 @@ internal class SailfishExecutionEngine : ISailfishExecutionEngine
             testCaseExecutionResult = new TestCaseExecutionResult(testInstanceContainer, ex);
         }
 
-        await mediator.Publish(
+        await _mediator.Publish(
             new TestCaseCompletedNotification(
                 MapResultToTrackingFormat(testInstanceContainer.Type, testCaseExecutionResult),
                 testInstanceContainer.ToExternal(),
@@ -322,7 +322,7 @@ internal class SailfishExecutionEngine : ISailfishExecutionEngine
         TestCaseExecutionResult testExecutionResult)
     {
         var group = new TestClassResultGroup(testClass, [testExecutionResult]);
-        return classExecutionSummaryCompiler
+        return _classExecutionSummaryCompiler
             .CompileToSummaries([group])
             .ToTrackingFormat()
             .Single();

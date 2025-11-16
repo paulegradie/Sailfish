@@ -5,7 +5,6 @@ using Xunit;
 using Sailfish.Presentation;
 using Sailfish.Execution;
 using Sailfish.Contracts.Public.Models;
-using Sailfish.Contracts.Public.Serialization.Tracking.V1;
 using Tests.Common.Builders;
 
 namespace Tests.Library.Presentation;
@@ -60,7 +59,7 @@ public class FormatExtensionMethodsTests
         perf.Median.ShouldBe(100.0);
         perf.StdDev.ShouldBe(20.0);
         perf.DataWithOutliersRemoved.Length.ShouldBe(4);
-        System.Math.Abs(perf.StandardError - 10.0).ShouldBeLessThan(1e-6);
+        Math.Abs(perf.StandardError - 10.0).ShouldBeLessThan(1e-6);
 
         // CI list should include 0.95 and 0.99
         perf.ConfidenceIntervals.ShouldNotBeNull();
@@ -69,8 +68,8 @@ public class FormatExtensionMethodsTests
         perf.ConfidenceIntervals.Any(ci => Math.Abs(ci.ConfidenceLevel - 0.99) < 1e-9).ShouldBeTrue();
 
         // Convenience properties should be non-zero for n>1
-        perf.CI95MarginOfError.ShouldBeGreaterThan(0);
-        perf.CI99MarginOfError.ShouldBeGreaterThan(0);
+        perf.Ci95MarginOfError.ShouldBeGreaterThan(0);
+        perf.Ci99MarginOfError.ShouldBeGreaterThan(0);
     }
 
     [Fact]

@@ -30,8 +30,8 @@ namespace Sailfish.Analysis.SailDiff.Statistics
             var q = new double[m];
 
             // BH: q(i) = min_{j>=i} (m/j * p(j)) with monotonicity enforcement from the end
-            double minQ = 1.0;
-            for (int i = m - 1; i >= 0; i--)
+            var minQ = 1.0;
+            for (var i = m - 1; i >= 0; i--)
             {
                 var rank = i + 1; // 1-based rank in ascending p
                 var bh = (m / (double)rank) * items[i].P;
@@ -41,7 +41,7 @@ namespace Sailfish.Analysis.SailDiff.Statistics
 
             // Write back using normalized pair keys to ensure (A,B)==(B,A)
             var result = new Dictionary<(string A, string B), double>(pValues.Count);
-            for (int i = 0; i < m; i++)
+            for (var i = 0; i < m; i++)
             {
                 result[items[i].Key] = q[i];
             }
@@ -53,7 +53,7 @@ namespace Sailfish.Analysis.SailDiff.Statistics
         /// ratio = meanB / meanA. CI computed on log scale using SEs, then exponentiated.
         /// If inputs are degenerate (means <= 0 or SEs not available), returns ratio with null CI.
         /// </summary>
-        public static (double Ratio, double? Lower, double? Upper) ComputeRatioCI(
+        public static (double Ratio, double? Lower, double? Upper) ComputeRatioCi(
             double meanA, double seA, int nA,
             double meanB, double seB, int nB,
             double confidenceLevel = 0.95)
@@ -96,7 +96,7 @@ namespace Sailfish.Analysis.SailDiff.Statistics
             return p;
         }
 
-        private static double SafeDiv(double a, double b) => (b == 0) ? 0 : a / b;
+        private static double SafeDiv(double a, double b) => Math.Abs(b) < double.Epsilon ? 0 : a / b;
         private static double Square(double x) => x * x;
     }
 }

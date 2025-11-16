@@ -3,8 +3,6 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using NSubstitute;
-using Sailfish.Contracts.Public.Models;
-using Sailfish.Execution;
 using Sailfish.Logging;
 using Sailfish.TestAdapter.Queue.Contracts;
 using Sailfish.TestAdapter.Queue.Implementation;
@@ -196,6 +194,59 @@ public class TestCompletionQueuePublisherTests : IDisposable
         await _queue.Received(1).EnqueueAsync(message, Arg.Any<CancellationToken>());
     }
 
+    [Fact]
+    public async Task PublishTestCompletion_WhenQueueThrowsInvalidOperationException_ShouldLogAndRethrow()
+    {
+        // Arrange
+        _publisher = new TestCompletionQueuePublisher(_queue, _logger);
+        var message = CreateTestMessage();
+        var exception = new InvalidOperationException("Queue is not running");
+        _queue.EnqueueAsync(Arg.Any<TestCompletionQueueMessage>(), Arg.Any<CancellationToken>())
+            .Returns(Task.FromException(exception));
+
+        // Act & Assert
+        await Should.ThrowAsync<InvalidOperationException>(() =>
+            _publisher.PublishTestCompletion(message, CancellationToken.None));
+
+        _logger.Received().Log(LogLevel.Error,
+            Arg.Is<string>(s => s.Contains("Failed to publish test completion message") && s.Contains("Queue is in invalid state")));
+    }
+
+    [Fact]
+    public async Task PublishTestCompletion_WhenOperationCancelled_ShouldLogWarningAndRethrow()
+    {
+        // Arrange
+        _publisher = new TestCompletionQueuePublisher(_queue, _logger);
+        var message = CreateTestMessage();
+        _queue.EnqueueAsync(Arg.Any<TestCompletionQueueMessage>(), Arg.Any<CancellationToken>())
+            .Returns(Task.FromException(new OperationCanceledException()));
+
+        // Act & Assert
+        await Should.ThrowAsync<OperationCanceledException>(() =>
+            _publisher.PublishTestCompletion(message, CancellationToken.None));
+
+        _logger.Received().Log(LogLevel.Warning,
+            Arg.Is<string>(s => s.Contains("Publishing test completion message") && s.Contains("was cancelled")));
+    }
+
+    [Fact]
+    public async Task PublishTestCompletion_WhenUnexpectedExceptionOccurs_ShouldLogErrorAndRethrow()
+    {
+        // Arrange
+        _publisher = new TestCompletionQueuePublisher(_queue, _logger);
+        var message = CreateTestMessage();
+        var exception = new Exception("Unexpected error");
+        _queue.EnqueueAsync(Arg.Any<TestCompletionQueueMessage>(), Arg.Any<CancellationToken>())
+            .Returns(Task.FromException(exception));
+
+        // Act & Assert
+        await Should.ThrowAsync<Exception>(() =>
+            _publisher.PublishTestCompletion(message, CancellationToken.None));
+
+        _logger.Received().Log(LogLevel.Error,
+            Arg.Is<string>(s => s.Contains("Unexpected error publishing test completion message")));
+    }
+
     #endregion
 
     #region Helper Methods
@@ -221,7 +272,7 @@ public class TestCompletionQueuePublisherTests : IDisposable
     {
         // Create large metadata dictionary
         var largeMetadata = new Dictionary<string, object>();
-        for (int i = 0; i < 1000; i++)
+        for (var i = 0; i < 1000; i++)
         {
             largeMetadata[$"Key{i}"] = $"Value{i}";
         }

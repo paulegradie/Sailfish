@@ -17,12 +17,12 @@ namespace Tests.Library.Analysis;
 
 public class TrackingFileParserTests
 {
-    private readonly TrackingFileParser parser;
+    private readonly TrackingFileParser _parser;
 
     public TrackingFileParserTests()
     {
         var mockLogger = Substitute.For<ILogger>();
-        parser = new TrackingFileParser(new TrackingFileSerialization(mockLogger), mockLogger);
+        _parser = new TrackingFileParser(new TrackingFileSerialization(mockLogger), mockLogger);
     }
 
     [Fact]
@@ -34,7 +34,7 @@ public class TrackingFileParserTests
         var file = TempFileHelper.WriteStringToTempFile(serialized);
 
         var datalist = new TrackingFileDataList();
-        var result = await parser.TryParse(file, datalist, CancellationToken.None);
+        var result = await _parser.TryParse(file, datalist, CancellationToken.None);
 
         result.ShouldBeTrue();
         datalist.Count.ShouldBe(1);
@@ -52,7 +52,7 @@ public class TrackingFileParserTests
         var file = TempFileHelper.WriteStringToTempFile(Some.RandomString());
 
         var datalist = new TrackingFileDataList();
-        var result = await parser.TryParse(file, datalist, CancellationToken.None);
+        var result = await _parser.TryParse(file, datalist, CancellationToken.None);
 
         result.ShouldBeFalse();
         datalist.ShouldBeEmpty();
@@ -69,7 +69,7 @@ public class TrackingFileParserTests
 
         var datalist = new TrackingFileDataList();
 
-        var result = await parser.TryParseMany(new List<string>
+        var result = await _parser.TryParseMany(new List<string>
             { corruptFile, goodFile }, datalist, CancellationToken.None);
 
         result.ShouldBeTrue();

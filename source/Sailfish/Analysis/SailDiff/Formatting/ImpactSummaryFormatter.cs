@@ -1,5 +1,4 @@
 using System;
-using System.Globalization;
 
 namespace Sailfish.Analysis.SailDiff.Formatting;
 
@@ -32,10 +31,10 @@ public class ImpactSummaryFormatter : IImpactSummaryFormatter
         
         return context switch
         {
-            OutputContext.IDE => CreateIDEImpactSummary(data, analysis),
+            OutputContext.Ide => CreateIdeImpactSummary(data, analysis),
             OutputContext.Markdown => CreateMarkdownImpactSummary(data, analysis),
             OutputContext.Console => CreateConsoleImpactSummary(data, analysis),
-            OutputContext.CSV => CreateCSVImpactSummary(data, analysis),
+            OutputContext.Csv => CreateCsvImpactSummary(data, analysis),
             _ => CreateConsoleImpactSummary(data, analysis)
         };
     }
@@ -91,7 +90,7 @@ public class ImpactSummaryFormatter : IImpactSummaryFormatter
     /// <summary>
     /// Creates impact summary for IDE output with emojis and rich formatting.
     /// </summary>
-    private string CreateIDEImpactSummary(SailDiffComparisonData data, ComparisonAnalysis analysis)
+    private string CreateIdeImpactSummary(SailDiffComparisonData data, ComparisonAnalysis analysis)
     {
         var icon = GetSignificanceIcon(analysis.Significance);
         var direction = analysis.IsImprovement ? "faster" : "slower";
@@ -137,7 +136,7 @@ public class ImpactSummaryFormatter : IImpactSummaryFormatter
     /// <summary>
     /// Creates impact summary for CSV output with structured data.
     /// </summary>
-    private string CreateCSVImpactSummary(SailDiffComparisonData data, ComparisonAnalysis analysis)
+    private string CreateCsvImpactSummary(SailDiffComparisonData data, ComparisonAnalysis analysis)
     {
         var direction = analysis.IsImprovement ? "faster" : "slower";
         var significanceText = GetSignificanceText(analysis.Significance);

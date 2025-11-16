@@ -20,7 +20,6 @@ using Shouldly;
 using Tests.Common.Builders;
 using Tests.Library.TestUtils;
 using Xunit;
-using Xunit.Sdk;
 
 
 namespace Tests.Library.Presentation;
@@ -80,7 +79,7 @@ public class MarkdownOutputGoldenTests
 
         // Build deterministic execution summaries: one class with WriteToMarkdown attribute
         var dataLen = 50;
-        double[] zeros = Enumerable.Repeat(0.0, dataLen).ToArray();
+        var zeros = Enumerable.Repeat(0.0, dataLen).ToArray();
 
         var classSummary = ClassExecutionSummaryTrackingFormatBuilder.Create()
             .WithTestClass(typeof(TestTypes.MarkdownGoldenClass))
@@ -124,7 +123,7 @@ public class MarkdownOutputGoldenTests
     public async Task Consolidated_Session_Markdown_Matches_Golden()
     {
         var originalCulture = CultureInfo.CurrentCulture;
-        var originalUICulture = CultureInfo.CurrentUICulture;
+        var originalUiCulture = CultureInfo.CurrentUICulture;
         try
         {
             CultureInfo.CurrentCulture = CultureInfo.InvariantCulture;
@@ -188,7 +187,7 @@ public class MarkdownOutputGoldenTests
         finally
         {
             CultureInfo.CurrentCulture = originalCulture;
-            CultureInfo.CurrentUICulture = originalUICulture;
+            CultureInfo.CurrentUICulture = originalUiCulture;
         }
     }
 

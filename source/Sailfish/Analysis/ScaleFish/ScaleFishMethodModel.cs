@@ -9,10 +9,16 @@ public interface IScaleFishMethodModels
     IEnumerable<ScaleFishPropertyModel> ScaleFishPropertyModels { get; set; }
 }
 
-public class ScaleFishMethodModel(string testMethodName, IEnumerable<ScaleFishPropertyModel> scaleFishPropertyModels) : IScaleFishMethodModels
+public class ScaleFishMethodModel : IScaleFishMethodModels
 {
-    public string TestMethodName { get; set; } = testMethodName;
-    public IEnumerable<ScaleFishPropertyModel> ScaleFishPropertyModels { get; set; } = scaleFishPropertyModels;
+    public ScaleFishMethodModel(string testMethodName, IEnumerable<ScaleFishPropertyModel> scaleFishPropertyModels)
+    {
+        TestMethodName = testMethodName;
+        ScaleFishPropertyModels = scaleFishPropertyModels;
+    }
+
+    public string TestMethodName { get; set; }
+    public IEnumerable<ScaleFishPropertyModel> ScaleFishPropertyModels { get; set; }
 
     public static IEnumerable<ScaleFishMethodModel> ParseResult(IEnumerable<KeyValuePair<string, ComplexityProperty>> rawResult)
     {

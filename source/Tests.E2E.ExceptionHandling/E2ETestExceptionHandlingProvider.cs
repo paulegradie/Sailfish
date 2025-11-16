@@ -5,8 +5,6 @@ using Microsoft.AspNetCore.Mvc.Testing;
 using Sailfish.Contracts.Public.Notifications;
 using Sailfish.Logging;
 using Sailfish.Registration;
-using System.Threading;
-using System.Threading.Tasks;
 using Tests.E2E.ExceptionHandling.Handlers;
 
 namespace Tests.E2E.ExceptionHandling;

@@ -53,7 +53,7 @@ public class BrentSearchTests
     public void FindRoot_WithTrigonometricFunction_ShouldFindRoot()
     {
         // Arrange: f(x) = sin(x), root at x = π (in range [3, 4])
-        Func<double, double> function = Math.Sin;
+        var function = Math.Sin;
 
         // Act
         var result = BrentSearch.FindRoot(function, 3, 4);
@@ -245,7 +245,7 @@ public class BrentSearchTests
     public void Find_WithExponentialFunction_ShouldFindValue()
     {
         // Arrange: f(x) = e^x, find x where f(x) = 100
-        Func<double, double> function = Math.Exp;
+        var function = Math.Exp;
         var targetValue = 100.0;
 
         // Act

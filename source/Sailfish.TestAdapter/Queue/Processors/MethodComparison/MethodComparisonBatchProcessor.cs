@@ -99,14 +99,14 @@ internal class MethodComparisonBatchProcessor
             {
                 _logger.Log(LogLevel.Information,
                     "Processing comparison group '{0}' with {1} methods",
-                    group.Key, groupMethods.Count);
+                    group.Key ?? "null", groupMethods.Count);
                 await ProcessComparisonGroup(group.Key!, groupMethods, cancellationToken);
             }
             else
             {
                 _logger.Log(LogLevel.Debug,
                     "Skipping comparison group '{0}' with insufficient methods: {1}",
-                    group.Key, groupMethods.Count);
+                    group.Key ?? "null", groupMethods.Count);
             }
         }
     }
@@ -136,9 +136,9 @@ internal class MethodComparisonBatchProcessor
         var allPairs = new HashSet<(string, string)>();
 
         // Generate all unique pairs for SailDiff comparison (avoid duplicate SailDiff calls)
-        for (int i = 0; i < testCases.Count; i++)
+        for (var i = 0; i < testCases.Count; i++)
         {
-            for (int j = i + 1; j < testCases.Count; j++)
+            for (var j = i + 1; j < testCases.Count; j++)
             {
                 var methodA = testCases[i];
                 var methodB = testCases[j];
@@ -180,7 +180,7 @@ internal class MethodComparisonBatchProcessor
     /// <summary>
     /// Performs SailDiff comparison between a Before and After method.
     /// </summary>
-    private async Task PerformMethodComparison(
+    private Task PerformMethodComparison(
         TestCompletionQueueMessage beforeMethod,
         TestCompletionQueueMessage afterMethod,
         string groupName,
@@ -249,12 +249,15 @@ internal class MethodComparisonBatchProcessor
             _logger.Log(LogLevel.Information,
                 "Completed comparison for group '{0}': {1} vs {2}",
                 groupName, beforeMethod.TestCaseId, afterMethod.TestCaseId);
+
+            return Task.CompletedTask;
         }
         catch (Exception ex)
         {
             _logger.Log(LogLevel.Error, ex,
                 "Failed to perform comparison for group '{0}': {1}",
                 groupName, ex.Message);
+            return Task.CompletedTask;
         }
     }
 
@@ -371,7 +374,7 @@ internal class MethodComparisonBatchProcessor
     /// Creates a combined class execution summary from both before and after method messages.
     /// This ensures SailDiff has access to both test results for comparison.
     /// </summary>
-    private IClassExecutionSummary CreateCombinedClassExecutionSummary(
+    private CombinedClassExecutionSummary CreateCombinedClassExecutionSummary(
         TestCompletionQueueMessage beforeMethod,
         TestCompletionQueueMessage afterMethod)
     {
@@ -421,7 +424,7 @@ internal class MethodComparisonBatchProcessor
     /// <summary>
     /// Formats SailDiff comparison results for display from a specific method's perspective using the unified formatter.
     /// </summary>
-    private string FormatComparisonResults(TestCaseSailDiffResult comparisonResult, string groupName,
+    private string FormatComparisonResults(TestCaseSailDiffResult? comparisonResult, string groupName,
         string beforeMethodName, string afterMethodName, string perspectiveMethodName)
     {
         _logger.Log(LogLevel.Debug,
@@ -459,7 +462,7 @@ internal class MethodComparisonBatchProcessor
         };
 
         // Format using unified formatter for IDE context
-        var formattedOutput = _unifiedFormatter.Format(comparisonData, OutputContext.IDE);
+        var formattedOutput = _unifiedFormatter.Format(comparisonData, OutputContext.Ide);
 
         _logger.Log(LogLevel.Debug,
             "Unified formatter generated output for '{0}' vs '{1}'. Significance: {2}, Change: {3:F1}%",
@@ -516,10 +519,10 @@ internal class MethodComparisonBatchProcessor
     /// </summary>
     private void AccumulateComparisonOutput(TestCompletionQueueMessage method, string newComparisonOutput)
     {
-        const string ComparisonResultsKey = "AccumulatedComparisons";
+        const string comparisonResultsKey = "AccumulatedComparisons";
 
         // Get existing accumulated comparisons
-        if (method.Metadata.TryGetValue(ComparisonResultsKey, out var existingObj) &&
+        if (method.Metadata.TryGetValue(comparisonResultsKey, out var existingObj) &&
             existingObj is List<string> existingComparisons)
         {
             // Add the new comparison to the list
@@ -531,18 +534,18 @@ internal class MethodComparisonBatchProcessor
         else
         {
             // Create new list with the first comparison
-            method.Metadata[ComparisonResultsKey] = new List<string> { newComparisonOutput };
+            method.Metadata[comparisonResultsKey] = new List<string> { newComparisonOutput };
             _logger.Log(LogLevel.Debug,
                 "Created new comparison list for '{0}' with first comparison",
                 method.TestCaseId);
         }
 
         // Update the formatted message with all accumulated comparisons
-        var allComparisons = (List<string>)method.Metadata[ComparisonResultsKey];
+        var allComparisons = (List<string>)method.Metadata[comparisonResultsKey];
         var combinedOutput = string.Join("", allComparisons);
 
         // Check if there's any original non-comparison content to preserve
-        string originalContent = "";
+        var originalContent = "";
         if (method.Metadata.TryGetValue("OriginalFormattedMessage", out var originalObj) &&
             originalObj is string original)
         {
@@ -631,13 +634,13 @@ internal class MethodComparisonBatchProcessor
 
     private static void UpdatePairwisePValueMetadata(TestCompletionQueueMessage a, TestCompletionQueueMessage b, double pValue)
     {
-        const string Key = "PairwisePValues";
+        const string key = "PairwisePValues";
         static void Update(TestCompletionQueueMessage msg, string otherId, double p)
         {
-            if (!msg.Metadata.TryGetValue(Key, out var obj) || obj is not Dictionary<string, double> dict)
+            if (!msg.Metadata.TryGetValue(key, out var obj) || obj is not Dictionary<string, double> dict)
             {
                 dict = new Dictionary<string, double>(StringComparer.Ordinal);
-                msg.Metadata[Key] = dict;
+                msg.Metadata[key] = dict;
             }
             dict[otherId] = p;
         }

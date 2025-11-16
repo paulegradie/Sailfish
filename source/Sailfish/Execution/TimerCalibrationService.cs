@@ -51,14 +51,14 @@ internal sealed class TimerCalibrationService : ITimerCalibrationService
         var action = (Action)Delegate.CreateDelegate(typeof(Action), probe);
 
         // Warmup (JIT/infra)
-        for (int i = 0; i < WarmupCount; i++)
+        for (var i = 0; i < WarmupCount; i++)
         {
             action();
         }
 
         // Measure N samples (outer Stopwatch includes delegate invoke + timer start/stop cost)
         var samples = new List<long>(SampleCount);
-        for (int i = 0; i < SampleCount; i++)
+        for (var i = 0; i < SampleCount; i++)
         {
             var sw = Stopwatch.StartNew();
             action();
@@ -73,12 +73,12 @@ internal sealed class TimerCalibrationService : ITimerCalibrationService
 
         // Compute median and stddev over raw ticks
         var ordered = samples.OrderBy(v => v).ToArray();
-        long median = (ordered.Length % 2 == 1) ? ordered[ordered.Length / 2] :
+        var median = (ordered.Length % 2 == 1) ? ordered[ordered.Length / 2] :
             ordered[(ordered.Length / 2) - 1] + ((ordered[ordered.Length / 2] - ordered[(ordered.Length / 2) - 1]) / 2);
 
         // stddev
         var mean = samples.Average();
-        double variance = 0.0;
+        var variance = 0.0;
         if (samples.Count > 1)
         {
             var diffsq = samples.Select(v => (v - mean) * (v - mean)).Sum();
@@ -87,9 +87,9 @@ internal sealed class TimerCalibrationService : ITimerCalibrationService
         var stddev = Math.Sqrt(Math.Max(0.0, variance));
 
         // RSD% relative to mean (avoid div-by-zero)
-        double rsdPct = (mean > 0.0) ? (stddev / mean) * 100.0 : 100.0;
+        var rsdPct = (mean > 0.0) ? (stddev / mean) * 100.0 : 100.0;
         // Score: higher is better, clamp 0..100
-        int score = (int)Math.Round(Math.Clamp(100.0 - (rsdPct * 4.0), 0.0, 100.0));
+        var score = (int)Math.Round(Math.Clamp(100.0 - (rsdPct * 4.0), 0.0, 100.0));
 
         // Clamp median to int range non-negative
         if (median < 0) median = 0;

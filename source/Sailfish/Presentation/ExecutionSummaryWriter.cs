@@ -14,19 +14,19 @@ internal interface IExecutionSummaryWriter
 
 internal class ExecutionSummaryWriter : IExecutionSummaryWriter
 {
-    private readonly IMediator mediator;
+    private readonly IMediator _mediator;
 
     public ExecutionSummaryWriter(IMediator mediator)
     {
-        this.mediator = mediator;
+        _mediator = mediator;
     }
 
     public async Task Write(
         List<IClassExecutionSummary> executionSummaries,
         CancellationToken cancellationToken)
     {
-        await mediator.Publish(new WriteToConsoleNotification(executionSummaries), cancellationToken).ConfigureAwait(false);
-        await mediator.Publish(new WriteToMarkDownNotification(executionSummaries), cancellationToken).ConfigureAwait(false);
-        await mediator.Publish(new WriteToCsvNotification(executionSummaries), cancellationToken).ConfigureAwait(false);
+        await _mediator.Publish(new WriteToConsoleNotification(executionSummaries), cancellationToken).ConfigureAwait(false);
+        await _mediator.Publish(new WriteToMarkDownNotification(executionSummaries), cancellationToken).ConfigureAwait(false);
+        await _mediator.Publish(new WriteToCsvNotification(executionSummaries), cancellationToken).ConfigureAwait(false);
     }
 }
