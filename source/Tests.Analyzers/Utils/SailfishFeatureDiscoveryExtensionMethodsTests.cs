@@ -1,10 +1,7 @@
-using System.Collections.Generic;
-using System.Linq;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Sailfish.Analyzers.Utils.TreeParsingExtensionMethods;
-using Tests.Analyzers.Utils;
 using Xunit;
 
 namespace Tests.Analyzers.Utils;
@@ -19,7 +16,7 @@ public class SailfishFeatureDiscoveryExtensionMethodsTests
         {
             MetadataReference.CreateFromFile(typeof(object).Assembly.Location),
             MetadataReference.CreateFromFile(typeof(Enumerable).Assembly.Location),
-            MetadataReference.CreateFromFile(typeof(System.Attribute).Assembly.Location)
+            MetadataReference.CreateFromFile(typeof(Attribute).Assembly.Location)
         };
         var compilation = CSharpCompilation.Create("TestAsm", new[] { tree }, refs, new CSharpCompilationOptions(OutputKind.DynamicallyLinkedLibrary));
         root = tree.GetRoot();

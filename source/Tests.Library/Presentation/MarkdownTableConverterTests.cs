@@ -4,7 +4,6 @@ using System.Linq;
 using NSubstitute;
 using Sailfish.Analysis.SailDiff.Formatting;
 using Sailfish.Analysis.ScaleFish;
-using Sailfish.Analysis.ScaleFish.CurveFitting;
 using Sailfish.Contracts.Public.Models;
 using Sailfish.Execution;
 using Sailfish.Presentation;
@@ -19,13 +18,13 @@ namespace Tests.Library.Presentation;
 /// </summary>
 public class MarkdownTableConverterTests
 {
-    private readonly MarkdownTableConverter markdownTableConverter;
-    private readonly ISailDiffUnifiedFormatter mockUnifiedFormatter;
+    private readonly MarkdownTableConverter _markdownTableConverter;
+    private readonly ISailDiffUnifiedFormatter _mockUnifiedFormatter;
 
     public MarkdownTableConverterTests()
     {
-        mockUnifiedFormatter = Substitute.For<ISailDiffUnifiedFormatter>();
-        markdownTableConverter = new MarkdownTableConverter(mockUnifiedFormatter);
+        _mockUnifiedFormatter = Substitute.For<ISailDiffUnifiedFormatter>();
+        _markdownTableConverter = new MarkdownTableConverter(_mockUnifiedFormatter);
     }
 
     [Fact]
@@ -43,8 +42,8 @@ public class MarkdownTableConverterTests
     public void Constructor_WithFormatter_ShouldCreateInstance()
     {
         // Act & Assert
-        markdownTableConverter.ShouldNotBeNull();
-        markdownTableConverter.ShouldBeAssignableTo<IMarkdownTableConverter>();
+        _markdownTableConverter.ShouldNotBeNull();
+        _markdownTableConverter.ShouldBeAssignableTo<IMarkdownTableConverter>();
     }
 
     [Fact]
@@ -61,7 +60,7 @@ public class MarkdownTableConverterTests
         var executionSummaries = new List<IClassExecutionSummary>();
 
         // Act
-        var result = markdownTableConverter.ConvertToMarkdownTableString(executionSummaries);
+        var result = _markdownTableConverter.ConvertToMarkdownTableString(executionSummaries);
 
         // Assert
         result.ShouldNotBeNull();
@@ -79,7 +78,7 @@ public class MarkdownTableConverterTests
         };
 
         // Act
-        var result = markdownTableConverter.ConvertToMarkdownTableString(executionSummaries);
+        var result = _markdownTableConverter.ConvertToMarkdownTableString(executionSummaries);
 
         // Assert
         result.ShouldNotBeNull();
@@ -99,7 +98,7 @@ public class MarkdownTableConverterTests
         };
 
         // Act
-        var result = markdownTableConverter.ConvertToMarkdownTableString(
+        var result = _markdownTableConverter.ConvertToMarkdownTableString(
             executionSummaries,
             summary => summary.TestClass.Name == "TestClass1");
 
@@ -116,7 +115,7 @@ public class MarkdownTableConverterTests
         var executionSummaries = new List<IClassExecutionSummary>();
 
         // Act
-        var result = markdownTableConverter.ConvertToEnhancedMarkdownTableString(executionSummaries);
+        var result = _markdownTableConverter.ConvertToEnhancedMarkdownTableString(executionSummaries);
 
         // Assert
         result.ShouldNotBeNull();
@@ -133,7 +132,7 @@ public class MarkdownTableConverterTests
         };
 
         // Act
-        var result = markdownTableConverter.ConvertToEnhancedMarkdownTableString(executionSummaries);
+        var result = _markdownTableConverter.ConvertToEnhancedMarkdownTableString(executionSummaries);
 
         // Assert
         result.ShouldNotBeNull();
@@ -152,7 +151,7 @@ public class MarkdownTableConverterTests
         };
 
         // Act
-        var result = markdownTableConverter.ConvertToEnhancedMarkdownTableString(
+        var result = _markdownTableConverter.ConvertToEnhancedMarkdownTableString(
             executionSummaries,
             summary => summary.TestClass.Name == "TestClass1");
 
@@ -170,7 +169,7 @@ public class MarkdownTableConverterTests
         var executionSummaries = new List<IClassExecutionSummary> { executionSummary };
 
         // Act
-        var result = markdownTableConverter.ConvertToEnhancedMarkdownTableString(executionSummaries);
+        var result = _markdownTableConverter.ConvertToEnhancedMarkdownTableString(executionSummaries);
 
         // Assert
         result.ShouldNotBeNull();
@@ -184,7 +183,7 @@ public class MarkdownTableConverterTests
         var scaleFishResults = new List<ScalefishClassModel>();
 
         // Act
-        var result = markdownTableConverter.ConvertScaleFishResultToMarkdown(scaleFishResults);
+        var result = _markdownTableConverter.ConvertScaleFishResultToMarkdown(scaleFishResults);
 
         // Assert
         result.ShouldNotBeNull();
@@ -201,7 +200,7 @@ public class MarkdownTableConverterTests
         };
 
         // Act
-        var result = markdownTableConverter.ConvertScaleFishResultToMarkdown(scaleFishResults);
+        var result = _markdownTableConverter.ConvertScaleFishResultToMarkdown(scaleFishResults);
 
         // Assert
         result.ShouldNotBeNull();
@@ -218,7 +217,7 @@ public class MarkdownTableConverterTests
         var executionSummaries = new List<IClassExecutionSummary> { executionSummary };
 
         // Act
-        var result = markdownTableConverter.ConvertToMarkdownTableString(executionSummaries);
+        var result = _markdownTableConverter.ConvertToMarkdownTableString(executionSummaries);
 
         // Assert
         result.ShouldNotBeNull();
@@ -233,7 +232,7 @@ public class MarkdownTableConverterTests
         var executionSummaries = new List<IClassExecutionSummary> { executionSummary };
 
         // Act
-        var result = markdownTableConverter.ConvertToEnhancedMarkdownTableString(executionSummaries);
+        var result = _markdownTableConverter.ConvertToEnhancedMarkdownTableString(executionSummaries);
 
         // Assert
         result.ShouldNotBeNull();
@@ -248,7 +247,7 @@ public class MarkdownTableConverterTests
         var executionSummaries = new List<IClassExecutionSummary> { executionSummary };
 
         // Act
-        var result = markdownTableConverter.ConvertToMarkdownTableString(executionSummaries);
+        var result = _markdownTableConverter.ConvertToMarkdownTableString(executionSummaries);
 
         // Assert
         result.ShouldNotBeNull();
@@ -264,7 +263,7 @@ public class MarkdownTableConverterTests
         var scaleFishResults = new List<ScalefishClassModel> { scaleFishResult };
 
         // Act
-        var result = markdownTableConverter.ConvertScaleFishResultToMarkdown(scaleFishResults);
+        var result = _markdownTableConverter.ConvertScaleFishResultToMarkdown(scaleFishResults);
 
         // Assert
         result.ShouldNotBeNull();
@@ -405,7 +404,7 @@ public class MarkdownTableConverterTests
             };
 
             // Act
-            var result = markdownTableConverter.ConvertToEnhancedMarkdownTableString(executionSummaries);
+            var result = _markdownTableConverter.ConvertToEnhancedMarkdownTableString(executionSummaries);
 
             // Assert
             result.ShouldContain("# 📊 Performance Test Results");
@@ -422,7 +421,7 @@ public class MarkdownTableConverterTests
             };
 
             // Act
-            var result = markdownTableConverter.ConvertToEnhancedMarkdownTableString(executionSummaries);
+            var result = _markdownTableConverter.ConvertToEnhancedMarkdownTableString(executionSummaries);
 
             // Assert
             result.ShouldContain("📈 TestGroup");
@@ -454,7 +453,7 @@ public class MarkdownTableConverterTests
             var executionSummaries = new List<IClassExecutionSummary> { summary };
 
             // Act
-            var result = markdownTableConverter.ConvertToEnhancedMarkdownTableString(executionSummaries);
+            var result = _markdownTableConverter.ConvertToEnhancedMarkdownTableString(executionSummaries);
 
             // Assert
             result.ShouldContain("- MyTest():");
@@ -482,7 +481,7 @@ public class MarkdownTableConverterTests
             var executionSummaries = new List<IClassExecutionSummary> { summary };
 
             // Act
-            var result = markdownTableConverter.ConvertToEnhancedMarkdownTableString(executionSummaries);
+            var result = _markdownTableConverter.ConvertToEnhancedMarkdownTableString(executionSummaries);
 
             // Assert
             result.ShouldContain("- LegacyTest():");
@@ -515,7 +514,7 @@ public class MarkdownTableConverterTests
             var executionSummaries = new List<IClassExecutionSummary> { summary };
 
             // Act
-            var result = markdownTableConverter.ConvertToEnhancedMarkdownTableString(executionSummaries);
+            var result = _markdownTableConverter.ConvertToEnhancedMarkdownTableString(executionSummaries);
 
             // Assert
             result.ShouldContain("📊 Performance Summary:");
@@ -541,7 +540,7 @@ public class MarkdownTableConverterTests
             var executionSummaries = new List<IClassExecutionSummary> { summary };
 
             // Act
-            var result = markdownTableConverter.ConvertToEnhancedMarkdownTableString(executionSummaries);
+            var result = _markdownTableConverter.ConvertToEnhancedMarkdownTableString(executionSummaries);
 
             // Assert
             result.ShouldContain("StdDev (N=10)");
@@ -623,7 +622,7 @@ public class MarkdownTableConverterTests
                     }
                 }
             };
-            var converter = new MarkdownTableConverter(mockUnifiedFormatter, manifestProvider);
+            var converter = new MarkdownTableConverter(_mockUnifiedFormatter, manifestProvider);
             var summaries = new List<IClassExecutionSummary> { CreateMockExecutionSummary("CalibClass") };
 
             // Act
@@ -643,7 +642,7 @@ public class MarkdownTableConverterTests
         public void EnhancedMarkdown_Excludes_TimerCalibration_Header_WhenManifestMissingCalibration()
         {
             var manifestProvider = new TestManifestProvider { Current = new Sailfish.Results.ReproducibilityManifest() };
-            var converter = new MarkdownTableConverter(mockUnifiedFormatter, manifestProvider);
+            var converter = new MarkdownTableConverter(_mockUnifiedFormatter, manifestProvider);
             var summaries = new List<IClassExecutionSummary> { CreateMockExecutionSummary("NoCalibClass") };
 
             var md = converter.ConvertToEnhancedMarkdownTableString(summaries);
@@ -664,7 +663,7 @@ public class MarkdownTableConverterTests
                     }
                 }
             };
-            var converter = new MarkdownTableConverter(mockUnifiedFormatter, manifestProvider);
+            var converter = new MarkdownTableConverter(_mockUnifiedFormatter, manifestProvider);
             var summaries = new List<IClassExecutionSummary> { CreateMockExecutionSummary("SeededClass") };
 
             var md = converter.ConvertToEnhancedMarkdownTableString(summaries);
@@ -676,7 +675,7 @@ public class MarkdownTableConverterTests
         public void EnhancedMarkdown_Excludes_Seed_WhenManifestHasNoSeed()
         {
             var manifestProvider = new TestManifestProvider { Current = new Sailfish.Results.ReproducibilityManifest() };
-            var converter = new MarkdownTableConverter(mockUnifiedFormatter, manifestProvider);
+            var converter = new MarkdownTableConverter(_mockUnifiedFormatter, manifestProvider);
             var summaries = new List<IClassExecutionSummary> { CreateMockExecutionSummary("NoSeedClass") };
 
             var md = converter.ConvertToEnhancedMarkdownTableString(summaries);
@@ -692,7 +691,7 @@ public class MarkdownTableConverterTests
         {
             // Uses fixture converter without manifest provider
             var summaries = new List<IClassExecutionSummary> { CreateMockExecutionSummary("NoProviderClass") };
-            var md = markdownTableConverter.ConvertToEnhancedMarkdownTableString(summaries);
+            var md = _markdownTableConverter.ConvertToEnhancedMarkdownTableString(summaries);
             md.ShouldNotContain("## ⏱️ Timer Calibration");
         }
 

@@ -32,10 +32,10 @@ public class OutputContextAdapter : IOutputContextAdapter
     {
         return context switch
         {
-            OutputContext.IDE => AdaptForIDE(impactSummary, detailedTable, groupName),
+            OutputContext.Ide => AdaptForIde(impactSummary, detailedTable, groupName),
             OutputContext.Markdown => AdaptForMarkdown(impactSummary, detailedTable, groupName),
             OutputContext.Console => AdaptForConsole(impactSummary, detailedTable, groupName),
-            OutputContext.CSV => AdaptForCSV(impactSummary, detailedTable, groupName),
+            OutputContext.Csv => AdaptForCsv(impactSummary, detailedTable, groupName),
             _ => AdaptForConsole(impactSummary, detailedTable, groupName)
         };
     }
@@ -43,7 +43,7 @@ public class OutputContextAdapter : IOutputContextAdapter
     /// <summary>
     /// Adapts output for IDE test output window with rich formatting and visual hierarchy.
     /// </summary>
-    private string AdaptForIDE(string impactSummary, string detailedTable, string? groupName)
+    private string AdaptForIde(string impactSummary, string detailedTable, string? groupName)
     {
         var sb = new StringBuilder();
         
@@ -144,7 +144,7 @@ public class OutputContextAdapter : IOutputContextAdapter
     /// <summary>
     /// Adapts output for CSV export with structured data format.
     /// </summary>
-    private string AdaptForCSV(string impactSummary, string detailedTable, string? groupName)
+    private string AdaptForCsv(string impactSummary, string detailedTable, string? groupName)
     {
         var sb = new StringBuilder();
         

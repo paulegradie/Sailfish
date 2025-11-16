@@ -19,16 +19,16 @@ namespace Tests.TestAdapter;
 
 public class TestDiscovererTests : IAsyncLifetime
 {
-    private IDiscoveryContext context = null!;
-    private IMessageLogger logger = null!;
-    private ITestCaseDiscoverySink sink = null!;
+    private IDiscoveryContext _context = null!;
+    private IMessageLogger _logger = null!;
+    private ITestCaseDiscoverySink _sink = null!;
 
 
     public Task InitializeAsync()
     {
-        context = Substitute.For<IDiscoveryContext>();
-        logger = Substitute.For<IMessageLogger>();
-        sink = Substitute.For<ITestCaseDiscoverySink>();
+        _context = Substitute.For<IDiscoveryContext>();
+        _logger = Substitute.For<IMessageLogger>();
+        _sink = Substitute.For<ITestCaseDiscoverySink>();
         return Task.CompletedTask;
     }
 
@@ -61,9 +61,9 @@ public class TestDiscovererTests : IAsyncLifetime
         var sources = new List<string>
             { "testSource" };
         var discoverer = new TestDiscoverer();
-        discoverer.DiscoverTests(sources, context, logger, sink);
+        discoverer.DiscoverTests(sources, _context, _logger, _sink);
 
-        var call = logger.ReceivedCalls().First();
+        var call = _logger.ReceivedCalls().First();
         call.GetArguments().Length.ShouldBe(2);
         call.GetArguments()[0].ShouldBe(TestMessageLevel.Warning);
         call.GetArguments()[1].ShouldBe("No tests discovered.");
@@ -78,9 +78,9 @@ public class TestDiscovererTests : IAsyncLifetime
             "Tests.Library.TestAdapter.dll"
         ];
         var discoverer = new TestDiscoverer();
-        discoverer.DiscoverTests(sources, context, logger, sink);
+        discoverer.DiscoverTests(sources, _context, _logger, _sink);
 
-        var call = logger.ReceivedCalls().First();
+        var call = _logger.ReceivedCalls().First();
         call.GetArguments().Length.ShouldBe(2);
         call.GetArguments()[0].ShouldBe(TestMessageLevel.Warning);
         call.GetArguments()[1].ShouldBe("No tests discovered.");
@@ -91,8 +91,8 @@ public class TestDiscovererTests : IAsyncLifetime
     {
         var source = DllFinder.FindThisProjectsDllRecursively();
         var discoverer = new TestDiscoverer(new TestDiscovery());
-        discoverer.DiscoverTests([source], context, logger, sink);
-        sink.ReceivedCalls().Count().ShouldBe(1);
+        discoverer.DiscoverTests([source], _context, _logger, _sink);
+        _sink.ReceivedCalls().Count().ShouldBe(1);
     }
 
     [Fact]
@@ -106,6 +106,6 @@ public class TestDiscovererTests : IAsyncLifetime
 
         var discoverer = new TestDiscoverer(discovery);
 
-        Should.Throw<SailfishException>(() => discoverer.DiscoverTests([source], context, logger, sink));
+        Should.Throw<SailfishException>(() => discoverer.DiscoverTests([source], _context, _logger, _sink));
     }
 }

@@ -19,11 +19,11 @@ namespace Sailfish.Results
         public string SailfishVersion { get; init; } = string.Empty;
         public string? CommitSha { get; init; }
         public string DotNetRuntime { get; init; } = string.Empty;
-        public string OS { get; init; } = string.Empty;
-        public string OSArchitecture { get; init; } = string.Empty;
+        public string Os { get; init; } = string.Empty;
+        public string OsArchitecture { get; init; } = string.Empty;
         public string ProcessArchitecture { get; init; } = string.Empty;
         public string? CpuModel { get; init; }
-        public string GCMode { get; init; } = string.Empty;
+        public string GcMode { get; init; } = string.Empty;
         public string Jit { get; init; } = string.Empty;
         public string ProcessPriority { get; init; } = string.Empty;
         public string CpuAffinity { get; init; } = string.Empty;
@@ -50,8 +50,8 @@ namespace Sailfish.Results
             public int NumWarmupIterations { get; init; }
             public double Mean { get; init; }
             public double StdDev { get; init; }
-            public double? CI95_MarginOfError { get; init; }
-            public double? CI99_MarginOfError { get; init; }
+            public double? Ci95MarginOfError { get; init; }
+            public double? Ci99MarginOfError { get; init; }
         }
 
         public sealed class TimerCalibrationSnapshot
@@ -95,11 +95,11 @@ namespace Sailfish.Results
                 SailfishVersion = GetInformationalVersion(typeof(ReproducibilityManifest).Assembly),
                 CommitSha = DetectCommitSha(),
                 DotNetRuntime = RuntimeInformation.FrameworkDescription,
-                OS = RuntimeInformation.OSDescription,
-                OSArchitecture = RuntimeInformation.OSArchitecture.ToString(),
+                Os = RuntimeInformation.OSDescription,
+                OsArchitecture = RuntimeInformation.OSArchitecture.ToString(),
                 ProcessArchitecture = RuntimeInformation.ProcessArchitecture.ToString(),
                 CpuModel = TryGetCpuModel(),
-                GCMode = System.Runtime.GCSettings.IsServerGC ? "Server" : "Workstation",
+                GcMode = System.Runtime.GCSettings.IsServerGC ? "Server" : "Workstation",
                 Jit = ReadJitFlags(),
                 ProcessPriority = TryGetProcessPriority(),
                 CpuAffinity = TryGetCpuAffinity(),
@@ -124,7 +124,7 @@ namespace Sailfish.Results
             return manifest;
         }
 
-        public void AddMethodSnapshots(IEnumerable<Sailfish.Contracts.Public.Serialization.Tracking.V1.ClassExecutionSummaryTrackingFormat> classes)
+        public void AddMethodSnapshots(IEnumerable<Contracts.Public.Serialization.Tracking.V1.ClassExecutionSummaryTrackingFormat> classes)
         {
             foreach (var cls in classes)
             {
@@ -158,8 +158,8 @@ namespace Sailfish.Results
                         NumWarmupIterations = pr.NumWarmupIterations,
                         Mean = pr.Mean,
                         StdDev = pr.StdDev,
-                        CI95_MarginOfError = moe95,
-                        CI99_MarginOfError = moe99
+                        Ci95MarginOfError = moe95,
+                        Ci99MarginOfError = moe99
                     });
                 }
             }
@@ -167,9 +167,9 @@ namespace Sailfish.Results
 
         public static void WriteJson(ReproducibilityManifest manifest, string outputDirectory, string? fileName = null)
         {
-            if (string.IsNullOrWhiteSpace(outputDirectory)) outputDirectory = Sailfish.Presentation.DefaultFileSettings.DefaultOutputDirectory;
+            if (string.IsNullOrWhiteSpace(outputDirectory)) outputDirectory = Presentation.DefaultFileSettings.DefaultOutputDirectory;
             if (!Directory.Exists(outputDirectory)) Directory.CreateDirectory(outputDirectory);
-            fileName ??= $"Manifest_{manifest.TimestampUtc.ToString(Sailfish.Presentation.DefaultFileSettings.SortableFormat)}.json";
+            fileName ??= $"Manifest_{manifest.TimestampUtc.ToString(Presentation.DefaultFileSettings.SortableFormat)}.json";
             var path = Path.Combine(outputDirectory, fileName);
             var json = JsonSerializer.Serialize(manifest, new JsonSerializerOptions { WriteIndented = true });
             File.WriteAllText(path, json);
@@ -195,7 +195,7 @@ namespace Sailfish.Results
 
         private static string BuildSessionId(IRunSettings runSettings)
         {
-            var ts = runSettings.TimeStamp.ToUniversalTime().ToString(Sailfish.Presentation.DefaultFileSettings.SortableFormat);
+            var ts = runSettings.TimeStamp.ToUniversalTime().ToString(Presentation.DefaultFileSettings.SortableFormat);
             return $"{ts}-{Guid.NewGuid().ToString("N")[..8]}";
         }
 

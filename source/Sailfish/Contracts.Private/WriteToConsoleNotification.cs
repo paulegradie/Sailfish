@@ -4,7 +4,12 @@ using Sailfish.Execution;
 
 namespace Sailfish.Contracts.Private;
 
-internal class WriteToConsoleNotification(List<IClassExecutionSummary> content) : INotification
+internal class WriteToConsoleNotification : INotification
 {
-    public List<IClassExecutionSummary> Content { get; } = content;
+    public WriteToConsoleNotification(List<IClassExecutionSummary> content)
+    {
+        Content = content;
+    }
+
+    public List<IClassExecutionSummary> Content { get; }
 }

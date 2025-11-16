@@ -31,7 +31,7 @@ public class TestCasePropertyClonerFixture
 
     public class Dehydrated
     {
-        private readonly string? PrivateField;
+        private readonly string? _privateField;
         internal string? InternalField;
         protected string? ProtectedField;
         public string? PublicField;
@@ -49,7 +49,7 @@ public class TestCasePropertyClonerFixture
             string? @protected)
         {
             ProtectedField = protectedField;
-            PrivateField = privateField;
+            _privateField = privateField;
             PublicField = publicField;
             InternalField = internalField;
             Public = @public;

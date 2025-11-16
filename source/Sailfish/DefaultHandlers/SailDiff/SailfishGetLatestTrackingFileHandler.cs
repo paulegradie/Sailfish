@@ -12,20 +12,26 @@ using Sailfish.Extensions.Types;
 
 namespace Sailfish.DefaultHandlers.SailDiff;
 
-internal class SailDiffGetLatestExecutionSummariesHandler(ITrackingFileDirectoryReader trackingFileDirectoryReader, ITrackingFileParser trackingFileParser, IRunSettings runSettings)
-    : IRequestHandler<GetLatestExecutionSummaryRequest, GetLatestExecutionSummaryResponse>
+internal class SailDiffGetLatestExecutionSummariesHandler : IRequestHandler<GetLatestExecutionSummaryRequest, GetLatestExecutionSummaryResponse>
 {
-    private readonly IRunSettings runSettings = runSettings;
-    private readonly ITrackingFileDirectoryReader trackingFileDirectoryReader = trackingFileDirectoryReader;
-    private readonly ITrackingFileParser trackingFileParser = trackingFileParser;
+    private readonly IRunSettings _runSettings;
+    private readonly ITrackingFileDirectoryReader _trackingFileDirectoryReader;
+    private readonly ITrackingFileParser _trackingFileParser;
+
+    public SailDiffGetLatestExecutionSummariesHandler(ITrackingFileDirectoryReader trackingFileDirectoryReader, ITrackingFileParser trackingFileParser, IRunSettings runSettings)
+    {
+        _runSettings = runSettings;
+        _trackingFileDirectoryReader = trackingFileDirectoryReader;
+        _trackingFileParser = trackingFileParser;
+    }
 
     public async Task<GetLatestExecutionSummaryResponse> Handle(GetLatestExecutionSummaryRequest request, CancellationToken cancellationToken)
     {
-        var trackingFiles = trackingFileDirectoryReader.FindTrackingFilesInDirectoryOrderedByLastModified(runSettings.GetRunSettingsTrackingDirectoryPath());
+        var trackingFiles = _trackingFileDirectoryReader.FindTrackingFilesInDirectoryOrderedByLastModified(_runSettings.GetRunSettingsTrackingDirectoryPath());
         if (trackingFiles.Count == 0) return new GetLatestExecutionSummaryResponse(new List<IClassExecutionSummary>());
 
         var executionSummaries = new TrackingFileDataList();
-        if (!await trackingFileParser.TryParse(trackingFiles.First(), executionSummaries, cancellationToken))
+        if (!await _trackingFileParser.TryParse(trackingFiles.First(), executionSummaries, cancellationToken))
             return new GetLatestExecutionSummaryResponse(new List<IClassExecutionSummary>());
 
         return trackingFiles.Count == 0

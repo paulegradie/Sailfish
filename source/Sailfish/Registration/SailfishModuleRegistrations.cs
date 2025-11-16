@@ -29,19 +29,19 @@ namespace Sailfish.Registration;
 
 internal class SailfishModuleRegistrations : IProvideAdditionalRegistrations
 {
-    private readonly IRunSettings runSettings;
+    private readonly IRunSettings _runSettings;
 
     public SailfishModuleRegistrations(IRunSettings runSettings)
     {
-        this.runSettings = runSettings;
+        _runSettings = runSettings;
     }
 
     public void Load(ContainerBuilder builder)
     {
         builder.RegisterInstance(
-            runSettings.DisableLogging
+            _runSettings.DisableLogging
                 ? new SilentLogger()
-                : runSettings.CustomLogger ?? new DefaultLogger(runSettings.MinimumLogLevel)).As<ILogger>();
+                : _runSettings.CustomLogger ?? new DefaultLogger(_runSettings.MinimumLogLevel)).As<ILogger>();
         builder.RegisterMediatR(MediatRConfigurationBuilder
             .Create(MediatrCommunityLicenseString, typeof(SailfishModuleRegistrations).Assembly)
             .Build());
@@ -52,7 +52,7 @@ internal class SailfishModuleRegistrations : IProvideAdditionalRegistrations
             .AsClosedTypesOf(typeof(IRequestHandler<,>))
             .AsImplementedInterfaces();
 
-        builder.RegisterInstance(runSettings).As<IRunSettings>();
+        builder.RegisterInstance(_runSettings).As<IRunSettings>();
         builder.RegisterType<TestCaseCountPrinter>().As<ITestCaseCountPrinter>().SingleInstance();
         builder.RegisterType<SailfishExecutor>().AsSelf();
         builder.RegisterType<SailFishTestExecutor>().As<ISailFishTestExecutor>();

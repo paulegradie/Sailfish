@@ -180,10 +180,10 @@ public class SailDiffUnifiedFormatter : ISailDiffUnifiedFormatter
 
         return context switch
         {
-            OutputContext.IDE => string.Join("\n\n", impactSummaries),
+            OutputContext.Ide => string.Join("\n\n", impactSummaries),
             OutputContext.Markdown => string.Join("\n\n", impactSummaries),
             OutputContext.Console => string.Join("\n\n", impactSummaries),
-            OutputContext.CSV => string.Join("\n", impactSummaries),
+            OutputContext.Csv => string.Join("\n", impactSummaries),
             _ => string.Join("\n\n", impactSummaries)
         };
     }

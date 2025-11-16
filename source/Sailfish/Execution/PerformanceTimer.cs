@@ -8,15 +8,15 @@ namespace Sailfish.Execution;
 public sealed class PerformanceTimer
 {
     public readonly List<IterationPerformance> ExecutionIterationPerformances = new();
-    private readonly Stopwatch iterationTimer;
-    private DateTimeOffset executionIterationStart;
+    private readonly Stopwatch _iterationTimer;
+    private DateTimeOffset _executionIterationStart;
 
-    private DateTimeOffset testCaseStart;
-    private DateTimeOffset testCaseStop;
+    private DateTimeOffset _testCaseStart;
+    private DateTimeOffset _testCaseStop;
 
     public PerformanceTimer()
     {
-        iterationTimer = new Stopwatch();
+        _iterationTimer = new Stopwatch();
     }
 
     public bool IsValid { get; private set; } = true;
@@ -49,37 +49,37 @@ public sealed class PerformanceTimer
 
     public void SetTestCaseStart()
     {
-        testCaseStart = DateTimeOffset.Now;
+        _testCaseStart = DateTimeOffset.Now;
     }
 
     public void SetTestCaseStop()
     {
-        testCaseStop = DateTimeOffset.Now;
+        _testCaseStop = DateTimeOffset.Now;
     }
 
     public void StartSailfishMethodExecutionTimer()
     {
-        if (iterationTimer.IsRunning) return;
-        executionIterationStart = DateTimeOffset.Now;
-        iterationTimer.Start();
+        if (_iterationTimer.IsRunning) return;
+        _executionIterationStart = DateTimeOffset.Now;
+        _iterationTimer.Start();
     }
 
     public void StopSailfishMethodExecutionTimer()
     {
-        if (!iterationTimer.IsRunning) return;
-        iterationTimer.Stop();
+        if (!_iterationTimer.IsRunning) return;
+        _iterationTimer.Stop();
         var executionIterationStop = DateTimeOffset.Now;
-        ExecutionIterationPerformances.Add(new IterationPerformance(executionIterationStart, executionIterationStop, iterationTimer.ElapsedTicks));
-        iterationTimer.Reset();
+        ExecutionIterationPerformances.Add(new IterationPerformance(_executionIterationStart, executionIterationStop, _iterationTimer.ElapsedTicks));
+        _iterationTimer.Reset();
     }
 
     public DateTimeOffset GetIterationStartTime()
     {
-        return testCaseStart;
+        return _testCaseStart;
     }
 
     public DateTimeOffset GetIterationStopTime()
     {
-        return testCaseStop;
+        return _testCaseStop;
     }
 }

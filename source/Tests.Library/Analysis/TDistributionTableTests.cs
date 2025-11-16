@@ -5,7 +5,7 @@ using Xunit;
 
 namespace Tests.Library.Analysis;
 
-public class TDistributionTableTests
+public class DistributionTableTests
 {
     [Theory]
     [InlineData(1, 0.95, 12.706, 1e-3)]
@@ -14,15 +14,15 @@ public class TDistributionTableTests
     [InlineData(10, 0.99, 3.169, 1e-3)]
     public void CriticalValues_ShouldMatchKnownGood(int df, double cl, double expected, double tol)
     {
-        var t = TDistributionTable.GetCriticalValue(cl, df);
+        var t = DistributionTable.GetCriticalValue(cl, df);
         t.ShouldBe(expected, tol);
     }
 
     [Fact]
     public void CriticalValue_ShouldDecreaseWithDf()
     {
-        var t5 = TDistributionTable.GetCriticalValue(0.95, 5);
-        var t30 = TDistributionTable.GetCriticalValue(0.95, 30);
+        var t5 = DistributionTable.GetCriticalValue(0.95, 5);
+        var t30 = DistributionTable.GetCriticalValue(0.95, 30);
         t30.ShouldBeLessThan(t5);
 
     }
@@ -34,7 +34,7 @@ public class TDistributionTableTests
     public void InvalidInputs_AreCoerced_ToSafeDefaults(int df, double cl)
     {
         // Should not throw and should return a finite value
-        var t = TDistributionTable.GetCriticalValue(cl, df);
+        var t = DistributionTable.GetCriticalValue(cl, df);
         t.ShouldBeGreaterThan(0);
         t.ShouldBeLessThan(100);
     }
@@ -47,7 +47,7 @@ public class TDistributionTableTests
             var cl = Math.BitDecrement(1.0); // just below 1.0
 
             // Act
-            var t = TDistributionTable.GetCriticalValue(cl, 30);
+            var t = DistributionTable.GetCriticalValue(cl, 30);
 
             // Assert: should hit fallback path and use the >= 0.999 branch
             t.ShouldBe(3.291, 1e-9);

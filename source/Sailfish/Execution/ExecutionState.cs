@@ -14,11 +14,11 @@ internal interface IExecutionState
 
 internal class ExecutionState : IExecutionState
 {
-    private readonly Dictionary<string, PropertiesAndFields> hiddenState = new();
+    private readonly Dictionary<string, PropertiesAndFields> _hiddenState = new();
 
     public PropertiesAndFields GetState(string key)
     {
-        if (!hiddenState.TryGetValue(key, out var state))
+        if (!_hiddenState.TryGetValue(key, out var state))
         {
             throw new SailfishException("State properties were expected but not found");
         };
@@ -27,16 +27,16 @@ internal class ExecutionState : IExecutionState
 
     public void SetState(string key, PropertiesAndFields state)
     {
-        hiddenState[key] = state;
+        _hiddenState[key] = state;
     }
 
     public void RemoveState(string key)
     {
-        hiddenState.Remove(key);
+        _hiddenState.Remove(key);
     }
 
     public bool Contains(string key)
     {
-        return hiddenState.ContainsKey(key);
+        return _hiddenState.ContainsKey(key);
     }
 }

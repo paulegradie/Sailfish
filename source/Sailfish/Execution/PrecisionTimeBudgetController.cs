@@ -39,7 +39,7 @@ internal sealed class PrecisionTimeBudgetController
         var perIterMs = Math.Max(0.001, Median(pilotSamplesNanoSeconds) / 1_000_000.0);
         var allowed = (int)Math.Floor(remainingMs / perIterMs);
 
-        double factor = 1.0;
+        var factor = 1.0;
         if (allowed <= 1) factor = 2.0;
         else if (allowed <= 3) factor = 1.5;
         else if (allowed <= 5) factor = 1.25;
@@ -59,7 +59,7 @@ internal sealed class PrecisionTimeBudgetController
         if (xs == null || xs.Length == 0) return 0;
         var arr = (double[])xs.Clone();
         Array.Sort(arr);
-        int mid = arr.Length / 2;
+        var mid = arr.Length / 2;
         if ((arr.Length & 1) == 1) return arr[mid];
         return 0.5 * (arr[mid - 1] + arr[mid]);
     }

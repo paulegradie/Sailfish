@@ -18,8 +18,8 @@ internal sealed class WriteAsCsvMap : ClassMap<PerformanceRunResult>
         Map(m => m.TotalNumOutliers).Index(7);
         Map(m => m.SampleSize).Index(8);
         Map(m => m.RawExecutionResults).TypeConverter<DoubleArrayCsvConverter>().Index(9);
-        Map(m => m.CI95MarginOfError).Index(10).Name("CI95_MOE");
-        Map(m => m.CI99MarginOfError).Index(11).Name("CI99_MOE");
+        Map(m => m.Ci95MarginOfError).Index(10).Name("CI95_MOE");
+        Map(m => m.Ci99MarginOfError).Index(11).Name("CI99_MOE");
 
     }
 }

@@ -19,21 +19,21 @@ namespace Tests.Library.Presentation;
 /// </summary>
 public class ExecutionSummaryWriterTests
 {
-    private readonly IMediator mockMediator;
-    private readonly ExecutionSummaryWriter executionSummaryWriter;
+    private readonly IMediator _mockMediator;
+    private readonly ExecutionSummaryWriter _executionSummaryWriter;
 
     public ExecutionSummaryWriterTests()
     {
-        mockMediator = Substitute.For<IMediator>();
-        executionSummaryWriter = new ExecutionSummaryWriter(mockMediator);
+        _mockMediator = Substitute.For<IMediator>();
+        _executionSummaryWriter = new ExecutionSummaryWriter(_mockMediator);
     }
 
     [Fact]
     public void Constructor_WithValidMediator_ShouldCreateInstance()
     {
         // Act & Assert
-        executionSummaryWriter.ShouldNotBeNull();
-        executionSummaryWriter.ShouldBeAssignableTo<IExecutionSummaryWriter>();
+        _executionSummaryWriter.ShouldNotBeNull();
+        _executionSummaryWriter.ShouldBeAssignableTo<IExecutionSummaryWriter>();
     }
 
 
@@ -46,18 +46,18 @@ public class ExecutionSummaryWriterTests
         var cancellationToken = CancellationToken.None;
 
         // Act
-        await executionSummaryWriter.Write(executionSummaries, cancellationToken);
+        await _executionSummaryWriter.Write(executionSummaries, cancellationToken);
 
         // Assert
-        await mockMediator.Received(1).Publish(
+        await _mockMediator.Received(1).Publish(
             Arg.Is<WriteToConsoleNotification>(n => n.Content == executionSummaries),
             cancellationToken);
 
-        await mockMediator.Received(1).Publish(
+        await _mockMediator.Received(1).Publish(
             Arg.Is<WriteToMarkDownNotification>(n => n.ClassExecutionSummaries == executionSummaries),
             cancellationToken);
 
-        await mockMediator.Received(1).Publish(
+        await _mockMediator.Received(1).Publish(
             Arg.Is<WriteToCsvNotification>(n => n.ClassExecutionSummaries == executionSummaries),
             cancellationToken);
     }
@@ -70,18 +70,18 @@ public class ExecutionSummaryWriterTests
         var cancellationToken = CancellationToken.None;
 
         // Act
-        await executionSummaryWriter.Write(executionSummaries, cancellationToken);
+        await _executionSummaryWriter.Write(executionSummaries, cancellationToken);
 
         // Assert
-        await mockMediator.Received(1).Publish(
+        await _mockMediator.Received(1).Publish(
             Arg.Is<WriteToConsoleNotification>(n => n.Content == executionSummaries),
             cancellationToken);
 
-        await mockMediator.Received(1).Publish(
+        await _mockMediator.Received(1).Publish(
             Arg.Is<WriteToMarkDownNotification>(n => n.ClassExecutionSummaries == executionSummaries),
             cancellationToken);
 
-        await mockMediator.Received(1).Publish(
+        await _mockMediator.Received(1).Publish(
             Arg.Is<WriteToCsvNotification>(n => n.ClassExecutionSummaries == executionSummaries),
             cancellationToken);
     }
@@ -95,18 +95,18 @@ public class ExecutionSummaryWriterTests
         var cancellationToken = cancellationTokenSource.Token;
 
         // Act
-        await executionSummaryWriter.Write(executionSummaries, cancellationToken);
+        await _executionSummaryWriter.Write(executionSummaries, cancellationToken);
 
         // Assert
-        await mockMediator.Received(1).Publish(
+        await _mockMediator.Received(1).Publish(
             Arg.Any<WriteToConsoleNotification>(),
             cancellationToken);
 
-        await mockMediator.Received(1).Publish(
+        await _mockMediator.Received(1).Publish(
             Arg.Any<WriteToMarkDownNotification>(),
             cancellationToken);
 
-        await mockMediator.Received(1).Publish(
+        await _mockMediator.Received(1).Publish(
             Arg.Any<WriteToCsvNotification>(),
             cancellationToken);
     }
@@ -119,12 +119,12 @@ public class ExecutionSummaryWriterTests
         var cancellationTokenSource = new CancellationTokenSource();
         cancellationTokenSource.Cancel();
 
-        mockMediator.Publish(Arg.Any<INotification>(), Arg.Any<CancellationToken>())
+        _mockMediator.Publish(Arg.Any<INotification>(), Arg.Any<CancellationToken>())
             .Returns(Task.FromCanceled(cancellationTokenSource.Token));
 
         // Act & Assert
         await Should.ThrowAsync<OperationCanceledException>(async () =>
-            await executionSummaryWriter.Write(executionSummaries, cancellationTokenSource.Token));
+            await _executionSummaryWriter.Write(executionSummaries, cancellationTokenSource.Token));
     }
 
     [Fact]
@@ -134,12 +134,12 @@ public class ExecutionSummaryWriterTests
         var executionSummaries = CreateMockExecutionSummaries();
         var cancellationToken = CancellationToken.None;
 
-        mockMediator.Publish(Arg.Any<WriteToConsoleNotification>(), Arg.Any<CancellationToken>())
+        _mockMediator.Publish(Arg.Any<WriteToConsoleNotification>(), Arg.Any<CancellationToken>())
             .Returns(Task.FromException(new InvalidOperationException("Console failed")));
 
         // Act & Assert
         await Should.ThrowAsync<InvalidOperationException>(async () =>
-            await executionSummaryWriter.Write(executionSummaries, cancellationToken));
+            await _executionSummaryWriter.Write(executionSummaries, cancellationToken));
     }
 
     [Fact]
@@ -149,15 +149,15 @@ public class ExecutionSummaryWriterTests
         var executionSummaries = CreateMockExecutionSummaries();
         var cancellationToken = CancellationToken.None;
 
-        mockMediator.Publish(Arg.Any<WriteToMarkDownNotification>(), Arg.Any<CancellationToken>())
+        _mockMediator.Publish(Arg.Any<WriteToMarkDownNotification>(), Arg.Any<CancellationToken>())
             .Returns(Task.FromException(new InvalidOperationException("Markdown failed")));
 
         // Act & Assert
         await Should.ThrowAsync<InvalidOperationException>(async () =>
-            await executionSummaryWriter.Write(executionSummaries, cancellationToken));
+            await _executionSummaryWriter.Write(executionSummaries, cancellationToken));
 
         // CSV notification should not be called due to exception
-        await mockMediator.DidNotReceive().Publish(
+        await _mockMediator.DidNotReceive().Publish(
             Arg.Any<WriteToCsvNotification>(),
             Arg.Any<CancellationToken>());
     }
@@ -169,12 +169,12 @@ public class ExecutionSummaryWriterTests
         var executionSummaries = CreateMockExecutionSummaries();
         var cancellationToken = CancellationToken.None;
 
-        mockMediator.Publish(Arg.Any<WriteToCsvNotification>(), Arg.Any<CancellationToken>())
+        _mockMediator.Publish(Arg.Any<WriteToCsvNotification>(), Arg.Any<CancellationToken>())
             .Returns(Task.FromException(new InvalidOperationException("CSV failed")));
 
         // Act & Assert
         await Should.ThrowAsync<InvalidOperationException>(async () =>
-            await executionSummaryWriter.Write(executionSummaries, cancellationToken));
+            await _executionSummaryWriter.Write(executionSummaries, cancellationToken));
     }
 
     [Fact]
@@ -185,20 +185,20 @@ public class ExecutionSummaryWriterTests
         var cancellationToken = CancellationToken.None;
         var callOrder = new List<string>();
 
-        mockMediator.Publish(Arg.Any<WriteToConsoleNotification>(), Arg.Any<CancellationToken>())
+        _mockMediator.Publish(Arg.Any<WriteToConsoleNotification>(), Arg.Any<CancellationToken>())
             .Returns(Task.CompletedTask)
             .AndDoes(_ => callOrder.Add("Console"));
 
-        mockMediator.Publish(Arg.Any<WriteToMarkDownNotification>(), Arg.Any<CancellationToken>())
+        _mockMediator.Publish(Arg.Any<WriteToMarkDownNotification>(), Arg.Any<CancellationToken>())
             .Returns(Task.CompletedTask)
             .AndDoes(_ => callOrder.Add("Markdown"));
 
-        mockMediator.Publish(Arg.Any<WriteToCsvNotification>(), Arg.Any<CancellationToken>())
+        _mockMediator.Publish(Arg.Any<WriteToCsvNotification>(), Arg.Any<CancellationToken>())
             .Returns(Task.CompletedTask)
             .AndDoes(_ => callOrder.Add("CSV"));
 
         // Act
-        await executionSummaryWriter.Write(executionSummaries, cancellationToken);
+        await _executionSummaryWriter.Write(executionSummaries, cancellationToken);
 
         // Assert
         callOrder.ShouldBe(new[] { "Console", "Markdown", "CSV" });
@@ -217,18 +217,18 @@ public class ExecutionSummaryWriterTests
         var cancellationToken = CancellationToken.None;
 
         // Act
-        await executionSummaryWriter.Write(executionSummaries, cancellationToken);
+        await _executionSummaryWriter.Write(executionSummaries, cancellationToken);
 
         // Assert
-        await mockMediator.Received(1).Publish(
+        await _mockMediator.Received(1).Publish(
             Arg.Is<WriteToConsoleNotification>(n => n.Content.Count == 3),
             cancellationToken);
 
-        await mockMediator.Received(1).Publish(
+        await _mockMediator.Received(1).Publish(
             Arg.Is<WriteToMarkDownNotification>(n => n.ClassExecutionSummaries.Count == 3),
             cancellationToken);
 
-        await mockMediator.Received(1).Publish(
+        await _mockMediator.Received(1).Publish(
             Arg.Is<WriteToCsvNotification>(n => n.ClassExecutionSummaries.Count == 3),
             cancellationToken);
     }
@@ -242,7 +242,7 @@ public class ExecutionSummaryWriterTests
 
         // This test verifies that ConfigureAwait(false) is used
         // by ensuring the method completes without deadlock in a synchronous context
-        var task = executionSummaryWriter.Write(executionSummaries, cancellationToken);
+        var task = _executionSummaryWriter.Write(executionSummaries, cancellationToken);
 
         // Act & Assert
         await task; // Should complete without deadlock

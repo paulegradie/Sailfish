@@ -10,7 +10,7 @@ namespace Sailfish.Analysis.SailDiff.Statistics.StatsCore.Distributions;
 
 internal sealed class MannWhitneyDistribution : UnivariateContinuousDistribution
 {
-    private readonly NormalDistribution approximation;
+    private readonly NormalDistribution _approximation;
 
     internal MannWhitneyDistribution(double[] ranks, int rank1Length, int rank2Length)
     {
@@ -33,7 +33,7 @@ internal sealed class MannWhitneyDistribution : UnivariateContinuousDistribution
             Array.Sort(Table);
         }
 
-        approximation = NormalDistributionFactory.Create(mean, stdDev);
+        _approximation = NormalDistributionFactory.Create(mean, stdDev);
         Correction = ContinuityCorrection.Midpoint;
     }
 
@@ -47,7 +47,7 @@ internal sealed class MannWhitneyDistribution : UnivariateContinuousDistribution
 
     public double[]? Table { get; }
 
-    public override double Mean => approximation.Mean;
+    public override double Mean => _approximation.Mean;
 
 
     public override DoubleRange Support => new(double.NegativeInfinity, double.PositiveInfinity);
@@ -81,7 +81,7 @@ internal sealed class MannWhitneyDistribution : UnivariateContinuousDistribution
         else
             x += 0.5;
 
-        return approximation.DistributionFunction(x);
+        return _approximation.DistributionFunction(x);
     }
 
     private new double ComplementaryDistributionFunction(double x)
@@ -101,7 +101,7 @@ internal sealed class MannWhitneyDistribution : UnivariateContinuousDistribution
                 throw new ArgumentOutOfRangeException();
         }
 
-        return approximation.ComplementaryDistributionFunction(x);
+        return _approximation.ComplementaryDistributionFunction(x);
     }
 
     private static double MannWhitneyU(double[] ranks)
@@ -112,17 +112,17 @@ internal sealed class MannWhitneyDistribution : UnivariateContinuousDistribution
 
     protected override double InnerProbabilityDensityFunction(double x)
     {
-        return Exact ? WilcoxonDistribution.Count(x, Table!) / (double)Table!.Length : approximation.ProbabilityDensityFunction(x);
+        return Exact ? WilcoxonDistribution.Count(x, Table!) / (double)Table!.Length : _approximation.ProbabilityDensityFunction(x);
     }
 
     protected override double InnerLogProbabilityDensityFunction(double x)
     {
-        return Exact ? Math.Log(WilcoxonDistribution.Count(x, Table!)) - Math.Log(Table!.Length) : approximation.ProbabilityDensityFunction(x);
+        return Exact ? Math.Log(WilcoxonDistribution.Count(x, Table!)) - Math.Log(Table!.Length) : _approximation.ProbabilityDensityFunction(x);
     }
 
     protected override double InnerInverseDistributionFunction(double p)
     {
-        if (!Exact) return approximation.InverseDistributionFunction(p);
+        if (!Exact) return _approximation.InverseDistributionFunction(p);
         if (NumberOfSamples1 <= NumberOfSamples2)
             return base.InnerInverseDistributionFunction(p);
         var num1 = 0.0;

@@ -63,13 +63,28 @@ public class TestCasePropertyClonerVariablesExclusionTests
     }
 
     // Simple data record and provider for the variable
-    public record SizeVariantData(string Name, int Value) : IComparable
+    public record SizeVariantData : IComparable
     {
+        public SizeVariantData(string Name, int Value)
+        {
+            this.Name = Name;
+            this.Value = Value;
+        }
+
         public int CompareTo(object? obj)
         {
             return obj is SizeVariantData other
                 ? (Name, Value).CompareTo((other.Name, other.Value))
                 : 1;
+        }
+
+        public string Name { get; init; }
+        public int Value { get; init; }
+
+        public void Deconstruct(out string Name, out int Value)
+        {
+            Name = this.Name;
+            Value = this.Value;
         }
     }
 

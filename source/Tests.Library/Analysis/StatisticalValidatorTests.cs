@@ -8,7 +8,7 @@ namespace Tests.Library.Analysis;
 
 public class StatisticalValidatorTests
 {
-    private readonly StatisticalValidator validator = new();
+    private readonly StatisticalValidator _validator = new();
 
     [Fact]
     public void Validate_LowSampleSize_Warns()
@@ -33,7 +33,7 @@ public class StatisticalValidatorTests
             marginOfError: 1.0);
 
         var settings = new ExecutionSettings { MinimumSampleSize = 10, TargetCoefficientOfVariation = 0.05, MaxConfidenceIntervalWidth = 0.2 };
-        var result = validator.Validate(pr, settings);
+        var result = _validator.Validate(pr, settings);
         result.HasWarnings.ShouldBeTrue();
         result.Warnings.ShouldContain(w => w.Code == "LOW_SAMPLE_SIZE");
     }
@@ -61,7 +61,7 @@ public class StatisticalValidatorTests
             marginOfError: 0.5);
 
         var settings = new ExecutionSettings { TargetCoefficientOfVariation = 0.05, MaxConfidenceIntervalWidth = 0.2 };
-        var result = validator.Validate(pr, settings);
+        var result = _validator.Validate(pr, settings);
         result.Warnings.ShouldContain(w => w.Code == "EXCESSIVE_OUTLIERS" && w.Severity == ValidationSeverity.Critical);
     }
 
@@ -88,7 +88,7 @@ public class StatisticalValidatorTests
             marginOfError: 2.0);
 
         var settings = new ExecutionSettings { TargetCoefficientOfVariation = 0.05, MaxConfidenceIntervalWidth = 0.5 };
-        var result = validator.Validate(pr, settings);
+        var result = _validator.Validate(pr, settings);
         result.Warnings.ShouldContain(w => w.Code == "HIGH_CV" || w.Code == "ELEVATED_CV");
     }
 
@@ -115,7 +115,7 @@ public class StatisticalValidatorTests
             marginOfError: 20.0);
 
         var settings = new ExecutionSettings { TargetCoefficientOfVariation = 0.05, MaxConfidenceIntervalWidth = 0.2 };
-        var result = validator.Validate(pr, settings);
+        var result = _validator.Validate(pr, settings);
         result.Warnings.ShouldContain(w => w.Code == "WIDE_CI" || w.Code == "ELEVATED_CI");
     }
 }

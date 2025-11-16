@@ -1,10 +1,17 @@
 namespace Sailfish.Analysis.ScaleFish;
 
-public class ScaleFishObservation(string methodName, string propertyName, ComplexityMeasurement[] complexityMeasurements)
+public class ScaleFishObservation
 {
-    public string MethodName { get; init; } = methodName;
-    public string PropertyName { get; init; } = propertyName;
-    public ComplexityMeasurement[] ComplexityMeasurements { get; init; } = complexityMeasurements;
+    public ScaleFishObservation(string methodName, string propertyName, ComplexityMeasurement[] complexityMeasurements)
+    {
+        MethodName = methodName;
+        PropertyName = propertyName;
+        ComplexityMeasurements = complexityMeasurements;
+    }
+
+    public string MethodName { get; init; }
+    public string PropertyName { get; init; }
+    public ComplexityMeasurement[] ComplexityMeasurements { get; init; }
 
     public void Deconstruct(out string methodName, out string propertyName, out ComplexityMeasurement[] complexityMeasurements)
     {

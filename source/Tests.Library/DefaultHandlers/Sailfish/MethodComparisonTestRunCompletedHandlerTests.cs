@@ -24,15 +24,15 @@ namespace Tests.Library.DefaultHandlers.Sailfish;
 
 public class MethodComparisonTestRunCompletedHandlerTests
 {
-    private readonly ILogger mockLogger;
-    private readonly IMediator mockMediator;
-    private readonly MethodComparisonTestRunCompletedHandler handler;
+    private readonly ILogger _mockLogger;
+    private readonly IMediator _mockMediator;
+    private readonly MethodComparisonTestRunCompletedHandler _handler;
 
     public MethodComparisonTestRunCompletedHandlerTests()
     {
-        mockLogger = Substitute.For<ILogger>();
-        mockMediator = Substitute.For<IMediator>();
-        handler = new MethodComparisonTestRunCompletedHandler(mockLogger, mockMediator);
+        _mockLogger = Substitute.For<ILogger>();
+        _mockMediator = Substitute.For<IMediator>();
+        _handler = new MethodComparisonTestRunCompletedHandler(_mockLogger, _mockMediator);
     }
 
     #region Constructor Tests
@@ -42,7 +42,7 @@ public class MethodComparisonTestRunCompletedHandlerTests
     {
         // Act & Assert
         Should.Throw<ArgumentNullException>(() =>
-            new MethodComparisonTestRunCompletedHandler(null!, mockMediator));
+            new MethodComparisonTestRunCompletedHandler(null!, _mockMediator));
     }
 
     [Fact]
@@ -50,7 +50,7 @@ public class MethodComparisonTestRunCompletedHandlerTests
     {
         // Act & Assert
         Should.Throw<ArgumentNullException>(() =>
-            new MethodComparisonTestRunCompletedHandler(mockLogger, null!));
+            new MethodComparisonTestRunCompletedHandler(_mockLogger, null!));
     }
 
     #endregion
@@ -64,10 +64,10 @@ public class MethodComparisonTestRunCompletedHandlerTests
         var notification = CreateTestNotificationWithWriteToMarkdown();
 
         // Act
-        await handler.Handle(notification, CancellationToken.None);
+        await _handler.Handle(notification, CancellationToken.None);
 
         // Assert
-        mockLogger.Received().Log(
+        _mockLogger.Received().Log(
             LogLevel.Debug,
             Arg.Any<string>(),
             Arg.Any<object[]>());
@@ -80,14 +80,14 @@ public class MethodComparisonTestRunCompletedHandlerTests
         var notification = CreateTestNotificationWithoutWriteToMarkdown();
 
         // Act
-        await handler.Handle(notification, CancellationToken.None);
+        await _handler.Handle(notification, CancellationToken.None);
 
         // Assert
-        await mockMediator.DidNotReceive().Publish(
+        await _mockMediator.DidNotReceive().Publish(
             Arg.Any<WriteMethodComparisonMarkdownNotification>(),
             Arg.Any<CancellationToken>());
 
-        mockLogger.Received().Log(
+        _mockLogger.Received().Log(
             LogLevel.Debug,
             Arg.Is<string>(s => s.Contains("No test classes found with WriteToMarkdown attribute")),
             Arg.Any<object[]>());
@@ -100,10 +100,10 @@ public class MethodComparisonTestRunCompletedHandlerTests
         var notification = CreateTestNotificationWithWriteToMarkdown();
 
         // Act
-        await handler.Handle(notification, CancellationToken.None);
+        await _handler.Handle(notification, CancellationToken.None);
 
         // Assert
-        await mockMediator.Received(1).Publish(
+        await _mockMediator.Received(1).Publish(
             Arg.Is<WriteMethodComparisonMarkdownNotification>(n =>
                 n.TestClassName.StartsWith("TestSession_") &&
                 !string.IsNullOrEmpty(n.MarkdownContent)),
@@ -117,10 +117,10 @@ public class MethodComparisonTestRunCompletedHandlerTests
         var notification = CreateTestNotificationWithMultipleClasses();
 
         // Act
-        await handler.Handle(notification, CancellationToken.None);
+        await _handler.Handle(notification, CancellationToken.None);
 
         // Assert
-        mockLogger.Received().Log(
+        _mockLogger.Received().Log(
             LogLevel.Debug,
             Arg.Is<string>(s => s.Contains("TestRunCompletedNotification received")),
             Arg.Any<object[]>());
@@ -137,10 +137,10 @@ public class MethodComparisonTestRunCompletedHandlerTests
         var notification = CreateTestNotificationWithComparisonMethods();
 
         // Act
-        await handler.Handle(notification, CancellationToken.None);
+        await _handler.Handle(notification, CancellationToken.None);
 
         // Assert
-        await mockMediator.Received(1).Publish(
+        await _mockMediator.Received(1).Publish(
             Arg.Is<WriteMethodComparisonMarkdownNotification>(n =>
                 n.MarkdownContent.Contains("Comparison Group:") &&
                 n.MarkdownContent.Contains("Performance Comparison Matrix")),
@@ -154,10 +154,10 @@ public class MethodComparisonTestRunCompletedHandlerTests
         var notification = CreateTestNotificationWithNonComparisonMethods();
 
         // Act
-        await handler.Handle(notification, CancellationToken.None);
+        await _handler.Handle(notification, CancellationToken.None);
 
         // Assert
-        await mockMediator.Received(1).Publish(
+        await _mockMediator.Received(1).Publish(
             Arg.Is<WriteMethodComparisonMarkdownNotification>(n =>
                 n.MarkdownContent.Contains("Individual Test Results")),
             Arg.Any<CancellationToken>());
@@ -170,10 +170,10 @@ public class MethodComparisonTestRunCompletedHandlerTests
         var notification = CreateTestNotificationWithEmptyResults();
 
         // Act
-        await handler.Handle(notification, CancellationToken.None);
+        await _handler.Handle(notification, CancellationToken.None);
 
         // Assert - Should not throw and should log appropriately
-        mockLogger.Received().Log(
+        _mockLogger.Received().Log(
             LogLevel.Debug,
             Arg.Any<string>(),
             Arg.Any<object[]>());
@@ -188,14 +188,14 @@ public class MethodComparisonTestRunCompletedHandlerTests
     {
         // Arrange
         var notification = CreateTestNotificationWithWriteToMarkdown();
-        mockMediator.When(x => x.Publish(Arg.Any<WriteMethodComparisonMarkdownNotification>(), Arg.Any<CancellationToken>()))
+        _mockMediator.When(x => x.Publish(Arg.Any<WriteMethodComparisonMarkdownNotification>(), Arg.Any<CancellationToken>()))
             .Do(_ => throw new InvalidOperationException("Test exception"));
 
         // Act
-        await handler.Handle(notification, CancellationToken.None);
+        await _handler.Handle(notification, CancellationToken.None);
 
         // Assert
-        mockLogger.Received().Log(
+        _mockLogger.Received().Log(
             LogLevel.Error,
             Arg.Any<Exception>(),
             Arg.Is<string>(s => s.Contains("Failed to generate consolidated session markdown")),
@@ -207,12 +207,12 @@ public class MethodComparisonTestRunCompletedHandlerTests
     {
         // Arrange
         var notification = CreateTestNotificationWithWriteToMarkdown();
-        mockMediator.When(x => x.Publish(Arg.Any<WriteMethodComparisonMarkdownNotification>(), Arg.Any<CancellationToken>()))
+        _mockMediator.When(x => x.Publish(Arg.Any<WriteMethodComparisonMarkdownNotification>(), Arg.Any<CancellationToken>()))
             .Do(_ => throw new InvalidOperationException("Mediator error"));
 
         // Act & Assert
         await Should.NotThrowAsync(async () =>
-            await handler.Handle(notification, CancellationToken.None));
+            await _handler.Handle(notification, CancellationToken.None));
     }
 
     #endregion
@@ -227,10 +227,10 @@ public class MethodComparisonTestRunCompletedHandlerTests
         var cts = new CancellationTokenSource();
 
         // Act
-        await handler.Handle(notification, cts.Token);
+        await _handler.Handle(notification, cts.Token);
 
         // Assert
-        await mockMediator.Received(1).Publish(
+        await _mockMediator.Received(1).Publish(
             Arg.Any<WriteMethodComparisonMarkdownNotification>(),
             cts.Token);
     }
@@ -243,12 +243,12 @@ public class MethodComparisonTestRunCompletedHandlerTests
         var cts = new CancellationTokenSource();
         cts.Cancel();
 
-        mockMediator.When(x => x.Publish(Arg.Any<WriteMethodComparisonMarkdownNotification>(), Arg.Any<CancellationToken>()))
+        _mockMediator.When(x => x.Publish(Arg.Any<WriteMethodComparisonMarkdownNotification>(), Arg.Any<CancellationToken>()))
             .Do(_ => throw new OperationCanceledException());
 
         // Act & Assert
         await Should.NotThrowAsync(async () =>
-            await handler.Handle(notification, cts.Token));
+            await _handler.Handle(notification, cts.Token));
     }
 
     #endregion
@@ -262,10 +262,10 @@ public class MethodComparisonTestRunCompletedHandlerTests
         var notification = CreateTestNotificationWithMultipleClassesWithWriteToMarkdown();
 
         // Act
-        await handler.Handle(notification, CancellationToken.None);
+        await _handler.Handle(notification, CancellationToken.None);
 
         // Assert
-        await mockMediator.Received(1).Publish(
+        await _mockMediator.Received(1).Publish(
             Arg.Is<WriteMethodComparisonMarkdownNotification>(n =>
                 !string.IsNullOrEmpty(n.MarkdownContent) &&
                 n.TestClassName.StartsWith("TestSession_")),
@@ -454,8 +454,8 @@ public class MethodComparisonTestRunCompletedHandlerTests
         var manifestProvider = new ReproducibilityManifestProvider();
 
         var richHandler = new MethodComparisonTestRunCompletedHandler(
-            mockLogger,
-            mockMediator,
+            _mockLogger,
+            _mockMediator,
             healthProvider,
             runSettings,
             manifestProvider);
@@ -501,8 +501,8 @@ public class MethodComparisonTestRunCompletedHandlerTests
 	        };
 
 	        var richHandler = new MethodComparisonTestRunCompletedHandler(
-	            mockLogger,
-	            mockMediator,
+	            _mockLogger,
+	            _mockMediator,
 	            healthProvider,
 	            runSettings,
 	            manifestProvider);
@@ -513,7 +513,7 @@ public class MethodComparisonTestRunCompletedHandlerTests
 	        await richHandler.Handle(notification, CancellationToken.None);
 
 	        // Assert: markdown contains the randomization seed
-	        await mockMediator.Received(1).Publish(
+	        await _mockMediator.Received(1).Publish(
 	            Arg.Is<WriteMethodComparisonMarkdownNotification>(n =>
 	                n.MarkdownContent.IndexOf("Randomization Seed", StringComparison.OrdinalIgnoreCase) >= 0 &&
 	                n.MarkdownContent.Contains("42")),
@@ -561,7 +561,7 @@ public class MethodComparisonTestRunCompletedHandlerTests
             };
 
             // Act
-            var md = InvokePrivate<string>(handler, "CreateNxNComparisonMatrix", methods);
+            var md = InvokePrivate<string>(_handler, "CreateNxNComparisonMatrix", methods);
 
             // Assert: header, table header with method names, diagonal em dash, CI + q-values and labels
             md.ShouldContain("### 🔢 NxN Comparison Matrix");
@@ -603,7 +603,7 @@ public class MethodComparisonTestRunCompletedHandlerTests
             };
 
             // Act
-            var md = InvokePrivate<string>(handler, "CreateNxNComparisonMatrix", methods);
+            var md = InvokePrivate<string>(_handler, "CreateNxNComparisonMatrix", methods);
 
             // Assert: still a proper table, but cells have no CI and no q-values; label should be Similar
             md.ShouldContain("| Method | Alpha | Beta |");

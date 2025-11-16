@@ -9,7 +9,7 @@ namespace Sailfish.Analysis.SailDiff.Statistics.StatsCore.Distributions;
 
 internal sealed class WilcoxonDistribution : UnivariateContinuousDistribution
 {
-    private readonly NormalDistribution approximation;
+    private readonly NormalDistribution _approximation;
 
     internal WilcoxonDistribution(double[] ranks, bool exact)
     {
@@ -18,7 +18,7 @@ internal sealed class WilcoxonDistribution : UnivariateContinuousDistribution
 
         var mean = ranks.Length * (ranks.Length + 1.0) / 4.0;
         var stdDev = Math.Sqrt(ranks.Length * (ranks.Length + 1.0) * (2.0 * ranks.Length + 1.0) / 24.0);
-        approximation = NormalDistributionFactory.Create(mean, stdDev);
+        _approximation = NormalDistributionFactory.Create(mean, stdDev);
         Table = null;
         if (!exact) return;
 
@@ -46,10 +46,10 @@ internal sealed class WilcoxonDistribution : UnivariateContinuousDistribution
 
     public ContinuityCorrection Correction { get; set; }
 
-    public override double Mean => approximation.Mean;
+    public override double Mean => _approximation.Mean;
 
 
-    public override DoubleRange Support => Exact ? new DoubleRange(0.0, double.PositiveInfinity) : approximation.Support;
+    public override DoubleRange Support => Exact ? new DoubleRange(0.0, double.PositiveInfinity) : _approximation.Support;
 
 
     public static double WPositive(int[] signs, double[] ranks)
@@ -70,7 +70,7 @@ internal sealed class WilcoxonDistribution : UnivariateContinuousDistribution
         else
             x += 0.5;
 
-        return approximation.DistributionFunction(x);
+        return _approximation.DistributionFunction(x);
     }
 
     protected override double InnerComplementaryDistributionFunction(double x)
@@ -82,22 +82,22 @@ internal sealed class WilcoxonDistribution : UnivariateContinuousDistribution
         else
             x += 0.5;
 
-        return approximation.ComplementaryDistributionFunction(x);
+        return _approximation.ComplementaryDistributionFunction(x);
     }
 
     protected override double InnerInverseDistributionFunction(double p)
     {
-        return Exact ? base.InnerInverseDistributionFunction(p) : approximation.InverseDistributionFunction(p);
+        return Exact ? base.InnerInverseDistributionFunction(p) : _approximation.InverseDistributionFunction(p);
     }
 
     protected override double InnerProbabilityDensityFunction(double x)
     {
-        return Exact ? Count(x, Table!) / (double)Table!.Length : approximation.ProbabilityDensityFunction(x);
+        return Exact ? Count(x, Table!) / (double)Table!.Length : _approximation.ProbabilityDensityFunction(x);
     }
 
     protected override double InnerLogProbabilityDensityFunction(double x)
     {
-        return Exact ? Math.Log(Count(x, Table!)) - Math.Log(Table!.Length) : approximation.LogProbabilityDensityFunction(x);
+        return Exact ? Math.Log(Count(x, Table!)) - Math.Log(Table!.Length) : _approximation.LogProbabilityDensityFunction(x);
     }
 
     public override string ToString(string? format, IFormatProvider? formatProvider)

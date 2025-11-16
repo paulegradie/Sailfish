@@ -10,20 +10,20 @@ namespace Tests.Library.Analysis.SailDiff;
 
 public class TrackingFileFinderTests
 {
-    private readonly ITrackingFileDirectoryReader mockTrackingFileDirectoryReader;
-    private readonly TrackingFileFinder trackingFileFinder;
+    private readonly ITrackingFileDirectoryReader _mockTrackingFileDirectoryReader;
+    private readonly TrackingFileFinder _trackingFileFinder;
 
     public TrackingFileFinderTests()
     {
-        mockTrackingFileDirectoryReader = Substitute.For<ITrackingFileDirectoryReader>();
-        trackingFileFinder = new TrackingFileFinder(mockTrackingFileDirectoryReader);
+        _mockTrackingFileDirectoryReader = Substitute.For<ITrackingFileDirectoryReader>();
+        _trackingFileFinder = new TrackingFileFinder(_mockTrackingFileDirectoryReader);
     }
 
     [Fact]
     public void Constructor_ShouldInitializeWithDependency()
     {
         // Arrange & Act
-        var finder = new TrackingFileFinder(mockTrackingFileDirectoryReader);
+        var finder = new TrackingFileFinder(_mockTrackingFileDirectoryReader);
 
         // Assert
         finder.ShouldNotBeNull();
@@ -37,12 +37,12 @@ public class TrackingFileFinderTests
         var beforeTarget = Some.RandomString();
         var tags = new OrderedDictionary();
 
-        mockTrackingFileDirectoryReader
+        _mockTrackingFileDirectoryReader
             .FindTrackingFilesInDirectoryOrderedByLastModified(directory)
             .Returns([]);
 
         // Act
-        var result = trackingFileFinder.GetBeforeAndAfterTrackingFiles(directory, beforeTarget, tags);
+        var result = _trackingFileFinder.GetBeforeAndAfterTrackingFiles(directory, beforeTarget, tags);
 
         // Assert
         result.ShouldNotBeNull();
@@ -59,12 +59,12 @@ public class TrackingFileFinderTests
         var tags = new OrderedDictionary();
         var files = new List<string> { "file1.json.tracking" };
 
-        mockTrackingFileDirectoryReader
+        _mockTrackingFileDirectoryReader
             .FindTrackingFilesInDirectoryOrderedByLastModified(directory)
             .Returns(files);
 
         // Act
-        var result = trackingFileFinder.GetBeforeAndAfterTrackingFiles(directory, beforeTarget, tags);
+        var result = _trackingFileFinder.GetBeforeAndAfterTrackingFiles(directory, beforeTarget, tags);
 
         // Assert
         result.ShouldNotBeNull();
@@ -81,12 +81,12 @@ public class TrackingFileFinderTests
         var tags = new OrderedDictionary();
         var files = new List<string> { "file1.json.tracking", "file2.json.tracking" };
 
-        mockTrackingFileDirectoryReader
+        _mockTrackingFileDirectoryReader
             .FindTrackingFilesInDirectoryOrderedByLastModified(directory)
             .Returns(files);
 
         // Act
-        var result = trackingFileFinder.GetBeforeAndAfterTrackingFiles(directory, beforeTarget, tags);
+        var result = _trackingFileFinder.GetBeforeAndAfterTrackingFiles(directory, beforeTarget, tags);
 
         // Assert
         result.ShouldNotBeNull();
@@ -108,12 +108,12 @@ public class TrackingFileFinderTests
             "file1.json.tracking", "file2.json.tracking", "file3.json.tracking", "file4.json.tracking"
         };
 
-        mockTrackingFileDirectoryReader
+        _mockTrackingFileDirectoryReader
             .FindTrackingFilesInDirectoryOrderedByLastModified(directory)
             .Returns(files);
 
         // Act
-        var result = trackingFileFinder.GetBeforeAndAfterTrackingFiles(directory, beforeTarget, tags);
+        var result = _trackingFileFinder.GetBeforeAndAfterTrackingFiles(directory, beforeTarget, tags);
 
         // Assert
         result.ShouldNotBeNull();
@@ -140,12 +140,12 @@ public class TrackingFileFinderTests
             "file3.tags-Version=2.0.0__Environment=Prod.json.tracking"
         };
 
-        mockTrackingFileDirectoryReader
+        _mockTrackingFileDirectoryReader
             .FindTrackingFilesInDirectoryOrderedByLastModified(directory)
             .Returns(files);
 
         // Act
-        var result = trackingFileFinder.GetBeforeAndAfterTrackingFiles(directory, beforeTarget, tags);
+        var result = _trackingFileFinder.GetBeforeAndAfterTrackingFiles(directory, beforeTarget, tags);
 
         // Assert
         result.ShouldNotBeNull();
@@ -169,12 +169,12 @@ public class TrackingFileFinderTests
             "file1.tags-Version=2.0.0.json.tracking", "file2.tags-Version=3.0.0.json.tracking"
         };
 
-        mockTrackingFileDirectoryReader
+        _mockTrackingFileDirectoryReader
             .FindTrackingFilesInDirectoryOrderedByLastModified(directory)
             .Returns(files);
 
         // Act
-        var result = trackingFileFinder.GetBeforeAndAfterTrackingFiles(directory, beforeTarget, tags);
+        var result = _trackingFileFinder.GetBeforeAndAfterTrackingFiles(directory, beforeTarget, tags);
 
         // Assert
         result.ShouldNotBeNull();
@@ -198,12 +198,12 @@ public class TrackingFileFinderTests
             "file4.tags-Environment=Test.json.tracking"
         };
 
-        mockTrackingFileDirectoryReader
+        _mockTrackingFileDirectoryReader
             .FindTrackingFilesInDirectoryOrderedByLastModified(directory)
             .Returns(files);
 
         // Act
-        var result = trackingFileFinder.GetBeforeAndAfterTrackingFiles(directory, beforeTarget, tags);
+        var result = _trackingFileFinder.GetBeforeAndAfterTrackingFiles(directory, beforeTarget, tags);
 
         // Assert
         result.ShouldNotBeNull();
@@ -223,12 +223,12 @@ public class TrackingFileFinderTests
 
         var files = new List<string> { "file1.json.tracking", "file2.json.tracking", "file3.json.tracking" };
 
-        mockTrackingFileDirectoryReader
+        _mockTrackingFileDirectoryReader
             .FindTrackingFilesInDirectoryOrderedByLastModified(directory)
             .Returns(files);
 
         // Act
-        var result = trackingFileFinder.GetBeforeAndAfterTrackingFiles(directory, beforeTarget, tags);
+        var result = _trackingFileFinder.GetBeforeAndAfterTrackingFiles(directory, beforeTarget, tags);
 
         // Assert
         result.ShouldNotBeNull();
@@ -251,12 +251,12 @@ public class TrackingFileFinderTests
             "file1.json.tracking", "file2.json.tracking", "file3.tags-Version=1.0.0.json.tracking"
         };
 
-        mockTrackingFileDirectoryReader
+        _mockTrackingFileDirectoryReader
             .FindTrackingFilesInDirectoryOrderedByLastModified(directory)
             .Returns(files);
 
         // Act
-        var result = trackingFileFinder.GetBeforeAndAfterTrackingFiles(directory, beforeTarget, tags);
+        var result = _trackingFileFinder.GetBeforeAndAfterTrackingFiles(directory, beforeTarget, tags);
 
         // Assert
         result.ShouldNotBeNull();
@@ -282,12 +282,12 @@ public class TrackingFileFinderTests
             "file3.tags-Version=2.0.0.json.tracking"
         };
 
-        mockTrackingFileDirectoryReader
+        _mockTrackingFileDirectoryReader
             .FindTrackingFilesInDirectoryOrderedByLastModified(directory)
             .Returns(files);
 
         // Act
-        var result = trackingFileFinder.GetBeforeAndAfterTrackingFiles(directory, beforeTarget, tags);
+        var result = _trackingFileFinder.GetBeforeAndAfterTrackingFiles(directory, beforeTarget, tags);
 
         // Assert
         result.ShouldNotBeNull();
@@ -313,12 +313,12 @@ public class TrackingFileFinderTests
             "file3.tags-Version=3.0.0.json.tracking"
         };
 
-        mockTrackingFileDirectoryReader
+        _mockTrackingFileDirectoryReader
             .FindTrackingFilesInDirectoryOrderedByLastModified(directory)
             .Returns(files);
 
         // Act
-        var result = trackingFileFinder.GetBeforeAndAfterTrackingFiles(directory, beforeTarget, tags);
+        var result = _trackingFileFinder.GetBeforeAndAfterTrackingFiles(directory, beforeTarget, tags);
 
         // Assert
         result.ShouldNotBeNull();
@@ -334,15 +334,15 @@ public class TrackingFileFinderTests
         var beforeTarget = Some.RandomString();
         var tags = new OrderedDictionary();
 
-        mockTrackingFileDirectoryReader
+        _mockTrackingFileDirectoryReader
             .FindTrackingFilesInDirectoryOrderedByLastModified(directory)
             .Returns([]);
 
         // Act
-        trackingFileFinder.GetBeforeAndAfterTrackingFiles(directory, beforeTarget, tags);
+        _trackingFileFinder.GetBeforeAndAfterTrackingFiles(directory, beforeTarget, tags);
 
         // Assert
-        mockTrackingFileDirectoryReader
+        _mockTrackingFileDirectoryReader
             .Received(1)
             .FindTrackingFilesInDirectoryOrderedByLastModified(directory);
     }

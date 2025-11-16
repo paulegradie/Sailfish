@@ -2,4 +2,9 @@ using System;
 
 namespace PerformanceTests;
 
-public class TestException(string? message) : Exception(message);
+public class TestException : Exception
+{
+    public TestException(string? message) : base(message)
+    {
+    }
+}

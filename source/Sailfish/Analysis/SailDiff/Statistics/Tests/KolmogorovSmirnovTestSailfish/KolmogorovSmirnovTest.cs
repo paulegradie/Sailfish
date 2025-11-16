@@ -12,11 +12,11 @@ public interface IKolmogorovSmirnovTest : ITest;
 
 public class KolmogorovSmirnovTest : IKolmogorovSmirnovTest
 {
-    private readonly ITestPreprocessor preprocessor;
+    private readonly ITestPreprocessor _preprocessor;
 
     public KolmogorovSmirnovTest(ITestPreprocessor preprocessor)
     {
-        this.preprocessor = preprocessor;
+        _preprocessor = preprocessor;
     }
 
     public TestResultWithOutlierAnalysis ExecuteTest(double[] before, double[] after, SailDiffSettings settings)
@@ -25,8 +25,8 @@ public class KolmogorovSmirnovTest : IKolmogorovSmirnovTest
 
         try
         {
-            var preprocessed1 = preprocessor.Preprocess(before, settings.UseOutlierDetection);
-            var preprocessed2 = preprocessor.Preprocess(after, settings.UseOutlierDetection);
+            var preprocessed1 = _preprocessor.Preprocess(before, settings.UseOutlierDetection);
+            var preprocessed2 = _preprocessor.Preprocess(after, settings.UseOutlierDetection);
 
             var sample1 = preprocessed1.OutlierAnalysis?.DataWithOutliersRemoved ?? preprocessed1.RawData;
             var sample2 = preprocessed2.OutlierAnalysis?.DataWithOutliersRemoved ?? preprocessed2.RawData;

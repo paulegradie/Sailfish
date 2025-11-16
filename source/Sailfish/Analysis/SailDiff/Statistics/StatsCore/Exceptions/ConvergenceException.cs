@@ -2,4 +2,9 @@ using System;
 
 namespace Sailfish.Analysis.SailDiff.Statistics.StatsCore.Exceptions;
 
-public class ConvergenceException(string? message) : Exception(message);
+public class ConvergenceException : Exception
+{
+    public ConvergenceException(string? message) : base(message)
+    {
+    }
+}

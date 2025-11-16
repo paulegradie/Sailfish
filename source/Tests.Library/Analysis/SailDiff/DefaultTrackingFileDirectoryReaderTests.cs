@@ -10,25 +10,25 @@ namespace Tests.Library.Analysis.SailDiff;
 
 public class DefaultTrackingFileDirectoryReaderTests : IDisposable
 {
-    private readonly DefaultTrackingFileDirectoryReader reader;
-    private readonly string tempDirectory;
-    private readonly List<string> createdFiles;
+    private readonly DefaultTrackingFileDirectoryReader _reader;
+    private readonly string _tempDirectory;
+    private readonly List<string> _createdFiles;
 
     public DefaultTrackingFileDirectoryReaderTests()
     {
-        reader = new DefaultTrackingFileDirectoryReader();
-        tempDirectory = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
-        Directory.CreateDirectory(tempDirectory);
-        createdFiles = [];
+        _reader = new DefaultTrackingFileDirectoryReader();
+        _tempDirectory = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
+        Directory.CreateDirectory(_tempDirectory);
+        _createdFiles = [];
     }
 
     public void Dispose()
     {
         try
         {
-            if (Directory.Exists(tempDirectory))
+            if (Directory.Exists(_tempDirectory))
             {
-                Directory.Delete(tempDirectory, true);
+                Directory.Delete(_tempDirectory, true);
             }
         }
         catch
@@ -55,7 +55,7 @@ public class DefaultTrackingFileDirectoryReaderTests : IDisposable
         // tempDirectory is already empty
 
         // Act
-        var result = reader.FindTrackingFilesInDirectoryOrderedByLastModified(tempDirectory);
+        var result = _reader.FindTrackingFilesInDirectoryOrderedByLastModified(_tempDirectory);
 
         // Assert
         result.ShouldNotBeNull();
@@ -71,7 +71,7 @@ public class DefaultTrackingFileDirectoryReaderTests : IDisposable
         CreateFile("config.xml");
 
         // Act
-        var result = reader.FindTrackingFilesInDirectoryOrderedByLastModified(tempDirectory);
+        var result = _reader.FindTrackingFilesInDirectoryOrderedByLastModified(_tempDirectory);
 
         // Assert
         result.ShouldNotBeNull();
@@ -85,7 +85,7 @@ public class DefaultTrackingFileDirectoryReaderTests : IDisposable
         var trackingFile = CreateTrackingFile("test1");
 
         // Act
-        var result = reader.FindTrackingFilesInDirectoryOrderedByLastModified(tempDirectory);
+        var result = _reader.FindTrackingFilesInDirectoryOrderedByLastModified(_tempDirectory);
 
         // Assert
         result.ShouldNotBeNull();
@@ -102,7 +102,7 @@ public class DefaultTrackingFileDirectoryReaderTests : IDisposable
         var file3 = CreateTrackingFileWithDelay("test3", TimeSpan.FromMilliseconds(300));
 
         // Act
-        var result = reader.FindTrackingFilesInDirectoryOrderedByLastModified(tempDirectory);
+        var result = _reader.FindTrackingFilesInDirectoryOrderedByLastModified(_tempDirectory);
 
         // Assert
         result.ShouldNotBeNull();
@@ -122,7 +122,7 @@ public class DefaultTrackingFileDirectoryReaderTests : IDisposable
         var file3 = CreateTrackingFileWithDelay("test3", TimeSpan.FromMilliseconds(300));
 
         // Act
-        var result = reader.FindTrackingFilesInDirectoryOrderedByLastModified(tempDirectory, ascending: true);
+        var result = _reader.FindTrackingFilesInDirectoryOrderedByLastModified(_tempDirectory, ascending: true);
 
         // Assert
         result.ShouldNotBeNull();
@@ -144,7 +144,7 @@ public class DefaultTrackingFileDirectoryReaderTests : IDisposable
         CreateFile("config.xml");
 
         // Act
-        var result = reader.FindTrackingFilesInDirectoryOrderedByLastModified(tempDirectory);
+        var result = _reader.FindTrackingFilesInDirectoryOrderedByLastModified(_tempDirectory);
 
         // Assert
         result.ShouldNotBeNull();
@@ -169,7 +169,7 @@ public class DefaultTrackingFileDirectoryReaderTests : IDisposable
         File.SetLastWriteTimeUtc(file2, timestamp);
 
         // Act
-        var result = reader.FindTrackingFilesInDirectoryOrderedByLastModified(tempDirectory);
+        var result = _reader.FindTrackingFilesInDirectoryOrderedByLastModified(_tempDirectory);
 
         // Assert
         result.ShouldNotBeNull();
@@ -186,7 +186,7 @@ public class DefaultTrackingFileDirectoryReaderTests : IDisposable
 
         // Act & Assert
         Should.Throw<DirectoryNotFoundException>(() =>
-            reader.FindTrackingFilesInDirectoryOrderedByLastModified(nonExistentDirectory));
+            _reader.FindTrackingFilesInDirectoryOrderedByLastModified(nonExistentDirectory));
     }
 
     [Fact]
@@ -194,7 +194,7 @@ public class DefaultTrackingFileDirectoryReaderTests : IDisposable
     {
         // Act & Assert
         Should.Throw<ArgumentNullException>(() =>
-            reader.FindTrackingFilesInDirectoryOrderedByLastModified(null!));
+            _reader.FindTrackingFilesInDirectoryOrderedByLastModified(null!));
     }
 
     [Fact]
@@ -202,7 +202,7 @@ public class DefaultTrackingFileDirectoryReaderTests : IDisposable
     {
         // Act & Assert
         Should.Throw<ArgumentException>(() =>
-            reader.FindTrackingFilesInDirectoryOrderedByLastModified(string.Empty));
+            _reader.FindTrackingFilesInDirectoryOrderedByLastModified(string.Empty));
     }
 
     [Fact]
@@ -214,7 +214,7 @@ public class DefaultTrackingFileDirectoryReaderTests : IDisposable
         var validTrackingFile = CreateTrackingFile("valid");
 
         // Act
-        var result = reader.FindTrackingFilesInDirectoryOrderedByLastModified(tempDirectory);
+        var result = _reader.FindTrackingFilesInDirectoryOrderedByLastModified(_tempDirectory);
 
         // Assert
         result.ShouldNotBeNull();
@@ -227,21 +227,21 @@ public class DefaultTrackingFileDirectoryReaderTests : IDisposable
     {
         // Arrange
         var trackingFiles = new List<string>();
-        for (int i = 0; i < 100; i++)
+        for (var i = 0; i < 100; i++)
         {
             var file = CreateTrackingFileWithDelay($"test{i:D3}", TimeSpan.FromMilliseconds(i * 10));
             trackingFiles.Add(file);
         }
 
         // Act
-        var result = reader.FindTrackingFilesInDirectoryOrderedByLastModified(tempDirectory);
+        var result = _reader.FindTrackingFilesInDirectoryOrderedByLastModified(_tempDirectory);
 
         // Assert
         result.ShouldNotBeNull();
         result.Count.ShouldBe(100);
         
         // Verify descending order (most recent first)
-        for (int i = 0; i < result.Count - 1; i++)
+        for (var i = 0; i < result.Count - 1; i++)
         {
             var currentFileTime = File.GetLastWriteTimeUtc(result[i]);
             var nextFileTime = File.GetLastWriteTimeUtc(result[i + 1]);
@@ -261,7 +261,7 @@ public class DefaultTrackingFileDirectoryReaderTests : IDisposable
         var nonTrackingFile = CreateFile("test.json.nottracking");
 
         // Act
-        var result = reader.FindTrackingFilesInDirectoryOrderedByLastModified(tempDirectory);
+        var result = _reader.FindTrackingFilesInDirectoryOrderedByLastModified(_tempDirectory);
 
         // Assert
         result.ShouldNotBeNull();
@@ -271,9 +271,9 @@ public class DefaultTrackingFileDirectoryReaderTests : IDisposable
 
     private string CreateFile(string fileName)
     {
-        var filePath = Path.Combine(tempDirectory, fileName);
+        var filePath = Path.Combine(_tempDirectory, fileName);
         File.WriteAllText(filePath, "test content");
-        createdFiles.Add(filePath);
+        _createdFiles.Add(filePath);
         return filePath;
     }
 
@@ -295,7 +295,7 @@ public class DefaultTrackingFileDirectoryReaderTests : IDisposable
     public void FindTrackingFilesInDirectoryOrderedByLastModified_WithSubdirectories_IgnoresSubdirectoryFiles()
     {
         // Arrange
-        var subdirectory = Path.Combine(tempDirectory, "subdir");
+        var subdirectory = Path.Combine(_tempDirectory, "subdir");
         Directory.CreateDirectory(subdirectory);
 
         var mainTrackingFile = CreateTrackingFile("main");
@@ -303,7 +303,7 @@ public class DefaultTrackingFileDirectoryReaderTests : IDisposable
         File.WriteAllText(subTrackingFile, "sub content");
 
         // Act
-        var result = reader.FindTrackingFilesInDirectoryOrderedByLastModified(tempDirectory);
+        var result = _reader.FindTrackingFilesInDirectoryOrderedByLastModified(_tempDirectory);
 
         // Assert
         result.ShouldNotBeNull();
@@ -320,7 +320,7 @@ public class DefaultTrackingFileDirectoryReaderTests : IDisposable
         var specialFile3 = CreateTrackingFile("test_with_underscores");
 
         // Act
-        var result = reader.FindTrackingFilesInDirectoryOrderedByLastModified(tempDirectory);
+        var result = _reader.FindTrackingFilesInDirectoryOrderedByLastModified(_tempDirectory);
 
         // Assert
         result.ShouldNotBeNull();
@@ -343,8 +343,8 @@ public class DefaultTrackingFileDirectoryReaderTests : IDisposable
         File.SetLastWriteTimeUtc(newFile, new DateTime(2030, 12, 31, 23, 59, 59, DateTimeKind.Utc));
 
         // Act
-        var resultDescending = reader.FindTrackingFilesInDirectoryOrderedByLastModified(tempDirectory, ascending: false);
-        var resultAscending = reader.FindTrackingFilesInDirectoryOrderedByLastModified(tempDirectory, ascending: true);
+        var resultDescending = _reader.FindTrackingFilesInDirectoryOrderedByLastModified(_tempDirectory, ascending: false);
+        var resultAscending = _reader.FindTrackingFilesInDirectoryOrderedByLastModified(_tempDirectory, ascending: true);
 
         // Assert
         resultDescending.ShouldNotBeNull();
@@ -366,7 +366,7 @@ public class DefaultTrackingFileDirectoryReaderTests : IDisposable
         File.SetAttributes(readOnlyFile, FileAttributes.ReadOnly);
 
         // Act
-        var result = reader.FindTrackingFilesInDirectoryOrderedByLastModified(tempDirectory);
+        var result = _reader.FindTrackingFilesInDirectoryOrderedByLastModified(_tempDirectory);
 
         // Assert
         result.ShouldNotBeNull();

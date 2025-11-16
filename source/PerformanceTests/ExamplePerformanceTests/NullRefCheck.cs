@@ -8,7 +8,20 @@ public abstract class NullRefOnTheBase
 {
     public NullThing? ThingINeed { get; set; }
 
-    public abstract record NullThing(object NotPresent);
+    public abstract record NullThing
+    {
+        protected NullThing(object NotPresent)
+        {
+            this.NotPresent = NotPresent;
+        }
+
+        public object NotPresent { get; init; }
+
+        public void Deconstruct(out object NotPresent)
+        {
+            NotPresent = this.NotPresent;
+        }
+    }
 }
 
 [Sailfish]

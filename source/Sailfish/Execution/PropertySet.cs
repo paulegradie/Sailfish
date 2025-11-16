@@ -9,9 +9,19 @@ namespace Sailfish.Execution;
 ///     There should only ever be as many TestCaseVariable objects in the list as there are properties on the test class
 ///     So each PropertySet represents a test case that should be executed
 /// </summary>
-public class PropertySet(List<TestCaseVariable> variableSet)
+public class PropertySet
 {
-    public List<TestCaseVariable> VariableSet { get; set; } = variableSet;
+    /// <summary>
+    ///     A property set is a container that holds an array of TestCaseVariables
+    ///     There should only ever be as many TestCaseVariable objects in the list as there are properties on the test class
+    ///     So each PropertySet represents a test case that should be executed
+    /// </summary>
+    public PropertySet(List<TestCaseVariable> variableSet)
+    {
+        VariableSet = variableSet;
+    }
+
+    public List<TestCaseVariable> VariableSet { get; set; }
 
     public IEnumerable<string> GetPropertyNames()
     {

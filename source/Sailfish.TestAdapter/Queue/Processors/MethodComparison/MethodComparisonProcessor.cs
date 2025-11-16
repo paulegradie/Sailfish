@@ -245,7 +245,7 @@ internal class MethodComparisonProcessor : TestCompletionQueueProcessorBase
         {
             var groupName = group?.ToString();
             Logger.Log(LogLevel.Information,
-                "Found comparison group '{0}' for test '{1}'", groupName, message.TestCaseId);
+                "Found comparison group '{0}' for test '{1}'", groupName ?? "null", message.TestCaseId);
             return groupName;
         }
 
@@ -506,11 +506,11 @@ internal class MethodComparisonProcessor : TestCompletionQueueProcessorBase
             foreach (var _ in stats) sb.Append("|-");
             sb.AppendLine("|");
 
-            for (int i = 0; i < stats.Count; i++)
+            for (var i = 0; i < stats.Count; i++)
             {
                 var row = stats[i];
                 sb.Append($"| {row.Name} |");
-                for (int j = 0; j < stats.Count; j++)
+                for (var j = 0; j < stats.Count; j++)
                 {
                     if (i == j)
                     {
@@ -518,7 +518,7 @@ internal class MethodComparisonProcessor : TestCompletionQueueProcessorBase
                         continue;
                     }
                     var col = stats[j];
-                    var (ratio, lo, hi) = MultipleComparisons.ComputeRatioCI(row.Mean, row.SE, row.N, col.Mean, col.SE, col.N, 0.95);
+                    var (ratio, lo, hi) = MultipleComparisons.ComputeRatioCi(row.Mean, row.SE, row.N, col.Mean, col.SE, col.N, 0.95);
                     var key = MultipleComparisons.NormalizePair(row.Id, col.Id);
                     qMap.TryGetValue(key, out var q);
                     var sig = q > 0 && q <= 0.05;
@@ -558,43 +558,6 @@ internal class MethodComparisonProcessor : TestCompletionQueueProcessorBase
         {
             if (p < 1e-3) return p.ToString("0.0e-0");
             return p.ToString("0.###");
-        }
-    }
-
-    /// <summary>
-    /// Creates a performance summary for a group of methods.
-    /// </summary>
-    /// <param name="methods">The methods in the comparison group.</param>
-    /// <returns>The formatted performance summary.</returns>
-    private string CreatePerformanceSummary(List<TestCompletionQueueMessage> methods)
-    {
-        if (methods.Count < 2) return string.Empty;
-
-        try
-        {
-            // Find fastest and slowest methods
-            var sortedMethods = methods.OrderBy(m => m.PerformanceMetrics.MeanMs).ToList();
-            var fastest = sortedMethods.First();
-            var slowest = sortedMethods.Last();
-
-            if (fastest.TestCaseId == slowest.TestCaseId) return string.Empty;
-
-            var sb = new StringBuilder();
-            sb.AppendLine("**📊 Performance Summary:**");
-            sb.AppendLine($"- 🟢 **Fastest:** {ExtractMethodName(fastest)} ({fastest.PerformanceMetrics.MeanMs:F3}ms)");
-            sb.AppendLine($"- 🔴 **Slowest:** {ExtractMethodName(slowest)} ({slowest.PerformanceMetrics.MeanMs:F3}ms)");
-
-            var percentageDifference = ((slowest.PerformanceMetrics.MeanMs - fastest.PerformanceMetrics.MeanMs) /
-                                        fastest.PerformanceMetrics.MeanMs) * 100;
-            sb.AppendLine($"- 📈 **Performance Gap:** {percentageDifference:F1}% difference");
-
-            return sb.ToString();
-        }
-        catch (Exception ex)
-        {
-            Logger.Log(LogLevel.Warning, ex,
-                "Failed to create performance summary: {0}", ex.Message);
-            return string.Empty;
         }
     }
 

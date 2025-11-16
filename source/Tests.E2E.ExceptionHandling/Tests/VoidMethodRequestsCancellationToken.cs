@@ -1,5 +1,4 @@
 using Sailfish.Attributes;
-using System.Threading;
 
 namespace Tests.E2E.ExceptionHandling.Tests;
 

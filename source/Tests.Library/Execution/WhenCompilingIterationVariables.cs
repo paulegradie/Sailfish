@@ -9,9 +9,14 @@ using Xunit.Abstractions;
 
 namespace Tests.Library.Execution;
 
-public class WhenCompilingIterationVariables(ITestOutputHelper testOutputHelper)
+public class WhenCompilingIterationVariables
 {
-    private readonly ITestOutputHelper testOutputHelper = testOutputHelper;
+    private readonly ITestOutputHelper _testOutputHelper;
+
+    public WhenCompilingIterationVariables(ITestOutputHelper testOutputHelper)
+    {
+        _testOutputHelper = testOutputHelper;
+    }
 
     [Fact]
     public void AllCombinationsAreFound_TwoProperties()
@@ -67,6 +72,6 @@ public class WhenCompilingIterationVariables(ITestOutputHelper testOutputHelper)
     [Theory]
     public void Wow(int a, int b)
     {
-        testOutputHelper.WriteLine((a + b).ToString());
+        _testOutputHelper.WriteLine((a + b).ToString());
     }
 }

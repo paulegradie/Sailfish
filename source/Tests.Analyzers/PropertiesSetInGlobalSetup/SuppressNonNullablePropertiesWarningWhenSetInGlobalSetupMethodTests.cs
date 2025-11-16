@@ -5,7 +5,6 @@ using Microsoft.CodeAnalysis.CSharp.Testing.XUnit;
 using Microsoft.CodeAnalysis.Testing;
 using Microsoft.CodeAnalysis.Testing.Verifiers;
 using Sailfish.Analyzers.DiagnosticAnalyzers;
-using System.Threading.Tasks;
 using Tests.Analyzers.Utils;
 using Xunit;
 

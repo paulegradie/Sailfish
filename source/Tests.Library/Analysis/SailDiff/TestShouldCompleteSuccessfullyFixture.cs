@@ -13,8 +13,8 @@ namespace Tests.Library.Analysis.SailDiff;
 
 public class TestShouldCompleteSuccessfullyFixture : IAsyncLifetime
 {
-    private double[] after = null!;
-    private double[] before = null!;
+    private double[] _after = null!;
+    private double[] _before = null!;
 
     /// <summary>
     ///     These data should both be large, and of unequal size!
@@ -22,7 +22,7 @@ public class TestShouldCompleteSuccessfullyFixture : IAsyncLifetime
     /// <returns></returns>
     public Task InitializeAsync()
     {
-        before =
+        _before =
         [
             23.4, 30.9, 18.8, 23.0, 21.4, 1, 24.6, 23.8, 24.1, 18.7, 16.3, 20.3,
             14.9, 35.4, 21.6, 21.2, 21.0, 15.0, 15.6, 24.0, 34.6, 40.9, 30.7,
@@ -33,7 +33,7 @@ public class TestShouldCompleteSuccessfullyFixture : IAsyncLifetime
             19.9, 32.1
         ];
 
-        after =
+        _after =
         [
             16.5, 1, 22.6, 25.3, 23.7, 1, 23.3, 23.9, 16.2, 23.0, 21.6, 10.8, 12.2,
             23.6, 10.1, 24.4, 16.4, 11.7, 17.7, 34.3, 24.3, 18.7, 27.5, 25.8, 22.5,
@@ -55,27 +55,27 @@ public class TestShouldCompleteSuccessfullyFixture : IAsyncLifetime
     public void TwoSample()
     {
         var test = new TwoSampleWilcoxonSignedRankTest(new TestPreprocessor(new SailfishOutlierDetector()));
-        Should.NotThrow(() => test.ExecuteTest(before, after, new SailDiffSettings(0.0001, 4, false)));
+        Should.NotThrow(() => test.ExecuteTest(_before, _after, new SailDiffSettings(0.0001, 4, false)));
     }
 
     [Fact]
     public void RankSum()
     {
         var test = new MannWhitneyWilcoxonTest(new TestPreprocessor(new SailfishOutlierDetector()));
-        Should.NotThrow(() => test.ExecuteTest(before, after, new SailDiffSettings(0.0001, 4, false, TestType.WilcoxonRankSumTest)));
+        Should.NotThrow(() => test.ExecuteTest(_before, _after, new SailDiffSettings(0.0001, 4, false, TestType.WilcoxonRankSumTest)));
     }
 
     [Fact]
-    public void TTEst()
+    public void TtEst()
     {
         var test = new Test(new TestPreprocessor(new SailfishOutlierDetector()));
-        Should.NotThrow(() => test.ExecuteTest(before, after, new SailDiffSettings(0.0001, 4, false, TestType.Test)));
+        Should.NotThrow(() => test.ExecuteTest(_before, _after, new SailDiffSettings(0.0001, 4, false, TestType.Test)));
     }
 
     [Fact]
     public void KolmogorovSmirnov()
     {
         var test = new KolmogorovSmirnovTest(new TestPreprocessor(new SailfishOutlierDetector()));
-        Should.NotThrow(() => test.ExecuteTest(before, after, new SailDiffSettings(0.0001, 4, false, TestType.KolmogorovSmirnovTest)));
+        Should.NotThrow(() => test.ExecuteTest(_before, _after, new SailDiffSettings(0.0001, 4, false, TestType.KolmogorovSmirnovTest)));
     }
 }

@@ -82,8 +82,8 @@ public class PerformanceRunResult
     public ValidationResult? Validation { get; set; }
 
     // Convenience properties for CSV and simple consumers
-    public double CI95MarginOfError => GetMarginFor(0.95);
-    public double CI99MarginOfError => GetMarginFor(0.99);
+    public double Ci95MarginOfError => GetMarginFor(0.95);
+    public double Ci99MarginOfError => GetMarginFor(0.99);
 
     private double GetMarginFor(double level)
     {

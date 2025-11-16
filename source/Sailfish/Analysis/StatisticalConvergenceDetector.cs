@@ -54,8 +54,8 @@ public class StatisticalConvergenceDetector : IStatisticalConvergenceDetector
         
         // Handle edge cases
         // Treat very small means as zero to avoid unstable CV and CI calculations
-        const double NearZero = 1e-9;
-        if (Math.Abs(mean) <= NearZero)
+        const double nearZero = 1e-9;
+        if (Math.Abs(mean) <= nearZero)
         {
             return new ConvergenceResult
             {
@@ -160,6 +160,6 @@ public class StatisticalConvergenceDetector : IStatisticalConvergenceDetector
     private static double GetTValue(double confidenceLevel, int degreesOfFreedom)
     {
         // Delegate to central t-distribution provider for accurate critical values
-        return TDistributionTable.GetCriticalValue(confidenceLevel, degreesOfFreedom);
+        return DistributionTable.GetCriticalValue(confidenceLevel, degreesOfFreedom);
     }
 }

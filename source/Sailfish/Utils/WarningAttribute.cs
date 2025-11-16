@@ -14,7 +14,12 @@ namespace Sailfish.Utils;
     | AttributeTargets.Event
     | AttributeTargets.Delegate,
     Inherited = false)]
-internal sealed class WarningAttribute(string? message) : Attribute
+internal sealed class WarningAttribute : Attribute
 {
-    public string? Message { get; } = message;
+    public WarningAttribute(string? message)
+    {
+        Message = message;
+    }
+
+    public string? Message { get; }
 }

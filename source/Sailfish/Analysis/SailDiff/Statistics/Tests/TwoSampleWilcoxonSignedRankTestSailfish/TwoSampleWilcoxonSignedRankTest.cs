@@ -9,15 +9,22 @@ namespace Sailfish.Analysis.SailDiff.Statistics.Tests.TwoSampleWilcoxonSignedRan
 
 public interface ITwoSampleWilcoxonSignedRankTest : ITest;
 
-public class TwoSampleWilcoxonSignedRankTest(ITestPreprocessor preprocessor) : ITwoSampleWilcoxonSignedRankTest
+public class TwoSampleWilcoxonSignedRankTest : ITwoSampleWilcoxonSignedRankTest
 {
+    private readonly ITestPreprocessor _preprocessor;
+
+    public TwoSampleWilcoxonSignedRankTest(ITestPreprocessor preprocessor)
+    {
+        _preprocessor = preprocessor;
+    }
+
     public TestResultWithOutlierAnalysis ExecuteTest(double[] before, double[] after, SailDiffSettings settings)
     {
         var sigDig = settings.Round;
 
         try
         {
-            var (preprocessed1, preprocessed2) = preprocessor.PreprocessJointlyWithDownSample(before, after, settings.UseOutlierDetection, 3, int.MaxValue);
+            var (preprocessed1, preprocessed2) = _preprocessor.PreprocessJointlyWithDownSample(before, after, settings.UseOutlierDetection, 3, int.MaxValue);
             var sample1 = preprocessed1.OutlierAnalysis?.DataWithOutliersRemoved ?? preprocessed1.RawData;
             var sample2 = preprocessed2.OutlierAnalysis?.DataWithOutliersRemoved ?? preprocessed2.RawData;
 

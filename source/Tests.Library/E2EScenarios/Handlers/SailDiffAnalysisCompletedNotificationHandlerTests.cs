@@ -10,7 +10,6 @@ using Sailfish.Contracts.Public;
 using Sailfish.Contracts.Public.Models;
 using Sailfish.Contracts.Public.Notifications;
 using Sailfish.DefaultHandlers.SailDiff;
-using Sailfish.Exceptions;
 using Sailfish.Presentation;
 using Shouldly;
 using Tests.Common.Utils;

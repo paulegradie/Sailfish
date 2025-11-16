@@ -5,7 +5,6 @@ using System.Threading.Tasks;
 using NSubstitute;
 using Sailfish.Analysis.ScaleFish.ComplexityFunctions;
 using Sailfish.Contracts.Public.Models;
-using Sailfish.Contracts.Public.Serialization.Tracking.V1;
 using Sailfish.Logging;
 using Shouldly;
 using Tests.Common.Builders;

@@ -4,18 +4,18 @@ namespace Tests.Common.Builders;
 
 public class PerformanceRunResultBuilder
 {
-    private double[]? dataWithOutliersRemoved;
-    private string? displayName;
-    private double[]? lowerOutliers;
-    private double? mean;
-    private double? median;
-    private int? numWarmupIterations;
-    private double[]? rawExecutionResults;
-    private int? sampleSize;
-    private double? stdDev;
-    private int? totalNumOutliers;
-    private double[]? upperOutliers;
-    private double? variance;
+    private double[]? _dataWithOutliersRemoved;
+    private string? _displayName;
+    private double[]? _lowerOutliers;
+    private double? _mean;
+    private double? _median;
+    private int? _numWarmupIterations;
+    private double[]? _rawExecutionResults;
+    private int? _sampleSize;
+    private double? _stdDev;
+    private int? _totalNumOutliers;
+    private double[]? _upperOutliers;
+    private double? _variance;
 
     public static PerformanceRunResultBuilder Create()
     {
@@ -24,73 +24,73 @@ public class PerformanceRunResultBuilder
 
     public PerformanceRunResultBuilder WithDisplayName(string displayName)
     {
-        this.displayName = displayName;
+        _displayName = displayName;
         return this;
     }
 
     public PerformanceRunResultBuilder WithMean(double mean)
     {
-        this.mean = mean;
+        _mean = mean;
         return this;
     }
 
     public PerformanceRunResultBuilder WithStdDev(double stdDev)
     {
-        this.stdDev = stdDev;
+        _stdDev = stdDev;
         return this;
     }
 
     public PerformanceRunResultBuilder WithVariance(double variance)
     {
-        this.variance = variance;
+        _variance = variance;
         return this;
     }
 
     public PerformanceRunResultBuilder WithMedian(double median)
     {
-        this.median = median;
+        _median = median;
         return this;
     }
 
     public PerformanceRunResultBuilder WithRawExecutionResults(double[] rawExecutionResults)
     {
-        this.rawExecutionResults = rawExecutionResults;
+        _rawExecutionResults = rawExecutionResults;
         return this;
     }
 
     public PerformanceRunResultBuilder WithSampleSize(int sampleSize)
     {
-        this.sampleSize = sampleSize;
+        _sampleSize = sampleSize;
         return this;
     }
 
     public PerformanceRunResultBuilder WithNumWarmupIterations(int numWarmupIterations)
     {
-        this.numWarmupIterations = numWarmupIterations;
+        _numWarmupIterations = numWarmupIterations;
         return this;
     }
 
     public PerformanceRunResultBuilder WithDataWithOutliersRemoved(double[] dataWithOutliersRemoved)
     {
-        this.dataWithOutliersRemoved = dataWithOutliersRemoved;
+        _dataWithOutliersRemoved = dataWithOutliersRemoved;
         return this;
     }
 
     public PerformanceRunResultBuilder WithUpperOutliers(double[] upperOutliers)
     {
-        this.upperOutliers = upperOutliers;
+        _upperOutliers = upperOutliers;
         return this;
     }
 
     public PerformanceRunResultBuilder WithLowerOutliers(double[] lowerOutliers)
     {
-        this.lowerOutliers = lowerOutliers;
+        _lowerOutliers = lowerOutliers;
         return this;
     }
 
     public PerformanceRunResultBuilder WithTotalNumOutliers(int totalNumOutliers)
     {
-        this.totalNumOutliers = totalNumOutliers;
+        _totalNumOutliers = totalNumOutliers;
         return this;
     }
 
@@ -98,17 +98,17 @@ public class PerformanceRunResultBuilder
     {
         // Set default values if properties are null
         return new PerformanceRunResult(
-            displayName ?? "My.Test()",
-            mean ?? 2.0,
-            stdDev ?? 1.0,
-            variance ?? 2.0,
-            median ?? 2.0,
-            rawExecutionResults ?? [],
-            sampleSize ?? 3,
-            numWarmupIterations ?? 2,
-            dataWithOutliersRemoved ?? [],
-            upperOutliers ?? [],
-            lowerOutliers ?? [],
-            totalNumOutliers ?? 0);
+            _displayName ?? "My.Test()",
+            _mean ?? 2.0,
+            _stdDev ?? 1.0,
+            _variance ?? 2.0,
+            _median ?? 2.0,
+            _rawExecutionResults ?? [],
+            _sampleSize ?? 3,
+            _numWarmupIterations ?? 2,
+            _dataWithOutliersRemoved ?? [],
+            _upperOutliers ?? [],
+            _lowerOutliers ?? [],
+            _totalNumOutliers ?? 0);
     }
 }

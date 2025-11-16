@@ -2,6 +2,7 @@
 using System.Threading;
 using System.Threading.Tasks;
 using Sailfish.Contracts.Public.Models;
+using Sailfish.Execution.Tuning;
 using Sailfish.Logging;
 
 namespace Sailfish.Execution;
@@ -16,10 +17,10 @@ internal interface ITestCaseIterator
 
 internal class TestCaseIterator : ITestCaseIterator
 {
-    private readonly ILogger logger;
-    private readonly IRunSettings runSettings;
-    private readonly IIterationStrategy fixedIterationStrategy;
-    private readonly IIterationStrategy adaptiveIterationStrategy;
+    private readonly ILogger _logger;
+    private readonly IRunSettings _runSettings;
+    private readonly IIterationStrategy _fixedIterationStrategy;
+    private readonly IIterationStrategy _adaptiveIterationStrategy;
 
     public TestCaseIterator(
         IRunSettings runSettings,
@@ -27,10 +28,10 @@ internal class TestCaseIterator : ITestCaseIterator
         IIterationStrategy fixedIterationStrategy,
         IIterationStrategy adaptiveIterationStrategy)
     {
-        this.logger = logger;
-        this.runSettings = runSettings;
-        this.fixedIterationStrategy = fixedIterationStrategy;
-        this.adaptiveIterationStrategy = adaptiveIterationStrategy;
+        _logger = logger;
+        _runSettings = runSettings;
+        _fixedIterationStrategy = fixedIterationStrategy;
+        _adaptiveIterationStrategy = adaptiveIterationStrategy;
     }
 
     public async Task<TestCaseExecutionResult> Iterate(
@@ -52,19 +53,19 @@ internal class TestCaseIterator : ITestCaseIterator
         var executionSettings = testInstanceContainer.ExecutionSettings;
         var useAdaptive = executionSettings.UseAdaptiveSampling;
 
-        var strategy = useAdaptive ? adaptiveIterationStrategy : fixedIterationStrategy;
+        var strategy = useAdaptive ? _adaptiveIterationStrategy : _fixedIterationStrategy;
 
         // Apply sample size override if specified
-        if (runSettings.SampleSizeOverride.HasValue)
+        if (_runSettings.SampleSizeOverride.HasValue)
         {
             if (useAdaptive)
             {
-                executionSettings.MaximumSampleSize = Math.Max(runSettings.SampleSizeOverride.Value,
+                executionSettings.MaximumSampleSize = Math.Max(_runSettings.SampleSizeOverride.Value,
                                                               executionSettings.MinimumSampleSize);
             }
             else
             {
-                executionSettings.SampleSize = Math.Max(runSettings.SampleSizeOverride.Value, 1);
+                executionSettings.SampleSize = Math.Max(_runSettings.SampleSizeOverride.Value, 1);
             }
         }
 
@@ -74,17 +75,17 @@ internal class TestCaseIterator : ITestCaseIterator
                 try
                 {
                     var tuner = new OperationsPerInvokeTuner();
-                    var tuned = await tuner.TuneAsync(testInstanceContainer, executionSettings.TargetIterationDuration, logger, cancellationToken).ConfigureAwait(false);
+                    var tuned = await tuner.TuneAsync(testInstanceContainer, executionSettings.TargetIterationDuration, _logger, cancellationToken).ConfigureAwait(false);
                     if (tuned > executionSettings.OperationsPerInvoke)
                     {
-                        logger.Log(LogLevel.Information, "      ---- Using OperationsPerInvoke={OPI} (auto-tuned)", tuned);
+                        _logger.Log(LogLevel.Information, "      ---- Using OperationsPerInvoke={OPI} (auto-tuned)", tuned);
                         executionSettings.OperationsPerInvoke = tuned;
                     }
                 }
                 catch (Exception ex)
                 {
                     // Non-fatal: fall back to provided OperationsPerInvoke
-                    logger.Log(LogLevel.Warning, ex, "      ---- Auto-tuning OperationsPerInvoke failed; continuing with OPI={OPI}", executionSettings.OperationsPerInvoke);
+                    _logger.Log(LogLevel.Warning, ex, "      ---- Auto-tuning OperationsPerInvoke failed; continuing with OPI={OPI}", executionSettings.OperationsPerInvoke);
                 }
             }
 
@@ -107,7 +108,7 @@ internal class TestCaseIterator : ITestCaseIterator
         // Log convergence information for adaptive sampling
         if (useAdaptive && iterationResult.ConvergedEarly)
         {
-            logger.Log(LogLevel.Information,
+            _logger.Log(LogLevel.Information,
                 "      ---- Adaptive sampling completed: {Reason}",
                 iterationResult.ConvergenceReason ?? "unknown");
         }
@@ -124,11 +125,11 @@ internal class TestCaseIterator : ITestCaseIterator
             : 0.0;
         if (driftPct > 20.0)
         {
-            logger.Log(LogLevel.Warning, "      ---- Overhead drift detected: {DriftPercent}%", driftPct);
+            _logger.Log(LogLevel.Warning, "      ---- Overhead drift detected: {DriftPercent}%", driftPct);
         }
         else
         {
-            logger.Log(LogLevel.Information, "      ---- Overhead baseline: {OverheadTicks} ticks (median), drift {DriftPercent}%", beginOverheadTicks, driftPct);
+            _logger.Log(LogLevel.Information, "      ---- Overhead baseline: {OverheadTicks} ticks (median), drift {DriftPercent}%", beginOverheadTicks, driftPct);
         }
 
         // Persist diagnostics for test output window consumption
@@ -145,7 +146,7 @@ internal class TestCaseIterator : ITestCaseIterator
     {
         for (var i = 0; i < testInstanceContainer.NumWarmupIterations; i++)
         {
-            logger.Log(LogLevel.Information, "      ---- warmup iteration {CurrentIteration} of {TotalIterations}", i + 1, testInstanceContainer.NumWarmupIterations);
+            _logger.Log(LogLevel.Information, "      ---- warmup iteration {CurrentIteration} of {TotalIterations}", i + 1, testInstanceContainer.NumWarmupIterations);
 
             try
             {
@@ -177,7 +178,7 @@ internal class TestCaseIterator : ITestCaseIterator
         if (ex is NullReferenceException)
             ex = new NullReferenceException(ex.Message + Environment.NewLine + $"Null variable or property encountered in method: {testProvider.ExecutionMethod.Name}");
 
-        logger.Log(LogLevel.Error, ex, "An exception occured during test execution");
+        _logger.Log(LogLevel.Error, ex, "An exception occured during test execution");
         return new TestCaseExecutionResult(testProvider, ex);
     }
 }

@@ -1,8 +1,5 @@
 using MediatR;
 using Sailfish.Contracts.Public.Notifications;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 
 namespace Tests.E2E.ExceptionHandling.Handlers;
 

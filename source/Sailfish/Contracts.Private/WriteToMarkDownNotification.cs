@@ -4,7 +4,12 @@ using Sailfish.Execution;
 
 namespace Sailfish.Contracts.Private;
 
-internal class WriteToMarkDownNotification(List<IClassExecutionSummary> classExecutionSummaries) : INotification
+internal class WriteToMarkDownNotification : INotification
 {
-    public List<IClassExecutionSummary> ClassExecutionSummaries { get; } = classExecutionSummaries;
+    public WriteToMarkDownNotification(List<IClassExecutionSummary> classExecutionSummaries)
+    {
+        ClassExecutionSummaries = classExecutionSummaries;
+    }
+
+    public List<IClassExecutionSummary> ClassExecutionSummaries { get; }
 }

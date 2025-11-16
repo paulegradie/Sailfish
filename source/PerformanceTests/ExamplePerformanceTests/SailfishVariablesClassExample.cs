@@ -62,12 +62,17 @@ public class MixedVariableApproachesExample
 }
 
 // Data types for the new class-based approach
-public record MyDatabaseConfig(
-    string ConnectionString,
-    int TimeoutSeconds,
-    bool EnableRetries
-) : IMyDatabaseConfig
+public record MyDatabaseConfig : IMyDatabaseConfig
 {
+    public MyDatabaseConfig(string ConnectionString,
+        int TimeoutSeconds,
+        bool EnableRetries)
+    {
+        this.ConnectionString = ConnectionString;
+        this.TimeoutSeconds = TimeoutSeconds;
+        this.EnableRetries = EnableRetries;
+    }
+
     public int CompareTo(object? obj)
     {
         if (obj is MyDatabaseConfig other)
@@ -82,15 +87,32 @@ public record MyDatabaseConfig(
         }
         return 1;
     }
+
+    public string ConnectionString { get; init; }
+    public int TimeoutSeconds { get; init; }
+    public bool EnableRetries { get; init; }
+
+    public void Deconstruct(out string ConnectionString, out int TimeoutSeconds, out bool EnableRetries)
+    {
+        ConnectionString = this.ConnectionString;
+        TimeoutSeconds = this.TimeoutSeconds;
+        EnableRetries = this.EnableRetries;
+    }
 }
 
-public record MyNetworkConfig(
-    string Protocol,
-    string Host,
-    int Port,
-    int MaxConnections
-) : IComparable
+public record MyNetworkConfig : IComparable
 {
+    public MyNetworkConfig(string Protocol,
+        string Host,
+        int Port,
+        int MaxConnections)
+    {
+        this.Protocol = Protocol;
+        this.Host = Host;
+        this.Port = Port;
+        this.MaxConnections = MaxConnections;
+    }
+
     public int CompareTo(object? obj)
     {
         if (obj is MyNetworkConfig other)
@@ -107,6 +129,19 @@ public record MyNetworkConfig(
             return MaxConnections.CompareTo(other.MaxConnections);
         }
         return 1;
+    }
+
+    public string Protocol { get; init; }
+    public string Host { get; init; }
+    public int Port { get; init; }
+    public int MaxConnections { get; init; }
+
+    public void Deconstruct(out string Protocol, out string Host, out int Port, out int MaxConnections)
+    {
+        Protocol = this.Protocol;
+        Host = this.Host;
+        Port = this.Port;
+        MaxConnections = this.MaxConnections;
     }
 }
 

@@ -1,4 +1,3 @@
-using System;
 using Sailfish.Analysis.SailDiff.Statistics.StatsCore.Distributions;
 
 namespace Sailfish.Analysis
@@ -7,7 +6,7 @@ namespace Sailfish.Analysis
     /// Provides two-tailed critical values for the Student's t-distribution.
     /// Uses the internal T-distribution implementation to compute quantiles.
     /// </summary>
-    public static class TDistributionTable
+    public static class DistributionTable
     {
         /// <summary>
         /// Returns the two-tailed critical t-value for the given confidence level and degrees of freedom.

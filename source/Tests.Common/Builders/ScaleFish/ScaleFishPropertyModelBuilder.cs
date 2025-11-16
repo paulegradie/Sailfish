@@ -1,23 +1,22 @@
 ﻿using Sailfish.Analysis.ScaleFish;
-using System;
 using Tests.Common.Utils;
 
 namespace Tests.Common.Builders.ScaleFish;
 
 public class ScaleFishPropertyModelBuilder : ScaleFishPropertyModelBuilder.IHavePropertyName
 {
-    private string? propertyName;
-    private ScaleFishModel? scaleFishModel;
+    private string? _propertyName;
+    private ScaleFishModel? _scaleFishModel;
 
     public ScaleFishPropertyModelBuilder WithPropertyName(string name)
     {
-        propertyName = name;
+        _propertyName = name;
         return this;
     }
 
     public ScaleFishPropertyModel Build()
     {
-        return new ScaleFishPropertyModel(propertyName ?? Some.RandomString(), scaleFishModel ?? ScaleFishModelBuilder.Create().Build());
+        return new ScaleFishPropertyModel(_propertyName ?? Some.RandomString(), _scaleFishModel ?? ScaleFishModelBuilder.Create().Build());
     }
 
     public static IHavePropertyName Create()
@@ -27,7 +26,7 @@ public class ScaleFishPropertyModelBuilder : ScaleFishPropertyModelBuilder.IHave
 
     public ScaleFishPropertyModelBuilder WithScaleFishModel(ScaleFishModel model)
     {
-        scaleFishModel = model;
+        _scaleFishModel = model;
         return this;
     }
 
@@ -36,7 +35,7 @@ public class ScaleFishPropertyModelBuilder : ScaleFishPropertyModelBuilder.IHave
     {
         var builder = ScaleFishModelBuilder.Create();
         configure(builder);
-        scaleFishModel = builder.Build();
+        _scaleFishModel = builder.Build();
         return this;
     }
 

@@ -4,7 +4,23 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Sailfish.Analysis.SailDiff.Statistics.Tests;
 
-public record PreprocessedData(double[] RawData, ProcessedStatisticalTestData? OutlierAnalysis);
+public record PreprocessedData
+{
+    public PreprocessedData(double[] RawData, ProcessedStatisticalTestData? OutlierAnalysis)
+    {
+        this.RawData = RawData;
+        this.OutlierAnalysis = OutlierAnalysis;
+    }
+
+    public double[] RawData { get; init; }
+    public ProcessedStatisticalTestData? OutlierAnalysis { get; init; }
+
+    public void Deconstruct(out double[] RawData, out ProcessedStatisticalTestData? OutlierAnalysis)
+    {
+        RawData = this.RawData;
+        OutlierAnalysis = this.OutlierAnalysis;
+    }
+}
 
 public interface ITestPreprocessor
 {
@@ -26,16 +42,21 @@ public interface ITestPreprocessor
         int? seed = null);
 }
 
-public class TestPreprocessor(ISailfishOutlierDetector outlierDetector) : ITestPreprocessor
+public class TestPreprocessor : ITestPreprocessor
 {
     private const int MinAnalysisSampSize = 3;
-    private readonly ISailfishOutlierDetector outlierDetector = outlierDetector;
+    private readonly ISailfishOutlierDetector _outlierDetector;
+
+    public TestPreprocessor(ISailfishOutlierDetector outlierDetector)
+    {
+        _outlierDetector = outlierDetector;
+    }
 
     public PreprocessedData Preprocess(double[] rawData, bool useOutlierDetection)
     {
         if (!useOutlierDetection || rawData.Length < MinAnalysisSampSize) return new PreprocessedData(rawData, null);
 
-        var outlierAnalysis = outlierDetector.DetectOutliers(rawData);
+        var outlierAnalysis = _outlierDetector.DetectOutliers(rawData);
         return new PreprocessedData(rawData, outlierAnalysis);
     }
 
@@ -47,7 +68,7 @@ public class TestPreprocessor(ISailfishOutlierDetector outlierDetector) : ITestP
     {
         if (useOutlierDetection)
         {
-            var outlierAnalysis = outlierDetector.DetectOutliers(rawData);
+            var outlierAnalysis = _outlierDetector.DetectOutliers(rawData);
             var downSampled = DownSampleWithRandomUniform(outlierAnalysis.DataWithOutliersRemoved, minArraySize, maxArraySize, seed);
             return new PreprocessedData(rawData,
                 outlierAnalysis with { OriginalData = rawData, DataWithOutliersRemoved = downSampled });
@@ -67,8 +88,8 @@ public class TestPreprocessor(ISailfishOutlierDetector outlierDetector) : ITestP
     {
         if (useOutlierDetection)
         {
-            var sample1OutlierAnalysis = outlierDetector.DetectOutliers(sample1);
-            var sample2OutlierAnalysis = outlierDetector.DetectOutliers(sample2);
+            var sample1OutlierAnalysis = _outlierDetector.DetectOutliers(sample1);
+            var sample2OutlierAnalysis = _outlierDetector.DetectOutliers(sample2);
 
             var smallestArray = Math.Min(sample1OutlierAnalysis.DataWithOutliersRemoved.Length, sample2OutlierAnalysis.DataWithOutliersRemoved.Length);
             var adjustedMax = Math.Min(smallestArray, maxArraySize);

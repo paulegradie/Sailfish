@@ -1,7 +1,4 @@
 ﻿using Sailfish.Attributes;
-using System.Collections.Generic;
-using System.Threading;
-using System.Threading.Tasks;
 using Tests.E2E.TestSuite.Utils;
 
 namespace Tests.E2E.TestSuite.Discoverable;
@@ -11,13 +8,13 @@ public class TestWithStringVariable
 {
     private const string ScenarioA = "ScenarioA";
     private const string ScenarioB = "ScenarioB";
-    private readonly Configuration configuration;
-    private readonly Dictionary<string, ScenarioData> scenarioMap = new();
-    private IClient client = null!;
+    private readonly Configuration _configuration;
+    private readonly Dictionary<string, ScenarioData> _scenarioMap = new();
+    private IClient _client = null!;
 
     public TestWithStringVariable(Configuration configuration)
     {
-        this.configuration = configuration;
+        _configuration = configuration;
     }
 
     [SailfishVariable(ScenarioA, ScenarioB)]
@@ -26,19 +23,19 @@ public class TestWithStringVariable
     [SailfishGlobalSetup]
     public void Setup()
     {
-        scenarioMap.Add(ScenarioA, configuration.Get(ScenarioA));
-        scenarioMap.Add(ScenarioB, configuration.Get(ScenarioB));
+        _scenarioMap.Add(ScenarioA, _configuration.Get(ScenarioA));
+        _scenarioMap.Add(ScenarioB, _configuration.Get(ScenarioB));
     }
 
     [SailfishMethodSetup]
     public void MethodSetup()
     {
-        client = ClientFactory.CreateClient(scenarioMap[Scenario!].Url);
+        _client = ClientFactory.CreateClient(_scenarioMap[Scenario!].Url);
     }
 
     [SailfishMethod]
     public async Task TestMethod(CancellationToken ct)
     {
-        await client.Get(ct);
+        await _client.Get(ct);
     }
 }

@@ -65,10 +65,10 @@ public class PerformanceRunResultTests
         // Assert
         perf.SampleSize.ShouldBe(2);
         perf.NumWarmupIterations.ShouldBe(0);
-        System.Math.Abs(perf.Mean - 1000.0).ShouldBeLessThan(1e-6);
-        System.Math.Abs(perf.Median - 1000.0).ShouldBeLessThan(1e-6);
-        System.Math.Abs(perf.StdDev - 0.0).ShouldBeLessThan(1e-9);
-        System.Math.Abs(perf.Variance - 0.0).ShouldBeLessThan(1e-9);
+        Math.Abs(perf.Mean - 1000.0).ShouldBeLessThan(1e-6);
+        Math.Abs(perf.Median - 1000.0).ShouldBeLessThan(1e-6);
+        Math.Abs(perf.StdDev - 0.0).ShouldBeLessThan(1e-9);
+        Math.Abs(perf.Variance - 0.0).ShouldBeLessThan(1e-9);
         perf.ConfidenceIntervals.ShouldNotBeNull();
     }
 }

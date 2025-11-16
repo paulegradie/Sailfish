@@ -6,7 +6,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using Sailfish.Logging;
 using Sailfish.TestAdapter.Queue.Contracts;
-using Sailfish.TestAdapter.Queue.Implementation;
 
 namespace Sailfish.TestAdapter.Queue.Implementation;
 
@@ -409,7 +408,7 @@ internal class TestCompletionQueueConsumer : IDisposable, IAsyncDisposable
         const int maxRetries = 3;
         const int baseDelayMs = 100;
 
-        for (int attempt = 1; attempt <= maxRetries; attempt++)
+        for (var attempt = 1; attempt <= maxRetries; attempt++)
         {
             try
             {
@@ -452,8 +451,20 @@ internal class TestCompletionQueueConsumer : IDisposable, IAsyncDisposable
                 }
 
                 // Calculate exponential backoff delay
+                // Use CancellationToken.None for the delay to ensure retries complete even if the consumer is stopping
+                // This allows in-flight message processing to complete gracefully
                 var delay = baseDelayMs * (int)Math.Pow(2, attempt - 1);
-                await Task.Delay(delay, cancellationToken).ConfigureAwait(false);
+                try
+                {
+                    await Task.Delay(delay, CancellationToken.None).ConfigureAwait(false);
+                }
+                catch (OperationCanceledException)
+                {
+                    // This should never happen with CancellationToken.None, but handle it just in case
+                    _logger.Log(LogLevel.Warning,
+                        $"Retry delay was cancelled for processor '{processor.GetType().Name}' - aborting retries");
+                    return;
+                }
             }
         }
     }

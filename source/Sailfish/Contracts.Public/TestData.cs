@@ -3,8 +3,14 @@ using Sailfish.Contracts.Public.Models;
 
 namespace Sailfish.Contracts.Public;
 
-public class TestData(IEnumerable<string> testIds, IEnumerable<PerformanceRunResult> data)
+public class TestData
 {
-    public IEnumerable<string> TestIds { get; } = testIds;
-    public IEnumerable<PerformanceRunResult> Data { get; } = data;
+    public TestData(IEnumerable<string> testIds, IEnumerable<PerformanceRunResult> data)
+    {
+        TestIds = testIds;
+        Data = data;
+    }
+
+    public IEnumerable<string> TestIds { get; }
+    public IEnumerable<PerformanceRunResult> Data { get; }
 }

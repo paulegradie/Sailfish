@@ -1,5 +1,8 @@
-using System;
-
 namespace Tests.E2E.ExceptionHandling;
 
-public class TestException(string? message = null) : Exception(message);
+public class TestException : Exception
+{
+    public TestException(string? message = null) : base(message)
+    {
+    }
+}

@@ -13,19 +13,19 @@ namespace Tests.Library.Analysis;
 /// </summary>
 public class SailfishOutlierDetectorTests
 {
-    private readonly SailfishOutlierDetector outlierDetector;
+    private readonly SailfishOutlierDetector _outlierDetector;
 
     public SailfishOutlierDetectorTests()
     {
-        outlierDetector = new SailfishOutlierDetector();
+        _outlierDetector = new SailfishOutlierDetector();
     }
 
     [Fact]
     public void Constructor_ShouldCreateInstance()
     {
         // Act & Assert
-        outlierDetector.ShouldNotBeNull();
-        outlierDetector.ShouldBeAssignableTo<ISailfishOutlierDetector>();
+        _outlierDetector.ShouldNotBeNull();
+        _outlierDetector.ShouldBeAssignableTo<ISailfishOutlierDetector>();
     }
 
     [Fact]
@@ -35,7 +35,7 @@ public class SailfishOutlierDetectorTests
         var data = new List<double>();
 
         // Act
-        var result = outlierDetector.DetectOutliers(data);
+        var result = _outlierDetector.DetectOutliers(data);
 
         // Assert
         result.ShouldNotBeNull();
@@ -53,7 +53,7 @@ public class SailfishOutlierDetectorTests
         var data = new List<double> { 100.0 };
 
         // Act
-        var result = outlierDetector.DetectOutliers(data);
+        var result = _outlierDetector.DetectOutliers(data);
 
         // Assert
         result.ShouldNotBeNull();
@@ -71,7 +71,7 @@ public class SailfishOutlierDetectorTests
         var data = new List<double> { 100.0, 105.0 };
 
         // Act
-        var result = outlierDetector.DetectOutliers(data);
+        var result = _outlierDetector.DetectOutliers(data);
 
         // Assert
         result.ShouldNotBeNull();
@@ -89,7 +89,7 @@ public class SailfishOutlierDetectorTests
         var data = new List<double> { 100.0, 105.0, 110.0 };
 
         // Act
-        var result = outlierDetector.DetectOutliers(data);
+        var result = _outlierDetector.DetectOutliers(data);
 
         // Assert
         result.ShouldNotBeNull();
@@ -107,7 +107,7 @@ public class SailfishOutlierDetectorTests
         var data = new List<double> { 95, 98, 99, 100, 101, 102, 105 };
 
         // Act
-        var result = outlierDetector.DetectOutliers(data);
+        var result = _outlierDetector.DetectOutliers(data);
 
         // Assert
         result.ShouldNotBeNull();
@@ -123,7 +123,7 @@ public class SailfishOutlierDetectorTests
         var data = new List<double> { 100, 101, 102, 103, 104, 105, 200, 300 };
 
         // Act
-        var result = outlierDetector.DetectOutliers(data);
+        var result = _outlierDetector.DetectOutliers(data);
 
         // Assert
         result.ShouldNotBeNull();
@@ -140,7 +140,7 @@ public class SailfishOutlierDetectorTests
         var data = new List<double> { 1, 2, 100, 101, 102, 103, 104, 105 };
 
         // Act
-        var result = outlierDetector.DetectOutliers(data);
+        var result = _outlierDetector.DetectOutliers(data);
 
         // Assert
         result.ShouldNotBeNull();
@@ -157,7 +157,7 @@ public class SailfishOutlierDetectorTests
         var data = new List<double> { 1, 2, 100, 101, 102, 103, 104, 105, 200, 300 };
 
         // Act
-        var result = outlierDetector.DetectOutliers(data);
+        var result = _outlierDetector.DetectOutliers(data);
 
         // Assert
         result.ShouldNotBeNull();
@@ -175,7 +175,7 @@ public class SailfishOutlierDetectorTests
         var data = new List<double> { 100, 100, 100, 100, 100, 100 };
 
         // Act
-        var result = outlierDetector.DetectOutliers(data);
+        var result = _outlierDetector.DetectOutliers(data);
 
         // Assert
         result.ShouldNotBeNull();
@@ -193,7 +193,7 @@ public class SailfishOutlierDetectorTests
         var data = new List<double> { -100, -50, -10, 0, 10, 50, 100 };
 
         // Act
-        var result = outlierDetector.DetectOutliers(data);
+        var result = _outlierDetector.DetectOutliers(data);
 
         // Assert
         result.ShouldNotBeNull();
@@ -209,7 +209,7 @@ public class SailfishOutlierDetectorTests
         var data = new List<double> { 1e6, 1.1e6, 1.2e6, 1.3e6, 1.4e6, 2e6 };
 
         // Act
-        var result = outlierDetector.DetectOutliers(data);
+        var result = _outlierDetector.DetectOutliers(data);
 
         // Assert
         result.ShouldNotBeNull();
@@ -225,7 +225,7 @@ public class SailfishOutlierDetectorTests
         var data = new List<double> { 1e-6, 1.1e-6, 1.2e-6, 1.3e-6, 1.4e-6, 2e-6 };
 
         // Act
-        var result = outlierDetector.DetectOutliers(data);
+        var result = _outlierDetector.DetectOutliers(data);
 
         // Assert
         result.ShouldNotBeNull();
@@ -241,7 +241,7 @@ public class SailfishOutlierDetectorTests
         var data = new List<double> { 0, 0, 1, 2, 3, 4, 5 };
 
         // Act
-        var result = outlierDetector.DetectOutliers(data);
+        var result = _outlierDetector.DetectOutliers(data);
 
         // Assert
         result.ShouldNotBeNull();
@@ -258,7 +258,7 @@ public class SailfishOutlierDetectorTests
         var dataCopy = new List<double>(originalData);
 
         // Act
-        var result = outlierDetector.DetectOutliers(originalData);
+        var result = _outlierDetector.DetectOutliers(originalData);
 
         // Assert
         result.ShouldNotBeNull();
@@ -273,7 +273,7 @@ public class SailfishOutlierDetectorTests
         var data = new List<double> { 1, 2, 100, 101, 102, 103, 104, 105, 200, 300 };
 
         // Act
-        var result = outlierDetector.DetectOutliers(data);
+        var result = _outlierDetector.DetectOutliers(data);
 
         // Assert
         result.ShouldNotBeNull();
@@ -288,7 +288,7 @@ public class SailfishOutlierDetectorTests
         var data = new List<double> { 1, 2, 100, 101, 102, 103, 104, 105, 200, 300 };
 
         // Act
-        var result = outlierDetector.DetectOutliers(data);
+        var result = _outlierDetector.DetectOutliers(data);
 
         // Assert
         result.ShouldNotBeNull();
@@ -303,7 +303,7 @@ public class SailfishOutlierDetectorTests
         var data = new List<double> { -1000, 100, 101, 102, 103, 104, 105, 1000 };
 
         // Act
-        var result = outlierDetector.DetectOutliers(data);
+        var result = _outlierDetector.DetectOutliers(data);
 
         // Assert
         result.ShouldNotBeNull();
@@ -323,7 +323,7 @@ public class SailfishOutlierDetectorTests
         };
 
         // Act
-        var result = outlierDetector.DetectOutliers(data);
+        var result = _outlierDetector.DetectOutliers(data);
 
         // Assert
         result.ShouldNotBeNull();
@@ -340,7 +340,7 @@ public class SailfishOutlierDetectorTests
         var data = new List<double>();
         
         // Add normal data
-        for (int i = 0; i < 1000; i++)
+        for (var i = 0; i < 1000; i++)
         {
             data.Add(100 + random.NextDouble() * 10);
         }
@@ -349,7 +349,7 @@ public class SailfishOutlierDetectorTests
         data.AddRange([200.0, 300.0, 1.0, 2.0]);
 
         // Act
-        var result = outlierDetector.DetectOutliers(data);
+        var result = _outlierDetector.DetectOutliers(data);
 
         // Assert
         result.ShouldNotBeNull();
@@ -369,7 +369,7 @@ public class SailfishOutlierDetectorTests
         };
 
         // Act
-        var result = outlierDetector.DetectOutliers(data);
+        var result = _outlierDetector.DetectOutliers(data);
 
         // Assert
         result.ShouldNotBeNull();

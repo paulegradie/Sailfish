@@ -1,9 +1,9 @@
 using System;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using NSubstitute;
 using Sailfish.Execution;
+using Sailfish.Execution.Tuning;
 using Sailfish.Logging;
 using Shouldly;
 using Xunit;
@@ -14,7 +14,7 @@ namespace Tests.Library.Execution;
 
 public class OperationsPerInvokeTunerTests
 {
-    private readonly ILogger logger = Substitute.For<ILogger>();
+    private readonly ILogger _logger = Substitute.For<ILogger>();
 
     [Fact]
     public async Task Tune_FastRelativeToTarget_IncreasesOPI()
@@ -28,7 +28,7 @@ public class OperationsPerInvokeTunerTests
         var tuner = new OperationsPerInvokeTuner();
 
         // Act
-        var tuned = await tuner.TuneAsync(container, TimeSpan.FromMilliseconds(30), logger, CancellationToken.None);
+        var tuned = await tuner.TuneAsync(container, TimeSpan.FromMilliseconds(30), _logger, CancellationToken.None);
 
         // Assert
         tuned.ShouldBeGreaterThanOrEqualTo(2);
@@ -46,7 +46,7 @@ public class OperationsPerInvokeTunerTests
         var tuner = new OperationsPerInvokeTuner();
 
         // Act
-        var tuned = await tuner.TuneAsync(container, TimeSpan.FromMilliseconds(10), logger, CancellationToken.None);
+        var tuned = await tuner.TuneAsync(container, TimeSpan.FromMilliseconds(10), _logger, CancellationToken.None);
 
         // Assert
         tuned.ShouldBe(1);
@@ -64,7 +64,7 @@ public class OperationsPerInvokeTunerTests
         var tuner = new OperationsPerInvokeTuner();
 
         // Act
-        var tuned = await tuner.TuneAsync(container, TimeSpan.Zero, logger, CancellationToken.None);
+        var tuned = await tuner.TuneAsync(container, TimeSpan.Zero, _logger, CancellationToken.None);
 
         // Assert
         tuned.ShouldBe(7);
@@ -72,15 +72,15 @@ public class OperationsPerInvokeTunerTests
 
     private sealed class DelayWork
     {
-        private readonly int ms;
-        public DelayWork(int ms) => this.ms = ms;
+        private readonly int _ms;
+        public DelayWork(int ms) => _ms = ms;
         public Task Run(CancellationToken ct)
         {
             var sw = System.Diagnostics.Stopwatch.StartNew();
-            while (sw.ElapsedMilliseconds < ms)
+            while (sw.ElapsedMilliseconds < _ms)
             {
                 if (ct.IsCancellationRequested) break;
-                System.Threading.Thread.SpinWait(1000);
+                Thread.SpinWait(1000);
             }
             return Task.CompletedTask;
         }

@@ -266,7 +266,7 @@ public class BeforeAndAfterTrackingFilesTests
         var beforeFiles = new List<string>();
         var afterFiles = new List<string>();
         
-        for (int i = 0; i < 1000; i++)
+        for (var i = 0; i < 1000; i++)
         {
             beforeFiles.Add($"before_file_{i}.json");
             afterFiles.Add($"after_file_{i}.json");

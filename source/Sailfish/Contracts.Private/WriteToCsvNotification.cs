@@ -4,7 +4,12 @@ using Sailfish.Execution;
 
 namespace Sailfish.Contracts.Private;
 
-internal class WriteToCsvNotification(List<IClassExecutionSummary> classExecutionSummaries) : INotification
+internal class WriteToCsvNotification : INotification
 {
-    public List<IClassExecutionSummary> ClassExecutionSummaries { get; } = classExecutionSummaries;
+    public WriteToCsvNotification(List<IClassExecutionSummary> classExecutionSummaries)
+    {
+        ClassExecutionSummaries = classExecutionSummaries;
+    }
+
+    public List<IClassExecutionSummary> ClassExecutionSummaries { get; }
 }

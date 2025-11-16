@@ -1,15 +1,14 @@
 ﻿using Sailfish.Attributes;
 using Shouldly;
-using System.Collections.Generic;
 
 namespace Tests.E2E.TestSuite.Discoverable;
 
 [Sailfish(1, 0, Disabled = Constants.Disabled)]
 public class VariablesIterateTest
 {
-    private static List<int> Expected = new();
+    private static List<int> _expected = new();
 
-    private string FieldMan = null!;
+    private string _fieldMan = null!;
 
     [SailfishVariable(1, 2)]
     public int N { get; set; }
@@ -19,7 +18,7 @@ public class VariablesIterateTest
     [SailfishGlobalSetup]
     public void Setup()
     {
-        FieldMan = "WOW";
+        _fieldMan = "WOW";
     }
 
     [SailfishMethodSetup]
@@ -31,23 +30,23 @@ public class VariablesIterateTest
     [SailfishMethod]
     public void Increment()
     {
-        FieldMan.ShouldBe("WOW");
-        Expected.Add(N);
+        _fieldMan.ShouldBe("WOW");
+        _expected.Add(N);
     }
 
     [SailfishMethod]
     public void SecondIncrement()
     {
         MyInt.ShouldBe(789);
-        FieldMan.ShouldBe("WOW");
-        Expected.Add(N);
+        _fieldMan.ShouldBe("WOW");
+        _expected.Add(N);
     }
 
     [SailfishGlobalTeardown]
     public void GlobalTeardownAssertions()
     {
-        FieldMan.ShouldBe("WOW");
-        Expected.ShouldBe(new List<int> { 1, 2, 1, 2 });
-        Expected = new List<int>();
+        _fieldMan.ShouldBe("WOW");
+        _expected.ShouldBe(new List<int> { 1, 2, 1, 2 });
+        _expected = new List<int>();
     }
 }

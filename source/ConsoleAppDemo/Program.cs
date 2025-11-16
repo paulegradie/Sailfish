@@ -4,7 +4,6 @@ using PerformanceTests.ExamplePerformanceTests;
 using Sailfish;
 using Sailfish.Logging;
 using Serilog.Events;
-using System;
 
 var settings = RunSettingsBuilder
     .CreateBuilder()
@@ -28,21 +27,21 @@ namespace PerformanceTestingUserInvokedConsoleApp
 {
     internal class CustomLogger : ILogger
     {
-        private readonly Serilog.ILogger logger;
+        private readonly Serilog.ILogger _logger;
 
         public CustomLogger(Serilog.ILogger seriLogger)
         {
-            logger = seriLogger;
+            _logger = seriLogger;
         }
 
         public void Log(LogLevel level, string template, params object[] values)
         {
-            logger.Write(GetEventLevel(level), template, values);
+            _logger.Write(GetEventLevel(level), template, values);
         }
 
         public void Log(LogLevel level, Exception ex, string template, params object[] values)
         {
-            logger.Write(GetEventLevel(level), ex, template, values);
+            _logger.Write(GetEventLevel(level), ex, template, values);
         }
 
         private static LogEventLevel GetEventLevel(LogLevel level)

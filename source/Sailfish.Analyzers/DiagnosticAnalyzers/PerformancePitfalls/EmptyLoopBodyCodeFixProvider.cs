@@ -1,14 +1,10 @@
 using System.Collections.Immutable;
 using System.Composition;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CodeActions;
 using Microsoft.CodeAnalysis.CodeFixes;
 using Microsoft.CodeAnalysis.CSharp;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using Microsoft.CodeAnalysis.Editing;
 
 namespace Sailfish.Analyzers.DiagnosticAnalyzers.PerformancePitfalls;
 
@@ -91,8 +87,8 @@ public sealed class EmptyLoopBodyCodeFixProvider : CodeFixProvider
     {
         if (originalBody is BlockSyntax block)
         {
-            // If it's an empty block, add consume; else append
-            return block.Statements.Count == 0 ? block.AddStatements(consumeStmt) : block.AddStatements(consumeStmt);
+            // Add consume statement to the block
+            return block.AddStatements(consumeStmt);
         }
 
         // Replace empty statement or single statement with a new block containing the consume call and the original if not empty

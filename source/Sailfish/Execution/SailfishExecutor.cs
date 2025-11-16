@@ -16,16 +16,16 @@ namespace Sailfish.Execution;
 
 internal class SailfishExecutor
 {
-    private readonly IClassExecutionSummaryCompiler classExecutionSummaryCompiler;
-    private readonly IExecutionSummaryWriter executionSummaryWriter;
-    private readonly ILogger logger;
-    private readonly IMediator mediator;
-    private readonly IRunSettings runSettings;
-    private readonly ISailDiffInternal sailDiff;
-    private readonly ISailFishTestExecutor sailFishTestExecutor;
-    private readonly IScaleFishInternal scaleFish;
-    private readonly ITestCollector testCollector;
-    private readonly ITestFilter testFilter;
+    private readonly IClassExecutionSummaryCompiler _classExecutionSummaryCompiler;
+    private readonly IExecutionSummaryWriter _executionSummaryWriter;
+    private readonly ILogger _logger;
+    private readonly IMediator _mediator;
+    private readonly IRunSettings _runSettings;
+    private readonly ISailDiffInternal _sailDiff;
+    private readonly ISailFishTestExecutor _sailFishTestExecutor;
+    private readonly IScaleFishInternal _scaleFish;
+    private readonly ITestCollector _testCollector;
+    private readonly ITestFilter _testFilter;
 
     public SailfishExecutor(IMediator mediator,
         ISailFishTestExecutor sailFishTestExecutor,
@@ -38,42 +38,42 @@ internal class SailfishExecutor
         IRunSettings runSettings,
         ILogger logger)
     {
-        this.classExecutionSummaryCompiler = classExecutionSummaryCompiler;
-        this.executionSummaryWriter = executionSummaryWriter;
-        this.logger = logger;
-        this.mediator = mediator;
-        this.runSettings = runSettings;
-        this.sailDiff = sailDiff;
-        this.sailFishTestExecutor = sailFishTestExecutor;
-        this.scaleFish = scaleFish;
-        this.testCollector = testCollector;
-        this.testFilter = testFilter;
+        _classExecutionSummaryCompiler = classExecutionSummaryCompiler;
+        _executionSummaryWriter = executionSummaryWriter;
+        _logger = logger;
+        _mediator = mediator;
+        _runSettings = runSettings;
+        _sailDiff = sailDiff;
+        _sailFishTestExecutor = sailFishTestExecutor;
+        _scaleFish = scaleFish;
+        _testCollector = testCollector;
+        _testFilter = testFilter;
     }
 
     public async Task<SailfishRunResult> Run(CancellationToken cancellationToken)
     {
-        var testInitializationResult = CollectTests(runSettings.TestNames, runSettings.TestLocationAnchors.ToArray());
+        var testInitializationResult = CollectTests(_runSettings.TestNames, _runSettings.TestLocationAnchors.ToArray());
         if (testInitializationResult.IsValid)
         {
             // Optional seeded randomization of test class execution order for reproducibility
             var testsList = testInitializationResult.Tests.ToList();
-            var seed = runSettings.Seed ?? TryParseSeed(runSettings.Args);
+            var seed = _runSettings.Seed ?? TryParseSeed(_runSettings.Args);
             if (seed.HasValue)
             {
                 var rng = new Random(seed.Value);
                 testsList = testsList.OrderBy(_ => rng.Next()).ToList();
-                logger.Log(LogLevel.Information, "Randomized test class execution order with seed {Seed}", seed.Value);
+                _logger.Log(LogLevel.Information, "Randomized test class execution order with seed {Seed}", seed.Value);
             }
 
-            var testClassResultGroups = await sailFishTestExecutor.Execute(testsList, cancellationToken).ConfigureAwait(false);
-            var classExecutionSummaries = classExecutionSummaryCompiler.CompileToSummaries(testClassResultGroups).ToList();
+            var testClassResultGroups = await _sailFishTestExecutor.Execute(testsList, cancellationToken).ConfigureAwait(false);
+            var classExecutionSummaries = _classExecutionSummaryCompiler.CompileToSummaries(testClassResultGroups).ToList();
 
-            await executionSummaryWriter.Write(classExecutionSummaries, cancellationToken);
-            await mediator.Publish(new TestRunCompletedNotification(classExecutionSummaries.ToTrackingFormat()), cancellationToken).ConfigureAwait(false);
+            await _executionSummaryWriter.Write(classExecutionSummaries, cancellationToken);
+            await _mediator.Publish(new TestRunCompletedNotification(classExecutionSummaries.ToTrackingFormat()), cancellationToken).ConfigureAwait(false);
 
-            if (runSettings.RunSailDiff) await sailDiff.Analyze(cancellationToken).ConfigureAwait(false);
+            if (_runSettings.RunSailDiff) await _sailDiff.Analyze(cancellationToken).ConfigureAwait(false);
 
-            if (runSettings.RunScaleFish) await scaleFish.Analyze(cancellationToken).ConfigureAwait(false);
+            if (_runSettings.RunScaleFish) await _scaleFish.Analyze(cancellationToken).ConfigureAwait(false);
 
             var exceptions = classExecutionSummaries
                 .SelectMany(classExecutionSummary =>
@@ -87,16 +87,16 @@ internal class SailfishExecutor
             return SailfishRunResult.CreateResult(classExecutionSummaries, exceptions);
         }
 
-        logger.Log(LogLevel.Error, "{NumErrors} errors encountered while discovering tests",
+        _logger.Log(LogLevel.Error, "{NumErrors} errors encountered while discovering tests",
             testInitializationResult.Errors.Count);
 
         var testDiscoveryExceptions = new List<Exception>();
         foreach (var (reason, names) in testInitializationResult.Errors)
         {
-            logger.Log(LogLevel.Error, "{Reason}", reason);
+            _logger.Log(LogLevel.Error, "{Reason}", reason);
             foreach (var testName in names)
             {
-                logger.Log(LogLevel.Error, "--- {TestName}", testName);
+                _logger.Log(LogLevel.Error, "--- {TestName}", testName);
                 testDiscoveryExceptions.Add(new SailfishException($"Test: {testName} - Error: {reason}"));
             }
         }
@@ -104,7 +104,7 @@ internal class SailfishExecutor
         return SailfishRunResult.CreateResult(Array.Empty<IClassExecutionSummary>(), testDiscoveryExceptions);
     }
 
-    private static int? TryParseSeed(Sailfish.Extensions.Types.OrderedDictionary args)
+    private static int? TryParseSeed(Extensions.Types.OrderedDictionary args)
     {
         try
         {
@@ -126,7 +126,7 @@ internal class SailfishExecutor
 
     private TestInitializationResult CollectTests(IEnumerable<string> testNames, IEnumerable<Type> locationTypes)
     {
-        var perfTests = testCollector.CollectTestTypes(locationTypes);
-        return testFilter.FilterAndValidate(perfTests, testNames);
+        var perfTests = _testCollector.CollectTestTypes(locationTypes);
+        return _testFilter.FilterAndValidate(perfTests, testNames);
     }
 }

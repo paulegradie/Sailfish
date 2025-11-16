@@ -1,6 +1,5 @@
 using System;
 using System.Reflection;
-using NSubstitute;
 using Sailfish.Attributes;
 using Sailfish.Execution;
 using Sailfish.Extensions.Methods;

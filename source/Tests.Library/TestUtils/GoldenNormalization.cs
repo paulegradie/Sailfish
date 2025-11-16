@@ -1,8 +1,4 @@
 using System;
-using System.Collections.Generic;
-using System.Globalization;
-using System.IO;
-using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
 
@@ -31,7 +27,7 @@ public static class GoldenNormalization
         // Matches patterns like "- OS: Microsoft Windows 10.0.19045 (X64/X64)" or "- OS: Ubuntu 24.04.3 LTS (X64/X64)"
         // Use a simple line-by-line approach to ensure we catch the OS line
         var lines = s.Split('\n');
-        for (int i = 0; i < lines.Length; i++)
+        for (var i = 0; i < lines.Length; i++)
         {
             if (lines[i].StartsWith("- OS:"))
             {
@@ -122,9 +118,9 @@ public static class GoldenNormalization
         // Create DP table
         var dp = new int[m + 1, n + 1];
 
-        for (int i = 1; i <= m; i++)
+        for (var i = 1; i <= m; i++)
         {
-            for (int j = 1; j <= n; j++)
+            for (var j = 1; j <= n; j++)
             {
                 if (actual[i - 1] == expected[j - 1])
                 {
@@ -160,7 +156,7 @@ public static class GoldenNormalization
         var diffCount = 0;
         var maxLine = Math.Max(actualLines.Length, expectedLines.Length);
 
-        for (int i = 0; i < maxLine && diffCount < maxLinesToShow; i++)
+        for (var i = 0; i < maxLine && diffCount < maxLinesToShow; i++)
         {
             var actualLine = i < actualLines.Length ? actualLines[i] : "<missing>";
             var expectedLine = i < expectedLines.Length ? expectedLines[i] : "<missing>";
@@ -191,7 +187,7 @@ public static class GoldenNormalization
         var count = 0;
         var maxLine = Math.Max(actual.Length, expected.Length);
 
-        for (int i = 0; i < maxLine; i++)
+        for (var i = 0; i < maxLine; i++)
         {
             var actualLine = i < actual.Length ? actual[i] : "<missing>";
             var expectedLine = i < expected.Length ? expected[i] : "<missing>";

@@ -14,7 +14,7 @@ namespace Tests.Library.Analysis.SailDiff;
 
 public class ConvergenceChecksWithOutlierDetection
 {
-    private readonly Random random = new(42);
+    private readonly Random _random = new(42);
 
     [Fact]
     public void TwoSampleWilcoxonSignedRankTestSailfish_NoChange()
@@ -98,6 +98,6 @@ public class ConvergenceChecksWithOutlierDetection
 
     private double[] GenerateRandomNormalDistribution(int sampleSize, double mean, double standardDeviation)
     {
-        return TestDistributions.GenerateRandomNormalDistribution(sampleSize, mean, standardDeviation, random);
+        return TestDistributions.GenerateRandomNormalDistribution(sampleSize, mean, standardDeviation, _random);
     }
 }

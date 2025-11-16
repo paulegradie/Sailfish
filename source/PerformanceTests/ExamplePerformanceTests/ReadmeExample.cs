@@ -9,7 +9,7 @@ namespace PerformanceTests.ExamplePerformanceTests;
 [Sailfish(SampleSize = 3, Disabled = false)]
 public class ReadmeExample
 {
-    private readonly Random random = new();
+    private readonly Random _random = new();
 
     [SailfishVariable(1, 2)]
     public int N { get; set; }
@@ -17,7 +17,7 @@ public class ReadmeExample
     [SailfishMethod]
     public async Task TestMethod(CancellationToken cancellationToken) // token is injected when requested
     {
-        var next = random.Next(50, 450);
+        var next = _random.Next(50, 450);
         await Task.Delay(next * N, cancellationToken);
     }
 }

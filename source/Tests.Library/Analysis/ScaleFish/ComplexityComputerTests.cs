@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using NSubstitute;
 using Sailfish.Analysis.ScaleFish;
-using Sailfish.Analysis.ScaleFish.CurveFitting;
 using Sailfish.Execution;
 using Shouldly;
 using Xunit;
@@ -16,23 +15,23 @@ namespace Tests.Library.Analysis.ScaleFish;
 /// </summary>
 public class ComplexityComputerTests
 {
-    private readonly IComplexityEstimator mockComplexityEstimator;
-    private readonly IScalefishObservationCompiler mockObservationCompiler;
-    private readonly ComplexityComputer complexityComputer;
+    private readonly IComplexityEstimator _mockComplexityEstimator;
+    private readonly IScalefishObservationCompiler _mockObservationCompiler;
+    private readonly ComplexityComputer _complexityComputer;
 
     public ComplexityComputerTests()
     {
-        mockComplexityEstimator = Substitute.For<IComplexityEstimator>();
-        mockObservationCompiler = Substitute.For<IScalefishObservationCompiler>();
-        complexityComputer = new ComplexityComputer(mockComplexityEstimator, mockObservationCompiler);
+        _mockComplexityEstimator = Substitute.For<IComplexityEstimator>();
+        _mockObservationCompiler = Substitute.For<IScalefishObservationCompiler>();
+        _complexityComputer = new ComplexityComputer(_mockComplexityEstimator, _mockObservationCompiler);
     }
 
     [Fact]
     public void Constructor_WithValidDependencies_ShouldCreateInstance()
     {
         // Act & Assert
-        complexityComputer.ShouldNotBeNull();
-        complexityComputer.ShouldBeAssignableTo<IComplexityComputer>();
+        _complexityComputer.ShouldNotBeNull();
+        _complexityComputer.ShouldBeAssignableTo<IComplexityComputer>();
     }
 
     [Fact]
@@ -40,7 +39,7 @@ public class ComplexityComputerTests
     {
         // Act & Assert
         Should.Throw<ArgumentNullException>(() => 
-            new ComplexityComputer(null!, mockObservationCompiler));
+            new ComplexityComputer(null!, _mockObservationCompiler));
     }
 
     [Fact]
@@ -48,7 +47,7 @@ public class ComplexityComputerTests
     {
         // Act & Assert
         Should.Throw<ArgumentNullException>(() => 
-            new ComplexityComputer(mockComplexityEstimator, null!));
+            new ComplexityComputer(_mockComplexityEstimator, null!));
     }
 
     [Fact]
@@ -58,7 +57,7 @@ public class ComplexityComputerTests
         var executionSummaries = new List<IClassExecutionSummary>();
 
         // Act
-        var result = complexityComputer.AnalyzeComplexity(executionSummaries);
+        var result = _complexityComputer.AnalyzeComplexity(executionSummaries);
 
         // Assert
         result.ShouldNotBeNull();
@@ -72,10 +71,10 @@ public class ComplexityComputerTests
         var executionSummary = CreateMockExecutionSummary();
         var executionSummaries = new List<IClassExecutionSummary> { executionSummary };
         
-        mockObservationCompiler.CompileObservationSet(executionSummary).Returns((ObservationSetFromSummaries?)null);
+        _mockObservationCompiler.CompileObservationSet(executionSummary).Returns((ObservationSetFromSummaries?)null);
 
         // Act
-        var result = complexityComputer.AnalyzeComplexity(executionSummaries);
+        var result = _complexityComputer.AnalyzeComplexity(executionSummaries);
 
         // Assert
         result.ShouldNotBeNull();
@@ -90,13 +89,13 @@ public class ComplexityComputerTests
         var executionSummaries = new List<IClassExecutionSummary> { executionSummary };
         
         var observationSet = CreateMockObservationSet();
-        mockObservationCompiler.CompileObservationSet(executionSummary).Returns(observationSet);
+        _mockObservationCompiler.CompileObservationSet(executionSummary).Returns(observationSet);
         
         var scaleFishModel = CreateMockScaleFishModel();
-        mockComplexityEstimator.EstimateComplexity(Arg.Any<ComplexityMeasurement[]>()).Returns(scaleFishModel);
+        _mockComplexityEstimator.EstimateComplexity(Arg.Any<ComplexityMeasurement[]>()).Returns(scaleFishModel);
 
         // Act
-        var result = complexityComputer.AnalyzeComplexity(executionSummaries);
+        var result = _complexityComputer.AnalyzeComplexity(executionSummaries);
 
         // Assert
         result.ShouldNotBeNull();
@@ -114,14 +113,14 @@ public class ComplexityComputerTests
         var observationSet1 = CreateMockObservationSet("Method1");
         var observationSet2 = CreateMockObservationSet("Method2");
         
-        mockObservationCompiler.CompileObservationSet(executionSummary1).Returns(observationSet1);
-        mockObservationCompiler.CompileObservationSet(executionSummary2).Returns(observationSet2);
+        _mockObservationCompiler.CompileObservationSet(executionSummary1).Returns(observationSet1);
+        _mockObservationCompiler.CompileObservationSet(executionSummary2).Returns(observationSet2);
         
         var scaleFishModel = CreateMockScaleFishModel();
-        mockComplexityEstimator.EstimateComplexity(Arg.Any<ComplexityMeasurement[]>()).Returns(scaleFishModel);
+        _mockComplexityEstimator.EstimateComplexity(Arg.Any<ComplexityMeasurement[]>()).Returns(scaleFishModel);
 
         // Act
-        var result = complexityComputer.AnalyzeComplexity(executionSummaries);
+        var result = _complexityComputer.AnalyzeComplexity(executionSummaries);
 
         // Assert
         result.ShouldNotBeNull();
@@ -136,12 +135,12 @@ public class ComplexityComputerTests
         var executionSummaries = new List<IClassExecutionSummary> { executionSummary };
         
         var observationSet = CreateMockObservationSet();
-        mockObservationCompiler.CompileObservationSet(executionSummary).Returns(observationSet);
+        _mockObservationCompiler.CompileObservationSet(executionSummary).Returns(observationSet);
         
-        mockComplexityEstimator.EstimateComplexity(Arg.Any<ComplexityMeasurement[]>()).Returns((ScaleFishModel?)null);
+        _mockComplexityEstimator.EstimateComplexity(Arg.Any<ComplexityMeasurement[]>()).Returns((ScaleFishModel?)null);
 
         // Act
-        var result = complexityComputer.AnalyzeComplexity(executionSummaries);
+        var result = _complexityComputer.AnalyzeComplexity(executionSummaries);
 
         // Assert
         result.ShouldNotBeNull();
@@ -165,20 +164,20 @@ public class ComplexityComputerTests
         };
         
         var observationSet = new ObservationSetFromSummaries("TestClass", observations);
-        mockObservationCompiler.CompileObservationSet(executionSummary).Returns(observationSet);
+        _mockObservationCompiler.CompileObservationSet(executionSummary).Returns(observationSet);
         
         var scaleFishModel = CreateMockScaleFishModel();
-        mockComplexityEstimator.EstimateComplexity(Arg.Any<ComplexityMeasurement[]>()).Returns(scaleFishModel);
+        _mockComplexityEstimator.EstimateComplexity(Arg.Any<ComplexityMeasurement[]>()).Returns(scaleFishModel);
 
         // Act
-        var result = complexityComputer.AnalyzeComplexity(executionSummaries);
+        var result = _complexityComputer.AnalyzeComplexity(executionSummaries);
 
         // Assert
         result.ShouldNotBeNull();
         result.ShouldNotBeEmpty();
         
         // Verify that complexity estimation was called for each method group
-        mockComplexityEstimator.Received(4).EstimateComplexity(Arg.Any<ComplexityMeasurement[]>());
+        _mockComplexityEstimator.Received(4).EstimateComplexity(Arg.Any<ComplexityMeasurement[]>());
     }
 
     [Fact]
@@ -196,20 +195,20 @@ public class ComplexityComputerTests
         };
         
         var observationSet = new ObservationSetFromSummaries("TestClass", observations);
-        mockObservationCompiler.CompileObservationSet(executionSummary).Returns(observationSet);
+        _mockObservationCompiler.CompileObservationSet(executionSummary).Returns(observationSet);
         
         var scaleFishModel = CreateMockScaleFishModel();
-        mockComplexityEstimator.EstimateComplexity(Arg.Any<ComplexityMeasurement[]>()).Returns(scaleFishModel);
+        _mockComplexityEstimator.EstimateComplexity(Arg.Any<ComplexityMeasurement[]>()).Returns(scaleFishModel);
 
         // Act
-        var result = complexityComputer.AnalyzeComplexity(executionSummaries);
+        var result = _complexityComputer.AnalyzeComplexity(executionSummaries);
 
         // Assert
         result.ShouldNotBeNull();
         result.ShouldNotBeEmpty();
         
         // Should have called complexity estimation for each property in each method
-        mockComplexityEstimator.Received(3).EstimateComplexity(Arg.Any<ComplexityMeasurement[]>());
+        _mockComplexityEstimator.Received(3).EstimateComplexity(Arg.Any<ComplexityMeasurement[]>());
     }
 
     [Fact]
@@ -220,10 +219,10 @@ public class ComplexityComputerTests
         var executionSummaries = new List<IClassExecutionSummary> { executionSummary };
         
         var observationSet = new ObservationSetFromSummaries("TestClass", []);
-        mockObservationCompiler.CompileObservationSet(executionSummary).Returns(observationSet);
+        _mockObservationCompiler.CompileObservationSet(executionSummary).Returns(observationSet);
 
         // Act
-        var result = complexityComputer.AnalyzeComplexity(executionSummaries);
+        var result = _complexityComputer.AnalyzeComplexity(executionSummaries);
 
         // Assert
         result.ShouldNotBeNull();

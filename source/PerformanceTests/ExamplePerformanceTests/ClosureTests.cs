@@ -9,7 +9,7 @@ namespace PerformanceTests.ExamplePerformanceTests;
 [Sailfish(SampleSize = 3, Disabled = false, DisableOverheadEstimation = true)]
 public class ScenarioSystem
 {
-    private readonly Random random = new();
+    private readonly Random _random = new();
 
     [SailfishVariable(0, 1, 2)] 
     public int Index { get; set; }
@@ -55,4 +55,17 @@ public class MyDataContainer
     }
 };
 
-public record Scenario(string Name);
+public record Scenario
+{
+    public Scenario(string Name)
+    {
+        this.Name = Name;
+    }
+
+    public string Name { get; init; }
+
+    public void Deconstruct(out string Name)
+    {
+        Name = this.Name;
+    }
+}

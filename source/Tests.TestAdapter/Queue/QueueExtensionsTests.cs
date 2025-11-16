@@ -1,10 +1,8 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using NSubstitute;
-using Sailfish.Contracts.Public.Models;
 using Sailfish.TestAdapter.Queue.Contracts;
 using Sailfish.TestAdapter.Queue.Extensions;
 using Sailfish.TestAdapter.Queue.Implementation;

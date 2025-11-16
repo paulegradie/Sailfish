@@ -120,10 +120,16 @@ internal static class BrentSearch
         };
     }
 
-    private readonly struct BrentSearchResult(double solution, BrentSearchStatus status)
+    private readonly struct BrentSearchResult
     {
-        public double Solution { get; } = solution;
+        public BrentSearchResult(double solution, BrentSearchStatus status)
+        {
+            Solution = solution;
+            Status = status;
+        }
 
-        public BrentSearchStatus Status { get; } = status;
+        public double Solution { get; }
+
+        public BrentSearchStatus Status { get; }
     }
 }

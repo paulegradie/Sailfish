@@ -1,5 +1,4 @@
 using System;
-using System.Linq;
 using Sailfish.Analysis.SailDiff.Statistics.StatsCore.Distributions;
 using Shouldly;
 using Xunit;

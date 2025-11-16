@@ -1,5 +1,3 @@
-using System;
-
 namespace Sailfish.Contracts.Public.Models;
 
 public sealed class ConfidenceIntervalResult

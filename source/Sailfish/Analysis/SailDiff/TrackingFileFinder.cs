@@ -10,13 +10,18 @@ internal interface ITrackingFileFinder
     BeforeAndAfterTrackingFiles GetBeforeAndAfterTrackingFiles(string directory, string beforeTarget, OrderedDictionary tags);
 }
 
-internal class TrackingFileFinder(ITrackingFileDirectoryReader trackingFileDirectoryReader) : ITrackingFileFinder
+internal class TrackingFileFinder : ITrackingFileFinder
 {
-    private readonly ITrackingFileDirectoryReader trackingFileDirectoryReader = trackingFileDirectoryReader;
+    private readonly ITrackingFileDirectoryReader _trackingFileDirectoryReader;
+
+    public TrackingFileFinder(ITrackingFileDirectoryReader trackingFileDirectoryReader)
+    {
+        _trackingFileDirectoryReader = trackingFileDirectoryReader;
+    }
 
     public BeforeAndAfterTrackingFiles GetBeforeAndAfterTrackingFiles(string directory, string beforeTarget, OrderedDictionary tags)
     {
-        var files = trackingFileDirectoryReader.FindTrackingFilesInDirectoryOrderedByLastModified(directory);
+        var files = _trackingFileDirectoryReader.FindTrackingFilesInDirectoryOrderedByLastModified(directory);
 
         if (tags.Count > 0)
         {

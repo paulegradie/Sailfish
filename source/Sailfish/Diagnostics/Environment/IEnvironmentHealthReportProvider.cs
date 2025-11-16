@@ -1,5 +1,3 @@
-using System;
-
 namespace Sailfish.Diagnostics.Environment
 {
     public interface IEnvironmentHealthReportProvider

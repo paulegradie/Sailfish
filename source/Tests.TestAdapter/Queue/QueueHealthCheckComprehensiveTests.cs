@@ -341,4 +341,123 @@ public class QueueHealthCheckComprehensiveTests : IDisposable
     }
 
     #endregion
+
+    #region Exception Tests
+
+    [Fact]
+    public async Task StartAsync_AfterDispose_ShouldThrowObjectDisposedException()
+    {
+        // Arrange
+        _healthCheck = new QueueHealthCheck(_queueManager, _configuration, _logger);
+        _healthCheck.Dispose();
+
+        // Act & Assert
+        await Should.ThrowAsync<ObjectDisposedException>(() =>
+            _healthCheck.StartAsync(CancellationToken.None));
+    }
+
+    [Fact]
+    public async Task StopAsync_AfterDispose_ShouldThrowObjectDisposedException()
+    {
+        // Arrange
+        _healthCheck = new QueueHealthCheck(_queueManager, _configuration, _logger);
+        _healthCheck.Dispose();
+
+        // Act & Assert
+        await Should.ThrowAsync<ObjectDisposedException>(() =>
+            _healthCheck.StopAsync(CancellationToken.None));
+    }
+
+    [Fact]
+    public async Task GetHealthStatusAsync_AfterDispose_ShouldThrowObjectDisposedException()
+    {
+        // Arrange
+        _healthCheck = new QueueHealthCheck(_queueManager, _configuration, _logger);
+        _healthCheck.Dispose();
+
+        // Act & Assert
+        await Should.ThrowAsync<ObjectDisposedException>(() =>
+            _healthCheck.GetHealthStatusAsync(CancellationToken.None));
+    }
+
+    [Fact]
+    public async Task GetHealthMetricsAsync_AfterDispose_ShouldThrowObjectDisposedException()
+    {
+        // Arrange
+        _healthCheck = new QueueHealthCheck(_queueManager, _configuration, _logger);
+        _healthCheck.Dispose();
+
+        // Act & Assert
+        await Should.ThrowAsync<ObjectDisposedException>(() =>
+            _healthCheck.GetHealthMetricsAsync(CancellationToken.None));
+    }
+
+    [Fact]
+    public async Task StartAsync_WithCancellationToken_ShouldRespectCancellation()
+    {
+        // Arrange
+        _healthCheck = new QueueHealthCheck(_queueManager, _configuration, _logger);
+        using var cts = new CancellationTokenSource();
+        cts.Cancel();
+
+        // Act & Assert
+        await Should.ThrowAsync<OperationCanceledException>(() =>
+            _healthCheck.StartAsync(cts.Token));
+    }
+
+    [Fact]
+    public async Task StopAsync_WithCancellationToken_ShouldRespectCancellation()
+    {
+        // Arrange
+        _healthCheck = new QueueHealthCheck(_queueManager, _configuration, _logger);
+        await _healthCheck.StartAsync(CancellationToken.None);
+        using var cts = new CancellationTokenSource();
+        cts.Cancel();
+
+        // Act & Assert
+        await Should.ThrowAsync<OperationCanceledException>(() =>
+            _healthCheck.StopAsync(cts.Token));
+    }
+
+    [Fact]
+    public async Task GetHealthStatusAsync_WithCancellationToken_ShouldRespectCancellation()
+    {
+        // Arrange
+        _healthCheck = new QueueHealthCheck(_queueManager, _configuration, _logger);
+        await _healthCheck.StartAsync(CancellationToken.None);
+        using var cts = new CancellationTokenSource();
+        cts.Cancel();
+
+        // Act & Assert
+        await Should.ThrowAsync<OperationCanceledException>(() =>
+            _healthCheck.GetHealthStatusAsync(cts.Token));
+    }
+
+    [Fact]
+    public async Task GetHealthMetricsAsync_WithCancellationToken_ShouldRespectCancellation()
+    {
+        // Arrange
+        _healthCheck = new QueueHealthCheck(_queueManager, _configuration, _logger);
+        await _healthCheck.StartAsync(CancellationToken.None);
+        using var cts = new CancellationTokenSource();
+        cts.Cancel();
+
+        // Act & Assert
+        await Should.ThrowAsync<OperationCanceledException>(() =>
+            _healthCheck.GetHealthMetricsAsync(cts.Token));
+    }
+
+    [Fact]
+    public void RecordProcessingTime_WithNegativeValue_ShouldIgnore()
+    {
+        // Arrange
+        _healthCheck = new QueueHealthCheck(_queueManager, _configuration, _logger);
+
+        // Act - Should not throw
+        _healthCheck.RecordProcessingTime(-100);
+
+        // Assert - No exception should be thrown
+    }
+
+    #endregion
 }

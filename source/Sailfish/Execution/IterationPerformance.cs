@@ -2,11 +2,18 @@ using System;
 
 namespace Sailfish.Execution;
 
-public class IterationPerformance(DateTimeOffset startTime, DateTimeOffset endTime, long elapsedTicks)
+public class IterationPerformance
 {
-    public DateTimeOffset StartTime { get; } = startTime;
-    public DateTimeOffset StopTime { get; } = endTime;
-    private long ElapsedTicks { get; set; } = elapsedTicks;
+    public IterationPerformance(DateTimeOffset startTime, DateTimeOffset endTime, long elapsedTicks)
+    {
+        StartTime = startTime;
+        StopTime = endTime;
+        ElapsedTicks = elapsedTicks;
+    }
+
+    public DateTimeOffset StartTime { get; }
+    public DateTimeOffset StopTime { get; }
+    private long ElapsedTicks { get; set; }
 
     // Tracks how many times this iteration's overhead subtraction was capped by the 80% guardrail
     public int CappedCount { get; private set; }
