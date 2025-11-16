@@ -66,7 +66,7 @@ internal sealed class TimerCalibrationService : ITimerCalibrationService
             samples.Add(sw.ElapsedTicks);
         }
 
-        if (samples.Count == 0)
+        if (SampleCount == 0)
         {
             return Task.FromResult(BuildResult(0, 0, 0.0, 0));
         }

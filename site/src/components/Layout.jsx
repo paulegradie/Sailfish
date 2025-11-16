@@ -39,6 +39,9 @@ const navigation = [
             { title: 'Confidence Intervals', href: '/docs/1/confidence-intervals', badge: 'NEW' },
             { title: 'Outlier Handling', href: '/docs/1/outlier-handling', badge: 'NEW' },
             { title: 'Environment Health Check', href: '/docs/1/environment-health', badge: 'NEW' },
+            { title: 'Anti-DCE', href: '/docs/1/anti-dce' },
+            { title: 'Precision Time Budget', href: '/docs/1/precision-time-budget' },
+            { title: 'Reproducibility Manifest', href: '/docs/1/reproducibility-manifest' },
         ],
     },
     {

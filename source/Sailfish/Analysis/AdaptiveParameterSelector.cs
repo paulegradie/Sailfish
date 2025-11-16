@@ -51,7 +51,7 @@ public class AdaptiveParameterSelector
             AdaptiveSamplingConfig.SpeedCategory.Medium => (0.05, 0.20),
             AdaptiveSamplingConfig.SpeedCategory.Slow => (0.07, 0.25),
             AdaptiveSamplingConfig.SpeedCategory.VerySlow => (0.10, 0.30),
-            _ => (executionSettings.TargetCoefficientOfVariation, executionSettings.MaxConfidenceIntervalWidth)
+            _ => throw new ArgumentOutOfRangeException(nameof(category), category, "Unexpected speed category")
         };
 
         // Suggested local minimum sample size by category
@@ -62,7 +62,7 @@ public class AdaptiveParameterSelector
             AdaptiveSamplingConfig.SpeedCategory.Medium => 20,
             AdaptiveSamplingConfig.SpeedCategory.Slow => 15,
             AdaptiveSamplingConfig.SpeedCategory.VerySlow => 10,
-            _ => throw new ArgumentOutOfRangeException()
+            _ => throw new ArgumentOutOfRangeException(nameof(category), category, "Unexpected speed category")
         };
 
         var reason = $"{category}: recommended MinN={recommendedMin} based on pilot median {medianNs / 1000.0:F1}\u00B5s to stabilize CV";
