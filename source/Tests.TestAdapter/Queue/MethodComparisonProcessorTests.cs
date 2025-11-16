@@ -1012,26 +1012,9 @@ public class MethodComparisonProcessorTests
                 Arg.Any<CancellationToken>());
         }
 
-        [Fact]
-        public void CreatePerformanceSummary_WithTwoMethods_ProducesFastestSlowestAndGap()
-        {
-            // Arrange
-            var methods = new List<TestCompletionQueueMessage>
-            {
-                CreateTestMessageWithMetrics("M1", "G", meanMs: 100, medianMs: 95, sampleSize: 10),
-                CreateTestMessageWithMetrics("M2", "G", meanMs: 200, medianMs: 190, sampleSize: 10)
-            };
-
-            // Use reflection to invoke the private instance method
-            var mi = typeof(MethodComparisonProcessor)
-                .GetMethod("CreatePerformanceSummary", System.Reflection.BindingFlags.Instance | System.Reflection.BindingFlags.NonPublic)!;
-            var summary = (string)mi.Invoke(_processor, new object[] { methods })!;
-
-            // Assert
-            summary.ShouldContain("Performance Summary");
-            summary.ShouldContain("**Fastest:** M1");
-            summary.ShouldContain("**Slowest:** M2");
-        }
+        // NOTE: CreatePerformanceSummary method was removed from MethodComparisonProcessor
+        // Performance summary generation is now handled by the markdown generation logic
+        // This test is no longer applicable and has been removed
 
         [Fact]
         public void HasComparisonMetadata_ReturnsTrue_WhenKeyPresent()

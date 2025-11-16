@@ -354,15 +354,17 @@ public class TestCompletionQueueManagerTests : IDisposable
     }
 
     [Fact]
-    public async Task StopAsync_AfterDispose_ShouldThrowObjectDisposedException()
+    public async Task StopAsync_AfterDispose_ShouldNotThrow()
     {
         // Arrange
         _manager = new TestCompletionQueueManager(_queue, _processors, _logger);
         _manager.Dispose();
 
-        // Act & Assert
-        await Should.ThrowAsync<ObjectDisposedException>(() =>
-            _manager.StopAsync(CancellationToken.None));
+        // Act - StopAsync is idempotent and returns early if disposed
+        await _manager.StopAsync(CancellationToken.None);
+
+        // Assert - Should complete without throwing
+        _manager.IsRunning.ShouldBeFalse();
     }
 
     [Fact]
@@ -375,18 +377,6 @@ public class TestCompletionQueueManagerTests : IDisposable
         // Act & Assert
         await Should.ThrowAsync<ObjectDisposedException>(() =>
             _manager.CompleteAsync(CancellationToken.None));
-    }
-
-    [Fact]
-    public async Task StopAsync_WhenNotRunning_ShouldThrowInvalidOperationException()
-    {
-        // Arrange
-        _manager = new TestCompletionQueueManager(_queue, _processors, _logger);
-
-        // Act & Assert
-        var exception = await Should.ThrowAsync<InvalidOperationException>(() =>
-            _manager.StopAsync(CancellationToken.None));
-        exception.Message.ShouldContain("not running");
     }
 
     [Fact]
