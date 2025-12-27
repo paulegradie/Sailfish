@@ -1,5 +1,5 @@
 ---
-title: Example app setup
+title: Console App & Test Project
 ---
 
 ## MyApp.CLI (a project)

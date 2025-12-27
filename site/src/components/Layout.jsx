@@ -27,12 +27,14 @@ const navigation = [
         ],
     },
     {
-        title: 'Sailfish Basics',
+        title: 'Sailfish',
         links: [
+            { title: 'Overview', href: '/docs/2/sailfish' },
             { title: 'Required Attributes', href: '/docs/1/required-attributes' },
             { title: 'Method Comparisons', href: '/docs/1/method-comparisons' },
             { title: 'Variables', href: '/docs/1/sailfish-variables' },
-            { title: 'The Test Lifecycle', href: '/docs/1/sailfish-test-lifecycle' },
+            { title: 'Test Lifecycle', href: '/docs/1/sailfish-test-lifecycle' },
+            { title: 'Test Lifecycle Event Hooks', href: '/docs/3/extensibility' },
             { title: 'Test Dependencies', href: '/docs/1/test-dependencies' },
             { title: 'Adaptive Sampling', href: '/docs/1/adaptive-sampling', badge: 'NEW' },
             { title: 'Iteration Tuning', href: '/docs/1/iteration-tuning', badge: 'NEW' },
@@ -44,27 +46,35 @@ const navigation = [
             { title: 'Reproducibility Manifest', href: '/docs/1/reproducibility-manifest' },
         ],
     },
+
     {
-        title: 'Outputs',
+        title: 'SailDiff',
         links: [
-            { title: 'Output Attributes', href: '/docs/1/output-attributes' },
-            { title: 'Markdown Output', href: '/docs/1/markdown-output' },
-            { title: 'CSV Output', href: '/docs/1/csv-output' },
-        ],
-    },
-    {
-        title: "Features",
-        links: [
-            { title: 'Sailfish', href: '/docs/2/sailfish' },
-            { title: 'SailDiff', href: '/docs/2/saildiff' },
-            { title: 'ScaleFish', href: '/docs/2/scalefish' },
+            { title: 'Overview', href: '/docs/2/saildiff' },
         ]
     },
     {
-        title: 'Advanced Sailfish',
+        title: 'ScaleFish',
         links: [
-            { title: 'Extensibility', href: '/docs/3/extensibility' },
-            { title: 'Example App', href: '/docs/3/example-app' },
+            { title: 'Overview', href: '/docs/2/scalefish' },
+        ]
+    },
+    {
+        title: 'Outputs',
+        links: [
+            { title: 'Markdown Attribute', href: '/docs/1/markdown-output' },
+            { title: 'Csv Attribute', href: '/docs/1/csv-output' },
+            { title: 'Test Output Window', href: '/docs/1/test-output-window' },
+            { title: 'Console', href: '/docs/1/console-output' },
+            { title: 'Logger', href: '/docs/1/logger' },
+        ],
+    },
+    {
+        title: 'Examples',
+        links: [
+            { title: 'Console App & Test Project', href: '/docs/3/example-app' },
+            { title: 'CI/CD Example', href: '/docs/3/cicd-example' },
+            { title: 'External Server CI/CD Example', href: '/docs/3/external-server-cicd-example-remote' },
         ],
     },
     {

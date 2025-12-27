@@ -1,10 +1,12 @@
 ---
-title: Extensibility Commands
+title: Test Lifecycle Event Hooks
 ---
 
 ## Introduction
 
-Sailfish exposes several public MediatR commands. Implement MediatR handlers for these commands to furhter customize Sailfish behavior.
+Sailfish exposes a set of MediatR commands and notifications that fire during the test lifecycle and analysis pipeline.
+By implementing handlers for these messages you can hook into Sailfish at well-defined points to customise behaviour:
+for example loading tracking data from external storage, streaming results, or emitting metrics to your own observability stack.
 
 ## BeforeAndAfterFileLocationRequest
 
