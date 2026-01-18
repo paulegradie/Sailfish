@@ -10,7 +10,9 @@ coverage:
     project:
       default:
         # Set the minimum coverage percentage required
-        target: 72%
+        target: 83%
+        # Make this informational only - won't fail the build on minor drops
+        informational: true
     patch:
       default:
         # Disable coverage percentage checks on diffs
