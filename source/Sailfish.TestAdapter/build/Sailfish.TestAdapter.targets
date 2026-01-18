@@ -20,28 +20,13 @@
     <TestAdapterPath Include="$(MSBuildThisFileDirectory)../lib/net9.0/" Condition="'$(TargetFramework)' == 'net9.0'" />
   </ItemGroup>
 
-  <!-- Copy all Sailfish runtime dependencies to output directory -->
+  <!-- Copy ALL runtime dependencies to output directory -->
   <Target Name="CopySailfishDependencies" AfterTargets="ResolvePackageAssets">
     <ItemGroup>
-      <!-- Copy all runtime assemblies from packages that Sailfish depends on -->
-      <ContentWithTargetPath Include="@(RuntimeCopyLocalItems)"
-        Condition="'%(RuntimeCopyLocalItems.NuGetPackageId)' == 'Sailfish' or
-                                        '%(RuntimeCopyLocalItems.NuGetPackageId)' == 'Autofac' or
-                                        '%(RuntimeCopyLocalItems.NuGetPackageId)' == 'MediatR' or
-                                        '%(RuntimeCopyLocalItems.NuGetPackageId)' == 'MediatR.Extensions.Autofac.DependencyInjection' or
-                                        '%(RuntimeCopyLocalItems.NuGetPackageId)' == 'CsvHelper' or
-                                        '%(RuntimeCopyLocalItems.NuGetPackageId)' == 'MathNet.Numerics' or
-                                        '%(RuntimeCopyLocalItems.NuGetPackageId)' == 'Perfolizer' or
-                                        '%(RuntimeCopyLocalItems.NuGetPackageId)' == 'System.Linq.Async' or
-                                        '%(RuntimeCopyLocalItems.NuGetPackageId)' == 'Microsoft.Extensions.Configuration' or
-                                        '%(RuntimeCopyLocalItems.NuGetPackageId)' == 'Microsoft.Extensions.Configuration.Json' or
-                                        '%(RuntimeCopyLocalItems.NuGetPackageId)' == 'Microsoft.Extensions.DependencyInjection.Abstractions' or
-                                        '%(RuntimeCopyLocalItems.NuGetPackageId)' == 'System.Runtime.Caching' or
-                                        '%(RuntimeCopyLocalItems.NuGetPackageId)' == 'System.Collections.Specialized' or
-                                        '%(RuntimeCopyLocalItems.NuGetPackageId)' == 'System.Diagnostics.DiagnosticSource'">
+      <!-- Copy all runtime assemblies - no filtering needed -->
+      <ContentWithTargetPath Include="@(RuntimeCopyLocalItems)">
         <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-        <TargetPath Condition="'%(RuntimeCopyLocalItems.TargetPath)' != ''">%(RuntimeCopyLocalItems.TargetPath)</TargetPath>
-        <TargetPath Condition="'%(RuntimeCopyLocalItems.TargetPath)' == ''">%(Filename)%(Extension)</TargetPath>
+        <TargetPath>%(Filename)%(Extension)</TargetPath>
       </ContentWithTargetPath>
     </ItemGroup>
   </Target>
