@@ -40,7 +40,8 @@
                                         '%(RuntimeCopyLocalItems.NuGetPackageId)' == 'System.Collections.Specialized' or
                                         '%(RuntimeCopyLocalItems.NuGetPackageId)' == 'System.Diagnostics.DiagnosticSource'">
         <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-        <TargetPath>%(Filename)%(Extension)</TargetPath>
+        <TargetPath Condition="'%(RuntimeCopyLocalItems.TargetPath)' != ''">%(RuntimeCopyLocalItems.TargetPath)</TargetPath>
+        <TargetPath Condition="'%(RuntimeCopyLocalItems.TargetPath)' == ''">%(Filename)%(Extension)</TargetPath>
       </ContentWithTargetPath>
     </ItemGroup>
   </Target>
