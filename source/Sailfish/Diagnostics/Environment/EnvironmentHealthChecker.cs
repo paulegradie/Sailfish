@@ -379,13 +379,13 @@ public class EnvironmentHealthChecker : IEnvironmentHealthChecker
                 HealthStatus.Pass => null,
                 HealthStatus.Warn => "Reduce background noise: close apps, pin to 1 core, use High Performance power plan",
                 HealthStatus.Fail => "Environment jitter is high. Close background tasks, disable power saving, pin CPU affinity, and retry",
-                _ => null
+                _ => throw new InvalidOperationException("Encountered unexpected status")
             };
             return new("Timer Jitter", status, details, rec);
         }
         catch (Exception ex)
         {
-            return new("Timer Jitter", HealthStatus.Unknown, ex.Message);
+            return new HealthCheckEntry("Timer Jitter", HealthStatus.Unknown, ex.Message);
         }
     }
 
