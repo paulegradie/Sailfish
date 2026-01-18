@@ -2,7 +2,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
     <PropertyGroup>
         <PackageId>Sailfish.TestAdapter</PackageId>
-        <Version>0.0.0</Version>
+        <Version>0.0.1-local</Version>
         <Authors>Paul E. Gradie</Authors>
         <Description>
             Sailfish is a produtiocction friendly performace test suite for owriinting organized performance tests
