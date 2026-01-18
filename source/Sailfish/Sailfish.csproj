@@ -25,10 +25,10 @@
 
     <ItemGroup>
         <PackageReference Include="MathNet.Numerics" Version="5.0.0"/>
-        <PackageReference Include="Autofac" Version="8.3.0" />
+        <PackageReference Include="Autofac" Version="9.0.0" />
         <PackageReference Include="CsvHelper" Version="33.1.0" />
         <PackageReference Include="MediatR" Version="13.0.0" />
-        <PackageReference Include="MediatR.Extensions.Autofac.DependencyInjection" Version="13.0.0" />
+        <PackageReference Include="MediatR.Extensions.Autofac.DependencyInjection" Version="13.1.0" />
         <PackageReference Include="Microsoft.Extensions.Configuration" Version="9.0.7" />
         <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="9.0.7" />
         <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="9.0.7" />
