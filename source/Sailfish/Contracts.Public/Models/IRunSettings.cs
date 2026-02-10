@@ -43,6 +43,8 @@ public interface IRunSettings
     // Global adaptive sampling overrides (null = no override)
     bool? GlobalUseAdaptiveSampling { get; }
     double? GlobalTargetCoefficientOfVariation { get; }
+    double? GlobalMaxConfidenceIntervalWidth { get; }
+    int? GlobalMinimumSampleSize { get; }
     int? GlobalMaximumSampleSize { get; }
 
         // Global outlier handling overrides (null = no override)

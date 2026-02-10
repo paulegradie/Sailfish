@@ -42,6 +42,8 @@ internal class ClassExecutionSummaryCompiler : IClassExecutionSummaryCompiler
             _runSettings.NumWarmupIterationsOverride,
             _runSettings.GlobalUseAdaptiveSampling,
             _runSettings.GlobalTargetCoefficientOfVariation,
+            _runSettings.GlobalMaxConfidenceIntervalWidth,
+            _runSettings.GlobalMinimumSampleSize,
             _runSettings.GlobalMaximumSampleSize);
         return new ClassExecutionSummary(
             testClassResultGroup.TestClass,

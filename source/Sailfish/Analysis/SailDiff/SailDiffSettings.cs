@@ -1,4 +1,7 @@
-﻿namespace Sailfish.Analysis.SailDiff;
+﻿using System;
+using Sailfish;
+
+namespace Sailfish.Analysis.SailDiff;
 
 /// <summary>
 ///     Settings to use with the regression tester.
@@ -30,6 +33,11 @@ public class SailDiffSettings
         TestType = testType;
         MaxDegreeOfParallelism = maxDegreeOfParallelism;
         DisableOrdering = disableOrdering;
+    }
+
+    public SailDiffSettings(SailfishPreset preset) : this()
+    {
+        ApplyPreset(preset);
     }
 
     public double Alpha { get; private set; }
@@ -67,5 +75,19 @@ public class SailDiffSettings
     public void SetDisableOrdering(bool disable)
     {
         DisableOrdering = disable;
+    }
+
+    private void ApplyPreset(SailfishPreset preset)
+    {
+        var (alpha, testType) = preset switch
+        {
+            SailfishPreset.LocalBaseline => (0.001, TestType.TwoSampleWilcoxonSignedRankTest),
+            SailfishPreset.CILowNoise => (0.0005, TestType.TwoSampleWilcoxonSignedRankTest),
+            SailfishPreset.ProductionNoisy => (0.01, TestType.WilcoxonRankSumTest),
+            _ => throw new ArgumentOutOfRangeException(nameof(preset), preset, "Unknown Sailfish preset.")
+        };
+
+        Alpha = alpha;
+        TestType = testType;
     }
 }

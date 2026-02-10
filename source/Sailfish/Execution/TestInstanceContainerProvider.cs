@@ -57,6 +57,8 @@ internal class TestInstanceContainerProvider : ITestInstanceContainerProvider
                 _runSettings.NumWarmupIterationsOverride,
                 _runSettings.GlobalUseAdaptiveSampling,
                 _runSettings.GlobalTargetCoefficientOfVariation,
+                _runSettings.GlobalMaxConfidenceIntervalWidth,
+                _runSettings.GlobalMinimumSampleSize,
                 _runSettings.GlobalMaximumSampleSize,
                 _runSettings.GlobalUseConfigurableOutlierDetection,
                 _runSettings.GlobalOutlierStrategy);
@@ -80,6 +82,8 @@ internal class TestInstanceContainerProvider : ITestInstanceContainerProvider
                     _runSettings.NumWarmupIterationsOverride,
                     _runSettings.GlobalUseAdaptiveSampling,
                     _runSettings.GlobalTargetCoefficientOfVariation,
+                    _runSettings.GlobalMaxConfidenceIntervalWidth,
+                    _runSettings.GlobalMinimumSampleSize,
                     _runSettings.GlobalMaximumSampleSize,
                     _runSettings.GlobalUseConfigurableOutlierDetection,
                     _runSettings.GlobalOutlierStrategy);

@@ -10,6 +10,13 @@ using Sailfish.Presentation;
 
 namespace Sailfish;
 
+public enum SailfishPreset
+{
+    LocalBaseline,
+    CILowNoise,
+    ProductionNoisy
+}
+
 public class RunSettingsBuilder
 {
     private readonly OrderedDictionary _args = new();
@@ -48,6 +55,8 @@ public class RunSettingsBuilder
     private OutlierStrategy? _globalOutlierStrategy;
 
     private double? _globalTargetCoefficientOfVariation;
+    private double? _globalMaxConfidenceIntervalWidth;
+    private int? _globalMinimumSampleSize;
     private int? _globalMaximumSampleSize;
 
     public static RunSettingsBuilder CreateBuilder()
@@ -271,6 +280,15 @@ public class RunSettingsBuilder
         return this;
     }
 
+    /// <summary>
+    ///     Applies a preset for adaptive sampling and outlier handling defaults.
+    /// </summary>
+    public RunSettingsBuilder WithPreset(SailfishPreset preset)
+    {
+        ApplyPreset(preset);
+        return this;
+    }
+
         /// <summary>
         ///     Configures global outlier handling for the current run. When set, these values override per-class defaults.
         /// </summary>
@@ -315,6 +333,8 @@ public class RunSettingsBuilder
             _setDebug,
             _globalUseAdaptiveSampling,
             _globalTargetCoefficientOfVariation,
+            _globalMaxConfidenceIntervalWidth,
+            _globalMinimumSampleSize,
             _globalMaximumSampleSize,
             _globalUseConfigurableOutlierDetection,
             _globalOutlierStrategy,
@@ -322,4 +342,51 @@ public class RunSettingsBuilder
             _timerCalibration,
             seed: _seed);
     }
+
+    private void ApplyPreset(SailfishPreset preset)
+    {
+        var settings = GetPresetExecutionDefaults(preset);
+        _globalUseAdaptiveSampling = true;
+        _globalTargetCoefficientOfVariation = settings.TargetCoefficientOfVariation;
+        _globalMaxConfidenceIntervalWidth = settings.MaxConfidenceIntervalWidth;
+        _globalMinimumSampleSize = settings.MinimumSampleSize;
+        _globalMaximumSampleSize = settings.MaximumSampleSize;
+        _globalUseConfigurableOutlierDetection = true;
+        _globalOutlierStrategy = settings.OutlierStrategy;
+
+        _sdSettings ??= new SailDiffSettings(preset);
+    }
+
+    private static PresetExecutionDefaults GetPresetExecutionDefaults(SailfishPreset preset)
+    {
+        return preset switch
+        {
+            SailfishPreset.LocalBaseline => new PresetExecutionDefaults(
+                targetCoefficientOfVariation: 0.05,
+                maxConfidenceIntervalWidth: 0.20,
+                minimumSampleSize: 10,
+                maximumSampleSize: 1000,
+                outlierStrategy: OutlierStrategy.RemoveUpper),
+            SailfishPreset.CILowNoise => new PresetExecutionDefaults(
+                targetCoefficientOfVariation: 0.02,
+                maxConfidenceIntervalWidth: 0.10,
+                minimumSampleSize: 30,
+                maximumSampleSize: 2000,
+                outlierStrategy: OutlierStrategy.RemoveAll),
+            SailfishPreset.ProductionNoisy => new PresetExecutionDefaults(
+                targetCoefficientOfVariation: 0.10,
+                maxConfidenceIntervalWidth: 0.30,
+                minimumSampleSize: 10,
+                maximumSampleSize: 5000,
+                outlierStrategy: OutlierStrategy.Adaptive),
+            _ => throw new ArgumentOutOfRangeException(nameof(preset), preset, "Unknown Sailfish preset.")
+        };
+    }
+
+    private sealed record PresetExecutionDefaults(
+        double TargetCoefficientOfVariation,
+        double MaxConfidenceIntervalWidth,
+        int MinimumSampleSize,
+        int MaximumSampleSize,
+        OutlierStrategy OutlierStrategy);
 }
