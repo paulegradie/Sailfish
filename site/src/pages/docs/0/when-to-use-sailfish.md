@@ -26,3 +26,8 @@ The same can be said for benchmarking. Sometimes you need to measure extremely q
 {% callout title="Tip: Adaptive Sampling" type="note" %}
 Use [Adaptive Sampling](/docs/1/adaptive-sampling) to achieve consistent precision while minimizing runtime, especially in CI.
 {% /callout %}
+
+{% callout title="Preset tradeoffs" type="note" %}
+Choose a preset from [Presets](/docs/1/presets) based on your environment.
+Sensitive presets improve small-regression detection; stable presets reduce runtime variance and CI flakiness.
+{% /callout %}
