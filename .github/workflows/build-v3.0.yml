@@ -94,6 +94,7 @@ jobs:
           dotnet-version: |
             8.x.x
             9.x.x
+            10.x.x
 
       - name: Build Projects
         run: |
@@ -127,6 +128,7 @@ jobs:
           dotnet-version: |
             8.x.x
             9.x.x
+            10.x.x
 
       - name: Download Artifacts
         uses: actions/download-artifact@v4
@@ -159,6 +161,7 @@ jobs:
           dotnet-version: |
             8.x.x
             9.x.x
+            10.x.x
 
       - name: Download Artifacts
         uses: actions/download-artifact@v4

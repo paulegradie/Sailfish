@@ -29,13 +29,13 @@ public static class DllFinder
             Substitute.For<IMessageLogger>(),
             path => !path.Contains($"{Path.DirectorySeparatorChar}obj{Path.DirectorySeparatorChar}"));
 
-        // Try to match current TFM from base directory first (e.g., net9.0, net8.0; Release or Debug)
+        // Try to match current TFM from base directory first (e.g., net10.0, net9.0, net8.0; Release or Debug)
         var baseDir = (AppContext.BaseDirectory ?? string.Empty).TrimEnd(Path.DirectorySeparatorChar);
         var preferred = allDlls.FirstOrDefault(p => baseDir.Length > 0 && p.StartsWith(baseDir));
         if (preferred is not null) return preferred;
 
         // Otherwise, attempt common TFMs in priority order under Release then Debug
-        var tfms = new[] { "net9.0", "net8.0" };
+        var tfms = new[] { "net10.0", "net9.0", "net8.0" };
         foreach (var tfm in tfms)
         {
             var rel = allDlls.FirstOrDefault(x => x.Contains(Path.Join("bin", "Release", tfm)));
