@@ -3,7 +3,10 @@
 codecov:
   notify:
     require_ci_to_pass: yes
-    after_n_builds: 1
+    # We have 3 parallel matrix jobs (Tests.Library, Tests.TestAdapter,
+    # Tests.Analyzers). Wait for all three uploads before computing the
+    # verdict; otherwise the badge reflects whichever job finished first.
+    after_n_builds: 3
 
 coverage:
   status:
@@ -40,13 +43,17 @@ parsers:
       method: no
       macro: no
 
+# Per-matrix-job flags. Each flag corresponds to a parallel test job in
+# .github/workflows/build-v3.0.yml. carryforward keeps the last known
+# coverage for a flag if its job fails or is skipped on a given commit,
+# so the badge stays stable.
 flags:
-  unittest: # Define a flag for unit tests
-    paths:
-      - "tests/unit"
-  integration: # Define a flag for integration tests
-    paths:
-      - "tests/integration"
+  Tests.Library:
+    carryforward: true
+  Tests.TestAdapter:
+    carryforward: true
+  Tests.Analyzers:
+    carryforward: true
 
 # Ignore files and directories that should not be included in coverage
 ignore:
@@ -54,7 +61,12 @@ ignore:
   - "vendor/*"
   - "docs/*"
   - "**/*.md"
-  - "**/*Tests.*" # Ignore any project with 'Tests.' in its name
+  - "source/Tests.*/**" # Ignore any project with 'Tests.' in its name
+  - "source/Demo.API/**"
+  - "source/ConsoleAppDemo/**"
+  - "source/ScaleFishDemo/**"
+  - "source/PerformanceTests/**"
+  - "source/AdaptiveSamplingQuickTest/**"
 
 # Settings for custom coverage reporting
 yaml:

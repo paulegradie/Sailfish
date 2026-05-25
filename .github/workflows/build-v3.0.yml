@@ -144,6 +144,12 @@ jobs:
         with:
           token: ${{ secrets.CODECOV_TOKEN }}
           slug: paulegradie/Sailfish
+          # Flag each matrix job so codecov merges the parallel uploads
+          # by-file instead of letting the last upload win.
+          flags: ${{ matrix.project }}
+          name: ${{ matrix.project }}
+          # Don't fail the whole job on a transient codecov outage.
+          fail_ci_if_error: false
 
   pack:
     name: Nuget Package Test
