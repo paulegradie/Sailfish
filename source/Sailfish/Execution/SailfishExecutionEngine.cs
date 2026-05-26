@@ -130,6 +130,11 @@ internal class SailfishExecutionEngine : ISailfishExecutionEngine
             var msg = $"Error resolving test from {testProvider.Test.FullName}";
             _logger.Log(LogLevel.Fatal, ex, msg);
 
+            if (ex is TestClassInstantiationException)
+            {
+                return [new TestCaseExecutionResult(ex)];
+            }
+
             var testCaseEnumerationException = new TestCaseEnumerationException(ex,
                 $"Failed to create test cases for {testProvider.Test.FullName}");
             return [new TestCaseExecutionResult(testCaseEnumerationException)];
