@@ -138,6 +138,24 @@ public class RunSettingsBuilderPresetTests
     }
 
     [Fact]
+    public void WithPreset_CalledTwice_LastCallWins()
+    {
+        // Regression for codex review #r2787896254: previously the first preset stuck
+        // because ApplyPreset eagerly used ??=. Now preset is applied at Build() so
+        // a later WithPreset call cleanly replaces an earlier one for BOTH execution
+        // settings and SailDiff settings — no silent divergence.
+        var settings = RunSettingsBuilder.CreateBuilder()
+            .WithPreset(SailfishPreset.Default)
+            .WithPreset(SailfishPreset.Relaxed)
+            .Build();
+
+        settings.GlobalTargetCoefficientOfVariation.ShouldBe(0.10);
+        settings.GlobalMaxConfidenceIntervalWidth.ShouldBe(0.30);
+        settings.GlobalOutlierStrategy.ShouldBe(OutlierStrategy.Adaptive);
+        settings.SailDiffSettings.Alpha.ShouldBe(0.01);
+    }
+
+    [Fact]
     public void SailDiffSettings_PresetConstructor_Default_SetsAlpha()
     {
         var s = new SailDiffSettings(SailfishPreset.Default);

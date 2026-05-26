@@ -52,6 +52,10 @@ public class RunSettingsBuilder
     private int? _globalMinimumSampleSize;
     private int? _globalMaximumSampleSize;
 
+    // Selected preset. Applied at Build() so that any explicit WithX call
+    // wins and a later WithPreset call replaces an earlier one.
+    private SailfishPreset? _preset;
+
     public static RunSettingsBuilder CreateBuilder()
     {
         return new RunSettingsBuilder();
@@ -275,13 +279,16 @@ public class RunSettingsBuilder
 
     /// <summary>
     ///     Seeds adaptive-sampling, outlier-handling, and SailDiff defaults from a named preset.
-    ///     Composition is order-insensitive: any explicit <c>WithGlobalX</c> or <see cref="WithSailDiff(SailDiffSettings)"/>
-    ///     call wins over the preset, regardless of whether it is invoked before or after <c>WithPreset</c>.
+    ///     The preset is applied at <see cref="Build"/>, so:
+    ///     <list type="bullet">
+    ///         <item>Any explicit <c>WithGlobalX</c> or <see cref="WithSailDiff(SailDiffSettings)"/> call wins over the preset, regardless of call order.</item>
+    ///         <item>If <c>WithPreset</c> is called more than once, the last call wins (no silent divergence between execution and SailDiff settings).</item>
+    ///     </list>
     ///     <c>WithPreset</c> does not enable SailDiff by itself — call <see cref="WithSailDiff()"/> separately.
     /// </summary>
     public RunSettingsBuilder WithPreset(SailfishPreset preset)
     {
-        ApplyPreset(preset);
+        _preset = preset;
         return this;
     }
 
@@ -305,6 +312,7 @@ public class RunSettingsBuilder
 
     public IRunSettings Build()
     {
+        if (_preset.HasValue) ApplyPreset(_preset.Value);
         return new RunSettings(
             _names,
             _localOutputDir ?? DefaultFileSettings.DefaultOutputDirectory,
