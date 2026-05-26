@@ -19,8 +19,12 @@ public class OperationsPerInvokeTunerTests
     [Fact]
     public async Task Tune_FastRelativeToTarget_IncreasesOPI()
     {
-        // Arrange: per-op ~10ms, target 30ms -> expect OPI >= 2
-        var instance = new DelayWork(10);
+        // Arrange: per-op ~5ms, target 100ms -> expect OPI >= 2.
+        // Headroom is intentionally wide (~20:1) so the assertion stays
+        // robust against jittery CI runners (e.g. multi-tenant vCPUs)
+        // where observed per-op time can drift several-fold above its
+        // nominal value.
+        var instance = new DelayWork(5);
         var method = typeof(DelayWork).GetMethod(nameof(DelayWork.Run))!;
         var settings = new ExecutionSettings { OperationsPerInvoke = 1, NumWarmupIterations = 0, SampleSize = 3 };
         var container = TestInstanceContainer.CreateTestInstance(instance, method, Array.Empty<string>(), Array.Empty<object>(), false, settings);
@@ -28,7 +32,7 @@ public class OperationsPerInvokeTunerTests
         var tuner = new OperationsPerInvokeTuner();
 
         // Act
-        var tuned = await tuner.TuneAsync(container, TimeSpan.FromMilliseconds(30), _logger, CancellationToken.None);
+        var tuned = await tuner.TuneAsync(container, TimeSpan.FromMilliseconds(100), _logger, CancellationToken.None);
 
         // Assert
         tuned.ShouldBeGreaterThanOrEqualTo(2);
