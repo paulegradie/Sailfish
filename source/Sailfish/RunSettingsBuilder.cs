@@ -10,13 +10,6 @@ using Sailfish.Presentation;
 
 namespace Sailfish;
 
-public enum SailfishPreset
-{
-    LocalBaseline,
-    CILowNoise,
-    ProductionNoisy
-}
-
 public class RunSettingsBuilder
 {
     private readonly OrderedDictionary _args = new();
@@ -281,7 +274,10 @@ public class RunSettingsBuilder
     }
 
     /// <summary>
-    ///     Applies a preset for adaptive sampling and outlier handling defaults.
+    ///     Seeds adaptive-sampling, outlier-handling, and SailDiff defaults from a named preset.
+    ///     Composition is order-insensitive: any explicit <c>WithGlobalX</c> or <see cref="WithSailDiff(SailDiffSettings)"/>
+    ///     call wins over the preset, regardless of whether it is invoked before or after <c>WithPreset</c>.
+    ///     <c>WithPreset</c> does not enable SailDiff by itself — call <see cref="WithSailDiff()"/> separately.
     /// </summary>
     public RunSettingsBuilder WithPreset(SailfishPreset preset)
     {
@@ -346,13 +342,13 @@ public class RunSettingsBuilder
     private void ApplyPreset(SailfishPreset preset)
     {
         var settings = GetPresetExecutionDefaults(preset);
-        _globalUseAdaptiveSampling = true;
-        _globalTargetCoefficientOfVariation = settings.TargetCoefficientOfVariation;
-        _globalMaxConfidenceIntervalWidth = settings.MaxConfidenceIntervalWidth;
-        _globalMinimumSampleSize = settings.MinimumSampleSize;
-        _globalMaximumSampleSize = settings.MaximumSampleSize;
-        _globalUseConfigurableOutlierDetection = true;
-        _globalOutlierStrategy = settings.OutlierStrategy;
+        _globalUseAdaptiveSampling ??= true;
+        _globalTargetCoefficientOfVariation ??= settings.TargetCoefficientOfVariation;
+        _globalMaxConfidenceIntervalWidth ??= settings.MaxConfidenceIntervalWidth;
+        _globalMinimumSampleSize ??= settings.MinimumSampleSize;
+        _globalMaximumSampleSize ??= settings.MaximumSampleSize;
+        _globalUseConfigurableOutlierDetection ??= true;
+        _globalOutlierStrategy ??= settings.OutlierStrategy;
 
         _sdSettings ??= new SailDiffSettings(preset);
     }
@@ -361,24 +357,24 @@ public class RunSettingsBuilder
     {
         return preset switch
         {
-            SailfishPreset.LocalBaseline => new PresetExecutionDefaults(
-                targetCoefficientOfVariation: 0.05,
-                maxConfidenceIntervalWidth: 0.20,
-                minimumSampleSize: 10,
-                maximumSampleSize: 1000,
-                outlierStrategy: OutlierStrategy.RemoveUpper),
-            SailfishPreset.CILowNoise => new PresetExecutionDefaults(
-                targetCoefficientOfVariation: 0.02,
-                maxConfidenceIntervalWidth: 0.10,
-                minimumSampleSize: 30,
-                maximumSampleSize: 2000,
-                outlierStrategy: OutlierStrategy.RemoveAll),
-            SailfishPreset.ProductionNoisy => new PresetExecutionDefaults(
-                targetCoefficientOfVariation: 0.10,
-                maxConfidenceIntervalWidth: 0.30,
-                minimumSampleSize: 10,
-                maximumSampleSize: 5000,
-                outlierStrategy: OutlierStrategy.Adaptive),
+            SailfishPreset.Default => new PresetExecutionDefaults(
+                TargetCoefficientOfVariation: 0.05,
+                MaxConfidenceIntervalWidth: 0.20,
+                MinimumSampleSize: 10,
+                MaximumSampleSize: 1000,
+                OutlierStrategy: OutlierStrategy.RemoveUpper),
+            SailfishPreset.Tight => new PresetExecutionDefaults(
+                TargetCoefficientOfVariation: 0.03,
+                MaxConfidenceIntervalWidth: 0.12,
+                MinimumSampleSize: 50,
+                MaximumSampleSize: 2000,
+                OutlierStrategy: OutlierStrategy.RemoveUpper),
+            SailfishPreset.Relaxed => new PresetExecutionDefaults(
+                TargetCoefficientOfVariation: 0.10,
+                MaxConfidenceIntervalWidth: 0.30,
+                MinimumSampleSize: 10,
+                MaximumSampleSize: 1000,
+                OutlierStrategy: OutlierStrategy.Adaptive),
             _ => throw new ArgumentOutOfRangeException(nameof(preset), preset, "Unknown Sailfish preset.")
         };
     }

@@ -56,9 +56,9 @@ internal static class ExecutionExtensionMethods
         int? globalNumWarmupIterations,
         bool? globalUseAdaptiveSampling,
         double? globalTargetCoefficientOfVariation,
-        double? globalMaxConfidenceIntervalWidth,
-        int? globalMinimumSampleSize,
-        int? globalMaximumSampleSize)
+        int? globalMaximumSampleSize,
+        double? globalMaxConfidenceIntervalWidth = null,
+        int? globalMinimumSampleSize = null)
     {
         var settings = type.RetrieveExecutionTestSettings(globalSampleSize, globalNumWarmupIterations);
         if (globalUseAdaptiveSampling.HasValue)
@@ -97,20 +97,20 @@ internal static class ExecutionExtensionMethods
             int? globalNumWarmupIterations,
             bool? globalUseAdaptiveSampling,
             double? globalTargetCoefficientOfVariation,
-            double? globalMaxConfidenceIntervalWidth,
-            int? globalMinimumSampleSize,
             int? globalMaximumSampleSize,
             bool? globalUseConfigurableOutlierDetection,
-            OutlierStrategy? globalOutlierStrategy)
+            OutlierStrategy? globalOutlierStrategy,
+            double? globalMaxConfidenceIntervalWidth = null,
+            int? globalMinimumSampleSize = null)
         {
             var settings = type.RetrieveExecutionTestSettings(
                 globalSampleSize,
                 globalNumWarmupIterations,
                 globalUseAdaptiveSampling,
                 globalTargetCoefficientOfVariation,
+                globalMaximumSampleSize,
                 globalMaxConfidenceIntervalWidth,
-                globalMinimumSampleSize,
-                globalMaximumSampleSize);
+                globalMinimumSampleSize);
 
             if (globalUseConfigurableOutlierDetection.HasValue)
             {

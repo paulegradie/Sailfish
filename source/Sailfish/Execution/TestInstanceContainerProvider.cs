@@ -57,11 +57,11 @@ internal class TestInstanceContainerProvider : ITestInstanceContainerProvider
                 _runSettings.NumWarmupIterationsOverride,
                 _runSettings.GlobalUseAdaptiveSampling,
                 _runSettings.GlobalTargetCoefficientOfVariation,
-                _runSettings.GlobalMaxConfidenceIntervalWidth,
-                _runSettings.GlobalMinimumSampleSize,
                 _runSettings.GlobalMaximumSampleSize,
                 _runSettings.GlobalUseConfigurableOutlierDetection,
-                _runSettings.GlobalOutlierStrategy);
+                _runSettings.GlobalOutlierStrategy,
+                _runSettings.GlobalMaxConfidenceIntervalWidth,
+                _runSettings.GlobalMinimumSampleSize);
             var seed = TryParseSeed(_runSettings.Args);
             if (seed.HasValue) executionSettings.Seed = seed;
             yield return TestInstanceContainer.CreateTestInstance(instance, Method, [], [], disabled, executionSettings);
@@ -82,11 +82,11 @@ internal class TestInstanceContainerProvider : ITestInstanceContainerProvider
                     _runSettings.NumWarmupIterationsOverride,
                     _runSettings.GlobalUseAdaptiveSampling,
                     _runSettings.GlobalTargetCoefficientOfVariation,
-                    _runSettings.GlobalMaxConfidenceIntervalWidth,
-                    _runSettings.GlobalMinimumSampleSize,
                     _runSettings.GlobalMaximumSampleSize,
                     _runSettings.GlobalUseConfigurableOutlierDetection,
-                    _runSettings.GlobalOutlierStrategy);
+                    _runSettings.GlobalOutlierStrategy,
+                    _runSettings.GlobalMaxConfidenceIntervalWidth,
+                    _runSettings.GlobalMinimumSampleSize);
                 var seed = TryParseSeed(_runSettings.Args);
                 if (seed.HasValue) executionSettings.Seed = seed;
                 yield return TestInstanceContainer.CreateTestInstance(instance, Method, propertyNames, variableValues, disabled, executionSettings);

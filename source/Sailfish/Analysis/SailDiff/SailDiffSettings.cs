@@ -79,15 +79,12 @@ public class SailDiffSettings
 
     private void ApplyPreset(SailfishPreset preset)
     {
-        var (alpha, testType) = preset switch
+        Alpha = preset switch
         {
-            SailfishPreset.LocalBaseline => (0.001, TestType.TwoSampleWilcoxonSignedRankTest),
-            SailfishPreset.CILowNoise => (0.0005, TestType.TwoSampleWilcoxonSignedRankTest),
-            SailfishPreset.ProductionNoisy => (0.01, TestType.WilcoxonRankSumTest),
+            SailfishPreset.Default => 0.001,
+            SailfishPreset.Tight => 0.0005,
+            SailfishPreset.Relaxed => 0.01,
             _ => throw new ArgumentOutOfRangeException(nameof(preset), preset, "Unknown Sailfish preset.")
         };
-
-        Alpha = alpha;
-        TestType = testType;
     }
 }
