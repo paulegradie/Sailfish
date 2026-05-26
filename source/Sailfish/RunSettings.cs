@@ -36,6 +36,8 @@ internal class RunSettings : IRunSettings
         bool debug = false,
         bool? globalUseAdaptiveSampling = null,
         double? globalTargetCoefficientOfVariation = null,
+        double? globalMaxConfidenceIntervalWidth = null,
+        int? globalMinimumSampleSize = null,
         int? globalMaximumSampleSize = null,
         bool? globalUseConfigurableOutlierDetection = null,
         OutlierStrategy? globalOutlierStrategy = null,
@@ -64,6 +66,8 @@ internal class RunSettings : IRunSettings
         StreamTrackingUpdates = streamTrackingUpdates;
         GlobalUseAdaptiveSampling = globalUseAdaptiveSampling;
         GlobalTargetCoefficientOfVariation = globalTargetCoefficientOfVariation;
+        GlobalMaxConfidenceIntervalWidth = globalMaxConfidenceIntervalWidth;
+        GlobalMinimumSampleSize = globalMinimumSampleSize;
         GlobalMaximumSampleSize = globalMaximumSampleSize;
         GlobalUseConfigurableOutlierDetection = globalUseConfigurableOutlierDetection;
         GlobalOutlierStrategy = globalOutlierStrategy;
@@ -95,6 +99,8 @@ internal class RunSettings : IRunSettings
     public bool StreamTrackingUpdates { get; }
     public bool? GlobalUseAdaptiveSampling { get; }
     public double? GlobalTargetCoefficientOfVariation { get; }
+    public double? GlobalMaxConfidenceIntervalWidth { get; }
+    public int? GlobalMinimumSampleSize { get; }
     public int? GlobalMaximumSampleSize { get; }
     public bool? GlobalUseConfigurableOutlierDetection { get; }
     public OutlierStrategy? GlobalOutlierStrategy { get; }

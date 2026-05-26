@@ -56,7 +56,9 @@ internal static class ExecutionExtensionMethods
         int? globalNumWarmupIterations,
         bool? globalUseAdaptiveSampling,
         double? globalTargetCoefficientOfVariation,
-        int? globalMaximumSampleSize)
+        int? globalMaximumSampleSize,
+        double? globalMaxConfidenceIntervalWidth = null,
+        int? globalMinimumSampleSize = null)
     {
         var settings = type.RetrieveExecutionTestSettings(globalSampleSize, globalNumWarmupIterations);
         if (globalUseAdaptiveSampling.HasValue)
@@ -67,6 +69,16 @@ internal static class ExecutionExtensionMethods
         if (globalTargetCoefficientOfVariation.HasValue)
         {
             settings.TargetCoefficientOfVariation = globalTargetCoefficientOfVariation.Value;
+        }
+
+        if (globalMaxConfidenceIntervalWidth.HasValue)
+        {
+            settings.MaxConfidenceIntervalWidth = globalMaxConfidenceIntervalWidth.Value;
+        }
+
+        if (globalMinimumSampleSize.HasValue)
+        {
+            settings.MinimumSampleSize = globalMinimumSampleSize.Value;
         }
 
         if (globalMaximumSampleSize.HasValue)
@@ -87,14 +99,18 @@ internal static class ExecutionExtensionMethods
             double? globalTargetCoefficientOfVariation,
             int? globalMaximumSampleSize,
             bool? globalUseConfigurableOutlierDetection,
-            OutlierStrategy? globalOutlierStrategy)
+            OutlierStrategy? globalOutlierStrategy,
+            double? globalMaxConfidenceIntervalWidth = null,
+            int? globalMinimumSampleSize = null)
         {
             var settings = type.RetrieveExecutionTestSettings(
                 globalSampleSize,
                 globalNumWarmupIterations,
                 globalUseAdaptiveSampling,
                 globalTargetCoefficientOfVariation,
-                globalMaximumSampleSize);
+                globalMaximumSampleSize,
+                globalMaxConfidenceIntervalWidth,
+                globalMinimumSampleSize);
 
             if (globalUseConfigurableOutlierDetection.HasValue)
             {
