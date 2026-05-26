@@ -22,3 +22,7 @@ You can optionally place your tests in a separate project, which installs the te
 You can enable adaptive sampling per class or globally to stop when results are stable.
 [Learn more →](/docs/1/adaptive-sampling)
 {% /callout %}
+
+{% callout title="Configuration Recipes" type="note" %}
+See [Configuration Recipes](/docs/1/presets) for copy-paste settings tuned for local dev, noisy CI, and release gates.
+{% /callout %}
