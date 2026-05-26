@@ -2,6 +2,7 @@ using System;
 using System.Linq;
 using Microsoft.CodeAnalysis;
 using NSubstitute;
+using Sailfish.Attributes;
 using Sailfish.TestAdapter;
 using Sailfish.TestAdapter.Discovery;
 using Sailfish.TestAdapter.TestProperties;
@@ -203,6 +204,63 @@ public class TestCaseItemCreatorTests
         fullyQualifiedNames.ShouldAllBe(name => !string.IsNullOrEmpty(name));
     }
 
+    [Fact]
+    public void AssembleTestCases_ShouldSetHierarchyAndManagedNameProperties()
+    {
+        // Arrange
+        var classMetaData = CreateClassMetaData();
+        var hashAlgorithm = Substitute.For<IHashAlgorithm>();
+        hashAlgorithm.GuidFromString(Arg.Any<string>()).Returns(Guid.NewGuid());
+
+        // Act
+        var testCases = TestCaseItemCreator.AssembleTestCases(classMetaData, "source.dll", hashAlgorithm).ToList();
+
+        // Assert
+        testCases.ShouldNotBeEmpty();
+        var first = testCases.First();
+        var hierarchy = (string[]?)first.GetPropertyValue(SailfishManagedProperty.TestCaseHierarchyProperty);
+        hierarchy.ShouldNotBeNull();
+        hierarchy!.Length.ShouldBe(SailfishManagedProperty.HierarchyTotalLevelCount);
+        hierarchy[SailfishManagedProperty.HierarchyContainerIndex].ShouldBeNull();
+        hierarchy[SailfishManagedProperty.HierarchyNamespaceIndex].ShouldBe(typeof(TestCaseItemCreatorTestClass).Namespace);
+        hierarchy[SailfishManagedProperty.HierarchyClassIndex].ShouldBe(typeof(TestCaseItemCreatorTestClass).Name);
+        hierarchy[SailfishManagedProperty.HierarchyTestGroupIndex].ShouldBe("TestMethod1");
+
+        first.GetPropertyValue(SailfishManagedProperty.TestCaseManagedTypeProperty)
+            .ShouldBe(typeof(TestCaseItemCreatorTestClass).FullName);
+        first.GetPropertyValue(SailfishManagedProperty.TestCaseManagedMethodProperty)
+            .ShouldBe("TestMethod1");
+    }
+
+    [Fact]
+    public void AssembleTestCases_ParameterizedVariants_ShouldShareHierarchyArrayPerMethod()
+    {
+        // Arrange — a class with a SailfishVariable produces multiple test cases for the same method.
+        var classMetaData = new ClassMetaData(
+            filePath: "/path/to/ParameterizedTest.cs",
+            classFullName: typeof(ParameterizedSailfishTestClass).FullName!,
+            performanceTestType: typeof(ParameterizedSailfishTestClass),
+            syntaxTree: Substitute.For<SyntaxTree>(),
+            methods: new[] { new MethodMetaData("ParamMethod", 10, null) });
+        var hashAlgorithm = Substitute.For<IHashAlgorithm>();
+        hashAlgorithm.GuidFromString(Arg.Any<string>()).Returns(_ => Guid.NewGuid());
+
+        // Act
+        var testCases = TestCaseItemCreator.AssembleTestCases(classMetaData, "source.dll", hashAlgorithm).ToList();
+
+        // Assert — multiple variants, each with the same hierarchy[TestGroup] value so Rider
+        // groups them under the parent method.
+        testCases.Count.ShouldBeGreaterThan(1);
+        var hierarchies = testCases
+            .Select(tc => (string[]?)tc.GetPropertyValue(SailfishManagedProperty.TestCaseHierarchyProperty))
+            .ToList();
+        hierarchies.ShouldAllBe(h => h != null);
+        hierarchies.ShouldAllBe(h =>
+            h![SailfishManagedProperty.HierarchyTestGroupIndex] == "ParamMethod" &&
+            h[SailfishManagedProperty.HierarchyClassIndex] == typeof(ParameterizedSailfishTestClass).Name &&
+            h[SailfishManagedProperty.HierarchyNamespaceIndex] == typeof(ParameterizedSailfishTestClass).Namespace);
+    }
+
     #endregion
 
     #region Helper Methods
@@ -297,4 +355,16 @@ public class TestCaseItemCreatorTestClassWithVariables
 public class TestCaseItemCreatorTypeWithNullFullName
 {
     // This class is used to test edge cases where Type.FullName might be null
+}
+
+// Intentionally NOT annotated with [Sailfish] so the TestAdapter's own type discovery does
+// not pick this class up while the Tests.TestAdapter assembly is being scanned. The
+// PropertySetGenerator only inspects [SailfishVariable] on properties to enumerate variants,
+// which is all the TestCaseItemCreator test needs.
+public class ParameterizedSailfishTestClass
+{
+    [SailfishVariable(1, 2, 3)]
+    public int N { get; set; }
+
+    public void ParamMethod() { }
 }
