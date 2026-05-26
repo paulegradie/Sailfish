@@ -20,15 +20,14 @@
 
     <!--
         Register the Sailfish test adapter via the modern MSBuild TestAdapterPath ItemGroup.
-        VS Test Explorer is lenient and auto-discovers adapters in the output folder, but
-        Rider/ReSharper drives VSTest via the MSBuild TestAdapterPath items only — without
-        these, Rider greys out 'Run Unit Tests' and shows no discoverable tests.
+        Using an absolute path because some hosts (notably ReSharper / Rider) resolve
+        TestAdapterPath items relative to a working directory other than the project root.
 
         Sailfish.TestAdapter.dll is already copied to $(OutputPath) by the default
         ProjectReference copy-local behavior, so we just need to point the runner at it.
     -->
     <ItemGroup>
-        <TestAdapterPath Include="$(OutputPath)" />
+        <TestAdapterPath Include="$([System.IO.Path]::GetFullPath('$(MSBuildProjectDirectory)/$(OutputPath)'))" />
     </ItemGroup>
 
     <!-- Exclude the Analyzer ItemGroup if building with Visual Studio -->
