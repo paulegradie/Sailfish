@@ -23,7 +23,6 @@ You can enable adaptive sampling per class or globally to stop when results are 
 [Learn more →](/docs/1/adaptive-sampling)
 {% /callout %}
 
-{% callout title="Need preset guidance?" type="note" %}
-Use [Presets](/docs/1/presets) to pick a policy for local development, CI, or release gates.
-Higher sensitivity catches smaller regressions; higher stability finishes faster on noisy hosts.
+{% callout title="Configuration Recipes" type="note" %}
+See [Configuration Recipes](/docs/1/presets) for copy-paste settings tuned for local dev, noisy CI, and release gates.
 {% /callout %}
