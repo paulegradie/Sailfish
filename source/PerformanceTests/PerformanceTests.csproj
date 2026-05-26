@@ -18,33 +18,18 @@
         <ProjectReference Include="..\Sailfish.TestAdapter\Sailfish.TestAdapter.csproj"/>
     </ItemGroup>
 
-    <!-- Ensure the test adapter is available for test discovery -->
-    <Target Name="CopyTestAdapter" AfterTargets="Build" Condition="'$(TargetFramework)' == 'net8.0'">
-        <ItemGroup>
-            <TestAdapterFiles Include="$(MSBuildProjectDirectory)\..\Sailfish.TestAdapter\bin\$(Configuration)\net8.0\Sailfish.TestAdapter.dll" />
-        </ItemGroup>
-        <Copy SourceFiles="@(TestAdapterFiles)" DestinationFolder="$(OutputPath)" SkipUnchangedFiles="false" />
-    </Target>
+    <!--
+        Register the Sailfish test adapter via the modern MSBuild TestAdapterPath ItemGroup.
+        VS Test Explorer is lenient and auto-discovers adapters in the output folder, but
+        Rider/ReSharper drives VSTest via the MSBuild TestAdapterPath items only — without
+        these, Rider greys out 'Run Unit Tests' and shows no discoverable tests.
 
-    <Target Name="CopyTestAdapterNet9" AfterTargets="Build" Condition="'$(TargetFramework)' == 'net9.0'">
-        <ItemGroup>
-            <TestAdapterFiles Include="$(MSBuildProjectDirectory)\..\Sailfish.TestAdapter\bin\$(Configuration)\net9.0\Sailfish.TestAdapter.dll" />
-        </ItemGroup>
-        <Copy SourceFiles="@(TestAdapterFiles)" DestinationFolder="$(OutputPath)" SkipUnchangedFiles="false" />
-    </Target>
-
-    <Target Name="CopyTestAdapterNet10" AfterTargets="Build" Condition="'$(TargetFramework)' == 'net10.0'">
-        <ItemGroup>
-            <TestAdapterFiles Include="$(MSBuildProjectDirectory)\..\Sailfish.TestAdapter\bin\$(Configuration)\net10.0\Sailfish.TestAdapter.dll" />
-        </ItemGroup>
-        <Copy SourceFiles="@(TestAdapterFiles)" DestinationFolder="$(OutputPath)" SkipUnchangedFiles="false" />
-    </Target>
-
-    <!-- Tell VSTest where to find the test adapter -->
-
-    <PropertyGroup>
-        <VSTestAdapterPath>$(OutputPath)</VSTestAdapterPath>
-    </PropertyGroup>
+        Sailfish.TestAdapter.dll is already copied to $(OutputPath) by the default
+        ProjectReference copy-local behavior, so we just need to point the runner at it.
+    -->
+    <ItemGroup>
+        <TestAdapterPath Include="$(OutputPath)" />
+    </ItemGroup>
 
     <!-- Exclude the Analyzer ItemGroup if building with Visual Studio -->
     <!--    Normally this will be a nuget package referece, so no additional properties necessary, .e.g OutputItemType and ReferenceOutperAssembly -->
