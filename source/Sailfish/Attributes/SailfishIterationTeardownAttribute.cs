@@ -45,4 +45,10 @@ public sealed class SailfishIterationTeardownAttribute : Attribute, IInnerLifecy
     ///     Array of method names that the SailfishIterationTeardown method should be executed after
     /// </summary>
     public string[] MethodNames { get; }
+
+    /// <summary>
+    ///     When true, the iteration teardown method is invoked at most once per executor run for the
+    ///     declaring test class — after the first applicable iteration only.
+    /// </summary>
+    public bool RunOnce { get; set; }
 }

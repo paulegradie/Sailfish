@@ -53,8 +53,9 @@ internal class CoreInvoker
         {
             var attribute = lifecycleMethod.GetCustomAttribute<TAttribute>();
             if (attribute is null) throw new SailfishException($"{nameof(TAttribute)}, was somehow missing");
-            if (attribute.MethodNames.Length == 0 || attribute.MethodNames.Contains(MainMethodName))
-                await lifecycleMethod.TryInvoke(_instance, cancellationToken).ConfigureAwait(false);
+            if (attribute.MethodNames.Length > 0 && !attribute.MethodNames.Contains(MainMethodName)) continue;
+            if (attribute.RunOnce && !LifecycleMethodTracker.TryClaim(_instance.GetType(), lifecycleMethod)) continue;
+            await lifecycleMethod.TryInvoke(_instance, cancellationToken).ConfigureAwait(false);
         }
     }
 

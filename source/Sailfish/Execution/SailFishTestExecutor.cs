@@ -38,6 +38,7 @@ internal class SailFishTestExecutor : ISailFishTestExecutor
         IEnumerable<Type> testTypes,
         CancellationToken cancellationToken = default)
     {
+        LifecycleMethodTracker.Reset();
         var allTestCaseResults = new List<TestClassResultGroup>();
         if (!FilterEnabledType(testTypes, out var enabledTestTypes))
         {
