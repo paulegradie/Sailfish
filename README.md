@@ -17,6 +17,7 @@ Sailfish is a .NET performance testing framework that makes it easy to write, ru
 - [Algorithm Comparisons](#algorithm-comparisons)
 - [Adaptive Sampling](#adaptive-sampling)
 - [Installation](#installation)
+- [IDE setup](#ide-setup)
 - [Outputs and Reporting](#outputs-and-reporting)
 - [Used By](#used-by)
 - [Contributing](#contributing)
@@ -149,6 +150,23 @@ Install via NuGet:
 ```bash
 dotnet add package Sailfish
 ```
+
+## IDE setup
+
+### Visual Studio
+Works out of the box. Reference `Sailfish.TestAdapter` (NuGet or `ProjectReference`) and Test Explorer will discover tests after a build.
+
+### JetBrains Rider
+Rider needs a one-time setting flipped so it engages VSTest discovery for projects that use Sailfish (or any third-party VSTest adapter without a built-in ReSharper provider).
+
+1. `Settings → Build, Execution, Deployment → Unit Testing → VSTest`
+2. Confirm **Enable VSTest adapters support** is on.
+3. Under **Projects with unit tests**, click `+` and add a file mask. Use `*` to opt every project in the solution in (recommended), or a specific name like `*PerformanceTests*` to narrow.
+4. Save → `Build → Rebuild Solution`.
+
+Sailfish tests then appear in the Unit Tests tool window with gutter play-buttons, and parameterized variants nest under their parent `SailfishMethod` (via the `TestCase.Hierarchy` properties the adapter emits).
+
+**Why the mask is needed**: ReSharper has built-in providers for xUnit / NUnit / MSTest only. For other VSTest adapters, it relies on the project being explicitly opted in to VSTest discovery via this mask — without it, ReSharper treats the project as non-test and greys out the run command. See issue [#98](https://github.com/paulegradie/Sailfish/issues/98) for background.
 
 ## Outputs and Reporting
 - N×N method comparison matrices per comparison group
