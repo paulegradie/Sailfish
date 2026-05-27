@@ -13,7 +13,7 @@
   "GlobalSettings": {
     "DisableOutlierDetection": false,
     "ResultsDirectory": "SailfishIDETestOutput",
-    "DisableEverything": true,
+    "DisableEverything": false,
     "Round": 5
   }
 }
