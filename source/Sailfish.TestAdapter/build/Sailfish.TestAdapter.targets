@@ -14,10 +14,19 @@
     </Content>
   </ItemGroup>
 
-  <!-- Ensure the test adapter is available for test discovery -->
+  <!--
+    Ensure the test adapter is available for test discovery.
+
+    Path.GetFullPath normalizes the '..' segment so the resulting item is a
+    plain absolute path. Some hosts (notably ReSharper / Rider) resolve
+    TestAdapterPath items relative to a working directory other than the
+    project root and don't collapse '..' on their own — handing them the
+    raw '$(MSBuildThisFileDirectory)../lib/<tfm>/' form leaves the adapter
+    undiscoverable. See PR #225 for the matching fix on the project-ref path.
+  -->
   <ItemGroup>
-    <TestAdapterPath Include="$(MSBuildThisFileDirectory)../lib/net9.0/" Condition="'$(TargetFramework)' == 'net9.0'" />
-    <TestAdapterPath Include="$(MSBuildThisFileDirectory)../lib/net10.0/" Condition="'$(TargetFramework)' == 'net10.0'" />
+    <TestAdapterPath Include="$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)../lib/net9.0/'))" Condition="'$(TargetFramework)' == 'net9.0'" />
+    <TestAdapterPath Include="$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)../lib/net10.0/'))" Condition="'$(TargetFramework)' == 'net10.0'" />
   </ItemGroup>
 
   <!-- Copy ALL runtime dependencies to output directory -->
