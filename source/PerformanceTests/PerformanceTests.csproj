@@ -18,33 +18,21 @@
         <ProjectReference Include="..\Sailfish.TestAdapter\Sailfish.TestAdapter.csproj"/>
     </ItemGroup>
 
-    <!-- Ensure the test adapter is available for test discovery -->
-    <Target Name="CopyTestAdapter" AfterTargets="Build" Condition="'$(TargetFramework)' == 'net8.0'">
-        <ItemGroup>
-            <TestAdapterFiles Include="$(MSBuildProjectDirectory)\..\Sailfish.TestAdapter\bin\$(Configuration)\net8.0\Sailfish.TestAdapter.dll" />
-        </ItemGroup>
-        <Copy SourceFiles="@(TestAdapterFiles)" DestinationFolder="$(OutputPath)" SkipUnchangedFiles="false" />
-    </Target>
+    <!--
+        Register the Sailfish test adapter via the modern MSBuild TestAdapterPath ItemGroup.
+        Using an absolute path because some hosts (notably ReSharper / Rider) resolve
+        TestAdapterPath items relative to a working directory other than the project root.
 
-    <Target Name="CopyTestAdapterNet9" AfterTargets="Build" Condition="'$(TargetFramework)' == 'net9.0'">
-        <ItemGroup>
-            <TestAdapterFiles Include="$(MSBuildProjectDirectory)\..\Sailfish.TestAdapter\bin\$(Configuration)\net9.0\Sailfish.TestAdapter.dll" />
-        </ItemGroup>
-        <Copy SourceFiles="@(TestAdapterFiles)" DestinationFolder="$(OutputPath)" SkipUnchangedFiles="false" />
-    </Target>
+        Sailfish.TestAdapter.dll is already copied to $(OutputPath) by the default
+        ProjectReference copy-local behavior, so we just need to point the runner at it.
 
-    <Target Name="CopyTestAdapterNet10" AfterTargets="Build" Condition="'$(TargetFramework)' == 'net10.0'">
-        <ItemGroup>
-            <TestAdapterFiles Include="$(MSBuildProjectDirectory)\..\Sailfish.TestAdapter\bin\$(Configuration)\net10.0\Sailfish.TestAdapter.dll" />
-        </ItemGroup>
-        <Copy SourceFiles="@(TestAdapterFiles)" DestinationFolder="$(OutputPath)" SkipUnchangedFiles="false" />
-    </Target>
-
-    <!-- Tell VSTest where to find the test adapter -->
-
-    <PropertyGroup>
-        <VSTestAdapterPath>$(OutputPath)</VSTestAdapterPath>
-    </PropertyGroup>
+        Uses Path.GetFullPath(path, basePath) so a custom $(OutputPath) that's already an
+        absolute path (e.g. CI layouts that point at /tmp/tests or C:\artifacts) is honored
+        as-is; only when $(OutputPath) is relative is it resolved against the project dir.
+    -->
+    <ItemGroup>
+        <TestAdapterPath Include="$([System.IO.Path]::GetFullPath('$(OutputPath)', '$(MSBuildProjectDirectory)'))" />
+    </ItemGroup>
 
     <!-- Exclude the Analyzer ItemGroup if building with Visual Studio -->
     <!--    Normally this will be a nuget package referece, so no additional properties necessary, .e.g OutputItemType and ReferenceOutperAssembly -->
