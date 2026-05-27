@@ -285,7 +285,7 @@ public class IterationStrategyTests
 
     private TestInstanceContainer CreateTestInstanceContainer()
     {
-        var mockCoreInvoker = Substitute.For<CoreInvoker>(new object(), typeof(object).GetMethod("ToString")!, new PerformanceTimer());
+        var mockCoreInvoker = Substitute.For<CoreInvoker>(new object(), typeof(object).GetMethod("ToString")!, new PerformanceTimer(), (LifecycleMethodTracker?)null);
         var mockExecutionSettings = Substitute.For<IExecutionSettings>();
 
         return TestInstanceContainer.CreateTestInstance(

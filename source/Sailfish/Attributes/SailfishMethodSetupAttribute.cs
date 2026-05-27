@@ -45,4 +45,11 @@ public sealed class SailfishMethodSetupAttribute : Attribute, IInnerLifecycleAtt
     ///     Array of method names that the SailfishIterationTeardown method should be executed after
     /// </summary>
     public string[] MethodNames { get; set; }
+
+    /// <summary>
+    ///     When true, the setup method is invoked at most once per executor run for the declaring
+    ///     test class, even when <see cref="MethodNames" /> lists multiple SailfishMethods. Useful
+    ///     for one-shot fixture initialization shared across multiple [SailfishMethod]s.
+    /// </summary>
+    public bool RunOnce { get; set; }
 }

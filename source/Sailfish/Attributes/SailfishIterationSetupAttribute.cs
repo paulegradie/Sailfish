@@ -45,4 +45,11 @@ public sealed class SailfishIterationSetupAttribute : Attribute, IInnerLifecycle
     ///     Array of method names that the SailfishIterationSetup method should be executed before
     /// </summary>
     public string[] MethodNames { get; }
+
+    /// <summary>
+    ///     When true, the iteration setup method is invoked at most once per executor run for the
+    ///     declaring test class — before the first applicable iteration only. Subsequent iterations
+    ///     and other applicable SailfishMethods skip it.
+    /// </summary>
+    public bool RunOnce { get; set; }
 }

@@ -38,6 +38,8 @@ internal class SailFishTestExecutor : ISailFishTestExecutor
         IEnumerable<Type> testTypes,
         CancellationToken cancellationToken = default)
     {
+        // Fresh tracker per executor run — claims do not leak across invocations.
+        var lifecycleMethodTracker = new LifecycleMethodTracker();
         var allTestCaseResults = new List<TestClassResultGroup>();
         if (!FilterEnabledType(testTypes, out var enabledTestTypes))
         {
@@ -53,7 +55,7 @@ internal class SailFishTestExecutor : ISailFishTestExecutor
             _testCaseCountPrinter.PrintTypeUpdate(testType.Name);
             try
             {
-                var testCaseExecutionResults = await Execute(testType, cancellationToken);
+                var testCaseExecutionResults = await Execute(testType, lifecycleMethodTracker, cancellationToken);
                 allTestCaseResults.Add(new TestClassResultGroup(testType, testCaseExecutionResults));
             }
             catch (Exception ex)
@@ -68,9 +70,11 @@ internal class SailFishTestExecutor : ISailFishTestExecutor
 
     private async Task<List<TestCaseExecutionResult>> Execute(
         Type test,
+        LifecycleMethodTracker lifecycleMethodTracker,
         CancellationToken cancellationToken = default)
     {
-        var testInstanceContainerProviders = _testInstanceContainerCreator.CreateTestContainerInstanceProviders(test);
+        var testInstanceContainerProviders = _testInstanceContainerCreator.CreateTestContainerInstanceProviders(
+            test, lifecycleMethodTracker: lifecycleMethodTracker);
         return await Execute(testInstanceContainerProviders, cancellationToken);
     }
 
