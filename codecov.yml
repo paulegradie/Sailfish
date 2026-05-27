@@ -40,25 +40,22 @@ flags:
   Tests.Analyzers:
     carryforward: true
 
-# Ignore files and directories that should not be included in coverage
+# Allow-list approach: by default ignore everything, then explicitly re-include
+# only the three published projects. Anything else (demos, sample apps, test
+# projects, perf-test harnesses, docs) is out of scope for coverage measurement
+# regardless of where it lives. New projects added under source/ will NOT be
+# counted unless they're explicitly added below — which is the safer default.
 ignore:
-  - "node_modules/*"
-  - "vendor/*"
-  - "docs/*"
-  - "**/*.md"
-  - "source/Tests.*/**" # Ignore any project with 'Tests.' in its name
-  - "source/Demo.API/**"
-  - "source/ConsoleAppDemo/**"
-  - "source/ScaleFishDemo/**"
-  - "source/PerformanceTests/**"
-  - "source/AdaptiveSamplingQuickTest/**"
+  - "**/*"
+  - "!source/Sailfish/**"
+  - "!source/Sailfish.Analyzers/**"
+  - "!source/Sailfish.TestAdapter/**"
 
-  # Test-adapter wiring: VSTest entry-point, MediatR-style framework handlers, queue
-  # plumbing, and DI registrations. These integrate with external APIs
-  # (IFrameworkHandle, IMessageLogger, the MediatR pipeline) and are exercised by the
-  # [Sailfish] fixture classes in Tests.TestAdapter + the Tests.E2E.* projects, not
-  # by isolated unit tests. Excluding them keeps the coverage metric meaningful for
-  # the algorithm/domain code that can actually be unit-tested.
+  # Within the in-scope projects, exclude framework wiring that is only
+  # exercised end-to-end via the test-adapter pipeline (VSTest entry-point,
+  # MediatR-style default handlers, queue plumbing, DI registrations). These
+  # integrate with external APIs (IFrameworkHandle, IMessageLogger, MediatR)
+  # and are not realistically unit-testable without invasive mocking.
   - "source/Sailfish.TestAdapter/TestExecutor.cs"
   - "source/Sailfish.TestAdapter/Handlers/**"
   - "source/Sailfish.TestAdapter/Queue/Implementation/**"
