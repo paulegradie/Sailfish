@@ -1,6 +1,6 @@
 # Sailfish
 
-[![Build Pipeline v3.0](https://github.com/paulegradie/Sailfish/actions/workflows/build-v3.0.yml/badge.svg)](https://github.com/paulegradie/Sailfish/actions/workflows/build-v3.0.yml)
+[![Build Pipeline v4.0](https://github.com/paulegradie/Sailfish/actions/workflows/build-v4.0.yml/badge.svg)](https://github.com/paulegradie/Sailfish/actions/workflows/build-v4.0.yml)
 ![NuGet](https://img.shields.io/nuget/dt/Sailfish)
 [![codecov](https://codecov.io/gh/paulegradie/Sailfish/graph/badge.svg?token=UN17VRVD0N)](https://codecov.io/gh/paulegradie/Sailfish)
 
