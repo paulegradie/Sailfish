@@ -70,6 +70,19 @@ internal static class TestCaseItemCreator
         testCase.SetPropertyValue(SailfishManagedProperty.SailfishDisplayNameDefinitionProperty, testCaseId.DisplayName);
         testCase.SetPropertyValue(SailfishManagedProperty.SailfishFormedVariableSectionDefinitionProperty, testCaseId.TestCaseVariables.FormVariableSection());
 
+        // Standard VSTest hierarchy + managed-name properties. Each variant of a parameterized
+        // SailfishMethod shares the same Hierarchy array, which lets Rider's Unit Tests tool
+        // window (and VS Test Explorer) group them under a single parent method node instead of
+        // listing them as flat siblings under the class.
+        var hierarchy = new string?[SailfishManagedProperty.HierarchyTotalLevelCount];
+        hierarchy[SailfishManagedProperty.HierarchyContainerIndex] = null;
+        hierarchy[SailfishManagedProperty.HierarchyNamespaceIndex] = testType.Namespace;
+        hierarchy[SailfishManagedProperty.HierarchyClassIndex] = testType.Name;
+        hierarchy[SailfishManagedProperty.HierarchyTestGroupIndex] = methodName;
+        testCase.SetPropertyValue(SailfishManagedProperty.TestCaseHierarchyProperty, hierarchy);
+        testCase.SetPropertyValue(SailfishManagedProperty.TestCaseManagedTypeProperty, testType.FullName);
+        testCase.SetPropertyValue(SailfishManagedProperty.TestCaseManagedMethodProperty, methodName);
+
         // comparison properties (if present)
         if (!string.IsNullOrEmpty(comparisonGroup))
         {
