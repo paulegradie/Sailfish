@@ -41,6 +41,9 @@ internal class TestAdapterExecutionEngine : ITestAdapterExecutionEngine
         List<TestCase> testCases,
         CancellationToken cancellationToken)
     {
+        // Fresh tracker per adapter run — RunOnce claims don't leak across multiple Execute()
+        // calls within the same testhost process.
+        var lifecycleMethodTracker = new LifecycleMethodTracker();
         var rawExecutionResults = new List<(string, TestClassResultGroup)>();
         var testCaseGroups = testCases.GroupBy(testCase => testCase.GetPropertyHelper(SailfishManagedProperty.SailfishTypeProperty));
 
@@ -56,7 +59,8 @@ internal class TestAdapterExecutionEngine : ITestAdapterExecutionEngine
                     CreatePropertyFilter(GetTestCaseProperties(
                         SailfishManagedProperty.SailfishFormedVariableSectionDefinitionProperty, testCases)),
                     CreateMethodFilter(GetTestCaseProperties(SailfishManagedProperty.SailfishMethodFilterProperty,
-                        testCases)));
+                        testCases)),
+                    lifecycleMethodTracker);
 
             var totalTestProviderCount = providerForCurrentTestCases.Count - 1;
 

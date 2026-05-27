@@ -50,7 +50,8 @@ internal class TestInstanceContainer
         string[] propertyNames,
         object[] variables,
         bool disabled,
-        IExecutionSettings executionSettings
+        IExecutionSettings executionSettings,
+        LifecycleMethodTracker? lifecycleMethodTracker = null
     )
     {
         if (propertyNames.Length != variables.Length) throw new SailfishException("Property names and variables do not match");
@@ -63,7 +64,7 @@ internal class TestInstanceContainer
             method,
             testCaseId,
             executionSettings,
-            new CoreInvoker(instance, method, new PerformanceTimer()),
+            new CoreInvoker(instance, method, new PerformanceTimer(), lifecycleMethodTracker),
             disabled);
     }
 

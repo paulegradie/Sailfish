@@ -14,7 +14,8 @@ internal interface ITestInstanceContainerCreator
     List<TestInstanceContainerProvider> CreateTestContainerInstanceProviders(
         Type test,
         Func<PropertySet, bool>? propertyTensorFilter = null,
-        Func<MethodInfo, bool>? instanceContainerFilter = null);
+        Func<MethodInfo, bool>? instanceContainerFilter = null,
+        LifecycleMethodTracker? lifecycleMethodTracker = null);
 }
 
 internal class TestInstanceContainerCreator : ITestInstanceContainerCreator
@@ -35,7 +36,8 @@ internal class TestInstanceContainerCreator : ITestInstanceContainerCreator
     public List<TestInstanceContainerProvider> CreateTestContainerInstanceProviders(
         Type testType,
         Func<PropertySet, bool>? propertyTensorFilter = null,
-        Func<MethodInfo, bool>? instanceContainerFilter = null)
+        Func<MethodInfo, bool>? instanceContainerFilter = null,
+        LifecycleMethodTracker? lifecycleMethodTracker = null)
     {
         var variableSets = _propertySetGenerator.GenerateSailfishVariableSets(testType, out _);
         if (propertyTensorFilter is not null) variableSets = variableSets.Where(propertyTensorFilter);
@@ -77,7 +79,8 @@ internal class TestInstanceContainerCreator : ITestInstanceContainerCreator
                 _typeActivator,
                 testType,
                 variableSetsList,
-                instanceContainer))
+                instanceContainer,
+                lifecycleMethodTracker))
             .ToList();
     }
 

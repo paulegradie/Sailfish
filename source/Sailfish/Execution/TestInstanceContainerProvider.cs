@@ -18,6 +18,7 @@ internal interface ITestInstanceContainerProvider
 
 internal class TestInstanceContainerProvider : ITestInstanceContainerProvider
 {
+    private readonly LifecycleMethodTracker? _lifecycleMethodTracker;
     private readonly IEnumerable<PropertySet> _propertySets;
     private readonly IRunSettings _runSettings;
     private readonly ITypeActivator _typeActivator;
@@ -27,10 +28,12 @@ internal class TestInstanceContainerProvider : ITestInstanceContainerProvider
         ITypeActivator typeActivator,
         Type test,
         IEnumerable<PropertySet> propertySets,
-        MethodInfo method)
+        MethodInfo method,
+        LifecycleMethodTracker? lifecycleMethodTracker = null)
     {
         Method = method;
         Test = test;
+        _lifecycleMethodTracker = lifecycleMethodTracker;
         _propertySets = propertySets;
         _runSettings = runSettings;
         _typeActivator = typeActivator;
@@ -64,7 +67,7 @@ internal class TestInstanceContainerProvider : ITestInstanceContainerProvider
                 _runSettings.GlobalMinimumSampleSize);
             var seed = TryParseSeed(_runSettings.Args);
             if (seed.HasValue) executionSettings.Seed = seed;
-            yield return TestInstanceContainer.CreateTestInstance(instance, Method, [], [], disabled, executionSettings);
+            yield return TestInstanceContainer.CreateTestInstance(instance, Method, [], [], disabled, executionSettings, _lifecycleMethodTracker);
         }
         else
         {
@@ -89,7 +92,7 @@ internal class TestInstanceContainerProvider : ITestInstanceContainerProvider
                     _runSettings.GlobalMinimumSampleSize);
                 var seed = TryParseSeed(_runSettings.Args);
                 if (seed.HasValue) executionSettings.Seed = seed;
-                yield return TestInstanceContainer.CreateTestInstance(instance, Method, propertyNames, variableValues, disabled, executionSettings);
+                yield return TestInstanceContainer.CreateTestInstance(instance, Method, propertyNames, variableValues, disabled, executionSettings, _lifecycleMethodTracker);
             }
         }
     }

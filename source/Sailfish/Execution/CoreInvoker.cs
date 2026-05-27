@@ -17,19 +17,21 @@ internal class CoreInvoker
     private readonly object _instance;
     private readonly List<MethodInfo> _iterationSetup;
     private readonly List<MethodInfo> _iterationTeardown;
+    private readonly LifecycleMethodTracker _lifecycleMethodTracker;
 
     private readonly MethodInfo _mainMethod;
     private readonly List<MethodInfo> _methodSetup;
     private readonly List<MethodInfo> _methodTeardown;
     private readonly PerformanceTimer _testCasePerformanceTimer;
 
-    public CoreInvoker(object instance, MethodInfo method, PerformanceTimer testCasePerformanceTimer)
+    public CoreInvoker(object instance, MethodInfo method, PerformanceTimer testCasePerformanceTimer, LifecycleMethodTracker? lifecycleMethodTracker = null)
     {
         _globalSetup = instance.FindMethodsDecoratedWithAttribute<SailfishGlobalSetupAttribute>();
         _globalTeardown = instance.FindMethodsDecoratedWithAttribute<SailfishGlobalTeardownAttribute>();
         _instance = instance;
         _iterationSetup = instance.FindMethodsDecoratedWithAttribute<SailfishIterationSetupAttribute>();
         _iterationTeardown = instance.FindMethodsDecoratedWithAttribute<SailfishIterationTeardownAttribute>();
+        _lifecycleMethodTracker = lifecycleMethodTracker ?? new LifecycleMethodTracker();
         _mainMethod = method;
         _methodSetup = instance.FindMethodsDecoratedWithAttribute<SailfishMethodSetupAttribute>();
         _methodTeardown = instance.FindMethodsDecoratedWithAttribute<SailfishMethodTeardownAttribute>();
@@ -54,7 +56,7 @@ internal class CoreInvoker
             var attribute = lifecycleMethod.GetCustomAttribute<TAttribute>();
             if (attribute is null) throw new SailfishException($"{nameof(TAttribute)}, was somehow missing");
             if (attribute.MethodNames.Length > 0 && !attribute.MethodNames.Contains(MainMethodName)) continue;
-            if (attribute.RunOnce && !LifecycleMethodTracker.TryClaim(_instance.GetType(), lifecycleMethod)) continue;
+            if (attribute.RunOnce && !_lifecycleMethodTracker.TryClaim(_instance.GetType(), lifecycleMethod)) continue;
             await lifecycleMethod.TryInvoke(_instance, cancellationToken).ConfigureAwait(false);
         }
     }
