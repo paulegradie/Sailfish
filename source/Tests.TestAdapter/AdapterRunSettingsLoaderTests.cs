@@ -6,6 +6,10 @@ using Xunit;
 
 namespace Tests.TestAdapter;
 
+// Serialize with sibling AdapterRunSettingsLoaderDefaultsTests — both mutate the
+// process-wide current working directory via Directory.SetCurrentDirectory, which races
+// catastrophically under xUnit's default class-parallel execution.
+[Collection("CwdMutatingAdapterRunSettingsLoader")]
 public class AdapterRunSettingsLoaderTests
 {
     [Fact]
