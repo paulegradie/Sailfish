@@ -62,6 +62,17 @@ ignore:
   - "source/PerformanceTests/**"
   - "source/AdaptiveSamplingQuickTest/**"
 
+  # Test-adapter wiring: VSTest entry-point, MediatR-style framework handlers, queue
+  # plumbing, and DI registrations. These integrate with external APIs
+  # (IFrameworkHandle, IMessageLogger, the MediatR pipeline) and are exercised by the
+  # [Sailfish] fixture classes in Tests.TestAdapter + the Tests.E2E.* projects, not
+  # by isolated unit tests. Excluding them keeps the coverage metric meaningful for
+  # the algorithm/domain code that can actually be unit-tested.
+  - "source/Sailfish.TestAdapter/TestExecutor.cs"
+  - "source/Sailfish.TestAdapter/Handlers/**"
+  - "source/Sailfish.TestAdapter/Queue/Implementation/**"
+  - "source/Sailfish.TestAdapter/Registrations/**"
+
 # Settings for custom coverage reporting
 yaml:
   min_version: "1.0.0"
