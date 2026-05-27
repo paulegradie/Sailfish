@@ -10,22 +10,16 @@ codecov:
 
 coverage:
   status:
-    project:
-      default:
-        # Set the minimum coverage percentage required
-        target: 83%
-        # Make this informational only - won't fail the build on minor drops
-        informational: true
-    patch:
-      default:
-        # Disable coverage percentage checks on diffs
-        enabled: no
+    # Disable both project and patch GitHub status checks entirely.
+    # Codecov still ingests coverage data and renders the PR comment / dashboard,
+    # but never posts a pass/fail status to the PR. This avoids spurious
+    # failures when tool upgrades nudge branch counting by fractions of a
+    # percent against an absolute target.
+    project: off
+    patch: off
 
   precision: 2 # Report coverage numbers with a precision of 2 decimal places
   round: down # Round coverage numbers down
-
-  # Define a threshold below which the coverage is considered poor
-  threshold: 1%
 
 comment:
   layout: "reach, diff, flags, files"
@@ -44,7 +38,7 @@ parsers:
       macro: no
 
 # Per-matrix-job flags. Each flag corresponds to a parallel test job in
-# .github/workflows/build-v3.0.yml. carryforward keeps the last known
+# .github/workflows/build-v4.0.yml. carryforward keeps the last known
 # coverage for a flag if its job fails or is skipped on a given commit,
 # so the badge stays stable.
 flags:
