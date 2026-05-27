@@ -1,4 +1,4 @@
-﻿name: Build Pipeline v3.0
+﻿name: Build Pipeline v4.0
 
 on:
   push:
