@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
 
     <PropertyGroup>
-        <TargetFrameworks>net8.0;net9.0;net10.0</TargetFrameworks>
+        <TargetFrameworks>net9.0;net10.0</TargetFrameworks>
         <ImplicitUsings>enable</ImplicitUsings>
         <Nullable>enable</Nullable>
         <LangVersion>latest</LangVersion>
@@ -9,9 +9,8 @@
 
     <ItemGroup>
         <!-- Use version compatible with each target framework -->
-        <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" Version="8.0.18" Condition="'$(TargetFramework)' == 'net8.0'" />
-        <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" Version="9.0.7" Condition="'$(TargetFramework)' == 'net9.0'" />
-        <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" Version="10.0.7" Condition="'$(TargetFramework)' == 'net10.0'" />
+        <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" Version="9.0.16" Condition="'$(TargetFramework)' == 'net9.0'" />
+        <PackageReference Include="Microsoft.AspNetCore.Mvc.Testing" Version="10.0.8" Condition="'$(TargetFramework)' == 'net10.0'" />
         <PackageReference Include="Shouldly" Version="4.3.0" />
     </ItemGroup>
     <ItemGroup>

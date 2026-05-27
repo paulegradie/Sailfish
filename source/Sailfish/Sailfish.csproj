@@ -8,7 +8,7 @@
             against your component or API. The general intention is to provide a simple tool that teams can use to write straight forward
             tests that assess the speed of your code, without weighing you down with all the extra ceremony.
         </Description>
-        <TargetFrameworks>net8.0;net9.0;net10.0</TargetFrameworks>
+        <TargetFrameworks>net9.0;net10.0</TargetFrameworks>
         <LangVersion>latest</LangVersion>
         <Nullable>enable</Nullable>
         <IsPackable>true</IsPackable>
@@ -25,17 +25,16 @@
 
     <ItemGroup>
         <PackageReference Include="MathNet.Numerics" Version="5.0.0"/>
-        <PackageReference Include="Autofac" Version="9.0.0" />
+        <PackageReference Include="Autofac" Version="9.1.0" />
         <PackageReference Include="CsvHelper" Version="33.1.0" />
-        <PackageReference Include="MediatR" Version="13.0.0" />
-        <PackageReference Include="MediatR.Extensions.Autofac.DependencyInjection" Version="13.1.0" />
-        <PackageReference Include="Microsoft.Extensions.Configuration" Version="9.0.7" />
-        <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="9.0.7" />
-        <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="9.0.7" />
-        <PackageReference Include="Perfolizer" Version="0.5.3" />
-        <PackageReference Include="System.Collections.Specialized" Version="4.3.0"/>
-        <PackageReference Include="System.Linq.Async" Version="6.0.3" />
-        <PackageReference Include="System.Runtime.Caching" Version="9.0.7" />
+        <PackageReference Include="MediatR" Version="14.1.0" />
+        <PackageReference Include="MediatR.Extensions.Autofac.DependencyInjection" Version="14.1.0" />
+        <PackageReference Include="Microsoft.Extensions.Configuration" Version="10.0.8" />
+        <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="10.0.8" />
+        <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="10.0.8" />
+        <PackageReference Include="Perfolizer" Version="0.7.1" />
+        <PackageReference Include="System.Linq.Async" Version="7.0.1" />
+        <PackageReference Include="System.Runtime.Caching" Version="10.0.8" />
     </ItemGroup>
 
     <ItemGroup>
