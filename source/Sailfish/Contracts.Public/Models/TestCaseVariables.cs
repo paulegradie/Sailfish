@@ -35,14 +35,9 @@ public class TestCaseVariables
 
     public TestCaseVariable? GetVariableIndex(int index)
     {
-        try
-        {
-            return Variables.ToArray()[index];
-        }
-        catch
-        {
-            return null;
-        }
+        // ElementAtOrDefault returns null for both negative and out-of-range indices,
+        // avoiding the exception-as-control-flow pattern previously used here.
+        return Variables.ElementAtOrDefault(index);
     }
 
     public TestCaseVariable GetVariableByName(string name)
