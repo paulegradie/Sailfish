@@ -44,8 +44,32 @@ public class ScaleFishLogSpacedRangeTests
     [Fact]
     public void GeometricSpacing_EndMustExceedStart()
     {
+        // start > end is invalid for geometric ratio computation.
         Should.Throw<System.ArgumentException>(
-            () => SailfishRangeVariableAttribute.SpacedRange(10, 10, 5, RangeSpacing.Linear).ToArray());
+            () => SailfishRangeVariableAttribute.SpacedRange(20, 10, 5, RangeSpacing.Geometric).ToArray());
+    }
+
+    [Fact]
+    public void GeometricSpacing_RejectsInfeasibleCount()
+    {
+        // 4 distinct geometrically-spaced integers in [1, 2] is impossible — only 1 and 2 exist.
+        Should.Throw<System.ArgumentException>(
+            () => SailfishRangeVariableAttribute.SpacedRange(1, 2, 4, RangeSpacing.Geometric).ToArray());
+    }
+
+    [Fact]
+    public void GeometricSpacing_NeverExceedsEnd()
+    {
+        // Dense (but feasible) packing — every value must lie within [start, end].
+        var values = SailfishRangeVariableAttribute.SpacedRange(1, 10, 5, RangeSpacing.Geometric).ToArray();
+        values.Length.ShouldBe(5);
+        values[0].ShouldBeGreaterThanOrEqualTo(1);
+        values[^1].ShouldBeLessThanOrEqualTo(10);
+        foreach (var v in values)
+        {
+            v.ShouldBeGreaterThanOrEqualTo(1);
+            v.ShouldBeLessThanOrEqualTo(10);
+        }
     }
 
     [Fact]

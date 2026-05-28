@@ -52,10 +52,13 @@ public class Exponential : ScaleFishModelFunction
             var dy = data[i].Y - bias;
             if (dy <= 0 || !double.IsFinite(dy)) continue;
 
-            // Delta-method weight: Var(log(y - b)) ≈ Var(y) / (y - b)^2 → weight = (y - b)^2 / Var(y)
+            // Delta-method weight: Var(log(y - b)) ≈ Var(y) / (y - b)^2 → weight = (y - b)^2 / Var(y).
+            // Preserve upstream zero weights (point gets excluded) and only repair non-finite values.
             var linW = weights?[i] ?? 1.0;
             var w = linW * dy * dy;
-            if (!double.IsFinite(w) || w <= 0) w = 1.0;
+            if (!double.IsFinite(w)) w = 1.0;
+            if (w < 0) w = 0;
+            if (w == 0) continue;
 
             sumW += w;
             sumWx += w * data[i].X;

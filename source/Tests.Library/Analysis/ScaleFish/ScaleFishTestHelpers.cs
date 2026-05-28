@@ -46,6 +46,10 @@ internal static class ScaleFishTestHelpers
         double relativeNoise,
         Random rng)
     {
+        if (sampleSize <= 0) throw new ArgumentException("sampleSize must be > 0", nameof(sampleSize));
+        if (relativeNoise < 0) throw new ArgumentException("relativeNoise must be ≥ 0", nameof(relativeNoise));
+        if (rng is null) throw new ArgumentNullException(nameof(rng));
+
         return xs
             .Select(x =>
             {
@@ -78,6 +82,10 @@ internal static class ScaleFishTestHelpers
         if (count < 2) throw new ArgumentException("count must be ≥ 2");
         if (min < 1) throw new ArgumentException("min must be ≥ 1");
         if (max <= min) throw new ArgumentException("max must be > min");
+        // Need at least `count` distinct integers in [min, max].
+        if (count > max - min + 1)
+            throw new ArgumentException(
+                $"Cannot generate {count} distinct geometrically-spaced integers in [{min}, {max}]");
 
         var ratio = Math.Pow((double)max / min, 1.0 / (count - 1));
         var result = new int[count];
@@ -85,7 +93,10 @@ internal static class ScaleFishTestHelpers
         for (var i = 0; i < count; i++)
         {
             var v = (int)Math.Round(min * Math.Pow(ratio, i));
+            // Force strict increase if rounding collapses adjacent points, but never exceed max.
+            // The feasibility check above guarantees we have room to bump within [min, max].
             if (v <= previous) v = previous + 1;
+            if (v > max) v = max;
             previous = v;
             result[i] = v;
         }

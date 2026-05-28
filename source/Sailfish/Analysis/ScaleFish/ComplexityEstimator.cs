@@ -69,6 +69,14 @@ public class ComplexityEstimator : IComplexityEstimator
     internal static PointEstimate? RankCandidates(ComplexityMeasurement[]? measurements)
     {
         if (measurements is null || measurements.Length < 2) return null;
+
+        // Filter NaN/inf observations once, upfront, so every candidate fits the same sample and the
+        // AICc denominator (n) matches the residual sum it's scoring. AnalyzeFitness also invalidates
+        // any family whose predictions overflow at the input X values, which keeps the effective
+        // fitted sample size identical across all valid candidates.
+        var cleaned = measurements.Where(m => double.IsFinite(m.Y)).ToArray();
+        if (cleaned.Length < 2) return null;
+
         var complexityFunctions = ComplexityReferences.GetComplexityFunctions();
 
         var fitnessResults = new List<(ScaleFishModelFunction Function, FitnessResult Fitness)>();
@@ -77,7 +85,7 @@ public class ComplexityEstimator : IComplexityEstimator
             FitnessResult fitness;
             try
             {
-                fitness = complexityFunction.AnalyzeFitness(measurements);
+                fitness = complexityFunction.AnalyzeFitness(cleaned);
             }
             catch
             {
@@ -90,7 +98,7 @@ public class ComplexityEstimator : IComplexityEstimator
 
         if (fitnessResults.Count == 0) return null;
 
-        var n = measurements.Length;
+        var n = cleaned.Length;
         var scored = fitnessResults
             .Select(r => new Scored(
                 r.Function,
@@ -143,6 +151,10 @@ public class ComplexityEstimator : IComplexityEstimator
             familyCounts.TryGetValue(winner.Name, out var count);
             familyCounts[winner.Name] = count + 1;
 
+            // Only record parameter samples from iterations that selected the same family as the
+            // point estimate. Scale/bias are family-specific units (e.g. a Linear scale and a Quadratic
+            // scale are not comparable), so mixing them across families would produce meaningless CIs.
+            if (winner.Name != bestFamilyName) continue;
             if (winner.FunctionParameters is null) continue;
             scaleSamples.Add(winner.FunctionParameters.Scale);
             biasSamples.Add(winner.FunctionParameters.Bias);

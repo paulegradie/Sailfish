@@ -70,6 +70,12 @@ public abstract class ScaleFishModelFunction
             .ToArray();
         var observations = cleanReferenceData.Select(x => x.Y).ToArray();
 
+        // A family that cannot evaluate Compute(...) at every input in the user's range (e.g. raw 2^x
+        // overflowing for large X) doesn't honestly fit the data. Invalidate rather than silently
+        // computing SSD on a truncated subset, which would otherwise give an artificially good fit.
+        if (fittedYs.Any(v => !v.IsFinite()))
+            return InvalidFitness();
+
         var pairs = observations
             .Zip(fittedYs)
             .Where(pair => pair.First.IsFinite() && pair.Second.IsFinite())
@@ -104,6 +110,11 @@ public abstract class ScaleFishModelFunction
     /// When every measurement carries replicate uncertainty, returns 1 / SE^2 weights normalised so they
     /// sum to N (preserves the residual scale used by downstream metrics). Returns null otherwise so the
     /// fit falls back to uniform weights — preserving identical behaviour for data without uncertainty.
+    ///
+    /// If any standard error is non-finite or non-positive (e.g. a perfectly stable replicate that
+    /// underflows to SE=0), we fall back to unweighted rather than silently dropping or boosting that
+    /// single point — a zero-weight point would lose its influence, and a 1.0-fallback would treat the
+    /// most certain measurement the same as the noisiest.
     /// </summary>
     internal static double[]? BuildVarianceWeights(ComplexityMeasurement[] data)
     {
@@ -114,7 +125,9 @@ public abstract class ScaleFishModelFunction
         for (var i = 0; i < data.Length; i++)
         {
             var se = data[i].StandardError;
-            raw[i] = se > 0 ? 1.0 / (se * se) : 0.0;
+            if (se <= 0 || !double.IsFinite(se))
+                return null;
+            raw[i] = 1.0 / (se * se);
         }
 
         var sum = raw.Sum();

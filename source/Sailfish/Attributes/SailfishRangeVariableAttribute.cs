@@ -139,6 +139,11 @@ public sealed class SailfishRangeVariableAttribute : Attribute, ISailfishVariabl
             throw new ArgumentException("start must be > 0 for geometric spacing");
         if (end <= start)
             throw new ArgumentException("end must be > start for geometric spacing");
+        // Geometric requires distinct integer values; we can't produce more points than the integer
+        // span allows without violating the inclusive [start, end] contract.
+        if (count > end - start + 1)
+            throw new ArgumentException(
+                $"Cannot generate {count} distinct geometrically-spaced integers in [{start}, {end}]. Increase end, decrease count, or use explicit values via SailfishVariableAttribute.");
 
         var ratio = Math.Pow((double)end / start, 1.0 / (count - 1));
         var previous = int.MinValue;
@@ -146,7 +151,10 @@ public sealed class SailfishRangeVariableAttribute : Attribute, ISailfishVariabl
         {
             var raw = start * Math.Pow(ratio, i);
             var v = (int)Math.Round(raw);
-            if (v <= previous) v = previous + 1; // keep strictly increasing if rounding collapses two adjacent points
+            // Force strict increase (rounding can collapse adjacent points) but never exceed end.
+            // The feasibility check above guarantees there is room to bump within [start, end].
+            if (v <= previous) v = previous + 1;
+            if (v > end) v = end;
             previous = v;
             yield return v;
         }

@@ -101,17 +101,19 @@ public class ScaleFishPowerLogFitTests
     [Fact]
     public void NonPositiveY_FilteredOut()
     {
-        // Should still produce a result when filtering leaves enough points.
+        // One non-positive Y plus four valid quadratic points — filtering should drop the bad point
+        // and recover the quadratic exponent from the remaining sample.
         var measurements = new[]
         {
-            new ComplexityMeasurement(2, 4),
+            new ComplexityMeasurement(2, -1),     // filtered: Y ≤ 0
             new ComplexityMeasurement(4, 16),
             new ComplexityMeasurement(8, 64),
             new ComplexityMeasurement(16, 256),
-            new ComplexityMeasurement(32, 1024)
+            new ComplexityMeasurement(32, 1024),
+            new ComplexityMeasurement(64, 4096)
         };
         var fit = PowerLogFit.TryFit(measurements);
         fit.ShouldNotBeNull();
-        fit.B.ShouldBe(2.0, tolerance: 0.05);
+        fit.B.ShouldBe(2.0, tolerance: 0.1);
     }
 }

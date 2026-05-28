@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using MathNet.Numerics.LinearAlgebra;
 
@@ -11,6 +12,28 @@ namespace Sailfish.Analysis.ScaleFish.CurveFitting;
 /// </summary>
 public class PowerLogFit
 {
+    private readonly struct Row
+    {
+        public Row(double x, double y, double dy, double logX, double logLogX, double logDy, double weight)
+        {
+            X = x;
+            Y = y;
+            Dy = dy;
+            LogX = logX;
+            LogLogX = logLogX;
+            LogDy = logDy;
+            Weight = weight;
+        }
+
+        public double X { get; }
+        public double Y { get; }
+        public double Dy { get; }
+        public double LogX { get; }
+        public double LogLogX { get; }
+        public double LogDy { get; }
+        public double Weight { get; }
+    }
+
     /// <summary>
     /// Fits the continuous model. Returns null when there aren't enough usable points
     /// (need at least 4 with x &gt; 1 and y &gt; 0), or when the fit is numerically degenerate.
@@ -25,27 +48,23 @@ public class PowerLogFit
         var minY = positiveYs.Min();
         var d = minY > 0 ? minY * 0.1 : 0.0;
 
-        var rows = data
-            .Select((m, idx) => new
-            {
-                m.X,
-                Dy = m.Y - d,
-                W = weights?[idx] ?? 1.0,
-                Index = idx
-            })
-            .Where(r => r.X > 1.0 && r.Dy > 0)
-            .Select(r =>
-            {
-                var logX = Math.Log(r.X);
-                if (logX <= 0) return (Usable: false, LogX: 0.0, LogLogX: 0.0, LogDy: 0.0, W: 0.0, Dy: 0.0);
-                var logLogX = Math.Log(logX);
-                if (!double.IsFinite(logLogX)) return (Usable: false, LogX: 0.0, LogLogX: 0.0, LogDy: 0.0, W: 0.0, Dy: 0.0);
-                return (Usable: true, LogX: logX, LogLogX: logLogX, LogDy: Math.Log(r.Dy), W: r.W, r.Dy);
-            })
-            .Where(r => r.Usable)
-            .ToArray();
+        var rows = new List<Row>(data.Length);
+        for (var idx = 0; idx < data.Length; idx++)
+        {
+            var m = data[idx];
+            var dy = m.Y - d;
+            if (m.X <= 1.0 || dy <= 0 || !double.IsFinite(dy)) continue;
 
-        if (rows.Length < 4) return null;
+            var logX = Math.Log(m.X);
+            if (logX <= 0) continue;
+
+            var logLogX = Math.Log(logX);
+            if (!double.IsFinite(logLogX)) continue;
+
+            rows.Add(new Row(m.X, m.Y, dy, logX, logLogX, Math.Log(dy), weights?[idx] ?? 1.0));
+        }
+
+        if (rows.Count < 4) return null;
 
         // Weighted normal equations for the linear model:
         //     log(y - d) = log(a) + b·log(x) + c·log(log(x))
@@ -53,11 +72,15 @@ public class PowerLogFit
         // weight per residual in log-space ≈ var(y)·(y - d)^(-2)·... → in practice use linear weight * (y - d)^2
         var ata = Matrix<double>.Build.Dense(3, 3);
         var atb = Matrix<double>.Build.Dense(3, 1);
+        var usedRows = new List<Row>(rows.Count);
         foreach (var r in rows)
         {
-            var w = r.W * r.Dy * r.Dy;
-            if (!double.IsFinite(w) || w <= 0) w = 1.0;
+            var w = r.Weight * r.Dy * r.Dy;
+            // Preserve upstream zero weights (excluded points) and only repair non-finite values.
+            if (!double.IsFinite(w)) w = 1.0;
+            if (w <= 0) continue;
 
+            usedRows.Add(r);
             double[] basis = { 1.0, r.LogX, r.LogLogX };
             for (var i = 0; i < 3; i++)
             {
@@ -68,6 +91,8 @@ public class PowerLogFit
                 atb[i, 0] += w * basis[i] * r.LogDy;
             }
         }
+
+        if (usedRows.Count < 4) return null;
 
         // Determinant check (Cholesky-friendly SPD matrix should have positive determinant)
         if (Math.Abs(ata.Determinant()) < 1e-30) return null;
@@ -90,15 +115,16 @@ public class PowerLogFit
         if (!double.IsFinite(a) || !double.IsFinite(b) || !double.IsFinite(c))
             return null;
 
-        // Compute residual SS and predicted-y R^2 in original y-space using the fitted (a, b, c, d).
+        // Compute R^2 on the same sample that was actually fit. Mixing in filtered-out points (x ≤ 1
+        // or non-finite predictions) makes yMean/ssTot inconsistent with ssRes and can collapse R^2.
         double ssRes = 0, ssTot = 0;
-        var yMean = data.Average(m => m.Y);
-        foreach (var m in data)
+        var yMean = usedRows.Average(r => r.Y);
+        foreach (var r in usedRows)
         {
-            var pred = a * Math.Pow(m.X, b) * Math.Pow(Math.Log(Math.Max(m.X, 1.0001)), c) + d;
+            var pred = a * Math.Pow(r.X, b) * Math.Pow(r.LogX, c) + d;
             if (!double.IsFinite(pred)) continue;
-            ssRes += (m.Y - pred) * (m.Y - pred);
-            ssTot += (m.Y - yMean) * (m.Y - yMean);
+            ssRes += (r.Y - pred) * (r.Y - pred);
+            ssTot += (r.Y - yMean) * (r.Y - yMean);
         }
         var r2 = ssTot > 0 ? 1.0 - ssRes / ssTot : 0.0;
 

@@ -64,10 +64,13 @@ public class Factorial : ScaleFishModelFunction
             var logFact = SpecialFunctions.GammaLn(data[i].X + 1.0);
             if (!double.IsFinite(logFact)) continue;
 
-            // Delta-method weight: Var(log(y - b)) ≈ Var(y) / (y - b)^2
+            // Delta-method weight: Var(log(y - b)) ≈ Var(y) / (y - b)^2.
+            // Preserve upstream zero weights (point gets excluded) and only repair non-finite values.
             var linW = weights?[i] ?? 1.0;
             var w = linW * dy * dy;
-            if (!double.IsFinite(w) || w <= 0) w = 1.0;
+            if (!double.IsFinite(w)) w = 1.0;
+            if (w < 0) w = 0;
+            if (w == 0) continue;
 
             sumW += w;
             sumWLogFact += w * logFact;
