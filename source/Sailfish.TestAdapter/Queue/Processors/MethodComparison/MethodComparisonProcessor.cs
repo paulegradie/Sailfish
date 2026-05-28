@@ -92,6 +92,20 @@ internal class MethodComparisonProcessor : TestCompletionQueueProcessorBase
 
         if (!string.IsNullOrEmpty(comparisonGroup))
         {
+            // Failed comparison members can never participate in N×N analysis.
+            // Adding them to a batch would either keep the batch incomplete
+            // forever (when their siblings never run, e.g., a failing
+            // [SailfishGlobalSetup]) or pollute the comparison output with
+            // zero-sample data. Leave such messages alone here so that
+            // FrameworkPublishingProcessor publishes them as Failed.
+            if (!message.TestResult.IsSuccess)
+            {
+                Logger.Log(LogLevel.Information,
+                    "Comparison method '{0}' failed - skipping batch processing; framework will publish a Failed outcome",
+                    message.TestCaseId);
+                return;
+            }
+
             Logger.Log(LogLevel.Information,
                 "Received test completion for comparison group '{0}': {1}",
                 comparisonGroup, message.TestCaseId);

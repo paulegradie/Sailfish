@@ -305,6 +305,28 @@ public class FrameworkPublishingProcessorTests
             Arg.Any<CancellationToken>());
     }
 
+    [Fact]
+    public async Task ProcessTestCompletion_WithFailedComparisonMethod_ShouldPublishFailureImmediately()
+    {
+        // Regression test for #229: when a [SailfishComparison] member fails
+        // (e.g., because [SailfishGlobalSetup] threw), it must NOT be deferred
+        // to MethodComparisonBatchProcessor. The failed member can never
+        // contribute to an N×N comparison and its sibling may never run, so
+        // the batch would stay incomplete and the IDE would see
+        // TestOutcome.None ("Outcome value None is not understood" in Rider).
+        // Arrange
+        var message = CreateFailedTestMessage();
+        message.Metadata["ComparisonGroup"] = "Group1";
+
+        // Act
+        await _processor.ProcessTestCompletion(message, CancellationToken.None);
+
+        // Assert: published immediately with StatusCode.Failure.
+        await _mediator.Received(1).Publish(
+            Arg.Is<FrameworkTestCaseEndNotification>(n => n.StatusCode == StatusCode.Failure),
+            Arg.Any<CancellationToken>());
+    }
+
     #endregion
 
     #region Duration Calculation Tests

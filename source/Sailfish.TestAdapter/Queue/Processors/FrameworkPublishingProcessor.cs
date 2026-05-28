@@ -313,6 +313,15 @@ public class FrameworkPublishingProcessor : TestCompletionQueueProcessorBase
     /// <returns>True if this is a comparison method, false otherwise.</returns>
     private static bool IsComparisonMethod(TestCompletionQueueMessage message)
     {
+        // A failed [SailfishComparison] test case can never contribute to an N×N
+        // comparison: there are no usable timing samples and no sibling will ever
+        // arrive that "completes" the batch. Treating it as a comparison method
+        // would defer publishing to MethodComparisonBatchProcessor, where it
+        // could get stranded — VSTest/Rider would then see TestOutcome.None
+        // ("Outcome value None is not understood"). Publish the failure here
+        // immediately and let the batch processor handle only successful members.
+        if (!message.TestResult.IsSuccess) return false;
+
         // Check if the message has comparison metadata
         var hasComparisonGroup = message.Metadata.TryGetValue("ComparisonGroup", out var groupObj) &&
                                  groupObj is string group && !string.IsNullOrEmpty(group);
