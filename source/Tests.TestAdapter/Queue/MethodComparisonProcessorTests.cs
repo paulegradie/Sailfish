@@ -336,7 +336,7 @@ public class MethodComparisonProcessorTests
 
         // Assert
         _logger.Received().Log(LogLevel.Debug,
-            Arg.Is<string>(s => s.Contains("insufficient methods")),
+            Arg.Is<string>(s => s.Contains("insufficient successful methods")),
             Arg.Any<object[]>());
     }
 
@@ -430,6 +430,99 @@ public class MethodComparisonProcessorTests
         // Assert: no suppression marker, no batch lookup.
         message.Metadata.ShouldNotContainKey("SuppressIndividualOutput");
         await _batchingService.DidNotReceive().GetBatchAsync(Arg.Any<string>(), Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task ProcessTestCompletion_WithFailedSiblingInBatch_ShouldNotTriggerEarlyProcessing()
+    {
+        // Regression test for PR #230 follow-up: when one member of a
+        // comparison group failed and only ONE successful sibling has arrived
+        // so far, the batch is NOT ready. Previously CheckAndProcessCompleteBatch
+        // counted the failed member toward the "ready when >= 2" threshold,
+        // so the single survivor fired ProcessBatch early; the IsSuccess
+        // filter inside ProcessBatch then collapsed the group to one method,
+        // publishing the survivor as an unenhanced single-method result.
+        // When the LATER successful sibling arrived, ProcessBatch ran again
+        // and republished the same survivor — now with comparison output —
+        // producing a duplicate framework notification. Counting only
+        // successful members in the readiness check prevents the early fire.
+        // Arrange: batch already contains a failed member; a successful one
+        // is about to arrive.
+        var failed = CreateTestMessage("FailedMethod", "Group1");
+        failed.TestResult.IsSuccess = false;
+        failed.TestResult.ExceptionMessage = "boom";
+
+        var passing = CreateTestMessage("PassingMethod", "Group1");
+
+        var batch = new TestCaseBatch
+        {
+            BatchId = "Comparison_TestClass1_Group1",
+            TestCases = new List<TestCompletionQueueMessage> { failed, passing },
+            Status = BatchStatus.Pending
+        };
+        _batchingService.GetBatchAsync(Arg.Any<string>(), Arg.Any<CancellationToken>())
+            .Returns(batch);
+
+        // Act
+        await _processor.ProcessTestCompletion(passing, CancellationToken.None);
+
+        // Assert: no early framework notification — ProcessBatch did not run,
+        // because there is still only one successful member in the group.
+        await _mediator.DidNotReceive().Publish(
+            Arg.Any<FrameworkTestCaseEndNotification>(),
+            Arg.Any<CancellationToken>());
+        _logger.Received().Log(LogLevel.Debug,
+            Arg.Is<string>(s => s.Contains("insufficient successful methods")),
+            Arg.Any<object[]>());
+    }
+
+    [Fact]
+    public async Task ProcessTestCompletion_WithFailedSiblingAndTwoSurvivors_FiresOnceWithComparison()
+    {
+        // Companion to the test above: with a failed sibling already buffered
+        // and TWO successful members in the batch, the comparison group is
+        // ready and ProcessBatch should run exactly once. The failed member
+        // is filtered out by ProcessBatch, and the two survivors get a single
+        // N×N comparison publish — never an "unenhanced then enhanced"
+        // double publish on the first survivor.
+        // Arrange
+        var failed = CreateTestMessage("FailedMethod", "Group1");
+        failed.TestResult.IsSuccess = false;
+        failed.TestResult.ExceptionMessage = "boom";
+
+        var survivor1 = CreateTestMessage("Survivor1", "Group1");
+        var survivor2 = CreateTestMessage("Survivor2", "Group1");
+
+        var batch = new TestCaseBatch
+        {
+            BatchId = "Comparison_TestClass1_Group1",
+            TestCases = new List<TestCompletionQueueMessage> { failed, survivor1, survivor2 },
+            Status = BatchStatus.Pending
+        };
+        _batchingService.GetBatchAsync(Arg.Any<string>(), Arg.Any<CancellationToken>())
+            .Returns(batch);
+
+        // Act: the second survivor flows through the processor, triggering
+        // the comparison once both successful members are present.
+        await _processor.ProcessTestCompletion(survivor2, CancellationToken.None);
+
+        // Assert: each survivor was published exactly once, and the failed
+        // member was not republished here (FrameworkPublishingProcessor
+        // already published it as Failed).
+        await _mediator.Received(1).Publish(
+            Arg.Is<FrameworkTestCaseEndNotification>(n =>
+                n.TestCase.FullyQualifiedName.EndsWith("Survivor1") &&
+                n.StatusCode == StatusCode.Success),
+            Arg.Any<CancellationToken>());
+        await _mediator.Received(1).Publish(
+            Arg.Is<FrameworkTestCaseEndNotification>(n =>
+                n.TestCase.FullyQualifiedName.EndsWith("Survivor2") &&
+                n.StatusCode == StatusCode.Success),
+            Arg.Any<CancellationToken>());
+        await _mediator.DidNotReceive().Publish(
+            Arg.Is<FrameworkTestCaseEndNotification>(n =>
+                n.TestCase.FullyQualifiedName.EndsWith("FailedMethod")),
+            Arg.Any<CancellationToken>());
     }
 
     #endregion
