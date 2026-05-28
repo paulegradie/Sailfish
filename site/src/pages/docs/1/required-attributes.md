@@ -11,7 +11,7 @@ Apply the `[Sailfish]` attribute to the class.
 ```csharp
 [Sailfish(
     SampleSize = 45,
-    NumWarmupIterations = 2,
+    NumWarmupIterations = 3,
     DisableOverheadEstimation = false,
     Disabled = false)]
 public class AMostBasicTest { ... }
@@ -24,7 +24,7 @@ public class AMostBasicTest { ... }
     UseAdaptiveSampling = true,
     TargetCoefficientOfVariation = 0.05,
     MaximumSampleSize = 1000,
-    NumWarmupIterations = 2)]
+    NumWarmupIterations = 3)]
 public class AdaptiveTest { ... }
 ```
 
@@ -38,7 +38,7 @@ These parameters control traditional fixed-sample-size testing.
 
 Sets the number of times the SailfishMethod will be invoked. This number should be as high as you can tolerate. Larger sample size improves the quality of the result.
 
-**Default:** 20
+**Default:** 3
 **Range:** 2 to int.MaxValue
 **Note:** Ignored when `UseAdaptiveSampling = true`
 
@@ -46,7 +46,7 @@ Sets the number of times the SailfishMethod will be invoked. This number should 
 
 Sets the number of times the SailfishMethod will be invoked before timing begins. This includes invocation of the SailfishIterationSetup and SailfishIterationTeardown lifecycle methods.
 
-**Default:** 2
+**Default:** 3
 **Range:** 0 to int.MaxValue
 **Note:** Applies to both fixed and adaptive sampling
 
@@ -118,14 +118,32 @@ public class DetailedAnalysis { ... }
 - **Default (1000):** Sufficient for most scenarios
 - **Higher (1500-3000):** For noisy workloads that need more samples to converge
 
-{% callout title="Additional Adaptive Parameters" type="note" %}
-The following adaptive sampling parameters are available via global configuration using `RunSettingsBuilder` but cannot be set per-class:
-- **MinimumSampleSize:** Minimum samples before checking convergence (default: 10)
-- **ConfidenceLevel:** Confidence level for CI width calculation (default: 0.95)
-- **MaxConfidenceIntervalWidth:** Maximum relative CI width threshold (default: 0.20)
-- **UseRelativeConfidenceInterval:** Whether to use relative CI width (default: true)
+#### MinimumSampleSize
+Minimum number of samples to collect before checking convergence.
 
-See [Adaptive Sampling](/docs/1/adaptive-sampling) for details on global configuration.
+- Default: `10`
+- Type: `int`
+
+#### ConfidenceLevel
+Confidence level used for interval estimation. Affects the CI width gate during adaptive sampling and the per‑sample CI emitted in outputs.
+
+- Default: `0.95`
+- Type: `double`
+
+#### MaxConfidenceIntervalWidth
+Maximum allowed confidence interval width. Interpreted as a relative width (fraction of the mean) when `UseRelativeConfidenceInterval = true`.
+
+- Default: `0.20` (20%)
+- Type: `double`
+
+#### UseRelativeConfidenceInterval
+When `true` (default), `MaxConfidenceIntervalWidth` is treated as a fraction of the mean; when `false`, it is interpreted as an absolute width in the same units as the measurement.
+
+- Default: `true`
+- Type: `bool`
+
+{% callout title="Global counterparts" type="note" %}
+Each of these knobs has a matching `WithGlobalX` setter on `RunSettingsBuilder`. The builder’s global value overrides per-class attribute values when set. See [Adaptive Sampling](/docs/1/adaptive-sampling) for global configuration details.
 {% /callout %}
 
 ---
@@ -147,6 +165,34 @@ Tests are discoverable but ignored when set to true. Useful for temporarily disa
 
 **Default:** `false`
 **Type:** `bool`
+
+#### EnableDefaultDiagnosers
+
+Enables lightweight default diagnosers (memory/GC/threading snapshots) for this class.
+
+**Default:** `false`
+**Type:** `bool`
+
+#### OutlierStrategy
+
+Preferred outlier handling strategy when configurable detection is enabled.
+
+**Default:** `OutlierStrategy.RemoveUpper`
+**Type:** `OutlierStrategy` (`None`, `RemoveAll`, `RemoveUpper`, `Adaptive`)
+
+#### UseConfigurableOutlierDetection
+
+Opt-in to settings-driven outlier handling for this class. When `false` (default), the legacy detector is used to preserve backward compatibility. See [Outlier Handling](/docs/1/outlier-handling).
+
+**Default:** `false`
+**Type:** `bool`
+
+```csharp
+[Sailfish(
+    UseConfigurableOutlierDetection = true,
+    OutlierStrategy = OutlierStrategy.Adaptive)]
+public class NoisyTest { ... }
+```
 
 ---
 
@@ -201,6 +247,31 @@ Apply the [SailfishMethod] attribute to a method you wish to time.
 [SailfishMethod]
 public async Task SailfishMethod(CancellationToken ct) => ...
 ```
+
+#### Order
+Sets the execution order for a SailfishMethod within the class. Ordered methods always run before unordered methods. Among unordered methods, order is not guaranteed.
+
+- Default: `int.MaxValue` (unordered)
+- Type: `int`
+
+#### Disabled
+When `true`, the method is discoverable but skipped at execution time.
+
+- Default: `false`
+- Type: `bool`
+
+#### DisableComplexity
+Disables ScaleFish complexity analysis for this specific method.
+
+- Default: `false`
+- Type: `bool`
+
+#### DisableOverheadEstimation
+Disables overhead estimation for this specific method (overrides the class-level value when set). Useful for very fast methods where the overhead-calibration cost is dominant.
+
+- Default: `false`
+- Type: `bool`
+
 ---
 
 ### Injecting Cancellation Tokens

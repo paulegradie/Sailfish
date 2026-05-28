@@ -18,15 +18,36 @@ This outputs a model file and a results file once your run is complete. The mode
 The first thing you'll need to do when enabling **ScaleFish** is to specify a SailfishVariable or SailfishRangeVariable and set the optional complexity boolean to true.
 
 ```csharp
-[SailfishRangeVariable(true, start: 5, 4, 6)]
+// SailfishRangeVariable: (bool scaleFish, int start, int count, int step = 1)
+// produces { 5, 11, 17, 23 } — start=5, count=4, step=6
+[SailfishRangeVariable(scaleFish: true, 5, 4, 6)]
 public int N { get; set; }
 
 // or
 
-[SailfishVariable(true, 1, 10, 50, 100, 500, 1000)]
+// SailfishVariable: (bool scaleFish, params int[] n) — requires at least 3 int values
+[SailfishVariable(scaleFish: true, 1, 10, 50, 100, 500, 1000)]
 public int N { get; set; }
-
 ```
+
+ScaleFish only accepts `int` variables (because models map a numeric size N to elapsed time), and the ScaleFish overloads require **at least three values** so the regression has enough points to fit. Accuracy improves with more values spread over a wider range.
+
+### Supported complexity classes
+
+Sailfish fits each variable against the following functions and picks the best/next‑best fit:
+
+| Name        | BigO          | Quality   |
+| ----------- | ------------- | --------- |
+| Linear      | O(n)          | Good      |
+| NLogN       | O(nLog(n))    | Good      |
+| LogLinear   | O(nlog\_2(n)) | Okay      |
+| Quadratic   | O(n^2)        | Bad       |
+| Cubic       | O(n^3)        | Very Bad  |
+| SqrtN       | O(sqrt(n))    | Very Good |
+| Exponential | O(2^n)        | Very Bad  |
+| Factorial   | O(n!)         | Worst!    |
+
+Note: there is no `Constant` / `O(1)` model and no isolated `Logarithmic` / `O(log n)` model — pure-constant data will still report the closest fit (typically Linear with a near‑zero slope).
 
 If using Sailfish as a test project, you can create a `.sailfish.json` file in the root of your test project (next to your `.csproj` file). This file can hold various configuration settings. When found, SailDiff will be automatically run. If any compatible setting is omitted, a sensible default will be used.
 
@@ -40,8 +61,8 @@ If using Sailfish as a test project, you can create a `.sailfish.json` file in t
     "SampleSizeOverride": 30
   },
   "SailDiffSettings": {
-    "TestType": "TTest",
-    "Alpha": 0.005,
+    "TestType": "Test",
+    "Alpha": 0.001,
     "Disabled": false
   },
   "ScaleFishSettings": {},
@@ -130,7 +151,7 @@ Sailfish provides basic tools for loading models and making predictions.
 ```csharp
 var model = ModelLoader
   .LoadModelFile("ScalefishModels_#####_####.json")
-  .GetScalefishModel(
+  .GetScaleFishModel(
     nameof(ScaleFishExample),
     nameof(ScaleFishExample.Linear),
     nameof(ScaleFishExample.N));

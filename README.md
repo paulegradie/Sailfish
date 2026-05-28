@@ -100,29 +100,19 @@ Note: Global settings act as defaults/overrides and can be combined with attribu
 ## Outlier Handling (defaults + opt‑in)
 By default, Sailfish removes both upper and lower outliers (Tukey fences) to preserve historical behavior.
 
-To opt into configurable outlier handling per run, enable the flag on ExecutionSettings and choose a strategy:
+To opt into configurable outlier handling, set the flag on the `[Sailfish]` attribute (per class) or on `RunSettingsBuilder` (globally).
+
+Per class:
 
 ````csharp
-var settings = new ExecutionSettings(asCsv: false, asConsole: true, asMarkdown: true, sampleSize: 20, numWarmupIterations: 0)
-{
+[Sailfish(
     UseConfigurableOutlierDetection = true,
     OutlierStrategy = OutlierStrategy.RemoveUpper // or RemoveLower, RemoveAll, DontRemove, Adaptive
-};
-
-// When converting programmatically
-var result = PerformanceRunResult.ConvertFromPerfTimer(testCaseId, performanceTimer, settings);
+)]
+public class MyTest { }
 ````
 
-- Legacy default (no behavior change): UseConfigurableOutlierDetection = false → RemoveAll
-- Strategies:
-  - RemoveUpper: remove only upper-fence outliers
-  - RemoveLower: remove only lower-fence outliers
-  - RemoveAll: remove both sides (legacy behavior)
-  - DontRemove: keep all data points, still reporting detected outliers
-  - Adaptive: choose based on which side(s) have detected outliers
-
-
-Global configuration for an entire run via RunSettingsBuilder:
+Globally (overrides per-class values):
 
 ````csharp
 var run = RunSettingsBuilder.CreateBuilder()
@@ -130,7 +120,13 @@ var run = RunSettingsBuilder.CreateBuilder()
     .Build();
 ````
 
-Note: Attribute-level knobs for outlier strategy are not yet exposed; programmatic configuration is available for advanced scenarios and runners that surface ExecutionSettings.
+- Legacy default (no behavior change): `UseConfigurableOutlierDetection = false` → `RemoveAll`
+- Strategies:
+  - `RemoveUpper`: remove only upper-fence outliers
+  - `RemoveLower`: remove only lower-fence outliers
+  - `RemoveAll`: remove both sides (legacy behavior)
+  - `DontRemove`: keep all data points, still reporting detected outliers
+  - `Adaptive`: choose based on which side(s) have detected outliers
 
 ## Reproducible Run Order (Seed)
 Set a seed to make run order deterministic across test classes, methods, and variable sets:
@@ -145,10 +141,17 @@ var run = RunSettingsBuilder.CreateBuilder()
 - The seed is surfaced in the Markdown header and in the Reproducibility Manifest
 
 ## Installation
+
+Requires **.NET 9** or **.NET 10**.
+
 Install via NuGet:
 
 ```bash
+# For a class-library / programmatic runner
 dotnet add package Sailfish
+
+# For tests that should be discovered by Visual Studio / Rider Test Explorer
+dotnet add package Sailfish.TestAdapter
 ```
 
 ## IDE setup
@@ -188,4 +191,4 @@ See the full documentation for output details and examples: https://paulgradie.c
 Contributions are welcome! Feel free to open issues and pull requests.
 
 ## License
-This project is licensed. See the LICENSE file in the repository for details.
+Sailfish is released under the [MIT license](LICENSE).

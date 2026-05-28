@@ -119,6 +119,7 @@ public record TestClassCompletedNotification(
 ## TestCaseDisabledNotification
 
 - A notification that signals that the current test case is disabled
+- Currently declared `internal` — consumers cannot subscribe directly. If you need this hook publicly, please open an issue.
 
 ```csharp
 internal record TestCaseDisabledNotification(
@@ -177,15 +178,8 @@ public record ScaleFishAnalysisCompleteNotification(
 - Used to write
 
 ```csharp
-public class SailDiffAnalysisCompleteNotification : INotification
-{
-    public IEnumerable<TestCaseResults> TestCaseResults { get; }
-    public string ResultsAsMarkdown { get; }
-
-    public SailDiffAnalysisCompleteNotification(IEnumerable<TestCaseResults> testCaseResults, string resultsAsMarkdown)
-    {
-        TestCaseResults = testCaseResults;
-        ResultsAsMarkdown = resultsAsMarkdown;
-    }
-}
+public record SailDiffAnalysisCompleteNotification(
+    IEnumerable<SailDiffResult> TestCaseResults,
+    string ResultsAsMarkdown)
+    : INotification;
 ```

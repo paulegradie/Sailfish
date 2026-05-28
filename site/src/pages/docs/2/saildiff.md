@@ -41,8 +41,8 @@ If using Sailfish as a test project, you can create a `.sailfish.json` file in t
     "SampleSizeOverride": 30
   },
   "SailDiffSettings": {
-    "TestType": "TTest",
-    "Alpha": 0.005,
+    "TestType": "Test",
+    "Alpha": 0.001,
     "Disabled": false
   },
   "ScaleFishSettings": {},
@@ -61,18 +61,18 @@ If using Sailfish as a test project, you can create a `.sailfish.json` file in t
 
 Description: Specifies an enum type for a statistical test. One of:
 
-  - TwoSampleWilcoxonSignedRankTest
+  - TwoSampleWilcoxonSignedRankTest (**Default**)
   - WilcoxonRankSumTest
   - KolmogorovSmirnovTest
-  - TTest (**Default**)
+  - Test (Student's t‑test)
 
-
+Note: the JSON value must match the enum member exactly — use `"Test"` (not `"TTest"`) when selecting the t‑test.
 
 **Alpha**
 
 Description: Threshold for significance detection. (Aka 'PValue threshold').
 
-Default: 0.005
+Default: 0.001 (library) / 0.0001 (test adapter)
 
 **Disabled**
 
@@ -86,10 +86,10 @@ Default: false
 ```
 Statistical Test
 ----------------
-Test Used:       TTest
-PVal Threshold:  0.005
+Test Used:       Test
+PVal Threshold:  0.001
 PValue:          0.0528963431
-Change:          No Change  (reason: 0.0528963431 > 0.005)
+Change:          No Change  (reason: 0.0528963431 > 0.001)
 
 |             | Before (ms) | After (ms) |
 | ---         | ---         | ---        |
@@ -111,17 +111,17 @@ The Mean and median are both presented alongside a PValue and Change description
 You may use the `RunSettingsBuilder` to configure SailDiff before running.
 
 ```csharp
-var settings = new SailfDiffSettings(
+var sailDiffSettings = new SailDiffSettings(
     alpha: 0.001,
     round: 3,
     useOutlierDetection: true,
-    testType: TestType.TTest,
+    testType: TestType.Test,
     maxDegreeOfParallelism: 4,
     disableOrdering: false);
 
-var settings = RunSettingsBuilder
+var runSettings = RunSettingsBuilder
     .CreateBuilder()
-    .WithSailDiff(settings)
+    .WithSailDiff(sailDiffSettings)
     .Build();
 ```
 
@@ -138,10 +138,10 @@ The flow of the analysis is
 1. `ReadInBeforeAndAfterDataRequest`
 1. Saildiff
 
-This flow shows that there are two points at which you can minipulate the data inputs:
+This flow shows that there are two points at which you can manipulate the data inputs:
 
-- IRequestHandler<BeforeAndAfterFileLocationRequest, BeforeAndAfterFileLocationResponse>
-- IRequestHandler<ReadInBeforeAndAfterDataCommand, ReadInBeforeAndAfterDataResponse>
+- `IRequestHandler<BeforeAndAfterFileLocationRequest, BeforeAndAfterFileLocationResponse>`
+- `IRequestHandler<ReadInBeforeAndAfterDataRequest, ReadInBeforeAndAfterDataResponse>`
 
 
 ### Runtime API (in-memory TestData)
@@ -163,26 +163,27 @@ Notes:
 
 ```csharp
 internal class SailfishBeforeAndAfterFileLocationHandler
-    : IRequestHandler<BeforeAndAfterFileLocationCommand, BeforeAndAfterFileLocationResponse>
+    : IRequestHandler<BeforeAndAfterFileLocationRequest, BeforeAndAfterFileLocationResponse>
 {
+    private readonly IRunSettings runSettings;
     private readonly ITrackingFileDirectoryReader trackingFileDirectoryReader;
 
     public SailfishBeforeAndAfterFileLocationHandler(
         IRunSettings runSettings,
         ITrackingFileDirectoryReader trackingFileDirectoryReader)
     {
+        this.runSettings = runSettings;
         this.trackingFileDirectoryReader = trackingFileDirectoryReader;
-        this.runSettings = runSettings
     }
 
     public Task<BeforeAndAfterFileLocationResponse> Handle(
-        BeforeAndAfterFileLocationCommand request,
+        BeforeAndAfterFileLocationRequest request,
         CancellationToken cancellationToken)
     {
         var trackingFiles = trackingFileDirectoryReader
-        .FindTrackingFilesInDirectoryOrderedByLastModified(
-            runSettings.GetRunSettingsTrackingDirectoryPath(),
-            ascending: false);
+            .FindTrackingFilesInDirectoryOrderedByLastModified(
+                runSettings.GetRunSettingsTrackingDirectoryPath(),
+                ascending: false);
 
         // Consider reading data from a:
         // - database
@@ -192,8 +193,8 @@ internal class SailfishBeforeAndAfterFileLocationHandler
         // - local directory
 
         return Task.FromResult(new BeforeAndAfterFileLocationResponse(
-            new List<string>() { trackingFiles.BeforeFilePath }.Where(x => !string.IsNullOrEmpty(x)),
-            new List<string>() { trackingFiles.AfterFilePath }.Where(x => !string.IsNullOrEmpty(x))));
+            trackingFiles.BeforeFilePaths.Where(x => !string.IsNullOrEmpty(x)),
+            trackingFiles.AfterFilePaths.Where(x => !string.IsNullOrEmpty(x))));
     }
 }
 ```
@@ -202,17 +203,17 @@ internal class SailfishBeforeAndAfterFileLocationHandler
 
 ```csharp
 internal class SailfishReadInBeforeAndAfterDataHandler
-: IRequestHandler<ReadInBeforeAndAfterDataCommand, ReadInBeforeAndAfterDataResponse>
+    : IRequestHandler<ReadInBeforeAndAfterDataRequest, ReadInBeforeAndAfterDataResponse>
 {
     public async Task<ReadInBeforeAndAfterDataResponse> Handle(
-        ReadInBeforeAndAfterDataCommand request,
+        ReadInBeforeAndAfterDataRequest request,
         CancellationToken cancellationToken)
     {
         // When you return the data, you are also required to
         // provide an IEnumerable<string> that represents the files that were used.
         return new ReadInBeforeAndAfterDataResponse(
             new TestData(dataSourcesBefore, beforeData),
-             new TestData(dataSourcesAfter, afterData));
+            new TestData(dataSourcesAfter, afterData));
     }
 }
 ```
@@ -223,16 +224,16 @@ SailDiff will automatically aggregate data when multiple files are provided.
 
 ## Which SailDiff Test should I use?
 
-When customizing the TestSettings **TestType** (either via .sailfish.json or RunSettingsBuilder), you have three options to choose from.
+When customizing the TestSettings **TestType** (either via .sailfish.json or RunSettingsBuilder), you have four options to choose from.
 
 You can follow this rule of thumb when choosing:
 
 ```python
 if (your test makes requests over a network):
-One of:
+    One of:
     - TwoSampleWilcoxonSignedRankTest
     - WilcoxonRankSumTest
     - KolmogorovSmirnovTest
 else:
-    - TTest
+    - Test (Student's t‑test)
 ```

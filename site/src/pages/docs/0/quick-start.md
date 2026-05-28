@@ -16,6 +16,8 @@ public class Example
 {
     private readonly IClient client;
 
+    // SailfishVariable accepts an explicit list of values — this produces two runs (N=1, N=10).
+    // For an inclusive range with a step, use [SailfishRangeVariable(start, count, step)].
     [SailfishVariable(1, 10)]
     public int N { get; set; }
 
@@ -83,9 +85,9 @@ public class RegistrationProvider : IProvideARegistrationCallback
 {
     public async Task RegisterAsync(
         ContainerBuilder builder,
-        CancellationToken ct)
+        CancellationToken cancellationToken = default)
     {
-       var typeInstance = await MyClientFactory.Create(ct);
+       var typeInstance = await MyClientFactory.Create(cancellationToken);
        builder.Register(_ => typeInstance).As<IClient>();
     }
 }
@@ -147,15 +149,12 @@ Outliers Removed: 3
 
 When using `[WriteToMarkdown]` or `[WriteToCsv]`, consolidated files are generated:
 
-**Markdown**: `TestSession_abc12345_Results_20250803_103000.md`
-- Session summary and metadata
-- Individual test results
-- N×N comparison matrices
-- Statistical analysis
+**Markdown**: `TestSession_abc12345_MethodComparisons_2025-08-03_10-30-00.md`
+- Session header (Generated, Session ID, Total Test Classes, Total Test Cases)
+- Per‑group comparison sections with N×N matrices
+- Per‑class detailed results table (Method, Mean, Median, Sample Size, Status)
 
 **CSV**: `TestSession_abc12345_Results_20250803_103000.csv`
 - Excel-friendly format
-- Session metadata
-- Individual test results
-- Method comparison data
-- Performance ratios and change descriptions
+- Individual test results (TestClass, TestMethod, MeanTime, MedianTime, StdDev, SampleSize, ComparisonGroup, Status)
+- Pairwise comparison rows with ratios, 95% CI, q-values (BH-FDR), and labels

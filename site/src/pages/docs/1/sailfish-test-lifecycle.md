@@ -83,6 +83,15 @@ You may do this with:
 - **SailfishIterationSetup**
 - **SailfishIterationTeardown**
 
+### RunOnce on method setup/teardown
+
+`SailfishMethodSetup` and `SailfishMethodTeardown` expose a `RunOnce` property. When `true`, the hook is invoked **at most once** per executor run for the declaring class, even when `MethodNames` lists multiple `[SailfishMethod]`s. This is useful for one-shot fixture initialization shared across multiple methods.
+
+```csharp
+[SailfishMethodSetup(nameof(Foo), nameof(Bar), RunOnce = true)]
+public Task ShareFixture(CancellationToken ct) => InitializeOnce(ct);
+```
+
 ## Property and Field Management
 
 When multiple test cases are created for a class, distinct instances of the class are created. Properties and Fields that are set in the global lifecycle methods must therefore be cloned to new instances that do not execute the global lifecycle method.
