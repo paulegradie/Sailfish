@@ -411,6 +411,27 @@ public class MethodComparisonProcessorTests
         message.Metadata.ShouldNotContainKey("SuppressIndividualOutput");
     }
 
+    [Fact]
+    public async Task ProcessTestCompletion_WithFailedComparisonMethod_ShouldNotSuppressOrBatch()
+    {
+        // Regression test for #229: a failed [SailfishComparison] member must
+        // not be deferred to the batch processor (its sibling may never run
+        // because [SailfishGlobalSetup] failed, leaving the batch
+        // permanently incomplete) — leave the message alone so
+        // FrameworkPublishingProcessor publishes it as Failed.
+        // Arrange
+        var message = CreateTestMessage("TestMethod1", "Group1");
+        message.TestResult.IsSuccess = false;
+        message.TestResult.ExceptionMessage = "simulated setup failure";
+
+        // Act
+        await _processor.ProcessTestCompletion(message, CancellationToken.None);
+
+        // Assert: no suppression marker, no batch lookup.
+        message.Metadata.ShouldNotContainKey("SuppressIndividualOutput");
+        await _batchingService.DidNotReceive().GetBatchAsync(Arg.Any<string>(), Arg.Any<CancellationToken>());
+    }
+
     #endregion
 
     #region MethodComparisonBatchProcessor Tests
@@ -544,8 +565,13 @@ public class MethodComparisonProcessorTests
     }
 
     [Fact]
-    public async Task MethodComparisonBatchProcessor_ProcessBatch_WithSingleFailedMethod_PublishesFailureNotification()
+    public async Task MethodComparisonBatchProcessor_ProcessBatch_SkipsFailedMembers_AvoidsDoublePublish()
     {
+        // Regression test for #229: a failed [SailfishComparison] member is
+        // published by FrameworkPublishingProcessor as Failed (its
+        // IsComparisonMethod guard no longer defers failed cases), so
+        // MethodComparisonBatchProcessor must not also republish it during
+        // batch teardown — that would emit a duplicate framework notification.
         // Arrange
         var processor = new MethodComparisonBatchProcessor(
             _sailDiff,
@@ -562,8 +588,45 @@ public class MethodComparisonProcessorTests
         // Act
         await processor.ProcessBatch(batch, CancellationToken.None);
 
-        // Assert: failure propagates as StatusCode.Failure on the framework notification.
+        // Assert: ProcessBatch must NOT publish anything for a comparison group
+        // whose only member already failed — FrameworkPublishingProcessor owns
+        // the Failed notification in that case.
+        await _mediator.DidNotReceive().Publish(
+            Arg.Any<FrameworkTestCaseEndNotification>(),
+            Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task MethodComparisonBatchProcessor_ProcessBatch_MixedFailureAndSuccess_OnlyPublishesSuccessfulMember()
+    {
+        // Regression test for #229: when one member of a comparison group fails
+        // and another succeeds, the failed member is already published by
+        // FrameworkPublishingProcessor. The batch processor should only
+        // publish the surviving successful member (as a single-method group)
+        // and never re-publish the failed one.
+        // Arrange
+        var processor = new MethodComparisonBatchProcessor(
+            _sailDiff,
+            _mediator,
+            _logger,
+            _unifiedFormatter);
+
+        var batch = CreateTestCaseBatch("Group1", new[] { "FailingMethod", "PassingMethod" });
+        var failingMessage = batch.TestCases.Single(tc => tc.TestCaseId.EndsWith("FailingMethod"));
+        failingMessage.TestResult.IsSuccess = false;
+        failingMessage.TestResult.ExceptionMessage = "boom";
+        failingMessage.TestResult.ExceptionType = "InvalidOperationException";
+
+        // Act
+        await processor.ProcessBatch(batch, CancellationToken.None);
+
+        // Assert: exactly one notification, for the passing member, with Success.
         await _mediator.Received(1).Publish(
+            Arg.Is<FrameworkTestCaseEndNotification>(n =>
+                n.StatusCode == StatusCode.Success &&
+                n.TestCase.FullyQualifiedName.EndsWith("PassingMethod")),
+            Arg.Any<CancellationToken>());
+        await _mediator.DidNotReceive().Publish(
             Arg.Is<FrameworkTestCaseEndNotification>(n => n.StatusCode == StatusCode.Failure),
             Arg.Any<CancellationToken>());
     }

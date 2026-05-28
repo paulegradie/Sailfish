@@ -79,9 +79,14 @@ internal class MethodComparisonBatchProcessor
                 testCase.TestCaseId, group ?? "null", role ?? "null");
         }
 
-        // Group test cases by comparison group
+        // Group test cases by comparison group. Failed members are excluded:
+        // FrameworkPublishingProcessor already publishes them as Failed (see
+        // its IsComparisonMethod guard), so re-publishing here would emit a
+        // duplicate notification, and a failed case has no usable samples to
+        // contribute to an N×N comparison anyway.
         var comparisonGroups = batch.TestCases
             .Where(HasComparisonMetadata)
+            .Where(tc => tc.TestResult.IsSuccess)
             .GroupBy(ExtractComparisonGroup)
             .Where(g => !string.IsNullOrEmpty(g.Key))
             .ToList();
