@@ -104,9 +104,13 @@ internal class MethodComparisonBatchProcessor
             }
             else
             {
-                _logger.Log(LogLevel.Debug,
-                    "Skipping comparison group '{0}' with insufficient methods: {1}",
-                    group.Key ?? "null", groupMethods.Count);
+                // A single-method comparison group still needs to be published as a regular
+                // pass/fail framework notification — otherwise VSTest/Rider sees TestOutcome.None
+                // and renders "Inconclusive" because FrameworkPublishingProcessor deferred to us.
+                _logger.Log(LogLevel.Information,
+                    "Publishing single-method comparison group '{0}' without comparison enhancement",
+                    group.Key ?? "null");
+                await PublishEnhancedFrameworkNotificationsForGroup(groupMethods, cancellationToken);
             }
         }
     }

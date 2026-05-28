@@ -6,8 +6,10 @@ using System.Threading.Tasks;
 using MediatR;
 using NSubstitute;
 using Sailfish.Analysis.SailDiff.Formatting;
+using Sailfish.Execution;
 using Sailfish.Logging;
 using Sailfish.TestAdapter.Execution;
+using Sailfish.TestAdapter.Handlers.FrameworkHandlers;
 using Sailfish.TestAdapter.Queue.Contracts;
 using Sailfish.TestAdapter.Queue.Processors.MethodComparison;
 using Shouldly;
@@ -513,8 +515,15 @@ public class MethodComparisonProcessorTests
     }
 
     [Fact]
-    public async Task MethodComparisonBatchProcessor_ProcessBatch_WithSingleMethod_ShouldSkipComparison()
+    public async Task MethodComparisonBatchProcessor_ProcessBatch_WithSingleMethod_StillPublishesFrameworkNotification()
     {
+        // Regression test for the "TestOutcome.None" bug: when a user runs a single
+        // SailfishComparison method in isolation (e.g., from Rider's test explorer),
+        // FrameworkPublishingProcessor defers to MethodComparisonBatchProcessor for
+        // any message tagged with ComparisonGroup. Previously the batch processor
+        // bailed out for groups with fewer than two methods and never published,
+        // so VSTest/Rider saw TestOutcome.None ("Inconclusive: Outcome value None
+        // is not understood"). The lone test must still be published as pass/fail.
         // Arrange
         var processor = new MethodComparisonBatchProcessor(
             _sailDiff,
@@ -527,10 +536,36 @@ public class MethodComparisonProcessorTests
         // Act
         await processor.ProcessBatch(batch, CancellationToken.None);
 
-        // Assert
-        _logger.Received().Log(LogLevel.Debug,
-            Arg.Is<string>(s => s.Contains("Skipping comparison group")),
-            Arg.Any<object[]>());
+        // Assert: the lone test case was published with a Success status (the helper
+        // builds messages with TestResult.IsSuccess == true by default).
+        await _mediator.Received(1).Publish(
+            Arg.Is<FrameworkTestCaseEndNotification>(n => n.StatusCode == StatusCode.Success),
+            Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task MethodComparisonBatchProcessor_ProcessBatch_WithSingleFailedMethod_PublishesFailureNotification()
+    {
+        // Arrange
+        var processor = new MethodComparisonBatchProcessor(
+            _sailDiff,
+            _mediator,
+            _logger,
+            _unifiedFormatter);
+
+        var batch = CreateTestCaseBatch("Group1", new[] { "TestMethod1" });
+        var loneMessage = batch.TestCases.Single();
+        loneMessage.TestResult.IsSuccess = false;
+        loneMessage.TestResult.ExceptionMessage = "boom";
+        loneMessage.TestResult.ExceptionType = "InvalidOperationException";
+
+        // Act
+        await processor.ProcessBatch(batch, CancellationToken.None);
+
+        // Assert: failure propagates as StatusCode.Failure on the framework notification.
+        await _mediator.Received(1).Publish(
+            Arg.Is<FrameworkTestCaseEndNotification>(n => n.StatusCode == StatusCode.Failure),
+            Arg.Any<CancellationToken>());
     }
 
     [Fact]
