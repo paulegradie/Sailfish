@@ -211,15 +211,22 @@ internal class MethodComparisonProcessor : TestCompletionQueueProcessorBase
                 return;
             }
 
-            // Check if the batch has multiple methods for comparison
+            // Check if the batch has enough SUCCESSFUL methods for comparison.
+            // Failed members must be excluded from the count: MethodComparisonBatchProcessor
+            // filters them out before doing N×N, so counting them here would let a single
+            // surviving sibling trigger ProcessBatch early (publishing it as an unenhanced
+            // single-method group), only to publish it a SECOND time once the next sibling
+            // arrives and the group actually runs the comparison. See issue #229
+            // and PR #230 follow-up.
             var comparisonMethods = batch.TestCases
                 .Where(tc => !string.IsNullOrEmpty(ExtractComparisonGroup(tc)))
+                .Where(tc => tc.TestResult.IsSuccess)
                 .ToList();
 
             if (comparisonMethods.Count >= 2)
             {
                 Logger.Log(LogLevel.Information,
-                    "Comparison batch '{0}' is complete with {1} methods. Processing comparisons...",
+                    "Comparison batch '{0}' is complete with {1} successful methods. Processing comparisons...",
                     batchId, comparisonMethods.Count);
 
                 // Process the complete batch
@@ -231,7 +238,7 @@ internal class MethodComparisonProcessor : TestCompletionQueueProcessorBase
             else
             {
                 Logger.Log(LogLevel.Debug,
-                    "Comparison batch '{0}' has insufficient methods for comparison: {1} methods",
+                    "Comparison batch '{0}' has insufficient successful methods for comparison: {1} methods",
                     batchId, comparisonMethods.Count);
             }
         }
