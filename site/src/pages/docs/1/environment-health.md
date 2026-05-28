@@ -22,10 +22,10 @@ The current set of checks includes:
 - JIT (Tiered/OSR) — reports TieredCompilation, QuickJit, QuickJitForLoops, On-Stack Replacement flags; recommend enabling Tiered JIT for representative steady-state performance
 - Process Priority (recommend AboveNormal/High)
 - GC Mode (recommend Server GC)
-- CPU Affinity (recommend pinning to 1 core for microbenchmarks)
+- CPU Affinity (recommend pinning to 1 core for microbenchmarks). Reported as `Unsupported` on macOS.
 - High‑Resolution Timer availability + Sleep/Delay granularity check
-- Power Plan (recommend High Performance)
-- Background CPU load (process)
+- Power Plan / Power Management — on Windows the entry is `Power Plan` (parses `powercfg /getactivescheme`); on macOS it appears as `Power Management` and recommends disabling App Nap + Energy Saver
+- Background CPU (current process's CPU usage as a proxy)
 
 Each check contributes to the health score and may include a brief recommendation.
 
@@ -45,7 +45,7 @@ Sailfish Environment Health: 87/100 (Excellent)
  - CPU Affinity: Warn (All cores) — Pin to 1 core to minimize cross-core jitter
  - Timer: Pass (High‑resolution timer; Sleep(1) median ≈ 15.6 ms)
  - Power Plan: Pass (High performance)
- - Background CPU (process): Pass (1%)
+ - Background CPU: Pass (1%)
 ```
 ## Timer granularity and short sleeps
 

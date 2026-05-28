@@ -53,18 +53,20 @@ public class Example
 
 #### Parameters:
 - **start**: The starting number for the range
-- **count**: The number of elements to create
-- **step**: The number of values to skip before taking the next value
+- **count**: The number of values to produce
+- **step**: The increment added between successive values (default `1`)
 
 ### Supported Simple Types
 
-Sailfish variables can be any type that is compatible with the base **Attribute** class:
+`SailfishVariable` has overloads for the following params arrays: `int`, `double`, `string`, `float`, `long`, `decimal`, `bool`. Enums are also supported via the underlying attribute machinery.
 
 ```csharp
-[SailfishVariable(10, 100, 1000)]           // integers
-[SailfishVariable(0.24, 1.6)]               // doubles
-[SailfishVariable("ScenarioA", "ScenarioB")] // strings
+[SailfishVariable(10, 100, 1000)]               // integers
+[SailfishVariable(0.24, 1.6)]                   // doubles
+[SailfishVariable("ScenarioA", "ScenarioB")]    // strings
 [SailfishVariable(MyEnum.First, MyEnum.Second)] // enums
+[SailfishVariable(true, false)]                 // booleans
+[SailfishVariable(1L, 2L, 3L)]                  // longs
 ```
 
 ---
@@ -445,9 +447,13 @@ public class MixedVariableApproachesExample
 When applying a variable attribute, you may choose to specify that variable for ScaleFish complexity estimation and modeling. To do so set the first optional parameter to true:
 
 ```csharp
-[SailfishVariable(scalefish: true, 10, 100, 1000)]
+[SailfishVariable(scaleFish: true, 10, 100, 1000)]
 ```
 
-{% callout title="ScaleFish constraint" type="warning" %}
-When using ScaleFish, variables must be of type `int`. Non-int and complex `Type` variables are not currently supported for complexity estimation.
+{% callout title="ScaleFish constraints" type="warning" %}
+When using ScaleFish:
+- Variables must be of type `int`. Non-int and complex `Type` variables are not supported.
+- At least **three** values are required so the regression has enough points to fit.
+
+`SailfishRangeVariable` also has a ScaleFish overload — `(bool scaleFish, int start, int count, int step = 1)`.
 {% /callout %}

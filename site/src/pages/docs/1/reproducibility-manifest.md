@@ -48,7 +48,7 @@ Example snippet:
 ### Session info
 - Timestamp (UTC)
 - Session ID (unique per run)
-- Randomization Seed (when seeded randomized run order is enabled)
+- Randomization configuration (`Seed`, `Types`, `Methods`, `PropertySets`) — populated when seeded randomized run order is enabled
 - Tags (from Run Settings)
 - CI system detection (e.g., GitHub Actions)
 
@@ -77,16 +77,29 @@ When available, Sailfish includes a short "Reproducibility Summary" near the top
 {
   "SailfishVersion": "2.3.0",
   "DotNetRuntime": ".NET 9.0.7",
-  "OS": "Microsoft Windows 11 Pro",
-  "GCMode": "Server",
+  "Os": "Microsoft Windows 11 Pro",
+  "OsArchitecture": "X64",
+  "ProcessArchitecture": "X64",
+  "GcMode": "Server",
   "Jit": "Tiered=default; QuickJit=default; QuickJitForLoops=default; OSR=default",
   "EnvironmentHealthScore": 85,
+  "EnvironmentHealthLabel": "Good",
   "SessionId": "20250115_120301-ab12cd34",
+  "Randomization": { "Seed": 12345, "Types": true, "Methods": true, "PropertySets": true },
   "Methods": [
-    { "TestCaseDisplayName": "MyTests.Foo()", "SampleSize": 100, "Mean": 1.2345, "StdDev": 0.0456, "CI95_MarginOfError": 0.0123 }
+    {
+      "TestCaseDisplayName": "MyTests.Foo()",
+      "SampleSize": 100,
+      "Mean": 1.2345,
+      "StdDev": 0.0456,
+      "Ci95MarginOfError": 0.0123,
+      "Ci99MarginOfError": 0.0162
+    }
   ]
 }
 ```
+
+JSON property names match the C# property names verbatim (the default `System.Text.Json` policy): `Os`, `GcMode`, `Ci95MarginOfError`, etc. — not `OS` / `GCMode` / `CI95_MarginOfError`.
 
 ## Notes
 - The manifest is written on a best‑effort basis; failures are logged at debug level and do not fail the test run.

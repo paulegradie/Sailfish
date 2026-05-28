@@ -24,8 +24,8 @@ If using Sailfish as a test project, you can create a `.sailfish.json` file in t
     "SampleSizeOverride": 30
   },
   "SailDiffSettings": {
-    "TestType": "TTest",
-    "Alpha": 0.005,
+    "TestType": "Test",
+    "Alpha": 0.001,
     "Disabled": false
   },
   "ScaleFishSettings": {},
@@ -43,6 +43,29 @@ If using Sailfish as a test project, you can create a `.sailfish.json` file in t
 If you are using JetBrains Rider, you need to [enable VS Test Adapter Support](https://www.jetbrains.com/help/rider/Reference__Options__Tools__Unit_Testing__VSTest.html).
 
 In contrast to test frameworks natively supported by Rider, tests from VSTest adapters are only discovered after test projects are built.
+
+**Getting the gutter "play" buttons to appear on Sailfish tests**
+
+Rider does not auto-detect VSTest-based test projects unless they reference one of the natively supported adapters (NUnit, xUnit, MSTest). Because Sailfish ships its own VSTest adapter, you need to tell Rider which of your projects to treat as test projects via a file-mask wildcard.
+
+1. Open **Settings → Build, Execution, Deployment → Unit Testing → VSTest**.
+2. Tick the checkbox at the top of the page to enable VSTest discovery.
+3. Under **Projects with unit tests**, add a file mask that matches your Sailfish test projects. The mask is matched against the `.csproj` filename.
+
+Examples — pick patterns that match how you name your Sailfish projects:
+
+```
+**performance-test*.csproj
+**benchmark*.csproj
+**PerformanceTests.csproj
+**Benchmarks.csproj
+```
+
+You can add multiple patterns. The `*` and `?` wildcards behave as in standard file globs (`?` = one character, `*` = zero or more).
+
+4. Build your solution. The play-button gutter icons should now appear next to each `[Sailfish]` class and test method.
+
+If the icons still don't appear, double-check that the project's `.csproj` filename actually matches one of your masks (the patterns operate on the project filename, not the assembly name or folder), and that the project has been built at least once since the masks were added.
 {% /callout %}
 
 

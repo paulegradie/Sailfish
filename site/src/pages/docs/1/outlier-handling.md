@@ -42,7 +42,15 @@ var run = RunSettingsBuilder.CreateBuilder()
 This sets a typed, discoverable global policy that flows to all test classes in the run. You can switch strategies (e.g., `DontRemove` for raw analysis, or `Adaptive` for side‑aware removal).
 
 ## Per‑class configuration
-Attribute‑level controls for outlier strategy are not yet exposed. Use the global configuration above to set a consistent policy across tests.
+
+You can also opt in to configurable outlier handling on a single class via the `[Sailfish]` attribute. Class-level values are overridden by `RunSettingsBuilder.WithGlobalOutlierHandling(...)` when that is set.
+
+```csharp
+[Sailfish(
+    UseConfigurableOutlierDetection = true,
+    OutlierStrategy = OutlierStrategy.RemoveUpper)]
+public class MyTest { ... }
+```
 
 ## How it interacts with statistics
 - Outliers that are removed do not participate in mean, standard deviation, or confidence interval calculations.

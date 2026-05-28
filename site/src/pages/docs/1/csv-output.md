@@ -30,30 +30,16 @@ public class PerformanceTest
 
 ## CSV Structure
 
-The generated CSV files use a multi-section format with clear organization:
+The generated CSV file uses a two-section format. Each section starts with a `#`-prefixed comment header.
 
-### Section 1: Session Metadata
-
-```csv
-# Session Metadata
-SessionId,Timestamp,TotalClasses,TotalTests
-abc12345,2025-08-03T10:30:00Z,1,6
-```
-
-**Fields:**
-- **SessionId**: Unique identifier for the test session
-- **Timestamp**: When the test session completed (UTC)
-- **TotalClasses**: Number of test classes with `[WriteToCsv]` in the session
-- **TotalTests**: Total number of test methods executed
-
-### Section 2: Individual Test Results
+### Section 1: Individual Test Results
 
 ```csv
 # Individual Test Results
-TestClass,TestMethod,MeanTime,MedianTime,StdDev,SampleSize,ComparisonGroup,Status,CI95_MOE,CI99_MOE
-PerformanceTest,BubbleSort,45.200,44.100,3.100,100,Algorithms,Success,1.2345,1.6789
-PerformanceTest,QuickSort,2.100,2.000,0.300,100,Algorithms,Success,0.1234,0.2345
-PerformanceTest,RegularMethod,1.000,1.000,0.100,100,,Success,0.0500,0.0800
+TestClass,TestMethod,MeanTime,MedianTime,StdDev,SampleSize,ComparisonGroup,Status
+PerformanceTest,BubbleSort,45.200,44.100,3.100,100,Algorithms,Success
+PerformanceTest,QuickSort,2.100,2.000,0.300,100,Algorithms,Success
+PerformanceTest,RegularMethod,1.000,1.000,0.100,100,,Success
 ```
 
 **Fields:**
@@ -63,13 +49,14 @@ PerformanceTest,RegularMethod,1.000,1.000,0.100,100,,Success,0.0500,0.0800
 - **MedianTime**: Median execution time in milliseconds
 - **StdDev**: Standard deviation of execution times
 - **SampleSize**: Number of iterations executed
-- **ComparisonGroup**: Comparison group name (if using `[SailfishComparison]`)
-- **Status**: Test execution status (Success/Failed)
+- **ComparisonGroup**: Comparison group name (if using `[SailfishComparison]`); empty for ungrouped methods
+- **Status**: Test execution status (`Success` / `Failed`)
 
-- **CI95_MOE**: Margin of error (ms) at 95% confidence; computed using Student’s t distribution and standard error of the mean. Precision is adaptively formatted in output displays; CSV stores numeric values.
-- **CI99_MOE**: Margin of error (ms) at 99% confidence; computed using Student’s t distribution and standard error of the mean. Precision is adaptively formatted in output displays; CSV stores numeric values.
+{% callout title="Where are CI95_MOE / CI99_MOE?" type="note" %}
+The session CSV intentionally keeps the per-test row narrow. The CI95 / CI99 margin-of-error columns are emitted in the **per-class tracking CSV** (next to the tracking JSON used by SailDiff) and surfaced in the [Reproducibility Manifest](/docs/1/reproducibility-manifest).
+{% /callout %}
 
-### Section 3: Method Comparisons
+### Section 2: Method Comparisons
 
 ```csv
 # Method Comparisons
