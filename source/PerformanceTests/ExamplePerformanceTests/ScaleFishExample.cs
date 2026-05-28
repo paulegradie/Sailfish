@@ -9,7 +9,9 @@ namespace PerformanceTests.ExamplePerformanceTests;
 [Sailfish(SampleSize = 20, DisableOverheadEstimation = true, Disabled = false)]
 public class ScaleFishExample
 {
-    [SailfishRangeVariable(true, 5, 10, 6)]
+    // Geometric (log-spaced) values — recommended for ScaleFish complexity probes.
+    // Produces N ∈ {5, 10, 21, 44, 90, 184}: equally spaced in log-x for maximum discrimination.
+    [SailfishRangeVariable(scaleFish: true, start: 5, end: 184, count: 6, spacing: RangeSpacing.Geometric)]
     public int N { get; set; }
 
     [SailfishMethod]

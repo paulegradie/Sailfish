@@ -306,6 +306,10 @@ public class MarkdownTableConverter : IMarkdownTableConverter
                             "",
                             "",
                             "",
+                            "",
+                            "",
+                            "",
+                            "",
                             ""
                         },
                         new List<string>
@@ -316,7 +320,11 @@ public class MarkdownTableConverter : IMarkdownTableConverter
                             "GoodnessOfFit",
                             "NextBest",
                             "NextBigO",
-                            "NextBestGoodnessOfFit"
+                            "NextBestGoodnessOfFit",
+                            "DeltaAICc",
+                            "AkaikeWeight",
+                            "Distinguishable",
+                            "ContinuousExponent"
                         },
                         c => c.PropertyName,
                         c => c.ScaleFishModel.ScaleFishModelFunction.Name,
@@ -324,7 +332,11 @@ public class MarkdownTableConverter : IMarkdownTableConverter
                         c => c.ScaleFishModel.GoodnessOfFit,
                         c => c.ScaleFishModel.NextClosestScaleFishModelFunction.Name,
                         c => c.ScaleFishModel.NextClosestScaleFishModelFunction.OName,
-                        c => c.ScaleFishModel.NextClosestGoodnessOfFit
+                        c => c.ScaleFishModel.NextClosestGoodnessOfFit,
+                        c => FormatDelta(c.ScaleFishModel.DeltaAicc),
+                        c => FormatWeight(c.ScaleFishModel.AkaikeWeight),
+                        c => c.ScaleFishModel.IsDistinguishable ? "yes" : "no",
+                        c => FormatPowerLog(c.ScaleFishModel.PowerLog)
                     ));
                 tableBuilder.AppendLine();
             }
@@ -396,5 +408,23 @@ public class MarkdownTableConverter : IMarkdownTableConverter
         }
 
 
+    }
+
+    private static string FormatDelta(double delta)
+    {
+        if (double.IsNaN(delta)) return "n/a";
+        if (double.IsInfinity(delta)) return "∞";
+        return delta.ToString("F2", System.Globalization.CultureInfo.InvariantCulture);
+    }
+
+    private static string FormatWeight(double weight)
+    {
+        if (double.IsNaN(weight)) return "n/a";
+        return weight.ToString("F3", System.Globalization.CultureInfo.InvariantCulture);
+    }
+
+    private static string FormatPowerLog(Sailfish.Analysis.ScaleFish.CurveFitting.PowerLogResult? powerLog)
+    {
+        return powerLog is null ? "n/a" : powerLog.Describe();
     }
 }
