@@ -60,20 +60,27 @@ public static class AdapterRunSettingsLoader
 
     private static SettingsConfiguration ParseSettings()
     {
-        var parsedSettings = new SettingsConfiguration();
+        FileInfo settingsFile;
         try
         {
-            var settingsFile = DirectoryRecursion.RecurseUpwardsUntilFileIsFound(
+            settingsFile = DirectoryRecursion.RecurseUpwardsUntilFileIsFound(
                 ".sailfish.json",
 #pragma warning disable RS1035
                 Directory.GetCurrentDirectory(),
 #pragma warning restore RS1035
                 6);
-            return SailfishSettingsParser.Parse(settingsFile.FullName);
         }
-        catch
+        catch (TestAdapterException)
         {
-            return parsedSettings;
+            // No .sailfish.json is present anywhere up the tree — that is an expected,
+            // supported configuration. Fall back to defaults silently.
+            return new SettingsConfiguration();
         }
+
+        // If the file exists but cannot be parsed (malformed JSON, IO error, etc.) we
+        // intentionally let the exception propagate. TestExecutor.HandleStartupException
+        // surfaces it to the test framework so the user can see and fix their config —
+        // silently falling back to defaults previously hid these problems entirely.
+        return SailfishSettingsParser.Parse(settingsFile.FullName);
     }
 }

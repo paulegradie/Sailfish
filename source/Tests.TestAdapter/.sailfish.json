@@ -5,7 +5,7 @@
     "SampleSizeOverride": null
   },
   "SailDiffSettings": {
-    "TestType": "TTest",
+    "TestType": "Test",
     "Alpha": 0.005,
     "Disabled": true
   },
@@ -13,7 +13,7 @@
   "GlobalSettings": {
     "DisableOutlierDetection": false,
     "ResultsDirectory": "SailfishIDETestOutput",
-    "DisableEverything": true,
+    "DisableEverything": false,
     "Round": 5
   }
 }
