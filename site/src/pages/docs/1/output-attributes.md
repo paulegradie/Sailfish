@@ -38,13 +38,13 @@ public class PerformanceTest
 ### Markdown Output Features
 
 - **Session-based consolidation**: Single markdown file per test session
-- **Individual test results**: Detailed statistics for each method
-- **Method comparison matrices**: N×N comparisons between methods in the same comparison group
-- **Statistical analysis**: P-values, significance testing, and performance ratios
-- **Organized sections**: Clear separation between different types of data
-- **Multiple confidence intervals**: Displays 95% and 99% by default with adaptive precision
+- **Per-group sections**: NxN comparison matrix and a five-column detailed results table per comparison group
+- **Statistical analysis**: BH-FDR q-values and 95% ratio confidence intervals in the matrix
+- **Environment & reproducibility headers**: Optional `🏥 Environment Health Check` and `🔁 Reproducibility Summary` sections near the top when enabled
 
-**Example filename**: `TestSession_abc12345_Results_20250803_103000.md`
+CI95/CI99 margins of error are not embedded in the consolidated session markdown — they're available in the per-class tracking CSV and in the Reproducibility Manifest.
+
+**Example filename**: `TestSession_abc12345_MethodComparisons_2025-08-03_10-30-00.md`
 
 
 {% callout title="See also" type="note" %}
@@ -86,23 +86,16 @@ public class PerformanceTest
 
 ### CSV Output Features
 
-- **Multi-section format**: Session metadata, individual results, and method comparisons
+- **Two-section format**: Individual test results and pairwise method comparisons
 - **Excel-compatible**: Easy to import and analyze in spreadsheet applications
 - **Session-based consolidation**: Single CSV file per test session
-- **Comprehensive data**: All test metrics and comparison results in tabular format
-- **Comment-friendly**: Section headers using `#` comments for clear organization
-- **Multiple confidence intervals**: Includes CI95_MOE and CI99_MOE columns for margin-of-error at 95% and 99% confidence
-
+- **Numeric ratios with confidence intervals and q-values**: Comparison rows include the BH-FDR q-value and 95% ratio CI bounds
 
 **Example filename**: `TestSession_abc12345_Results_20250803_103000.csv`
 
 ### CSV Structure
 
 ```csv
-# Session Metadata
-SessionId,Timestamp,TotalClasses,TotalTests
-abc12345,2025-08-03T10:30:00Z,1,6
-
 # Individual Test Results
 TestClass,TestMethod,MeanTime,MedianTime,StdDev,SampleSize,ComparisonGroup,Status
 PerformanceTest,BubbleSort,45.200,44.100,3.100,100,Algorithms,Success
@@ -110,8 +103,8 @@ PerformanceTest,QuickSort,2.100,2.000,0.300,100,Algorithms,Success
 PerformanceTest,RegularMethod,1.000,1.000,0.100,100,,Success
 
 # Method Comparisons
-ComparisonGroup,Method1,Method2,Method1Mean,Method2Mean,PerformanceRatio,ChangeDescription
-Algorithms,BubbleSort,QuickSort,45.200,2.100,21.5x slower,Regressed
+ComparisonGroup,Method1,Method2,Mean1,Mean2,Ratio,CI95_Lower,CI95_Upper,q_value,Label,ChangeDescription
+Algorithms,BubbleSort,QuickSort,45.200,2.100,0.046,0.040,0.054,1.2e-12,Improved,Improved
 ```
 
 ## Combined Usage

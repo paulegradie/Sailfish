@@ -30,58 +30,50 @@ public class PerformanceTest
 
 ## Markdown Structure
 
-The generated markdown files use a well-organized, multi-section format:
+The session-consolidated markdown file is organized as follows:
 
-### Section 1: Session Metadata
+### Section 1: Session Header
 
 ```markdown
-# Performance Test Results
+# 📊 Test Session Results
+
+**Generated:** 2025-08-03 10:30:00 UTC
 **Session ID:** abc12345
-**Timestamp:** 2025-08-03T10:30:00Z
-**Total Classes:** 1
-**Total Tests:** 3
+**Total Test Classes:** 1
+**Total Test Cases:** 3
 ```
 
 **Fields:**
+- **Generated**: When the test session completed (UTC)
 - **Session ID**: Unique identifier for the test session
-- **Timestamp**: When the test session completed (UTC)
-- **Total Classes**: Number of test classes with `[WriteToMarkdown]` in the session
-- **Total Tests**: Total number of test methods executed
+- **Total Test Classes**: Number of test classes with `[WriteToMarkdown]` in the session
+- **Total Test Cases**: Total number of test cases (methods × variable combinations) executed
 
-### Section 2: Individual Test Results
+The header is followed by optional `## 🏥 Environment Health Check` and `## 🔁 Reproducibility Summary` sections — see below.
 
-#### PerformanceTest
+### Section 2: Per-Group Comparison Sections
 
-| Method | Mean (ms) | Median (ms) | StdDev (N=100) | CI95 MOE | CI99 MOE | Status |
-|--------|-----------|-------------|----------------|----------|----------|--------|
-| BubbleSort | 45.2000 | 44.1000 | 3.1000 | ±1.2345 | ±1.6789 | ✅ Success |
-| QuickSort | 2.1000 | 2.0000 | 0.3000 | ±0.1234 | ±0.2345 | ✅ Success |
-| RegularMethod | 1.0000 | 1.0000 | 0.1000 | ±0.0500 | ±0.0800 | ✅ Success |
+For each `[SailfishComparison]` group with at least two methods, the file emits an `## 🔬 Comparison Group: {GroupName}` section containing:
 
-**Columns:**
-- **Method**: Name of the test method
-- **Mean (ms)**: Average execution time in milliseconds
-- **Median (ms)**: Median execution time in milliseconds
-- **StdDev (N=X)**: Standard deviation with sample size indicator
-- **CI95 MOE**: Margin of error at 95% confidence (±ms)
-- **CI99 MOE**: Margin of error at 99% confidence (±ms)
-- **Status**: Test execution status with emoji indicator
+- A `### Performance Comparison Matrix` — the N×N matrix with ratios (col / row), 95% ratio CIs, and BH-FDR q-values.
+- A `### Detailed Results` table:
 
-### Section 3: Method Comparison Matrices
-
-#### Comparison Group: Algorithms
-
-| Method 1 | Method 2 | Mean 1 (ms) | Mean 2 (ms) | Ratio | 95% CI | q-value (FDR) | Label |
-|----------|----------|-------------|-------------|-------|--------|----------------|-------|
-| BubbleSort | QuickSort | 45.2000 | 2.1000 | 21.5 | [18.3, 24.9] | 0.000 | Slower |
+```markdown
+| Method | Mean Time | Median Time | Sample Size | Status |
+|--------|-----------|-------------|-------------|--------|
+| BubbleSort | 45.200ms | 44.100ms | 100 | ✅ Success |
+| QuickSort | 2.100ms | 2.000ms | 100 | ✅ Success |
+```
 
 **Columns:**
-- **Method 1 / Method 2**: Methods being compared
-- **Mean 1 / Mean 2**: Mean execution times for each method
-- **Ratio**: `Mean1 / Mean2` (unitless). Values > 1 indicate Method 1 is slower; values < 1 indicate it is faster.
-- **95% CI**: Confidence interval for the ratio computed on the log scale. If the interval crosses 1.0, the label is "Similar".
-- **q-value (FDR)**: Benjamini–Hochberg adjusted p-value accounting for multiple comparisons within the group.
-- **Label**: One of Improved, Similar, or Slower (consolidated outputs use "Slower" rather than "Regressed").
+- **Method**: Test case display name
+- **Mean Time / Median Time**: Average and median execution time (ms, 3 decimal places)
+- **Sample Size**: Number of iterations after outlier filtering
+- **Status**: ✅ Success or ❌ Failed
+
+### Section 3: Individual Test Results
+
+Methods that aren't part of a comparison group are grouped under `## 📊 Individual Test Results` using the same five-column table.
 
 ## Session-Based Consolidation
 
@@ -92,7 +84,7 @@ Markdown files use **session-based consolidation**, meaning:
 - **Unique naming**: Files use session IDs and timestamps to prevent conflicts
 - **Complete data**: All test results from the entire session are included
 
-**Example filename**: `TestSession_abc12345_Results_20250803_103000.md`
+**Example filename**: `TestSession_abc12345_MethodComparisons_2025-08-03_10-30-00.md`
 
 ### 🏥 Environment Health Section (when enabled)
 
@@ -147,21 +139,7 @@ See [latest performance results](./TestSession_abc12345_Results_20250803_103000.
 
 ### Multiple Comparison Groups
 
-When you have multiple comparison groups, each generates its own comparison matrix:
-
-#### Comparison Group: StringOperations
-
-| Method 1 | Method 2 | Mean 1 (ms) | Mean 2 (ms) | Ratio | 95% CI | q-value (FDR) | Label |
-|----------|----------|-------------|-------------|-------|--------|----------------|-------|
-| StringConcat | StringBuilder | 15.2000 | 8.1000 | 1.9 | [1.7, 2.2] | 0.000 | Slower |
-| StringConcat | StringInterpolation | 15.2000 | 12.3000 | 1.2 | [1.1, 1.4] | 0.023 | Slower |
-| StringBuilder | StringInterpolation | 8.1000 | 12.3000 | 0.66 | [0.60, 0.72] | 0.001 | Improved |
-
-#### Comparison Group: Collections
-
-| Method 1 | Method 2 | Mean 1 (ms) | Mean 2 (ms) | Ratio | 95% CI | q-value (FDR) | Label |
-|----------|----------|-------------|-------------|-------|--------|----------------|-------|
-| ListIteration | ArrayIteration | 5.4000 | 3.2000 | 1.7 | [1.5, 1.9] | 0.000 | Slower |
+When you have multiple comparison groups, each gets its own `## 🔬 Comparison Group: {GroupName}` section with its own NxN matrix and detailed results table. The detailed table is always 5 columns (Method, Mean Time, Median Time, Sample Size, Status); ratios and q‑values live in the matrix above it.
 
 ### N×N Comparison Matrices
 
@@ -186,16 +164,16 @@ Sailfish uses adaptive precision to ensure readability:
 
 ### Mixed Test Types
 
-The markdown includes both comparison and regular methods:
+The session markdown includes both comparison methods (under per-group sections) and ungrouped methods (under `## 📊 Individual Test Results`). All tables share the same 5-column shape:
 
-#### MyTest
+```markdown
+| Method | Mean Time | Median Time | Sample Size | Status |
+|--------|-----------|-------------|-------------|--------|
+| RegularMethod        | 1.000ms  | 1.000ms  | 100 | ✅ Success |
+| AnotherRegularMethod | 1.100ms  | 1.000ms  | 100 | ✅ Success |
+```
 
-| Method | Mean (ms) | Median (ms) | StdDev (N=100) | CI95 MOE | CI99 MOE | Status |
-|--------|-----------|-------------|----------------|----------|----------|--------|
-| ComparisonMethod1 | 10.5000 | 9.8000 | 1.2000 | ±0.4567 | ±0.6789 | ✅ Success |
-| ComparisonMethod2 | 8.3000 | 8.1000 | 0.9000 | ±0.3456 | ±0.5123 | ✅ Success |
-| RegularMethod | 1.0000 | 1.0000 | 0.1000 | ±0.0500 | ±0.0800 | ✅ Success |
-| AnotherRegularMethod | 1.1000 | 1.0000 | 0.1000 | ±0.0500 | ±0.0800 | ✅ Success |
+For per-test CI95/CI99 margins of error or standard deviation, consult the per-class tracking CSV or the [Reproducibility Manifest](/docs/1/reproducibility-manifest).
 
 ## Best Practices
 

@@ -1,4 +1,15 @@
-﻿## What's Changed in vNEXT_VERSION
+﻿## What's Changed in v0.0.117
+
+- Fix: failed `[SailfishComparison]` members now publish `TestOutcome.Failed` instead of `TestOutcome.None`, so IDE Test Explorer surfaces the exception and stack trace correctly (#228, #230)
+- Fix: comparison batch readiness no longer waits on members that failed — single-survivor groups complete cleanly and N×N matrices are computed across the surviving members only (#231)
+- Fix: a single `[SailfishComparison]` test (no siblings) now reports its real outcome rather than `TestOutcome.None`
+- New: `[SailfishMethodSetup]` / `[SailfishMethodTeardown]` gain a `RunOnce` flag — invoke a setup/teardown at most once per executor run for the declaring class, even when `MethodNames` lists multiple methods (#224)
+- New: `SailfishPreset` recipes (`Default` / `Tight` / `Relaxed`) — `RunSettingsBuilder.WithPreset(SailfishPreset.Tight)` seeds adaptive sampling, outlier handling, and SailDiff defaults in one call; explicit `WithGlobalX` / `WithSailDiff` calls win over the preset, and `WithPreset` itself is last-wins when called multiple times (#218, #219)
+- Build: drop `net8.0`; Sailfish, `Sailfish.TestAdapter`, and `Sailfish.Analyzers` now target `net9.0` and `net10.0` only (#226)
+- Rider discovery: emit `TestCase.Hierarchy` + `ManagedType`/`ManagedMethod` properties and honor absolute `OutputPath` in `TestAdapterPath` so parameterized variants nest correctly under their parent method (#223, #225). Includes a documented one-time VSTest opt-in.
+- TestAdapter robustness: `AdapterRunSettingsLoader` no longer silently swallows exceptions when `.sailfish.json` is malformed; failures surface as `TestClassInstantiationException` (#222).
+
+## v0.0.116 and earlier
 - New: NxN Method Comparisons rigor + CSV parity
   - Test Adapter and session markdown: NxN comparisons per group with Benjamini–Hochberg FDR–adjusted q-values and 95% ratio confidence intervals (computed on the log scale)
   - CSV session output updated to include: ComparisonGroup, Method1, Method2, Mean1, Mean2, Ratio, CI95_Lower, CI95_Upper, q_value, Label, ChangeDescription (legacy column retained for backward compatibility)

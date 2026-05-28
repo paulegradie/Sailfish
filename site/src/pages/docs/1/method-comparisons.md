@@ -287,12 +287,39 @@ You can configure SailDiff behavior using `.sailfish.json`:
 ```json
 {
   "SailDiffSettings": {
-    "TestType": "TTest",
-    "Alpha": 0.05,
+    "TestType": "Test",
+    "Alpha": 0.001,
     "Disabled": false
   }
 }
 ```
+
+### Attribute properties
+
+`[SailfishComparison]` has two optional named arguments beyond the required group name:
+
+- **`DisplayName`** — overrides the method name in comparison output. Useful when you want a friendly label without renaming the C# method.
+- **`Disabled`** — when `true`, the method is excluded from comparisons even though other methods in the group are present. Lets you toggle a comparator off without removing the attribute.
+
+```csharp
+[SailfishMethod]
+[SailfishComparison("SortingAlgorithms", DisplayName = "Built-in Array.Sort")]
+public void QuickSort() { /* ... */ }
+
+[SailfishMethod]
+[SailfishComparison("SortingAlgorithms", Disabled = true)]
+public void OldExperiment() { /* ... */ }
+```
+
+### Failure handling
+
+If a `[SailfishComparison]` method throws, Sailfish publishes a normal failed `TestOutcome` for that case immediately and **excludes it from the batch**:
+
+- The exception surfaces in the IDE Test Explorer as a failure, with the stack trace attached.
+- Sibling comparators are not blocked — the comparison batch readiness check only counts surviving members.
+- The N×N matrix is computed across the surviving members. If fewer than two members survive, no matrix is produced (and a short note is emitted to the consolidated outputs).
+
+This is why a partially-failing group still reports useful comparisons rather than silently hanging.
 
 ## Best Practices
 

@@ -24,8 +24,8 @@ If using Sailfish as a test project, you can create a `.sailfish.json` file in t
     "SampleSizeOverride": 30
   },
   "SailDiffSettings": {
-    "TestType": "TTest",
-    "Alpha": 0.005,
+    "TestType": "Test",
+    "Alpha": 0.001,
     "Disabled": false
   },
   "ScaleFishSettings": {},
