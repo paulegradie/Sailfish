@@ -65,7 +65,13 @@ internal class ScalefishObservationCompiler : IScalefishObservationCompiler
 
         var complexityMeasurements = complexityCase
             .Variables
-            .Zip(testResult.Select(x => x.PerformanceRunResult!.Mean)).Select(x => new ComplexityMeasurement(x.First, x.Second))
+            .Zip(testResult.Select(x => x.PerformanceRunResult!))
+            .Select(pair => new ComplexityMeasurement(
+                pair.First,
+                pair.Second.Mean,
+                pair.Second.StdDev,
+                pair.Second.SampleSize,
+                pair.Second.DataWithOutliersRemoved))
             .ToList();
         return complexityMeasurements;
     }
