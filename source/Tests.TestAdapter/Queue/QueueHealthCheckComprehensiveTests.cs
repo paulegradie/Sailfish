@@ -25,7 +25,7 @@ public class QueueHealthCheckComprehensiveTests : IDisposable
 
     public QueueHealthCheckComprehensiveTests()
     {
-        var queue = new InMemoryTestCompletionQueue(1000);
+        var queue = new InMemoryTestCompletionQueue(new QueueConfiguration());
         var processors = Array.Empty<ITestCompletionQueueProcessor>();
         _logger = Substitute.For<ILogger>();
         _queueManager = new TestCompletionQueueManager(queue, processors, _logger);

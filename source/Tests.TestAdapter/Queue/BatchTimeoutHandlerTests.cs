@@ -365,7 +365,8 @@ public class BatchTimeoutHandlerTests : IDisposable
         var timedOutBatch = CreateTestBatch("batch1", DateTime.UtcNow.AddMinutes(-10));
         timedOutBatch.CompletionTimeout = null;
 
-        // Remove TestCase metadata to trigger exception path
+        // Remove all metadata: the publish path should still succeed with synthetic fallbacks
+        // (a missing TestCase no longer drops the notification — it falls back to a synthetic one).
         timedOutBatch.TestCases.First().Metadata.Clear();
 
         _batchingService.GetPendingBatchesAsync(Arg.Any<CancellationToken>())
@@ -374,11 +375,10 @@ public class BatchTimeoutHandlerTests : IDisposable
         // Act
         var result = await _timeoutHandler.ProcessTimedOutBatchesAsync(CancellationToken.None);
 
-        // Assert - Should process 0 batches successfully (batch is timed out but processing individual test case fails)
-        // The implementation catches exceptions per test case and continues, so the batch itself is marked as processed
-        // but individual test case failures are logged
-        result.ShouldBe(1); // Batch is processed even though test case publication fails
-        _logger.Received().Log(LogLevel.Error, Arg.Any<Exception>(), Arg.Any<string>(), Arg.Any<object[]>());
+        // Assert
+        result.ShouldBe(1);
+        await _mediator.Received(1).Publish(Arg.Any<FrameworkTestCaseEndNotification>(), Arg.Any<CancellationToken>());
+        _logger.Received().Log(LogLevel.Warning, Arg.Any<string>(), Arg.Any<object[]>());
     }
 
     [Fact]
@@ -407,7 +407,8 @@ public class BatchTimeoutHandlerTests : IDisposable
 
         var batch1 = CreateTestBatch("batch1", DateTime.UtcNow.AddMinutes(-10));
         batch1.CompletionTimeout = null;
-        batch1.TestCases.First().Metadata.Clear(); // This will cause failure in test case processing
+        // Strip metadata: publish still succeeds via synthetic fallbacks.
+        batch1.TestCases.First().Metadata.Clear();
 
         var batch2 = CreateTestBatch("batch2", DateTime.UtcNow.AddMinutes(-10));
         batch2.CompletionTimeout = null;
@@ -418,11 +419,9 @@ public class BatchTimeoutHandlerTests : IDisposable
         // Act
         var result = await _timeoutHandler.ProcessTimedOutBatchesAsync(CancellationToken.None);
 
-        // Assert - Both batches should be processed (batch processing succeeds even if individual test case fails)
-        // batch1 processes but test case publication fails (caught and logged)
-        // batch2 processes successfully
+        // Assert
         result.ShouldBe(2);
-        await _mediator.Received(1).Publish(Arg.Any<FrameworkTestCaseEndNotification>(), Arg.Any<CancellationToken>());
+        await _mediator.Received(2).Publish(Arg.Any<FrameworkTestCaseEndNotification>(), Arg.Any<CancellationToken>());
     }
 
     #endregion

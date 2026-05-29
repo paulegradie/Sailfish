@@ -56,30 +56,6 @@ namespace Sailfish.TestAdapter.Queue.Processors;
 /// </remarks>
 public class FrameworkPublishingProcessor : TestCompletionQueueProcessorBase
 {
-    #region Constants
-
-    /// <summary>
-    /// Metadata key for storing the TestCase object in test completion messages.
-    /// </summary>
-    private const string TestCaseMetadataKey = "TestCase";
-
-    /// <summary>
-    /// Metadata key for storing the formatted test output message.
-    /// </summary>
-    private const string TestOutputMessageMetadataKey = "FormattedMessage";
-
-    /// <summary>
-    /// Metadata key for storing the test execution start time.
-    /// </summary>
-    private const string StartTimeMetadataKey = "StartTime";
-
-    /// <summary>
-    /// Metadata key for storing the original exception object for failed tests.
-    /// </summary>
-    private const string ExceptionMetadataKey = "Exception";
-
-    #endregion
-
     #region Fields
 
     private readonly IMediator _mediator;
@@ -126,7 +102,7 @@ public class FrameworkPublishingProcessor : TestCompletionQueueProcessorBase
         {
             // Check if this is a comparison method - if so, skip publishing here
             // The MethodComparisonBatchProcessor will handle publishing enhanced results
-            if (IsComparisonMethod(message))
+            if (MessageMetadata.IsComparisonMember(message))
             {
                 Logger.Log(LogLevel.Debug,
                     "Skipping framework publishing for comparison method '{0}' - will be handled by MethodComparisonBatchProcessor",
@@ -135,13 +111,13 @@ public class FrameworkPublishingProcessor : TestCompletionQueueProcessorBase
             }
 
             // Extract required data from the message and metadata
-            var testCase = ExtractTestCase(message);
-            var testOutputMessage = ExtractTestOutputMessage(message);
-            var startTime = ExtractStartTime(message);
-            var endTime = ExtractEndTime(message);
-            var duration = CalculateDuration(message, startTime, endTime);
-            var statusCode = DetermineStatusCode(message);
-            var exception = ExtractException(message);
+            var testCase = MessageMetadata.ExtractTestCase(message, Logger);
+            var testOutputMessage = MessageMetadata.ExtractFormattedMessage(message, Logger);
+            var startTime = MessageMetadata.ExtractStartTime(message, Logger);
+            var endTime = MessageMetadata.ExtractEndTime(message);
+            var duration = MessageMetadata.CalculateDuration(message, startTime, endTime);
+            var statusCode = message.TestResult.IsSuccess ? StatusCode.Success : StatusCode.Failure;
+            var exception = MessageMetadata.ExtractException(message);
 
             // Create the framework notification
             var frameworkNotification = new FrameworkTestCaseEndNotification(
@@ -170,163 +146,6 @@ public class FrameworkPublishingProcessor : TestCompletionQueueProcessorBase
             // Re-throw to maintain error contract, but this will be handled by base class
             throw;
         }
-    }
-
-    #endregion
-
-    #region Data Extraction Methods
-
-    /// <summary>
-    /// Extracts the TestCase object from the message metadata.
-    /// </summary>
-    /// <param name="message">The test completion message.</param>
-    /// <returns>The TestCase object, or a fallback TestCase if not found.</returns>
-    private TestCase ExtractTestCase(TestCompletionQueueMessage message)
-    {
-        if (message.Metadata.TryGetValue(TestCaseMetadataKey, out var testCaseObj) && testCaseObj is TestCase testCase)
-        {
-            return testCase;
-        }
-
-        Logger.Log(LogLevel.Warning,
-            "TestCase not found in metadata for test case '{0}'. Creating fallback TestCase.",
-            message.TestCaseId);
-
-        // Create a fallback TestCase to ensure framework publishing continues
-        return new TestCase(message.TestCaseId, new Uri("executor://sailfish"), "Sailfish");
-    }
-
-    /// <summary>
-    /// Extracts the formatted test output message from the message metadata.
-    /// </summary>
-    /// <param name="message">The test completion message.</param>
-    /// <returns>The test output message, or a default message if not found.</returns>
-    private string ExtractTestOutputMessage(TestCompletionQueueMessage message)
-    {
-        if (message.Metadata.TryGetValue(TestOutputMessageMetadataKey, out var messageObj) && messageObj is string outputMessage)
-        {
-            return outputMessage;
-        }
-
-        Logger.Log(LogLevel.Warning,
-            "Test output message not found in metadata for test case '{0}'. Using default message.",
-            message.TestCaseId);
-
-        // Provide a basic fallback message
-        return $"Test case '{message.TestCaseId}' completed with status: {(message.TestResult.IsSuccess ? "Success" : "Failed")}";
-    }
-
-    /// <summary>
-    /// Extracts the test execution start time from the message metadata.
-    /// </summary>
-    /// <param name="message">The test completion message.</param>
-    /// <returns>The start time, or a calculated fallback time if not found.</returns>
-    private DateTimeOffset ExtractStartTime(TestCompletionQueueMessage message)
-    {
-        if (message.Metadata.TryGetValue(StartTimeMetadataKey, out var startTimeObj) && startTimeObj is DateTimeOffset startTime)
-        {
-            return startTime;
-        }
-
-        Logger.Log(LogLevel.Warning,
-            "Start time not found in metadata for test case '{0}'. Calculating fallback start time.",
-            message.TestCaseId);
-
-        // Calculate fallback start time based on completion time and median duration
-        var medianDuration = message.PerformanceMetrics.MedianMs;
-        return message.CompletedAt.AddMilliseconds(-medianDuration);
-    }
-
-    /// <summary>
-    /// Extracts the test execution end time from the message.
-    /// </summary>
-    /// <param name="message">The test completion message.</param>
-    /// <returns>The end time from the CompletedAt field.</returns>
-    private DateTimeOffset ExtractEndTime(TestCompletionQueueMessage message)
-    {
-        return message.CompletedAt;
-    }
-
-    /// <summary>
-    /// Calculates the test execution duration.
-    /// </summary>
-    /// <param name="message">The test completion message.</param>
-    /// <param name="startTime">The test start time.</param>
-    /// <param name="endTime">The test end time.</param>
-    /// <returns>The duration in milliseconds.</returns>
-    private double CalculateDuration(TestCompletionQueueMessage message, DateTimeOffset startTime, DateTimeOffset endTime)
-    {
-        // Prefer the median from performance metrics if available
-        if (message.PerformanceMetrics.MedianMs > 0)
-        {
-            return message.PerformanceMetrics.MedianMs;
-        }
-
-        // Fallback to time difference calculation
-        var duration = (endTime - startTime).TotalMilliseconds;
-        return Math.Max(0, duration); // Ensure non-negative duration
-    }
-
-    /// <summary>
-    /// Determines the status code based on the test result.
-    /// </summary>
-    /// <param name="message">The test completion message.</param>
-    /// <returns>The appropriate StatusCode value.</returns>
-    private StatusCode DetermineStatusCode(TestCompletionQueueMessage message)
-    {
-        return message.TestResult.IsSuccess ? StatusCode.Success : StatusCode.Failure;
-    }
-
-    /// <summary>
-    /// Extracts the original exception from the message metadata or creates one from test result data.
-    /// </summary>
-    /// <param name="message">The test completion message.</param>
-    /// <returns>The exception object, or null if the test was successful.</returns>
-    private Exception? ExtractException(TestCompletionQueueMessage message)
-    {
-        // Return null for successful tests
-        if (message.TestResult.IsSuccess)
-        {
-            return null;
-        }
-
-        // Try to get the original exception from metadata
-        if (message.Metadata.TryGetValue(ExceptionMetadataKey, out var exceptionObj) && exceptionObj is Exception originalException)
-        {
-            return originalException;
-        }
-
-        // Create an exception from the test result data if original is not available
-        if (!string.IsNullOrEmpty(message.TestResult.ExceptionMessage))
-        {
-            return new Exception(message.TestResult.ExceptionMessage);
-        }
-
-        // Fallback for failed tests without exception details
-        return new Exception("Test failed without specific exception details");
-    }
-
-    /// <summary>
-    /// Determines if a test case is a comparison method that should be handled by MethodComparisonBatchProcessor.
-    /// </summary>
-    /// <param name="message">The test completion queue message to check.</param>
-    /// <returns>True if this is a comparison method, false otherwise.</returns>
-    private static bool IsComparisonMethod(TestCompletionQueueMessage message)
-    {
-        // A failed [SailfishComparison] test case can never contribute to an N×N
-        // comparison: there are no usable timing samples and no sibling will ever
-        // arrive that "completes" the batch. Treating it as a comparison method
-        // would defer publishing to MethodComparisonBatchProcessor, where it
-        // could get stranded — VSTest/Rider would then see TestOutcome.None
-        // ("Outcome value None is not understood"). Publish the failure here
-        // immediately and let the batch processor handle only successful members.
-        if (!message.TestResult.IsSuccess) return false;
-
-        // Check if the message has comparison metadata
-        var hasComparisonGroup = message.Metadata.TryGetValue("ComparisonGroup", out var groupObj) &&
-                                 groupObj is string group && !string.IsNullOrEmpty(group);
-
-        return hasComparisonGroup;
     }
 
     #endregion

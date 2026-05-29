@@ -1,5 +1,5 @@
 ﻿using System;
-using System.Collections.Concurrent;
+using System.Collections.Immutable;
 using System.Diagnostics;
 using System.Linq;
 using System.Threading;
@@ -49,9 +49,12 @@ internal class TestCompletionQueueConsumer : IDisposable, IAsyncDisposable
 {
     private readonly ITestCompletionQueue _queue;
     private readonly ILogger _logger;
-    private readonly ConcurrentBag<ITestCompletionQueueProcessor> _processors;
     private readonly IProcessingMetricsCollector? _metricsCollector;
-    
+
+    // Atomically-updated immutable list preserves registration order and lets the
+    // processing loop read a stable snapshot without locking.
+    private ImmutableList<ITestCompletionQueueProcessor> _processors = ImmutableList<ITestCompletionQueueProcessor>.Empty;
+
     private Task? _processingTask;
     private CancellationTokenSource? _cancellationTokenSource;
     private volatile bool _isRunning;
@@ -85,7 +88,6 @@ internal class TestCompletionQueueConsumer : IDisposable, IAsyncDisposable
         _queue = queue ?? throw new ArgumentNullException(nameof(queue));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         _metricsCollector = metricsCollector;
-        _processors = new ConcurrentBag<ITestCompletionQueueProcessor>();
 
         _isRunning = false;
         _isDisposed = false;
@@ -106,15 +108,15 @@ internal class TestCompletionQueueConsumer : IDisposable, IAsyncDisposable
     /// <value>
     /// The number of processors currently registered to receive test completion messages.
     /// </value>
-    public int ProcessorCount => _processors.Count;
+    public int ProcessorCount => Volatile.Read(ref _processors).Count;
 
     /// <summary>
-    /// Gets a snapshot of all registered processors.
+    /// Gets a snapshot of all registered processors in registration order.
     /// </summary>
     /// <returns>An array of all currently registered processors.</returns>
     public ITestCompletionQueueProcessor[] GetProcessors()
     {
-        return _processors.ToArray();
+        return Volatile.Read(ref _processors).ToArray();
     }
 
     /// <summary>
@@ -145,12 +147,12 @@ internal class TestCompletionQueueConsumer : IDisposable, IAsyncDisposable
         {
             throw new ArgumentNullException(nameof(processor));
         }
-        
+
         ThrowIfDisposed();
-        
-        _processors.Add(processor);
-        _logger.Log(LogLevel.Information, 
-            $"Registered processor '{processor.GetType().Name}' with queue consumer. Total processors: {_processors.Count}");
+
+        var updated = AtomicUpdate(list => list.Add(processor));
+        _logger.Log(LogLevel.Information,
+            $"Registered processor '{processor.GetType().Name}' with queue consumer. Total processors: {updated.Count}");
     }
 
     /// <summary>
@@ -181,21 +183,43 @@ internal class TestCompletionQueueConsumer : IDisposable, IAsyncDisposable
         {
             throw new ArgumentNullException(nameof(processor));
         }
-        
+
         ThrowIfDisposed();
-        
-        // Create a new bag without the processor to remove
-        var remainingProcessors = _processors.Where(p => !ReferenceEquals(p, processor)).ToList();
-        
-        // Clear the current bag and add back the remaining processors
-        while (_processors.TryTake(out _)) { }
-        foreach (var remainingProcessor in remainingProcessors)
+
+        // Remove the first occurrence by reference identity so that registering the same
+        // instance twice and then unregistering once preserves the duplicate (matches the
+        // documented "one registration removed per call" behavior).
+        var updated = AtomicUpdate(list =>
         {
-            _processors.Add(remainingProcessor);
+            var index = -1;
+            for (var i = 0; i < list.Count; i++)
+            {
+                if (ReferenceEquals(list[i], processor))
+                {
+                    index = i;
+                    break;
+                }
+            }
+            return index < 0 ? list : list.RemoveAt(index);
+        });
+
+        _logger.Log(LogLevel.Information,
+            $"Unregistered processor '{processor.GetType().Name}' from queue consumer. Total processors: {updated.Count}");
+    }
+
+    private ImmutableList<ITestCompletionQueueProcessor> AtomicUpdate(
+        Func<ImmutableList<ITestCompletionQueueProcessor>, ImmutableList<ITestCompletionQueueProcessor>> mutator)
+    {
+        while (true)
+        {
+            var current = Volatile.Read(ref _processors);
+            var next = mutator(current);
+            if (ReferenceEquals(next, current) ||
+                ReferenceEquals(Interlocked.CompareExchange(ref _processors, next, current), current))
+            {
+                return next;
+            }
         }
-        
-        _logger.Log(LogLevel.Information, 
-            $"Unregistered processor '{processor.GetType().Name}' from queue consumer. Total processors: {_processors.Count}");
     }
 
     /// <summary>
@@ -371,9 +395,9 @@ internal class TestCompletionQueueConsumer : IDisposable, IAsyncDisposable
     /// <returns>A task representing the asynchronous processing operation.</returns>
     private async Task ProcessMessageWithProcessors(TestCompletionQueueMessage message, CancellationToken cancellationToken)
     {
-        var processors = _processors.ToArray(); // Snapshot for thread safety
+        var processors = Volatile.Read(ref _processors);
 
-        if (processors.Length == 0)
+        if (processors.Count == 0)
         {
             _logger.Log(LogLevel.Warning,
                 $"No processors registered - message for test case '{message.TestCaseId}' will not be processed");
@@ -381,9 +405,9 @@ internal class TestCompletionQueueConsumer : IDisposable, IAsyncDisposable
         }
 
         _logger.Log(LogLevel.Debug,
-            $"Processing message for test case '{message.TestCaseId}' with {processors.Length} processors");
+            $"Processing message for test case '{message.TestCaseId}' with {processors.Count} processors");
 
-        // Process with each registered processor sequentially
+        // Process with each registered processor sequentially, in registration order.
         foreach (var processor in processors)
         {
             await ProcessMessageWithSingleProcessor(message, processor, cancellationToken).ConfigureAwait(false);

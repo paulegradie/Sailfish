@@ -154,6 +154,44 @@ public class TestCompletionQueueConsumerTests : IDisposable
         Should.Throw<ObjectDisposedException>(() => _consumer.UnregisterProcessor(processor));
     }
 
+    [Fact]
+    public void GetProcessors_ShouldReturnInRegistrationOrder()
+    {
+        // Arrange
+        _consumer = new TestCompletionQueueConsumer(_queue, _logger);
+        var first = Substitute.For<ITestCompletionQueueProcessor>();
+        var second = Substitute.For<ITestCompletionQueueProcessor>();
+        var third = Substitute.For<ITestCompletionQueueProcessor>();
+
+        // Act
+        _consumer.RegisterProcessor(first);
+        _consumer.RegisterProcessor(second);
+        _consumer.RegisterProcessor(third);
+        var snapshot = _consumer.GetProcessors();
+
+        // Assert
+        snapshot.ShouldBe(new[] { first, second, third });
+    }
+
+    [Fact]
+    public void UnregisterProcessor_ShouldPreserveOrderOfRemainingProcessors()
+    {
+        // Arrange
+        _consumer = new TestCompletionQueueConsumer(_queue, _logger);
+        var first = Substitute.For<ITestCompletionQueueProcessor>();
+        var second = Substitute.For<ITestCompletionQueueProcessor>();
+        var third = Substitute.For<ITestCompletionQueueProcessor>();
+        _consumer.RegisterProcessor(first);
+        _consumer.RegisterProcessor(second);
+        _consumer.RegisterProcessor(third);
+
+        // Act
+        _consumer.UnregisterProcessor(second);
+
+        // Assert
+        _consumer.GetProcessors().ShouldBe(new[] { first, third });
+    }
+
     #endregion
 
     #region StartAsync Tests
