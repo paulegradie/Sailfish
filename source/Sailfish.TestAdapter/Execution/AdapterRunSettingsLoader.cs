@@ -4,6 +4,7 @@ using Sailfish.Exceptions;
 using Sailfish.TestAdapter.Discovery;
 using Sailfish.TestAdapter.TestSettingsParser;
 using SailDiffSettings = Sailfish.Analysis.SailDiff.SailDiffSettings;
+using RuntimeScaleFishSettings = Sailfish.Analysis.ScaleFish.ScaleFishSettings;
 
 namespace Sailfish.TestAdapter.Execution;
 
@@ -36,12 +37,28 @@ public static class AdapterRunSettingsLoader
             runSettingsBuilder = runSettingsBuilder.WithTimerCalibration(parsedSettings.SailfishSettings.TimerCalibration.Value);
 
         var testSettings = MapToTestSettings(parsedSettings);
+        var scaleFishSettings = MapToScaleFishSettings(parsedSettings);
         var runSettings = runSettingsBuilder
             .CreateTrackingFiles()
             .WithSailDiff(testSettings)
-            .WithScaleFish()
+            .WithScaleFish(scaleFishSettings)
             .Build();
         return runSettings;
+    }
+
+    private static RuntimeScaleFishSettings MapToScaleFishSettings(SettingsConfiguration settingsConfiguration)
+    {
+        var mapped = new RuntimeScaleFishSettings();
+        var parsed = settingsConfiguration.ScaleFishSettings;
+        // `SettingsConfiguration.ScaleFishSettings` is initialized inline to a default instance, but a
+        // user can explicitly set the JSON property to null. Return defaults in that case rather than NRE.
+        if (parsed is null) return mapped;
+        if (parsed.EnableBootstrap is not null) mapped.EnableBootstrap = parsed.EnableBootstrap.Value;
+        if (parsed.BootstrapIterations is not null) mapped.BootstrapIterations = parsed.BootstrapIterations.Value;
+        if (parsed.EnableParallelBootstrap is not null) mapped.EnableParallelBootstrap = parsed.EnableParallelBootstrap.Value;
+        if (parsed.EnableContinuousExponent is not null) mapped.EnableContinuousExponent = parsed.EnableContinuousExponent.Value;
+        if (parsed.DistinguishabilityDelta is not null) mapped.DistinguishabilityDelta = parsed.DistinguishabilityDelta.Value;
+        return mapped;
     }
 
     private static SailDiffSettings MapToTestSettings(SettingsConfiguration settingsConfiguration)

@@ -66,12 +66,21 @@ internal class ScalefishObservationCompiler : IScalefishObservationCompiler
         var complexityMeasurements = complexityCase
             .Variables
             .Zip(testResult.Select(x => x.PerformanceRunResult!))
-            .Select(pair => new ComplexityMeasurement(
-                pair.First,
-                pair.Second.Mean,
-                pair.Second.StdDev,
-                pair.Second.SampleSize,
-                pair.Second.DataWithOutliersRemoved))
+            .Select(pair =>
+            {
+                // The bootstrap and weighted-fit paths assume `SampleSize` matches the length of
+                // `RawSamples`. `PerformanceRunResult.SampleSize` is the *original* count (pre-outlier
+                // removal), while `DataWithOutliersRemoved` is what we actually carry as the raw vector.
+                // Use the cleaned vector's length so StandardError = StdDev / √N stays honest.
+                var cleaned = pair.Second.DataWithOutliersRemoved;
+                var effectiveN = cleaned?.Length ?? pair.Second.SampleSize;
+                return new ComplexityMeasurement(
+                    pair.First,
+                    pair.Second.Mean,
+                    pair.Second.StdDev,
+                    effectiveN,
+                    cleaned);
+            })
             .ToList();
         return complexityMeasurements;
     }

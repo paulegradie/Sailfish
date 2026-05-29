@@ -90,6 +90,13 @@ public class ScaleFishModel
     public BootstrapDiagnostic? Bootstrap { get; init; }
 
     /// <summary>
+    /// When the classification is not distinguishable, a recommended next X value that would maximally
+    /// separate the top two candidate families. Null when the result is already distinguishable
+    /// (or when no measurements are available to derive a sensible value).
+    /// </summary>
+    public int? SuggestedNextN { get; init; }
+
+    /// <summary>
     /// Δ-AICc between the next-best and best model. Larger ⇒ more confidently distinguishable.
     /// </summary>
     public double DeltaAicc =>

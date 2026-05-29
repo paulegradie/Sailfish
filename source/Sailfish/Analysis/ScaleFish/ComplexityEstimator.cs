@@ -1,7 +1,9 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Sailfish.Analysis.ScaleFish.CurveFitting;
+using Sailfish.Contracts.Public.Models;
 
 namespace Sailfish.Analysis.ScaleFish;
 
@@ -13,38 +15,74 @@ public interface IComplexityEstimator
 public class ComplexityEstimator : IComplexityEstimator
 {
     /// <summary>
-    /// Δ-AICc threshold above which the best model is considered statistically separable from the runner-up.
-    /// 2 is the standard Burnham &amp; Anderson cutoff for "some evidence"; we use it as the distinguishability gate.
+    /// Default Δ-AICc threshold above which the best model is considered statistically separable from the
+    /// runner-up. 2 is the standard Burnham &amp; Anderson cutoff for "some evidence". Tune via
+    /// <see cref="ScaleFishSettings.DistinguishabilityDelta"/>.
     /// </summary>
     public const double DistinguishabilityDelta = 2.0;
 
     /// <summary>Default number of bootstrap iterations when raw replicates are available.</summary>
     public const int DefaultBootstrapIterations = 200;
 
-    public ScaleFishModel? EstimateComplexity(ComplexityMeasurement[] measurements)
+    private readonly ScaleFishSettings _settings;
+
+    /// <summary>
+    /// Parameterless constructor — uses default <see cref="ScaleFishSettings"/>. Preserved for tests and
+    /// callers who don't yet thread <see cref="IRunSettings"/> through their DI graph.
+    /// </summary>
+    public ComplexityEstimator() : this(new ScaleFishSettings())
     {
-        var point = RankCandidates(measurements);
-        if (point is null) return null;
-
-        // Optional continuous-exponent diagnostic
-        PowerLogResult? powerLog;
-        try
-        {
-            var weights = ScaleFishModelFunction.BuildVarianceWeights(measurements!);
-            powerLog = PowerLogFit.TryFit(measurements!, weights);
-        }
-        catch
-        {
-            powerLog = null;
-        }
-
-        // Optional bootstrap — only runs when raw replicates are present at every X
-        var bootstrap = TryBootstrap(measurements!, point.Best.Function.Name, point.Best.Function.FunctionParameters);
-
-        return Build(point, powerLog, bootstrap);
     }
 
-    private static ScaleFishModel Build(PointEstimate point, PowerLogResult? powerLog, BootstrapDiagnostic? bootstrap)
+    /// <summary>
+    /// Uses the run's <see cref="IRunSettings.ScaleFishSettings"/> when resolved via DI.
+    /// </summary>
+    public ComplexityEstimator(IRunSettings runSettings) : this(runSettings?.ScaleFishSettings ?? new ScaleFishSettings())
+    {
+    }
+
+    public ComplexityEstimator(ScaleFishSettings settings)
+    {
+        _settings = settings ?? new ScaleFishSettings();
+    }
+
+    public ScaleFishModel? EstimateComplexity(ComplexityMeasurement[] measurements)
+    {
+        var point = RankCandidates(measurements, _settings.DistinguishabilityDelta);
+        if (point is null) return null;
+
+        // Optional continuous-exponent diagnostic — gated by settings.
+        PowerLogResult? powerLog = null;
+        if (_settings.EnableContinuousExponent)
+        {
+            try
+            {
+                var weights = ScaleFishModelFunction.BuildVarianceWeights(measurements!);
+                powerLog = PowerLogFit.TryFit(measurements!, weights);
+            }
+            catch
+            {
+                powerLog = null;
+            }
+        }
+
+        // Optional bootstrap — only runs when raw replicates are present at every X and the user hasn't
+        // opted out / set iterations to 0.
+        BootstrapDiagnostic? bootstrap = null;
+        if (_settings.EnableBootstrap && _settings.BootstrapIterations > 0)
+        {
+            bootstrap = TryBootstrap(
+                measurements!,
+                point.Best.Function.Name,
+                _settings.BootstrapIterations,
+                _settings.DistinguishabilityDelta,
+                _settings.EnableParallelBootstrap);
+        }
+
+        return Build(point, powerLog, bootstrap, measurements);
+    }
+
+    private ScaleFishModel Build(PointEstimate point, PowerLogResult? powerLog, BootstrapDiagnostic? bootstrap, ComplexityMeasurement[] measurements)
     {
         return new ScaleFishModel(
             point.Best.Function,
@@ -58,15 +96,33 @@ public class ComplexityEstimator : IComplexityEstimator
             sampleSize: point.SampleSize,
             powerLog: powerLog)
         {
-            Bootstrap = bootstrap
+            Bootstrap = bootstrap,
+            SuggestedNextN = SuggestNextN(point, measurements)
         };
+    }
+
+    /// <summary>
+    /// When the result is not distinguishable, suggest a next X value to add. For most adjacent
+    /// family ties (Linear vs NLogN, Quadratic vs Cubic, etc.) doubling the current max X gives the
+    /// two candidate curves enough room to diverge to break the tie at typical noise levels.
+    /// </summary>
+    private static int? SuggestNextN(PointEstimate point, ComplexityMeasurement[] measurements)
+    {
+        if (point.IsDistinguishable) return null;
+        if (measurements is null || measurements.Length == 0) return null;
+        var finiteXs = measurements.Where(m => double.IsFinite(m.X) && m.X > 0).Select(m => m.X).ToArray();
+        if (finiteXs.Length == 0) return null;
+        var maxX = finiteXs.Max();
+        var suggested = (long)Math.Ceiling(maxX * 2.0);
+        if (suggested <= 0 || suggested > int.MaxValue) return null;
+        return (int)suggested;
     }
 
     /// <summary>
     /// Fits every candidate family to the measurements and ranks them by AICc, returning the point estimate
     /// (best, runner-up, akaike weight, distinguishability). Returns null when no candidate produced a valid fit.
     /// </summary>
-    internal static PointEstimate? RankCandidates(ComplexityMeasurement[]? measurements)
+    internal static PointEstimate? RankCandidates(ComplexityMeasurement[]? measurements, double distinguishabilityDelta = DistinguishabilityDelta)
     {
         if (measurements is null || measurements.Length < 2) return null;
 
@@ -116,7 +172,7 @@ public class ComplexityEstimator : IComplexityEstimator
         var delta = double.IsFinite(closest.Aicc) && double.IsFinite(nextClosest.Aicc)
             ? nextClosest.Aicc - closest.Aicc
             : double.NaN;
-        var isDistinguishable = double.IsFinite(delta) && delta >= DistinguishabilityDelta;
+        var isDistinguishable = double.IsFinite(delta) && delta >= distinguishabilityDelta;
 
         return new PointEstimate(closest, nextClosest, akaikeWeight, isDistinguishable, n);
     }
@@ -124,40 +180,47 @@ public class ComplexityEstimator : IComplexityEstimator
     private static BootstrapDiagnostic? TryBootstrap(
         ComplexityMeasurement[] measurements,
         string bestFamilyName,
-        FittedCurve? pointParameters)
+        int iterations,
+        double distinguishabilityDelta,
+        bool runInParallel)
     {
         if (measurements.Any(m => m.RawSamples is null || m.RawSamples.Length < 2))
             return null;
+        if (iterations <= 0) return null;
 
-        var iterations = DefaultBootstrapIterations;
-        var rng = new Random(DeterministicSeed(measurements));
+        var baseSeed = DeterministicSeed(measurements);
 
+        // Per-iteration result slot. Each iteration runs independently with its own RNG seeded from
+        // (baseSeed, iterationIndex), so the aggregated outputs are identical whether we execute
+        // serially or across many threads — `Parallel.For` is bit-for-bit equivalent to the for loop.
+        var iterationResults = new IterationResult?[iterations];
+
+        if (runInParallel && iterations > 1)
+        {
+            Parallel.For(0, iterations,
+                i => iterationResults[i] = RunBootstrapIteration(measurements, baseSeed, i, distinguishabilityDelta));
+        }
+        else
+        {
+            for (var i = 0; i < iterations; i++)
+                iterationResults[i] = RunBootstrapIteration(measurements, baseSeed, i, distinguishabilityDelta);
+        }
+
+        // Aggregate sequentially. Scale/bias samples only come from iterations whose winning family
+        // matches the point estimate — those parameters live in family-specific units, so mixing
+        // them across families would produce meaningless CIs.
         var scaleSamples = new List<double>(iterations);
         var biasSamples = new List<double>(iterations);
         var familyCounts = new Dictionary<string, int>();
 
-        for (var iter = 0; iter < iterations; iter++)
+        foreach (var result in iterationResults)
         {
-            var resampled = new ComplexityMeasurement[measurements.Length];
-            for (var i = 0; i < measurements.Length; i++)
-            {
-                resampled[i] = ResampleAtX(measurements[i], rng);
-            }
-
-            var inner = RankCandidates(resampled);
-            if (inner is null) continue;
-
-            var winner = inner.Best.Function;
-            familyCounts.TryGetValue(winner.Name, out var count);
-            familyCounts[winner.Name] = count + 1;
-
-            // Only record parameter samples from iterations that selected the same family as the
-            // point estimate. Scale/bias are family-specific units (e.g. a Linear scale and a Quadratic
-            // scale are not comparable), so mixing them across families would produce meaningless CIs.
-            if (winner.Name != bestFamilyName) continue;
-            if (winner.FunctionParameters is null) continue;
-            scaleSamples.Add(winner.FunctionParameters.Scale);
-            biasSamples.Add(winner.FunctionParameters.Bias);
+            if (result is null) continue;
+            familyCounts.TryGetValue(result.WinnerName, out var count);
+            familyCounts[result.WinnerName] = count + 1;
+            if (result.WinnerName != bestFamilyName) continue;
+            scaleSamples.Add(result.Scale);
+            biasSamples.Add(result.Bias);
         }
 
         if (familyCounts.Count == 0) return null;
@@ -175,6 +238,32 @@ public class ComplexityEstimator : IComplexityEstimator
             scaleCiUpper: scaleHigh,
             biasCiLower: biasLow,
             biasCiUpper: biasHigh);
+    }
+
+    private static IterationResult? RunBootstrapIteration(
+        ComplexityMeasurement[] measurements,
+        int baseSeed,
+        int iterationIndex,
+        double distinguishabilityDelta)
+    {
+        // Knuth's multiplicative hash mixed with the iteration index gives every iteration an
+        // independent RNG sequence while keeping the output reproducible for identical inputs.
+        // Cast to int explicitly because 2654435761 overflows int as a literal (it's uint).
+        var seed = unchecked((int)(baseSeed * 2654435761u + (uint)iterationIndex));
+        var rng = new Random(seed);
+
+        var resampled = new ComplexityMeasurement[measurements.Length];
+        for (var i = 0; i < measurements.Length; i++)
+            resampled[i] = ResampleAtX(measurements[i], rng);
+
+        var inner = RankCandidates(resampled, distinguishabilityDelta);
+        if (inner is null) return null;
+
+        var winner = inner.Best.Function;
+        if (winner.FunctionParameters is null)
+            return new IterationResult(winner.Name, double.NaN, double.NaN);
+
+        return new IterationResult(winner.Name, winner.FunctionParameters.Scale, winner.FunctionParameters.Bias);
     }
 
     private static ComplexityMeasurement ResampleAtX(ComplexityMeasurement source, Random rng)
@@ -198,6 +287,8 @@ public class ComplexityEstimator : IComplexityEstimator
         var stdDev = raw.Length > 1 ? Math.Sqrt(sqSum / (raw.Length - 1)) : 0.0;
         return new ComplexityMeasurement(source.X, mean, stdDev, raw.Length, resampled);
     }
+
+    private sealed record IterationResult(string WinnerName, double Scale, double Bias);
 
     private static (double lower, double upper) Percentiles(List<double> samples, double low, double high)
     {

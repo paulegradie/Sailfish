@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using Sailfish.Analysis.SailDiff;
 using Sailfish.Analysis;
+using Sailfish.Analysis.ScaleFish;
 
 using Sailfish.Extensions.Types;
 using Sailfish.Logging;
@@ -16,6 +17,7 @@ public interface IRunSettings
     bool RunScaleFish { get; }
     bool CreateTrackingFiles { get; }
     SailDiffSettings SailDiffSettings { get; }
+    ScaleFishSettings ScaleFishSettings { get; }
     IEnumerable<Type> TestLocationAnchors { get; }
     IEnumerable<Type> RegistrationProviderAnchors { get; }
     OrderedDictionary Tags { get; }

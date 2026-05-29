@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using Sailfish.Analysis.SailDiff;
 using Sailfish.Analysis;
+using Sailfish.Analysis.ScaleFish;
 
 using Sailfish.Contracts.Public.Models;
 using Sailfish.Extensions.Types;
@@ -43,7 +44,8 @@ internal class RunSettings : IRunSettings
         OutlierStrategy? globalOutlierStrategy = null,
         bool enableEnvironmentHealthCheck = true,
         bool timerCalibration = true,
-        int? seed = null)
+        int? seed = null,
+        ScaleFishSettings? scaleFishSettings = null)
     {
         TestNames = testNames;
         LocalOutputDirectory = localOutputDirectory;
@@ -51,6 +53,7 @@ internal class RunSettings : IRunSettings
         RunSailDiff = useSailDiff;
         RunScaleFish = useScaleFish;
         SailDiffSettings = sailDiffSettings;
+        ScaleFishSettings = scaleFishSettings ?? new ScaleFishSettings();
         TestLocationAnchors = testLocationAnchors;
         RegistrationProviderAnchors = registrationProviderAnchors;
         Tags = tags;
@@ -84,6 +87,7 @@ internal class RunSettings : IRunSettings
     public bool RunSailDiff { get; }
     public bool RunScaleFish { get; }
     public SailDiffSettings SailDiffSettings { get; }
+    public ScaleFishSettings ScaleFishSettings { get; }
     public IEnumerable<Type> TestLocationAnchors { get; }
     public IEnumerable<Type> RegistrationProviderAnchors { get; }
     public OrderedDictionary Tags { get; }
