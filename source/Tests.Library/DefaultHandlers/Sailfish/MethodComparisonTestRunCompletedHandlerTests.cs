@@ -148,6 +148,64 @@ public class MethodComparisonTestRunCompletedHandlerTests
     }
 
     [Fact]
+    public async Task Handle_WithBaselineComparison_RendersBaselineTable()
+    {
+        // Arrange — a comparison group with exactly one IsBaseline=true method.
+        var notification = CreateTestNotificationWithBaselineComparison();
+
+        // Act
+        await _handler.Handle(notification, CancellationToken.None);
+
+        // Assert — baseline mode emits a "Baseline Comparison" header (not the N×N matrix header)
+        // and a "Ratio vs Baseline" column.
+        await _mockMediator.Received(1).Publish(
+            Arg.Is<WriteMethodComparisonMarkdownNotification>(n =>
+                n.MarkdownContent.Contains("Baseline Comparison") &&
+                n.MarkdownContent.Contains("Ratio vs Baseline") &&
+                n.MarkdownContent.Contains("(baseline)") &&
+                !n.MarkdownContent.Contains("Performance Comparison Matrix")),
+            Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task Handle_WithSameGroupNameInTwoClasses_KeepsEachBaselineMode()
+    {
+        // Regression for the per-class scoping bug: two distinct classes use the same
+        // ComparisonGroup name and each has its own single baseline. Without per-class grouping,
+        // the merged group sees 2 baselines and silently collapses to an N×N matrix.
+        var notification = CreateTestNotificationWithSameGroupNameInTwoClasses();
+
+        await _handler.Handle(notification, CancellationToken.None);
+
+        await _mockMediator.Received(1).Publish(
+            Arg.Is<WriteMethodComparisonMarkdownNotification>(n =>
+                // Both class sections appear under their class-disambiguated headers.
+                n.MarkdownContent.Contains("Comparison Group: TestGroup (TestClassWithBaselineComparison)") &&
+                n.MarkdownContent.Contains("Comparison Group: TestGroup (OtherTestClassWithBaselineComparison)") &&
+                // Both render in baseline mode — never the fallback matrix header.
+                n.MarkdownContent.Contains("Baseline Comparison") &&
+                !n.MarkdownContent.Contains("Performance Comparison Matrix")),
+            Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task Handle_WithLegacyComparisonAttribute_StillRendersComparison()
+    {
+        // Arrange — uses the obsolete [SailfishComparison] attribute via the fallback path.
+        var notification = CreateTestNotificationWithLegacyComparison();
+
+        // Act
+        await _handler.Handle(notification, CancellationToken.None);
+
+        // Assert — legacy attribute has no baseline concept → falls through to N×N matrix.
+        await _mockMediator.Received(1).Publish(
+            Arg.Is<WriteMethodComparisonMarkdownNotification>(n =>
+                n.MarkdownContent.Contains("Comparison Group:") &&
+                n.MarkdownContent.Contains("Performance Comparison Matrix")),
+            Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
     public async Task Handle_WithNonComparisonMethods_GeneratesIndividualResults()
     {
         // Arrange
@@ -346,6 +404,81 @@ public class MethodComparisonTestRunCompletedHandlerTests
         return new TestRunCompletedNotification([classExecutionSummary]);
     }
 
+    private TestRunCompletedNotification CreateTestNotificationWithBaselineComparison()
+    {
+        var classExecutionSummary = ClassExecutionSummaryTrackingFormatBuilder.Create()
+            .WithTestClass(typeof(TestClassWithBaselineComparison))
+            .WithCompiledTestCaseResult(b => b
+                .WithTestCaseId(TestCaseIdBuilder.Create().WithTestCaseName("Baseline").Build())
+                .WithPerformanceRunResult(PerformanceRunResultTrackingFormatBuilder.Create()
+                    .WithMean(10.0)
+                    .WithMedian(9.5)
+                    .WithSampleSize(100)
+                    .Build()))
+            .WithCompiledTestCaseResult(b => b
+                .WithTestCaseId(TestCaseIdBuilder.Create().WithTestCaseName("Contender").Build())
+                .WithPerformanceRunResult(PerformanceRunResultTrackingFormatBuilder.Create()
+                    .WithMean(20.0)
+                    .WithMedian(19.5)
+                    .WithSampleSize(100)
+                    .Build()))
+            .Build();
+
+        return new TestRunCompletedNotification([classExecutionSummary]);
+    }
+
+    private TestRunCompletedNotification CreateTestNotificationWithSameGroupNameInTwoClasses()
+    {
+        var classA = ClassExecutionSummaryTrackingFormatBuilder.Create()
+            .WithTestClass(typeof(TestClassWithBaselineComparison))
+            .WithCompiledTestCaseResult(b => b
+                .WithTestCaseId(TestCaseIdBuilder.Create().WithTestCaseName("Baseline").Build())
+                .WithPerformanceRunResult(PerformanceRunResultTrackingFormatBuilder.Create()
+                    .WithMean(10.0).WithMedian(9.5).WithSampleSize(100).Build()))
+            .WithCompiledTestCaseResult(b => b
+                .WithTestCaseId(TestCaseIdBuilder.Create().WithTestCaseName("Contender").Build())
+                .WithPerformanceRunResult(PerformanceRunResultTrackingFormatBuilder.Create()
+                    .WithMean(20.0).WithMedian(19.5).WithSampleSize(100).Build()))
+            .Build();
+
+        var classB = ClassExecutionSummaryTrackingFormatBuilder.Create()
+            .WithTestClass(typeof(OtherTestClassWithBaselineComparison))
+            .WithCompiledTestCaseResult(b => b
+                .WithTestCaseId(TestCaseIdBuilder.Create().WithTestCaseName("Baseline").Build())
+                .WithPerformanceRunResult(PerformanceRunResultTrackingFormatBuilder.Create()
+                    .WithMean(30.0).WithMedian(29.5).WithSampleSize(100).Build()))
+            .WithCompiledTestCaseResult(b => b
+                .WithTestCaseId(TestCaseIdBuilder.Create().WithTestCaseName("Contender").Build())
+                .WithPerformanceRunResult(PerformanceRunResultTrackingFormatBuilder.Create()
+                    .WithMean(40.0).WithMedian(39.5).WithSampleSize(100).Build()))
+            .Build();
+
+        return new TestRunCompletedNotification([classA, classB]);
+    }
+
+    private TestRunCompletedNotification CreateTestNotificationWithLegacyComparison()
+    {
+        var classExecutionSummary = ClassExecutionSummaryTrackingFormatBuilder.Create()
+            .WithTestClass(typeof(LegacyTestClassWithComparison))
+            .WithCompiledTestCaseResult(b => b
+                .WithTestCaseId(TestCaseIdBuilder.Create().WithTestCaseName("Method1").Build())
+                .WithPerformanceRunResult(PerformanceRunResultTrackingFormatBuilder.Create()
+                    .WithMean(10.0)
+                    .WithMedian(9.5)
+                    .WithSampleSize(100)
+                    .Build()))
+            .WithCompiledTestCaseResult(b => b
+                .WithTestCaseId(TestCaseIdBuilder.Create().WithTestCaseName("Method2").Build())
+                .WithPerformanceRunResult(PerformanceRunResultTrackingFormatBuilder.Create()
+                    .WithMean(20.0)
+                    .WithMedian(19.5)
+                    .WithSampleSize(100)
+                    .Build()))
+            .Build();
+
+        return new TestRunCompletedNotification([classExecutionSummary]);
+    }
+
     private TestRunCompletedNotification CreateTestNotificationWithNonComparisonMethods()
     {
         var classExecutionSummary = ClassExecutionSummaryTrackingFormatBuilder.Create()
@@ -413,11 +546,46 @@ public class MethodComparisonTestRunCompletedHandlerTests
     [WriteToMarkdown]
     private class TestClassWithComparison
     {
+        [SailfishMethod(ComparisonGroup = "TestGroup")]
+        public void Method1() { }
+
+        [SailfishMethod(ComparisonGroup = "TestGroup")]
+        public void Method2() { }
+    }
+
+    [WriteToMarkdown]
+    private class TestClassWithBaselineComparison
+    {
+        [SailfishMethod(ComparisonGroup = "TestGroup", IsBaseline = true)]
+        public void Baseline() { }
+
+        [SailfishMethod(ComparisonGroup = "TestGroup")]
+        public void Contender() { }
+    }
+
+    // Deliberately reuses the "TestGroup" name from TestClassWithBaselineComparison to verify
+    // per-class scoping. Without it, both classes' baselines would merge and fall back to N×N.
+    [WriteToMarkdown]
+    private class OtherTestClassWithBaselineComparison
+    {
+        [SailfishMethod(ComparisonGroup = "TestGroup", IsBaseline = true)]
+        public void Baseline() { }
+
+        [SailfishMethod(ComparisonGroup = "TestGroup")]
+        public void Contender() { }
+    }
+
+    [WriteToMarkdown]
+    private class LegacyTestClassWithComparison
+    {
+        // Coverage for the deprecation-window fallback: legacy [SailfishComparison] still resolves.
+#pragma warning disable CS0618 // Type or member is obsolete
         [SailfishComparison("TestGroup")]
         public void Method1() { }
 
         [SailfishComparison("TestGroup")]
         public void Method2() { }
+#pragma warning restore CS0618
     }
 
     [WriteToMarkdown]

@@ -1,20 +1,22 @@
-﻿using Sailfish.Attributes;
+using Sailfish.Attributes;
 
 namespace Tests.E2E.TestSuite.Discoverable;
 
 /// <summary>
-/// Example test class demonstrating the new method comparison feature.
-/// This class shows how to use SailfishComparisonAttribute to mark methods
-/// for "before and after" performance comparisons.
+/// Example test class demonstrating the method comparison feature.
+/// Comparison configuration lives on <see cref="SailfishMethodAttribute"/> itself:
+/// set <c>ComparisonGroup</c> to opt a method into a named comparison, and optionally
+/// set <c>IsBaseline = true</c> on one method per group to switch from the default N×N
+/// matrix to N−1 baseline-vs-contender comparisons.
 /// </summary>
 /// <remarks>
 /// When running individual methods, only that method's results are displayed.
-/// When running the entire class, SailDiff comparisons are performed between
-/// methods in the same comparison group and displayed in the test output.
-/// 
-/// Usage:
-/// - Run individual methods: Only method results shown
-/// - Run entire class: Method results + SailDiff comparison results shown
+/// When running the entire class, comparisons are performed between methods in the
+/// same comparison group and rendered in the markdown/CSV output.
+///
+/// - <c>SumCalculation</c> has no baseline → full N×N matrix is rendered.
+/// - <c>SortingAlgorithm</c> nominates <c>SortWithQuickSort</c> as the baseline → the
+///   table reports each contender's ratio vs. quicksort.
 /// </remarks>
 [Sailfish(Disabled = Constants.Disabled)]
 public class MethodComparisonExample
@@ -33,10 +35,9 @@ public class MethodComparisonExample
     }
 
     /// <summary>
-    /// LINQ-based sum calculation algorithm.
+    /// LINQ-based sum calculation algorithm. Part of the SumCalculation group (no baseline → N×N).
     /// </summary>
-    [SailfishMethod]
-    [SailfishComparison("SumCalculation")]
+    [SailfishMethod(ComparisonGroup = "SumCalculation")]
     public void CalculateSumWithLinq()
     {
         var sum = _data.Sum();
@@ -45,10 +46,9 @@ public class MethodComparisonExample
     }
 
     /// <summary>
-    /// Loop-based sum calculation algorithm.
+    /// Loop-based sum calculation algorithm. Part of the SumCalculation group (no baseline → N×N).
     /// </summary>
-    [SailfishMethod]
-    [SailfishComparison("SumCalculation")]
+    [SailfishMethod(ComparisonGroup = "SumCalculation")]
     public void CalculateSumWithLoop()
     {
         var sum = 0;
@@ -61,10 +61,9 @@ public class MethodComparisonExample
     }
 
     /// <summary>
-    /// Bubble sort algorithm implementation.
+    /// Bubble sort algorithm — contender in the SortingAlgorithm group.
     /// </summary>
-    [SailfishMethod]
-    [SailfishComparison("SortingAlgorithm")]
+    [SailfishMethod(ComparisonGroup = "SortingAlgorithm")]
     public void SortWithBubbleSort()
     {
         var array = _data.ToArray();
@@ -83,10 +82,10 @@ public class MethodComparisonExample
     }
 
     /// <summary>
-    /// Optimized sorting algorithm using Array.Sort.
+    /// Optimized sorting algorithm — declared as the baseline of SortingAlgorithm.
+    /// All other methods in this group are reported as ratios vs. this one.
     /// </summary>
-    [SailfishMethod]
-    [SailfishComparison("SortingAlgorithm")]
+    [SailfishMethod(ComparisonGroup = "SortingAlgorithm", IsBaseline = true)]
     public void SortWithQuickSort()
     {
         var array = _data.ToArray();
@@ -94,7 +93,7 @@ public class MethodComparisonExample
     }
 
     /// <summary>
-    /// Regular method without comparison - will not participate in comparisons.
+    /// Regular method without comparison — will not participate in any comparison group.
     /// </summary>
     [SailfishMethod]
     public void RegularMethod()
@@ -104,7 +103,7 @@ public class MethodComparisonExample
     }
 
     /// <summary>
-    /// Another regular method - demonstrates that non-comparison methods work normally.
+    /// Another regular method — demonstrates that non-comparison methods coexist with comparison ones.
     /// </summary>
     [SailfishMethod]
     public void AnotherRegularMethod()

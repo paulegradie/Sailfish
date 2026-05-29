@@ -187,10 +187,12 @@ internal class CsvTestRunCompletedHandler : INotificationHandler<TestRunComplete
 
         try
         {
+            // Group by (TestClass, ComparisonGroup) — see ComparisonGroupKey for why class-scoping matters
+            // (same-named groups in different classes must not be merged when counting baselines).
             var comparisonGroups = typed
                 .Where(tr => HasComparisonAttribute(tr.TestResult, tr.TestClass))
-                .GroupBy(tr => GetComparisonGroup(tr.TestResult, tr.TestClass))
-                .Where(g => !string.IsNullOrEmpty(g.Key))
+                .GroupBy(tr => new ComparisonGroupKey(tr.TestClass, GetComparisonGroup(tr.TestResult, tr.TestClass)))
+                .Where(g => !string.IsNullOrEmpty(g.Key.GroupName))
                 .ToList();
 
             if (!comparisonGroups.Any())
@@ -204,70 +206,101 @@ internal class CsvTestRunCompletedHandler : INotificationHandler<TestRunComplete
 
             foreach (var group in comparisonGroups)
             {
-                var methods = group.Select(g => g.TestResult).ToList();
+                var groupName = group.Key.GroupName!;
+                var className = group.Key.TestClass.Name;
+                var members = group.ToList();
+                var methods = members.Select(g => g.TestResult).ToList();
                 if (methods.Count < 2) continue;
 
-                // Build stats for each method in the group
-                var stats = methods.Select(m =>
-                {
-                    var pr = m.PerformanceRunResult;
-                    var mean = pr?.Mean ?? 0.0;
-                    var n = pr?.DataWithOutliersRemoved?.Length ?? pr?.SampleSize ?? 0;
-                    var stdDev = pr?.StdDev ?? 0.0;
-                    var se = n > 0 ? stdDev / Math.Sqrt(n) : 0.0;
-                    var name = GetMethodName(m.TestCaseId?.DisplayName ?? "Unknown");
-                    var id = m.TestCaseId?.DisplayName ?? name;
-                    return new { Name = name, Id = id, Mean = mean, SE = se, N = n };
-                })
-                .Where(s => s.Mean > 0)
-                .ToList();
+                // Build stats for each method in the group, tagging baseline membership.
+                var stats = members
+                    .Select(m =>
+                    {
+                        var tr = m.TestResult;
+                        var pr = tr.PerformanceRunResult;
+                        var mean = pr?.Mean ?? 0.0;
+                        var n = pr?.DataWithOutliersRemoved?.Length ?? pr?.SampleSize ?? 0;
+                        var stdDev = pr?.StdDev ?? 0.0;
+                        var se = n > 0 ? stdDev / Math.Sqrt(n) : 0.0;
+                        var name = GetMethodName(tr.TestCaseId?.DisplayName ?? "Unknown");
+                        var id = tr.TestCaseId?.DisplayName ?? name;
+                        var isBaseline = GetComparisonInfoForResult(tr, m.TestClass).IsBaseline;
+                        return new { Name = name, Id = id, Mean = mean, SE = se, N = n, IsBaseline = isBaseline };
+                    })
+                    .Where(s => s.Mean > 0)
+                    .ToList();
 
                 if (stats.Count < 2) continue;
 
-                // Compute pairwise p-values on log-ratio and apply BH-FDR
-                var pMap = new Dictionary<(string A, string B), double>();
-                for (var i = 0; i < stats.Count; i++)
+                var baselineStats = stats.Where(s => s.IsBaseline).ToList();
+                var baselineMode = baselineStats.Count == 1;
+                if (baselineStats.Count > 1)
                 {
-                    for (var j = i + 1; j < stats.Count; j++)
+                    _logger.Log(LogLevel.Warning,
+                        "Comparison group '{0}' in class '{1}' has {2} methods marked IsBaseline=true; expected at most one. " +
+                        "Falling back to N×N comparison rows. The SF1301 analyzer should catch this at build time.",
+                        groupName, className, baselineStats.Count);
+                }
+
+                // Build the (i, j) pair list — baseline-vs-contender when one baseline, otherwise full N×N.
+                var pairs = new List<(int I, int J)>();
+                if (baselineMode)
+                {
+                    var baselineIdx = stats.IndexOf(baselineStats[0]);
+                    for (var k = 0; k < stats.Count; k++)
                     {
-                        var a = stats[i];
-                        var b = stats[j];
-                        var p = ComputeLogRatioPValue(a.Mean, a.SE, a.N, b.Mean, b.SE, b.N);
-                        if (!double.IsNaN(p) && p > 0)
+                        if (k == baselineIdx) continue;
+                        pairs.Add((baselineIdx, k));
+                    }
+                }
+                else
+                {
+                    for (var i = 0; i < stats.Count; i++)
+                    {
+                        for (var j = i + 1; j < stats.Count; j++)
                         {
-                            pMap[MultipleComparisons.NormalizePair(a.Id, b.Id)] = p;
+                            pairs.Add((i, j));
                         }
+                    }
+                }
+
+                // Compute p-values over the selected pairs and apply BH-FDR
+                var pMap = new Dictionary<(string A, string B), double>();
+                foreach (var (i, j) in pairs)
+                {
+                    var a = stats[i];
+                    var b = stats[j];
+                    var p = ComputeLogRatioPValue(a.Mean, a.SE, a.N, b.Mean, b.SE, b.N);
+                    if (!double.IsNaN(p) && p > 0)
+                    {
+                        pMap[MultipleComparisons.NormalizePair(a.Id, b.Id)] = p;
                     }
                 }
                 var qMap = pMap.Count > 0
                     ? MultipleComparisons.BenjaminiHochbergAdjust(pMap)
                     : new Dictionary<(string A, string B), double>();
 
-                // Emit one row per unique pair i<j
-                for (var i = 0; i < stats.Count; i++)
+                // Emit one row per selected pair
+                foreach (var (i, j) in pairs)
                 {
-                    for (var j = i + 1; j < stats.Count; j++)
-                    {
-                        var row = stats[i];
-                        var col = stats[j];
+                    var row = stats[i];
+                    var col = stats[j];
 
-                        var ci = MultipleComparisons.ComputeRatioCi(row.Mean, row.SE, row.N, col.Mean, col.SE, col.N, 0.95);
-                        var ratio = ci.Ratio;
-                        var lo = ci.Lower;
-                        var hi = ci.Upper;
+                    var ci = MultipleComparisons.ComputeRatioCi(row.Mean, row.SE, row.N, col.Mean, col.SE, col.N, 0.95);
+                    var ratio = ci.Ratio;
+                    var lo = ci.Lower;
+                    var hi = ci.Upper;
 
-                        double q;
-                        qMap.TryGetValue(MultipleComparisons.NormalizePair(row.Id, col.Id), out q);
-                        var sig = q > 0 && q <= 0.05;
-                        var label = sig ? (ratio < 1.0 ? "Improved" : "Slower") : "Similar";
+                    qMap.TryGetValue(MultipleComparisons.NormalizePair(row.Id, col.Id), out var q);
+                    var sig = q > 0 && q <= 0.05;
+                    var label = sig ? (ratio < 1.0 ? "Improved" : "Slower") : "Similar";
 
-                        var loStr = lo.HasValue ? lo.Value.ToString("0.###") : "";
-                        var hiStr = hi.HasValue ? hi.Value.ToString("0.###") : "";
-                        var qStr = q > 0 ? FormatP(q) : "";
+                    var loStr = lo.HasValue ? lo.Value.ToString("0.###") : "";
+                    var hiStr = hi.HasValue ? hi.Value.ToString("0.###") : "";
+                    var qStr = q > 0 ? FormatP(q) : "";
 
-                        var changeDesc = label == "Improved" ? "Improved" : label == "Slower" ? "Regressed" : "No Change";
-                        sb.AppendLine($"{group.Key},{row.Name},{col.Name},{row.Mean:0.###},{col.Mean:0.###},{ratio:0.###},{loStr},{hiStr},{qStr},{label},{changeDesc}");
-                    }
+                    var changeDesc = label == "Improved" ? "Improved" : label == "Slower" ? "Regressed" : "No Change";
+                    sb.AppendLine($"{groupName},{row.Name},{col.Name},{row.Mean:0.###},{col.Mean:0.###},{ratio:0.###},{loStr},{hiStr},{qStr},{label},{changeDesc}");
                 }
             }
 
@@ -446,17 +479,13 @@ internal class CsvTestRunCompletedHandler : INotificationHandler<TestRunComplete
 
             if (method != null)
             {
-                var comparisonAttribute = method.GetCustomAttribute<SailfishComparisonAttribute>();
-                if (comparisonAttribute != null && !comparisonAttribute.Disabled)
+                var (group, _) = ReadComparisonInfo(method);
+                if (!string.IsNullOrEmpty(group))
                 {
-                    _logger.Log(LogLevel.Debug, "Found comparison group '{0}' for method '{1}'",
-                        comparisonAttribute.ComparisonGroup, method.Name);
-                    return comparisonAttribute.ComparisonGroup;
+                    _logger.Log(LogLevel.Debug, "Found comparison group '{0}' for method '{1}'", group, method.Name);
+                    return group;
                 }
-                else
-                {
-                    _logger.Log(LogLevel.Debug, "No SailfishComparison attribute found for method '{0}'", method.Name);
-                }
+                _logger.Log(LogLevel.Debug, "No comparison attribute found for method '{0}'", method.Name);
             }
 
             return null;
@@ -467,6 +496,64 @@ internal class CsvTestRunCompletedHandler : INotificationHandler<TestRunComplete
                 "Failed to get comparison group for test '{0}': {1}",
                 testResult.TestCaseId?.DisplayName ?? "Unknown", ex.Message);
             return null;
+        }
+    }
+
+    /// <summary>
+    /// Resolves the comparison group + baseline flag for a method, preferring the new
+    /// <see cref="SailfishMethodAttribute"/> shape and falling back to the obsolete
+    /// <see cref="SailfishComparisonAttribute"/> during the deprecation window.
+    /// </summary>
+    private static (string? Group, bool IsBaseline) ReadComparisonInfo(MethodInfo method)
+    {
+        var methodAttr = method.GetCustomAttribute<SailfishMethodAttribute>();
+        if (methodAttr != null && !string.IsNullOrEmpty(methodAttr.ComparisonGroup))
+        {
+            return (methodAttr.ComparisonGroup, methodAttr.IsBaseline);
+        }
+
+#pragma warning disable CS0618 // Type or member is obsolete
+        var legacyAttr = method.GetCustomAttribute<SailfishComparisonAttribute>();
+#pragma warning restore CS0618
+        if (legacyAttr != null && !legacyAttr.Disabled)
+        {
+            return (legacyAttr.ComparisonGroup, false);
+        }
+
+        return (null, false);
+    }
+
+    /// <summary>
+    /// Returns the comparison info (group + baseline flag) for a single test result,
+    /// performing the same method lookup as <see cref="GetComparisonGroup"/>.
+    /// </summary>
+    private (string? Group, bool IsBaseline) GetComparisonInfoForResult(
+        CompiledTestCaseResultTrackingFormat testResult, Type testClass)
+    {
+        try
+        {
+            var displayName = testResult.TestCaseId?.DisplayName ?? "Unknown";
+            var methodName = GetMethodName(displayName);
+
+            var method = testClass.GetMethod(
+                methodName,
+                BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static | BindingFlags.FlattenHierarchy);
+            if (method == null)
+            {
+                var allMethods = testClass.GetMethods(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static | BindingFlags.FlattenHierarchy);
+                method = allMethods.FirstOrDefault(m =>
+                    string.Equals(m.Name, methodName, StringComparison.Ordinal) ||
+                    displayName.StartsWith(m.Name, StringComparison.Ordinal));
+            }
+
+            return method != null ? ReadComparisonInfo(method) : (null, false);
+        }
+        catch (Exception ex)
+        {
+            _logger.Log(LogLevel.Warning, ex,
+                "Failed to resolve comparison info for test '{0}': {1}",
+                testResult.TestCaseId?.DisplayName ?? "Unknown", ex.Message);
+            return (null, false);
         }
     }
 }

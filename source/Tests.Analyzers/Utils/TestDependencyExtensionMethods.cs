@@ -99,6 +99,8 @@ public sealed class SailfishIterationTeardownAttribute : Attribute, IInnerLifecy
 [AttributeUsage(AttributeTargets.Method, Inherited = false)]
 public sealed class SailfishMethodAttribute : Attribute
 {
+    public string? ComparisonGroup { get; set; }
+    public bool IsBaseline { get; set; }
 }
 
 [AttributeUsage(AttributeTargets.Method, AllowMultiple = false)]

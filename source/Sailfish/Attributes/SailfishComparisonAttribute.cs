@@ -1,33 +1,33 @@
-﻿using System;
+using System;
 
 namespace Sailfish.Attributes;
 
 /// <summary>
 /// Specifies that a method should be included in performance comparisons.
-/// Methods with the same comparison group will be compared against each other
-/// when the full test class is executed.
 /// </summary>
 /// <remarks>
-/// This attribute enables performance comparisons between methods in the same test class.
-/// When individual methods are run, only their results are shown with comparison info.
-/// When the full class is run, statistical comparisons are performed between methods
-/// in the same comparison group and displayed in the test output.
+/// This attribute is obsolete. Comparison configuration has been folded into
+/// <see cref="SailfishMethodAttribute"/>:
 ///
-/// Example usage:
 /// <code>
-/// [SailfishComparison("SortingAlgorithms")]
-/// public void BubbleSort() { /* implementation */ }
+/// // Before:
+/// [SailfishMethod]
+/// [SailfishComparison("Sort")]
+/// public void QuickSort() { /* ... */ }
 ///
-/// [SailfishComparison("SortingAlgorithms")]
-/// public void QuickSort() { /* implementation */ }
-///
-/// [SailfishComparison("SortingAlgorithms")]
-/// public void MergeSort() { /* implementation */ }
+/// // After:
+/// [SailfishMethod(ComparisonGroup = "Sort", IsBaseline = true)]
+/// public void QuickSort() { /* ... */ }
 /// </code>
 ///
-/// This creates an N×N comparison matrix between all methods in the group.
+/// During the deprecation window, this attribute is still honoured by the runtime as a fallback,
+/// but the analyzer will warn at build time and the type will be removed in the next major release.
 /// </remarks>
 [AttributeUsage(AttributeTargets.Method)]
+[Obsolete(
+    "Use SailfishMethod(ComparisonGroup = \"...\", IsBaseline = true|false) instead. " +
+    "SailfishComparisonAttribute will be removed in the next major release.",
+    error: false)]
 public sealed class SailfishComparisonAttribute : Attribute
 {
     /// <summary>
@@ -60,5 +60,3 @@ public sealed class SailfishComparisonAttribute : Attribute
     /// </summary>
     public bool Disabled { get; set; }
 }
-
-
