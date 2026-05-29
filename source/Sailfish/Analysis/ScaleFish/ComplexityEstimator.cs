@@ -213,8 +213,12 @@ public class ComplexityEstimator : IComplexityEstimator
         if (cleaned.Length < 4) return null;
 
         var predErrors = new List<double>(cleaned.Length);
-        var agreements = 0;
-        var validFolds = 0;
+        // Rank agreement and prediction error live on *independent* denominators: a fold can rank
+        // successfully but fail prediction (e.g. the all-data winner's Compute overflows on this
+        // fold's training data), or vice versa. Mixing them — using prediction-fold count as the
+        // rank denominator — can drive rankAgreement above 1.0, which is meaningless.
+        var rankFolds = 0;
+        var rankAgreements = 0;
 
         for (var i = 0; i < cleaned.Length; i++)
         {
@@ -230,8 +234,9 @@ public class ComplexityEstimator : IComplexityEstimator
             var foldPoint = RankCandidates(train, distinguishabilityDelta);
             if (foldPoint is null) continue;
 
+            rankFolds++;
             if (string.Equals(foldPoint.Best.Function.Name, allDataBestFamilyName, StringComparison.Ordinal))
-                agreements++;
+                rankAgreements++;
 
             // Refit the all-data winning family on this fold's training data to get an honest prediction.
             var ownInstance = ComplexityFunctionRegistry.CreateFitInstances()
@@ -247,18 +252,17 @@ public class ComplexityEstimator : IComplexityEstimator
                 var err = Math.Abs(predicted - heldOut.Y);
                 if (!double.IsFinite(err)) continue;
                 predErrors.Add(err);
-                validFolds++;
             }
             catch
             {
-                // skip this fold
+                // skip this fold's prediction contribution; rank-agreement is unaffected
             }
         }
 
-        // Require at least 3 valid folds to report a CV signal — fewer is statistically meaningless.
-        if (validFolds < 3 || predErrors.Count < 3) return null;
+        // Require at least 3 valid folds (rank-wise) to report a CV signal — fewer is statistically meaningless.
+        if (rankFolds < 3 || predErrors.Count < 3) return null;
 
-        var rankAgreement = agreements / (double)validFolds;
+        var rankAgreement = rankAgreements / (double)rankFolds;
         var mean = predErrors.Average();
         var sorted = predErrors.OrderBy(v => v).ToArray();
         double median;
@@ -267,7 +271,7 @@ public class ComplexityEstimator : IComplexityEstimator
         else
             median = sorted[sorted.Length / 2];
 
-        return new CrossValidationDiagnostic(validFolds, rankAgreement, mean, median);
+        return new CrossValidationDiagnostic(rankFolds, rankAgreement, mean, median);
     }
 
     /// <summary>

@@ -104,6 +104,12 @@ public static class ComplexityHistoryStore
                 var sha = process.StandardOutput.ReadToEnd().Trim();
                 if (!string.IsNullOrWhiteSpace(sha) && sha.Length >= 7) return sha;
             }
+            else
+            {
+                // Timeout — git is still running. `using` would dispose without terminating;
+                // kill it explicitly so we don't leak an orphaned child process.
+                try { process.Kill(entireProcessTree: true); } catch { /* best-effort */ }
+            }
         }
         catch
         {

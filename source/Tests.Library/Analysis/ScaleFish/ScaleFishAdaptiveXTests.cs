@@ -78,4 +78,37 @@ public class ScaleFishAdaptiveXTests
         Should.Throw<ArgumentException>(
             () => AdaptiveXRecommender.RecommendRefinement(Array.Empty<int>(), dummy, 100));
     }
+
+    [Fact]
+    public void Refinement_NarrowExtensionRange_DegradesInsteadOfThrowing()
+    {
+        // Regression: when targetMaxN is only one or two integers past currentMax, the underlying
+        // SpacedRange would refuse to emit `extraPoints` distinct integers. The recommender should
+        // cap extraPoints to what's feasible rather than throwing.
+        var measurements = ScaleFishTestHelpers.BuildExact(new Linear(), new[] { 4, 8, 16, 32 });
+        var prior = new ComplexityEstimator().EstimateComplexity(measurements);
+        prior.ShouldNotBeNull();
+
+        var existing = new[] { 4, 8, 16, 32 };
+
+        // Only one available integer past currentMax (33), but the caller asks for 3 extras —
+        // recommender should append the single available point rather than throw.
+        var refined = AdaptiveXRecommender.RecommendRefinement(existing, prior, targetMaxN: 33, extraPoints: 3);
+        refined[^1].ShouldBeLessThanOrEqualTo(33);
+        refined[^1].ShouldBeGreaterThan(32);
+    }
+
+    [Fact]
+    public void Refinement_TwoIntegerExtension_ProducesPair()
+    {
+        var measurements = ScaleFishTestHelpers.BuildExact(new Linear(), new[] { 4, 8, 16, 32 });
+        var prior = new ComplexityEstimator().EstimateComplexity(measurements);
+        prior.ShouldNotBeNull();
+
+        var existing = new[] { 4, 8, 16, 32 };
+        // Range of 2 available integers (33, 34) — should cap extraPoints from 3 to 2.
+        var refined = AdaptiveXRecommender.RecommendRefinement(existing, prior, targetMaxN: 34, extraPoints: 3);
+        refined.Count(x => x > 32).ShouldBeGreaterThanOrEqualTo(1);
+        refined[^1].ShouldBeLessThanOrEqualTo(34);
+    }
 }

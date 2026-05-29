@@ -82,4 +82,29 @@ public class ScaleFishCrossValidationTests
         result.ShouldNotBeNull();
         result.CrossValidation.ShouldBeNull();
     }
+
+    [Fact]
+    public void RankAgreement_NeverExceedsOne()
+    {
+        // Regression for a subtle bug: rank-agreement and prediction-error live on independent fold
+        // denominators. Mixing them would let rankAgreement = agreements / predictionFolds drift above
+        // 1.0 whenever a rank-match fold's prediction step failed. Exercise a noisy run and assert the
+        // invariant for every reasonable seed.
+        for (var seed = 1; seed <= 5; seed++)
+        {
+            var rng = new Random(seed);
+            var measurements = ScaleFishTestHelpers.BuildNoisy(
+                x => x,
+                ScaleFishTestHelpers.LogSpacedX(8, 256, 6),
+                sampleSize: 25,
+                relativeNoise: 0.08,
+                rng);
+
+            var result = new ComplexityEstimator().EstimateComplexity(measurements);
+            result.ShouldNotBeNull();
+            result.CrossValidation.ShouldNotBeNull();
+            result.CrossValidation.RankAgreement.ShouldBeLessThanOrEqualTo(1.0, $"seed {seed}");
+            result.CrossValidation.RankAgreement.ShouldBeGreaterThanOrEqualTo(0.0, $"seed {seed}");
+        }
+    }
 }

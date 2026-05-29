@@ -70,8 +70,21 @@ public static class AdaptiveXRecommender
             // doubling, ignoring the suggestion. Caller can raise targetMaxN if desired.
             floor = currentMax + 1;
 
+        // SpacedRange requires count ≤ (end - start + 1) distinct integers. Cap extraPoints so a
+        // narrow extension range (e.g. floor = currentMax + 1 with default extraPoints = 3) degrades
+        // to whatever is achievable rather than throwing.
+        var availableIntegers = targetMaxN - floor + 1;
+        if (availableIntegers < 2)
+        {
+            // Even a single new point won't satisfy SpacedRange's count >= 2 contract — fall back to
+            // appending the single available integer at the end of the existing set.
+            if (availableIntegers == 1) existing.Add(floor);
+            return existing.Distinct().OrderBy(x => x).ToList();
+        }
+
+        var cappedExtraPoints = Math.Min(extraPoints, availableIntegers);
         var extras = SailfishRangeVariableAttribute
-            .SpacedRange(floor, targetMaxN, extraPoints, RangeSpacing.Geometric)
+            .SpacedRange(floor, targetMaxN, cappedExtraPoints, RangeSpacing.Geometric)
             .ToList();
 
         // Merge with existing, dedup, sort.

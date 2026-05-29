@@ -87,7 +87,9 @@ public static class ScaleFishHtmlReportBuilder
         var model = propModel.ScaleFishModel;
         sb.AppendLine("<div class=\"prop-block\">");
         sb.AppendLine($"<div><span class=\"prop-key\">{Escape(propModel.PropertyName)}</span>");
-        sb.AppendLine($"<span class=\"badge {(model.IsDistinguishable ? "badge-good" : "badge-warn")}\">{model.ScaleFishModelFunction.OName}{(model.IsDistinguishable ? "" : " (uncertain)")}</span></div>");
+        // OName comes from custom families' user-supplied strings — escape so an attacker-controlled
+        // value (or an accidental `<` / `&`) can't break the surrounding HTML.
+        sb.AppendLine($"<span class=\"badge {(model.IsDistinguishable ? "badge-good" : "badge-warn")}\">{Escape(model.ScaleFishModelFunction.OName)}{(model.IsDistinguishable ? "" : " (uncertain)")}</span></div>");
 
         AppendMetricsTable(sb, model);
 

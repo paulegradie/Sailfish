@@ -9,9 +9,19 @@ using Xunit;
 namespace Tests.Library.Analysis.ScaleFish;
 
 /// <summary>
+/// Collection definition that serialises tests touching process-wide state (environment variables,
+/// the file system at fixed paths). xUnit guarantees no two tests in the same Collection run in
+/// parallel — critical for the env-var test below that would otherwise race with itself or with
+/// other env-mutating tests.
+/// </summary>
+[CollectionDefinition("ScaleFishEnvVarSerial", DisableParallelization = true)]
+public class ScaleFishEnvVarSerialCollection { }
+
+/// <summary>
 /// Verifies the trend-tracking primitives: history persistence, commit-SHA resolution, and the diff
 /// engine that surfaces class transitions, parameter drift, and distinguishability flips.
 /// </summary>
+[Collection("ScaleFishEnvVarSerial")]
 public class ScaleFishTrendTrackingTests
 {
     [Fact]

@@ -56,7 +56,8 @@ internal class ScaleFish : IScaleFish, IScaleFishInternal
 
         try
         {
-            var complexityResults = _complexityComputer.AnalyzeComplexity(executionSummaries).ToList();
+            var analysisResult = _complexityComputer.AnalyzeComplexityWithMeasurements(executionSummaries);
+            var complexityResults = analysisResult.Classes.ToList();
             var complexityMarkdown = _markdownTableConverter.ConvertScaleFishResultToMarkdown(complexityResults);
 
             // Optional trend tracking — persist a snapshot of every fit and diff against the most-recent
@@ -88,7 +89,7 @@ internal class ScaleFish : IScaleFish, IScaleFishInternal
             {
                 try
                 {
-                    EmitHtmlReport(complexityResults);
+                    EmitHtmlReport(complexityResults, analysisResult.MeasurementsByPropertyKey);
                 }
                 catch (Exception ex)
                 {
@@ -146,16 +147,11 @@ internal class ScaleFish : IScaleFish, IScaleFishInternal
         return ComplexityHistoryDiffer.Diff(prior, entries);
     }
 
-    private void EmitHtmlReport(IReadOnlyList<ScalefishClassModel> complexityResults)
+    private void EmitHtmlReport(
+        IReadOnlyList<ScalefishClassModel> complexityResults,
+        IReadOnlyDictionary<string, ComplexityMeasurement[]> measurementsByKey)
     {
-        // The renderer accepts a per-property measurements map for plotting empirical points. We don't
-        // currently surface measurements to ScaleFish.Analyze (the compiler shapes them per-property),
-        // so for now we emit a curves-only report. A future PR can plumb the per-property measurements
-        // through; the HTML still renders the metrics tables and tail-fit blocks meaningfully without
-        // the plotted points.
-        var html = Sailfish.Presentation.ScaleFishHtmlReportBuilder.Build(
-            complexityResults,
-            new System.Collections.Generic.Dictionary<string, Sailfish.Analysis.ScaleFish.ComplexityMeasurement[]>());
+        var html = Sailfish.Presentation.ScaleFishHtmlReportBuilder.Build(complexityResults, measurementsByKey);
 
         var outputDir = _runSettings.LocalOutputDirectory;
         if (string.IsNullOrWhiteSpace(outputDir)) return;
