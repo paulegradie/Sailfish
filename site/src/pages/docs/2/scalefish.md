@@ -93,6 +93,11 @@ All ScaleFish settings are optional — omit any field to keep the default. Avai
 | `EnableParallelBootstrap` | `bool` | `true` | Run bootstrap iterations across multiple threads (output is bit-for-bit identical to the serial version — each iteration's RNG is seeded from `(data-hash, iteration-index)`). |
 | `EnableContinuousExponent` | `bool` | `true` | Fit the continuous power-log `(b, c)` diagnostic. |
 | `DistinguishabilityDelta` | `double` | `2.0` | Δ-AICc threshold for declaring the best model statistically separable from the runner-up. Raise to be more conservative. |
+| `EnableCrossValidation` | `bool` | `true` | Run leave-one-X-out cross-validation as an out-of-sample check on the classification. Produces `CvStability` with rank-agreement and prediction-error metrics. |
+| `EnableTailPercentileFits` | `bool` | `true` | When raw replicates are present, fit ScaleFish separately on per-X percentiles (default p50/p95/p99). Reveals when the tail scales differently from the mean. |
+| `TailPercentiles` | `double[]` | `[0.50, 0.95, 0.99]` | Percentiles to fit. Values must be in (0, 1). |
+| `EnableTrendTracking` | `bool` | `true` | Persist a per-run snapshot to the tracking directory and surface class transitions / parameter drift against the most-recent prior snapshot. |
+| `EmitHtmlReport` | `bool` | `true` | Emit a standalone HTML report (with inline SVG plots) alongside the markdown one. |
 
 Example `.sailfish.json`:
 
@@ -148,9 +153,9 @@ Custom families serialise/deserialise through the standard ScaleFish model file 
 
 **Test Class: ScaleFishExample**
 
-| Variable                  | BestFit | BigO | GoodnessOfFit | NextBest | NextBigO   | NextBestGoodnessOfFit | DeltaAICc | AkaikeWeight | Distinguishable | ContinuousExponent | SuggestNextN |
-| ------------------------- | ------- | ---- | ------------- | -------- | ---------- | --------------------- | --------- | ------------ | --------------- | ------------------ | ------------ |
-| ScaleFishExample.Linear.N | Linear  | O(n) | 0.99          | NLogN    | O(nLog(n)) | 0.99                  | 18.4      | 0.999        | yes             | b=1.03, c=0.02     | —            |
+| Variable                  | BestFit | BigO | GoodnessOfFit | NextBest | NextBigO   | NextBestGoodnessOfFit | DeltaAICc | AkaikeWeight | Distinguishable | ContinuousExponent | SuggestNextN | CvStability    |
+| ------------------------- | ------- | ---- | ------------- | -------- | ---------- | --------------------- | --------- | ------------ | --------------- | ------------------ | ------------ | -------------- |
+| ScaleFishExample.Linear.N | Linear  | O(n) | 0.99          | NLogN    | O(nLog(n)) | 0.99                  | 18.4      | 0.999        | yes             | b=1.03, c=0.02     | —            | agree=1.00 k=6 |
 
 For each variable, all other variables are held constant at their smallest scale. For each candidate family the estimator performs a **linear-in-parameters fit** (using `y = scale · basis(x) + bias`, with variance-weighting when replicate uncertainty is available) and computes:
 
@@ -160,6 +165,48 @@ For each variable, all other variables are held constant at their smallest scale
 - **Distinguishable** — `yes` when DeltaAICc ≥ 2, `no` when the top two candidates are too close to call.
 - **ContinuousExponent** — `b` and `c` from a continuous `y = a · x^b · (log x)^c + d` fit. Useful when reality is between two textbook curves (e.g. `b = 1.4, c = 0`: between Linear and Quadratic).
 - **SuggestNextN** — when `Distinguishable` is `no`, a recommended next X to add that would maximally separate the top two candidate families. Shown as `—` once the result is already distinguishable.
+- **CvStability** — leave-one-X-out rank agreement and fold count. `agree=1.00` means every hold-out fold picked the same winning family as the all-data fit.
+
+### Tail-percentile fits
+
+When raw replicates are present, ScaleFish additionally classifies each requested percentile (p50/p95/p99 by default). The result's `TailFits` collection has one entry per percentile, each with its own family classification, R², ΔAICc, Akaike weight, distinguishability flag, and fitted (scale, bias). Useful for spotting cases where the mean scales linearly but the p99 has quadratic behaviour — typically a sign of GC pauses, lock contention, or other amplifying noise sources.
+
+### Trend tracking & complexity regression detection
+
+When `EnableTrendTracking` is on (default), every ScaleFish run writes a slim per-fit snapshot under `<TrackingDir>/ComplexityHistory/` indexed by timestamp and commit SHA (resolved from `GITHUB_SHA`, `CI_COMMIT_SHA`, `BUILD_SOURCEVERSION`, `CIRCLE_SHA1`, `GIT_COMMIT`, or `git rev-parse HEAD` — whichever is available). On subsequent runs, the new snapshot is diffed against the most-recent prior; any transitions are appended to the markdown report and published via a `ComplexityRegressionDetectedNotification` for downstream consumers (CI scripts, IDE plugins).
+
+Transition kinds:
+
+| Kind | Meaning |
+| --- | --- |
+| `Stable` | Same best family, parameters within ±25 %, distinguishability flag unchanged. |
+| `ParameterDrift` | Same best family, but `scale` shifted more than ±25 % between snapshots. |
+| `ClassChanged` | Best family flipped (e.g. `O(n)` → `O(n²)`). The headline regression case. |
+| `DistinguishabilityChanged` | Family + parameters stable, but the `Distinguishable` flag flipped. |
+
+The `Stable` kind is filtered out of the markdown section; the notification only fires on non-stable transitions.
+
+### Adaptive X recommender
+
+`AdaptiveXRecommender` is a planning helper for sizing the next probe set:
+
+```csharp
+// Geometric initial probe across [16, 2048] with 7 points
+var probe = AdaptiveXRecommender.RecommendInitialProbe(minN: 16, maxN: 2048, points: 7);
+
+// Or refine against a prior run that came back undistinguishable
+var refined = AdaptiveXRecommender.RecommendRefinement(
+    previousProbeXs: probe,
+    previous: priorScaleFishModel,
+    targetMaxN: 16_384,
+    extraPoints: 3);
+```
+
+It's a pure function — copy the returned X values into a `SailfishVariableAttribute` for the next run.
+
+### HTML report
+
+With `EmitHtmlReport` enabled (default), ScaleFish writes `ScaleFishReport_yyyyMMdd-HHmmss.html` next to the markdown output. The file is self-contained (inline SVG and CSS, no external dependencies) and includes the empirical points, best/runner-up fitted curves, metrics tables, and tail-percentile blocks for each property.
 
 ## Models
 

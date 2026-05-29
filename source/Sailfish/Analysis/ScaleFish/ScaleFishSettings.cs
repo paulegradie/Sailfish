@@ -37,5 +37,37 @@ public class ScaleFishSettings
     /// </summary>
     public double DistinguishabilityDelta { get; set; } = 2.0;
 
+    /// <summary>
+    /// When true, the estimator runs leave-one-X-out cross-validation as a hold-out check on the
+    /// AICc-based classification. Adds a <see cref="CurveFitting.CrossValidationDiagnostic"/> to the
+    /// result. Cheap for typical N counts (5–10 X values).
+    /// </summary>
+    public bool EnableCrossValidation { get; set; } = true;
+
+    /// <summary>
+    /// When true, additional ScaleFish fits are run on per-X percentiles (default p50/p95/p99) of the
+    /// raw replicates, surfaced via the model's <c>TailFits</c> dictionary. Useful for detecting tail
+    /// behaviour that diverges from the mean — GC pauses, contention scaling, etc.
+    /// </summary>
+    public bool EnableTailPercentileFits { get; set; } = true;
+
+    /// <summary>
+    /// Percentiles to fit when <see cref="EnableTailPercentileFits"/> is true. Values in (0, 1).
+    /// Defaults to { 0.50, 0.95, 0.99 }.
+    /// </summary>
+    public double[] TailPercentiles { get; set; } = new[] { 0.50, 0.95, 0.99 };
+
+    /// <summary>
+    /// When true, every ScaleFish run appends a snapshot to a history file in the tracking directory and
+    /// the markdown report includes a transition section if a previous snapshot existed for this method.
+    /// </summary>
+    public bool EnableTrendTracking { get; set; } = true;
+
+    /// <summary>
+    /// When true, the estimator writes a standalone HTML report next to the markdown one. Includes the
+    /// empirical points, best/runner-up curves, bootstrap CI band, residuals, and tail-percentile minis.
+    /// </summary>
+    public bool EmitHtmlReport { get; set; } = true;
+
     public static ScaleFishSettings Default => new();
 }

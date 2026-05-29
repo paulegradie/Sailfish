@@ -1,3 +1,4 @@
+using System.Collections.Generic;
 using Sailfish.Analysis.ScaleFish.CurveFitting;
 
 namespace Sailfish.Analysis.ScaleFish;
@@ -95,6 +96,19 @@ public class ScaleFishModel
     /// (or when no measurements are available to derive a sensible value).
     /// </summary>
     public int? SuggestedNextN { get; init; }
+
+    /// <summary>
+    /// Leave-one-X-out cross-validation diagnostic. Null when CV is disabled or not enough data points
+    /// were available to run at least 3 folds.
+    /// </summary>
+    public CrossValidationDiagnostic? CrossValidation { get; init; }
+
+    /// <summary>
+    /// Per-percentile classification of the raw replicates (e.g. p50, p95, p99). Reveals when the tail
+    /// scales differently from the mean — typical for GC pauses or lock contention. Empty when tail
+    /// fits are disabled or no raw replicates are present.
+    /// </summary>
+    public IReadOnlyList<TailFitResult> TailFits { get; init; } = System.Array.Empty<TailFitResult>();
 
     /// <summary>
     /// Δ-AICc between the next-best and best model. Larger ⇒ more confidently distinguishable.
