@@ -5,28 +5,37 @@
         <Authors>Paul E. Gradie</Authors>
         <Copyright>Copyright</Copyright>
         <PackageTags>analyzers</PackageTags>
-        <NoPackageAnalysis>true</NoPackageAnalysis>
         <Description>
             Welcome to Sailfish!
             There are three tools included in this package:
-            - Sailfish is a simple in-process performace test framework for writing clean, manageable performance tests.
+            - Sailfish is a simple in-process performance test framework for writing clean, manageable performance tests.
             - SailDiff is a statistical testing tool for comparing before change and after change datasets.
             - ScaleFish is a machine learning tool for modeling general logical complexity and making predictions.
             Use these in combination to write a basic performance regression detection system for your application's
             delivery pipeline.
         </Description>
+        <RepositoryType>git</RepositoryType>
+        <RepositoryUrl>https://github.com/paulegradie/Sailfish</RepositoryUrl>
+
         <TargetFramework>netstandard2.0</TargetFramework>
         <LangVersion>latest</LangVersion>
         <Nullable>enable</Nullable>
         <ImplicitUsings>enable</ImplicitUsings>
         <EnforceExtendedAnalyzerRules>true</EnforceExtendedAnalyzerRules>
+
         <IsPackable>true</IsPackable>
+        <IsRoslynComponent>true</IsRoslynComponent>
+        <DevelopmentDependency>true</DevelopmentDependency>
+        <IncludeBuildOutput>false</IncludeBuildOutput>
+        <NoPackageAnalysis>true</NoPackageAnalysis>
+        <SuppressDependenciesWhenPacking>true</SuppressDependenciesWhenPacking>
+        <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+
         <DebugType>Embedded</DebugType>
         <EmbedAllSources>True</EmbedAllSources>
         <SymbolPackageFormat>snupkg</SymbolPackageFormat>
-        <RepositoryType>git</RepositoryType>
-        <RepositoryUrl>https://github.com/paulegradie/Sailfish</RepositoryUrl>
-        <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+
+        <NoWarn>$(NoWarn);RS1038</NoWarn>
     </PropertyGroup>
 
     <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
@@ -34,38 +43,16 @@
         <Optimize>true</Optimize>
     </PropertyGroup>
 
-
-    <Target Name="CopyToSingleFolder" AfterTargets="Build" Condition="'$(TargetFrameworks)' != ''">
-        <!-- This target runs after the build process and works only if multiple target frameworks are defined -->
-        <ItemGroup>
-            <AllFrameworkOutputs Include="$(OutputPath)$(AssemblyName).dll"/>
-        </ItemGroup>
-        <Copy SourceFiles="@(AllFrameworkOutputs)" DestinationFolder="$(BaseOutputPath)$(Configuration)"/>
-    </Target>
-
-    <Target Name="CustomPack" BeforeTargets="Pack" Condition="'$(TargetFrameworks)' != ''">
-        <!-- This target runs before the pack process and works only if multiple target frameworks are defined -->
-        <ItemGroup>
-            <None Include="$(BaseOutputPath)$(Configuration)\$(AssemblyName).dll" Pack="true" PackagePath="analyzers/dotnet/cs"/>
-        </ItemGroup>
-    </Target>
-
     <ItemGroup>
-        <None Update="tools\*.ps1" CopyToOutputDirectory="Always" Pack="true" PackagePath="tools"/>
-        <None Include="$(OutputPath)$(AssemblyName).dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false"/>
+        <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.14.0" PrivateAssets="all" />
+        <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="4.14.0" PrivateAssets="all" />
+        <PackageReference Include="Microsoft.CodeAnalysis.Analyzers" Version="3.11.0" PrivateAssets="all" />
     </ItemGroup>
 
-    <PropertyGroup>
-        <IncludeBuildOutput>true</IncludeBuildOutput>
-    </PropertyGroup>
     <ItemGroup>
-
-        <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="5.3.0" PrivateAssets="all" />
-        <PackageReference Include="Microsoft.CodeAnalysis.CSharp.Workspaces" Version="5.3.0" PrivateAssets="all" />
+        <None Include="$(OutputPath)\$(AssemblyName).dll" Pack="true" PackagePath="analyzers/dotnet/cs" Visible="false" />
     </ItemGroup>
-    <PropertyGroup>
-        <NoWarn>$(NoWarn);RS1038</NoWarn>
-    </PropertyGroup>
+
     <ItemGroup>
         <AdditionalFiles Include="AnalyzerReleases.Shipped.md" />
         <AdditionalFiles Include="AnalyzerReleases.Unshipped.md" />
