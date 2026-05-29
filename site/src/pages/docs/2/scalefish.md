@@ -84,26 +84,73 @@ If using Sailfish as a test project, you can create a `.sailfish.json` file in t
 }
 ```
 
-There are currently no customizations for the ScaleFishSettings.
+All ScaleFish settings are optional — omit any field to keep the default. Available knobs:
+
+| Setting | Type | Default | Description |
+| --- | --- | --- | --- |
+| `EnableBootstrap` | `bool` | `true` | Run the bootstrap diagnostic when raw replicates are present. Disable to skip parameter CIs and the selection-agreement metric. |
+| `BootstrapIterations` | `int` | `200` | Number of bootstrap iterations. Set to `0` to disable entirely. |
+| `EnableParallelBootstrap` | `bool` | `true` | Run bootstrap iterations across multiple threads (output is bit-for-bit identical to the serial version — each iteration's RNG is seeded from `(data-hash, iteration-index)`). |
+| `EnableContinuousExponent` | `bool` | `true` | Fit the continuous power-log `(b, c)` diagnostic. |
+| `DistinguishabilityDelta` | `double` | `2.0` | Δ-AICc threshold for declaring the best model statistically separable from the runner-up. Raise to be more conservative. |
+
+Example `.sailfish.json`:
+
+```json
+{
+  "ScaleFishSettings": {
+    "EnableBootstrap": true,
+    "BootstrapIterations": 500,
+    "EnableParallelBootstrap": true,
+    "DistinguishabilityDelta": 4.0
+  }
+}
+```
 
 ### Library
 
-You may use the `RunsettingsBuilder` to configure ScaleFish before running.
+The `RunSettingsBuilder` exposes the same knobs:
 
 ```csharp
 var settings = RunSettingsBuilder
     .CreateBuilder()
-    .WithScaleFish()
+    .WithScaleFish(new ScaleFishSettings
+    {
+        BootstrapIterations = 500,
+        DistinguishabilityDelta = 4.0
+    })
     .Build();
 ```
+
+### Registering a custom complexity family
+
+ScaleFish's catalog is open. Subclass `ScaleFishModelFunction` and register your type before the test run — the new family is considered alongside the built-ins in the AICc ranking.
+
+```csharp
+public class LogLog : ScaleFishModelFunction
+{
+    public override string Name { get; set; } = nameof(LogLog);
+    public override string OName { get; set; } = "O(log(log(n)))";
+    public override string Quality { get; set; } = "Excellent";
+    public override string FunctionDef { get; set; } = "f(x) = {0}*log(log(x)) + {1}";
+
+    public override double Compute(double bias, double scale, double x)
+        => scale * Math.Log(Math.Log(x)) + bias;
+}
+
+// Once registered, every subsequent ScaleFish run includes this family in the ranking.
+ComplexityFunctionRegistry.Register<LogLog>();
+```
+
+Custom families serialise/deserialise through the standard ScaleFish model file as long as the registration is in place when the file is loaded.
 
 ## Results
 
 **Test Class: ScaleFishExample**
 
-| Variable                  | BestFit | BigO | GoodnessOfFit | NextBest | NextBigO   | NextBestGoodnessOfFit | DeltaAICc | AkaikeWeight | Distinguishable | ContinuousExponent |
-| ------------------------- | ------- | ---- | ------------- | -------- | ---------- | --------------------- | --------- | ------------ | --------------- | ------------------ |
-| ScaleFishExample.Linear.N | Linear  | O(n) | 0.99          | NLogN    | O(nLog(n)) | 0.99                  | 18.4      | 0.999        | yes             | b=1.03, c=0.02     |
+| Variable                  | BestFit | BigO | GoodnessOfFit | NextBest | NextBigO   | NextBestGoodnessOfFit | DeltaAICc | AkaikeWeight | Distinguishable | ContinuousExponent | SuggestNextN |
+| ------------------------- | ------- | ---- | ------------- | -------- | ---------- | --------------------- | --------- | ------------ | --------------- | ------------------ | ------------ |
+| ScaleFishExample.Linear.N | Linear  | O(n) | 0.99          | NLogN    | O(nLog(n)) | 0.99                  | 18.4      | 0.999        | yes             | b=1.03, c=0.02     | —            |
 
 For each variable, all other variables are held constant at their smallest scale. For each candidate family the estimator performs a **linear-in-parameters fit** (using `y = scale · basis(x) + bias`, with variance-weighting when replicate uncertainty is available) and computes:
 
@@ -112,6 +159,7 @@ For each variable, all other variables are held constant at their smallest scale
 - **AkaikeWeight** — the share of total Akaike support that goes to the best model (between 0 and 1). 1.0 = effectively single-winner.
 - **Distinguishable** — `yes` when DeltaAICc ≥ 2, `no` when the top two candidates are too close to call.
 - **ContinuousExponent** — `b` and `c` from a continuous `y = a · x^b · (log x)^c + d` fit. Useful when reality is between two textbook curves (e.g. `b = 1.4, c = 0`: between Linear and Quadratic).
+- **SuggestNextN** — when `Distinguishable` is `no`, a recommended next X to add that would maximally separate the top two candidate families. Shown as `—` once the result is already distinguishable.
 
 ## Models
 

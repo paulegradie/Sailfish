@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using Sailfish.Analysis.SailDiff;
 using Sailfish.Analysis;
+using Sailfish.Analysis.ScaleFish;
 
 using Sailfish.Contracts.Public.Models;
 using Sailfish.Extensions.Types;
@@ -30,6 +31,7 @@ public class RunSettingsBuilder
     private bool _sailDiff;
     private bool _scaleFish;
     private SailDiffSettings? _sdSettings;
+    private ScaleFishSettings? _sfSettings;
     private bool _setDebug;
     private bool _streamTrackingUpdates = true;
     private DateTime? _timeStamp;
@@ -173,6 +175,17 @@ public class RunSettingsBuilder
     public RunSettingsBuilder WithScaleFish()
     {
         _scaleFish = true;
+        return this;
+    }
+
+    /// <summary>
+    ///     Enables ScaleFish with a custom <see cref="ScaleFishSettings"/> object (controls bootstrap
+    ///     iterations, parallelism, the continuous-exponent diagnostic, and the distinguishability threshold).
+    /// </summary>
+    public RunSettingsBuilder WithScaleFish(ScaleFishSettings settings)
+    {
+        _scaleFish = true;
+        _sfSettings = settings;
         return this;
     }
 
@@ -344,7 +357,8 @@ public class RunSettingsBuilder
             _globalOutlierStrategy,
             _enableEnvironmentHealthCheck,
             _timerCalibration,
-            seed: _seed);
+            seed: _seed,
+            scaleFishSettings: _sfSettings);
     }
 
     private void ApplyPreset(SailfishPreset preset)

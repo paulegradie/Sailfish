@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Runtime.Serialization;
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using Sailfish.Analysis.ScaleFish.ComplexityFunctions;
+using Sailfish.Analysis.ScaleFish.CurveFitting;
 using Sailfish.Contracts.Public.Serialization.JsonConverters;
 using Sailfish.Exceptions;
 
@@ -50,11 +50,31 @@ public class ComplexityFunctionConverter : JsonConverter<List<ScalefishClassMode
                     var nextBestComplexityFunction = DeserializeComplexityFunction(nextBestComplexityFunctionTypeName, nextBestComplexityFunctionProperty);
                     var nextBestGoodnessOfFit = complexityResultJsonElement.GetProperty(nameof(ScaleFishModel.NextClosestGoodnessOfFit)).GetDouble();
 
+                    // Phase-2 fields — all optional in serialized form so older model files keep loading.
+                    var bestAicc = ReadOptionalDouble(complexityResultJsonElement, nameof(ScaleFishModel.BestAicc), double.NaN);
+                    var nextBestAicc = ReadOptionalDouble(complexityResultJsonElement, nameof(ScaleFishModel.NextBestAicc), double.NaN);
+                    var akaikeWeight = ReadOptionalDouble(complexityResultJsonElement, nameof(ScaleFishModel.AkaikeWeight), double.NaN);
+                    var isDistinguishable = ReadOptionalBool(complexityResultJsonElement, nameof(ScaleFishModel.IsDistinguishable), false);
+                    var sampleSize = ReadOptionalInt(complexityResultJsonElement, nameof(ScaleFishModel.SampleSize), 0);
+                    var powerLog = ReadOptionalPowerLog(complexityResultJsonElement);
+                    var bootstrap = ReadOptionalBootstrap(complexityResultJsonElement);
+                    var suggestedNextN = ReadOptionalNullableInt(complexityResultJsonElement, nameof(ScaleFishModel.SuggestedNextN));
+
                     var complexityResult = new ScaleFishModel(
                         complexityFunction,
                         goodnessOfFit,
                         nextBestComplexityFunction,
-                        nextBestGoodnessOfFit);
+                        nextBestGoodnessOfFit,
+                        bestAicc: bestAicc,
+                        nextBestAicc: nextBestAicc,
+                        akaikeWeight: akaikeWeight,
+                        isDistinguishable: isDistinguishable,
+                        sampleSize: sampleSize,
+                        powerLog: powerLog)
+                    {
+                        Bootstrap = bootstrap,
+                        SuggestedNextN = suggestedNextN
+                    };
 
                     testPropertyComplexityResults.Add(new ScaleFishPropertyModel(propertyName, complexityResult));
                 }
@@ -84,20 +104,86 @@ public class ComplexityFunctionConverter : JsonConverter<List<ScalefishClassMode
 
     private static ScaleFishModelFunction DeserializeComplexityFunction(string complexityFunctionTypeName, JsonElement complexityFunctionProperty)
     {
-        ScaleFishModelFunction? deserialized = complexityFunctionTypeName switch
+        var deserialized = ComplexityFunctionRegistry.Deserialize(complexityFunctionTypeName, complexityFunctionProperty);
+        if (deserialized is null)
         {
-            nameof(Cubic) => complexityFunctionProperty.Deserialize<Cubic>(),
-            nameof(Exponential) => complexityFunctionProperty.Deserialize<Exponential>(),
-            nameof(Factorial) => complexityFunctionProperty.Deserialize<Factorial>(),
-            nameof(Linear) => complexityFunctionProperty.Deserialize<Linear>(),
-            nameof(LogLinear) => complexityFunctionProperty.Deserialize<LogLinear>(),
-            nameof(NLogN) => complexityFunctionProperty.Deserialize<NLogN>(),
-            nameof(Quadratic) => complexityFunctionProperty.Deserialize<Quadratic>(),
-            nameof(SqrtN) => complexityFunctionProperty.Deserialize<SqrtN>(),
-            _ => throw new SailfishException($"Failed to identify complexity function type: {complexityFunctionTypeName}")
-        };
-
-        if (deserialized is null) throw new SerializationException($"Failed to deserialize {complexityFunctionTypeName}");
+            // Registry lookup failed — either the name was unknown or its registered deserializer
+            // returned null. Surface as a SerializationException so the loader can show the user what
+            // went wrong and which name was offending.
+            throw new SerializationException($"Failed to deserialize complexity function: {complexityFunctionTypeName}. Is it registered in ComplexityFunctionRegistry?");
+        }
         return deserialized;
+    }
+
+    private static double ReadOptionalDouble(JsonElement element, string propertyName, double fallback)
+    {
+        if (!element.TryGetProperty(propertyName, out var prop)) return fallback;
+        if (prop.ValueKind == JsonValueKind.Null) return fallback;
+        if (prop.ValueKind == JsonValueKind.Number && prop.TryGetDouble(out var num)) return num;
+        // JsonNanConverter writes NaN / ±Infinity as strings; handle those here so we round-trip.
+        if (prop.ValueKind == JsonValueKind.String)
+        {
+            var s = prop.GetString();
+            return s switch
+            {
+                "NaN" => double.NaN,
+                "Infinity" => double.PositiveInfinity,
+                "-Infinity" => double.NegativeInfinity,
+                _ => double.TryParse(s, System.Globalization.NumberStyles.Float, System.Globalization.CultureInfo.InvariantCulture, out var parsed) ? parsed : fallback
+            };
+        }
+        return fallback;
+    }
+
+    private static bool ReadOptionalBool(JsonElement element, string propertyName, bool fallback)
+    {
+        if (!element.TryGetProperty(propertyName, out var prop)) return fallback;
+        return prop.ValueKind switch
+        {
+            JsonValueKind.True => true,
+            JsonValueKind.False => false,
+            _ => fallback
+        };
+    }
+
+    private static int ReadOptionalInt(JsonElement element, string propertyName, int fallback)
+    {
+        if (!element.TryGetProperty(propertyName, out var prop)) return fallback;
+        if (prop.ValueKind == JsonValueKind.Null) return fallback;
+        return prop.TryGetInt32(out var v) ? v : fallback;
+    }
+
+    private static int? ReadOptionalNullableInt(JsonElement element, string propertyName)
+    {
+        if (!element.TryGetProperty(propertyName, out var prop)) return null;
+        if (prop.ValueKind == JsonValueKind.Null) return null;
+        return prop.TryGetInt32(out var v) ? v : (int?)null;
+    }
+
+    private static PowerLogResult? ReadOptionalPowerLog(JsonElement parent)
+    {
+        if (!parent.TryGetProperty(nameof(ScaleFishModel.PowerLog), out var prop)) return null;
+        if (prop.ValueKind == JsonValueKind.Null || prop.ValueKind != JsonValueKind.Object) return null;
+
+        var a = ReadOptionalDouble(prop, nameof(PowerLogResult.A), double.NaN);
+        var b = ReadOptionalDouble(prop, nameof(PowerLogResult.B), double.NaN);
+        var c = ReadOptionalDouble(prop, nameof(PowerLogResult.C), double.NaN);
+        var d = ReadOptionalDouble(prop, nameof(PowerLogResult.D), double.NaN);
+        var r2 = ReadOptionalDouble(prop, nameof(PowerLogResult.RSquared), double.NaN);
+        return new PowerLogResult(a, b, c, d, r2);
+    }
+
+    private static BootstrapDiagnostic? ReadOptionalBootstrap(JsonElement parent)
+    {
+        if (!parent.TryGetProperty(nameof(ScaleFishModel.Bootstrap), out var prop)) return null;
+        if (prop.ValueKind == JsonValueKind.Null || prop.ValueKind != JsonValueKind.Object) return null;
+
+        var iterations = ReadOptionalInt(prop, nameof(BootstrapDiagnostic.Iterations), 0);
+        var selectionAgreement = ReadOptionalDouble(prop, nameof(BootstrapDiagnostic.SelectionAgreement), double.NaN);
+        var scaleLow = ReadOptionalDouble(prop, nameof(BootstrapDiagnostic.ScaleCiLower), double.NaN);
+        var scaleHigh = ReadOptionalDouble(prop, nameof(BootstrapDiagnostic.ScaleCiUpper), double.NaN);
+        var biasLow = ReadOptionalDouble(prop, nameof(BootstrapDiagnostic.BiasCiLower), double.NaN);
+        var biasHigh = ReadOptionalDouble(prop, nameof(BootstrapDiagnostic.BiasCiUpper), double.NaN);
+        return new BootstrapDiagnostic(iterations, selectionAgreement, scaleLow, scaleHigh, biasLow, biasHigh);
     }
 }

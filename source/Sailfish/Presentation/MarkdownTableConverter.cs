@@ -310,6 +310,7 @@ public class MarkdownTableConverter : IMarkdownTableConverter
                             "",
                             "",
                             "",
+                            "",
                             ""
                         },
                         new List<string>
@@ -324,7 +325,8 @@ public class MarkdownTableConverter : IMarkdownTableConverter
                             "DeltaAICc",
                             "AkaikeWeight",
                             "Distinguishable",
-                            "ContinuousExponent"
+                            "ContinuousExponent",
+                            "SuggestNextN"
                         },
                         c => c.PropertyName,
                         c => c.ScaleFishModel.ScaleFishModelFunction.Name,
@@ -336,7 +338,8 @@ public class MarkdownTableConverter : IMarkdownTableConverter
                         c => FormatDelta(c.ScaleFishModel.DeltaAicc),
                         c => FormatWeight(c.ScaleFishModel.AkaikeWeight),
                         c => c.ScaleFishModel.IsDistinguishable ? "yes" : "no",
-                        c => FormatPowerLog(c.ScaleFishModel.PowerLog)
+                        c => FormatPowerLog(c.ScaleFishModel.PowerLog),
+                        c => FormatSuggestion(c.ScaleFishModel.SuggestedNextN)
                     ));
                 tableBuilder.AppendLine();
             }
@@ -426,5 +429,10 @@ public class MarkdownTableConverter : IMarkdownTableConverter
     private static string FormatPowerLog(Sailfish.Analysis.ScaleFish.CurveFitting.PowerLogResult? powerLog)
     {
         return powerLog is null ? "n/a" : powerLog.Describe();
+    }
+
+    private static string FormatSuggestion(int? suggested)
+    {
+        return suggested is null ? "—" : suggested.Value.ToString(System.Globalization.CultureInfo.InvariantCulture);
     }
 }
