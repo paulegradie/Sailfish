@@ -142,6 +142,28 @@ public class CsvTestRunCompletedHandlerTests
     }
 
     [Fact]
+    public async Task Handle_WithSameGroupNameInTwoClasses_EmitsBaselineRowsForEach()
+    {
+        // Regression: per-class grouping must keep each class's lone baseline intact.
+        // If grouping were by group-name only, the merged group would see 2 baselines and
+        // collapse into N×N pair rows (Baseline,Contender,OtherBaseline,OtherContender pairs).
+        var notification = CreateTestNotificationWithSameGroupNameInTwoClasses();
+
+        await _handler.Handle(notification, CancellationToken.None);
+
+        await _mockMediator.Received(1).Publish(
+            Arg.Is<WriteMethodComparisonCsvNotification>(n =>
+                n.CsvContent.Contains("# Method Comparisons") &&
+                // Each class emits exactly its own baseline-vs-contender row.
+                n.CsvContent.Contains("TestGroup,Baseline,Contender") &&
+                n.CsvContent.Contains("TestGroup,OtherBaseline,OtherContender") &&
+                // The cross-class N×N pair must NOT appear.
+                !n.CsvContent.Contains("TestGroup,Baseline,OtherBaseline") &&
+                !n.CsvContent.Contains("TestGroup,Contender,OtherContender")),
+            Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
     public async Task Handle_WithLegacyComparisonAttribute_StillEmitsComparison()
     {
         // Arrange — exercises the obsolete-attribute fallback path.
@@ -398,6 +420,35 @@ public class CsvTestRunCompletedHandlerTests
         return new TestRunCompletedNotification([classExecutionSummary]);
     }
 
+    private TestRunCompletedNotification CreateTestNotificationWithSameGroupNameInTwoClasses()
+    {
+        var classA = ClassExecutionSummaryTrackingFormatBuilder.Create()
+            .WithTestClass(typeof(TestClassWithBaselineComparison))
+            .WithCompiledTestCaseResult(b => b
+                .WithTestCaseId(TestCaseIdBuilder.Create().WithTestCaseName("Baseline").Build())
+                .WithPerformanceRunResult(PerformanceRunResultTrackingFormatBuilder.Create()
+                    .WithMean(100.0).WithMedian(95.0).WithStdDev(5.0).WithSampleSize(10).Build()))
+            .WithCompiledTestCaseResult(b => b
+                .WithTestCaseId(TestCaseIdBuilder.Create().WithTestCaseName("Contender").Build())
+                .WithPerformanceRunResult(PerformanceRunResultTrackingFormatBuilder.Create()
+                    .WithMean(200.0).WithMedian(195.0).WithStdDev(10.0).WithSampleSize(10).Build()))
+            .Build();
+
+        var classB = ClassExecutionSummaryTrackingFormatBuilder.Create()
+            .WithTestClass(typeof(OtherTestClassWithBaselineComparison))
+            .WithCompiledTestCaseResult(b => b
+                .WithTestCaseId(TestCaseIdBuilder.Create().WithTestCaseName("OtherBaseline").Build())
+                .WithPerformanceRunResult(PerformanceRunResultTrackingFormatBuilder.Create()
+                    .WithMean(150.0).WithMedian(145.0).WithStdDev(7.0).WithSampleSize(10).Build()))
+            .WithCompiledTestCaseResult(b => b
+                .WithTestCaseId(TestCaseIdBuilder.Create().WithTestCaseName("OtherContender").Build())
+                .WithPerformanceRunResult(PerformanceRunResultTrackingFormatBuilder.Create()
+                    .WithMean(300.0).WithMedian(295.0).WithStdDev(15.0).WithSampleSize(10).Build()))
+            .Build();
+
+        return new TestRunCompletedNotification([classA, classB]);
+    }
+
     private TestRunCompletedNotification CreateTestNotificationWithLegacyComparison()
     {
         var classExecutionSummary = ClassExecutionSummaryTrackingFormatBuilder.Create()
@@ -492,6 +543,18 @@ public class CsvTestRunCompletedHandlerTests
 
         [SailfishMethod(ComparisonGroup = "TestGroup")]
         public void Contender() { }
+    }
+
+    // Deliberately reuses the "TestGroup" name from TestClassWithBaselineComparison to verify
+    // per-class scoping.
+    [WriteToCsv]
+    private class OtherTestClassWithBaselineComparison
+    {
+        [SailfishMethod(ComparisonGroup = "TestGroup", IsBaseline = true)]
+        public void OtherBaseline() { }
+
+        [SailfishMethod(ComparisonGroup = "TestGroup")]
+        public void OtherContender() { }
     }
 
     [WriteToCsv]

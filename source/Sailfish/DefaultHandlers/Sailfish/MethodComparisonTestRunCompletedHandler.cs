@@ -310,18 +310,23 @@ internal class MethodComparisonTestRunCompletedHandler : INotificationHandler<Te
             return sb.ToString();
         }
 
-        // Group test results by comparison groups across all classes
+        // Group test results by (TestClass, ComparisonGroup). Grouping by name alone would merge
+        // same-named groups from different test classes — each class's lone baseline would be counted
+        // together, and a valid per-class baseline configuration would collapse to N×N. The grouping
+        // domain matches the analyzer: per-class, per-group.
         var comparisonGroups = allTestResults
             .Where(tr => HasComparisonAttribute(tr.TestResult, tr.TestClass))
-            .GroupBy(tr => GetComparisonGroup(tr.TestResult, tr.TestClass))
-            .Where(g => !string.IsNullOrEmpty(g.Key))
+            .GroupBy(tr => new ComparisonGroupKey(tr.TestClass, GetComparisonGroup(tr.TestResult, tr.TestClass)))
+            .Where(g => !string.IsNullOrEmpty(g.Key.GroupName))
             .ToList();
 
         if (comparisonGroups.Any())
         {
             foreach (var group in comparisonGroups)
             {
-                sb.AppendLine($"## 🔬 Comparison Group: {group.Key}");
+                var groupName = group.Key.GroupName!;
+                var className = group.Key.TestClass.Name;
+                sb.AppendLine($"## 🔬 Comparison Group: {groupName} ({className})");
                 sb.AppendLine();
 
                 var members = group.ToList();
@@ -351,9 +356,9 @@ internal class MethodComparisonTestRunCompletedHandler : INotificationHandler<Te
                     if (baselines.Count > 1)
                     {
                         _logger.Log(LogLevel.Warning,
-                            "Comparison group '{0}' has {1} methods marked IsBaseline=true; expected at most one. " +
+                            "Comparison group '{0}' in class '{1}' has {2} methods marked IsBaseline=true; expected at most one. " +
                             "Falling back to N×N comparison. The SF1301 analyzer should catch this at build time.",
-                            group.Key!, baselines.Count);
+                            groupName, className, baselines.Count);
                     }
                     sectionHeader = "### Performance Comparison Matrix";
                     comparisonContent = CreateNxNComparisonMatrix(methods);

@@ -187,10 +187,12 @@ internal class CsvTestRunCompletedHandler : INotificationHandler<TestRunComplete
 
         try
         {
+            // Group by (TestClass, ComparisonGroup) — see ComparisonGroupKey for why class-scoping matters
+            // (same-named groups in different classes must not be merged when counting baselines).
             var comparisonGroups = typed
                 .Where(tr => HasComparisonAttribute(tr.TestResult, tr.TestClass))
-                .GroupBy(tr => GetComparisonGroup(tr.TestResult, tr.TestClass))
-                .Where(g => !string.IsNullOrEmpty(g.Key))
+                .GroupBy(tr => new ComparisonGroupKey(tr.TestClass, GetComparisonGroup(tr.TestResult, tr.TestClass)))
+                .Where(g => !string.IsNullOrEmpty(g.Key.GroupName))
                 .ToList();
 
             if (!comparisonGroups.Any())
@@ -204,6 +206,8 @@ internal class CsvTestRunCompletedHandler : INotificationHandler<TestRunComplete
 
             foreach (var group in comparisonGroups)
             {
+                var groupName = group.Key.GroupName!;
+                var className = group.Key.TestClass.Name;
                 var members = group.ToList();
                 var methods = members.Select(g => g.TestResult).ToList();
                 if (methods.Count < 2) continue;
@@ -233,9 +237,9 @@ internal class CsvTestRunCompletedHandler : INotificationHandler<TestRunComplete
                 if (baselineStats.Count > 1)
                 {
                     _logger.Log(LogLevel.Warning,
-                        "Comparison group '{0}' has {1} methods marked IsBaseline=true; expected at most one. " +
+                        "Comparison group '{0}' in class '{1}' has {2} methods marked IsBaseline=true; expected at most one. " +
                         "Falling back to N×N comparison rows. The SF1301 analyzer should catch this at build time.",
-                        group.Key!, baselineStats.Count);
+                        groupName, className, baselineStats.Count);
                 }
 
                 // Build the (i, j) pair list — baseline-vs-contender when one baseline, otherwise full N×N.
@@ -296,7 +300,7 @@ internal class CsvTestRunCompletedHandler : INotificationHandler<TestRunComplete
                     var qStr = q > 0 ? FormatP(q) : "";
 
                     var changeDesc = label == "Improved" ? "Improved" : label == "Slower" ? "Regressed" : "No Change";
-                    sb.AppendLine($"{group.Key},{row.Name},{col.Name},{row.Mean:0.###},{col.Mean:0.###},{ratio:0.###},{loStr},{hiStr},{qStr},{label},{changeDesc}");
+                    sb.AppendLine($"{groupName},{row.Name},{col.Name},{row.Mean:0.###},{col.Mean:0.###},{ratio:0.###},{loStr},{hiStr},{qStr},{label},{changeDesc}");
                 }
             }
 
