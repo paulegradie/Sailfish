@@ -528,7 +528,7 @@ internal class TestCompletionMessageMapper : ITestCompletionMessageMapper
             var comparisonGroupId = ExtractComparisonGroupId(currentTestCase);
             if (!string.IsNullOrEmpty(comparisonGroupId))
             {
-                metadata["ComparisonGroup"] = comparisonGroupId;
+                metadata[MessageMetadata.Keys.ComparisonGroup] = comparisonGroupId;
             }
 
             // Comparison role information for method comparison processing
@@ -728,15 +728,15 @@ internal class TestCompletionMessageMapper : ITestCompletionMessageMapper
         var metadata = new Dictionary<string, object>
         {
             // Core data required for framework publishing
-            ["TestCase"] = coreData.CurrentTestCase,
-            ["FormattedMessage"] = formattedMessage,
-            ["StartTime"] = performanceTimer.GetIterationStartTime(),
-            ["EndTime"] = performanceTimer.GetIterationStopTime(),
+            [MessageMetadata.Keys.TestCase] = coreData.CurrentTestCase,
+            [MessageMetadata.Keys.FormattedMessage] = formattedMessage,
+            [MessageMetadata.Keys.StartTime] = performanceTimer.GetIterationStartTime(),
+            [MessageMetadata.Keys.EndTime] = performanceTimer.GetIterationStopTime(),
             ["MedianRuntime"] = executionResult.MedianRuntime,
             ["StatusCode"] = executionResult.StatusCode,
 
             // Exception data (if any)
-            ["Exception"] = executionResult.Exception as object ?? DBNull.Value,
+            [MessageMetadata.Keys.Exception] = executionResult.Exception as object ?? DBNull.Value,
 
             // Additional context for processors
             ["ClassExecutionSummaries"] = coreData.ClassExecutionSummaries,

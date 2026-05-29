@@ -49,6 +49,7 @@ internal class BatchTimeoutHandler : IBatchTimeoutHandler, IDisposable
     private Timer? _monitoringTimer;
     private bool _isRunning;
     private bool _isDisposed;
+    private int _sweepInProgress;
     private readonly object _lockObject = new();
     
     /// <summary>
@@ -235,10 +236,22 @@ internal class BatchTimeoutHandler : IBatchTimeoutHandler, IDisposable
     /// Timer callback method that periodically checks for and processes timed-out batches.
     /// </summary>
     /// <param name="state">Timer state (not used).</param>
+    /// <remarks>
+    /// `async void` is required by the Timer callback signature. The method swallows all
+    /// exceptions to keep the timer alive, and uses <see cref="_sweepInProgress"/> as a
+    /// non-blocking reentrancy guard so a slow sweep can't overlap with the next tick
+    /// and double-publish framework notifications for the same batch.
+    /// </remarks>
     private async void MonitorBatchTimeouts(object? state)
     {
         if (_isDisposed || !_isRunning)
         {
+            return;
+        }
+
+        if (Interlocked.CompareExchange(ref _sweepInProgress, 1, 0) != 0)
+        {
+            // Previous sweep is still running; skip this tick.
             return;
         }
 
@@ -251,6 +264,10 @@ internal class BatchTimeoutHandler : IBatchTimeoutHandler, IDisposable
             _logger.Log(LogLevel.Error, ex,
                 "Error occurred during batch timeout monitoring: {0}", ex.Message);
             // Don't re-throw in timer callback to prevent timer from stopping
+        }
+        finally
+        {
+            Volatile.Write(ref _sweepInProgress, 0);
         }
     }
 
@@ -323,14 +340,13 @@ internal class BatchTimeoutHandler : IBatchTimeoutHandler, IDisposable
     {
         try
         {
-            // Extract required data from the message metadata (similar to FrameworkPublishingProcessor)
-            var testCase = ExtractTestCase(message);
-            var testOutputMessage = ExtractTestOutputMessage(message);
-            var startTime = ExtractStartTime(message);
-            var endTime = ExtractEndTime(message);
-            var duration = CalculateDuration(message, startTime, endTime);
-            var statusCode = DetermineStatusCode(message);
-            var exception = ExtractException(message);
+            var testCase = MessageMetadata.ExtractTestCase(message, _logger);
+            var testOutputMessage = MessageMetadata.ExtractFormattedMessage(message, _logger);
+            var startTime = MessageMetadata.ExtractStartTime(message, _logger);
+            var endTime = MessageMetadata.ExtractEndTime(message);
+            var duration = MessageMetadata.CalculateDuration(message, startTime, endTime);
+            var statusCode = message.TestResult.IsSuccess ? StatusCode.Success : StatusCode.Failure;
+            var exception = MessageMetadata.ExtractException(message);
 
             // Create the framework notification
             var frameworkNotification = new FrameworkTestCaseEndNotification(
@@ -357,119 +373,6 @@ internal class BatchTimeoutHandler : IBatchTimeoutHandler, IDisposable
                 message.TestCaseId, ex.Message);
             throw;
         }
-    }
-
-    /// <summary>
-    /// Extracts the TestCase object from the message metadata.
-    /// </summary>
-    /// <param name="message">The test completion message.</param>
-    /// <returns>The TestCase object.</returns>
-    private static Microsoft.VisualStudio.TestPlatform.ObjectModel.TestCase ExtractTestCase(TestCompletionQueueMessage message)
-    {
-        if (message.Metadata.TryGetValue("TestCase", out var testCaseObj) &&
-            testCaseObj is Microsoft.VisualStudio.TestPlatform.ObjectModel.TestCase testCase)
-        {
-            return testCase;
-        }
-
-        throw new InvalidOperationException($"TestCase not found in message metadata for test case '{message.TestCaseId}'");
-    }
-
-    /// <summary>
-    /// Extracts the test output message from the message metadata.
-    /// </summary>
-    /// <param name="message">The test completion message.</param>
-    /// <returns>The test output message string.</returns>
-    private static string ExtractTestOutputMessage(TestCompletionQueueMessage message)
-    {
-        if (message.Metadata.TryGetValue("FormattedMessage", out var outputObj) &&
-            outputObj is string outputMessage)
-        {
-            return outputMessage;
-        }
-
-        return string.Empty; // Default to empty string if not found
-    }
-
-    /// <summary>
-    /// Extracts the start time from the message metadata.
-    /// </summary>
-    /// <param name="message">The test completion message.</param>
-    /// <returns>The test start time.</returns>
-    private static DateTimeOffset ExtractStartTime(TestCompletionQueueMessage message)
-    {
-        if (message.Metadata.TryGetValue("StartTime", out var startTimeObj) &&
-            startTimeObj is DateTimeOffset startTime)
-        {
-            return startTime;
-        }
-
-        // Default to message completion time if start time not found
-        return message.CompletedAt;
-    }
-
-    /// <summary>
-    /// Extracts the end time from the message metadata.
-    /// </summary>
-    /// <param name="message">The test completion message.</param>
-    /// <returns>The test end time.</returns>
-    private static DateTimeOffset ExtractEndTime(TestCompletionQueueMessage message)
-    {
-        if (message.Metadata.TryGetValue("EndTime", out var endTimeObj) &&
-            endTimeObj is DateTimeOffset endTime)
-        {
-            return endTime;
-        }
-
-        // Default to message completion time if end time not found
-        return message.CompletedAt;
-    }
-
-    /// <summary>
-    /// Calculates the test execution duration in milliseconds.
-    /// </summary>
-    /// <param name="message">The test completion message.</param>
-    /// <param name="startTime">The test start time.</param>
-    /// <param name="endTime">The test end time.</param>
-    /// <returns>The test execution duration in milliseconds.</returns>
-    private static double CalculateDuration(TestCompletionQueueMessage message, DateTimeOffset startTime, DateTimeOffset endTime)
-    {
-        // Prefer the median from performance metrics if available
-        if (message.PerformanceMetrics.MedianMs > 0)
-        {
-            return message.PerformanceMetrics.MedianMs;
-        }
-
-        // Fallback to time difference calculation
-        var duration = (endTime - startTime).TotalMilliseconds;
-        return Math.Max(0, duration); // Ensure non-negative duration
-    }
-
-    /// <summary>
-    /// Determines the test status code from the message.
-    /// </summary>
-    /// <param name="message">The test completion message.</param>
-    /// <returns>The test status code.</returns>
-    private static StatusCode DetermineStatusCode(TestCompletionQueueMessage message)
-    {
-        // Use the test result from the message to determine status
-        return message.TestResult.IsSuccess ? StatusCode.Success : StatusCode.Failure;
-    }
-
-    /// <summary>
-    /// Extracts the exception from the message metadata.
-    /// </summary>
-    /// <param name="message">The test completion message.</param>
-    /// <returns>The exception if present, null otherwise.</returns>
-    private static Exception? ExtractException(TestCompletionQueueMessage message)
-    {
-        if (message.Metadata.TryGetValue("Exception", out var exceptionObj) &&
-            exceptionObj is Exception exception)
-        {
-            return exception;
-        }
-
-        return null;
     }
 
     /// <summary>

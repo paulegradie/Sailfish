@@ -51,7 +51,7 @@ namespace Sailfish.TestAdapter.Queue.Implementation;
 /// can be registered as a service in the DI container. It uses the standard ILogger
 /// interface for comprehensive diagnostic information and error reporting.
 /// </remarks>
-internal class TestCompletionQueueManager : IDisposable
+internal class TestCompletionQueueManager : IDisposable, IAsyncDisposable
 {
     private readonly ITestCompletionQueue _queue;
     private readonly ITestCompletionQueueProcessor[] _processors;
@@ -500,14 +500,11 @@ internal class TestCompletionQueueManager : IDisposable
         }
 
         // Dispose queue
-        if (queue != null)
+        if (queue is IDisposable disposableQueue)
         {
             try
             {
-                if (queue is IDisposable disposableQueue)
-                {
-                    disposableQueue.Dispose();
-                }
+                disposableQueue.Dispose();
             }
             catch (Exception ex)
             {
@@ -515,8 +512,6 @@ internal class TestCompletionQueueManager : IDisposable
                     "Error occurred while disposing queue service: {0}", ex.Message);
             }
         }
-
-        await Task.CompletedTask.ConfigureAwait(false);
     }
 
     /// <summary>
@@ -569,14 +564,11 @@ internal class TestCompletionQueueManager : IDisposable
     }
 
     /// <summary>
-    /// Releases all resources used by the <see cref="TestCompletionQueueManager"/>.
+    /// Asynchronously releases all resources used by the <see cref="TestCompletionQueueManager"/>.
+    /// This is the preferred disposal path — it properly awaits the underlying consumer's
+    /// background processing task instead of blocking the calling thread.
     /// </summary>
-    /// <remarks>
-    /// This method ensures proper cleanup of all queue manager resources by stopping
-    /// the manager if it's running and disposing of all managed resources. The method
-    /// is safe to call multiple times and will not throw exceptions during disposal.
-    /// </remarks>
-    public void Dispose()
+    public async ValueTask DisposeAsync()
     {
         if (_isDisposed)
         {
@@ -584,31 +576,29 @@ internal class TestCompletionQueueManager : IDisposable
         }
 
         _logger.Log(LogLevel.Information,
-            "Disposing test completion queue manager");
+            "Disposing test completion queue manager asynchronously");
 
-        // Stop the manager if it's running
         if (_isRunning)
         {
             try
             {
-                StopAsync(CancellationToken.None).GetAwaiter().GetResult();
+                await StopAsync(CancellationToken.None).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
                 _logger.Log(LogLevel.Warning, ex,
-                    "Error occurred while stopping queue manager during disposal: {0}", ex.Message);
+                    "Error occurred while stopping queue manager during async disposal: {0}", ex.Message);
             }
         }
 
-        // Clean up any remaining resources
         try
         {
-            CleanupResourcesAsync().GetAwaiter().GetResult();
+            await CleanupResourcesAsync().ConfigureAwait(false);
         }
         catch (Exception ex)
         {
             _logger.Log(LogLevel.Warning, ex,
-                "Error occurred while cleaning up resources during disposal: {0}", ex.Message);
+                "Error occurred while cleaning up resources during async disposal: {0}", ex.Message);
         }
 
         lock (_lock)
@@ -618,5 +608,58 @@ internal class TestCompletionQueueManager : IDisposable
 
         _logger.Log(LogLevel.Information,
             "Test completion queue manager disposed successfully");
+    }
+
+    /// <summary>
+    /// Releases the manager's resources synchronously. Prefer <see cref="DisposeAsync"/>;
+    /// this overload only requests cancellation of the consumer's background work so the
+    /// container teardown thread is not blocked waiting on async work (which previously
+    /// risked a deadlock via <c>GetAwaiter().GetResult()</c>). Outstanding work will
+    /// complete on its own once cancellation is observed.
+    /// </summary>
+    public void Dispose()
+    {
+        if (_isDisposed)
+        {
+            return;
+        }
+
+        _logger.Log(LogLevel.Information,
+            "Disposing test completion queue manager synchronously - requesting cancellation only");
+
+        TestCompletionQueueConsumer? consumer;
+        lock (_lock)
+        {
+            _isRunning = false;
+            consumer = _consumer;
+            _consumer = null;
+            _isDisposed = true;
+        }
+
+        try
+        {
+            consumer?.Dispose();
+        }
+        catch (Exception ex)
+        {
+            _logger.Log(LogLevel.Warning, ex,
+                "Error occurred while disposing consumer during synchronous disposal: {0}", ex.Message);
+        }
+
+        if (_queue is IDisposable disposableQueue)
+        {
+            try
+            {
+                disposableQueue.Dispose();
+            }
+            catch (Exception ex)
+            {
+                _logger.Log(LogLevel.Warning, ex,
+                    "Error occurred while disposing queue during synchronous disposal: {0}", ex.Message);
+            }
+        }
+
+        _logger.Log(LogLevel.Information,
+            "Test completion queue manager disposed synchronously (background processing may still be completing)");
     }
 }

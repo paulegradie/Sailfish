@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Threading;
 using System.Threading.Channels;
 using System.Threading.Tasks;
@@ -26,24 +26,13 @@ namespace Sailfish.TestAdapter.Queue.Implementation;
 /// - Proper lifecycle management with start/stop/complete operations
 /// - Graceful shutdown with completion detection
 /// - Comprehensive error handling for invalid operations
-/// - Configuration-aware with support for queue settings
-///
-/// Configuration Support:
-/// The queue accepts a QueueConfiguration object that controls various aspects of its behavior:
-/// - MaxQueueCapacity: Applied to the underlying channel capacity
-/// - EnableBatchProcessing, MaxBatchSize: Stored for future use by queue consumers
-/// - Other settings: Available via Configuration property for processors and consumers
-///
-/// The implementation is designed to be lightweight and efficient for the test adapter
-/// runtime environment where queue operations must not impact test execution performance.
 /// </remarks>
 public class InMemoryTestCompletionQueue : ITestCompletionQueue, IDisposable
 {
     private readonly Channel<TestCompletionQueueMessage> _channel;
     private readonly ChannelWriter<TestCompletionQueueMessage> _writer;
     private readonly ChannelReader<TestCompletionQueueMessage> _reader;
-    private readonly int _maxCapacity;
-    private readonly QueueConfiguration? _configuration;
+    private readonly QueueConfiguration _configuration;
 
     private volatile bool _isRunning;
     private volatile bool _isCompleted;
@@ -79,77 +68,21 @@ public class InMemoryTestCompletionQueue : ITestCompletionQueue, IDisposable
         }
 
         _configuration = configuration;
-        _maxCapacity = configuration.MaxQueueCapacity;
 
-        // Create a bounded channel with the configured capacity
-        _channel = Channel.CreateBounded<TestCompletionQueueMessage>(_maxCapacity);
+        _channel = Channel.CreateBounded<TestCompletionQueueMessage>(configuration.MaxQueueCapacity);
         _writer = _channel.Writer;
         _reader = _channel.Reader;
-
-        _isRunning = false;
-        _isCompleted = false;
-        _isDisposed = false;
-        _queueDepth = 0;
-    }
-
-    /// <summary>
-    /// Initializes a new instance of the <see cref="InMemoryTestCompletionQueue"/> class.
-    /// Creates a bounded channel with the specified capacity for controlled memory usage.
-    /// </summary>
-    /// <param name="maxCapacity">
-    /// The maximum number of messages that can be queued. Must be greater than 0.
-    /// </param>
-    /// <exception cref="ArgumentOutOfRangeException">
-    /// Thrown when <paramref name="maxCapacity"/> is less than or equal to 0.
-    /// </exception>
-    /// <remarks>
-    /// This constructor is provided for backward compatibility. For full configuration support,
-    /// use the constructor that accepts a <see cref="QueueConfiguration"/> parameter.
-    /// </remarks>
-    public InMemoryTestCompletionQueue(int maxCapacity)
-    {
-        if (maxCapacity <= 0)
-        {
-            throw new ArgumentOutOfRangeException(nameof(maxCapacity),
-                "Maximum capacity must be greater than 0.");
-        }
-
-        _configuration = null;
-        _maxCapacity = maxCapacity;
-
-        // Create a bounded channel with the specified capacity
-        _channel = Channel.CreateBounded<TestCompletionQueueMessage>(maxCapacity);
-        _writer = _channel.Writer;
-        _reader = _channel.Reader;
-
-        _isRunning = false;
-        _isCompleted = false;
-        _isDisposed = false;
-        _queueDepth = 0;
     }
 
     /// <summary>
     /// Gets the queue configuration used to initialize this queue instance.
-    /// Returns null if the queue was created using the legacy constructor.
     /// </summary>
-    /// <value>
-    /// The <see cref="QueueConfiguration"/> used to create this queue, or null if created
-    /// with the legacy constructor that only accepts capacity.
-    /// </value>
-    /// <remarks>
-    /// This property provides access to the full configuration for queue consumers and processors
-    /// that need to access batch processing settings, timeouts, and other configuration values.
-    /// When null, consumers should use appropriate default values.
-    /// </remarks>
-    public QueueConfiguration? Configuration => _configuration;
+    public QueueConfiguration Configuration => _configuration;
 
     /// <summary>
     /// Gets the maximum capacity of the queue as configured during initialization.
     /// </summary>
-    /// <value>
-    /// The maximum number of messages that can be queued simultaneously.
-    /// </value>
-    public int MaxCapacity => _maxCapacity;
+    public int MaxCapacity => _configuration.MaxQueueCapacity;
 
     /// <inheritdoc />
     public bool IsRunning => _isRunning && !_isDisposed;
@@ -171,19 +104,19 @@ public class InMemoryTestCompletionQueue : ITestCompletionQueue, IDisposable
     public Task StartAsync(CancellationToken cancellationToken)
     {
         ThrowIfDisposed();
-        
+
         if (_isRunning)
         {
             throw new InvalidOperationException("Queue is already running.");
         }
-        
+
         if (_isCompleted)
         {
             throw new InvalidOperationException("Queue has been completed and cannot be restarted.");
         }
 
         cancellationToken.ThrowIfCancellationRequested();
-        
+
         _isRunning = true;
         return Task.CompletedTask;
     }
@@ -193,7 +126,7 @@ public class InMemoryTestCompletionQueue : ITestCompletionQueue, IDisposable
     {
         ThrowIfDisposed();
         cancellationToken.ThrowIfCancellationRequested();
-        
+
         _isRunning = false;
         return Task.CompletedTask;
     }
@@ -203,13 +136,13 @@ public class InMemoryTestCompletionQueue : ITestCompletionQueue, IDisposable
     {
         ThrowIfDisposed();
         cancellationToken.ThrowIfCancellationRequested();
-        
+
         _isCompleted = true;
         _isRunning = false;
-        
+
         // Complete the writer to signal no more messages will be added
         _writer.Complete();
-        
+
         return Task.CompletedTask;
     }
 
@@ -220,14 +153,14 @@ public class InMemoryTestCompletionQueue : ITestCompletionQueue, IDisposable
         {
             throw new ArgumentNullException(nameof(message));
         }
-        
+
         ThrowIfDisposed();
-        
+
         if (!_isRunning)
         {
             throw new InvalidOperationException("Queue is not running. Call StartAsync before enqueuing messages.");
         }
-        
+
         if (_isCompleted)
         {
             throw new InvalidOperationException("Queue has been completed and cannot accept new messages.");
@@ -263,7 +196,7 @@ public class InMemoryTestCompletionQueue : ITestCompletionQueue, IDisposable
                     return message;
                 }
             }
-            
+
             // Channel is completed and no more messages are available
             return null;
         }
@@ -286,14 +219,11 @@ public class InMemoryTestCompletionQueue : ITestCompletionQueue, IDisposable
             Interlocked.Decrement(ref _queueDepth);
             return Task.FromResult<TestCompletionQueueMessage?>(message);
         }
-        
+
         // No message available immediately
         return Task.FromResult<TestCompletionQueueMessage?>(null);
     }
 
-    /// <summary>
-    /// Throws an <see cref="ObjectDisposedException"/> if the queue has been disposed.
-    /// </summary>
     private void ThrowIfDisposed()
     {
         if (_isDisposed)

@@ -128,7 +128,7 @@ public class QueueHealthCheckProcessingTimeTests
 
     private TestCompletionQueueManager CreateMockQueueManager()
     {
-        var queue = new InMemoryTestCompletionQueue(1000);
+        var queue = new InMemoryTestCompletionQueue(new QueueConfiguration());
         var processors = Array.Empty<ITestCompletionQueueProcessor>();
         return new TestCompletionQueueManager(queue, processors, _logger);
     }

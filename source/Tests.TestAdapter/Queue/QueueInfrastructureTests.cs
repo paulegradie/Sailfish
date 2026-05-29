@@ -210,7 +210,7 @@ public class QueueInfrastructureTests
     public async Task InMemoryTestCompletionQueue_Start_ShouldSetRunningState()
     {
         // Arrange
-        using var queue = new InMemoryTestCompletionQueue(1000);
+        using var queue = new InMemoryTestCompletionQueue(new QueueConfiguration());
 
         // Act
         await queue.StartAsync(CancellationToken.None);
@@ -227,7 +227,7 @@ public class QueueInfrastructureTests
     public async Task InMemoryTestCompletionQueue_StartTwice_ShouldThrowInvalidOperationException()
     {
         // Arrange
-        using var queue = new InMemoryTestCompletionQueue(1000);
+        using var queue = new InMemoryTestCompletionQueue(new QueueConfiguration());
         await queue.StartAsync(CancellationToken.None);
 
         // Act & Assert
@@ -242,7 +242,7 @@ public class QueueInfrastructureTests
     public async Task InMemoryTestCompletionQueue_EnqueueDequeue_ShouldWorkCorrectly()
     {
         // Arrange
-        using var queue = new InMemoryTestCompletionQueue(1000);
+        using var queue = new InMemoryTestCompletionQueue(new QueueConfiguration());
         await queue.StartAsync(CancellationToken.None);
         var message = CreateTestMessage();
 
@@ -263,7 +263,7 @@ public class QueueInfrastructureTests
     public async Task InMemoryTestCompletionQueue_EnqueueAfterStop_ShouldThrowInvalidOperationException()
     {
         // Arrange
-        using var queue = new InMemoryTestCompletionQueue(1000);
+        using var queue = new InMemoryTestCompletionQueue(new QueueConfiguration());
         await queue.StartAsync(CancellationToken.None);
         await queue.StopAsync(CancellationToken.None);
         var message = CreateTestMessage();
@@ -271,33 +271,6 @@ public class QueueInfrastructureTests
         // Act & Assert
         await Should.ThrowAsync<InvalidOperationException>(
             () => queue.EnqueueAsync(message, CancellationToken.None));
-    }
-
-    /// <summary>
-    /// Tests that InMemoryTestCompletionQueue throws when constructed with invalid capacity.
-    /// </summary>
-    [Fact]
-    public void InMemoryTestCompletionQueue_InvalidCapacity_ShouldThrowArgumentOutOfRangeException()
-    {
-        // Act & Assert
-        Should.Throw<ArgumentOutOfRangeException>(() => new InMemoryTestCompletionQueue(0));
-        Should.Throw<ArgumentOutOfRangeException>(() => new InMemoryTestCompletionQueue(-1));
-    }
-
-    /// <summary>
-    /// Tests that InMemoryTestCompletionQueue accepts valid capacity values.
-    /// </summary>
-    [Fact]
-    public void InMemoryTestCompletionQueue_ValidCapacity_ShouldCreateSuccessfully()
-    {
-        // Act & Assert
-        using var queue1 = new InMemoryTestCompletionQueue(1);
-        using var queue2 = new InMemoryTestCompletionQueue(1000);
-        using var queue3 = new InMemoryTestCompletionQueue(int.MaxValue);
-
-        queue1.ShouldNotBeNull();
-        queue2.ShouldNotBeNull();
-        queue3.ShouldNotBeNull();
     }
 
     /// <summary>
@@ -349,20 +322,6 @@ public class QueueInfrastructureTests
         // Act & Assert
         Should.Throw<ArgumentOutOfRangeException>(() => new InMemoryTestCompletionQueue(config1));
         Should.Throw<ArgumentOutOfRangeException>(() => new InMemoryTestCompletionQueue(config2));
-    }
-
-    /// <summary>
-    /// Tests that legacy constructor sets Configuration property to null.
-    /// </summary>
-    [Fact]
-    public void InMemoryTestCompletionQueue_LegacyConstructor_ShouldHaveNullConfiguration()
-    {
-        // Act
-        using var queue = new InMemoryTestCompletionQueue(1000);
-
-        // Assert
-        queue.Configuration.ShouldBeNull();
-        queue.MaxCapacity.ShouldBe(1000);
     }
 
     #endregion
@@ -649,7 +608,7 @@ public class QueueInfrastructureTests
     public async Task QueueOperations_WithCancellationToken_ShouldRespectCancellation()
     {
         // Arrange
-        using var queue = new InMemoryTestCompletionQueue(1000);
+        using var queue = new InMemoryTestCompletionQueue(new QueueConfiguration());
         await queue.StartAsync(CancellationToken.None);
         using var cts = new CancellationTokenSource();
         cts.Cancel();
@@ -693,7 +652,7 @@ public class QueueInfrastructureTests
     public void QueueComponents_Disposal_ShouldCleanupResources()
     {
         // Arrange & Act
-        var queue = new InMemoryTestCompletionQueue(1000);
+        var queue = new InMemoryTestCompletionQueue(new QueueConfiguration());
         queue.Dispose();
 
         // Assert
@@ -710,7 +669,7 @@ public class QueueInfrastructureTests
     public async Task InMemoryTestCompletionQueue_QueueDepth_ShouldTrackAccurately()
     {
         // Arrange
-        using var queue = new InMemoryTestCompletionQueue(1000);
+        using var queue = new InMemoryTestCompletionQueue(new QueueConfiguration());
         await queue.StartAsync(CancellationToken.None);
 
         // Assert initial depth
@@ -752,7 +711,7 @@ public class QueueInfrastructureTests
     public async Task InMemoryTestCompletionQueue_QueueDepth_WithTryDequeue_ShouldTrackAccurately()
     {
         // Arrange
-        using var queue = new InMemoryTestCompletionQueue(1000);
+        using var queue = new InMemoryTestCompletionQueue(new QueueConfiguration());
         await queue.StartAsync(CancellationToken.None);
 
         // Assert initial depth
@@ -791,7 +750,7 @@ public class QueueInfrastructureTests
     public async Task GetDiagnosticInfo_ShouldReturnNullUptime()
     {
         // Arrange
-        using var queue = new InMemoryTestCompletionQueue(1000);
+        using var queue = new InMemoryTestCompletionQueue(new QueueConfiguration());
         await queue.StartAsync(CancellationToken.None);
 
         // Act
@@ -816,7 +775,7 @@ public class QueueInfrastructureTests
     public async Task GetDiagnosticInfo_ShouldIncludeCorrectAdditionalInfo()
     {
         // Arrange
-        using var queue = new InMemoryTestCompletionQueue(1000);
+        using var queue = new InMemoryTestCompletionQueue(new QueueConfiguration());
         await queue.StartAsync(CancellationToken.None);
         var message = CreateTestMessage();
         await queue.EnqueueAsync(message, CancellationToken.None);

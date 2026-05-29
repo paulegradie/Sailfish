@@ -316,10 +316,37 @@ public class TestCompletionQueueManagerTests : IDisposable
 
         // Assert
         _logger.Received(1).Log(LogLevel.Information,
-            Arg.Is<string>(s => s.Contains("Test completion queue manager disposed successfully")));
+            Arg.Is<string>(s => s.Contains("disposed synchronously")));
     }
 
-    // TestCompletionQueueManager doesn't implement IAsyncDisposable
+    [Fact]
+    public async Task DisposeAsync_ShouldDisposeResourcesProperly()
+    {
+        // Arrange
+        _manager = new TestCompletionQueueManager(_queue, _processors, _logger);
+
+        // Act
+        await _manager.DisposeAsync();
+
+        // Assert
+        _logger.Received(1).Log(LogLevel.Information,
+            Arg.Is<string>(s => s.Contains("disposed successfully")));
+    }
+
+    [Fact]
+    public async Task DisposeAsync_WhenRunning_ShouldStopFirst()
+    {
+        // Arrange
+        _manager = new TestCompletionQueueManager(_queue, _processors, _logger);
+        var configuration = new QueueConfiguration { IsEnabled = true };
+        await _manager.StartAsync(configuration, CancellationToken.None);
+
+        // Act
+        await _manager.DisposeAsync();
+
+        // Assert
+        _manager.IsRunning.ShouldBeFalse();
+    }
 
     [Fact]
     public async Task Dispose_WhenRunning_ShouldStopFirst()

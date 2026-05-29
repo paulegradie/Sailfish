@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using NSubstitute;
+using Sailfish.TestAdapter.Queue.Configuration;
 using Sailfish.TestAdapter.Queue.Contracts;
 using Sailfish.TestAdapter.Queue.Extensions;
 using Sailfish.TestAdapter.Queue.Implementation;
@@ -93,7 +94,7 @@ public class QueueExtensionsTests : IDisposable
     public async Task EnqueueBatchAsync_WithValidMessages_ShouldEnqueueAll()
     {
         // Arrange
-        using var queue = new InMemoryTestCompletionQueue(1000);
+        using var queue = new InMemoryTestCompletionQueue(new QueueConfiguration());
         await queue.StartAsync(CancellationToken.None);
         
         var messages = new[]
@@ -126,7 +127,7 @@ public class QueueExtensionsTests : IDisposable
     public async Task EnqueueBatchAsync_WithNullMessages_ShouldThrowArgumentNullException()
     {
         // Arrange
-        using var queue = new InMemoryTestCompletionQueue(1000);
+        using var queue = new InMemoryTestCompletionQueue(new QueueConfiguration());
         await queue.StartAsync(CancellationToken.None);
 
         // Act & Assert
@@ -138,7 +139,7 @@ public class QueueExtensionsTests : IDisposable
     public async Task EnqueueBatchAsync_WithCancellation_ShouldThrowOperationCanceledException()
     {
         // Arrange
-        using var queue = new InMemoryTestCompletionQueue(1000);
+        using var queue = new InMemoryTestCompletionQueue(new QueueConfiguration());
         await queue.StartAsync(CancellationToken.None);
         var messages = new[] { CreateTestMessage() };
         using var cts = new CancellationTokenSource();
@@ -157,7 +158,7 @@ public class QueueExtensionsTests : IDisposable
     public async Task IsHealthy_WhenRunningAndNotCompleted_ShouldReturnTrue()
     {
         // Arrange
-        using var queue = new InMemoryTestCompletionQueue(1000);
+        using var queue = new InMemoryTestCompletionQueue(new QueueConfiguration());
         await queue.StartAsync(CancellationToken.None);
 
         // Act
@@ -171,7 +172,7 @@ public class QueueExtensionsTests : IDisposable
     public void IsHealthy_WhenNotRunning_ShouldReturnFalse()
     {
         // Arrange
-        using var queue = new InMemoryTestCompletionQueue(1000);
+        using var queue = new InMemoryTestCompletionQueue(new QueueConfiguration());
         // Don't start the queue
 
         // Act
@@ -185,7 +186,7 @@ public class QueueExtensionsTests : IDisposable
     public async Task IsHealthy_WhenCompleted_ShouldReturnFalse()
     {
         // Arrange
-        using var queue = new InMemoryTestCompletionQueue(1000);
+        using var queue = new InMemoryTestCompletionQueue(new QueueConfiguration());
         await queue.StartAsync(CancellationToken.None);
         await queue.CompleteAsync(CancellationToken.None);
 
@@ -214,7 +215,7 @@ public class QueueExtensionsTests : IDisposable
     public async Task GetQueueStatus_WithRunningQueue_ShouldReturnCorrectStatus()
     {
         // Arrange
-        using var queue = new InMemoryTestCompletionQueue(1000);
+        using var queue = new InMemoryTestCompletionQueue(new QueueConfiguration());
         await queue.StartAsync(CancellationToken.None);
         var message = CreateTestMessage();
         await queue.EnqueueAsync(message, CancellationToken.None);
@@ -248,7 +249,7 @@ public class QueueExtensionsTests : IDisposable
     public async Task WaitForEmptyAsync_WithEmptyQueue_ShouldReturnTrueImmediately()
     {
         // Arrange
-        using var queue = new InMemoryTestCompletionQueue(1000);
+        using var queue = new InMemoryTestCompletionQueue(new QueueConfiguration());
         await queue.StartAsync(CancellationToken.None);
 
         // Act
@@ -262,7 +263,7 @@ public class QueueExtensionsTests : IDisposable
     public async Task WaitForEmptyAsync_WithTimeout_ShouldReturnFalse()
     {
         // Arrange
-        using var queue = new InMemoryTestCompletionQueue(1000);
+        using var queue = new InMemoryTestCompletionQueue(new QueueConfiguration());
         await queue.StartAsync(CancellationToken.None);
         await queue.EnqueueAsync(CreateTestMessage(), CancellationToken.None);
 
@@ -534,7 +535,7 @@ public class QueueExtensionsTests : IDisposable
     public async Task LogQueueStatus_WithHealthyQueue_ShouldLogInfo()
     {
         // Arrange
-        using var queue = new InMemoryTestCompletionQueue(1000);
+        using var queue = new InMemoryTestCompletionQueue(new QueueConfiguration());
         await queue.StartAsync(CancellationToken.None);
 
         // Act
@@ -558,7 +559,7 @@ public class QueueExtensionsTests : IDisposable
     public async Task ToHealthCheckResult_WithHealthyQueue_ShouldReturnHealthyResult()
     {
         // Arrange
-        using var queue = new InMemoryTestCompletionQueue(1000);
+        using var queue = new InMemoryTestCompletionQueue(new QueueConfiguration());
         await queue.StartAsync(CancellationToken.None);
 
         // Act
@@ -581,7 +582,7 @@ public class QueueExtensionsTests : IDisposable
     public void ToHealthCheckResult_WithUnhealthyQueue_ShouldReturnUnhealthyResult()
     {
         // Arrange
-        using var queue = new InMemoryTestCompletionQueue(1000);
+        using var queue = new InMemoryTestCompletionQueue(new QueueConfiguration());
         // Don't start the queue
 
         // Act

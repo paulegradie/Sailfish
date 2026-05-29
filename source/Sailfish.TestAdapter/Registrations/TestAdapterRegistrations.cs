@@ -130,14 +130,9 @@ internal class TestAdapterRegistrations : IProvideAdditionalRegistrations
     private static void RegisterCoreQueueServices(ContainerBuilder builder)
     {
         // Core queue implementation - singleton to maintain state during test execution
-        // Use factory registration to inject the MaxQueueCapacity configuration parameter
-        builder.Register(context =>
-        {
-            var configuration = context.Resolve<QueueConfiguration>();
-            return new InMemoryTestCompletionQueue(configuration.MaxQueueCapacity);
-        })
-        .As<ITestCompletionQueue>()
-        .SingleInstance();
+        builder.Register(context => new InMemoryTestCompletionQueue(context.Resolve<QueueConfiguration>()))
+            .As<ITestCompletionQueue>()
+            .SingleInstance();
 
         // Queue publisher - transient as it's a lightweight service
         builder.RegisterType<TestCompletionQueuePublisher>()
