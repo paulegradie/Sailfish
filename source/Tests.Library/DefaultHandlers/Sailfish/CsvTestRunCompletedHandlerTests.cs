@@ -125,6 +125,40 @@ public class CsvTestRunCompletedHandlerTests
     }
 
     [Fact]
+    public async Task Handle_WithBaselineComparison_EmitsOnlyBaselineVsContenderRows()
+    {
+        // Arrange — a 2-method group with one baseline → exactly one CSV pair row should appear.
+        var notification = CreateTestNotificationWithBaselineComparison();
+
+        // Act
+        await _handler.Handle(notification, CancellationToken.None);
+
+        // Assert
+        await _mockMediator.Received(1).Publish(
+            Arg.Is<WriteMethodComparisonCsvNotification>(n =>
+                n.CsvContent.Contains("# Method Comparisons") &&
+                n.CsvContent.Contains("TestGroup,Baseline,Contender")),
+            Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task Handle_WithLegacyComparisonAttribute_StillEmitsComparison()
+    {
+        // Arrange — exercises the obsolete-attribute fallback path.
+        var notification = CreateTestNotificationWithLegacyComparison();
+
+        // Act
+        await _handler.Handle(notification, CancellationToken.None);
+
+        // Assert
+        await _mockMediator.Received(1).Publish(
+            Arg.Is<WriteMethodComparisonCsvNotification>(n =>
+                n.CsvContent.Contains("# Method Comparisons") &&
+                n.CsvContent.Contains("TestGroup,")),
+            Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
     public async Task Handle_WithNonComparisonMethods_GeneratesIndividualResults()
     {
         // Arrange
@@ -339,6 +373,56 @@ public class CsvTestRunCompletedHandlerTests
         return new TestRunCompletedNotification([classExecutionSummary]);
     }
 
+    private TestRunCompletedNotification CreateTestNotificationWithBaselineComparison()
+    {
+        var classExecutionSummary = ClassExecutionSummaryTrackingFormatBuilder.Create()
+            .WithTestClass(typeof(TestClassWithBaselineComparison))
+            .WithCompiledTestCaseResult(b => b
+                .WithTestCaseId(TestCaseIdBuilder.Create().WithTestCaseName("Baseline").Build())
+                .WithPerformanceRunResult(PerformanceRunResultTrackingFormatBuilder.Create()
+                    .WithMean(100.0)
+                    .WithMedian(95.0)
+                    .WithStdDev(5.0)
+                    .WithSampleSize(10)
+                    .Build()))
+            .WithCompiledTestCaseResult(b => b
+                .WithTestCaseId(TestCaseIdBuilder.Create().WithTestCaseName("Contender").Build())
+                .WithPerformanceRunResult(PerformanceRunResultTrackingFormatBuilder.Create()
+                    .WithMean(200.0)
+                    .WithMedian(195.0)
+                    .WithStdDev(10.0)
+                    .WithSampleSize(10)
+                    .Build()))
+            .Build();
+
+        return new TestRunCompletedNotification([classExecutionSummary]);
+    }
+
+    private TestRunCompletedNotification CreateTestNotificationWithLegacyComparison()
+    {
+        var classExecutionSummary = ClassExecutionSummaryTrackingFormatBuilder.Create()
+            .WithTestClass(typeof(LegacyTestClassWithComparison))
+            .WithCompiledTestCaseResult(b => b
+                .WithTestCaseId(TestCaseIdBuilder.Create().WithTestCaseName("Method1").Build())
+                .WithPerformanceRunResult(PerformanceRunResultTrackingFormatBuilder.Create()
+                    .WithMean(100.0)
+                    .WithMedian(95.0)
+                    .WithStdDev(5.0)
+                    .WithSampleSize(10)
+                    .Build()))
+            .WithCompiledTestCaseResult(b => b
+                .WithTestCaseId(TestCaseIdBuilder.Create().WithTestCaseName("Method2").Build())
+                .WithPerformanceRunResult(PerformanceRunResultTrackingFormatBuilder.Create()
+                    .WithMean(200.0)
+                    .WithMedian(195.0)
+                    .WithStdDev(10.0)
+                    .WithSampleSize(10)
+                    .Build()))
+            .Build();
+
+        return new TestRunCompletedNotification([classExecutionSummary]);
+    }
+
     private TestRunCompletedNotification CreateTestNotificationWithEmptyResults()
     {
         var classExecutionSummary = ClassExecutionSummaryTrackingFormatBuilder.Create()
@@ -393,11 +477,34 @@ public class CsvTestRunCompletedHandlerTests
     [WriteToCsv]
     private class TestClassWithComparison
     {
+        [SailfishMethod(ComparisonGroup = "TestGroup")]
+        public void Method1() { }
+
+        [SailfishMethod(ComparisonGroup = "TestGroup")]
+        public void Method2() { }
+    }
+
+    [WriteToCsv]
+    private class TestClassWithBaselineComparison
+    {
+        [SailfishMethod(ComparisonGroup = "TestGroup", IsBaseline = true)]
+        public void Baseline() { }
+
+        [SailfishMethod(ComparisonGroup = "TestGroup")]
+        public void Contender() { }
+    }
+
+    [WriteToCsv]
+    private class LegacyTestClassWithComparison
+    {
+        // Coverage for the deprecation-window fallback: legacy [SailfishComparison] still resolves.
+#pragma warning disable CS0618 // Type or member is obsolete
         [SailfishComparison("TestGroup")]
         public void Method1() { }
 
         [SailfishComparison("TestGroup")]
         public void Method2() { }
+#pragma warning restore CS0618
     }
 
     [WriteToCsv]

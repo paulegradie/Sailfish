@@ -146,39 +146,61 @@ public static class DiscoveryAnalysisMethods
 
     /// <summary>
     /// Extracts comparison group information from a method declaration's attributes.
+    /// Prefers the new <c>[SailfishMethod(ComparisonGroup = "...")]</c> shape and falls back
+    /// to the obsolete <c>[SailfishComparison("...")]</c> attribute during the deprecation window.
     /// </summary>
     /// <param name="methodDeclaration">The method declaration to analyze.</param>
     /// <returns>The comparison group name, or null if no comparison attribute is found.</returns>
     private static string? ExtractComparisonInfo(MethodDeclarationSyntax methodDeclaration)
     {
-        // Look for SailfishComparison attribute
-        var comparisonAttribute = methodDeclaration.AttributeLists
-            .SelectMany(attrList => attrList.Attributes)
-            .FirstOrDefault(attr =>
-                attr.Name.ToString() == "SailfishComparison" ||
-                attr.Name.ToString() == "SailfishComparisonAttribute");
-
-        if (comparisonAttribute?.ArgumentList?.Arguments == null || comparisonAttribute.ArgumentList.Arguments.Count < 1)
-        {
-            return null;
-        }
-
         try
         {
-            // Extract comparison group (first and only argument)
+            // Preferred: SailfishMethod attribute with a named ComparisonGroup argument.
+            var sailfishMethodAttr = methodDeclaration.AttributeLists
+                .SelectMany(attrList => attrList.Attributes)
+                .FirstOrDefault(attr =>
+                    attr.Name.ToString() == "SailfishMethod" ||
+                    attr.Name.ToString() == "SailfishMethodAttribute");
+
+            if (sailfishMethodAttr?.ArgumentList?.Arguments != null)
+            {
+                foreach (var arg in sailfishMethodAttr.ArgumentList.Arguments)
+                {
+                    if (arg.NameEquals?.Name.Identifier.ValueText == "ComparisonGroup")
+                    {
+                        var value = ExtractStringLiteralValue(arg.Expression);
+                        if (!string.IsNullOrEmpty(value))
+                        {
+                            return value;
+                        }
+                    }
+                }
+            }
+
+            // Legacy fallback: standalone SailfishComparison attribute.
+            var comparisonAttribute = methodDeclaration.AttributeLists
+                .SelectMany(attrList => attrList.Attributes)
+                .FirstOrDefault(attr =>
+                    attr.Name.ToString() == "SailfishComparison" ||
+                    attr.Name.ToString() == "SailfishComparisonAttribute");
+
+            if (comparisonAttribute?.ArgumentList?.Arguments == null || comparisonAttribute.ArgumentList.Arguments.Count < 1)
+            {
+                return null;
+            }
+
+            // Extract comparison group (first positional argument).
             var groupArgument = comparisonAttribute.ArgumentList.Arguments[0];
             return ExtractStringLiteralValue(groupArgument.Expression);
         }
         catch (ArgumentException ex)
         {
-            // If we can't parse the attribute arguments due to invalid argument format, return null
-            Debug.WriteLine($"[Sailfish.TestAdapter] Failed to parse SailfishComparison attribute arguments: {ex.Message}");
+            Debug.WriteLine($"[Sailfish.TestAdapter] Failed to parse comparison attribute arguments: {ex.Message}");
             return null;
         }
         catch (InvalidOperationException ex)
         {
-            // If we can't access the expression due to invalid syntax tree state, return null
-            Debug.WriteLine($"[Sailfish.TestAdapter] Failed to access SailfishComparison attribute expression: {ex.Message}");
+            Debug.WriteLine($"[Sailfish.TestAdapter] Failed to access comparison attribute expression: {ex.Message}");
             return null;
         }
     }
