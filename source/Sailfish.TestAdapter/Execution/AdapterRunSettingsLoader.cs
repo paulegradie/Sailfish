@@ -58,6 +58,11 @@ public static class AdapterRunSettingsLoader
         if (parsed.EnableParallelBootstrap is not null) mapped.EnableParallelBootstrap = parsed.EnableParallelBootstrap.Value;
         if (parsed.EnableContinuousExponent is not null) mapped.EnableContinuousExponent = parsed.EnableContinuousExponent.Value;
         if (parsed.DistinguishabilityDelta is not null) mapped.DistinguishabilityDelta = parsed.DistinguishabilityDelta.Value;
+        if (parsed.EnableCrossValidation is not null) mapped.EnableCrossValidation = parsed.EnableCrossValidation.Value;
+        if (parsed.EnableTailPercentileFits is not null) mapped.EnableTailPercentileFits = parsed.EnableTailPercentileFits.Value;
+        if (parsed.TailPercentiles is not null && parsed.TailPercentiles.Length > 0) mapped.TailPercentiles = parsed.TailPercentiles;
+        if (parsed.EnableTrendTracking is not null) mapped.EnableTrendTracking = parsed.EnableTrendTracking.Value;
+        if (parsed.EmitHtmlReport is not null) mapped.EmitHtmlReport = parsed.EmitHtmlReport.Value;
         return mapped;
     }
 

@@ -311,6 +311,7 @@ public class MarkdownTableConverter : IMarkdownTableConverter
                             "",
                             "",
                             "",
+                            "",
                             ""
                         },
                         new List<string>
@@ -326,7 +327,8 @@ public class MarkdownTableConverter : IMarkdownTableConverter
                             "AkaikeWeight",
                             "Distinguishable",
                             "ContinuousExponent",
-                            "SuggestNextN"
+                            "SuggestNextN",
+                            "CvStability"
                         },
                         c => c.PropertyName,
                         c => c.ScaleFishModel.ScaleFishModelFunction.Name,
@@ -339,7 +341,8 @@ public class MarkdownTableConverter : IMarkdownTableConverter
                         c => FormatWeight(c.ScaleFishModel.AkaikeWeight),
                         c => c.ScaleFishModel.IsDistinguishable ? "yes" : "no",
                         c => FormatPowerLog(c.ScaleFishModel.PowerLog),
-                        c => FormatSuggestion(c.ScaleFishModel.SuggestedNextN)
+                        c => FormatSuggestion(c.ScaleFishModel.SuggestedNextN),
+                        c => FormatCvStability(c.ScaleFishModel.CrossValidation)
                     ));
                 tableBuilder.AppendLine();
             }
@@ -434,5 +437,12 @@ public class MarkdownTableConverter : IMarkdownTableConverter
     private static string FormatSuggestion(int? suggested)
     {
         return suggested is null ? "—" : suggested.Value.ToString(System.Globalization.CultureInfo.InvariantCulture);
+    }
+
+    private static string FormatCvStability(Sailfish.Analysis.ScaleFish.CurveFitting.CrossValidationDiagnostic? cv)
+    {
+        if (cv is null) return "n/a";
+        return string.Format(System.Globalization.CultureInfo.InvariantCulture,
+            "agree={0:F2} k={1}", cv.RankAgreement, cv.FoldCount);
     }
 }

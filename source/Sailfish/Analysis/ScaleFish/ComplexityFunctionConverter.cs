@@ -59,6 +59,8 @@ public class ComplexityFunctionConverter : JsonConverter<List<ScalefishClassMode
                     var powerLog = ReadOptionalPowerLog(complexityResultJsonElement);
                     var bootstrap = ReadOptionalBootstrap(complexityResultJsonElement);
                     var suggestedNextN = ReadOptionalNullableInt(complexityResultJsonElement, nameof(ScaleFishModel.SuggestedNextN));
+                    var crossValidation = ReadOptionalCrossValidation(complexityResultJsonElement);
+                    var tailFits = ReadOptionalTailFits(complexityResultJsonElement);
 
                     var complexityResult = new ScaleFishModel(
                         complexityFunction,
@@ -73,7 +75,9 @@ public class ComplexityFunctionConverter : JsonConverter<List<ScalefishClassMode
                         powerLog: powerLog)
                     {
                         Bootstrap = bootstrap,
-                        SuggestedNextN = suggestedNextN
+                        SuggestedNextN = suggestedNextN,
+                        CrossValidation = crossValidation,
+                        TailFits = tailFits
                     };
 
                     testPropertyComplexityResults.Add(new ScaleFishPropertyModel(propertyName, complexityResult));
@@ -171,6 +175,45 @@ public class ComplexityFunctionConverter : JsonConverter<List<ScalefishClassMode
         var d = ReadOptionalDouble(prop, nameof(PowerLogResult.D), double.NaN);
         var r2 = ReadOptionalDouble(prop, nameof(PowerLogResult.RSquared), double.NaN);
         return new PowerLogResult(a, b, c, d, r2);
+    }
+
+    private static IReadOnlyList<TailFitResult> ReadOptionalTailFits(JsonElement parent)
+    {
+        if (!parent.TryGetProperty(nameof(ScaleFishModel.TailFits), out var prop)) return Array.Empty<TailFitResult>();
+        if (prop.ValueKind != JsonValueKind.Array) return Array.Empty<TailFitResult>();
+
+        var list = new List<TailFitResult>();
+        foreach (var item in prop.EnumerateArray())
+        {
+            if (item.ValueKind != JsonValueKind.Object) continue;
+            list.Add(new TailFitResult(
+                percentile: ReadOptionalDouble(item, nameof(TailFitResult.Percentile), double.NaN),
+                bestFamilyName: item.TryGetProperty(nameof(TailFitResult.BestFamilyName), out var bf) ? bf.GetString() ?? "" : "",
+                bestFamilyOName: item.TryGetProperty(nameof(TailFitResult.BestFamilyOName), out var bfo) ? bfo.GetString() ?? "" : "",
+                bestRSquared: ReadOptionalDouble(item, nameof(TailFitResult.BestRSquared), double.NaN),
+                nextFamilyName: item.TryGetProperty(nameof(TailFitResult.NextFamilyName), out var nf) ? nf.GetString() ?? "" : "",
+                nextRSquared: ReadOptionalDouble(item, nameof(TailFitResult.NextRSquared), double.NaN),
+                bestAicc: ReadOptionalDouble(item, nameof(TailFitResult.BestAicc), double.NaN),
+                nextBestAicc: ReadOptionalDouble(item, nameof(TailFitResult.NextBestAicc), double.NaN),
+                akaikeWeight: ReadOptionalDouble(item, nameof(TailFitResult.AkaikeWeight), double.NaN),
+                isDistinguishable: ReadOptionalBool(item, nameof(TailFitResult.IsDistinguishable), false),
+                sampleSize: ReadOptionalInt(item, nameof(TailFitResult.SampleSize), 0),
+                bestScale: ReadOptionalDouble(item, nameof(TailFitResult.BestScale), double.NaN),
+                bestBias: ReadOptionalDouble(item, nameof(TailFitResult.BestBias), double.NaN)));
+        }
+        return list;
+    }
+
+    private static CrossValidationDiagnostic? ReadOptionalCrossValidation(JsonElement parent)
+    {
+        if (!parent.TryGetProperty(nameof(ScaleFishModel.CrossValidation), out var prop)) return null;
+        if (prop.ValueKind == JsonValueKind.Null || prop.ValueKind != JsonValueKind.Object) return null;
+
+        var foldCount = ReadOptionalInt(prop, nameof(CrossValidationDiagnostic.FoldCount), 0);
+        var rankAgreement = ReadOptionalDouble(prop, nameof(CrossValidationDiagnostic.RankAgreement), double.NaN);
+        var meanError = ReadOptionalDouble(prop, nameof(CrossValidationDiagnostic.MeanPredictionError), double.NaN);
+        var medianError = ReadOptionalDouble(prop, nameof(CrossValidationDiagnostic.MedianPredictionError), double.NaN);
+        return new CrossValidationDiagnostic(foldCount, rankAgreement, meanError, medianError);
     }
 
     private static BootstrapDiagnostic? ReadOptionalBootstrap(JsonElement parent)
