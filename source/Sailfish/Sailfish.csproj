@@ -4,7 +4,7 @@
         <Version>0.0.117</Version>
         <Authors>Paul E. Gradie</Authors>
         <Description>
-            Sailfish is a simple in-process performace test framework for writing clean, manageable performance tests
+            Sailfish is a simple in-process performance test framework for writing clean, manageable performance tests
             against your component or API. The general intention is to provide a simple tool that teams can use to write straight forward
             tests that assess the speed of your code, without weighing you down with all the extra ceremony.
         </Description>
