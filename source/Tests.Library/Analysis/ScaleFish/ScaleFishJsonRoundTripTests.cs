@@ -92,6 +92,8 @@ public class ScaleFishJsonRoundTripTests
         loaded.Bootstrap.SelectionAgreement.ShouldBe(0.95, tolerance: 1e-9);
         loaded.Bootstrap.ScaleCiLower.ShouldBe(2.8, tolerance: 1e-9);
         loaded.Bootstrap.ScaleCiUpper.ShouldBe(3.5, tolerance: 1e-9);
+        loaded.Bootstrap.BiasCiLower.ShouldBe(1.2, tolerance: 1e-9);
+        loaded.Bootstrap.BiasCiUpper.ShouldBe(1.9, tolerance: 1e-9);
 
         loaded.SuggestedNextN.ShouldBe(1024);
     }

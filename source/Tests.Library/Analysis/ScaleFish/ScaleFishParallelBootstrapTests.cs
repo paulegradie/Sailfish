@@ -69,6 +69,8 @@ public class ScaleFishParallelBootstrapTests
             results[i].SelectionAgreement.ShouldBe(results[0].SelectionAgreement);
             results[i].ScaleCiLower.ShouldBe(results[0].ScaleCiLower);
             results[i].ScaleCiUpper.ShouldBe(results[0].ScaleCiUpper);
+            results[i].BiasCiLower.ShouldBe(results[0].BiasCiLower);
+            results[i].BiasCiUpper.ShouldBe(results[0].BiasCiUpper);
         }
     }
 }

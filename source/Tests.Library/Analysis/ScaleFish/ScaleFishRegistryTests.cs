@@ -124,6 +124,32 @@ public class ScaleFishRegistryTests
         }
     }
 
+    [Fact]
+    public void Register_KeysByRuntimeName_NotTypeName()
+    {
+        // A custom family whose `Name` deliberately diverges from its C# type name. The registry must
+        // key by the runtime Name (what the JSON writer emits) so the converter can find it on load.
+        try
+        {
+            ComplexityFunctionRegistry.Register<RenamedFamily>();
+
+            ComplexityFunctionRegistry.IsRegistered("CustomLogLog").ShouldBeTrue("key should be the runtime Name");
+            ComplexityFunctionRegistry.IsRegistered(nameof(RenamedFamily)).ShouldBeFalse("type-name key must not leak");
+
+            // Deserialize should succeed for the runtime Name…
+            var elem = System.Text.Json.JsonSerializer.SerializeToElement(new RenamedFamily());
+            ComplexityFunctionRegistry.Deserialize("CustomLogLog", elem).ShouldNotBeNull();
+
+            // …and return null when called with the type name (no false positives).
+            ComplexityFunctionRegistry.Deserialize(nameof(RenamedFamily), elem).ShouldBeNull();
+        }
+        finally
+        {
+            ComplexityFunctionRegistry.Unregister("CustomLogLog");
+            ComplexityFunctionRegistry.ResetToBuiltIns();
+        }
+    }
+
     /// <summary>
     /// Sample custom family used by the tests above — represents y = scale * x^5 + bias.
     /// </summary>
@@ -138,5 +164,20 @@ public class ScaleFishRegistryTests
         {
             return scale * Math.Pow(x, 5) + bias;
         }
+    }
+
+    /// <summary>
+    /// Custom family whose <see cref="ScaleFishModelFunction.Name"/> diverges from the CLR type name.
+    /// Exercises the registry's contract that registration keys by runtime Name, not <c>typeof(T).Name</c>.
+    /// </summary>
+    public class RenamedFamily : ScaleFishModelFunction
+    {
+        public override string Name { get; set; } = "CustomLogLog";
+        public override string OName { get; set; } = "O(log log n)";
+        public override string Quality { get; set; } = "Excellent";
+        public override string FunctionDef { get; set; } = "f(x) = {0}*log(log(x)) + {1}";
+
+        public override double Compute(double bias, double scale, double x)
+            => scale * Math.Log(Math.Log(Math.Max(x, Math.E + 0.001))) + bias;
     }
 }

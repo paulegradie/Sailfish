@@ -50,6 +50,9 @@ public static class AdapterRunSettingsLoader
     {
         var mapped = new RuntimeScaleFishSettings();
         var parsed = settingsConfiguration.ScaleFishSettings;
+        // `SettingsConfiguration.ScaleFishSettings` is initialized inline to a default instance, but a
+        // user can explicitly set the JSON property to null. Return defaults in that case rather than NRE.
+        if (parsed is null) return mapped;
         if (parsed.EnableBootstrap is not null) mapped.EnableBootstrap = parsed.EnableBootstrap.Value;
         if (parsed.BootstrapIterations is not null) mapped.BootstrapIterations = parsed.BootstrapIterations.Value;
         if (parsed.EnableParallelBootstrap is not null) mapped.EnableParallelBootstrap = parsed.EnableParallelBootstrap.Value;

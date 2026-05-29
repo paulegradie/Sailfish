@@ -40,10 +40,20 @@ public static class ComplexityFunctionRegistry
     /// <summary>
     /// Adds a complexity family to the catalog. Re-registering an already-known name replaces the
     /// previous entry (useful for tests; harmless for one-shot setup).
+    ///
+    /// <para>
+    /// The registration key is the runtime instance's <see cref="ScaleFishModelFunction.Name"/>, which is
+    /// what <see cref="ComplexityFunctionConverter"/> writes into JSON and reads back during deserialization.
+    /// This means custom families whose display name differs from their CLR type name still round-trip
+    /// correctly (e.g. a class <c>LogLog</c> can choose to serialise as <c>"MyLogLog"</c>).
+    /// </para>
     /// </summary>
     public static void Register<T>() where T : ScaleFishModelFunction, new()
     {
-        var name = typeof(T).Name;
+        // Use the runtime Name property — that's the string the JSON writer emits and the loader
+        // looks up. Using typeof(T).Name would break round-trip for any family whose Name was
+        // overridden to something other than the C# type name.
+        var name = new T().Name;
         var entry = new Entry(name, () => new T(), element => element.Deserialize<T>());
         lock (SyncRoot)
         {
@@ -93,7 +103,7 @@ public static class ComplexityFunctionRegistry
     /// </summary>
     public static ScaleFishModelFunction? Deserialize(string name, JsonElement element)
     {
-        Entry entry;
+        Entry? entry;
         lock (SyncRoot)
         {
             entry = Entries.FirstOrDefault(e => e.Name == name);
