@@ -38,8 +38,9 @@ public class SailDiffConsoleWindowMessageFormatter : ISailDiffConsoleWindowMessa
         var stringBuilder = new StringBuilder();
         BuildHeader(stringBuilder, testIds.BeforeTestIds, testIds.AfterTestIds, sailDiffSettings);
 
-        // Use enhanced formatting for console output
-        var resultsAsMarkdown = _sailDiffResultMarkdownConverter.ConvertToEnhancedMarkdownTable(sailDiffResult, Formatting.OutputContext.Console);
+        // Use enhanced formatting for console output. Threading the configured alpha through
+        // ensures the rendered "is significant?" banner matches the test's actual cutoff.
+        var resultsAsMarkdown = _sailDiffResultMarkdownConverter.ConvertToEnhancedMarkdownTable(sailDiffResult, Formatting.OutputContext.Console, sailDiffSettings.Alpha);
 
         stringBuilder.AppendLine(resultsAsMarkdown);
         var result = stringBuilder.ToString();

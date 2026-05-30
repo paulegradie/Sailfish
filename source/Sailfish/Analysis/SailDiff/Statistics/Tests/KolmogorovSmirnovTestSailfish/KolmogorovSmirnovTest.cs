@@ -51,7 +51,7 @@ public class KolmogorovSmirnovTest : IKolmogorovSmirnovTest
             {
                 { AdditionalResults.EmpiricalDistribution1, test.EmpiricalDistribution1 },
                 { AdditionalResults.EmpiricalDistribution2, test.EmpiricalDistribution2 },
-                { AdditionalResults.Size, HypothesisTest.Size },
+                { AdditionalResults.Size, settings.Alpha },
                 { AdditionalResults.Tail, test.Tail }
             };
 

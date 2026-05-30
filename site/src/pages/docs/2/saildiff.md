@@ -41,8 +41,8 @@ If using Sailfish as a test project, you can create a `.sailfish.json` file in t
     "SampleSizeOverride": 30
   },
   "SailDiffSettings": {
-    "TestType": "Test",
-    "Alpha": 0.001,
+    "TestType": "WilcoxonRankSumTest",
+    "Alpha": 0.05,
     "Disabled": false
   },
   "ScaleFishSettings": {},
@@ -61,18 +61,18 @@ If using Sailfish as a test project, you can create a `.sailfish.json` file in t
 
 Description: Specifies an enum type for a statistical test. One of:
 
-  - TwoSampleWilcoxonSignedRankTest (**Default**)
-  - WilcoxonRankSumTest
-  - KolmogorovSmirnovTest
-  - Test (Student's t‑test)
+  - WilcoxonRankSumTest (**Default**) — Mann-Whitney U test. The correct non-parametric test for two **independent** samples — i.e., the typical SailDiff scenario of two separate benchmark runs. Robust to the positive skew common in timing data.
+  - Test — Welch's two-sample t-test (no equal-variance assumption). Use when you want a CI on the mean difference and your samples are reasonably large or log-distributed.
+  - KolmogorovSmirnovTest — Compares full empirical distributions. Less powerful than rank-sum for pure location shifts; use when you suspect distributional shape changes (bimodal latency, regime shifts) rather than a simple "is run B faster?".
+  - TwoSampleWilcoxonSignedRankTest — **Paired samples only.** Each before[i] must be paired with after[i] by experimental design. Independent benchmark iterations are not paired; using this on unpaired data produces invalid p-values. Prefer `WilcoxonRankSumTest` for almost all SailDiff use cases.
 
 Note: the JSON value must match the enum member exactly — use `"Test"` (not `"TTest"`) when selecting the t‑test.
 
 **Alpha**
 
-Description: Threshold for significance detection. (Aka 'PValue threshold').
+Description: Significance threshold (Type I error rate). The 95% confidence intervals reported alongside each result correspond to `1 − Alpha`.
 
-Default: 0.001 (library) / 0.0001 (test adapter)
+Default: `0.05` (matches conventional statistical practice; previous default of `0.001` made detection effectively impossible at typical Sailfish sample sizes). For release-gate runs use the `Tight` preset (`0.01`); for noisy CI hosts use `Relaxed` (`0.10`).
 
 **Disabled**
 
@@ -86,10 +86,10 @@ Default: false
 ```
 Statistical Test
 ----------------
-Test Used:       Test
-PVal Threshold:  0.001
+Test Used:       WilcoxonRankSumTest
+PVal Threshold:  0.05
 PValue:          0.0528963431
-Change:          No Change  (reason: 0.0528963431 > 0.001)
+Change:          No Change  (reason: 0.0528963431 > 0.05)
 
 |             | Before (ms) | After (ms) |
 | ---         | ---         | ---        |
@@ -112,10 +112,10 @@ You may use the `RunSettingsBuilder` to configure SailDiff before running.
 
 ```csharp
 var sailDiffSettings = new SailDiffSettings(
-    alpha: 0.001,
+    alpha: 0.05,
     round: 3,
     useOutlierDetection: true,
-    testType: TestType.Test,
+    testType: TestType.WilcoxonRankSumTest,
     maxDegreeOfParallelism: 4,
     disableOrdering: false);
 
@@ -224,16 +224,10 @@ SailDiff will automatically aggregate data when multiple files are provided.
 
 ## Which SailDiff Test should I use?
 
-When customizing the TestSettings **TestType** (either via .sailfish.json or RunSettingsBuilder), you have four options to choose from.
+The default — `WilcoxonRankSumTest` (Mann-Whitney U) — is the right choice for almost every Sailfish use case. It compares two **independent** samples (separate benchmark runs), doesn't assume normality, and is robust to the positive skew typical of timing data.
 
-You can follow this rule of thumb when choosing:
+Use a non-default test only when one of the following applies:
 
-```python
-if (your test makes requests over a network):
-    One of:
-    - TwoSampleWilcoxonSignedRankTest
-    - WilcoxonRankSumTest
-    - KolmogorovSmirnovTest
-else:
-    - Test (Student's t‑test)
-```
+- **`Test` (Welch's t-test)** — when you specifically need a CI on the *mean difference* (rather than a stochastic-dominance statement), and either your N is large enough for the CLT to apply (~30+ per side) or your timings are already log-transformed.
+- **`KolmogorovSmirnovTest`** — when you suspect the *shape* of the latency distribution has changed (bimodal latency from a new code path, regime shifts, tail blow-ups), not just its location. KS is less powerful than rank-sum for pure shifts, so don't use it as a general default.
+- **`TwoSampleWilcoxonSignedRankTest`** — **only** when your data is genuinely paired by experimental design (same input, same iteration index in a deterministic harness, or repeated measures on the same subject) and you control the pairing. Independent benchmark iterations are not paired; using signed-rank on unpaired data produces invalid p-values.

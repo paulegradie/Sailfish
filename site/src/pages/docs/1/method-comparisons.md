@@ -287,12 +287,14 @@ You can configure SailDiff behavior using `.sailfish.json`:
 ```json
 {
   "SailDiffSettings": {
-    "TestType": "Test",
-    "Alpha": 0.001,
+    "TestType": "WilcoxonRankSumTest",
+    "Alpha": 0.05,
     "Disabled": false
   }
 }
 ```
+
+The N×N matrix uses the configured `Alpha` for both per-pair significance and the BH-FDR q-value cell labels — no more hardcoded `0.05` cutoff in formatters. Ratio confidence intervals follow the same `1 − Alpha` level.
 
 ### Attribute properties
 

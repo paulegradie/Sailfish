@@ -13,6 +13,19 @@ public interface ISailDiffResultMarkdownConverter
 {
     string ConvertToMarkdownTable(IEnumerable<SailDiffResult> testCaseResults);
     string ConvertToEnhancedMarkdownTable(IEnumerable<SailDiffResult> testCaseResults, OutputContext context = OutputContext.Markdown);
+
+    /// <summary>
+    /// Enhanced variant that threads the user-configured <paramref name="alpha"/> through to the
+    /// unified formatter, so the significance threshold visible in the output matches the
+    /// threshold the test actually used. Prefer this overload when settings are reachable.
+    /// </summary>
+    /// <remarks>
+    /// Default implementation falls back to <see cref="ConvertToEnhancedMarkdownTable(IEnumerable{SailDiffResult}, OutputContext)"/>
+    /// so existing implementers do not need to update. Implementers that want to surface a
+    /// non-default alpha should override this overload.
+    /// </remarks>
+    string ConvertToEnhancedMarkdownTable(IEnumerable<SailDiffResult> testCaseResults, OutputContext context, double alpha)
+        => ConvertToEnhancedMarkdownTable(testCaseResults, context);
 }
 
 public class SailDiffResultMarkdownConverter : ISailDiffResultMarkdownConverter
@@ -37,6 +50,9 @@ public class SailDiffResultMarkdownConverter : ISailDiffResultMarkdownConverter
     }
 
     public string ConvertToEnhancedMarkdownTable(IEnumerable<SailDiffResult> testCaseResults, OutputContext context = OutputContext.Markdown)
+        => ConvertToEnhancedMarkdownTable(testCaseResults, context, Sailfish.Analysis.SailDiff.Statistics.SailDiffSignificance.FallbackAlpha);
+
+    public string ConvertToEnhancedMarkdownTable(IEnumerable<SailDiffResult> testCaseResults, OutputContext context, double alpha)
     {
         var enumeratedResults = testCaseResults.ToList();
 
@@ -48,7 +64,7 @@ public class SailDiffResultMarkdownConverter : ISailDiffResultMarkdownConverter
         // If unified formatter is available, use it for enhanced output
         if (_unifiedFormatter != null)
         {
-            return CreateUnifiedFormattedOutput(enumeratedResults, context);
+            return CreateUnifiedFormattedOutput(enumeratedResults, context, alpha);
         }
 
         // Fallback to enhanced legacy format
@@ -96,7 +112,7 @@ public class SailDiffResultMarkdownConverter : ISailDiffResultMarkdownConverter
             [.. selectors]);
     }
 
-    private string CreateUnifiedFormattedOutput(List<SailDiffResult> enumeratedResults, OutputContext context)
+    private string CreateUnifiedFormattedOutput(List<SailDiffResult> enumeratedResults, OutputContext context, double alpha)
     {
         var sb = new StringBuilder();
 
@@ -108,7 +124,7 @@ public class SailDiffResultMarkdownConverter : ISailDiffResultMarkdownConverter
         }
 
         // Convert each SailDiff result to comparison data and format
-        var comparisons = enumeratedResults.Select(result => ConvertToComparisonData(result)).ToList();
+        var comparisons = enumeratedResults.Select(result => ConvertToComparisonData(result, alpha)).ToList();
 
         if (comparisons.Count == 1)
         {
@@ -148,7 +164,7 @@ public class SailDiffResultMarkdownConverter : ISailDiffResultMarkdownConverter
         return sb.ToString();
     }
 
-    private SailDiffComparisonData ConvertToComparisonData(SailDiffResult result)
+    private SailDiffComparisonData ConvertToComparisonData(SailDiffResult result, double alpha)
     {
         return new SailDiffComparisonData
         {
@@ -159,7 +175,7 @@ public class SailDiffResultMarkdownConverter : ISailDiffResultMarkdownConverter
             Metadata = new ComparisonMetadata
             {
                 SampleSize = result.TestResultsWithOutlierAnalysis.StatisticalTestResult.SampleSizeBefore,
-                AlphaLevel = 0.05,
+                AlphaLevel = alpha,
                 TestType = "T-Test",
                 OutliersRemoved = (result.TestResultsWithOutlierAnalysis.Sample1?.TotalNumOutliers ?? 0) +
                                  (result.TestResultsWithOutlierAnalysis.Sample2?.TotalNumOutliers ?? 0)

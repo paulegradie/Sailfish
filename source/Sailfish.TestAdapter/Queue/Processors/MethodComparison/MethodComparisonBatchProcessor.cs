@@ -235,11 +235,15 @@ internal class MethodComparisonBatchProcessor
                 "SailDiff comparison completed for group '{0}'. Results count: {1}",
                 groupName, comparisonResult?.SailDiffResults?.Count ?? 0);
 
-            // Store pairwise p-value for NxN FDR adjustment later
+            // Store pairwise p-value for NxN FDR adjustment later. Also store the alpha used
+            // for the comparison so downstream formatters apply the user-configured threshold
+            // when labelling matrix cells, rather than the previously hardcoded 0.05.
             var pNullable = comparisonResult?.SailDiffResults?.FirstOrDefault()?.TestResultsWithOutlierAnalysis?.StatisticalTestResult?.PValue;
             if (pNullable.HasValue)
             {
-                UpdatePairwisePValueMetadata(beforeMethod, afterMethod, pNullable.Value);
+                var fdrAlpha = comparisonResult?.TestSettings?.Alpha
+                               ?? Sailfish.Analysis.SailDiff.Statistics.SailDiffSignificance.FallbackAlpha;
+                UpdatePairwisePValueMetadata(beforeMethod, afterMethod, pNullable.Value, fdrAlpha);
             }
 
             // Format comparison results from each method's perspective
@@ -641,10 +645,10 @@ internal class MethodComparisonBatchProcessor
             exception);
     }
 
-    private static void UpdatePairwisePValueMetadata(TestCompletionQueueMessage a, TestCompletionQueueMessage b, double pValue)
+    private static void UpdatePairwisePValueMetadata(TestCompletionQueueMessage a, TestCompletionQueueMessage b, double pValue, double alpha)
     {
         const string key = "PairwisePValues";
-        static void Update(TestCompletionQueueMessage msg, string otherId, double p)
+        static void Update(TestCompletionQueueMessage msg, string otherId, double p, double a)
         {
             if (!msg.Metadata.TryGetValue(key, out var obj) || obj is not Dictionary<string, double> dict)
             {
@@ -652,9 +656,13 @@ internal class MethodComparisonBatchProcessor
                 msg.Metadata[key] = dict;
             }
             dict[otherId] = p;
+            // Single source of truth for the significance threshold downstream formatters use.
+            // Without this, the N×N matrix would use a hardcoded 0.05 even if the user configured
+            // a tighter or looser alpha. See SailDiffSignificance.MetadataKey.
+            msg.Metadata[Sailfish.Analysis.SailDiff.Statistics.SailDiffSignificance.MetadataKey] = a;
         }
-        Update(a, b.TestCaseId, pValue);
-        Update(b, a.TestCaseId, pValue);
+        Update(a, b.TestCaseId, pValue, alpha);
+        Update(b, a.TestCaseId, pValue, alpha);
     }
 
 }

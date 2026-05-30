@@ -13,6 +13,7 @@ using Sailfish.Contracts.Public.Serialization.Tracking.V1;
 using Sailfish.Logging;
 using MathNet.Numerics.Distributions;
 using Sailfish.Analysis.SailDiff.Statistics;
+using Sailfish.Contracts.Public.Models;
 
 namespace Sailfish.DefaultHandlers.Sailfish;
 
@@ -25,6 +26,7 @@ internal class CsvTestRunCompletedHandler : INotificationHandler<TestRunComplete
 {
     private readonly ILogger _logger;
     private readonly IMediator _mediator;
+    private readonly IRunSettings? _runSettings;
 
     /// <summary>
     /// Initializes a new instance of the CsvTestRunCompletedHandler class.
@@ -35,6 +37,19 @@ internal class CsvTestRunCompletedHandler : INotificationHandler<TestRunComplete
     {
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         _mediator = mediator ?? throw new ArgumentNullException(nameof(mediator));
+        _runSettings = null;
+    }
+
+    /// <summary>
+    /// Preferred constructor: takes the optional <see cref="IRunSettings"/> so the BH-FDR
+    /// q-value threshold honours the user-configured <see cref="SailDiffSettings.Alpha"/>
+    /// instead of defaulting to 0.05. Autofac selects this overload when all dependencies
+    /// are available.
+    /// </summary>
+    public CsvTestRunCompletedHandler(ILogger logger, IMediator mediator, IRunSettings runSettings)
+        : this(logger, mediator)
+    {
+        _runSettings = runSettings;
     }
 
     /// <summary>
@@ -280,19 +295,22 @@ internal class CsvTestRunCompletedHandler : INotificationHandler<TestRunComplete
                     ? MultipleComparisons.BenjaminiHochbergAdjust(pMap)
                     : new Dictionary<(string A, string B), double>();
 
+                var alpha = _runSettings?.SailDiffSettings?.Alpha ?? SailDiffSignificance.FallbackAlpha;
+                var confidenceLevel = 1.0 - alpha;
+
                 // Emit one row per selected pair
                 foreach (var (i, j) in pairs)
                 {
                     var row = stats[i];
                     var col = stats[j];
 
-                    var ci = MultipleComparisons.ComputeRatioCi(row.Mean, row.SE, row.N, col.Mean, col.SE, col.N, 0.95);
+                    var ci = MultipleComparisons.ComputeRatioCi(row.Mean, row.SE, row.N, col.Mean, col.SE, col.N, confidenceLevel);
                     var ratio = ci.Ratio;
                     var lo = ci.Lower;
                     var hi = ci.Upper;
 
                     qMap.TryGetValue(MultipleComparisons.NormalizePair(row.Id, col.Id), out var q);
-                    var sig = q > 0 && q <= 0.05;
+                    var sig = SailDiffSignificance.IsSignificantPositive(q, alpha);
                     var label = sig ? (ratio < 1.0 ? "Improved" : "Slower") : "Similar";
 
                     var loStr = lo.HasValue ? lo.Value.ToString("0.###") : "";
