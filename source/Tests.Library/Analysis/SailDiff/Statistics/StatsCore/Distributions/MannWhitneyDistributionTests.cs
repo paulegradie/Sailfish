@@ -323,5 +323,80 @@ public class MannWhitneyDistributionTests
         distribution.ShouldNotBeNull();
         distribution.Mean.ShouldBe(4.5);
     }
+
+    // ─── Regression: asymmetric n1 vs n2 returns correct CCDF ─────────────────────────────
+    //
+    // Pre-fix, MannWhitneyDistribution.InnerComplementaryDistributionFunction branched on
+    // n1 vs n2 and returned the CDF when n1 > n2 — a leftover from the pre-DP era. The
+    // wrapper's two-sided p-value formula 2·min(F(U), F_c(U)) then collapsed for n1 > n2
+    // to 2·F(U) with U = U2 = max, returning p = 1 even for maximally-separated data.
+    //
+    // These tests pin both sides of the fix: the CCDF is correct in both n1 < n2 and
+    // n1 > n2 orientations, the CDF + CCDF satisfy the documented discrete identity
+    // F(u) + F_c(u) = 1 + P(U = u), and the orientation symmetry P(U1 ≤ u) = P(U2 ≥ n1·n2 − u)
+    // holds across both sample-size relations.
+
+    [Fact]
+    public void Ccdf_NLargerThanM_ReturnsCcdfNotCdf()
+    {
+        // 5 vs 4 — the "n1 > n2" path that the asymmetric branch corrupted. Untied ranks so
+        // the exact DP path activates.
+        var ranks = Enumerable.Range(1, 9).Select(x => (double)x).ToArray();
+        var distribution = new MannWhitneyDistribution(ranks, 5, 4);
+
+        // U support is {0, ..., 20}; mid-support u = 10 should have F + Fc = 1 + PMF(10).
+        var f = distribution.DistributionFunction(10);
+        var fc = distribution.ComplementaryDistributionFunction(10);
+        var pmfAt10 = distribution.ProbabilityDensityFunction(10);
+
+        (f + fc).ShouldBe(1.0 + pmfAt10, tolerance: 1e-9);
+
+        // At the upper boundary U = 20, P(U ≥ 20) = PMF(20) > 0, so Fc(20) is strictly
+        // positive — not F(20) = 1.0, which the pre-fix code would have returned.
+        var fcMax = distribution.ComplementaryDistributionFunction(20);
+        fcMax.ShouldBeGreaterThan(0);
+        fcMax.ShouldBeLessThan(0.1, customMessage: "tail PMF at U=max should be small but non-zero");
+    }
+
+    [Fact]
+    public void Ccdf_IsConsistentAcrossSampleSizeOrientations()
+    {
+        // The U-statistic null distribution is symmetric: passing (n1, n2) or (n2, n1)
+        // must yield the same PMF at every support point and the same CCDF at every query.
+        var ranks = Enumerable.Range(1, 9).Select(x => (double)x).ToArray();
+        var d54 = new MannWhitneyDistribution(ranks, 5, 4);  // n1 > n2 — the pre-fix bug path
+        var d45 = new MannWhitneyDistribution(ranks, 4, 5);  // n1 < n2 — pre-fix correct path
+
+        for (var u = 0; u <= 20; u++)
+        {
+            d54.ComplementaryDistributionFunction(u).ShouldBe(
+                d45.ComplementaryDistributionFunction(u),
+                tolerance: 1e-12,
+                customMessage: $"CCDF at u={u} should not depend on n1 vs n2 orientation");
+        }
+    }
+
+    [Fact]
+    public void TwoSidedPValue_MaxSeparation_NLargerThanM_RejectsCorrectly()
+    {
+        // The agent's regression example: before=[1..5], after=[6..9]. Ranks are 1..9.
+        // Rank1 = [1,2,3,4,5], Rank2 = [6,7,8,9]. U1 = 0, U2 = 20 = n1·n2 (max separation).
+        // Pre-fix wrapper computed p ≈ min(2·F(U2), 1) = min(2·1, 1) = 1.
+        // Post-fix: p ≈ 2·min(F(20), F_c(20)) where F_c(20) = PMF(20) ≈ 1/126 ≈ 0.0079.
+        // So p ≈ 2·0.0079 ≈ 0.016 — small enough to reject at α = 0.05.
+        var ranks = Enumerable.Range(1, 9).Select(x => (double)x).ToArray();
+        var distribution = new MannWhitneyDistribution(ranks, 5, 4);
+
+        // Mirror the wrapper's two-sided formula directly so this test is robust to wrapper
+        // refactors and isolates the distribution-level fix.
+        const double u = 20.0;
+        var twoSidedP = Math.Min(2.0 * Math.Min(distribution.DistributionFunction(u),
+                                                distribution.ComplementaryDistributionFunction(u)), 1.0);
+
+        twoSidedP.ShouldBeLessThan(0.05,
+            customMessage: "Maximally-separated 5-vs-4 sample must yield p < 0.05; the pre-fix branch returned p = 1.");
+        twoSidedP.ShouldBeGreaterThan(0.0,
+            customMessage: "p-value must be strictly positive (smallest possible for n1=5, n2=4 is 2/C(9,4) = 2/126 ≈ 0.016).");
+    }
 }
 
