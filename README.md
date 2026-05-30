@@ -27,7 +27,7 @@ Sailfish is a .NET performance testing framework that makes it easy to write, ru
 
 ## Features
 - Statistical rigor: outlier detection, multiple tests, significance analysis
-- Method comparisons with `[SailfishComparison]`
+- Method comparisons via `[SailfishMethod(ComparisonGroup = "…", IsBaseline = true|false)]`
 - Multiple outputs: test logs, Markdown, CSV
 - Easy CI/CD integration
 - Historical analysis with SailDiff
@@ -53,7 +53,7 @@ public class MyPerformanceTest
 ```
 
 ## Algorithm Comparisons
-Compare multiple algorithms automatically and get N×N matrices, significance tests, and clear performance ratios.
+Group two or more methods on a class with `ComparisonGroup` and Sailfish compares them automatically. Mark one method as the baseline with `IsBaseline = true` for an N−1 baseline-vs-contender report, or leave all members baseline-less for an N×N matrix. Both modes report ratios with 95% confidence intervals and BH-FDR–adjusted q-values.
 
 ```csharp
 [WriteToMarkdown]  // Generate consolidated markdown output
@@ -61,15 +61,15 @@ Compare multiple algorithms automatically and get N×N matrices, significance te
 [Sailfish(SampleSize = 100)]
 public class AlgorithmComparison
 {
-    [SailfishMethod]
-    [SailfishComparison("SortingAlgorithms")]
-    public void BubbleSort() { /* implementation */ }
-
-    [SailfishMethod]
-    [SailfishComparison("SortingAlgorithms")]
+    [SailfishMethod(ComparisonGroup = "SortingAlgorithms", IsBaseline = true)]
     public void QuickSort() { /* implementation */ }
+
+    [SailfishMethod(ComparisonGroup = "SortingAlgorithms")]
+    public void BubbleSort() { /* implementation */ }
 }
 ```
+
+See [Method Comparisons](https://paulgradie.com/Sailfish/docs/1/method-comparisons) for the full feature, including the N×N mode (drop `IsBaseline`) and the SF1300/1301/1302 build-time analyzers.
 
 ## Adaptive Sampling
 Adaptive sampling stops collecting samples once results are statistically stable (defaults shown):
@@ -172,10 +172,10 @@ Sailfish tests then appear in the Unit Tests tool window with gutter play-button
 **Why the mask is needed**: ReSharper has built-in providers for xUnit / NUnit / MSTest only. For other VSTest adapters, it relies on the project being explicitly opted in to VSTest discovery via this mask — without it, ReSharper treats the project as non-test and greys out the run command. See issue [#98](https://github.com/paulegradie/Sailfish/issues/98) for background.
 
 ## Outputs and Reporting
-- N×N method comparison matrices per comparison group
-- Statistical significance testing (p-values, confidence intervals)
+- Per-group method comparisons (N−1 baseline mode or full N×N matrix)
+- BH-FDR–adjusted q-values and 95% ratio confidence intervals
 - Consolidated Markdown and CSV outputs
-- Clear performance ratios (e.g., "X times faster/slower")
+- Improved / Slower / Similar labels at α = 0.05
 
 See the full documentation for output details and examples: https://paulgradie.com/Sailfish/
 

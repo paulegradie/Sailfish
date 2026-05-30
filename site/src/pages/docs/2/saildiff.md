@@ -9,7 +9,7 @@ title: SailDiff
 SailDiff operates in two main modes:
 
 1. **Historical Comparisons**: Compare current test runs against previously saved tracking data
-2. **Method Comparisons**: Compare multiple methods within a single test run using the `[SailfishComparison]` attribute
+2. **Method Comparisons**: Compare multiple methods within a single test run via `SailfishMethod(ComparisonGroup = "...")`
 
 When enabled, SailDiff will produce various measurements describing the differences between test runs or methods. Results are presented via multiple output formats:
 
@@ -19,13 +19,13 @@ When enabled, SailDiff will produce various measurements describing the differen
 
 ### Method Comparisons
 
-For real-time method comparisons within a single test run, see the [Method Comparisons](/docs/1/method-comparisons) documentation. This feature allows you to compare multiple algorithms or implementations automatically using the `[SailfishComparison("GroupName")]` attribute.
+For real-time method comparisons within a single test run, see the [Method Comparisons](/docs/1/method-comparisons) documentation. This feature allows you to compare multiple algorithms or implementations automatically by setting `ComparisonGroup = "..."` on `[SailfishMethod]` (and optionally `IsBaseline = true` on one method per group).
 
 Method comparisons generate:
-- **N×N comparison matrices**: Every method compared against every other method in the same group
-- **Statistical significance testing**: P-values and confidence intervals
-- **Performance ratios**: Clear "X times faster/slower" descriptions
-- **Consolidated outputs**: Both markdown and CSV formats available with `[WriteToMarkdown]` and `[WriteToCsv]` attributes
+- **N×N or N−1 layouts**: every pair compared (no baseline) or each contender against the chosen baseline
+- **Statistical significance testing**: BH-FDR–adjusted q-values and 95% confidence intervals on the ratio
+- **Improved / Slower / Similar labels** at α = 0.05
+- **Consolidated outputs**: both markdown and CSV formats with `[WriteToMarkdown]` and `[WriteToCsv]`
 
 ## Enabling / Configuring SailDiff
 

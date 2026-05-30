@@ -16,8 +16,8 @@ Sailfish, `Sailfish.TestAdapter`, and `Sailfish.Analyzers` now target `net9.0` a
 `[SailfishMethodSetup(nameof(Foo), nameof(Bar), RunOnce = true)]` invokes a setup/teardown at most once per executor run, even when multiple `MethodNames` are listed. [Learn more →](/docs/1/sailfish-test-lifecycle)
 {% /callout %}
 
-{% callout title="Fix: SailfishComparison failure handling" type="note" %}
-Failed `[SailfishComparison]` members now publish `TestOutcome.Failed` (no more silent `TestOutcome.None`) and don't block sibling members from completing the comparison batch. [Learn more →](/docs/1/method-comparisons)
+{% callout title="Fix: Method-comparison failure handling" type="note" %}
+Failed members of a comparison group now publish `TestOutcome.Failed` (no more silent `TestOutcome.None`) and don't block sibling members from completing the comparison batch. [Learn more →](/docs/1/method-comparisons)
 {% /callout %}
 
 {% callout title="Feature highlight: Timer Calibration + Jitter Score" type="note" %}

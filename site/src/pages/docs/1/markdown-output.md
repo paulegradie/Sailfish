@@ -15,13 +15,11 @@ Apply the `[WriteToMarkdown]` attribute to any test class:
 [Sailfish(SampleSize = 100)]
 public class PerformanceTest
 {
-    [SailfishMethod]
-    [SailfishComparison("Algorithms")]
-    public void BubbleSort() { /* implementation */ }
-
-    [SailfishMethod]
-    [SailfishComparison("Algorithms")]
+    [SailfishMethod(ComparisonGroup = "Algorithms", IsBaseline = true)]
     public void QuickSort() { /* implementation */ }
+
+    [SailfishMethod(ComparisonGroup = "Algorithms")]
+    public void BubbleSort() { /* implementation */ }
 
     [SailfishMethod]
     public void RegularMethod() { /* implementation */ }
@@ -53,16 +51,20 @@ The header is followed by optional `## 🏥 Environment Health Check` and `## �
 
 ### Section 2: Per-Group Comparison Sections
 
-For each `[SailfishComparison]` group with at least two methods, the file emits an `## 🔬 Comparison Group: {GroupName}` section containing:
+For each `(class, ComparisonGroup)` with at least two methods, the file emits an `## 🔬 Comparison Group: {GroupName} ({ClassName})` section. The class name is included so same-named groups in different classes are reported separately.
 
-- A `### Performance Comparison Matrix` — the N×N matrix with ratios (col / row), 95% ratio CIs, and BH-FDR q-values.
-- A `### Detailed Results` table:
+The section then contains one of:
+
+- **Baseline mode** (exactly one method in the group sets `IsBaseline = true`): a `### Baseline Comparison` section with one row per contender. Ratio is contender/baseline, with a 95% CI and BH-FDR q-value.
+- **N×N mode** (no baseline): a `### Performance Comparison Matrix` — every pair of methods appears as a cell with ratio (col / row), 95% CI, and q-value.
+
+Either layout is followed by a `### Detailed Results` table:
 
 ```markdown
 | Method | Mean Time | Median Time | Sample Size | Status |
 |--------|-----------|-------------|-------------|--------|
-| BubbleSort | 45.200ms | 44.100ms | 100 | ✅ Success |
 | QuickSort | 2.100ms | 2.000ms | 100 | ✅ Success |
+| BubbleSort | 45.200ms | 44.100ms | 100 | ✅ Success |
 ```
 
 **Columns:**
@@ -139,16 +141,18 @@ See [latest performance results](./TestSession_abc12345_Results_20250803_103000.
 
 ### Multiple Comparison Groups
 
-When you have multiple comparison groups, each gets its own `## 🔬 Comparison Group: {GroupName}` section with its own NxN matrix and detailed results table. The detailed table is always 5 columns (Method, Mean Time, Median Time, Sample Size, Status); ratios and q‑values live in the matrix above it.
+Each group gets its own `## 🔬 Comparison Group: {GroupName} ({ClassName})` section with its own baseline table or N×N matrix, followed by the detailed results table. The detailed table is always 5 columns (Method, Mean Time, Median Time, Sample Size, Status); ratios, CIs, and q-values live in the comparison section above it.
 
-### N×N Comparison Matrices
+### Pair counts per group
 
-For groups with multiple methods, all pairwise comparisons are included:
+| Methods in group | No-baseline (N×N) cells off-diagonal | Baseline (N−1) rows |
+| --- | --- | --- |
+| 2 | 2 (one each way) | 1 |
+| 3 | 6 | 2 |
+| 4 | 12 | 3 |
+| N | N × (N−1) | N − 1 |
 
-- **2 methods**: 1 comparison
-- **3 methods**: 3 comparisons (A vs B, A vs C, B vs C)
-- **4 methods**: 6 comparisons
-- **N methods**: N×(N-1)/2 comparisons
+Baseline mode is set by adding `IsBaseline = true` to exactly one `[SailfishMethod]` in the group. The N−1 layout is generally easier to read and gives sharper q-values because the FDR adjustment is over fewer hypotheses.
 
 ### Adaptive Precision Formatting
 
@@ -185,12 +189,10 @@ Use meaningful test class and method names since they appear in the markdown:
 [WriteToMarkdown]
 public class DatabaseQueryPerformance  // Clear class name
 {
-    [SailfishMethod]
-    [SailfishComparison("QueryTypes")]
+    [SailfishMethod(ComparisonGroup = "QueryTypes", IsBaseline = true)]
     public void SimpleSelect() { }      // Descriptive method name
 
-    [SailfishMethod]
-    [SailfishComparison("QueryTypes")]
+    [SailfishMethod(ComparisonGroup = "QueryTypes")]
     public void ComplexJoin() { }       // Descriptive method name
 }
 ```
@@ -200,9 +202,9 @@ public class DatabaseQueryPerformance  // Clear class name
 Choose comparison group names that clearly indicate what's being compared:
 
 ```csharp
-[SailfishComparison("DatabaseQueries")]     // Good
-[SailfishComparison("SerializationMethods")] // Good
-[SailfishComparison("Group1")]               // Poor
+[SailfishMethod(ComparisonGroup = "DatabaseQueries")]      // Good
+[SailfishMethod(ComparisonGroup = "SerializationMethods")] // Good
+[SailfishMethod(ComparisonGroup = "Group1")]               // Poor
 ```
 
 ### 3. Configure Output Directory
@@ -250,9 +252,9 @@ If markdown files are empty or missing:
 
 If method comparisons are missing from the markdown:
 
-1. **Verify group names**: Ensure methods use identical group names (case-sensitive)
-2. **Check method count**: Need at least 2 methods in a group for comparisons
-3. **Confirm attributes**: Both `[SailfishMethod]` and `[SailfishComparison]` required
+1. **Verify group names**: Ensure methods use identical `ComparisonGroup` values (case-sensitive)
+2. **Check method count**: Need at least 2 methods in a group for comparisons (SF1302 warns at build time)
+3. **At most one baseline**: SF1301 errors at build time if more than one method in a group sets `IsBaseline = true`
 
 ### GitHub Rendering Issues
 
