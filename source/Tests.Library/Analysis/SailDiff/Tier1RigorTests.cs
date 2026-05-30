@@ -232,6 +232,77 @@ public class Tier1RigorTests
         Should.Throw<Sailfish.Analysis.SailDiff.Statistics.StatsCore.Exceptions.DimensionMismatchException>(() =>
             Sailfish.Analysis.SailDiff.Statistics.StatsCore.Analysers.Factories.TwoSampleWilcoxonSignedRankFactory.Create(before, after));
     }
+
+    [Fact]
+    public void LegacyImpactSummary_HonorsConfiguredAlpha_NotHardcodedFiveHundredths()
+    {
+        // Regression for Codex review on PR #242: when SailDiffResultMarkdownConverter is
+        // constructed without an ISailDiffUnifiedFormatter (the public default-ctor surface),
+        // the legacy fallback used to hardcode `p < 0.05` and ignore the configured alpha.
+        // With Relaxed (α = 0.10) and a Regressed verdict at p = 0.08 the impact line read
+        // "NO CHANGE", contradicting the test wrapper's own verdict. The fix prefers the
+        // ChangeDescription as the authoritative source and threads alpha as the fallback.
+        var testCaseId = new TestCaseId("Suite.MyTest()");
+        var stats = new StatisticalTestResult(
+            meanBefore: 100,
+            meanAfter: 115,
+            medianBefore: 100,
+            medianAfter: 115,
+            testStatistic: 1.5,
+            pValue: 0.08,
+            changeDescription: SailfishChangeDirection.Regressed,
+            sampleSizeBefore: 20,
+            sampleSizeAfter: 20,
+            rawDataBefore: new double[] { 100 },
+            rawDataAfter: new double[] { 115 },
+            additionalResults: new Dictionary<string, object>());
+        var sailDiffResult = new SailDiffResult(testCaseId,
+            new TestResultWithOutlierAnalysis(stats, null, null));
+
+        // No unified formatter → uses the legacy fallback path.
+        var converter = new SailDiffResultMarkdownConverter();
+        var output = converter.ConvertToEnhancedMarkdownTable(
+            new[] { sailDiffResult },
+            Sailfish.Analysis.SailDiff.Formatting.OutputContext.Markdown,
+            alpha: 0.10);
+
+        output.ShouldContain("REGRESSED");
+        output.ShouldNotContain("(NO CHANGE)");
+    }
+
+    [Fact]
+    public void LegacyImpactSummary_RespectsNoChangeVerdict_WhenTestWrapperSaidNoChange()
+    {
+        // Symmetric check: if the test wrapper produced NoChange (because p > the user's α),
+        // the legacy summary must show NO CHANGE regardless of how the raw p-value compares
+        // to the legacy 0.05 default — the wrapper is the single source of truth.
+        var testCaseId = new TestCaseId("Suite.MyTest()");
+        var stats = new StatisticalTestResult(
+            meanBefore: 100,
+            meanAfter: 105,
+            medianBefore: 100,
+            medianAfter: 105,
+            testStatistic: 0.7,
+            pValue: 0.04, // would be "significant" under the old hardcoded 0.05 — but wrapper said NoChange
+            changeDescription: SailfishChangeDirection.NoChange,
+            sampleSizeBefore: 20,
+            sampleSizeAfter: 20,
+            rawDataBefore: new double[] { 100 },
+            rawDataAfter: new double[] { 105 },
+            additionalResults: new Dictionary<string, object>());
+        var sailDiffResult = new SailDiffResult(testCaseId,
+            new TestResultWithOutlierAnalysis(stats, null, null));
+
+        var converter = new SailDiffResultMarkdownConverter();
+        var output = converter.ConvertToEnhancedMarkdownTable(
+            new[] { sailDiffResult },
+            Sailfish.Analysis.SailDiff.Formatting.OutputContext.Markdown,
+            alpha: 0.01); // strict alpha; wrapper's NoChange already reflects this
+
+        output.ShouldContain("NO CHANGE");
+        output.ShouldNotContain("REGRESSED");
+        output.ShouldNotContain("IMPROVED");
+    }
 }
 
 internal static class Tier1ArrayExtensions
