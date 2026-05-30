@@ -1,20 +1,20 @@
-using Autofac;
 using Demo.API;
 using MediatR;
 using Microsoft.AspNetCore.Mvc.Testing;
+using Microsoft.Extensions.DependencyInjection;
 using PerformanceTestingUserInvokedConsoleApp.CustomHandlerOverrideExamples;
 using Sailfish.Contracts.Public.Notifications;
 using Sailfish.Registration;
 
 namespace PerformanceTestingUserInvokedConsoleApp;
 
-public class AppRegistrationProvider : IProvideARegistrationCallback
+public class AppRegistrationProvider : IRegisterSailfishServices
 {
-    public async Task RegisterAsync(ContainerBuilder builder, CancellationToken cancellationToken = default)
+    public async Task RegisterAsync(IServiceCollection services, CancellationToken cancellationToken = default)
     {
-        builder.RegisterType<WebApplicationFactory<DemoApp>>();
-        builder.RegisterType<TestRunCompletedNotificationHandler>().As<INotificationHandler<TestRunCompletedNotification>>();
-        builder.RegisterType<CloudWriter>().As<ICloudWriter>();
+        services.AddTransient<WebApplicationFactory<DemoApp>>();
+        services.AddTransient<INotificationHandler<TestRunCompletedNotification>, TestRunCompletedNotificationHandler>();
+        services.AddTransient<ICloudWriter, CloudWriter>();
         await Task.Yield();
     }
 }

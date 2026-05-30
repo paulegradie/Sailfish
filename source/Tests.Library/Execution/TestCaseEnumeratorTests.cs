@@ -1,4 +1,3 @@
-using Autofac;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -162,7 +161,7 @@ public class TestCaseEnumerationTests
         var provider = new TestInstanceContainerProvider(
             runSettings,
             new TypeActivator(
-                Substitute.For<ILifetimeScope>()),
+                Substitute.For<IServiceProvider>()),
             typeof(MinimalTest),
             new List<PropertySet>(),
             typeof(MinimalTest).GetMethods().First());

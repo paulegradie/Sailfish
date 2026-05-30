@@ -1,7 +1,5 @@
-﻿using Autofac;
 using MediatR;
-using MediatR.Extensions.Autofac.DependencyInjection;
-using MediatR.Extensions.Autofac.DependencyInjection.Builder;
+using Microsoft.Extensions.DependencyInjection;
 using Sailfish.Analysis;
 using Sailfish.Analysis.SailDiff;
 using Sailfish.Analysis.SailDiff.Statistics;
@@ -24,131 +22,119 @@ using Sailfish.Presentation.Markdown;
 using Sailfish.Diagnostics.Environment;
 using Sailfish.Results;
 
-
-
 namespace Sailfish.Registration;
 
-internal class SailfishModuleRegistrations : IProvideAdditionalRegistrations
+/// <summary>
+///     Core Sailfish service registrations. Adds every framework service required to run benchmarks.
+///     This is invoked by <see cref="AssemblyRegistrationExtensionMethods.AddSailfish"/> — consumers should not
+///     call into it directly.
+/// </summary>
+internal static class SailfishModuleRegistrations
 {
-    private readonly IRunSettings _runSettings;
+    public const string FixedIterationStrategyKey = "Fixed";
+    public const string AdaptiveIterationStrategyKey = "Adaptive";
 
-    public SailfishModuleRegistrations(IRunSettings runSettings)
+    public static IServiceCollection AddSailfishCore(this IServiceCollection services, IRunSettings runSettings)
     {
-        _runSettings = runSettings;
-    }
+        // Logger — instance-valued, depends on the runSettings configuration.
+        ILogger logger = runSettings.DisableLogging
+            ? new SilentLogger()
+            : runSettings.CustomLogger ?? new DefaultLogger(runSettings.MinimumLogLevel);
+        services.AddSingleton(logger);
 
-    public void Load(ContainerBuilder builder)
-    {
-        builder.RegisterInstance(
-            _runSettings.DisableLogging
-                ? new SilentLogger()
-                : _runSettings.CustomLogger ?? new DefaultLogger(_runSettings.MinimumLogLevel)).As<ILogger>();
-        builder.RegisterMediatR(MediatRConfigurationBuilder
-            .Create(MediatrCommunityLicenseString, typeof(SailfishModuleRegistrations).Assembly)
-            .Build());
-        builder.RegisterAssemblyTypes(typeof(SailfishModuleRegistrations).Assembly)
-            .AsClosedTypesOf(typeof(INotificationHandler<>))
-            .AsImplementedInterfaces();
-        builder.RegisterAssemblyTypes(typeof(SailfishModuleRegistrations).Assembly)
-            .AsClosedTypesOf(typeof(IRequestHandler<,>))
-            .AsImplementedInterfaces();
+        // MediatR 14+ on the MS DI path calls ILoggerFactory during its license check, so we ensure logging
+        // infrastructure exists. AddLogging is idempotent — if the caller has already registered logging,
+        // this is a no-op.
+        services.AddLogging();
 
-        builder.RegisterInstance(_runSettings).As<IRunSettings>();
-        builder.RegisterType<TestCaseCountPrinter>().As<ITestCaseCountPrinter>().SingleInstance();
-        builder.RegisterType<SailfishExecutor>().AsSelf();
-        builder.RegisterType<SailFishTestExecutor>().As<ISailFishTestExecutor>();
-        builder.RegisterType<TestFilter>().As<ITestFilter>();
-        builder.RegisterType<TestListValidator>().As<ITestListValidator>();
-        builder.RegisterType<TestCollector>().As<ITestCollector>();
-        builder.RegisterType<ParameterCombinator>().As<IParameterCombinator>();
-        builder.RegisterType<PropertySetGenerator>().As<IPropertySetGenerator>();
-        builder.RegisterType<TestInstanceContainerCreator>().As<ITestInstanceContainerCreator>();
-        // Register statistical convergence detector
-        builder.RegisterType<StatisticalConvergenceDetector>()
-            .As<IStatisticalConvergenceDetector>()
-            .SingleInstance();
+        // MediatR — scan this assembly for handlers using the native IServiceCollection extension.
+        // The community license key is required by MediatR 14+; same key that was previously passed to
+        // MediatRConfigurationBuilder.Create(...) on the Autofac path.
+        services.AddMediatR(cfg =>
+        {
+            cfg.LicenseKey = MediatrCommunityLicenseString;
+            cfg.RegisterServicesFromAssemblyContaining(typeof(SailfishModuleRegistrations));
+        });
 
-        // Register iteration strategies
-        builder.RegisterType<FixedIterationStrategy>()
-            .As<IIterationStrategy>()
-            .Named<IIterationStrategy>("Fixed")
-            .SingleInstance();
+        // Run settings — singleton, passed in by caller.
+        services.AddSingleton(runSettings);
 
-        builder.RegisterType<AdaptiveIterationStrategy>()
-            .As<IIterationStrategy>()
-            .Named<IIterationStrategy>("Adaptive")
-            .SingleInstance();
+        services.AddSingleton<ITestCaseCountPrinter, TestCaseCountPrinter>();
+        services.AddTransient<SailfishExecutor>();
+        services.AddTransient<ISailFishTestExecutor, SailFishTestExecutor>();
+        services.AddTransient<ITestFilter, TestFilter>();
+        services.AddTransient<ITestListValidator, TestListValidator>();
+        services.AddTransient<ITestCollector, TestCollector>();
+        services.AddTransient<IParameterCombinator, ParameterCombinator>();
+        services.AddTransient<IPropertySetGenerator, PropertySetGenerator>();
+        services.AddTransient<ITestInstanceContainerCreator, TestInstanceContainerCreator>();
 
-        // Register TestCaseIterator with strategy dependencies
-        builder.Register(c => new TestCaseIterator(
-            c.Resolve<IRunSettings>(),
-            c.Resolve<ILogger>(),
-            c.ResolveNamed<IIterationStrategy>("Fixed"),
-            c.ResolveNamed<IIterationStrategy>("Adaptive")))
-            .As<ITestCaseIterator>()
-            .SingleInstance();
-        builder.RegisterType<StatisticsCompiler>().As<IStatisticsCompiler>();
-        builder.RegisterType<ClassExecutionSummaryCompiler>().As<IClassExecutionSummaryCompiler>();
-        builder.RegisterType<ExecutionSummaryWriter>().As<IExecutionSummaryWriter>();
-        builder.RegisterType<MarkdownWriter>().As<IMarkdownWriter>();
-        builder.RegisterType<ConsoleWriter>().As<IConsoleWriter>();
-        builder.RegisterType<PerformanceRunResultFileWriter>().As<IPerformanceRunResultFileWriter>();
-        builder.RegisterType<TrackingFileFinder>().As<ITrackingFileFinder>();
-        builder.RegisterType<DefaultTrackingFileDirectoryReader>().As<ITrackingFileDirectoryReader>();
-        builder.RegisterType<IterationVariableRetriever>().As<IIterationVariableRetriever>();
-        // Register unified formatter components for legacy SailDiff
-        builder.RegisterType<Sailfish.Analysis.SailDiff.Formatting.ImpactSummaryFormatter>()
-            .As<Sailfish.Analysis.SailDiff.Formatting.IImpactSummaryFormatter>()
-            .InstancePerDependency();
+        // Statistical convergence detector — singleton, holds no per-run state but is expensive to allocate.
+        services.AddSingleton<IStatisticalConvergenceDetector, StatisticalConvergenceDetector>();
 
-        builder.RegisterType<Sailfish.Analysis.SailDiff.Formatting.DetailedTableFormatter>()
-            .As<Sailfish.Analysis.SailDiff.Formatting.IDetailedTableFormatter>()
-            .InstancePerDependency();
+        // Iteration strategies registered as keyed singletons; TestCaseIterator resolves both by key.
+        services.AddKeyedSingleton<IIterationStrategy, FixedIterationStrategy>(FixedIterationStrategyKey);
+        services.AddKeyedSingleton<IIterationStrategy, AdaptiveIterationStrategy>(AdaptiveIterationStrategyKey);
 
-        builder.RegisterType<Sailfish.Analysis.SailDiff.Formatting.OutputContextAdapter>()
-            .As<Sailfish.Analysis.SailDiff.Formatting.IOutputContextAdapter>()
-            .InstancePerDependency();
+        services.AddSingleton<ITestCaseIterator>(sp => new TestCaseIterator(
+            sp.GetRequiredService<IRunSettings>(),
+            sp.GetRequiredService<ILogger>(),
+            sp.GetRequiredKeyedService<IIterationStrategy>(FixedIterationStrategyKey),
+            sp.GetRequiredKeyedService<IIterationStrategy>(AdaptiveIterationStrategyKey)));
 
-        builder.RegisterType<Sailfish.Analysis.SailDiff.Formatting.SailDiffUnifiedFormatter>()
-            .As<Sailfish.Analysis.SailDiff.Formatting.ISailDiffUnifiedFormatter>()
-            .InstancePerDependency();
+        services.AddTransient<IStatisticsCompiler, StatisticsCompiler>();
+        services.AddTransient<IClassExecutionSummaryCompiler, ClassExecutionSummaryCompiler>();
+        services.AddTransient<IExecutionSummaryWriter, ExecutionSummaryWriter>();
+        services.AddTransient<IMarkdownWriter, MarkdownWriter>();
+        services.AddTransient<IConsoleWriter, ConsoleWriter>();
+        services.AddTransient<IPerformanceRunResultFileWriter, PerformanceRunResultFileWriter>();
+        services.AddTransient<ITrackingFileFinder, TrackingFileFinder>();
+        services.AddTransient<ITrackingFileDirectoryReader, DefaultTrackingFileDirectoryReader>();
+        services.AddTransient<IIterationVariableRetriever, IterationVariableRetriever>();
 
-        // Register enhanced SailDiffResultMarkdownConverter with unified formatter
-        builder.RegisterType<SailDiffResultMarkdownConverter>().As<ISailDiffResultMarkdownConverter>();
-        builder.RegisterType<SailfishExecutionEngine>().As<ISailfishExecutionEngine>().InstancePerDependency();
-        builder.RegisterType<ReproducibilityManifestProvider>().As<IReproducibilityManifestProvider>().SingleInstance();
+        // Unified formatter components for legacy SailDiff (Transient — instance per dependency).
+        services.AddTransient<Sailfish.Analysis.SailDiff.Formatting.IImpactSummaryFormatter, Sailfish.Analysis.SailDiff.Formatting.ImpactSummaryFormatter>();
+        services.AddTransient<Sailfish.Analysis.SailDiff.Formatting.IDetailedTableFormatter, Sailfish.Analysis.SailDiff.Formatting.DetailedTableFormatter>();
+        services.AddTransient<Sailfish.Analysis.SailDiff.Formatting.IOutputContextAdapter, Sailfish.Analysis.SailDiff.Formatting.OutputContextAdapter>();
+        services.AddTransient<Sailfish.Analysis.SailDiff.Formatting.ISailDiffUnifiedFormatter, Sailfish.Analysis.SailDiff.Formatting.SailDiffUnifiedFormatter>();
 
+        services.AddTransient<ISailDiffResultMarkdownConverter, SailDiffResultMarkdownConverter>();
+        services.AddTransient<ISailfishExecutionEngine, SailfishExecutionEngine>();
+        services.AddSingleton<IReproducibilityManifestProvider, ReproducibilityManifestProvider>();
+        services.AddSingleton<IEnvironmentHealthReportProvider, EnvironmentHealthReportProvider>();
 
-        builder.RegisterType<EnvironmentHealthReportProvider>().As<IEnvironmentHealthReportProvider>().SingleInstance();
+        // Timer calibration service and provider — session-scoped singletons.
+        services.AddSingleton<ITimerCalibrationService, TimerCalibrationService>();
+        services.AddSingleton<ITimerCalibrationResultProvider, TimerCalibrationResultProvider>();
 
-            // Timer calibration service and provider
-            builder.RegisterType<TimerCalibrationService>().As<ITimerCalibrationService>().SingleInstance();
-            builder.RegisterType<TimerCalibrationResultProvider>().As<ITimerCalibrationResultProvider>().SingleInstance();
+        services.AddTransient<IMarkdownTableConverter, MarkdownTableConverter>();
+        services.AddTransient<ITrackingFileParser, TrackingFileParser>();
 
+        // SailDiff has two interface views over a single implementation; register both as transient.
+        services.AddTransient<ISailDiffInternal, SailDiff>();
+        services.AddTransient<ISailDiff, SailDiff>();
+        services.AddTransient<IScaleFishInternal, ScaleFish>();
+        services.AddTransient<IScaleFish, ScaleFish>();
 
-        // Register enhanced MarkdownTableConverter with unified formatter
-        builder.RegisterType<MarkdownTableConverter>().As<IMarkdownTableConverter>().InstancePerDependency();
-        builder.RegisterType<TrackingFileParser>().As<ITrackingFileParser>();
-        builder.RegisterType<SailDiff>().As<ISailDiffInternal>().InstancePerDependency();
-        builder.RegisterType<SailDiff>().As<ISailDiff>().InstancePerDependency();
-        builder.RegisterType<ScaleFish>().As<IScaleFishInternal>().InstancePerDependency();
-        builder.RegisterType<ScaleFish>().As<IScaleFish>().InstancePerDependency();
-        builder.RegisterType<TrackingFileSerialization>().As<ITrackingFileSerialization>();
-        builder.RegisterType<TypeActivator>().As<ITypeActivator>();
-        builder.RegisterType<StatisticalTestComputer>().As<IStatisticalTestComputer>();
-        builder.RegisterType<TestPreprocessor>().As<ITestPreprocessor>();
-        builder.RegisterType<StatisticalTestExecutor>().As<IStatisticalTestExecutor>();
-        builder.RegisterType<PerformanceRunResultAggregator>().As<IPerformanceRunResultAggregator>();
-        builder.RegisterType<ComplexityComputer>().As<IComplexityComputer>();
-        builder.RegisterType<ComplexityEstimator>().As<IComplexityEstimator>();
-        builder.RegisterType<SailfishOutlierDetector>().As<ISailfishOutlierDetector>();
-        builder.RegisterType<Test>().As<ITTest>();
-        builder.RegisterType<MannWhitneyWilcoxonTest>().As<IMannWhitneyWilcoxonTest>();
-        builder.RegisterType<TwoSampleWilcoxonSignedRankTest>().As<ITwoSampleWilcoxonSignedRankTest>();
-        builder.RegisterType<KolmogorovSmirnovTest>().As<IKolmogorovSmirnovTest>();
-        builder.RegisterType<PermutationTest>().As<IPermutationTest>();
-        builder.RegisterType<ScalefishObservationCompiler>().As<IScalefishObservationCompiler>();
-        builder.RegisterType<SailDiffConsoleWindowMessageFormatter>().As<ISailDiffConsoleWindowMessageFormatter>();
+        services.AddTransient<ITrackingFileSerialization, TrackingFileSerialization>();
+        services.AddTransient<ITypeActivator, TypeActivator>();
+        services.AddTransient<IStatisticalTestComputer, StatisticalTestComputer>();
+        services.AddTransient<ITestPreprocessor, TestPreprocessor>();
+        services.AddTransient<IStatisticalTestExecutor, StatisticalTestExecutor>();
+        services.AddTransient<IPerformanceRunResultAggregator, PerformanceRunResultAggregator>();
+        services.AddTransient<IComplexityComputer, ComplexityComputer>();
+        services.AddTransient<IComplexityEstimator, ComplexityEstimator>();
+        services.AddTransient<ISailfishOutlierDetector, SailfishOutlierDetector>();
+        services.AddTransient<ITTest, Test>();
+        services.AddTransient<IMannWhitneyWilcoxonTest, MannWhitneyWilcoxonTest>();
+        services.AddTransient<ITwoSampleWilcoxonSignedRankTest, TwoSampleWilcoxonSignedRankTest>();
+        services.AddTransient<IKolmogorovSmirnovTest, KolmogorovSmirnovTest>();
+        // SailDiff Tier 3 permutation test (added in #249, merged from main).
+        services.AddTransient<IPermutationTest, PermutationTest>();
+        services.AddTransient<IScalefishObservationCompiler, ScalefishObservationCompiler>();
+        services.AddTransient<ISailDiffConsoleWindowMessageFormatter, SailDiffConsoleWindowMessageFormatter>();
+
+        return services;
     }
 
     private const string MediatrCommunityLicenseString =

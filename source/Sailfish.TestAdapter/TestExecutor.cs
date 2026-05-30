@@ -1,27 +1,26 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
-using Autofac;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.Adapter;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.Logging;
+using Sailfish.Diagnostics.Environment;
 using Sailfish.Exceptions;
 using Sailfish.Logging;
 using Sailfish.Registration;
+using Sailfish.Results;
 using Sailfish.TestAdapter.Discovery;
 using Sailfish.TestAdapter.Execution;
+using Sailfish.TestAdapter.Execution.EnvironmentHealth;
 using Sailfish.TestAdapter.Queue.Configuration;
 using Sailfish.TestAdapter.Queue.Contracts;
 using Sailfish.TestAdapter.Queue.Implementation;
 using Sailfish.TestAdapter.Registrations;
-using Sailfish.TestAdapter.Execution.EnvironmentHealth;
-using Sailfish.Diagnostics.Environment;
-using Sailfish.Results;
-
 using Sailfish.TestAdapter.TestProperties;
 
 namespace Sailfish.TestAdapter;
@@ -84,15 +83,16 @@ public class TestExecutor : ITestExecutor
     {
         frameworkHandle.EnableShutdownAfterTestRun = true;
 
-        var builder = new ContainerBuilder();
+        var services = new ServiceCollection();
         try
         {
             var runSettings = AdapterRunSettingsLoader.RetrieveAndLoadAdapterRunSettings();
-            builder.RegisterSailfishTypes(runSettings, new TestAdapterRegistrations(frameworkHandle));
+            services.AddSailfish(runSettings);
+            services.AddSailfishTestAdapter(frameworkHandle);
 
             var refTestType = RetrieveReferenceTypeForTestProject(testCases);
             SailfishTypeRegistrationUtility.InvokeRegistrationProviderCallbackMain(
-                    builder,
+                    services,
                     new[] { refTestType },
                     new[] { refTestType },
                     _cancellationTokenSource.Token)
@@ -104,22 +104,22 @@ public class TestExecutor : ITestExecutor
             return;
         }
 
-        var container = builder.Build();
+        var provider = services.BuildServiceProvider();
 
         try
         {
-            // Environment health check (informational)
+            // Environment health check (informational).
             try
             {
-                var rs = container.ResolveOptional<Sailfish.Contracts.Public.Models.IRunSettings>();
+                var rs = provider.GetService<Sailfish.Contracts.Public.Models.IRunSettings>();
 
-                // 1) Timer Calibration (session-level)
+                // 1) Timer Calibration (session-level).
                 try
                 {
                     if (rs?.TimerCalibration is not false)
                     {
-                        var timerSvc = container.ResolveOptional<Sailfish.Execution.ITimerCalibrationService>();
-                        var timerProv = container.ResolveOptional<Sailfish.Execution.ITimerCalibrationResultProvider>();
+                        var timerSvc = provider.GetService<Sailfish.Execution.ITimerCalibrationService>();
+                        var timerProv = provider.GetService<Sailfish.Execution.ITimerCalibrationResultProvider>();
                         if (timerSvc != null && timerProv != null)
                         {
                             var calib = timerSvc.CalibrateAsync(_cancellationTokenSource.Token)
@@ -128,10 +128,9 @@ public class TestExecutor : ITestExecutor
                                 .GetResult();
                             timerProv.Current = calib;
 
-                            // Log succinct summary to test output and Sailfish logger
                             var summary = $"Timer calibration: freq={calib.StopwatchFrequency} Hz, res≈{calib.ResolutionNs:F0} ns, baseline={calib.MedianTicks} ticks, RSD={calib.RsdPercent:F1}%, score={calib.JitterScore}/100";
                             frameworkHandle.SendMessage(TestMessageLevel.Informational, summary);
-                            var log = container.ResolveOptional<ILogger>();
+                            var log = provider.GetService<ILogger>();
                             log?.Log(LogLevel.Information, summary);
                         }
                     }
@@ -141,10 +140,10 @@ public class TestExecutor : ITestExecutor
                     frameworkHandle.SendMessage(TestMessageLevel.Warning, $"Timer calibration failed: {tex.Message}");
                 }
 
-                // 2) Environment health check (informational)
+                // 2) Environment health check (informational).
                 if (rs?.EnableEnvironmentHealthCheck is not false)
                 {
-                    var runner = container.ResolveOptional<EnvironmentHealthCheckRunner>();
+                    var runner = provider.GetService<EnvironmentHealthCheckRunner>();
                     if (runner != null)
                     {
                         var ctx = new EnvironmentHealthCheckContext { TestAssemblyPath = testCases.FirstOrDefault()?.Source };
@@ -153,34 +152,29 @@ public class TestExecutor : ITestExecutor
                             .GetAwaiter()
                             .GetResult();
 
-                        // Publish to test output window
                         frameworkHandle.SendMessage(TestMessageLevel.Informational, result.Summary);
 
-                        // Store report for downstream markdown output (session consolidated)
-                        var reportProvider = container.ResolveOptional<IEnvironmentHealthReportProvider>();
+                        var reportProvider = provider.GetService<IEnvironmentHealthReportProvider>();
                         if (reportProvider is not null)
                         {
                             reportProvider.Current = result.Report;
                         }
 
-
-                        // Also log to Sailfish logger so it appears in standard INF/DBG stream
-                        var logger = container.ResolveOptional<ILogger>();
+                        var logger = provider.GetService<ILogger>();
                         logger?.Log(LogLevel.Information, result.Summary.TrimEnd());
 
-                        // Initialize reproducibility manifest base (best-effort)
+                        // Initialize reproducibility manifest base (best-effort).
                         try
                         {
-                            var manifestProvider = container.ResolveOptional<IReproducibilityManifestProvider>();
+                            var manifestProvider = provider.GetService<IReproducibilityManifestProvider>();
                             if (manifestProvider != null && rs != null && manifestProvider.Current == null)
                             {
                                 manifestProvider.Current = ReproducibilityManifest.CreateBase(rs, reportProvider?.Current);
                             }
 
-                            // If timer calibration ran earlier, attach snapshot to manifest
                             try
                             {
-                                var timerProv = container.ResolveOptional<Sailfish.Execution.ITimerCalibrationResultProvider>();
+                                var timerProv = provider.GetService<Sailfish.Execution.ITimerCalibrationResultProvider>();
                                 var calib = timerProv?.Current;
                                 if (manifestProvider != null && manifestProvider.Current != null && calib != null)
                                 {
@@ -190,7 +184,6 @@ public class TestExecutor : ITestExecutor
                             catch { /* best-effort */ }
                         }
                         catch { /* non-fatal */ }
-
                     }
                 }
             }
@@ -199,11 +192,11 @@ public class TestExecutor : ITestExecutor
                 frameworkHandle.SendMessage(TestMessageLevel.Warning, $"Environment health check failed: {ex.Message}");
             }
 
-            // Start queue services if enabled
-            StartQueueServices(container);
+            // Start queue services if enabled.
+            StartQueueServices(provider);
 
-            // Execute tests
-            _testExecution.ExecuteTests(testCases, container, frameworkHandle, _cancellationTokenSource.Token);
+            // Execute tests.
+            _testExecution.ExecuteTests(testCases, provider, frameworkHandle, _cancellationTokenSource.Token);
         }
         catch (Exception ex)
         {
@@ -211,11 +204,11 @@ public class TestExecutor : ITestExecutor
         }
         finally
         {
-            // Stop queue services if enabled
-            StopQueueServices(container);
+            // Stop queue services if enabled.
+            StopQueueServices(provider);
 
-            // Dispose container
-            container.Dispose();
+            // Dispose provider — this also disposes any bridged-in Autofac container (see AutofacBridge.BridgeOwner).
+            provider.Dispose();
         }
     }
 
@@ -248,28 +241,22 @@ public class TestExecutor : ITestExecutor
     }
 
     /// <summary>
-    /// Starts queue services if the queue system is enabled.
-    /// This method provides a synchronous wrapper around the asynchronous queue startup operations.
+    ///     Starts queue services if the queue system is enabled. Handles startup failures gracefully by
+    ///     logging errors but allowing test execution to continue with direct framework publishing as a
+    ///     fallback mechanism.
     /// </summary>
-    /// <param name="container">The dependency injection container containing queue services.</param>
-    /// <remarks>
-    /// This method handles queue startup failures gracefully by logging errors but allowing
-    /// test execution to continue with direct framework publishing as a fallback mechanism.
-    /// The queue system is only started if QueueConfiguration.IsEnabled is true.
-    /// </remarks>
-    private void StartQueueServices(IContainer container)
+    private void StartQueueServices(IServiceProvider provider)
     {
         try
         {
-            StartQueueServicesAsync(container, _cancellationTokenSource.Token)
+            StartQueueServicesAsync(provider, _cancellationTokenSource.Token)
                 .ConfigureAwait(false)
                 .GetAwaiter()
                 .GetResult();
         }
         catch (Exception ex)
         {
-            // Log error but continue - fallback to direct framework publishing
-            var logger = container.ResolveOptional<ILogger>();
+            var logger = provider.GetService<ILogger>();
             logger?.Log(LogLevel.Warning, ex,
                 "Failed to start queue services. Test execution will continue with direct framework publishing. Error: {0}",
                 ex.Message);
@@ -277,28 +264,21 @@ public class TestExecutor : ITestExecutor
     }
 
     /// <summary>
-    /// Stops queue services if the queue system is enabled.
-    /// This method provides a synchronous wrapper around the asynchronous queue shutdown operations.
+    ///     Stops queue services if the queue system is enabled. Ensures all pending batches are processed
+    ///     before stopping the queue services.
     /// </summary>
-    /// <param name="container">The dependency injection container containing queue services.</param>
-    /// <remarks>
-    /// This method handles queue shutdown failures gracefully by logging errors but continuing
-    /// with cleanup operations. It ensures all pending batches are processed before stopping
-    /// the queue services. This method is called during test execution cleanup.
-    /// </remarks>
-    private void StopQueueServices(IContainer container)
+    private void StopQueueServices(IServiceProvider provider)
     {
         try
         {
-            StopQueueServicesAsync(container, _cancellationTokenSource.Token)
+            StopQueueServicesAsync(provider, _cancellationTokenSource.Token)
                 .ConfigureAwait(false)
                 .GetAwaiter()
                 .GetResult();
         }
         catch (Exception ex)
         {
-            // Log error but continue with cleanup - we're in a finally block
-            var logger = container.ResolveOptional<ILogger>();
+            var logger = provider.GetService<ILogger>();
             logger?.Log(LogLevel.Warning, ex,
                 "Failed to stop queue services during cleanup. Error: {0}",
                 ex.Message);
@@ -306,37 +286,25 @@ public class TestExecutor : ITestExecutor
     }
 
     /// <summary>
-    /// Asynchronously starts queue services including the queue manager and batching service.
+    ///     Asynchronously starts queue services including the queue manager and batching service.
     /// </summary>
-    /// <param name="container">The dependency injection container containing queue services.</param>
-    /// <param name="cancellationToken">A cancellation token to cancel the startup operation.</param>
-    /// <returns>A task representing the asynchronous startup operation.</returns>
-    /// <remarks>
-    /// This method checks if the queue system is enabled via QueueConfiguration.IsEnabled.
-    /// If enabled, it starts the batching service first, then the queue manager.
-    /// The startup sequence ensures proper initialization order for the queue infrastructure.
-    /// </remarks>
-    private async Task StartQueueServicesAsync(IContainer container, CancellationToken cancellationToken)
+    private async Task StartQueueServicesAsync(IServiceProvider provider, CancellationToken cancellationToken)
     {
-        // Check if queue system is enabled
-        var queueConfiguration = container.ResolveOptional<QueueConfiguration>();
+        var queueConfiguration = provider.GetService<QueueConfiguration>();
 
         if (queueConfiguration == null || !queueConfiguration.IsEnabled)
         {
-            return; // Queue system is disabled, nothing to start
+            return;
         }
 
-        var logger = container.ResolveOptional<ILogger>();
+        var logger = provider.GetService<ILogger>();
         logger?.Log(LogLevel.Information, "Starting queue services for test execution...");
-
-        // Debug: Log queue configuration status
         logger?.Log(LogLevel.Information, "Queue configuration - IsEnabled: {0}, EnableMethodComparison: {1}",
             queueConfiguration.IsEnabled, queueConfiguration.EnableMethodComparison);
 
-        // Resolve queue services
-        var queueManager = container.ResolveOptional<TestCompletionQueueManager>();
-        var batchingService = container.ResolveOptional<ITestCaseBatchingService>();
-        var timeoutHandler = container.ResolveOptional<IBatchTimeoutHandler>();
+        var queueManager = provider.GetService<TestCompletionQueueManager>();
+        var batchingService = provider.GetService<ITestCaseBatchingService>();
+        var timeoutHandler = provider.GetService<IBatchTimeoutHandler>();
 
         if (queueManager == null)
         {
@@ -355,110 +323,100 @@ public class TestExecutor : ITestExecutor
             logger?.Log(LogLevel.Warning, "IBatchTimeoutHandler not found in container. Timeout handling will not be available.");
         }
 
-        // Start batching service first
         await batchingService.StartAsync(cancellationToken).ConfigureAwait(false);
         logger?.Log(LogLevel.Debug, "Test case batching service started successfully");
 
-        // Start timeout handler if available
         if (timeoutHandler != null)
         {
             await timeoutHandler.StartAsync(cancellationToken).ConfigureAwait(false);
             logger?.Log(LogLevel.Debug, "Batch timeout handler started successfully");
         }
 
-        // Start queue manager
         await queueManager.StartAsync(queueConfiguration, cancellationToken).ConfigureAwait(false);
         logger?.Log(LogLevel.Information, "Queue services started successfully");
     }
 
     /// <summary>
-    /// Asynchronously stops queue services with proper batch completion handling.
+    ///     Asynchronously stops queue services with proper batch completion handling.
     /// </summary>
-    /// <param name="container">The dependency injection container containing queue services.</param>
-    /// <param name="cancellationToken">A cancellation token to cancel the shutdown operation.</param>
-    /// <returns>A task representing the asynchronous shutdown operation.</returns>
-    /// <remarks>
-    /// This method ensures all pending batches are processed before stopping the queue services.
-    /// It uses the configured batch completion timeout to wait for batch processing to complete.
-    /// The shutdown sequence stops the queue manager first, then the batching service.
-    /// </remarks>
-    private async Task StopQueueServicesAsync(IContainer container, CancellationToken cancellationToken)
+    private async Task StopQueueServicesAsync(IServiceProvider provider, CancellationToken cancellationToken)
     {
-        // Check if queue system is enabled
-        var queueConfiguration = container.ResolveOptional<QueueConfiguration>();
+        var queueConfiguration = provider.GetService<QueueConfiguration>();
         if (queueConfiguration == null || !queueConfiguration.IsEnabled)
         {
-            return; // Queue system is disabled, nothing to stop
+            return;
         }
 
-        var logger = container.ResolveOptional<ILogger>();
+        var logger = provider.GetService<ILogger>();
         logger?.Log(LogLevel.Information, "Stopping queue services and completing pending batches...");
 
-        // Resolve queue services
-        var queueManager = container.ResolveOptional<TestCompletionQueueManager>();
-        var batchingService = container.ResolveOptional<ITestCaseBatchingService>();
-        var timeoutHandler = container.ResolveOptional<IBatchTimeoutHandler>();
+        var queueManager = provider.GetService<TestCompletionQueueManager>();
+        var batchingService = provider.GetService<ITestCaseBatchingService>();
+        var timeoutHandler = provider.GetService<IBatchTimeoutHandler>();
 
         if (queueManager == null && batchingService == null && timeoutHandler == null)
         {
-            return; // No queue services to stop
+            return;
         }
 
-        // Create timeout for batch completion
-        using var timeoutCts = new CancellationTokenSource(TimeSpan.FromMilliseconds(queueConfiguration.BatchCompletionTimeoutMs));
-        using var combinedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, timeoutCts.Token);
+        // Queue shutdown uses a dedicated CTS bounded only by BatchCompletionTimeoutMs — NOT linked to
+        // the execution cancellation token. If the test run was cancelled, we still want to flush
+        // pending batches and gracefully stop the queue services; reusing the execution token would
+        // short-circuit CompleteAsync/StopAsync the moment cancellation is requested and skip the drain.
+        // The execution token is observed by 'cancellationToken' parameter recipients (the queue services
+        // themselves can still cooperate with it if they choose), but we don't enforce it here.
+        _ = cancellationToken; // intentionally not linked into shutdown — see comment above
+        using var shutdownCts = new CancellationTokenSource(TimeSpan.FromMilliseconds(queueConfiguration.BatchCompletionTimeoutMs));
+        var shutdownToken = shutdownCts.Token;
 
         try
         {
-            // Complete batching service first to finalize all pending batches
             if (batchingService != null)
             {
-                await batchingService.CompleteAsync(combinedCts.Token).ConfigureAwait(false);
+                await batchingService.CompleteAsync(shutdownToken).ConfigureAwait(false);
                 logger?.Log(LogLevel.Debug, "Test case batching service completed successfully");
             }
 
-            // Complete and stop queue manager
             if (queueManager != null)
             {
-                await queueManager.CompleteAsync(combinedCts.Token).ConfigureAwait(false);
-                await queueManager.StopAsync(combinedCts.Token).ConfigureAwait(false);
+                await queueManager.CompleteAsync(shutdownToken).ConfigureAwait(false);
+                await queueManager.StopAsync(shutdownToken).ConfigureAwait(false);
                 logger?.Log(LogLevel.Debug, "Queue manager stopped successfully");
             }
 
-            // Stop timeout handler
             if (timeoutHandler != null)
             {
-                await timeoutHandler.StopAsync(combinedCts.Token).ConfigureAwait(false);
+                await timeoutHandler.StopAsync(shutdownToken).ConfigureAwait(false);
                 logger?.Log(LogLevel.Debug, "Batch timeout handler stopped successfully");
             }
 
-            // Stop batching service
             if (batchingService != null)
             {
-                await batchingService.StopAsync(combinedCts.Token).ConfigureAwait(false);
+                await batchingService.StopAsync(shutdownToken).ConfigureAwait(false);
                 logger?.Log(LogLevel.Debug, "Test case batching service stopped successfully");
             }
 
             logger?.Log(LogLevel.Information, "Queue services stopped successfully");
         }
-        catch (OperationCanceledException) when (timeoutCts.Token.IsCancellationRequested)
+        catch (OperationCanceledException) when (shutdownToken.IsCancellationRequested)
         {
             logger?.Log(LogLevel.Warning,
                 "Batch completion timeout ({0}ms) expired. Proceeding with queue shutdown.",
                 queueConfiguration.BatchCompletionTimeoutMs);
 
-            // Force stop services even if timeout occurred
+            // Force a final unconditional stop — if the shutdown timeout fired we don't want to compound
+            // it with another cancellation on the StopAsync calls below.
             if (queueManager != null)
             {
-                await queueManager.StopAsync(cancellationToken).ConfigureAwait(false);
+                await queueManager.StopAsync(CancellationToken.None).ConfigureAwait(false);
             }
             if (timeoutHandler != null)
             {
-                await timeoutHandler.StopAsync(cancellationToken).ConfigureAwait(false);
+                await timeoutHandler.StopAsync(CancellationToken.None).ConfigureAwait(false);
             }
             if (batchingService != null)
             {
-                await batchingService.StopAsync(cancellationToken).ConfigureAwait(false);
+                await batchingService.StopAsync(CancellationToken.None).ConfigureAwait(false);
             }
         }
     }

@@ -1,6 +1,5 @@
 using System;
-using Autofac;
-using Autofac.Core.Registration;
+using Microsoft.Extensions.DependencyInjection;
 using Sailfish.Attributes;
 using Sailfish.Contracts.Public.Models;
 using Sailfish.Exceptions;
@@ -40,16 +39,16 @@ public class TypeActivatorTests
 
     private interface INotRegistered { }
 
-    private static ILifetimeScope EmptyScope()
+    private static IServiceProvider EmptyProvider()
     {
-        return new ContainerBuilder().Build().BeginLifetimeScope();
+        return new ServiceCollection().BuildServiceProvider();
     }
 
     [Fact]
     public void CreateDehydratedTestInstance_WhenDependencyIsNotRegistered_ThrowsTestClassInstantiationException()
     {
-        using var scope = EmptyScope();
-        var activator = new TypeActivator(scope);
+        var provider = EmptyProvider();
+        var activator = new TypeActivator(provider);
 
         var ex = Should.Throw<TestClassInstantiationException>(() =>
             activator.CreateDehydratedTestInstance(
@@ -58,15 +57,18 @@ public class TypeActivatorTests
                 disabled: false));
 
         ex.TestType.ShouldBe(typeof(TestClassWithDependency));
-        ex.InnerException.ShouldBeOfType<ComponentNotRegisteredException>();
+        // The new MS-DI-based TypeActivator throws SailfishException (instead of Autofac's
+        // ComponentNotRegisteredException) when a constructor dependency cannot be resolved, then wraps it
+        // in TestClassInstantiationException — matching the historical outer-exception contract.
+        ex.InnerException.ShouldBeOfType<SailfishException>();
         ex.Message.ShouldContain(typeof(TestClassWithDependency).FullName!);
     }
 
     [Fact]
     public void CreateDehydratedTestInstance_WhenConstructorThrows_ThrowsTestClassInstantiationException_UnwrappingTargetInvocationException()
     {
-        using var scope = EmptyScope();
-        var activator = new TypeActivator(scope);
+        var provider = EmptyProvider();
+        var activator = new TypeActivator(provider);
 
         var ex = Should.Throw<TestClassInstantiationException>(() =>
             activator.CreateDehydratedTestInstance(

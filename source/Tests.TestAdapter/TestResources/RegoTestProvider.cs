@@ -1,15 +1,15 @@
 using System.Threading;
 using System.Threading.Tasks;
-using Autofac;
+using Microsoft.Extensions.DependencyInjection;
 using Sailfish.Registration;
 
 namespace Tests.TestAdapter.TestResources;
 
-public class RegoTestProvider : IProvideARegistrationCallback
+public class RegoTestProvider : IRegisterSailfishServices
 {
-    public async Task RegisterAsync(ContainerBuilder builder, CancellationToken cancellationToken)
+    public async Task RegisterAsync(IServiceCollection services, CancellationToken cancellationToken)
     {
         await Task.CompletedTask;
-        builder.RegisterType<GenericDependency<AnyType>>();
+        services.AddTransient<GenericDependency<AnyType>>();
     }
 }

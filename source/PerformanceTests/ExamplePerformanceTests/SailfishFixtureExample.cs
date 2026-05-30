@@ -2,10 +2,10 @@ using System;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
-using Autofac;
 using Demo.API;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
+using Microsoft.Extensions.DependencyInjection;
 using Sailfish.Attributes;
 using Sailfish.Registration;
 
@@ -83,32 +83,32 @@ public class SailfishFixture : IDisposable
     // single parameterless ctor is all that is allowed
     public SailfishFixture()
     {
-        var builder = new ContainerBuilder();
-        RegisterThings(builder);
-        Container = builder.Build();
+        var services = new ServiceCollection();
+        RegisterThings(services);
+        Provider = services.BuildServiceProvider();
     }
 
-    private IContainer Container { get; }
+    private ServiceProvider Provider { get; }
 
     public void Dispose()
     {
         GC.SuppressFinalize(this);
-        Container.Dispose();
+        Provider.Dispose();
     }
 
-    private static void RegisterThings(ContainerBuilder builder)
+    private static void RegisterThings(IServiceCollection services)
     {
-        builder.RegisterType<ExampleDep>().AsSelf();
-        builder.RegisterType<WebApplicationFactory<DemoApp>>();
+        services.AddTransient<ExampleDep>();
+        services.AddTransient<WebApplicationFactory<DemoApp>>();
     }
 
     public object ResolveType(Type type)
     {
-        return Container.Resolve(type);
+        return Provider.GetRequiredService(type);
     }
 
     public T ResolveType<T>() where T : notnull
     {
-        return Container.Resolve<T>();
+        return Provider.GetRequiredService<T>();
     }
 }

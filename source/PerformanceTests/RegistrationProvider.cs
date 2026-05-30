@@ -1,17 +1,17 @@
 using System.Threading;
 using System.Threading.Tasks;
-using Autofac;
 using Demo.API;
 using Microsoft.AspNetCore.Mvc.Testing;
+using Microsoft.Extensions.DependencyInjection;
 using Sailfish.Registration;
 
 namespace PerformanceTests;
 
-public class RegistrationProvider : IProvideARegistrationCallback
+public class RegistrationProvider : IRegisterSailfishServices
 {
-    public async Task RegisterAsync(ContainerBuilder builder, CancellationToken cancellationToken)
+    public async Task RegisterAsync(IServiceCollection services, CancellationToken cancellationToken)
     {
         await Task.CompletedTask;
-        builder.RegisterType<WebApplicationFactory<DemoApp>>();
+        services.AddTransient<WebApplicationFactory<DemoApp>>();
     }
 }

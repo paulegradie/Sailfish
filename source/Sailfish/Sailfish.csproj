@@ -25,13 +25,22 @@
 
     <ItemGroup>
         <PackageReference Include="MathNet.Numerics" Version="5.0.0"/>
+        <!-- Autofac is retained only for the legacy compat bridge (see Registration/Bridge/AutofacBridge.cs).
+             It will be removed once the [Obsolete] IProvideARegistrationCallback / IProvideAdditionalRegistrations
+             extension points are deleted. Prefer IRegisterSailfishServices / IServiceCollection going forward. -->
         <PackageReference Include="Autofac" Version="9.1.0" />
         <PackageReference Include="CsvHelper" Version="33.1.0" />
         <PackageReference Include="MediatR" Version="14.1.0" />
-        <PackageReference Include="MediatR.Extensions.Autofac.DependencyInjection" Version="14.1.0" />
         <PackageReference Include="Microsoft.Extensions.Configuration" Version="10.0.8" />
         <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="10.0.8" />
+        <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="10.0.8" />
         <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="10.0.8" />
+        <!-- MediatR 14+ requires ILoggerFactory during its license-validation step on the MS DI path, and
+             will throw at startup with "MediatR requires ILoggerFactory to be registered. Call
+             services.AddLogging before services.AddMediatR." (see LuckyPennySoftware/MediatR#1157).
+             SailfishModuleRegistrations calls services.AddLogging() before services.AddMediatR(...) — this
+             package supplies the implementation. -->
+        <PackageReference Include="Microsoft.Extensions.Logging" Version="10.0.8" />
         <PackageReference Include="Perfolizer" Version="0.7.1" />
         <PackageReference Include="System.Linq.Async" Version="7.0.1" />
         <PackageReference Include="System.Runtime.Caching" Version="10.0.8" />
