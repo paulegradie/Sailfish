@@ -2,6 +2,7 @@
 using Sailfish.Analysis.SailDiff.Statistics.Tests;
 using Sailfish.Analysis.SailDiff.Statistics.Tests.KolmogorovSmirnovTestSailfish;
 using Sailfish.Analysis.SailDiff.Statistics.Tests.MWWilcoxonTestSailfish;
+using Sailfish.Analysis.SailDiff.Statistics.Tests.PermutationTest;
 using Sailfish.Analysis.SailDiff.Statistics.Tests.TTest;
 using Sailfish.Analysis.SailDiff.Statistics.Tests.TwoSampleWilcoxonSignedRankTestSailfish;
 using Sailfish.Exceptions;
@@ -19,16 +20,19 @@ public class StatisticalTestExecutor : IStatisticalTestExecutor
     private readonly IMannWhitneyWilcoxonTest _mannWhitneyWilcoxonTestSailfish;
     private readonly ITTest _ttest;
     private readonly ITwoSampleWilcoxonSignedRankTest _twoSampWilcoxonSignedRankTestSailfish;
+    private readonly IPermutationTest _permutationTest;
 
     public StatisticalTestExecutor(IMannWhitneyWilcoxonTest mannWhitneyWilcoxonTestSailfish,
         ITTest ttest,
         ITwoSampleWilcoxonSignedRankTest twoSampWilcoxonSignedRankTestSailfish,
-        IKolmogorovSmirnovTest kolmogorovSmirnovTestSailfish)
+        IKolmogorovSmirnovTest kolmogorovSmirnovTestSailfish,
+        IPermutationTest permutationTest)
     {
         _kolmogorovSmirnovTestSailfish = kolmogorovSmirnovTestSailfish;
         _mannWhitneyWilcoxonTestSailfish = mannWhitneyWilcoxonTestSailfish;
         _ttest = ttest;
         _twoSampWilcoxonSignedRankTestSailfish = twoSampWilcoxonSignedRankTestSailfish;
+        _permutationTest = permutationTest;
     }
 
     public TestResultWithOutlierAnalysis ExecuteStatisticalTest(
@@ -41,7 +45,8 @@ public class StatisticalTestExecutor : IStatisticalTestExecutor
             { TestType.Test, _ttest },
             { TestType.WilcoxonRankSumTest, _mannWhitneyWilcoxonTestSailfish },
             { TestType.TwoSampleWilcoxonSignedRankTest, _twoSampWilcoxonSignedRankTestSailfish },
-            { TestType.KolmogorovSmirnovTest, _kolmogorovSmirnovTestSailfish }
+            { TestType.KolmogorovSmirnovTest, _kolmogorovSmirnovTestSailfish },
+            { TestType.PermutationTest, _permutationTest }
         };
 
         if (!testMap.TryGetValue(settings.TestType, out var value)) throw new SailfishException($"Test type {settings.TestType.ToString()} not supported");

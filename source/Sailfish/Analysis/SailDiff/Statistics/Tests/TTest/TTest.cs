@@ -57,6 +57,10 @@ public class Test : ITTest
             var changeDirection = meanAfter > meanBefore ? SailfishChangeDirection.Regressed : SailfishChangeDirection.Improved;
             var description = isSignificant ? changeDirection : SailfishChangeDirection.NoChange;
             var additionalResults = new Dictionary<string, object> { { AdditionalResults.DegreesOfFreedom, dof } };
+            // SampleSize* / RawData* describe the data the test actually consumed (after
+            // outlier removal), matching the mean/median/p-value already computed from the
+            // processed sample. The original user input is still accessible on the wrapping
+            // TestResultWithOutlierAnalysis via Sample1.OriginalData / Sample2.OriginalData.
             var testResults = new StatisticalTestResult(
                 meanBefore,
                 meanAfter,
@@ -65,10 +69,10 @@ public class Test : ITTest
                 testStatistic,
                 pVal,
                 description,
-                before.Length,
-                after.Length,
-                before,
-                after,
+                rawSample1.Length,
+                rawSample2.Length,
+                rawSample1,
+                rawSample2,
                 additionalResults);
 
             // Effect size: Hedges' g on the *raw* scale so the reported magnitude is
@@ -105,6 +109,14 @@ public class Test : ITTest
                     test.EstimatedValue1, test.EstimatedValue2,
                     test.Confidence.Min, test.Confidence.Max);
             }
+
+            // MDE on the raw scale, expressed as a percentage of the pooled mean. Answers
+            // "what's the smallest regression this run could have caught?" — actionable when
+            // the result was NoChange but you suspect a real but small effect was missed.
+            testResults.MinimumDetectableEffectPercent = MinimumDetectableEffect.RelativePercent(
+                rawSample1.Mean(), rawSample1.Variance(), rawSample1.Length,
+                rawSample2.Mean(), rawSample2.Variance(), rawSample2.Length,
+                settings.Alpha);
 
             return new TestResultWithOutlierAnalysis(testResults, preprocessed1.OutlierAnalysis, preprocessed2.OutlierAnalysis);
         }

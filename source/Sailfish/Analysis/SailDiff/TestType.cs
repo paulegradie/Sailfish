@@ -44,5 +44,16 @@ public enum TestType
     /// than rank-sum for pure location shifts; use when you suspect distributional changes
     /// (e.g., a new code path with bimodal latency) rather than a simple "is run B faster?".
     /// </summary>
-    KolmogorovSmirnovTest
+    KolmogorovSmirnovTest,
+
+    /// <summary>
+    /// Permutation test on the difference in means. Approximate-exact: shuffles the joint
+    /// sample-1 / sample-2 labels <c>K</c> times (default 10,000) and counts how often a
+    /// random permutation produces a mean difference at least as extreme as the observed
+    /// one. Distribution-free, no parametric assumption — robust against heavy-tailed and
+    /// multi-modal timing data where the t-test's normality assumption is shaky. Slower
+    /// than the analytic tests by roughly a factor of <c>K / N</c>; use when the data has
+    /// visible outliers you can't justify removing.
+    /// </summary>
+    PermutationTest
 }

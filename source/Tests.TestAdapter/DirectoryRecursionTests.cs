@@ -29,27 +29,35 @@ public class DirectoryRecursionTests
     [Fact]
     public void RecurseUpwardsUntilFileIsFound_WithValidFile_ShouldReturnFileInfo()
     {
-        // Arrange
-        var currentDirectory = Directory.GetCurrentDirectory();
-        var testFile = Path.Combine(currentDirectory, "test.csproj");
-        
-        // Create a temporary test file
-        File.WriteAllText(testFile, "<Project></Project>");
-        
+        // Build an isolated three-level dir tree under Path.GetTempPath() with the .csproj
+        // file at the top. Pre-fix this test used Directory.GetCurrentDirectory() as the
+        // start point and dropped a test.csproj into it — but RecurseUpwardsUntilFileIsFound
+        // searches the *parent* of its source path, so it only succeeded when something else
+        // in the test runner's working-directory chain happened to contain a .csproj. CI
+        // layouts that lack that ancestry (build agents, dotnet test in detached mode) made
+        // the test flake. The temp-dir tree is hermetic.
+        var rootDir = Path.Combine(Path.GetTempPath(), "Sailfish_DirRecursionTest_" + Guid.NewGuid().ToString("N"));
+        var middleDir = Path.Combine(rootDir, "middle");
+        var leafDir = Path.Combine(middleDir, "leaf");
+        Directory.CreateDirectory(leafDir);
+
+        var csprojPath = Path.Combine(rootDir, "TestProject.csproj");
+        File.WriteAllText(csprojPath, "<Project></Project>");
+        // The function inspects files in Path.GetDirectoryName(sourceFile); pass a file in
+        // the leaf directory so the recursion has to walk up two levels to find the csproj.
+        var sourceFile = Path.Combine(leafDir, "source.cs");
+        File.WriteAllText(sourceFile, string.Empty);
+
         try
         {
-            // Act
-            var result = DirectoryRecursion.RecurseUpwardsUntilFileIsFound(".csproj", currentDirectory, 5);
+            var result = DirectoryRecursion.RecurseUpwardsUntilFileIsFound(".csproj", sourceFile, 5);
 
-            // Assert
             result.ShouldNotBeNull();
-            result.Name.ShouldEndWith(".csproj");
+            result.Name.ShouldBe("TestProject.csproj");
         }
         finally
         {
-            // Cleanup
-            if (File.Exists(testFile))
-                File.Delete(testFile);
+            if (Directory.Exists(rootDir)) Directory.Delete(rootDir, recursive: true);
         }
     }
 

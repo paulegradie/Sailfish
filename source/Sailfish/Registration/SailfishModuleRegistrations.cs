@@ -6,6 +6,7 @@ using Sailfish.Analysis.SailDiff.Statistics;
 using Sailfish.Analysis.SailDiff.Statistics.Tests;
 using Sailfish.Analysis.SailDiff.Statistics.Tests.KolmogorovSmirnovTestSailfish;
 using Sailfish.Analysis.SailDiff.Statistics.Tests.MWWilcoxonTestSailfish;
+using Sailfish.Analysis.SailDiff.Statistics.Tests.PermutationTest;
 using Sailfish.Analysis.SailDiff.Statistics.Tests.TTest;
 using Sailfish.Analysis.SailDiff.Statistics.Tests.TwoSampleWilcoxonSignedRankTestSailfish;
 using Sailfish.Analysis.ScaleFish;
@@ -128,6 +129,8 @@ internal static class SailfishModuleRegistrations
         services.AddTransient<IMannWhitneyWilcoxonTest, MannWhitneyWilcoxonTest>();
         services.AddTransient<ITwoSampleWilcoxonSignedRankTest, TwoSampleWilcoxonSignedRankTest>();
         services.AddTransient<IKolmogorovSmirnovTest, KolmogorovSmirnovTest>();
+        // SailDiff Tier 3 permutation test (added in #249, merged from main).
+        services.AddTransient<IPermutationTest, PermutationTest>();
         services.AddTransient<IScalefishObservationCompiler, ScalefishObservationCompiler>();
         services.AddTransient<ISailDiffConsoleWindowMessageFormatter, SailDiffConsoleWindowMessageFormatter>();
 
