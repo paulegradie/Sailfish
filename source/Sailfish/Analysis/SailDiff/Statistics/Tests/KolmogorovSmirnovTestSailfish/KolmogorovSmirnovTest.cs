@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using MathNet.Numerics.Statistics;
 using Sailfish.Analysis.SailDiff.Statistics.StatsCore.Analysers.AnalysersBase;
 using Sailfish.Analysis.SailDiff.Statistics.StatsCore.Analysers.Factories;
+using Sailfish.Analysis.SailDiff.Statistics.StatsCore.MathOps;
 using Sailfish.Contracts.Public;
 using Sailfish.Contracts.Public.Models;
 
@@ -55,6 +56,10 @@ public class KolmogorovSmirnovTest : IKolmogorovSmirnovTest
                 { AdditionalResults.Tail, test.Tail }
             };
 
+            // SampleSize* / RawData* describe the data the test actually consumed (after
+            // outlier removal), matching the mean/median/p-value already computed from the
+            // processed sample. The original user input is still accessible on the wrapping
+            // TestResultWithOutlierAnalysis via Sample1.OriginalData / Sample2.OriginalData.
             var testResults = new StatisticalTestResult(
                 meanBefore,
                 meanAfter,
@@ -63,11 +68,20 @@ public class KolmogorovSmirnovTest : IKolmogorovSmirnovTest
                 testStatistic,
                 pVal,
                 description,
-                before.Length,
-                after.Length,
-                before,
-                after,
+                sample1.Length,
+                sample2.Length,
+                sample1,
+                sample2,
                 additionalResults);
+
+            // MDE on the raw scale — same diagnostic for KS as for the other tests so the
+            // formatters can show it uniformly. KS doesn't naturally produce an effect size
+            // (the D statistic *is* the effect size), so we leave that field unset.
+            testResults.MinimumDetectableEffectPercent = MinimumDetectableEffect.RelativePercent(
+                sample1.Mean(), sample1.Variance(), sample1.Length,
+                sample2.Mean(), sample2.Variance(), sample2.Length,
+                settings.Alpha);
+
             return new TestResultWithOutlierAnalysis(testResults, preprocessed1.OutlierAnalysis, preprocessed2.OutlierAnalysis);
         }
         catch (Exception ex)

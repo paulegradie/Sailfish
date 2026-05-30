@@ -90,16 +90,27 @@ public class SailDiffResultMarkdownConverter : ISailDiffResultMarkdownConverter
             m => m.TestResultsWithOutlierAnalysis.StatisticalTestResult.MedianBefore,
             m => m.TestResultsWithOutlierAnalysis.StatisticalTestResult.MedianAfter,
             m => m.TestResultsWithOutlierAnalysis.StatisticalTestResult.PValue,
+            // Tier-2 fields surface in the legacy markdown so consumers that still depend on
+            // this format (and there are several) see the same magnitude story as the IDE
+            // banner. Nullable values render as empty cells.
+            m => FormatQValue(m.TestResultsWithOutlierAnalysis.StatisticalTestResult.QValue),
+            m => FormatEffectSize(m.TestResultsWithOutlierAnalysis.StatisticalTestResult.EffectSize),
+            m => FormatDifference(m.TestResultsWithOutlierAnalysis.StatisticalTestResult.Difference),
+            m => FormatMde(m.TestResultsWithOutlierAnalysis.StatisticalTestResult.MinimumDetectableEffectPercent),
             m => m.TestResultsWithOutlierAnalysis.StatisticalTestResult.ChangeDescription
         };
 
         var headers = new List<string>
         {
-            "Display Name", $"MeanBefore (N={nBefore})", $"MeanAfter (N={nAfter})", "MedianBefore", "MedianAfter", "PValue", "Change Description"
+            "Display Name",
+            $"MeanBefore (N={nBefore})", $"MeanAfter (N={nAfter})",
+            "MedianBefore", "MedianAfter",
+            "PValue", "QValue (BH)", "Effect", "Shift", "MDE",
+            "Change Description"
         };
         var columnValueSuffixes = new List<string>
         {
-            "", "ms", "ms", "ms", "ms", "", ""
+            "", "ms", "ms", "ms", "ms", "", "", "", "", "%", ""
         };
 
         if (enumeratedResults.Any(x => !string.IsNullOrEmpty(x.TestResultsWithOutlierAnalysis.ExceptionMessage)))
@@ -114,6 +125,30 @@ public class SailDiffResultMarkdownConverter : ISailDiffResultMarkdownConverter
             headers,
             [.. selectors]);
     }
+
+    private static string FormatQValue(double? q) => q.HasValue ? q.Value.ToString("0.####") : string.Empty;
+
+    private static string FormatEffectSize(Sailfish.Contracts.Public.Models.EffectSizeReport? effect)
+    {
+        if (effect is null) return string.Empty;
+        // CI bounds use the same 0.### precision as the point estimate (and as FormatDifference)
+        // so all bracket-style reports show consistent precision in console/markdown output.
+        var ci = effect.CiLower.HasValue && effect.CiUpper.HasValue
+            ? $" [{effect.CiLower.Value:0.###}, {effect.CiUpper.Value:0.###}]"
+            : string.Empty;
+        return $"{effect.Name}={effect.Value:0.###}{ci}";
+    }
+
+    private static string FormatDifference(Sailfish.Contracts.Public.Models.DifferenceReport? diff)
+    {
+        if (diff is null) return string.Empty;
+        var ci = diff.CiLower.HasValue && diff.CiUpper.HasValue
+            ? $" [{diff.CiLower.Value:0.###}, {diff.CiUpper.Value:0.###}]"
+            : string.Empty;
+        return $"{diff.Value:0.###} {diff.Units}{ci}";
+    }
+
+    private static string FormatMde(double? mde) => mde.HasValue ? mde.Value.ToString("0.##") : string.Empty;
 
     private string CreateUnifiedFormattedOutput(List<SailDiffResult> enumeratedResults, OutputContext context, double alpha)
     {
