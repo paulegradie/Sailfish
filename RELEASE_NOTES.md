@@ -1,5 +1,36 @@
 ﻿## What's Changed in v0.0.118 (unreleased)
 
+### Breaking change: dependency injection container is now Microsoft.Extensions.DependencyInjection
+
+Sailfish's internal DI container moved from Autofac to `Microsoft.Extensions.DependencyInjection` (the standard .NET DI abstraction). The Autofac-typed public surface is gone — the `Autofac` package is no longer a dependency.
+
+**Migration in three lines per provider:**
+
+```diff
+-public class RegistrationProvider : IProvideARegistrationCallback
++public class RegistrationProvider : IRegisterSailfishServices
+ {
+-    public async Task RegisterAsync(ContainerBuilder builder, CancellationToken ct)
++    public async Task RegisterAsync(IServiceCollection services, CancellationToken ct)
+     {
+-        builder.RegisterType<MyClient>().As<IClient>();
++        services.AddSingleton<IClient, MyClient>();
+     }
+ }
+```
+
+**Symbols removed in this release:**
+
+- `IProvideARegistrationCallback` → use `IRegisterSailfishServices`
+- `IProvideAdditionalRegistrations` → use `IRegisterSailfishServices` (the async/sync split is gone — implement once)
+- `SailfishRunner.Run(IRunSettings, Action<ContainerBuilder>, …)` → `SailfishRunner.Run(IRunSettings, Action<IServiceCollection>, …)`
+- `ContainerBuilder.RegisterSailfishTypes(IRunSettings)` (extension method) → `IServiceCollection.AddSailfish(IRunSettings)`
+- `ITestExecution.ExecuteTests(…, IContainer, …)` → `ITestExecution.ExecuteTests(…, IServiceProvider, …)`
+
+`ISailfishDependency` and `ISailfishFixture<T>` are unchanged — both still work exactly as before.
+
+See [Registering Tests Dependencies](docs/1/test-dependencies) for the current docs.
+
 ### SailDiff Tier 3: MDE reporting, permutation test, formatter completeness
 
 Closes out the SailDiff rigor roadmap with power/UX work that turns NoChange verdicts

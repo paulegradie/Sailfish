@@ -28,12 +28,12 @@ RunSettings AssembleRunRequest(args)
     return new RunSettings(...);
 }
 
-public class RegistrationProvider : IProvideARegistrationCallback
+public class RegistrationProvider : IRegisterSailfishServices
 {
-    public async Task RegisterAsync(ContainerBuilder builder, CancellationToken ct)
+    public async Task RegisterAsync(IServiceCollection services, CancellationToken ct)
     {
        var typeInstance = await MyClientFactory.Create(ct);
-       builder.RegisterType(typeInstance).As<IClient>();
+       services.AddSingleton<IClient>(typeInstance);
     }
 }
 ```
@@ -46,12 +46,12 @@ public class RegistrationProvider : IProvideARegistrationCallback
 
 ```csharp
 // this will be picked up by Sailfish's dependency scanner
-public class RegistrationProvider : IProvideARegistrationCallback
+public class RegistrationProvider : IRegisterSailfishServices
 {
-    public async Task RegisterAsync(ContainerBuilder builder, CancellationToken ct)
+    public async Task RegisterAsync(IServiceCollection services, CancellationToken ct)
     {
        var typeInstance = await MyClientFactory.Create(ct);
-       builder.RegisterType(typeInstance).As<IClient>();
+       services.AddSingleton<IClient>(typeInstance);
     }
 }
 

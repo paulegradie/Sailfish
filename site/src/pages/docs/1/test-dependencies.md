@@ -5,9 +5,11 @@ Sailfish supports several ways to register dependencies that test classes can co
 
 Sailfish will scan the calling assembly by default to discover implementations. You can customize the search location by passing one or more anchor types to `RunSettingsBuilder.ProvidersFromAssembliesContaining(...)`.
 
-# IProvideARegistrationCallback
+Sailfish's DI container is `Microsoft.Extensions.DependencyInjection` (the standard .NET DI abstraction). You contribute services via an `IServiceCollection` — the same one you'd use in an ASP.NET Core app, a Generic Host, or any other modern .NET app.
 
-Implement `IProvideARegistrationCallback` to get an Autofac `ContainerBuilder` callback. The container holds and resolves your dependencies from a lifetime scope managed by Sailfish.
+# IRegisterSailfishServices
+
+Implement `IRegisterSailfishServices` to register dependencies onto the `IServiceCollection` Sailfish will use to build its `IServiceProvider`. This is the primary extension point.
 
 ```csharp
 // In your Program.cs / Main
@@ -18,33 +20,39 @@ var runSettings = RunSettingsBuilder
 await SailfishRunner.Run(runSettings);
 
 // In a class somewhere in the same assembly
-public class RegistrationProvider : IProvideARegistrationCallback
+public class RegistrationProvider : IRegisterSailfishServices
 {
     public async Task RegisterAsync(
-        ContainerBuilder builder,
+        IServiceCollection services,
         CancellationToken cancellationToken = default)
     {
        var typeInstance = await MyClientFactory.Create(cancellationToken);
-       builder.Register(ctx => typeInstance).As<IClient>();
-       builder.RegisterType<MyType>().AsSelf();
+       services.AddSingleton<IClient>(typeInstance);
+       services.AddTransient<MyType>();
     }
 }
 ```
+
+The implementing class must have a public parameterless constructor (Sailfish discovers and constructs it via reflection).
+
 ---
 
-# IProvideAdditionalRegistrations
+# Inline registration via `SailfishRunner.Run`
 
-For purely synchronous registrations you can implement `IProvideAdditionalRegistrations`. Sailfish discovers and runs all implementations alongside any `IProvideARegistrationCallback` providers.
+For one-off cases where you don't want a discoverable provider class, you can pass an `Action<IServiceCollection>` directly to `SailfishRunner.Run`. The action is invoked after Sailfish's core services are registered and before the `IServiceProvider` is built.
 
 ```csharp
-public class AdditionalRegistrations : IProvideAdditionalRegistrations
-{
-    public void Load(ContainerBuilder builder)
+await SailfishRunner.Run(
+    runSettings,
+    services =>
     {
-        builder.RegisterType<MyType>().AsSelf();
-    }
-}
+        services.AddSingleton<IClient>(new MyClient());
+        services.AddTransient<MyType>();
+    });
 ```
+
+Note: registrations added this way are *not* visible to the IDE Test Adapter, which runs in a separate process and never sees your `Action<IServiceCollection>`. If your tests need both the Sailfish runner and the IDE play button, prefer `IRegisterSailfishServices` — it's auto-discovered by both entry points.
+
 ---
 
 # ISailfishDependency

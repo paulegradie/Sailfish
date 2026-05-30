@@ -84,14 +84,14 @@ See [Method Comparisons](/docs/1/method-comparisons) for the full feature: the i
 ## 3. Register a Dependency
 
 ```csharp
-public class RegistrationProvider : IProvideARegistrationCallback
+public class RegistrationProvider : IRegisterSailfishServices
 {
     public async Task RegisterAsync(
-        ContainerBuilder builder,
+        IServiceCollection services,
         CancellationToken cancellationToken = default)
     {
        var typeInstance = await MyClientFactory.Create(cancellationToken);
-       builder.Register(_ => typeInstance).As<IClient>();
+       services.AddSingleton<IClient>(typeInstance);
     }
 }
 ```
