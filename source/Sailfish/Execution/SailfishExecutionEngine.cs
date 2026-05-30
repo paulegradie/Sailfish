@@ -122,10 +122,12 @@ internal class SailfishExecutionEngine : ISailfishExecutionEngine
         }
         catch (Exception ex)
         {
+            var currentInstance = TryGetCurrent(testCaseEnumerator);
+
             await _mediator.Publish(
-                new TestCaseExceptionNotification(testCaseEnumerator.Current.ToExternal(), testCaseGroup, ex),
+                new TestCaseExceptionNotification(currentInstance?.ToExternal(), testCaseGroup, ex),
                 cancellationToken);
-            await DisposeOfTestInstance(testCaseEnumerator.Current);
+            await DisposeOfTestInstance(currentInstance);
             testCaseEnumerator.Dispose();
             var msg = $"Error resolving test from {testProvider.Test.FullName}";
             _logger.Log(LogLevel.Fatal, ex, msg);
@@ -264,13 +266,28 @@ internal class SailfishExecutionEngine : ISailfishExecutionEngine
         }
         catch (Exception ex)
         {
-            await _mediator.Publish(new TestCaseExceptionNotification(instanceContainerEnumerator.Current.ToExternal(), testCaseGroup, ex), ct);
-            await DisposeOfTestInstance(instanceContainerEnumerator.Current);
+            var currentInstance = TryGetCurrent(instanceContainerEnumerator);
+            await _mediator.Publish(new TestCaseExceptionNotification(currentInstance?.ToExternal(), testCaseGroup, ex), ct);
+            await DisposeOfTestInstance(currentInstance);
             continueIterating = true;
             _consoleWriter.WriteString(ex.Message);
         }
 
         return continueIterating;
+    }
+
+    private static TestInstanceContainer? TryGetCurrent(IEnumerator<TestInstanceContainer> enumerator)
+    {
+        // Per IEnumerator<T>: Current is undefined when MoveNext has thrown or returned false.
+        // Reading it without a guard masks the real exception with an NRE.
+        try
+        {
+            return enumerator.Current;
+        }
+        catch
+        {
+            return null;
+        }
     }
 
     private async Task<List<TestCaseExecutionResult>> CatchAndReturn(Exception ex, TestInstanceContainer testCase,
