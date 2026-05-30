@@ -58,4 +58,27 @@ public class StatisticalTestResult
     public double[] RawDataBefore { get; set; }
     public double[] RawDataAfter { get; set; }
     public Dictionary<string, object> AdditionalResults { get; }
+
+    /// <summary>
+    /// Standardised effect-size estimate for the comparison — Hedges' g for the t-test,
+    /// Cliff's delta for the rank-sum, etc. <c>null</c> when the test doesn't define one
+    /// (e.g. KS, where the test statistic itself <em>is</em> the effect size).
+    /// </summary>
+    public EffectSizeReport? EffectSize { get; set; }
+
+    /// <summary>
+    /// Point estimate of the location shift between before and after, with a CI at the
+    /// configured significance level. Provides the magnitude answer alongside the binary
+    /// significance verdict — "by how much" rather than just "is there a difference?".
+    /// <c>null</c> when the test doesn't produce a shift estimate.
+    /// </summary>
+    public DifferenceReport? Difference { get; set; }
+
+    /// <summary>
+    /// Benjamini-Hochberg–adjusted q-value for this comparison within the family of all
+    /// pairs in the current SailDiff run. Populated by
+    /// <c>StatisticalTestComputer.ComputeTest</c> after every pair has been tested.
+    /// <c>null</c> when the test failed or only a single comparison ran.
+    /// </summary>
+    public double? QValue { get; set; }
 }

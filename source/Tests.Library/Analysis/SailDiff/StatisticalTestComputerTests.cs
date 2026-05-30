@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using NSubstitute;
@@ -379,9 +380,12 @@ public class StatisticalTestComputerTests
     }
 
     [Fact]
-    public void ComputeTest_WithMoreThan60Results_ShouldReturnUnorderedResults()
+    public void ComputeTest_WithLargeResultSet_StillOrdersWhenOrderingIsEnabled()
     {
-        // Arrange
+        // Regression for the dropped magic-60 branch — pre-Tier-2 the code silently bailed
+        // out of ordering when results.Count > 60 with no documented rationale, producing
+        // different output ordering for large workloads versus small ones. Now the
+        // DisableOrdering flag is the only switch.
         var testCaseIds = Enumerable.Range(1, 65).Select(i => new TestCaseId($"TestClass.Method{i:D3}")).ToList();
 
         var beforeResults = testCaseIds.Select(id =>
@@ -404,9 +408,10 @@ public class StatisticalTestComputerTests
         // Act
         var results = _computer.ComputeTest(beforeData, afterData, settings);
 
-        // Assert
+        // Assert: all 65 results returned, and they're ordered alphabetically (Method001..Method065).
         results.Count.ShouldBe(65);
-        // With more than 60 results, ordering should be skipped
+        var names = results.Select(r => r.TestCaseId.DisplayName).ToList();
+        names.ShouldBe(names.OrderBy(n => n, StringComparer.Ordinal).ToList());
     }
 
     #endregion

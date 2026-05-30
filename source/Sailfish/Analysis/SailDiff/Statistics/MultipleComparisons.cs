@@ -26,26 +26,57 @@ namespace Sailfish.Analysis.SailDiff.Statistics
                 .OrderBy(t => t.P)
                 .ToArray();
 
-            var m = items.Length;
-            var q = new double[m];
+            var qSorted = BenjaminiHochbergAdjustSorted(items.Select(t => t.P).ToArray());
 
-            // BH: q(i) = min_{j>=i} (m/j * p(j)) with monotonicity enforcement from the end
+            // Write back using normalized pair keys to ensure (A,B)==(B,A)
+            var result = new Dictionary<(string A, string B), double>(pValues.Count);
+            for (var i = 0; i < items.Length; i++)
+            {
+                result[items[i].Key] = qSorted[i];
+            }
+            return result;
+        }
+
+        /// <summary>
+        /// String-keyed BH variant for cases where each comparison has a single identifier
+        /// (e.g. one SailDiff before/after pair per test-case display name).
+        /// </summary>
+        public static Dictionary<string, double> BenjaminiHochbergAdjust(IDictionary<string, double> pValues)
+        {
+            if (pValues == null || pValues.Count == 0)
+                return new();
+
+            var items = pValues
+                .Select(kv => (Key: kv.Key, P: ClampP(kv.Value)))
+                .OrderBy(t => t.P)
+                .ToArray();
+
+            var qSorted = BenjaminiHochbergAdjustSorted(items.Select(t => t.P).ToArray());
+
+            var result = new Dictionary<string, double>(pValues.Count);
+            for (var i = 0; i < items.Length; i++)
+            {
+                result[items[i].Key] = qSorted[i];
+            }
+            return result;
+        }
+
+        // Core BH step on a p-value vector that is already sorted ascending. q(i) =
+        // min_{j ≥ i} (m/j · p(j)) enforced monotonically from the end so larger p's never
+        // produce smaller q's than their predecessors.
+        private static double[] BenjaminiHochbergAdjustSorted(double[] sortedAscendingPValues)
+        {
+            var m = sortedAscendingPValues.Length;
+            var q = new double[m];
             var minQ = 1.0;
             for (var i = m - 1; i >= 0; i--)
             {
                 var rank = i + 1; // 1-based rank in ascending p
-                var bh = (m / (double)rank) * items[i].P;
+                var bh = (m / (double)rank) * sortedAscendingPValues[i];
                 if (bh < minQ) minQ = bh;
                 q[i] = Math.Min(1.0, minQ);
             }
-
-            // Write back using normalized pair keys to ensure (A,B)==(B,A)
-            var result = new Dictionary<(string A, string B), double>(pValues.Count);
-            for (var i = 0; i < m; i++)
-            {
-                result[items[i].Key] = q[i];
-            }
-            return result;
+            return q;
         }
 
         /// <summary>
