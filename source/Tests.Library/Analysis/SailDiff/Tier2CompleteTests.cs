@@ -269,8 +269,11 @@ public class Tier2CompleteTests
         ba.ExceptionMessage.ShouldBeEmpty();
         ab.StatisticalTestResult.PValue.ShouldBe(ba.StatisticalTestResult.PValue, tolerance: 1e-12,
             customMessage: "p-value must be invariant under sample-order swap.");
+        // SailfishChangeDirection is a static class of `const string`, so these constants
+        // are already strings — `.ToString()` would be a no-op. Matches the convention in
+        // Tier1RigorTests where ChangeDescription is compared to the bare constant.
         ab.StatisticalTestResult.ChangeDescription.ShouldBe(SailfishChangeDirection.Regressed);
-        ba.StatisticalTestResult.ChangeDescription.ShouldBe(SailfishChangeDirection.Improved.ToString());
+        ba.StatisticalTestResult.ChangeDescription.ShouldBe(SailfishChangeDirection.Improved);
     }
 
     // ─── Critical regression: NaN p-value cannot contaminate BH-FDR family ──────────────
