@@ -11,7 +11,7 @@ public class EnvironmentHealthCheckerTests
     [Fact]
     public async Task CheckAsync_Returns_Report_WithScoreAndEntries()
     {
-        var checker = new EnvironmentHealthChecker();
+        var checker = EnvironmentHealthCheckerTestHelpers.CreateFast();
         var report = await checker.CheckAsync();
 
         report.ShouldNotBeNull();
@@ -23,7 +23,7 @@ public class EnvironmentHealthCheckerTests
     [Fact]
     public async Task Report_Includes_Key_Entries()
     {
-        var checker = new EnvironmentHealthChecker();
+        var checker = EnvironmentHealthCheckerTestHelpers.CreateFast();
         var report = await checker.CheckAsync();
 
         var names = report.Entries.Select(e => e.Name).ToList();
@@ -39,7 +39,7 @@ public class EnvironmentHealthCheckerTests
     [Fact]
     public async Task Report_Includes_BuildMode_And_JitEntries()
     {
-        var checker = new EnvironmentHealthChecker();
+        var checker = EnvironmentHealthCheckerTestHelpers.CreateFast();
         var report = await checker.CheckAsync();
 
         var names = report.Entries.Select(e => e.Name).ToList();
@@ -53,7 +53,7 @@ public class EnvironmentHealthCheckerTests
         try
         {
             System.Environment.SetEnvironmentVariable("COMPlus_TieredCompilation", "0");
-            var checker = new EnvironmentHealthChecker();
+            var checker = EnvironmentHealthCheckerTestHelpers.CreateFast();
             var report = await checker.CheckAsync();
             var jit = report.Entries.First(e => e.Name == "JIT (Tiered/OSR)");
             jit.Details.ShouldContain("Tiered=");
@@ -87,7 +87,7 @@ public class EnvironmentHealthCheckerTests
                 JitterScore = 100
             }
         };
-        var checker = new EnvironmentHealthChecker(provider);
+        var checker = EnvironmentHealthCheckerTestHelpers.CreateFast(provider);
         var report = await checker.CheckAsync();
         report.Entries.Any(e => e.Name == "Timer Jitter" && e.Status == HealthStatus.Pass).ShouldBeTrue();
     }
@@ -106,7 +106,7 @@ public class EnvironmentHealthCheckerTests
                 JitterScore = 60
             }
         };
-        var checker = new EnvironmentHealthChecker(provider);
+        var checker = EnvironmentHealthCheckerTestHelpers.CreateFast(provider);
         var report = await checker.CheckAsync();
         report.Entries.Any(e => e.Name == "Timer Jitter" && e.Status == HealthStatus.Warn).ShouldBeTrue();
     }
@@ -125,7 +125,7 @@ public class EnvironmentHealthCheckerTests
                 JitterScore = 20
             }
         };
-        var checker = new EnvironmentHealthChecker(provider);
+        var checker = EnvironmentHealthCheckerTestHelpers.CreateFast(provider);
         var report = await checker.CheckAsync();
         report.Entries.Any(e => e.Name == "Timer Jitter" && e.Status == HealthStatus.Fail).ShouldBeTrue();
     }
@@ -145,7 +145,7 @@ public class EnvironmentHealthCheckerTests
                     JitterScore = 80
                 }
             };
-            var checker = new EnvironmentHealthChecker(provider);
+            var checker = EnvironmentHealthCheckerTestHelpers.CreateFast(provider);
             var report = await checker.CheckAsync();
             report.Entries.Any(e => e.Name == "Timer Jitter" && e.Status == HealthStatus.Pass).ShouldBeTrue();
         }
@@ -164,7 +164,7 @@ public class EnvironmentHealthCheckerTests
                     JitterScore = 40
                 }
             };
-            var checker = new EnvironmentHealthChecker(provider);
+            var checker = EnvironmentHealthCheckerTestHelpers.CreateFast(provider);
             var report = await checker.CheckAsync();
             report.Entries.Any(e => e.Name == "Timer Jitter" && e.Status == HealthStatus.Warn).ShouldBeTrue();
         }
@@ -172,7 +172,7 @@ public class EnvironmentHealthCheckerTests
         [Fact]
         public async Task Report_DoesNotInclude_TimerJitter_WhenProviderNull()
         {
-            var checker = new EnvironmentHealthChecker();
+            var checker = EnvironmentHealthCheckerTestHelpers.CreateFast();
             var report = await checker.CheckAsync();
             report.Entries.Any(e => e.Name == "Timer Jitter").ShouldBeFalse();
         }
@@ -181,7 +181,7 @@ public class EnvironmentHealthCheckerTests
         public async Task Report_DoesNotInclude_TimerJitter_WhenProviderCurrentNull()
         {
             var provider = new TestTimerProvider { Current = null };
-            var checker = new EnvironmentHealthChecker(provider);
+            var checker = EnvironmentHealthCheckerTestHelpers.CreateFast(provider);
             var report = await checker.CheckAsync();
             report.Entries.Any(e => e.Name == "Timer Jitter").ShouldBeFalse();
         }
@@ -189,7 +189,7 @@ public class EnvironmentHealthCheckerTests
     [Fact]
     public async Task CheckAsync_WithContext_UsesProvidedTestAssemblyPath()
     {
-        var checker = new EnvironmentHealthChecker();
+        var checker = EnvironmentHealthCheckerTestHelpers.CreateFast();
         var context = new EnvironmentHealthCheckContext { TestAssemblyPath = typeof(EnvironmentHealthCheckerTests).Assembly.Location };
         var report = await checker.CheckAsync(context);
 
@@ -201,7 +201,7 @@ public class EnvironmentHealthCheckerTests
     [Fact]
     public async Task CheckAsync_WithInvalidTestAssemblyPath_FallsBackToDefaultAssembly()
     {
-        var checker = new EnvironmentHealthChecker();
+        var checker = EnvironmentHealthCheckerTestHelpers.CreateFast();
         var context = new EnvironmentHealthCheckContext { TestAssemblyPath = "/nonexistent/path/assembly.dll" };
         var report = await checker.CheckAsync(context);
 
@@ -213,7 +213,7 @@ public class EnvironmentHealthCheckerTests
     [Fact]
     public async Task GcMode_ReturnsValidStatus()
     {
-        var checker = new EnvironmentHealthChecker();
+        var checker = EnvironmentHealthCheckerTestHelpers.CreateFast();
         var report = await checker.CheckAsync();
 
         var gcMode = report.Entries.First(e => e.Name == "GC Mode");
@@ -224,7 +224,7 @@ public class EnvironmentHealthCheckerTests
     [Fact]
     public async Task ProcessPriority_ReturnsValidStatus()
     {
-        var checker = new EnvironmentHealthChecker();
+        var checker = EnvironmentHealthCheckerTestHelpers.CreateFast();
         var report = await checker.CheckAsync();
 
         var priority = report.Entries.First(e => e.Name == "Process Priority");
@@ -235,6 +235,7 @@ public class EnvironmentHealthCheckerTests
     [Fact]
     public async Task Timer_ReturnsValidStatus()
     {
+        // Exercises the real timer-resolution probe (intentionally slow).
         var checker = new EnvironmentHealthChecker();
         var report = await checker.CheckAsync();
 
@@ -247,6 +248,7 @@ public class EnvironmentHealthCheckerTests
     [Fact]
     public async Task BackgroundCpu_ReturnsValidStatus()
     {
+        // Exercises the real CPU sampling probe (intentionally slow).
         var checker = new EnvironmentHealthChecker();
         var report = await checker.CheckAsync();
 
@@ -269,7 +271,7 @@ public class EnvironmentHealthCheckerTests
                 JitterScore = 30
             }
         };
-        var checker = new EnvironmentHealthChecker(provider);
+        var checker = EnvironmentHealthCheckerTestHelpers.CreateFast(provider);
         var report = await checker.CheckAsync();
         report.Entries.Any(e => e.Name == "Timer Jitter" && e.Status == HealthStatus.Fail).ShouldBeTrue();
     }

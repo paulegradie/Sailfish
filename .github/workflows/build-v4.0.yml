@@ -116,8 +116,10 @@ jobs:
     needs: build
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
         project: ["Tests.Library", "Tests.TestAdapter", "Tests.Analyzers"]
+        framework: ["net9.0", "net10.0"]
     steps:
       - uses: actions/checkout@v4
 
@@ -135,7 +137,7 @@ jobs:
           path: .
 
       - name: Test Projects
-        run: dotnet test ./source/${{ matrix.project }}/${{ matrix.project }}.csproj --verbosity normal --collect:"XPlat Code Coverage"
+        run: dotnet test ./source/${{ matrix.project }}/${{ matrix.project }}.csproj --framework ${{ matrix.framework }} --verbosity normal --collect:"XPlat Code Coverage"
 
       - name: Upload coverage reports to Codecov
         uses: codecov/codecov-action@v4.0.1
@@ -144,8 +146,8 @@ jobs:
           slug: paulegradie/Sailfish
           # Flag each matrix job so codecov merges the parallel uploads
           # by-file instead of letting the last upload win.
-          flags: ${{ matrix.project }}
-          name: ${{ matrix.project }}
+          flags: ${{ matrix.project }}-${{ matrix.framework }}
+          name: ${{ matrix.project }}-${{ matrix.framework }}
           # Don't fail the whole job on a transient codecov outage.
           fail_ci_if_error: false
 

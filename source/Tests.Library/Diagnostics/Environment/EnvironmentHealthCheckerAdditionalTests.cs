@@ -11,7 +11,7 @@ public class EnvironmentHealthCheckerAdditionalTests
     [Fact]
     public async Task BuildMode_Uses_TestAssemblyPath_When_Provided()
     {
-        var checker = new EnvironmentHealthChecker();
+        var checker = EnvironmentHealthCheckerTestHelpers.CreateFast();
         var ctx = new EnvironmentHealthCheckContext
         {
             TestAssemblyPath = typeof(EnvironmentHealthChecker).Assembly.Location
@@ -37,7 +37,7 @@ public class EnvironmentHealthCheckerAdditionalTests
             // Pin to a single core (bit 0)
             proc.ProcessorAffinity = (System.IntPtr)1;
 
-            var checker = new EnvironmentHealthChecker();
+            var checker = EnvironmentHealthCheckerTestHelpers.CreateFast();
             var report = await checker.CheckAsync();
             var affinity = report.Entries.First(e => e.Name == "CPU Affinity");
             affinity.Status.ShouldBe(HealthStatus.Pass);
@@ -62,7 +62,7 @@ public class EnvironmentHealthCheckerAdditionalTests
             System.Environment.SetEnvironmentVariable("COMPlus_TC_QuickJitForLoops", "0");
             System.Environment.SetEnvironmentVariable("COMPlus_TC_OnStackReplacement", "0");
 
-            var checker = new EnvironmentHealthChecker();
+            var checker = EnvironmentHealthCheckerTestHelpers.CreateFast();
             var report = await checker.CheckAsync();
             var jit = report.Entries.First(e => e.Name == "JIT (Tiered/OSR)");
             jit.Details.ShouldContain("Tiered=1");
@@ -95,7 +95,7 @@ public class EnvironmentHealthCheckerAdditionalTests
             // Pin to two cores (bits 0 and 1)
             proc.ProcessorAffinity = (System.IntPtr)3;
 
-            var checker = new EnvironmentHealthChecker();
+            var checker = EnvironmentHealthCheckerTestHelpers.CreateFast();
             var report = await checker.CheckAsync();
             var affinity = report.Entries.First(e => e.Name == "CPU Affinity");
             affinity.Status.ShouldBe(HealthStatus.Warn);
@@ -128,7 +128,7 @@ public class EnvironmentHealthCheckerAdditionalTests
                 return;
             }
 
-            var checker = new EnvironmentHealthChecker();
+            var checker = EnvironmentHealthCheckerTestHelpers.CreateFast();
             var report = await checker.CheckAsync();
             var entry = report.Entries.First(e => e.Name == "Process Priority");
             entry.Status.ShouldBe(HealthStatus.Pass);
@@ -142,7 +142,7 @@ public class EnvironmentHealthCheckerAdditionalTests
     [Fact]
     public async Task BuildMode_Unknown_When_Loading_NonDotNet_File()
     {
-        var checker = new EnvironmentHealthChecker();
+        var checker = EnvironmentHealthCheckerTestHelpers.CreateFast();
         var sysDir = System.Environment.SystemDirectory;
         var nonDotNetPath = System.IO.Path.Combine(sysDir, "notepad.exe");
         if (!System.IO.File.Exists(nonDotNetPath))
@@ -181,7 +181,7 @@ public class EnvironmentHealthCheckerAdditionalTests
                 return;
             }
 
-            var checker = new EnvironmentHealthChecker();
+            var checker = EnvironmentHealthCheckerTestHelpers.CreateFast();
             var report = await checker.CheckAsync();
             var entry = report.Entries.First(e => e.Name == "Process Priority");
             entry.Status.ShouldBe(HealthStatus.Warn);
@@ -220,7 +220,7 @@ public class EnvironmentHealthCheckerAdditionalTests
     [Fact]
     public async Task CheckAsync_WithNullContext_Returns_ValidReport()
     {
-        var checker = new EnvironmentHealthChecker();
+        var checker = EnvironmentHealthCheckerTestHelpers.CreateFast();
         var report = await checker.CheckAsync(context: null);
 
         report.ShouldNotBeNull();
@@ -231,7 +231,7 @@ public class EnvironmentHealthCheckerAdditionalTests
     [Fact]
     public async Task CheckAsync_WithDefaultCancellationToken_Returns_ValidReport()
     {
-        var checker = new EnvironmentHealthChecker();
+        var checker = EnvironmentHealthCheckerTestHelpers.CreateFast();
         var report = await checker.CheckAsync(cancellationToken: default);
 
         report.ShouldNotBeNull();
@@ -242,7 +242,7 @@ public class EnvironmentHealthCheckerAdditionalTests
     [Fact]
     public async Task CheckAsync_WithBothNullContextAndDefaultCancellationToken_Returns_ValidReport()
     {
-        var checker = new EnvironmentHealthChecker();
+        var checker = EnvironmentHealthCheckerTestHelpers.CreateFast();
         var report = await checker.CheckAsync(context: null, cancellationToken: default);
 
         report.ShouldNotBeNull();
@@ -253,7 +253,7 @@ public class EnvironmentHealthCheckerAdditionalTests
     [Fact]
     public async Task CheckAsync_WithCancellationToken_Returns_ValidReport()
     {
-        var checker = new EnvironmentHealthChecker();
+        var checker = EnvironmentHealthCheckerTestHelpers.CreateFast();
         using var cts = new System.Threading.CancellationTokenSource();
         var report = await checker.CheckAsync(cancellationToken: cts.Token);
 
@@ -265,14 +265,14 @@ public class EnvironmentHealthCheckerAdditionalTests
     [Fact]
     public void CheckAsync_Implements_IEnvironmentHealthChecker()
     {
-        var checker = new EnvironmentHealthChecker();
+        var checker = EnvironmentHealthCheckerTestHelpers.CreateFast();
         checker.ShouldBeAssignableTo<IEnvironmentHealthChecker>();
     }
 
     [Fact]
     public async Task CheckAsync_Returns_EnvironmentHealthReport()
     {
-        var checker = new EnvironmentHealthChecker();
+        var checker = EnvironmentHealthCheckerTestHelpers.CreateFast();
         var result = await checker.CheckAsync();
         result.ShouldBeOfType<EnvironmentHealthReport>();
     }

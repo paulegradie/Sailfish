@@ -9,6 +9,7 @@ using Xunit;
 
 namespace Tests.TestAdapter;
 
+[Collection(AssemblyDiscoveryCollection.Name)]
 public class TestDiscoveryTests
 {
     [Fact]
