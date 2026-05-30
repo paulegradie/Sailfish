@@ -42,7 +42,7 @@ public class SailDiffConsoleWindowMessageFormatterTests
     {
         // Arrange
         const string expectedMarkdown = "| Test | Before | After |\n|------|--------|-------|";
-        _mockMarkdownConverter.ConvertToEnhancedMarkdownTable(Arg.Any<IEnumerable<SailDiffResult>>(), OutputContext.Console)
+        _mockMarkdownConverter.ConvertToEnhancedMarkdownTable(Arg.Any<IEnumerable<SailDiffResult>>(), OutputContext.Console, Arg.Any<double>())
             .Returns(expectedMarkdown);
 
         var testCaseId = new TestCaseId("TestClass.TestMethod()");
@@ -81,7 +81,7 @@ public class SailDiffConsoleWindowMessageFormatterTests
         _formatter.FormConsoleWindowMessageForSailDiff(sailDiffResults, testIds, settings, CancellationToken.None);
 
         // Assert
-        _mockMarkdownConverter.Received(1).ConvertToEnhancedMarkdownTable(sailDiffResults, OutputContext.Console);
+        _mockMarkdownConverter.Received(1).ConvertToEnhancedMarkdownTable(sailDiffResults, OutputContext.Console, Arg.Any<double>());
     }
 
     [Fact]
@@ -89,7 +89,7 @@ public class SailDiffConsoleWindowMessageFormatterTests
     {
         // Arrange
         const string expectedMarkdown = "markdown content";
-        _mockMarkdownConverter.ConvertToEnhancedMarkdownTable(Arg.Any<IEnumerable<SailDiffResult>>(), OutputContext.Console)
+        _mockMarkdownConverter.ConvertToEnhancedMarkdownTable(Arg.Any<IEnumerable<SailDiffResult>>(), OutputContext.Console, Arg.Any<double>())
             .Returns(expectedMarkdown);
 
         var sailDiffResults = CreateSampleSailDiffResults();
@@ -108,7 +108,7 @@ public class SailDiffConsoleWindowMessageFormatterTests
     {
         // Arrange
         const string expectedMarkdown = "";
-        _mockMarkdownConverter.ConvertToEnhancedMarkdownTable(Arg.Any<IEnumerable<SailDiffResult>>(), OutputContext.Console)
+        _mockMarkdownConverter.ConvertToEnhancedMarkdownTable(Arg.Any<IEnumerable<SailDiffResult>>(), OutputContext.Console, Arg.Any<double>())
             .Returns(expectedMarkdown);
 
         var emptyResults = new List<SailDiffResult>();
@@ -292,7 +292,7 @@ public class SailDiffConsoleWindowMessageFormatterTests
     {
         // Arrange
         const string expectedMarkdown = "multiple results markdown";
-        _mockMarkdownConverter.ConvertToEnhancedMarkdownTable(Arg.Any<IEnumerable<SailDiffResult>>(), OutputContext.Console)
+        _mockMarkdownConverter.ConvertToEnhancedMarkdownTable(Arg.Any<IEnumerable<SailDiffResult>>(), OutputContext.Console, Arg.Any<double>())
             .Returns(expectedMarkdown);
 
         var results = new List<SailDiffResult>();
@@ -313,7 +313,7 @@ public class SailDiffConsoleWindowMessageFormatterTests
         // Assert
         result.ShouldContain(expectedMarkdown);
         _mockMarkdownConverter.Received(1).ConvertToEnhancedMarkdownTable(Arg.Is<IEnumerable<SailDiffResult>>(
-            r => r.ToList().Count == 3), OutputContext.Console);
+            r => r.ToList().Count == 3), OutputContext.Console, Arg.Any<double>());
     }
 
     [Fact]
@@ -360,7 +360,7 @@ public class SailDiffConsoleWindowMessageFormatterTests
         var settings = CreateSampleSailDiffSettings();
 
         const string expectedMarkdown = "exception result markdown";
-        _mockMarkdownConverter.ConvertToEnhancedMarkdownTable(Arg.Any<IEnumerable<SailDiffResult>>(), OutputContext.Console)
+        _mockMarkdownConverter.ConvertToEnhancedMarkdownTable(Arg.Any<IEnumerable<SailDiffResult>>(), OutputContext.Console, Arg.Any<double>())
             .Returns(expectedMarkdown);
 
         // Act
@@ -369,7 +369,7 @@ public class SailDiffConsoleWindowMessageFormatterTests
         // Assert
         result.ShouldNotBeNull();
         result.ShouldContain(expectedMarkdown);
-        _mockMarkdownConverter.Received(1).ConvertToEnhancedMarkdownTable(sailDiffResults, OutputContext.Console);
+        _mockMarkdownConverter.Received(1).ConvertToEnhancedMarkdownTable(sailDiffResults, OutputContext.Console, Arg.Any<double>());
     }
 
     [Fact]
@@ -424,7 +424,7 @@ public class SailDiffConsoleWindowMessageFormatterTests
     public void FormConsoleWindowMessageForSailDiff_WithNullMarkdownResult_ShouldHandleGracefully()
     {
         // Arrange
-        _mockMarkdownConverter.ConvertToEnhancedMarkdownTable(Arg.Any<IEnumerable<SailDiffResult>>(), OutputContext.Console)
+        _mockMarkdownConverter.ConvertToEnhancedMarkdownTable(Arg.Any<IEnumerable<SailDiffResult>>(), OutputContext.Console, Arg.Any<double>())
             .Returns((string?)null);
 
         var sailDiffResults = CreateSampleSailDiffResults();

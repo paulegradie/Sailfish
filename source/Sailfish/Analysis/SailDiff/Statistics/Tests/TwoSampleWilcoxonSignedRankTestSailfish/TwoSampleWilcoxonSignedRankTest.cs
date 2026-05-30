@@ -9,6 +9,23 @@ namespace Sailfish.Analysis.SailDiff.Statistics.Tests.TwoSampleWilcoxonSignedRan
 
 public interface ITwoSampleWilcoxonSignedRankTest : ITest;
 
+/// <summary>
+/// Two-sample Wilcoxon signed-rank test.
+/// </summary>
+/// <remarks>
+/// <para>
+/// <strong>This test is only valid for paired samples.</strong> Each element of <c>before</c>
+/// must be paired with the element at the same index in <c>after</c> by experimental design
+/// — e.g., the same input, the same iteration index in a deterministic experiment, or
+/// repeated measures on the same subject. SailDiff's typical input (two independent benchmark
+/// runs) does <strong>not</strong> satisfy this pairing assumption; for that scenario, prefer
+/// <see cref="MWWilcoxonTestSailfish.MannWhitneyWilcoxonTest"/> (the default).
+/// </para>
+/// <para>
+/// If <c>before</c> and <c>after</c> have different lengths the test cannot be computed and
+/// the result will carry the underlying exception.
+/// </para>
+/// </remarks>
 public class TwoSampleWilcoxonSignedRankTest : ITwoSampleWilcoxonSignedRankTest
 {
     private readonly ITestPreprocessor _preprocessor;
@@ -24,7 +41,14 @@ public class TwoSampleWilcoxonSignedRankTest : ITwoSampleWilcoxonSignedRankTest
 
         try
         {
-            var (preprocessed1, preprocessed2) = _preprocessor.PreprocessJointlyWithDownSample(before, after, settings.UseOutlierDetection, 3, int.MaxValue);
+            // Signed-rank requires PAIRED samples. We pass int.MaxValue as max so no random
+            // down-sample is performed; only outlier removal can shrink either side. Note that
+            // independent per-sample outlier removal can break pairing — if the resulting sizes
+            // differ, the factory throws DimensionMismatchException, which is caught below.
+            // The recommended fix is to disable outlier detection on this test, or to switch to
+            // MannWhitneyWilcoxonTest for independent benchmark samples.
+            var (preprocessed1, preprocessed2) = _preprocessor.PreprocessJointlyWithDownSample(
+                before, after, settings.UseOutlierDetection, minArraySize: 3, maxArraySize: int.MaxValue);
             var sample1 = preprocessed1.OutlierAnalysis?.DataWithOutliersRemoved ?? preprocessed1.RawData;
             var sample2 = preprocessed2.OutlierAnalysis?.DataWithOutliersRemoved ?? preprocessed2.RawData;
 

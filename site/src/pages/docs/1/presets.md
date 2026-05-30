@@ -15,9 +15,9 @@ Sailfish exposes a handful of knobs that, together, decide how much data you col
 
 | Recipe | When to use | `TargetCoefficientOfVariation` | `MaxConfidenceIntervalWidth` | `MinimumSampleSize` | `MaximumSampleSize` | `OutlierStrategy` | SailDiff `alpha` |
 | --- | --- | --- | --- | --- | --- | --- | --- |
-| **Default** | Most local and CI runs. Matches Sailfish's built-in defaults. | `0.05` (5%) | `0.20` (20%) | `10` | `1000` | `RemoveUpper` | `0.001` |
-| **Tight** | Release gates and baseline verification where small regressions matter. | `0.03` (3%) | `0.12` (12%) | `50` | `2000` | `RemoveUpper` | `0.0005` |
-| **Relaxed** | Shared/noisy CI hosts where predictable completion time matters more than micro-changes. | `0.10` (10%) | `0.30` (30%) | `10` | `1000` | `Adaptive` | `0.01` |
+| **Default** | Most local and CI runs. Matches Sailfish's built-in defaults. | `0.05` (5%) | `0.20` (20%) | `10` | `1000` | `RemoveUpper` | `0.05` |
+| **Tight** | Release gates and baseline verification where small regressions matter. | `0.03` (3%) | `0.12` (12%) | `50` | `2000` | `RemoveUpper` | `0.01` |
+| **Relaxed** | Shared/noisy CI hosts where predictable completion time matters more than micro-changes. | `0.10` (10%) | `0.30` (30%) | `10` | `1000` | `Adaptive` | `0.10` |
 
 The **Default** row is what you get from a bare `[Sailfish]` attribute today.
 

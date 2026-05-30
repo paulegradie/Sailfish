@@ -16,8 +16,13 @@ internal sealed class TwoSampleT : HypothesisTest
         int samples2,
         bool assumeEqualVariances = true,
         double hypothesizedDifference = 0.0,
-        TwoSampleHypothesis alternate = TwoSampleHypothesis.ValuesAreDifferent)
+        TwoSampleHypothesis alternate = TwoSampleHypothesis.ValuesAreDifferent,
+        double alpha = DefaultSize)
     {
+        // Significance threshold drives the reported CI width: a 95% CI pairs with alpha=0.05,
+        // a 99% CI with alpha=0.01, etc. Defaulting to DefaultSize preserves existing behaviour
+        // for callers that don't supply alpha.
+        Size = alpha;
         AssumeEqualVariance = assumeEqualVariances;
         EstimatedValue1 = mean1;
         EstimatedValue2 = mean2;
