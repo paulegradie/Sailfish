@@ -57,6 +57,10 @@ public class Test : ITTest
             var changeDirection = meanAfter > meanBefore ? SailfishChangeDirection.Regressed : SailfishChangeDirection.Improved;
             var description = isSignificant ? changeDirection : SailfishChangeDirection.NoChange;
             var additionalResults = new Dictionary<string, object> { { AdditionalResults.DegreesOfFreedom, dof } };
+            // SampleSize* / RawData* describe the data the test actually consumed (after
+            // outlier removal), matching the mean/median/p-value already computed from the
+            // processed sample. The original user input is still accessible on the wrapping
+            // TestResultWithOutlierAnalysis via Sample1.OriginalData / Sample2.OriginalData.
             var testResults = new StatisticalTestResult(
                 meanBefore,
                 meanAfter,
@@ -65,10 +69,10 @@ public class Test : ITTest
                 testStatistic,
                 pVal,
                 description,
-                before.Length,
-                after.Length,
-                before,
-                after,
+                rawSample1.Length,
+                rawSample2.Length,
+                rawSample1,
+                rawSample2,
                 additionalResults);
 
             // Effect size: Hedges' g on the *raw* scale so the reported magnitude is

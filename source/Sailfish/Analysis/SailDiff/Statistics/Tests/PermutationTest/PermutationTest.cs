@@ -132,6 +132,10 @@ public class PermutationTest : IPermutationTest
                 { AdditionalResults.CountAtLeastAsExtreme, countAtLeastAsExtreme }
             };
 
+            // SampleSize* / RawData* describe the data the test actually consumed (after
+            // outlier removal), matching the mean/median/p-value already computed from the
+            // processed sample. The original user input is still accessible on the wrapping
+            // TestResultWithOutlierAnalysis via Sample1.OriginalData / Sample2.OriginalData.
             var testResults = new StatisticalTestResult(
                 meanBefore,
                 meanAfter,
@@ -140,10 +144,10 @@ public class PermutationTest : IPermutationTest
                 testStatistic,
                 Math.Round(pVal, TestConstants.PValueSigDig),
                 description,
-                before.Length,
-                after.Length,
-                before,
-                after,
+                sample1.Length,
+                sample2.Length,
+                sample1,
+                sample2,
                 additionalResults);
 
             // Distribution-free effect size + shift — same suite the Mann-Whitney wrapper

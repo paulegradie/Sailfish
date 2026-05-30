@@ -70,6 +70,10 @@ public class TwoSampleWilcoxonSignedRankTest : ITwoSampleWilcoxonSignedRankTest
             var changeDirection = medianAfter > medianBefore ? SailfishChangeDirection.Regressed : SailfishChangeDirection.Improved;
             var description = isSignificant ? changeDirection : SailfishChangeDirection.NoChange;
             var additionalResults = new Dictionary<string, object>();
+            // SampleSize* / RawData* describe the data the test actually consumed (after
+            // outlier removal), matching the mean/median/p-value already computed from the
+            // processed sample. The original user input is still accessible on the wrapping
+            // TestResultWithOutlierAnalysis via Sample1.OriginalData / Sample2.OriginalData.
             var testResults = new StatisticalTestResult(
                 meanBefore,
                 meanAfter,
@@ -78,10 +82,10 @@ public class TwoSampleWilcoxonSignedRankTest : ITwoSampleWilcoxonSignedRankTest
                 testStatistic,
                 pval,
                 description,
-                before.Length,
-                after.Length,
-                before,
-                after,
+                sample1.Length,
+                sample2.Length,
+                sample1,
+                sample2,
                 additionalResults);
 
             // MDE on the raw scale — consistent with the other wrappers. For paired data the

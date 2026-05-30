@@ -56,6 +56,10 @@ public class KolmogorovSmirnovTest : IKolmogorovSmirnovTest
                 { AdditionalResults.Tail, test.Tail }
             };
 
+            // SampleSize* / RawData* describe the data the test actually consumed (after
+            // outlier removal), matching the mean/median/p-value already computed from the
+            // processed sample. The original user input is still accessible on the wrapping
+            // TestResultWithOutlierAnalysis via Sample1.OriginalData / Sample2.OriginalData.
             var testResults = new StatisticalTestResult(
                 meanBefore,
                 meanAfter,
@@ -64,10 +68,10 @@ public class KolmogorovSmirnovTest : IKolmogorovSmirnovTest
                 testStatistic,
                 pVal,
                 description,
-                before.Length,
-                after.Length,
-                before,
-                after,
+                sample1.Length,
+                sample2.Length,
+                sample1,
+                sample2,
                 additionalResults);
 
             // MDE on the raw scale — same diagnostic for KS as for the other tests so the

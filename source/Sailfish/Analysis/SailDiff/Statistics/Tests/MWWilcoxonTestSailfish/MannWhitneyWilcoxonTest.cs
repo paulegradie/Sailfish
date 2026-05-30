@@ -68,6 +68,10 @@ public class MannWhitneyWilcoxonTest : IMannWhitneyWilcoxonTest
                 { AdditionalResults.Statistic2, test.Statistic2 }
             };
 
+            // SampleSize* / RawData* describe the data the test actually consumed (after
+            // outlier removal), matching the mean/median/p-value already computed from the
+            // processed sample. The original user input is still accessible on the wrapping
+            // TestResultWithOutlierAnalysis via Sample1.OriginalData / Sample2.OriginalData.
             var testResults = new StatisticalTestResult(
                 meanBefore,
                 meanAfter,
@@ -76,10 +80,10 @@ public class MannWhitneyWilcoxonTest : IMannWhitneyWilcoxonTest
                 testStatistic,
                 pVal,
                 description,
-                before.Length,
-                after.Length,
-                before,
-                after,
+                sample1.Length,
+                sample2.Length,
+                sample1,
+                sample2,
                 additionalResults);
 
             // Effect size: Cliff's delta (P(after > before) − P(after < before)). Natural

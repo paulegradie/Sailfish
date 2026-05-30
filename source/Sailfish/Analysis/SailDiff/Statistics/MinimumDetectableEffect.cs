@@ -109,6 +109,14 @@ public static class MinimumDetectableEffect
         var zAlpha = Normal.InvCDF(0, 1, 1.0 - alpha / 2.0);
         var zBeta = Normal.InvCDF(0, 1, power);
         var n = 2.0 * variance * Math.Pow((zAlpha + zBeta) / effectAbsolute, 2);
-        return (int)Math.Ceiling(n);
+
+        // Tiny effects relative to variance can push `n` past int.MaxValue; an unchecked
+        // cast would wrap to a negative count. Saturate at int.MaxValue instead. Conversely,
+        // very large effects relative to variance can give n < 2 — but a two-sample test
+        // still needs at least N=2 per side, so we clamp upward to match the zero-variance
+        // branch's floor.
+        if (double.IsNaN(n)) return null;
+        if (n >= int.MaxValue) return int.MaxValue;
+        return Math.Max(2, (int)Math.Ceiling(n));
     }
 }
