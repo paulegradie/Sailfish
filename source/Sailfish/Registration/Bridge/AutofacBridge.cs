@@ -77,10 +77,7 @@ internal static class AutofacBridge
                 "permanently.", ex);
         }
 
-        var owner = new BridgeOwner(autofacContainer);
-        // Singleton so MS DI disposes the Autofac container along with the ServiceProvider.
-        services.AddSingleton(owner);
-
+        RegisterBridgeOwner(services, autofacContainer);
         BridgeRegistrationsIntoServiceCollection(services, autofacContainer);
     }
 #pragma warning restore CS0618
@@ -96,9 +93,17 @@ internal static class AutofacBridge
         action(builder);
         var container = builder.Build();
 
-        var owner = new BridgeOwner(container);
-        services.AddSingleton(owner);
+        RegisterBridgeOwner(services, container);
         BridgeRegistrationsIntoServiceCollection(services, container);
+    }
+
+    private static void RegisterBridgeOwner(IServiceCollection services, IContainer container)
+    {
+        // Register the BridgeOwner via a factory so the MS DI container takes ownership of disposal
+        // (AddSingleton(instance) overloads register an externally-owned object that MS DI will NOT
+        // dispose — see https://learn.microsoft.com/dotnet/core/extensions/dependency-injection#disposal-of-services).
+        // The factory runs once per ServiceProvider; the container instance is captured in the closure.
+        services.AddSingleton(_ => new BridgeOwner(container));
     }
 
     private static void BridgeRegistrationsIntoServiceCollection(IServiceCollection services, IContainer container)
@@ -108,6 +113,16 @@ internal static class AutofacBridge
         // per service. We treat the lifetime as singleton if it's RootScopeLifetime, transient otherwise —
         // Autofac's InstancePerLifetimeScope and other scope semantics don't map 1:1, and we err on the side
         // of transient (the legacy "InstancePerDependency" default).
+        //
+        // Known limitation: multi-registration fidelity. MS DI's GetRequiredService<T>() returns the LAST
+        // registered descriptor of a given service type, so if Autofac has several registrations for the
+        // same service (e.g. INotificationHandler<X> across several types) and a caller does
+        // serviceProvider.GetService<T>(), they'll see one of them. In practice this is harmless inside
+        // Sailfish because:
+        //   - MediatR resolves handler enumerations via MediatR's internal pipeline (IMediator).
+        //   - Sailfish's keyed services are registered on the IServiceCollection directly, not bridged.
+        // External code that depends on multi-registration semantics over the bridge should migrate to
+        // IRegisterSailfishServices.
         foreach (var registration in container.ComponentRegistry.Registrations)
         {
             var lifetime = registration.Lifetime is RootScopeLifetime
@@ -124,9 +139,14 @@ internal static class AutofacBridge
                     continue;
                 }
 
+                // Close over the *specific* IContainer instance for this bridge invocation. Resolving via
+                // sp.GetRequiredService<BridgeOwner>() would return only the LAST registered BridgeOwner
+                // if multiple bridges ran (e.g. RunLegacyCallbacksAsync followed by BridgeBuilderAction),
+                // so passthrough descriptors created here would silently resolve from the wrong container.
+                var capturedContainer = container;
                 services.Add(new ServiceDescriptor(
                     serviceType,
-                    sp => sp.GetRequiredService<BridgeOwner>().Container.Resolve(serviceType),
+                    _ => capturedContainer.Resolve(serviceType),
                     lifetime));
             }
         }

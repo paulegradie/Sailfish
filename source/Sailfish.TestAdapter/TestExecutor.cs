@@ -359,55 +359,64 @@ public class TestExecutor : ITestExecutor
             return;
         }
 
-        using var timeoutCts = new CancellationTokenSource(TimeSpan.FromMilliseconds(queueConfiguration.BatchCompletionTimeoutMs));
-        using var combinedCts = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken, timeoutCts.Token);
+        // Queue shutdown uses a dedicated CTS bounded only by BatchCompletionTimeoutMs — NOT linked to
+        // the execution cancellation token. If the test run was cancelled, we still want to flush
+        // pending batches and gracefully stop the queue services; reusing the execution token would
+        // short-circuit CompleteAsync/StopAsync the moment cancellation is requested and skip the drain.
+        // The execution token is observed by 'cancellationToken' parameter recipients (the queue services
+        // themselves can still cooperate with it if they choose), but we don't enforce it here.
+        _ = cancellationToken; // intentionally not linked into shutdown — see comment above
+        using var shutdownCts = new CancellationTokenSource(TimeSpan.FromMilliseconds(queueConfiguration.BatchCompletionTimeoutMs));
+        var shutdownToken = shutdownCts.Token;
 
         try
         {
             if (batchingService != null)
             {
-                await batchingService.CompleteAsync(combinedCts.Token).ConfigureAwait(false);
+                await batchingService.CompleteAsync(shutdownToken).ConfigureAwait(false);
                 logger?.Log(LogLevel.Debug, "Test case batching service completed successfully");
             }
 
             if (queueManager != null)
             {
-                await queueManager.CompleteAsync(combinedCts.Token).ConfigureAwait(false);
-                await queueManager.StopAsync(combinedCts.Token).ConfigureAwait(false);
+                await queueManager.CompleteAsync(shutdownToken).ConfigureAwait(false);
+                await queueManager.StopAsync(shutdownToken).ConfigureAwait(false);
                 logger?.Log(LogLevel.Debug, "Queue manager stopped successfully");
             }
 
             if (timeoutHandler != null)
             {
-                await timeoutHandler.StopAsync(combinedCts.Token).ConfigureAwait(false);
+                await timeoutHandler.StopAsync(shutdownToken).ConfigureAwait(false);
                 logger?.Log(LogLevel.Debug, "Batch timeout handler stopped successfully");
             }
 
             if (batchingService != null)
             {
-                await batchingService.StopAsync(combinedCts.Token).ConfigureAwait(false);
+                await batchingService.StopAsync(shutdownToken).ConfigureAwait(false);
                 logger?.Log(LogLevel.Debug, "Test case batching service stopped successfully");
             }
 
             logger?.Log(LogLevel.Information, "Queue services stopped successfully");
         }
-        catch (OperationCanceledException) when (timeoutCts.Token.IsCancellationRequested)
+        catch (OperationCanceledException) when (shutdownToken.IsCancellationRequested)
         {
             logger?.Log(LogLevel.Warning,
                 "Batch completion timeout ({0}ms) expired. Proceeding with queue shutdown.",
                 queueConfiguration.BatchCompletionTimeoutMs);
 
+            // Force a final unconditional stop — if the shutdown timeout fired we don't want to compound
+            // it with another cancellation on the StopAsync calls below.
             if (queueManager != null)
             {
-                await queueManager.StopAsync(cancellationToken).ConfigureAwait(false);
+                await queueManager.StopAsync(CancellationToken.None).ConfigureAwait(false);
             }
             if (timeoutHandler != null)
             {
-                await timeoutHandler.StopAsync(cancellationToken).ConfigureAwait(false);
+                await timeoutHandler.StopAsync(CancellationToken.None).ConfigureAwait(false);
             }
             if (batchingService != null)
             {
-                await batchingService.StopAsync(cancellationToken).ConfigureAwait(false);
+                await batchingService.StopAsync(CancellationToken.None).ConfigureAwait(false);
             }
         }
     }

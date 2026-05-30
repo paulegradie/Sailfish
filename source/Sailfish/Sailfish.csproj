@@ -35,8 +35,11 @@
         <PackageReference Include="Microsoft.Extensions.Configuration.Json" Version="10.0.8" />
         <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="10.0.8" />
         <PackageReference Include="Microsoft.Extensions.DependencyInjection.Abstractions" Version="10.0.8" />
-        <!-- Required by MediatR 14+ which calls services.GetRequiredService&lt;ILoggerFactory&gt;() during its
-             license-validation step on the MS DI path. -->
+        <!-- MediatR 14+ requires ILoggerFactory during its license-validation step on the MS DI path, and
+             will throw at startup with "MediatR requires ILoggerFactory to be registered. Call
+             services.AddLogging before services.AddMediatR." (see LuckyPennySoftware/MediatR#1157).
+             SailfishModuleRegistrations calls services.AddLogging() before services.AddMediatR(...) — this
+             package supplies the implementation. -->
         <PackageReference Include="Microsoft.Extensions.Logging" Version="10.0.8" />
         <PackageReference Include="Perfolizer" Version="0.7.1" />
         <PackageReference Include="System.Linq.Async" Version="7.0.1" />

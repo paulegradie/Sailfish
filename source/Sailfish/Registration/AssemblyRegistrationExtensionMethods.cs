@@ -24,33 +24,42 @@ public static class AssemblyRegistrationExtensionMethods
     ///     <see cref="AddSailfish(IServiceCollection, IRunSettings)" /> for new code.
     /// </summary>
     /// <remarks>
-    ///     Internally this delegates to the same MS DI pipeline used by <see cref="AddSailfish"/> by spinning
-    ///     up a transient <see cref="ServiceCollection" />, registering Sailfish services, then bridging them
-    ///     back onto the supplied <see cref="ContainerBuilder" />. Provided strictly for backward compatibility.
+    ///     <para>
+    ///         Internally this delegates to the same MS DI pipeline used by <see cref="AddSailfish"/> by
+    ///         building an <see cref="IServiceCollection"/> populated with Sailfish's core registrations and
+    ///         mirroring it onto the supplied <see cref="ContainerBuilder"/> as passthrough delegates. The
+    ///         underlying <see cref="IServiceProvider"/> is built lazily on first resolution from a
+    ///         <c>RegisterBuildCallback</c> hook, so callers that add their own registrations to the same
+    ///         builder *before* calling <see cref="Autofac.ContainerBuilder.Build"/> will see Sailfish's
+    ///         services normally.
+    ///     </para>
+    ///     <para>
+    ///         <b>Known limitation:</b> registrations the caller adds to the Autofac builder are <i>not</i>
+    ///         visible to Sailfish's MS-DI-resolved internals (e.g. <c>TypeActivator</c>'s constructor
+    ///         injection). If your code injects Autofac-only registrations into Sailfish test classes, migrate
+    ///         to <see cref="AddSailfish(IServiceCollection, IRunSettings)"/> combined with
+    ///         <see cref="IRegisterSailfishServices"/> — those are wired through the same single
+    ///         <see cref="IServiceProvider"/> that <c>TypeActivator</c> uses.
+    ///     </para>
     /// </remarks>
-    [Obsolete("Use IServiceCollection.AddSailfish(runSettings) instead. This Autofac-typed overload is bridged into MS DI for backward compatibility and will be removed in a future major release.", error: false)]
+    [Obsolete("Use IServiceCollection.AddSailfish(runSettings) and IRegisterSailfishServices instead. This Autofac-typed overload is bridged into MS DI for backward compatibility; registrations added directly to the ContainerBuilder are NOT visible to Sailfish's internal resolution pipeline. This overload will be removed in a future major release.", error: false)]
     public static void RegisterSailfishTypes(this ContainerBuilder builder, IRunSettings runSettings)
     {
-        // The legacy semantics were "core Sailfish registrations land on this Autofac builder". The post-Phase-A
-        // pipeline runs everything through MS DI, so we forward to the new path via an in-process bridge:
-        //   1. Build an IServiceCollection populated with the core registrations.
-        //   2. Build a ServiceProvider from it.
-        //   3. Add Autofac registrations that resolve each service back out of that ServiceProvider.
-        // This is the inverse of AutofacBridge and is intentionally simple — the only known caller in this
-        // shape is SailfishExecutionCaller's [Obsolete] runner overload, which is itself being deprecated.
         var services = new ServiceCollection();
         services.AddSailfishCore(runSettings);
-        var provider = services.BuildServiceProvider();
 
-        // Keep the provider alive for the lifetime of the Autofac container.
-        builder.RegisterInstance(provider).As<IServiceProvider>().SingleInstance();
-        builder.RegisterBuildCallback(c => c.Resolve<IServiceProvider>()); // ensures provider is rooted
+        // Defer building the ServiceProvider until the Autofac container itself is built. This (a) avoids
+        // a wasted BuildServiceProvider call if the consumer mutates the IServiceCollection state somehow
+        // and (b) keeps the ServiceProvider's lifetime cleanly bound to the Autofac container.
+        IServiceProvider? cachedProvider = null;
+        IServiceProvider GetProvider() => cachedProvider ??= services.BuildServiceProvider();
 
-        // Mirror each service descriptor into the Autofac container as a passthrough delegate.
+        // Mirror each service descriptor into Autofac as a passthrough delegate. We capture the local
+        // services collection and resolve through the lazy GetProvider on each Autofac resolve.
         foreach (var descriptor in services)
         {
             var serviceType = descriptor.ServiceType;
-            var registration = builder.Register(_ => provider.GetRequiredService(serviceType)).As(serviceType);
+            var registration = builder.Register(_ => GetProvider().GetRequiredService(serviceType)).As(serviceType);
             switch (descriptor.Lifetime)
             {
                 case ServiceLifetime.Singleton:
@@ -64,6 +73,10 @@ public static class AssemblyRegistrationExtensionMethods
                     break;
             }
         }
+
+        // Expose the IServiceProvider on the Autofac side too, for callers that want to resolve Sailfish
+        // services without going through Autofac (rare).
+        builder.Register(_ => GetProvider()).As<IServiceProvider>().SingleInstance();
     }
 
     /// <summary>

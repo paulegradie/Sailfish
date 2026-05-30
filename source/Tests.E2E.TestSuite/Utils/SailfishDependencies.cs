@@ -24,8 +24,12 @@ public class SailfishDependencies : IDisposable
 
     private static void RegisterThings(IServiceCollection services)
     {
+        // NB: we intentionally do NOT register SailfishDependencies into its own container —
+        // calling Provider.GetRequiredService<SailfishDependencies>() would recursively instantiate
+        // a new fixture (each of which builds its own ServiceProvider), so the registration was
+        // both a latent stack-overflow hazard and dead code (the fixture instance is created by
+        // Sailfish itself via ISailfishFixture<T>, not resolved through here).
         services.AddTransient<ExampleDep>();
-        services.AddTransient<SailfishDependencies>();
         services.AddTransient<WebApplicationFactory<DemoApp>>();
     }
 

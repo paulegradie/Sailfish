@@ -13,7 +13,7 @@ namespace Sailfish.Execution;
 internal static class SailfishExecutionCaller
 {
     [Warning(
-        "Try avoid using the 'registerAdditionalTypes' callback because registrations passed this way are not available via the IDE Test Adapter. Only use this if your project doesn't require IDE play button functionality. In general, prefer to implement IRegisterSailfishServices and let it be auto-discovered.")]
+        "Try avoid using the 'configureServices' callback because registrations passed this way are not available via the IDE Test Adapter. Only use this if your project doesn't require IDE play button functionality. In general, prefer to implement IRegisterSailfishServices and let it be auto-discovered.")]
     internal static async Task<SailfishRunResult> Run(
         IRunSettings runSettings,
         Action<IServiceCollection>? configureServices,
@@ -60,16 +60,7 @@ internal static class SailfishExecutionCaller
             runSettings.RegistrationProviderAnchors,
             cancellationToken ?? CancellationToken.None).ConfigureAwait(false);
 
-        CancellationToken ct;
-        if (cancellationToken is null)
-        {
-            var source = new CancellationTokenSource();
-            ct = source.Token;
-        }
-        else
-        {
-            ct = (CancellationToken)cancellationToken;
-        }
+        var ct = cancellationToken ?? CancellationToken.None;
 
         await using var provider = services.BuildServiceProvider();
         return await provider.GetRequiredService<SailfishExecutor>().Run(ct).ConfigureAwait(false);
