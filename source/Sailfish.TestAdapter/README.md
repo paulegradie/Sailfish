@@ -63,7 +63,7 @@ The adapter implements the Visual Studio Test Platform extensibility interfaces 
 
 **Key Responsibilities**:
 - Receives test cases from VS Test Platform
-- Sets up Autofac dependency injection container
+- Sets up a `Microsoft.Extensions.DependencyInjection` service provider
 - Delegates execution to Sailfish execution engine
 - Handles test cancellation and cleanup
 - Reports test results and errors back to framework
@@ -113,7 +113,7 @@ The adapter implements the Visual Studio Test Platform extensibility interfaces 
 
 ### Dependency Injection (`Registrations/`)
 **Core Service**: `TestAdapterRegistrations`
-**Purpose**: Configures Autofac container for test adapter services
+**Purpose**: Configures the MS DI `IServiceCollection` with test-adapter services on top of `AddSailfish`
 
 **Registered Services**:
 - Test execution components
@@ -227,7 +227,7 @@ build/
 - **Multi-Framework**: Support for .NET 8.0 and .NET 9.0
 - **IDE Integration**: Works with Visual Studio, Rider, and command-line tools
 - **Cancellation**: Test execution cancellation support
-- **DI Integration**: Full Autofac container integration
+- **DI Integration**: Built on `Microsoft.Extensions.DependencyInjection` (`IServiceCollection` / `IServiceProvider`)
 - **Notification System**: MediatR-based event handling
 
 ### Known Limitations ⚠️
@@ -311,7 +311,7 @@ TestExecutor → SailfishExecutionEngine → TestCaseCompletedNotification
 
 **Integration Points**:
 - **Modified Notification Handler**: TestCaseCompletedNotificationHandler publishes to queue instead of framework
-- **Container Integration**: Register all queue services in Autofac container
+- **Container Integration**: Register all queue services in the MS DI `IServiceCollection`
 - **Lifecycle Management**: Ensure proper queue startup/shutdown with test execution
 - **Fallback Mechanism**: Direct framework publishing if queue fails
 

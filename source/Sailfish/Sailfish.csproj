@@ -25,10 +25,6 @@
 
     <ItemGroup>
         <PackageReference Include="MathNet.Numerics" Version="5.0.0"/>
-        <!-- Autofac is retained only for the legacy compat bridge (see Registration/Bridge/AutofacBridge.cs).
-             It will be removed once the [Obsolete] IProvideARegistrationCallback / IProvideAdditionalRegistrations
-             extension points are deleted. Prefer IRegisterSailfishServices / IServiceCollection going forward. -->
-        <PackageReference Include="Autofac" Version="9.1.0" />
         <PackageReference Include="CsvHelper" Version="33.1.0" />
         <PackageReference Include="MediatR" Version="14.1.0" />
         <PackageReference Include="Microsoft.Extensions.Configuration" Version="10.0.8" />

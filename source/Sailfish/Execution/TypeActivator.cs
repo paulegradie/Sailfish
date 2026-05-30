@@ -47,8 +47,8 @@ public class TypeActivator : ITypeActivator
                 .Select(x => _services.GetService(x)
                     ?? throw new SailfishException(
                         $"No registration found for type '{x.FullName}' required by test class '{test.FullName}'. " +
-                        "Register it via IServiceCollection (e.g. an IRegisterSailfishServices implementation) " +
-                        "or, in legacy code, via an [Obsolete] IProvideARegistrationCallback."))
+                        "Register it via IServiceCollection — typically by implementing IRegisterSailfishServices " +
+                        "in your test assembly."))
                 .ToList();
         }
         catch (Exception ex)

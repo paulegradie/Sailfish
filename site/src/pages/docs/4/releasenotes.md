@@ -4,6 +4,10 @@ title: Release Notes
 
 ## Current Release Notes
 
+{% callout title="Breaking: DI container is now Microsoft.Extensions.DependencyInjection" type="warning" %}
+Sailfish has moved off Autofac onto the standard .NET DI abstraction (`IServiceCollection` / `IServiceProvider`). Implement `IRegisterSailfishServices` in place of `IProvideARegistrationCallback`, and use `IServiceCollection.AddSailfish(runSettings)` in place of `ContainerBuilder.RegisterSailfishTypes(runSettings)`. The `Autofac` package is no longer a dependency. [Migration guide →](/docs/1/test-dependencies)
+{% /callout %}
+
 {% callout title=".NET 10 support, .NET 8 dropped" type="success" %}
 Sailfish, `Sailfish.TestAdapter`, and `Sailfish.Analyzers` now target `net9.0` and `net10.0` only. If you're on `net8.0`, stay on Sailfish 0.0.115 or upgrade your project.
 {% /callout %}

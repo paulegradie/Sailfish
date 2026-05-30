@@ -48,8 +48,7 @@ internal static class SailfishModuleRegistrations
         services.AddLogging();
 
         // MediatR — scan this assembly for handlers using the native IServiceCollection extension.
-        // The community license key is required by MediatR 14+; same key that was previously passed to
-        // MediatRConfigurationBuilder.Create(...) on the Autofac path.
+        // The community license key is required by MediatR 14+.
         services.AddMediatR(cfg =>
         {
             cfg.LicenseKey = MediatrCommunityLicenseString;

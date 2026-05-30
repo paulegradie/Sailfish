@@ -43,8 +43,8 @@ internal class CsvTestRunCompletedHandler : INotificationHandler<TestRunComplete
     /// <summary>
     /// Preferred constructor: takes the optional <see cref="IRunSettings"/> so the BH-FDR
     /// q-value threshold honours the user-configured <see cref="SailDiffSettings.Alpha"/>
-    /// instead of defaulting to 0.05. Autofac selects this overload when all dependencies
-    /// are available.
+    /// instead of defaulting to 0.05. The DI container selects this overload when all
+    /// dependencies are available (multiple ctors → MediatR picks the longest match).
     /// </summary>
     public CsvTestRunCompletedHandler(ILogger logger, IMediator mediator, IRunSettings runSettings)
         : this(logger, mediator)

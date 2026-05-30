@@ -77,8 +77,10 @@ internal class MethodComparisonTestRunCompletedHandler : INotificationHandler<Te
     }
 
     /// <summary>
-    /// Full-feature constructor including run settings and reproducibility manifest provider.
-    /// Autofac will select this when all dependencies are available.
+    /// Fallback constructor used when the health/reporting services are available but
+    /// <see cref="ITimerCalibrationResultProvider"/> is not registered. If all
+    /// six constructor dependencies are available, the 6-parameter overload above is
+    /// preferred by the DI activator (longest satisfiable constructor wins).
     /// </summary>
     public MethodComparisonTestRunCompletedHandler(
         ILogger logger,

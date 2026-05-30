@@ -9,12 +9,6 @@ namespace Sailfish.Registration;
 ///     additional service registrations into Sailfish's DI container. Implementations are auto-discovered by
 ///     <see cref="SailfishTypeRegistrationUtility" /> at run time and invoked once during startup.
 /// </summary>
-/// <remarks>
-///     This is the recommended replacement for the legacy <see cref="IProvideARegistrationCallback" /> interface,
-///     which is now [Obsolete]. The new interface accepts the standard
-///     <see cref="Microsoft.Extensions.DependencyInjection.IServiceCollection" /> and integrates cleanly with the
-///     wider .NET ecosystem.
-/// </remarks>
 public interface IRegisterSailfishServices
 {
     /// <summary>

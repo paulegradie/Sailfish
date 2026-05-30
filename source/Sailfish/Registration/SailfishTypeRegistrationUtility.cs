@@ -8,18 +8,14 @@ using Microsoft.Extensions.DependencyInjection;
 using Sailfish.Attributes;
 using Sailfish.Exceptions;
 using Sailfish.Extensions.Methods;
-using Sailfish.Registration.Bridge;
 
 namespace Sailfish.Registration;
 
 internal static class SailfishTypeRegistrationUtility
 {
     /// <summary>
-    ///     Discover registration callbacks across the user's test assemblies and register their services into
-    ///     <paramref name="services" />. Both the legacy Autofac-typed
-    ///     <see cref="IProvideARegistrationCallback" /> / <see cref="IProvideAdditionalRegistrations" /> and the
-    ///     new <see cref="IRegisterSailfishServices" /> are discovered; legacy callbacks are funneled through
-    ///     <see cref="AutofacBridge" />.
+    ///     Discover <see cref="IRegisterSailfishServices" /> implementations across the user's test
+    ///     assemblies and register their services into <paramref name="services" />.
     /// </summary>
     public static async Task InvokeRegistrationProviderCallbackMain(
         IServiceCollection services,
@@ -48,9 +44,7 @@ internal static class SailfishTypeRegistrationUtility
         RegisterISailfishFixtureGenericTypes(services, allSourcesForOtherRegistrations);
         RegisterISailfishDependencyTypes(services, allSourcesForOtherRegistrations);
 
-        // Test types are NOT registered into MS DI; TypeActivator instantiates them manually via reflection
-        // (preserving the historical behaviour of the now-removed RelaxedConstructorFinder, which allowed
-        // non-public constructors and bypassed MS DI's public-ctor-only restriction).
+        // Test types are NOT registered into MS DI; TypeActivator instantiates them manually via reflection.
         EnsureTestTypesAreActivatableViaTypeActivator(testAssembliesTypes);
     }
 
@@ -109,33 +103,12 @@ internal static class SailfishTypeRegistrationUtility
     {
         var assemblyTypes = allAssemblyTypes.ToList();
 
-        // New API: IRegisterSailfishServices — register directly into IServiceCollection.
-        var modernProviders = GetInstancesOf<IRegisterSailfishServices>(assemblyTypes);
-        foreach (var provider in modernProviders)
+        // Discover IRegisterSailfishServices implementations and run them against the service collection.
+        var providers = GetInstancesOf<IRegisterSailfishServices>(assemblyTypes);
+        foreach (var provider in providers)
         {
             await provider.RegisterAsync(services, cancellationToken).ConfigureAwait(false);
         }
-
-        // Legacy API: IProvideARegistrationCallback / IProvideAdditionalRegistrations — funneled through the
-        // Autofac compat bridge. The bridge spins up a temporary Autofac ContainerBuilder, lets the legacy
-        // callback register into it, then converts each resulting Autofac registration into a passthrough
-        // service descriptor on the IServiceCollection.
-#pragma warning disable CS0618 // intentionally calling the obsolete legacy interface
-        var legacyAsyncProviders = GetInstancesOf<IProvideARegistrationCallback>(assemblyTypes);
-        var legacyModuleProviders = GetInstancesOf<IProvideAdditionalRegistrations>(assemblyTypes)
-            // Filter out SailfishModuleRegistrations if any external subclass shows up — though there shouldn't
-            // be any, since the type is now an internal static class with no public surface.
-            .ToList();
-
-        if (legacyAsyncProviders.Count > 0 || legacyModuleProviders.Count > 0)
-        {
-            await AutofacBridge.RunLegacyCallbacksAsync(
-                services,
-                legacyAsyncProviders,
-                legacyModuleProviders,
-                cancellationToken).ConfigureAwait(false);
-        }
-#pragma warning restore CS0618
     }
 
     private static List<T> GetInstancesOf<T>(IEnumerable<Type> allAssemblyTypes)
