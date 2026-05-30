@@ -316,21 +316,24 @@ public void Method1()
 }
 ```
 
-## Configuring SailDiff (alpha, test type)
+## Configuring the significance threshold
 
-Method comparisons share the same statistical machinery as historical SailDiff comparisons. You can configure the significance threshold and test type via `.sailfish.json`:
+You can configure the alpha used by the method-comparison output via `.sailfish.json`:
 
 ```json
 {
   "SailDiffSettings": {
-    "TestType": "WilcoxonRankSumTest",
     "Alpha": 0.05,
     "Disabled": false
   }
 }
 ```
 
-The Improved / Slower / Similar labels are decided against the configured `Alpha` after the BH-FDR adjustment. The N×N matrix and the baseline-vs-contender table both use that same `Alpha` for per-pair significance, and the reported ratio confidence intervals follow the matching `1 − Alpha` level — no hardcoded `0.05` anywhere in the formatters.
+The Improved / Slower / Similar labels are decided against the configured `Alpha` after the BH-FDR adjustment. The N×N matrix and the baseline-vs-contender table both use that same `Alpha` for per-pair significance, and the reported ratio confidence intervals follow the matching `1 − Alpha` level — no hardcoded `0.05` in the formatters.
+
+{% callout title="TestType is not honoured here" type="note" %}
+`SailDiffSettings.TestType` controls the test used by [historical SailDiff comparisons](/docs/2/saildiff), not method comparisons. The method-comparison handlers always compute p-values from a Welch-style log-ratio approximation (Student-t CDF on the log-scale standard error), regardless of what `TestType` is set to in `.sailfish.json`. Only `Alpha` is read by these output paths.
+{% /callout %}
 
 ## Troubleshooting
 
