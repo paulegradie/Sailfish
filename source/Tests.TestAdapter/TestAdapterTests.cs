@@ -17,6 +17,7 @@ using Xunit;
 
 namespace Tests.TestAdapter;
 
+[Collection(AssemblyDiscoveryCollection.Name)]
 public class TestDiscovererTests : IAsyncLifetime
 {
     private IDiscoveryContext _context = null!;

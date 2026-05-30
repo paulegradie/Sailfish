@@ -7,6 +7,7 @@ using Xunit;
 
 namespace Tests.TestAdapter;
 
+[Collection(AssemblyDiscoveryCollection.Name)]
 public class TestDiscoveryFixture
 {
     [Fact]

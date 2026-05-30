@@ -10,6 +10,7 @@ using Xunit;
 
 namespace Tests.TestAdapter;
 
+[Collection(AssemblyDiscoveryCollection.Name)]
 public class TestCaseAssemblyFixture
 {
     private static string FindSpecificUniqueFile(string fileName)

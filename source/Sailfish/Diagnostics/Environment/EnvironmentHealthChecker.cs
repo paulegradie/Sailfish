@@ -13,14 +13,27 @@ namespace Sailfish.Diagnostics.Environment;
 public class EnvironmentHealthChecker : IEnvironmentHealthChecker
 {
     private readonly ITimerCalibrationResultProvider? _timerProvider;
+    private readonly Func<HealthCheckEntry> _timerResolutionProbe;
+    private readonly Func<CancellationToken, Task<HealthCheckEntry>> _backgroundCpuProbe;
 
     public EnvironmentHealthChecker()
+        : this(timerProvider: null, timerResolutionProbe: null, backgroundCpuProbe: null)
     {
     }
 
     public EnvironmentHealthChecker(ITimerCalibrationResultProvider timerProvider)
+        : this(timerProvider, timerResolutionProbe: null, backgroundCpuProbe: null)
+    {
+    }
+
+    internal EnvironmentHealthChecker(
+        ITimerCalibrationResultProvider? timerProvider,
+        Func<HealthCheckEntry>? timerResolutionProbe,
+        Func<CancellationToken, Task<HealthCheckEntry>>? backgroundCpuProbe)
     {
         _timerProvider = timerProvider;
+        _timerResolutionProbe = timerResolutionProbe ?? CheckTimerResolution;
+        _backgroundCpuProbe = backgroundCpuProbe ?? (static ct => CheckBackgroundCpuLoadAsync(ct));
     }
 
     public async Task<EnvironmentHealthReport> CheckAsync(EnvironmentHealthCheckContext? context = null, CancellationToken cancellationToken = default)
@@ -32,7 +45,7 @@ public class EnvironmentHealthChecker : IEnvironmentHealthChecker
             CheckProcessPriority(),
             CheckGcMode(),
             CheckCpuAffinity(),
-            CheckTimerResolution(),
+            _timerResolutionProbe(),
             CheckOsPowerHints()
         };
 
@@ -47,7 +60,7 @@ public class EnvironmentHealthChecker : IEnvironmentHealthChecker
         // Background CPU load sampling (best-effort)
         try
         {
-            var background = await CheckBackgroundCpuLoadAsync().ConfigureAwait(false);
+            var background = await _backgroundCpuProbe(cancellationToken).ConfigureAwait(false);
             entries.Add(background);
         }
         catch
@@ -57,6 +70,12 @@ public class EnvironmentHealthChecker : IEnvironmentHealthChecker
 
         return new EnvironmentHealthReport(entries);
     }
+
+    internal static HealthCheckEntry FastTimerResolutionEntry() =>
+        new("Timer", HealthStatus.Pass, "Stubbed for fast tests");
+
+    internal static HealthCheckEntry FastBackgroundCpuEntry() =>
+        new("Background CPU", HealthStatus.Pass, "Stubbed for fast tests");
 
     private static HealthCheckEntry CheckBuildConfiguration(EnvironmentHealthCheckContext? context)
     {
@@ -323,7 +342,7 @@ public class EnvironmentHealthChecker : IEnvironmentHealthChecker
         }
     }
 
-    private static async Task<HealthCheckEntry> CheckBackgroundCpuLoadAsync()
+    private static async Task<HealthCheckEntry> CheckBackgroundCpuLoadAsync(CancellationToken cancellationToken = default)
     {
         try
         {
@@ -331,7 +350,7 @@ public class EnvironmentHealthChecker : IEnvironmentHealthChecker
             var p = Process.GetCurrentProcess();
             var startCpu = p.TotalProcessorTime;
             var sw = Stopwatch.StartNew();
-            await Task.Delay(500).ConfigureAwait(false);
+            await Task.Delay(500, cancellationToken).ConfigureAwait(false);
             p.Refresh();
             var endCpu = p.TotalProcessorTime;
             sw.Stop();

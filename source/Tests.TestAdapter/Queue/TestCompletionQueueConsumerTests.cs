@@ -268,17 +268,22 @@ public class TestCompletionQueueConsumerTests : IDisposable
     {
         // Arrange
         _consumer = new TestCompletionQueueConsumer(_queue, _logger);
+        var dequeueCount = 0;
         _queue.DequeueAsync(Arg.Any<CancellationToken>())
-            .Returns(Task.FromResult<TestCompletionQueueMessage?>(null)); // Queue completed
+            .Returns(_ =>
+            {
+                Interlocked.Increment(ref dequeueCount);
+                return Task.FromResult<TestCompletionQueueMessage?>(null);
+            }); // Queue completed
         await _consumer.StartAsync(CancellationToken.None);
-        await Task.Delay(100); // Give processing loop time to start
+        await WaitFor.ConditionAsync(() => dequeueCount > 0, description: "processing loop started");
 
         // Act
         await _consumer.StopAsync(CancellationToken.None);
 
         // Assert
         _consumer.IsRunning.ShouldBeFalse();
-        _logger.Received().Log(LogLevel.Information, 
+        _logger.Received().Log(LogLevel.Information,
             Arg.Is<string>(s => s.Contains("Test completion queue consumer service stopped successfully")));
     }
 
@@ -336,12 +341,17 @@ public class TestCompletionQueueConsumerTests : IDisposable
         _consumer.RegisterProcessor(processor);
 
         // Setup queue to return null (queue completed)
+        var dequeueCount = 0;
         _queue.DequeueAsync(Arg.Any<CancellationToken>())
-            .Returns(Task.FromResult<TestCompletionQueueMessage?>(null));
+            .Returns(_ =>
+            {
+                Interlocked.Increment(ref dequeueCount);
+                return Task.FromResult<TestCompletionQueueMessage?>(null);
+            });
 
         // Act
         await _consumer.StartAsync(CancellationToken.None);
-        await Task.Delay(100); // Give processing loop time to process
+        await WaitFor.ConditionAsync(() => dequeueCount > 0, description: "processing loop dequeued at least once");
         await _consumer.StopAsync(CancellationToken.None);
 
         // Assert - Should not throw, processor should not be called
@@ -356,8 +366,13 @@ public class TestCompletionQueueConsumerTests : IDisposable
         var processor = Substitute.For<ITestCompletionQueueProcessor>();
         var message = TestCompletionQueueConsumerTests.CreateTestMessage();
 
+        var processorCalls = 0;
         processor.ProcessTestCompletion(Arg.Any<TestCompletionQueueMessage>(), Arg.Any<CancellationToken>())
-            .Returns(Task.FromException(new Exception("Processor error")));
+            .Returns(_ =>
+            {
+                Interlocked.Increment(ref processorCalls);
+                return Task.FromException(new Exception("Processor error"));
+            });
 
         _consumer.RegisterProcessor(processor);
 
@@ -368,9 +383,8 @@ public class TestCompletionQueueConsumerTests : IDisposable
 
         // Act
         var processingTask = _consumer.StartAsync(CancellationToken.None);
-        // Wait long enough for all 3 retry attempts: initial + 100ms delay + attempt2 + 200ms delay + attempt3
-        // Total: ~800ms to be safe, then stop
-        await Task.Delay(1000);
+        // Wait for all 3 retry attempts to complete (initial + 100ms + 200ms delays inside the consumer).
+        await WaitFor.CountReachedAsync(() => processorCalls, 3);
         await _consumer.StopAsync(CancellationToken.None);
         await processingTask;
 
@@ -396,8 +410,13 @@ public class TestCompletionQueueConsumerTests : IDisposable
         var processor = Substitute.For<ITestCompletionQueueProcessor>();
         var message = TestCompletionQueueConsumerTests.CreateTestMessage();
 
+        var processorCalls = 0;
         processor.ProcessTestCompletion(Arg.Any<TestCompletionQueueMessage>(), Arg.Any<CancellationToken>())
-            .Returns(Task.FromException(new OperationCanceledException()));
+            .Returns(_ =>
+            {
+                Interlocked.Increment(ref processorCalls);
+                return Task.FromException(new OperationCanceledException());
+            });
 
         _consumer.RegisterProcessor(processor);
 
@@ -408,7 +427,7 @@ public class TestCompletionQueueConsumerTests : IDisposable
 
         // Act
         await _consumer.StartAsync(CancellationToken.None);
-        await Task.Delay(200); // Give processing loop time to process
+        await WaitFor.CountReachedAsync(() => processorCalls, 1);
         await _consumer.StopAsync(CancellationToken.None);
 
         // Assert - Should log warning for cancellation
@@ -424,6 +443,13 @@ public class TestCompletionQueueConsumerTests : IDisposable
         var processor2 = Substitute.For<ITestCompletionQueueProcessor>();
         var message = TestCompletionQueueConsumerTests.CreateTestMessage();
 
+        var p1Calls = 0;
+        var p2Calls = 0;
+        processor1.ProcessTestCompletion(Arg.Any<TestCompletionQueueMessage>(), Arg.Any<CancellationToken>())
+            .Returns(_ => { Interlocked.Increment(ref p1Calls); return Task.CompletedTask; });
+        processor2.ProcessTestCompletion(Arg.Any<TestCompletionQueueMessage>(), Arg.Any<CancellationToken>())
+            .Returns(_ => { Interlocked.Increment(ref p2Calls); return Task.CompletedTask; });
+
         _consumer.RegisterProcessor(processor1);
         _consumer.RegisterProcessor(processor2);
 
@@ -434,7 +460,7 @@ public class TestCompletionQueueConsumerTests : IDisposable
 
         // Act
         await _consumer.StartAsync(CancellationToken.None);
-        await Task.Delay(200); // Give processing loop time to process
+        await WaitFor.ConditionAsync(() => p1Calls >= 1 && p2Calls >= 1, description: "both processors invoked");
         await _consumer.StopAsync(CancellationToken.None);
 
         // Assert - Both processors should be called
@@ -451,9 +477,18 @@ public class TestCompletionQueueConsumerTests : IDisposable
         var processor2 = Substitute.For<ITestCompletionQueueProcessor>();
         var message = TestCompletionQueueConsumerTests.CreateTestMessage();
 
+        var p1Calls = 0;
+        var p2Calls = 0;
+
         // First processor throws exception
         processor1.ProcessTestCompletion(Arg.Any<TestCompletionQueueMessage>(), Arg.Any<CancellationToken>())
-            .Returns(Task.FromException(new Exception("Processor 1 error")));
+            .Returns(_ =>
+            {
+                Interlocked.Increment(ref p1Calls);
+                return Task.FromException(new Exception("Processor 1 error"));
+            });
+        processor2.ProcessTestCompletion(Arg.Any<TestCompletionQueueMessage>(), Arg.Any<CancellationToken>())
+            .Returns(_ => { Interlocked.Increment(ref p2Calls); return Task.CompletedTask; });
 
         _consumer.RegisterProcessor(processor1);
         _consumer.RegisterProcessor(processor2);
@@ -465,9 +500,8 @@ public class TestCompletionQueueConsumerTests : IDisposable
 
         // Act
         var processingTask = _consumer.StartAsync(CancellationToken.None);
-        // Wait long enough for all 3 retry attempts: initial + 100ms delay + attempt2 + 200ms delay + attempt3
-        // Total: ~1000ms to be safe, then stop
-        await Task.Delay(1000);
+        // Wait until the retry-and-continue behavior has actually completed.
+        await WaitFor.ConditionAsync(() => p1Calls >= 3 && p2Calls >= 1, description: "p1 retried 3x and p2 invoked");
         await _consumer.StopAsync(CancellationToken.None);
         await processingTask;
 

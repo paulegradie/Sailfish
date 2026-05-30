@@ -289,9 +289,9 @@ public class QueueHealthCheckComprehensiveTests : IDisposable
 
         // Act
         await _healthCheck.StartAsync(CancellationToken.None);
-        
-        // Wait a bit for the initial health check
-        await Task.Delay(100);
+
+        // Wait for the initial health check to fire its event
+        await WaitFor.ConditionAsync(() => eventArgs is not null, description: "initial HealthStatusChanged event");
 
         // Assert
         // The initial health check should trigger an event

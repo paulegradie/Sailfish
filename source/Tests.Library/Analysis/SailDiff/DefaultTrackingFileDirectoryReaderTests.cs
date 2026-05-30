@@ -282,12 +282,13 @@ public class DefaultTrackingFileDirectoryReaderTests : IDisposable
         return CreateFile($"{baseName}{DefaultFileSettings.TrackingSuffix}");
     }
 
+    // BaseTime + offset gives stable, monotonically-increasing timestamps without sleeping.
+    private static readonly DateTime TimestampBaseUtc = new(2024, 1, 1, 0, 0, 0, DateTimeKind.Utc);
+
     private string CreateTrackingFileWithDelay(string baseName, TimeSpan delay)
     {
         var filePath = CreateTrackingFile(baseName);
-        System.Threading.Thread.Sleep(delay);
-        // Touch the file to update its timestamp
-        File.SetLastWriteTimeUtc(filePath, DateTime.UtcNow);
+        File.SetLastWriteTimeUtc(filePath, TimestampBaseUtc + delay);
         return filePath;
     }
 

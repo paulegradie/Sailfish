@@ -22,6 +22,7 @@ using IRunSettings = Sailfish.Contracts.Public.Models.IRunSettings;
 
 namespace Tests.TestAdapter;
 
+[Collection(AssemblyDiscoveryCollection.Name)]
 public class TestExecutionFixture
 {
     private readonly ContainerBuilder _builder;
