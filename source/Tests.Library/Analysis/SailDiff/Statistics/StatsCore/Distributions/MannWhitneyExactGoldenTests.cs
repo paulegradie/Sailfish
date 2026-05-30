@@ -292,4 +292,58 @@ public class MannWhitneyExactGoldenTests
         t.Statistic2.ShouldBe(9.0, tolerance: 1e-9);
         t.PValue.ShouldBe(0.10, tolerance: 1e-9);
     }
+
+    [Fact]
+    public void TiedRanks_OddSizedGroupAtIntegerMean_RouteToNormalApproximation()
+    {
+        // Regression for Codex review on PR #245: detecting ties via "rank has fractional
+        // part" misses tie groups of odd size, which produce integer mean ranks. For samples
+        // [1, 2] vs [2, 2, 3] the combined rank vector is [1, 3, 3, 3, 5] — three rank-3
+        // entries from the 3-way tie — and every element is an integer. The pre-fix code
+        // routed this to the DP path, which assumes a permutation of 1..N and silently
+        // returned the *untied* null distribution.
+        //
+        // The rank vector here is what the wrapper would compute internally from those
+        // samples; we construct it directly to make the assertion specific to the
+        // tie-detection branch rather than coupled to the upstream Rank() helper.
+        var ranks = new[] { 1.0, 3.0, 3.0, 3.0, 5.0 };
+        var dist = new MannWhitneyDistribution(ranks, 2, 3);
+
+        dist.Exact.ShouldBeFalse("3-way tie at integer ranks must fall through to the normal approximation");
+    }
+
+    [Fact]
+    public void TiedRanks_FiveWayTieAtIntegerMean_RouteToNormalApproximation()
+    {
+        // Five tied observations at central positions also average to an integer rank.
+        // Combined sorted: positions 1..9 with five tied at positions 2..6 → rank = 4 each.
+        // Rank vector: [1, 4, 4, 4, 4, 4, 7, 8, 9] — all integer.
+        var ranks = new[] { 1.0, 4.0, 4.0, 4.0, 4.0, 4.0, 7.0, 8.0, 9.0 };
+        var dist = new MannWhitneyDistribution(ranks, 4, 5);
+
+        dist.Exact.ShouldBeFalse("5-way tie at integer ranks must fall through to the normal approximation");
+    }
+
+    [Fact]
+    public void TiedRanks_TwoWayTieAtHalfIntegerMean_RouteToNormalApproximation()
+    {
+        // Two tied observations average to a half-integer rank — the case the original
+        // fractional-rank check did handle. This test stays as a sanity guard so the new
+        // tie-aware check doesn't accidentally regress the even-sized case.
+        var ranks = new[] { 1.0, 2.5, 2.5, 4.0 };
+        var dist = new MannWhitneyDistribution(ranks, 2, 2);
+
+        dist.Exact.ShouldBeFalse("2-way tie at half-integer ranks must fall through to the normal approximation");
+    }
+
+    [Fact]
+    public void UntiedRanks_StillUseExactDpPath()
+    {
+        // Symmetric guard: the tie-detection rewrite must not over-trigger and downgrade
+        // legitimate untied inputs to the normal approximation.
+        var ranks = new double[] { 1, 2, 3, 4, 5, 6, 7, 8 };
+        var dist = new MannWhitneyDistribution(ranks, 4, 4);
+
+        dist.Exact.ShouldBeTrue("untied rank vector should still use the DP exact path");
+    }
 }

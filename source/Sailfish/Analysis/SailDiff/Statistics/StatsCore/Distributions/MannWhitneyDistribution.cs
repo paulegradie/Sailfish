@@ -52,16 +52,15 @@ internal sealed class MannWhitneyDistribution : UnivariateContinuousDistribution
         _approximation = NormalDistributionFactory.Create(mean, stdDev);
         Correction = ContinuityCorrection.Midpoint;
 
-        // Eligibility for the exact path: both samples within the DP cap, AND the ranks are
-        // untied (the DP assumes the rank vector is a permutation of integers). Tied rank
-        // vectors carry fractional values (e.g. 3.5) and route through the normal
-        // approximation, whose tie-corrected variance — wired above — gives an accurate
-        // p-value down to N≈8 per side (Conover, §5.1).
+        // Eligibility for the exact path: both samples within the DP cap, AND no tied ranks
+        // (the DP assumes the rank vector is a permutation of integers 1..N). Tied inputs
+        // route through the normal approximation, whose tie-corrected variance — wired above —
+        // gives an accurate p-value down to N≈8 per side (Conover, §5.1).
         Exact = rank1Length > 0
                 && rank2Length > 0
                 && rank1Length <= ExactMaxN
                 && rank2Length <= ExactMaxN
-                && !HasFractionalRanks(ranks);
+                && !HasTies(ranks);
 
         if (!Exact) return;
 
@@ -99,14 +98,15 @@ internal sealed class MannWhitneyDistribution : UnivariateContinuousDistribution
 
     public override DoubleRange Support => new(double.NegativeInfinity, double.PositiveInfinity);
 
-    private static bool HasFractionalRanks(double[] ranks)
+    private static bool HasTies(double[] ranks)
     {
-        // Untied rank vectors are permutations of 1..N (integer-valued). Any tie-broken rank
-        // vector contains at least one half-integer (3.5 etc.). A single sweep is plenty —
-        // the rank vector is small relative to anything else we'd allocate.
-        for (var i = 0; i < ranks.Length; i++)
-            if (ranks[i] != Math.Floor(ranks[i]))
-                return true;
+        // Detect tied input directly via tie-group counts rather than via a fractional-rank
+        // heuristic — odd-size tie groups (3-way, 5-way, …) produce integer mean ranks (e.g.
+        // three tied observations at positions 2, 3, 4 all receive rank 3) and slip through a
+        // half-integer check. Reuses the same Ties() helper that drives the variance
+        // correction in Corrections().
+        foreach (var groupSize in ranks.Ties())
+            if (groupSize > 1) return true;
         return false;
     }
 
