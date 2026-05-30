@@ -83,7 +83,9 @@ public class FullRuns
             .WithAnalysisDisabledGlobally()
             .Build();
 
-        var result = await SailfishRunner.Run(runSettings, builder => Console.Write(string.Empty), CancellationToken.None);
+        // Use the new MS-DI-typed overload explicitly — both Run overloads exist during the deprecation window
+        // and an untyped lambda would be ambiguous.
+        var result = await SailfishRunner.Run(runSettings, (Microsoft.Extensions.DependencyInjection.IServiceCollection services) => Console.Write(string.Empty), CancellationToken.None);
         result.IsValid.ShouldBe(true);
         result.Exceptions.ShouldNotBeNull();
         result.Exceptions.Count().ShouldBe(0);

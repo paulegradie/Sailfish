@@ -1,36 +1,36 @@
-using Autofac;
 using Demo.API;
 using Microsoft.AspNetCore.Mvc.Testing;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Tests.E2E.TestSuite.Utils;
 
-// Example of what they can implement
+// Example of what a test author can implement: a parameterless-ctor class that builds its own DI container
+// and exposes a typed resolver. Sailfish auto-resolves it when listed as a Sailfish fixture generic argument.
 public class SailfishDependencies : IDisposable
 {
-    // single parameterless ctor is all this is allowed
     public SailfishDependencies()
     {
-        var builder = new ContainerBuilder();
-        RegisterThings(builder);
-        Container = builder.Build();
+        var services = new ServiceCollection();
+        RegisterThings(services);
+        Provider = services.BuildServiceProvider();
     }
 
-    private IContainer Container { get; }
+    private ServiceProvider Provider { get; }
 
     public void Dispose()
     {
-        Container.Dispose();
+        Provider.Dispose();
     }
 
-    private static void RegisterThings(ContainerBuilder builder)
+    private static void RegisterThings(IServiceCollection services)
     {
-        builder.RegisterType<ExampleDep>().AsSelf();
-        builder.RegisterType<SailfishDependencies>().AsSelf();
-        builder.RegisterType<WebApplicationFactory<DemoApp>>();
+        services.AddTransient<ExampleDep>();
+        services.AddTransient<SailfishDependencies>();
+        services.AddTransient<WebApplicationFactory<DemoApp>>();
     }
 
     public T ResolveType<T>() where T : notnull
     {
-        return Container.Resolve<T>();
+        return Provider.GetRequiredService<T>();
     }
 }

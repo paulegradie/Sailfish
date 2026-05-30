@@ -2,7 +2,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using Autofac;
 using Sailfish.Contracts.Public.Models;
 using Sailfish.Exceptions;
 using Sailfish.Extensions.Methods;
@@ -16,11 +15,11 @@ public interface ITypeActivator
 
 public class TypeActivator : ITypeActivator
 {
-    private readonly ILifetimeScope _lifetimeScope;
+    private readonly IServiceProvider _services;
 
-    public TypeActivator(ILifetimeScope lifetimeScope)
+    public TypeActivator(IServiceProvider services)
     {
-        _lifetimeScope = lifetimeScope;
+        _services = services;
     }
 
     public object CreateDehydratedTestInstance(Type test, TestCaseId testCaseId, bool disabled)
@@ -43,7 +42,14 @@ public class TypeActivator : ITypeActivator
         List<object> ctorArgs;
         try
         {
-            ctorArgs = ctorArgTypes.Where(x => x != typeof(TestCaseId)).Select(x => _lifetimeScope.Resolve(x)).ToList();
+            ctorArgs = ctorArgTypes
+                .Where(x => x != typeof(TestCaseId))
+                .Select(x => _services.GetService(x)
+                    ?? throw new SailfishException(
+                        $"No registration found for type '{x.FullName}' required by test class '{test.FullName}'. " +
+                        "Register it via IServiceCollection (e.g. an IRegisterSailfishServices implementation) " +
+                        "or, in legacy code, via an [Obsolete] IProvideARegistrationCallback."))
+                .ToList();
         }
         catch (Exception ex)
         {

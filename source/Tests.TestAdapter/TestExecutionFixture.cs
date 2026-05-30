@@ -1,9 +1,9 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using Autofac;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.Adapter;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.Logging;
@@ -25,21 +25,23 @@ namespace Tests.TestAdapter;
 [Collection(AssemblyDiscoveryCollection.Name)]
 public class TestExecutionFixture
 {
-    private readonly ContainerBuilder _builder;
+    private readonly IServiceCollection _services;
     private readonly IFrameworkHandle _frameworkHandle;
     private readonly List<TestCase> _testCases;
 
     public TestExecutionFixture()
     {
         _frameworkHandle = Substitute.For<IFrameworkHandle>();
-        _builder = new ContainerBuilder();
-        _builder.RegisterSailfishTypes(Substitute.For<IRunSettings>(), new TestAdapterRegistrations(_frameworkHandle));
-        _builder.RegisterInstance(RunSettingsBuilder.CreateBuilder().DisableOverheadEstimation().Build());
+        _services = new ServiceCollection();
+        _services.AddSailfish(Substitute.For<IRunSettings>());
+        _services.AddSailfishTestAdapter(_frameworkHandle);
+        _services.AddSingleton(RunSettingsBuilder.CreateBuilder().DisableOverheadEstimation().Build());
+
         var projectDll = DllFinder.FindThisProjectsDllRecursively();
         _testCases = new TestDiscovery().DiscoverTests(new[] { projectDll }, Substitute.For<IMessageLogger>()).ToList();
         var refTestType = TestExecutor.RetrieveReferenceTypeForTestProject(_testCases);
         SailfishTypeRegistrationUtility.InvokeRegistrationProviderCallbackMain(
-                _builder,
+                _services,
                 new[] { refTestType },
                 new[] { refTestType },
                 CancellationToken.None)
@@ -49,15 +51,15 @@ public class TestExecutionFixture
     [Fact]
     public void FilteredTestsAreSuccessfullyDiscovered()
     {
-        using var container = _builder.Build();
-        Should.NotThrow(() => new TestExecution().ExecuteTests(_testCases.Take(1).ToList(), container, _frameworkHandle, CancellationToken.None));
+        using var provider = _services.BuildServiceProvider();
+        Should.NotThrow(() => new TestExecution().ExecuteTests(_testCases.Take(1).ToList(), provider, _frameworkHandle, CancellationToken.None));
     }
 
     [Fact]
     public void TestCasesAreExecutedCorrectly()
     {
-        using var container = _builder.Build();
-        Should.NotThrow(() => new TestExecution().ExecuteTests(_testCases, container, _frameworkHandle, CancellationToken.None));
+        using var provider = _services.BuildServiceProvider();
+        Should.NotThrow(() => new TestExecution().ExecuteTests(_testCases, provider, _frameworkHandle, CancellationToken.None));
     }
 
     [Fact]
@@ -66,24 +68,24 @@ public class TestExecutionFixture
         var program = Substitute.For<ITestAdapterExecutionProgram>();
         var ct = new CancellationToken();
         program.Run(_testCases, ct).ThrowsForAnyArgs(new Exception("Test"));
-        var b = new ContainerBuilder();
-        b.RegisterInstance(program);
-        await using var container = b.Build();
+
+        var services = new ServiceCollection();
+        services.AddSingleton(program);
+        await using var provider = services.BuildServiceProvider();
 
         var execution = new TestExecution();
-        Should.Throw<Exception>(() => execution.ExecuteTests(_testCases, container, _frameworkHandle, ct));
+        Should.Throw<Exception>(() => execution.ExecuteTests(_testCases, provider, _frameworkHandle, ct));
     }
 
     [Fact]
     public void StartupExceptionsAreHandled()
     {
         var context = Substitute.For<IRunContext>();
-        using var container = _builder.Build();
 
         var execution = Substitute.For<ITestExecution>();
         execution
-            .When(x => x.ExecuteTests(Arg.Any<List<TestCase>>(), Arg.Any<IContainer>(), _frameworkHandle, Arg.Any<CancellationToken>()))
-            .Do(call => throw new Exception("Oopsie"));
+            .When(x => x.ExecuteTests(Arg.Any<List<TestCase>>(), Arg.Any<IServiceProvider>(), _frameworkHandle, Arg.Any<CancellationToken>()))
+            .Do(_ => throw new Exception("Oopsie"));
         var executor = new TestExecutor(execution);
 
         executor.RunTests(_testCases, context, _frameworkHandle);
