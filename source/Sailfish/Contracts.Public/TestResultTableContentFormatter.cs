@@ -131,8 +131,10 @@ public class SailDiffResultMarkdownConverter : ISailDiffResultMarkdownConverter
     private static string FormatEffectSize(Sailfish.Contracts.Public.Models.EffectSizeReport? effect)
     {
         if (effect is null) return string.Empty;
+        // CI bounds use the same 0.### precision as the point estimate (and as FormatDifference)
+        // so all bracket-style reports show consistent precision in console/markdown output.
         var ci = effect.CiLower.HasValue && effect.CiUpper.HasValue
-            ? $" [{effect.CiLower.Value:0.##}, {effect.CiUpper.Value:0.##}]"
+            ? $" [{effect.CiLower.Value:0.###}, {effect.CiUpper.Value:0.###}]"
             : string.Empty;
         return $"{effect.Name}={effect.Value:0.###}{ci}";
     }
