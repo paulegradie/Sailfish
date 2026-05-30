@@ -11,25 +11,19 @@ The `[WriteToMarkdown]` attribute generates consolidated markdown files containi
 ```csharp
 [WriteToMarkdown]
 [Sailfish]
-public class PerformanceTest
+public class SortBenchmarks
 {
-    [SailfishMethod(ComparisonGroup = "Algorithms", IsBaseline = true)]
-    public void QuickSort()
-    {
-        // Implementation
-    }
+    // [Sailfish] makes comparison automatic — every method is in the implicit
+    // class-wide comparison group. One method as baseline switches to N−1 mode.
 
-    [SailfishMethod(ComparisonGroup = "Algorithms")]
-    public void BubbleSort()
-    {
-        // Implementation
-    }
+    [SailfishMethod(IsBaseline = true)]
+    public void QuickSort() { /* ... */ }
 
     [SailfishMethod]
-    public void RegularMethod()
-    {
-        // Implementation
-    }
+    public void BubbleSort() { /* ... */ }
+
+    [SailfishMethod]
+    public void MergeSort() { /* ... */ }
 }
 ```
 
@@ -37,7 +31,7 @@ public class PerformanceTest
 
 - **Session-based consolidation**: Single markdown file per test session
 - **Per-group sections**: Either a baseline-vs-contender table (when one method is the baseline) or an N×N comparison matrix (when none is), followed by a five-column detailed results table per comparison group
-- **Per-class scoping**: Section header is `## 🔬 Comparison Group: GroupName (ClassName)` so same-named groups in different classes are reported separately
+- **Per-class scoping**: Section header is `## 🔬 Comparisons: {ClassName}` for the implicit class-wide group, or `## 🔬 Comparison Group: {Name} ({ClassName})` for explicit named groups — same-named groups in different classes are reported separately
 - **Statistical analysis**: BH-FDR q-values and 95% ratio confidence intervals
 - **Environment & reproducibility headers**: Optional `🏥 Environment Health Check` and `🔁 Reproducibility Summary` sections near the top when enabled
 
@@ -59,25 +53,16 @@ The `[WriteToCsv]` attribute generates consolidated CSV files containing both in
 ```csharp
 [WriteToCsv]
 [Sailfish]
-public class PerformanceTest
+public class SortBenchmarks
 {
-    [SailfishMethod(ComparisonGroup = "Algorithms", IsBaseline = true)]
-    public void QuickSort()
-    {
-        // Implementation
-    }
-
-    [SailfishMethod(ComparisonGroup = "Algorithms")]
-    public void BubbleSort()
-    {
-        // Implementation
-    }
+    [SailfishMethod(IsBaseline = true)]
+    public void QuickSort() { /* ... */ }
 
     [SailfishMethod]
-    public void RegularMethod()
-    {
-        // Implementation
-    }
+    public void BubbleSort() { /* ... */ }
+
+    [SailfishMethod]
+    public void MergeSort() { /* ... */ }
 }
 ```
 
@@ -96,16 +81,17 @@ public class PerformanceTest
 ```csv
 # Individual Test Results
 TestClass,TestMethod,MeanTime,MedianTime,StdDev,SampleSize,ComparisonGroup,Status
-PerformanceTest,BubbleSort,45.200,44.100,3.100,100,Algorithms,Success
-PerformanceTest,QuickSort,2.100,2.000,0.300,100,Algorithms,Success
-PerformanceTest,RegularMethod,1.000,1.000,0.100,100,,Success
+SortBenchmarks,BubbleSort,45.200,44.100,3.100,100,SortBenchmarks,Success
+SortBenchmarks,MergeSort,3.400,3.300,0.300,100,SortBenchmarks,Success
+SortBenchmarks,QuickSort,2.100,2.000,0.300,100,SortBenchmarks,Success
 
 # Method Comparisons
 ComparisonGroup,Method1,Method2,Mean1,Mean2,Ratio,CI95_Lower,CI95_Upper,q_value,Label,ChangeDescription
-Algorithms,QuickSort,BubbleSort,2.100,45.200,21.524,18.301,24.917,1.2e-12,Slower,Regressed
+SortBenchmarks,QuickSort,BubbleSort,2.100,45.200,21.524,18.301,24.917,1.2e-12,Slower,Regressed
+SortBenchmarks,QuickSort,MergeSort,2.100,3.400,1.619,1.412,1.856,3.4e-09,Slower,Regressed
 ```
 
-In this example QuickSort is the baseline, so Method1 is always QuickSort and one row appears per contender. Ratio = Mean2 / Mean1, so values > 1 indicate Method2 is slower than the baseline.
+Implicit class-wide group rows show the class name in the `ComparisonGroup` column (here `SortBenchmarks`). Explicit `ComparisonGroup = "..."` values would appear there instead. With `IsBaseline = true` on one method, Method1 is always the baseline and one row appears per contender; without a baseline the rows are all pairwise (i&lt;j) combinations. Ratio = Mean2 / Mean1.
 
 ## Combined Usage
 
@@ -143,13 +129,13 @@ public class DatabaseQueryPerformance { }
 public class SerializationBenchmarks { }
 ```
 
-### 2. Organize Comparison Groups
-Use meaningful comparison group names that clearly indicate what's being compared:
+### 2. Reach for explicit groups only when you need multiple in one class
+The implicit class-wide group is usually all the context the output needs — methods in `SortBenchmarks` are reported under that class name automatically. Only set `ComparisonGroup = "..."` when one class genuinely has multiple distinct comparisons to make:
 
 ```csharp
 [SailfishMethod(ComparisonGroup = "DatabaseQueries")]      // Good
 [SailfishMethod(ComparisonGroup = "SerializationMethods")] // Good
-[SailfishMethod(ComparisonGroup = "Group1")]               // Poor
+[SailfishMethod(ComparisonGroup = "Group1")]               // Poor — meaningless name
 ```
 
 ### 3. Consider Output Directory

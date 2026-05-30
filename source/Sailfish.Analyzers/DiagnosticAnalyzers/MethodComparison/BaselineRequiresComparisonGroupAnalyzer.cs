@@ -8,20 +8,22 @@ using Sailfish.Analyzers.Utils.TreeParsingExtensionMethods;
 namespace Sailfish.Analyzers.DiagnosticAnalyzers.MethodComparison;
 
 /// <summary>
-/// SF1300 — When a method sets <c>IsBaseline = true</c>, it must also set
-/// <c>ComparisonGroup</c>. A baseline outside a group is meaningless.
+/// SF1300 — <c>IsBaseline = true</c> is only meaningful when the method participates in some
+/// comparison group. With class-default comparison on, this is satisfied either by an explicit
+/// <c>ComparisonGroup</c> on the method or by the enclosing <c>[Sailfish]</c> class not setting
+/// <c>DisableComparison = true</c>. The analyzer fires when both are missing.
 /// </summary>
 [DiagnosticAnalyzer(LanguageNames.CSharp)]
 public class BaselineRequiresComparisonGroupAnalyzer : AnalyzerBase<ClassDeclarationSyntax>
 {
     public static readonly DiagnosticDescriptor Descriptor = new(
         "SF1300",
-        "IsBaseline=true requires a ComparisonGroup",
-        "Method '{0}' sets IsBaseline = true but does not specify a ComparisonGroup. Add 'ComparisonGroup = \"...\"' to the SailfishMethod attribute, or remove IsBaseline.",
+        "IsBaseline=true on a method that isn't in any comparison group",
+        "Method '{0}' sets IsBaseline = true but isn't in any comparison group. Either set ComparisonGroup on the method, or remove DisableComparison = true from the class's [Sailfish] attribute.",
         AnalyzerGroups.EssentialAnalyzers.Category,
         isEnabledByDefault: AnalyzerGroups.EssentialAnalyzers.IsEnabledByDefault,
         defaultSeverity: DiagnosticSeverity.Error,
-        description: "IsBaseline only makes sense within a named ComparisonGroup; declaring a baseline without one is invalid.",
+        description: "IsBaseline only makes sense within a comparison group; a method outside every group cannot be a baseline.",
         helpLinkUri: AnalyzerGroups.EssentialAnalyzers.HelpLink);
 
     public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics => ImmutableArray.Create(Descriptor);
@@ -30,14 +32,20 @@ public class BaselineRequiresComparisonGroupAnalyzer : AnalyzerBase<ClassDeclara
     {
         if (!classDeclaration.IsASailfishTestType(semanticModel)) return;
 
+        var classDisables = classDeclaration is ClassDeclarationSyntax cds && MethodComparisonAttributeReader.ClassDisablesComparison(cds);
+
         foreach (var method in classDeclaration.Members.OfType<MethodDeclarationSyntax>())
         {
             var info = MethodComparisonAttributeReader.TryRead(method);
             if (info is null) continue;
             if (!info.IsBaseline) continue;
-            if (!string.IsNullOrEmpty(info.ComparisonGroup)) continue;
 
-            // Report at the IsBaseline argument if we can locate it; otherwise at the attribute.
+            // Method participates in some comparison group when either:
+            //   - It has an explicit ComparisonGroup, OR
+            //   - The class allows the implicit class-wide group (DisableComparison = false).
+            if (!string.IsNullOrEmpty(info.ComparisonGroup)) continue;
+            if (!classDisables) continue;
+
             var location = info.IsBaselineArgument?.GetLocation() ?? info.Attribute.GetLocation();
             context.ReportDiagnostic(Diagnostic.Create(Descriptor, location, method.Identifier.Text));
         }

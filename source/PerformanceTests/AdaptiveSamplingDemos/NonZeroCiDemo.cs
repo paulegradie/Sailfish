@@ -7,7 +7,7 @@ namespace PerformanceTests.AdaptiveSamplingDemos;
 // Demo designed to always yield a clearly non-zero CI
 // Fixed sampling avoids early convergence; alternating delays ensure variance
 [WriteToMarkdown]
-[Sailfish(UseAdaptiveSampling = false, SampleSize = 24)]
+[Sailfish(UseAdaptiveSampling = false, SampleSize = 24, DisableComparison = true)]
 public class NonZeroCiDemo
 {
     private static int _counter;

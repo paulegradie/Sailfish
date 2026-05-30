@@ -8,8 +8,8 @@ using Sailfish.Analyzers.Utils.TreeParsingExtensionMethods;
 namespace Sailfish.Analyzers.DiagnosticAnalyzers.MethodComparison;
 
 /// <summary>
-/// SF1301 — At most one method per <c>(class, ComparisonGroup)</c> may set
-/// <c>IsBaseline = true</c>. When multiple are present the runtime falls back to N×N
+/// SF1301 — At most one method per comparison group (including the implicit class-wide group)
+/// may set <c>IsBaseline = true</c>. When multiple are present the runtime falls back to N×N
 /// comparison and emits a warning; the user almost certainly meant to pick one.
 /// </summary>
 [DiagnosticAnalyzer(LanguageNames.CSharp)]
@@ -17,8 +17,8 @@ public class SingleBaselinePerGroupAnalyzer : AnalyzerBase<ClassDeclarationSynta
 {
     public static readonly DiagnosticDescriptor Descriptor = new(
         "SF1301",
-        "Only one IsBaseline per ComparisonGroup is allowed",
-        "ComparisonGroup '{0}' has {1} methods marked IsBaseline = true; exactly one is allowed. The runtime will fall back to N×N comparison.",
+        "Only one IsBaseline per comparison group is allowed",
+        "Comparison group {0} has {1} methods marked IsBaseline = true; exactly one is allowed. The runtime will fall back to N×N comparison.",
         AnalyzerGroups.EssentialAnalyzers.Category,
         isEnabledByDefault: AnalyzerGroups.EssentialAnalyzers.IsEnabledByDefault,
         defaultSeverity: DiagnosticSeverity.Error,
@@ -31,21 +31,30 @@ public class SingleBaselinePerGroupAnalyzer : AnalyzerBase<ClassDeclarationSynta
     {
         if (!classDeclaration.IsASailfishTestType(semanticModel)) return;
 
-        var infos = classDeclaration.Members
+        var classDisables = classDeclaration is ClassDeclarationSyntax cds && MethodComparisonAttributeReader.ClassDisablesComparison(cds);
+
+        var grouped = classDeclaration.Members
             .OfType<MethodDeclarationSyntax>()
             .Select(MethodComparisonAttributeReader.TryRead)
-            .Where(info => info is not null && !string.IsNullOrEmpty(info.ComparisonGroup))
-            .Cast<MethodComparisonInfo>();
+            .Where(info => info is not null)
+            .Cast<MethodComparisonInfo>()
+            .Select(info => new { Info = info, Key = info.EffectiveGroupKey(classDisables) })
+            .Where(x => x.Key is not null)
+            .GroupBy(x => x.Key);
 
-        foreach (var group in infos.GroupBy(i => i.ComparisonGroup!))
+        foreach (var group in grouped)
         {
-            var baselines = group.Where(i => i.IsBaseline).ToList();
+            var baselines = group.Where(x => x.Info.IsBaseline).Select(x => x.Info).ToList();
             if (baselines.Count < 2) continue;
+
+            var displayGroupKey = group.Key == MethodComparisonInfo.ImplicitGroupKey
+                ? "(implicit class-wide)"
+                : $"'{group.Key}'";
 
             foreach (var b in baselines)
             {
                 var location = b.IsBaselineArgument?.GetLocation() ?? b.Attribute.GetLocation();
-                context.ReportDiagnostic(Diagnostic.Create(Descriptor, location, group.Key, baselines.Count));
+                context.ReportDiagnostic(Diagnostic.Create(Descriptor, location, displayGroupKey, baselines.Count));
             }
         }
     }

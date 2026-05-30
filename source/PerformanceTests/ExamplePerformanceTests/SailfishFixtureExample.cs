@@ -13,7 +13,7 @@ namespace PerformanceTests.ExamplePerformanceTests;
 
 [WriteToCsv]
 [WriteToMarkdown]
-[Sailfish(SampleSize = 3, NumWarmupIterations = 2, DisableOverheadEstimation = false, Disabled = false)]
+[Sailfish(SampleSize = 3, NumWarmupIterations = 2, DisableOverheadEstimation = false, Disabled = false, DisableComparison = true)]
 public sealed class SailfishFixtureExample : TestBase
 {
     private readonly SailfishFixture _sailfishFixture;

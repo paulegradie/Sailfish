@@ -27,10 +27,33 @@ internal sealed class MethodComparisonInfo
 
     public MethodDeclarationSyntax Method { get; }
     public AttributeSyntax Attribute { get; }
+
+    /// <summary>The explicit <c>ComparisonGroup</c> value from <c>[SailfishMethod]</c>, or null if not set.</summary>
     public string? ComparisonGroup { get; }
     public bool IsBaseline { get; }
     public AttributeArgumentSyntax? ComparisonGroupArgument { get; }
     public AttributeArgumentSyntax? IsBaselineArgument { get; }
+
+    /// <summary>
+    /// Returns the effective comparison-group key for this method, given whether the enclosing
+    /// class opts out of the implicit class-wide group via <c>[Sailfish(DisableComparison = true)]</c>.
+    ///   <list type="bullet">
+    ///     <item><description>Explicit <see cref="ComparisonGroup"/> wins regardless of class setting.</description></item>
+    ///     <item><description>If no explicit group and class allows implicit: returns <see cref="ImplicitGroupKey"/>.</description></item>
+    ///     <item><description>If no explicit group and class opts out: returns <c>null</c> (method not in any group).</description></item>
+    ///   </list>
+    /// </summary>
+    public string? EffectiveGroupKey(bool classDisablesComparison)
+    {
+        if (!string.IsNullOrEmpty(ComparisonGroup)) return ComparisonGroup;
+        return classDisablesComparison ? null : ImplicitGroupKey;
+    }
+
+    /// <summary>
+    /// Sentinel used as the group key for methods that join the implicit class-wide comparison group.
+    /// Distinct from any user-typed string (contains characters that aren't valid in a C# identifier).
+    /// </summary>
+    public const string ImplicitGroupKey = "<implicit class-wide>";
 }
 
 internal static class MethodComparisonAttributeReader
@@ -81,5 +104,31 @@ internal static class MethodComparisonAttributeReader
         }
 
         return new MethodComparisonInfo(method, sailfishMethodAttr, comparisonGroup, isBaseline, comparisonGroupArg, isBaselineArg);
+    }
+
+    /// <summary>
+    /// Returns true when the class's <c>[Sailfish]</c> attribute sets <c>DisableComparison = true</c>
+    /// as a boolean literal.
+    /// </summary>
+    public static bool ClassDisablesComparison(ClassDeclarationSyntax classDeclaration)
+    {
+        var sailfishAttr = classDeclaration.AttributeLists
+            .SelectMany(attrList => attrList.Attributes)
+            .FirstOrDefault(attr =>
+                attr.Name.ToString() == "Sailfish" ||
+                attr.Name.ToString() == "SailfishAttribute");
+
+        if (sailfishAttr?.ArgumentList?.Arguments == null) return false;
+
+        foreach (var arg in sailfishAttr.ArgumentList.Arguments)
+        {
+            if (arg.NameEquals?.Name.Identifier.ValueText != "DisableComparison") continue;
+            if (arg.Expression is LiteralExpressionSyntax lit)
+            {
+                var kind = lit.Token.Kind();
+                if (kind == SyntaxKind.TrueKeyword) return true;
+            }
+        }
+        return false;
     }
 }

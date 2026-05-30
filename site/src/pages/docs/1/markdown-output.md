@@ -13,18 +13,20 @@ Apply the `[WriteToMarkdown]` attribute to any test class:
 ```csharp
 [WriteToMarkdown]
 [Sailfish(SampleSize = 100)]
-public class PerformanceTest
+public class SortBenchmarks
 {
-    [SailfishMethod(ComparisonGroup = "Algorithms", IsBaseline = true)]
+    [SailfishMethod(IsBaseline = true)]
     public void QuickSort() { /* implementation */ }
 
-    [SailfishMethod(ComparisonGroup = "Algorithms")]
+    [SailfishMethod]
     public void BubbleSort() { /* implementation */ }
 
     [SailfishMethod]
-    public void RegularMethod() { /* implementation */ }
+    public void MergeSort() { /* implementation */ }
 }
 ```
+
+`[Sailfish]` forms an implicit class-wide comparison group across the methods above. Use `[Sailfish(DisableComparison = true)]` to skip comparison output and emit per-method timing only.
 
 ## Markdown Structure
 
@@ -51,7 +53,10 @@ The header is followed by optional `## 🏥 Environment Health Check` and `## �
 
 ### Section 2: Per-Group Comparison Sections
 
-For each `(class, ComparisonGroup)` with at least two methods, the file emits an `## 🔬 Comparison Group: {GroupName} ({ClassName})` section. The class name is included so same-named groups in different classes are reported separately.
+For each comparison group on a `[Sailfish]` class with at least two methods, the file emits a section:
+
+- **Implicit class-wide group** (the default — no explicit `ComparisonGroup` on any of the methods): `## 🔬 Comparisons: {ClassName}`
+- **Explicit named group** (`[SailfishMethod(ComparisonGroup = "...")]`): `## 🔬 Comparison Group: {GroupName} ({ClassName})` — the class name is included so same-named groups in different classes are reported separately.
 
 The section then contains one of:
 
@@ -75,7 +80,7 @@ Either layout is followed by a `### Detailed Results` table:
 
 ### Section 3: Individual Test Results
 
-Methods that aren't part of a comparison group are grouped under `## 📊 Individual Test Results` using the same five-column table.
+Methods that aren't part of a comparison group — typically those on `[Sailfish(DisableComparison = true)]` classes — are grouped under `## 📊 Individual Test Results` using the same five-column table.
 
 ## Session-Based Consolidation
 
@@ -141,7 +146,7 @@ See [latest performance results](./TestSession_abc12345_Results_20250803_103000.
 
 ### Multiple Comparison Groups
 
-Each group gets its own `## 🔬 Comparison Group: {GroupName} ({ClassName})` section with its own baseline table or N×N matrix, followed by the detailed results table. The detailed table is always 5 columns (Method, Mean Time, Median Time, Sample Size, Status); ratios, CIs, and q-values live in the comparison section above it.
+A class can declare explicit `ComparisonGroup` names to peel its methods off the implicit class-wide group into multiple named ones. Each named group gets its own `## 🔬 Comparison Group: {GroupName} ({ClassName})` section with its own baseline table or N×N matrix, followed by the detailed results table. The detailed table is always 5 columns (Method, Mean Time, Median Time, Sample Size, Status); ratios, CIs, and q-values live in the comparison section above it.
 
 ### Pair counts per group
 
@@ -187,24 +192,25 @@ Use meaningful test class and method names since they appear in the markdown:
 
 ```csharp
 [WriteToMarkdown]
-public class DatabaseQueryPerformance  // Clear class name
+[Sailfish]
+public class DatabaseQueryPerformance   // Class name doubles as the implicit comparison group label
 {
-    [SailfishMethod(ComparisonGroup = "QueryTypes", IsBaseline = true)]
-    public void SimpleSelect() { }      // Descriptive method name
+    [SailfishMethod(IsBaseline = true)]
+    public void SimpleSelect() { }       // Descriptive method name
 
-    [SailfishMethod(ComparisonGroup = "QueryTypes")]
-    public void ComplexJoin() { }       // Descriptive method name
+    [SailfishMethod]
+    public void ComplexJoin() { }        // Descriptive method name
 }
 ```
 
-### 2. Use Descriptive Comparison Groups
+### 2. Reach for explicit groups only when you need multiple in one class
 
-Choose comparison group names that clearly indicate what's being compared:
+The implicit class-wide group is usually all the context the output needs. Set `ComparisonGroup = "..."` only when a single class genuinely has multiple distinct comparisons:
 
 ```csharp
-[SailfishMethod(ComparisonGroup = "DatabaseQueries")]      // Good
+[SailfishMethod(ComparisonGroup = "DatabaseQueries")]      // Good — explicit name needed for multi-group class
 [SailfishMethod(ComparisonGroup = "SerializationMethods")] // Good
-[SailfishMethod(ComparisonGroup = "Group1")]               // Poor
+[SailfishMethod(ComparisonGroup = "Group1")]               // Poor — meaningless name
 ```
 
 ### 3. Configure Output Directory
@@ -252,9 +258,11 @@ If markdown files are empty or missing:
 
 If method comparisons are missing from the markdown:
 
-1. **Verify group names**: Ensure methods use identical `ComparisonGroup` values (case-sensitive)
-2. **Check method count**: Need at least 2 methods in a group for comparisons (SF1302 warns at build time)
-3. **At most one baseline**: SF1301 errors at build time if more than one method in a group sets `IsBaseline = true`
+1. **Class is `[Sailfish]`**: comparison sections require a Sailfish test class.
+2. **Not opted out**: check whether the class has `DisableComparison = true` on `[Sailfish]`.
+3. **Method count**: each comparison group needs ≥ 2 methods (SF1302 warns at build time).
+4. **Explicit group names match**: when using explicit `ComparisonGroup`, values are case-sensitive.
+5. **At most one baseline**: SF1301 errors at build time if more than one method in a group sets `IsBaseline = true`.
 
 ### GitHub Rendering Issues
 

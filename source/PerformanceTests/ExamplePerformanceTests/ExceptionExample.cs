@@ -5,7 +5,7 @@ using Sailfish.Attributes;
 
 namespace PerformanceTests.ExamplePerformanceTests;
 
-[Sailfish(SampleSize = 4, DisableOverheadEstimation = true)]
+[Sailfish(SampleSize = 4, DisableOverheadEstimation = true, DisableComparison = true)]
 public class ExceptionExample
 {
     [SailfishMethod]

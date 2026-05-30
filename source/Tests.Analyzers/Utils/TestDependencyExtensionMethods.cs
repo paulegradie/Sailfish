@@ -63,6 +63,7 @@ public sealed class SailfishAttribute : Attribute
     [Range(0, int.MaxValue)]
     public int NumWarmupIterations { get; set; }
     public bool Disabled { get; set; }
+    public bool DisableComparison { get; set; }
 }
 
 [AttributeUsage(AttributeTargets.Method, Inherited = false, AllowMultiple = false)]

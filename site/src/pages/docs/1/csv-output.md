@@ -13,18 +13,20 @@ Apply the `[WriteToCsv]` attribute to any test class:
 ```csharp
 [WriteToCsv]
 [Sailfish(SampleSize = 100)]
-public class PerformanceTest
+public class SortBenchmarks
 {
-    [SailfishMethod(ComparisonGroup = "Algorithms", IsBaseline = true)]
+    [SailfishMethod(IsBaseline = true)]
     public void QuickSort() { /* implementation */ }
 
-    [SailfishMethod(ComparisonGroup = "Algorithms")]
+    [SailfishMethod]
     public void BubbleSort() { /* implementation */ }
 
     [SailfishMethod]
-    public void RegularMethod() { /* implementation */ }
+    public void MergeSort() { /* implementation */ }
 }
 ```
+
+The `[Sailfish]` class above forms an implicit class-wide comparison group — `QuickSort` is the baseline; the other two are contenders. Pass `DisableComparison = true` to `[Sailfish]` to opt out and just emit per-method rows.
 
 ## CSV Structure
 
@@ -35,9 +37,9 @@ The generated CSV file uses a two-section format. Each section starts with a `#`
 ```csv
 # Individual Test Results
 TestClass,TestMethod,MeanTime,MedianTime,StdDev,SampleSize,ComparisonGroup,Status
-PerformanceTest,BubbleSort,45.200,44.100,3.100,100,Algorithms,Success
-PerformanceTest,QuickSort,2.100,2.000,0.300,100,Algorithms,Success
-PerformanceTest,RegularMethod,1.000,1.000,0.100,100,,Success
+SortBenchmarks,BubbleSort,45.200,44.100,3.100,100,SortBenchmarks,Success
+SortBenchmarks,MergeSort,3.400,3.300,0.300,100,SortBenchmarks,Success
+SortBenchmarks,QuickSort,2.100,2.000,0.300,100,SortBenchmarks,Success
 ```
 
 **Fields:**
@@ -47,7 +49,11 @@ PerformanceTest,RegularMethod,1.000,1.000,0.100,100,,Success
 - **MedianTime**: Median execution time in milliseconds
 - **StdDev**: Standard deviation of execution times
 - **SampleSize**: Number of iterations executed
-- **ComparisonGroup**: Comparison group name (set via `SailfishMethod(ComparisonGroup = "...")`); empty for ungrouped methods. The group is scoped per test class — the same name in two different classes is reported as two independent groups, distinguished by the `TestClass` column.
+- **ComparisonGroup**: The comparison-group label for this method's row.
+  - For methods in the **implicit class-wide group** (the default when `[Sailfish]` is set without `DisableComparison`): the class name.
+  - For methods with explicit `[SailfishMethod(ComparisonGroup = "...")]`: that name.
+  - Empty for methods not in any comparison group (their class has `DisableComparison = true`).
+  - Comparison groups are scoped per class — the same name in two different classes is reported as two independent groups, distinguished by the `TestClass` column.
 - **Status**: Test execution status (`Success` / `Failed`)
 
 {% callout title="Where are CI95_MOE / CI99_MOE?" type="note" %}
@@ -64,11 +70,12 @@ The shape of this section depends on whether the group has a baseline:
 ```csv
 # Method Comparisons
 ComparisonGroup,Method1,Method2,Mean1,Mean2,Ratio,CI95_Lower,CI95_Upper,q_value,Label,ChangeDescription
-Algorithms,QuickSort,BubbleSort,2.100,45.200,21.524,18.301,24.917,1.2e-12,Slower,Regressed
+SortBenchmarks,QuickSort,BubbleSort,2.100,45.200,21.524,18.301,24.917,1.2e-12,Slower,Regressed
+SortBenchmarks,QuickSort,MergeSort,2.100,3.400,1.619,1.412,1.856,3.4e-09,Slower,Regressed
 ```
 
 **Fields:**
-- **ComparisonGroup**: Name of the comparison group
+- **ComparisonGroup**: The comparison-group label — class name for the implicit class-wide group, or the explicit name set via `SailfishMethod(ComparisonGroup = "...")`.
 - **Method1 / Method2**: The two methods being compared. In baseline mode, Method1 is always the baseline.
 - **Mean1 / Mean2**: Mean execution times (ms) for each method
 - **Ratio**: `Mean2 / Mean1` (unitless). Values > 1 indicate Method 2 is slower than Method 1; values < 1 indicate Method 2 is faster.
@@ -125,7 +132,7 @@ The CSV format is designed for easy Excel analysis:
 
 ### Multiple Comparison Groups
 
-When you have multiple comparison groups, each generates its own set of comparisons:
+A class can declare explicit `ComparisonGroup` names to split its methods into more than one comparison. Each group generates its own set of rows:
 
 ```csv
 # Method Comparisons
@@ -149,17 +156,15 @@ The rows above are an N×N example — none of the methods is marked `IsBaseline
 
 Baseline mode is set by adding `IsBaseline = true` to exactly one `[SailfishMethod]` in the group. The CSV row count for that group shrinks accordingly and the FDR adjustment runs over the smaller set, sharpening individual q-values.
 
-### Mixed Test Types
+### Classes that opt out of comparison
 
-The CSV includes both comparison and regular methods:
+Use `[Sailfish(DisableComparison = true)]` when a class isn't really comparing alternatives — methods then appear in the individual results section with an empty `ComparisonGroup` column and no comparison rows are emitted:
 
 ```csv
 # Individual Test Results
 TestClass,TestMethod,MeanTime,MedianTime,StdDev,SampleSize,ComparisonGroup,Status
-MyTest,ComparisonMethod1,10.500,9.800,1.200,100,Group1,Success
-MyTest,ComparisonMethod2,8.300,8.100,0.900,100,Group1,Success
-MyTest,RegularMethod,1.000,1.000,0.100,100,,Success
-MyTest,AnotherRegularMethod,1.100,1.000,0.100,100,,Success
+SmokeChecks,OperationA,10.500,9.800,1.200,100,,Success
+SmokeChecks,OperationB,1.100,1.000,0.100,100,,Success
 ```
 
 ## Best Practices
@@ -170,24 +175,25 @@ Use meaningful test class and method names since they appear in the CSV:
 
 ```csharp
 [WriteToCsv]
-public class DatabaseQueryPerformance  // Clear class name
+[Sailfish]
+public class DatabaseQueryPerformance   // Class name doubles as the implicit comparison group label
 {
-    [SailfishMethod(ComparisonGroup = "QueryTypes", IsBaseline = true)]
+    [SailfishMethod(IsBaseline = true)]
     public void SimpleSelect() { }      // Descriptive method name
 
-    [SailfishMethod(ComparisonGroup = "QueryTypes")]
+    [SailfishMethod]
     public void ComplexJoin() { }       // Descriptive method name
 }
 ```
 
-### 2. Use Descriptive Comparison Groups
+### 2. Reach for explicit groups only when you need multiple in one class
 
-Choose comparison group names that clearly indicate what's being compared:
+The implicit class-wide group is usually all the context the output needs — methods in `DatabaseQueryPerformance` already group under that class. Only set `ComparisonGroup = "..."` when one class genuinely has multiple distinct comparisons:
 
 ```csharp
-[SailfishMethod(ComparisonGroup = "DatabaseQueries")]      // Good
+[SailfishMethod(ComparisonGroup = "DatabaseQueries")]      // Good — explicit name needed for multi-group class
 [SailfishMethod(ComparisonGroup = "SerializationMethods")] // Good
-[SailfishMethod(ComparisonGroup = "Group1")]               // Poor
+[SailfishMethod(ComparisonGroup = "Group1")]               // Poor — meaningless name
 ```
 
 ### 3. Configure Output Directory
@@ -226,9 +232,11 @@ If CSV files are empty or missing:
 
 If method comparisons are missing from the CSV:
 
-1. **Verify group names**: Ensure methods use identical `ComparisonGroup` values (case-sensitive)
-2. **Check method count**: Need at least 2 methods in a group for comparisons (SF1302 warns at build time)
-3. **Single baseline per group**: At most one method in the group can set `IsBaseline = true` (SF1301 enforces this)
+1. **Class is `[Sailfish]`**: comparison rows require the class to be a Sailfish test class.
+2. **Not opted out**: check whether the class has `DisableComparison = true` on `[Sailfish]`.
+3. **Method count**: each comparison group needs ≥ 2 methods (SF1302 warns at build time).
+4. **Explicit group names match**: when using explicit `ComparisonGroup`, values are case-sensitive.
+5. **Single baseline per group**: at most one method per group can set `IsBaseline = true` (SF1301 enforces this).
 
 ### Excel Import Issues
 

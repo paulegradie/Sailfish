@@ -77,6 +77,18 @@ public sealed class SailfishAttribute : Attribute
     public bool DisableOverheadEstimation { get; set; }
 
     /// <summary>
+    ///     Disables the implicit class-wide comparison group for this class.
+    ///     By default, every <see cref="SailfishMethodAttribute"/> in a Sailfish class that doesn't
+    ///     set <c>ComparisonGroup</c> explicitly is treated as a member of a single implicit
+    ///     class-wide comparison group, producing an N×N matrix (or a baseline-vs-contender table
+    ///     when one method sets <c>IsBaseline = true</c>).
+    ///     Set this to <c>true</c> when the class isn't comparison-focused — methods without an
+    ///     explicit <c>ComparisonGroup</c> will then run individually with no comparison output.
+    ///     Methods that set <c>ComparisonGroup</c> explicitly still participate in their named group.
+    /// </summary>
+    public bool DisableComparison { get; set; }
+
+    /// <summary>
     ///     Gets or sets whether to use adaptive sampling for this test class.
     ///     When enabled, tests will continue until statistical convergence is achieved.
     /// </summary>

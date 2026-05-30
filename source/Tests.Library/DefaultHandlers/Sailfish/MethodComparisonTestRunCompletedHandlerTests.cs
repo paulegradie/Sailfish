@@ -189,19 +189,57 @@ public class MethodComparisonTestRunCompletedHandlerTests
     }
 
     [Fact]
-    public async Task Handle_WithLegacyComparisonAttribute_StillRendersComparison()
+    public async Task Handle_WithImplicitGroup_RendersComparisons()
     {
-        // Arrange — uses the obsolete [SailfishComparison] attribute via the fallback path.
-        var notification = CreateTestNotificationWithLegacyComparison();
+        // Arrange — class is [Sailfish] (no DisableComparison), methods have no explicit ComparisonGroup.
+        // Both should join the implicit class-wide group and produce a comparison section.
+        var notification = CreateTestNotificationWithImplicitGroup();
 
         // Act
         await _handler.Handle(notification, CancellationToken.None);
 
-        // Assert — legacy attribute has no baseline concept → falls through to N×N matrix.
+        // Assert — implicit group uses a "Comparisons: {ClassName}" header (not "Comparison Group: …").
         await _mockMediator.Received(1).Publish(
             Arg.Is<WriteMethodComparisonMarkdownNotification>(n =>
-                n.MarkdownContent.Contains("Comparison Group:") &&
+                n.MarkdownContent.Contains("Comparisons: TestClassWithImplicitGroup") &&
                 n.MarkdownContent.Contains("Performance Comparison Matrix")),
+            Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task Handle_WithImplicitGroupAndBaseline_RendersBaselineTable()
+    {
+        // Arrange — class is [Sailfish], one method sets IsBaseline = true with no explicit group.
+        var notification = CreateTestNotificationWithImplicitGroupAndBaseline();
+
+        // Act
+        await _handler.Handle(notification, CancellationToken.None);
+
+        // Assert — implicit-group baseline table.
+        await _mockMediator.Received(1).Publish(
+            Arg.Is<WriteMethodComparisonMarkdownNotification>(n =>
+                n.MarkdownContent.Contains("Comparisons: TestClassWithImplicitGroupAndBaseline") &&
+                n.MarkdownContent.Contains("Baseline Comparison") &&
+                n.MarkdownContent.Contains("Ratio vs Baseline") &&
+                !n.MarkdownContent.Contains("Performance Comparison Matrix")),
+            Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task Handle_WithDisableComparison_DoesNotEmitComparisons()
+    {
+        // Arrange — class is [Sailfish(DisableComparison = true)] with two plain [SailfishMethod]s.
+        var notification = CreateTestNotificationWithComparisonDisabled();
+
+        // Act
+        await _handler.Handle(notification, CancellationToken.None);
+
+        // Assert — methods fall through to Individual Test Results, no comparison sections.
+        await _mockMediator.Received(1).Publish(
+            Arg.Is<WriteMethodComparisonMarkdownNotification>(n =>
+                n.MarkdownContent.Contains("Individual Test Results") &&
+                !n.MarkdownContent.Contains("Baseline Comparison") &&
+                !n.MarkdownContent.Contains("Performance Comparison Matrix")),
             Arg.Any<CancellationToken>());
     }
 
@@ -456,24 +494,52 @@ public class MethodComparisonTestRunCompletedHandlerTests
         return new TestRunCompletedNotification([classA, classB]);
     }
 
-    private TestRunCompletedNotification CreateTestNotificationWithLegacyComparison()
+    private TestRunCompletedNotification CreateTestNotificationWithImplicitGroup()
     {
         var classExecutionSummary = ClassExecutionSummaryTrackingFormatBuilder.Create()
-            .WithTestClass(typeof(LegacyTestClassWithComparison))
+            .WithTestClass(typeof(TestClassWithImplicitGroup))
             .WithCompiledTestCaseResult(b => b
-                .WithTestCaseId(TestCaseIdBuilder.Create().WithTestCaseName("Method1").Build())
+                .WithTestCaseId(TestCaseIdBuilder.Create().WithTestCaseName("MethodA").Build())
                 .WithPerformanceRunResult(PerformanceRunResultTrackingFormatBuilder.Create()
-                    .WithMean(10.0)
-                    .WithMedian(9.5)
-                    .WithSampleSize(100)
-                    .Build()))
+                    .WithMean(10.0).WithMedian(9.5).WithSampleSize(100).Build()))
             .WithCompiledTestCaseResult(b => b
-                .WithTestCaseId(TestCaseIdBuilder.Create().WithTestCaseName("Method2").Build())
+                .WithTestCaseId(TestCaseIdBuilder.Create().WithTestCaseName("MethodB").Build())
                 .WithPerformanceRunResult(PerformanceRunResultTrackingFormatBuilder.Create()
-                    .WithMean(20.0)
-                    .WithMedian(19.5)
-                    .WithSampleSize(100)
-                    .Build()))
+                    .WithMean(20.0).WithMedian(19.5).WithSampleSize(100).Build()))
+            .Build();
+
+        return new TestRunCompletedNotification([classExecutionSummary]);
+    }
+
+    private TestRunCompletedNotification CreateTestNotificationWithImplicitGroupAndBaseline()
+    {
+        var classExecutionSummary = ClassExecutionSummaryTrackingFormatBuilder.Create()
+            .WithTestClass(typeof(TestClassWithImplicitGroupAndBaseline))
+            .WithCompiledTestCaseResult(b => b
+                .WithTestCaseId(TestCaseIdBuilder.Create().WithTestCaseName("Reference").Build())
+                .WithPerformanceRunResult(PerformanceRunResultTrackingFormatBuilder.Create()
+                    .WithMean(10.0).WithMedian(9.5).WithSampleSize(100).Build()))
+            .WithCompiledTestCaseResult(b => b
+                .WithTestCaseId(TestCaseIdBuilder.Create().WithTestCaseName("Alternative").Build())
+                .WithPerformanceRunResult(PerformanceRunResultTrackingFormatBuilder.Create()
+                    .WithMean(20.0).WithMedian(19.5).WithSampleSize(100).Build()))
+            .Build();
+
+        return new TestRunCompletedNotification([classExecutionSummary]);
+    }
+
+    private TestRunCompletedNotification CreateTestNotificationWithComparisonDisabled()
+    {
+        var classExecutionSummary = ClassExecutionSummaryTrackingFormatBuilder.Create()
+            .WithTestClass(typeof(TestClassWithComparisonDisabled))
+            .WithCompiledTestCaseResult(b => b
+                .WithTestCaseId(TestCaseIdBuilder.Create().WithTestCaseName("OperationA").Build())
+                .WithPerformanceRunResult(PerformanceRunResultTrackingFormatBuilder.Create()
+                    .WithMean(10.0).WithMedian(9.5).WithSampleSize(100).Build()))
+            .WithCompiledTestCaseResult(b => b
+                .WithTestCaseId(TestCaseIdBuilder.Create().WithTestCaseName("OperationB").Build())
+                .WithPerformanceRunResult(PerformanceRunResultTrackingFormatBuilder.Create()
+                    .WithMean(20.0).WithMedian(19.5).WithSampleSize(100).Build()))
             .Build();
 
         return new TestRunCompletedNotification([classExecutionSummary]);
@@ -575,17 +641,41 @@ public class MethodComparisonTestRunCompletedHandlerTests
         public void Contender() { }
     }
 
+    // Implicit class-wide group: [Sailfish] is present without DisableComparison; methods have no
+    // explicit ComparisonGroup. Both methods join the implicit class-wide group.
+    [Sailfish]
     [WriteToMarkdown]
-    private class LegacyTestClassWithComparison
+    private class TestClassWithImplicitGroup
     {
-        // Coverage for the deprecation-window fallback: legacy [SailfishComparison] still resolves.
-#pragma warning disable CS0618 // Type or member is obsolete
-        [SailfishComparison("TestGroup")]
-        public void Method1() { }
+        [SailfishMethod]
+        public void MethodA() { }
 
-        [SailfishComparison("TestGroup")]
-        public void Method2() { }
-#pragma warning restore CS0618
+        [SailfishMethod]
+        public void MethodB() { }
+    }
+
+    // Implicit class-wide group with a baseline.
+    [Sailfish]
+    [WriteToMarkdown]
+    private class TestClassWithImplicitGroupAndBaseline
+    {
+        [SailfishMethod(IsBaseline = true)]
+        public void Reference() { }
+
+        [SailfishMethod]
+        public void Alternative() { }
+    }
+
+    // Class-level opt-out: methods don't join any group; output should land in Individual Test Results.
+    [Sailfish(DisableComparison = true)]
+    [WriteToMarkdown]
+    private class TestClassWithComparisonDisabled
+    {
+        [SailfishMethod]
+        public void OperationA() { }
+
+        [SailfishMethod]
+        public void OperationB() { }
     }
 
     [WriteToMarkdown]

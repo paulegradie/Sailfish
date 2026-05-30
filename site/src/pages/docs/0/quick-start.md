@@ -36,7 +36,7 @@ public class Example
 
 ### Method Comparison Test
 
-Mark two or more methods with the same `ComparisonGroup` and Sailfish will compare them. Pick one as the baseline via `IsBaseline = true` for an N−1 baseline-vs-contender report, or leave all members baseline-less for an N×N matrix.
+Every `[SailfishMethod]` in a `[Sailfish]` class is automatically compared against its siblings — no extra attributes required. Optionally pick one method as the baseline via `IsBaseline = true` to switch from an N×N matrix to an N−1 baseline-vs-contender report.
 
 ```csharp
 [WriteToMarkdown]  // Generate consolidated markdown output
@@ -52,14 +52,14 @@ public class AlgorithmComparison
         _data = Enumerable.Range(1, 1000).ToList();
     }
 
-    [SailfishMethod(ComparisonGroup = "SortingAlgorithms", IsBaseline = true)]
+    [SailfishMethod(IsBaseline = true)]
     public void QuickSort()
     {
         var array = _data.ToArray();
         Array.Sort(array);
     }
 
-    [SailfishMethod(ComparisonGroup = "SortingAlgorithms")]
+    [SailfishMethod]
     public void BubbleSort()
     {
         var array = _data.ToArray();
@@ -77,7 +77,9 @@ public class AlgorithmComparison
 }
 ```
 
-See [Method Comparisons](/docs/1/method-comparisons) for the full feature, including the no-baseline N×N mode and the SF1300/1301/1302 build-time analyzers.
+Don't want comparison output on a particular class? Set `[Sailfish(DisableComparison = true)]` and the methods run individually with no comparison section.
+
+See [Method Comparisons](/docs/1/method-comparisons) for the full feature: the implicit class-wide group, explicit `ComparisonGroup` for multi-group classes, baseline vs. N×N modes, and the SF1300/1301/1302 build-time analyzers.
 
 ## 3. Register a Dependency
 
@@ -126,7 +128,7 @@ The individual descriptive statistics for each method appear in the IDE Test Out
 A baseline group renders like:
 
 ```
-## 🔬 Comparison Group: SortingAlgorithms (AlgorithmComparison)
+## 🔬 Comparisons: AlgorithmComparison
 
 ### 📐 Baseline-vs-Contender (baseline = `QuickSort`, q-values via BH-FDR, α=0.05)
 

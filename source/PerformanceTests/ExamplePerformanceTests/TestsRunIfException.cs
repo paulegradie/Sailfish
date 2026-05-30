@@ -4,7 +4,7 @@ using Sailfish.Attributes;
 
 namespace PerformanceTests.ExamplePerformanceTests;
 
-[Sailfish]
+[Sailfish(DisableComparison = true)]
 public class TestsRunIfException
 {
     [SailfishMethodSetup]

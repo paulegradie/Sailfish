@@ -9,7 +9,7 @@ title: SailDiff
 SailDiff operates in two main modes:
 
 1. **Historical Comparisons**: Compare current test runs against previously saved tracking data
-2. **Method Comparisons**: Compare multiple methods within a single test run via `SailfishMethod(ComparisonGroup = "...")`
+2. **Method Comparisons**: Compare multiple methods within a single test run — automatic for every `[SailfishMethod]` on a `[Sailfish]` class
 
 When enabled, SailDiff will produce various measurements describing the differences between test runs or methods. Results are presented via multiple output formats:
 
@@ -19,7 +19,7 @@ When enabled, SailDiff will produce various measurements describing the differen
 
 ### Method Comparisons
 
-For real-time method comparisons within a single test run, see the [Method Comparisons](/docs/1/method-comparisons) documentation. This feature allows you to compare multiple algorithms or implementations automatically by setting `ComparisonGroup = "..."` on `[SailfishMethod]` (and optionally `IsBaseline = true` on one method per group).
+For real-time method comparisons within a single test run, see the [Method Comparisons](/docs/1/method-comparisons) documentation. Comparison is the default behavior for any `[Sailfish]` class — every `[SailfishMethod]` joins an implicit class-wide comparison group. Pick a baseline with `IsBaseline = true` for an N−1 table; opt a class out entirely with `DisableComparison = true`; or set `ComparisonGroup = "..."` for the advanced multi-group case.
 
 Method comparisons generate:
 - **N×N or N−1 layouts**: every pair compared (no baseline) or each contender against the chosen baseline
