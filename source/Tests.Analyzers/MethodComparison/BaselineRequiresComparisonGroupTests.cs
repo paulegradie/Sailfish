@@ -9,10 +9,12 @@ namespace Tests.Analyzers.MethodComparison;
 public class BaselineRequiresComparisonGroupTests
 {
     [Fact]
-    public async Task ReportsErrorWhenIsBaselineWithoutComparisonGroup()
+    public async Task ReportsErrorWhenIsBaselineOnMethodNotInAnyGroup()
     {
+        // Class has DisableComparison = true AND method has no explicit ComparisonGroup
+        // → method is not in any comparison group → IsBaseline is invalid.
         const string source = @"
-[Sailfish]
+[Sailfish(DisableComparison = true)]
 public class TestCode
 {
     [SailfishMethod({|#0:IsBaseline = true|})]
@@ -29,10 +31,11 @@ public class TestCode
     }
 
     [Fact]
-    public async Task NoDiagnosticWhenBaselineHasComparisonGroup()
+    public async Task NoDiagnosticWhenBaselineHasExplicitComparisonGroup()
     {
+        // Explicit ComparisonGroup wins regardless of class-level setting.
         const string source = @"
-[Sailfish]
+[Sailfish(DisableComparison = true)]
 public class TestCode
 {
     [SailfishMethod(ComparisonGroup = ""g"", IsBaseline = true)]
@@ -46,10 +49,29 @@ public class TestCode
     }
 
     [Fact]
+    public async Task NoDiagnosticWhenBaselineJoinsImplicitClassGroup()
+    {
+        // [Sailfish] (no DisableComparison) means the method joins the implicit class-wide
+        // comparison group, so IsBaseline is meaningful even without an explicit ComparisonGroup.
+        const string source = @"
+[Sailfish]
+public class TestCode
+{
+    [SailfishMethod(IsBaseline = true)]
+    public void Baseline() { }
+
+    [SailfishMethod]
+    public void Contender() { }
+}";
+        await AnalyzerVerifier<BaselineRequiresComparisonGroupAnalyzer>.VerifyAnalyzerAsync(
+            source.AddSailfishAttributeDependencies());
+    }
+
+    [Fact]
     public async Task NoDiagnosticWhenIsBaselineIsFalse()
     {
         const string source = @"
-[Sailfish]
+[Sailfish(DisableComparison = true)]
 public class TestCode
 {
     [SailfishMethod(IsBaseline = false)]

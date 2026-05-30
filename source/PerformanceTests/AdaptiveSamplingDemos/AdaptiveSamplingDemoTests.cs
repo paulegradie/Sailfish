@@ -10,7 +10,7 @@ namespace PerformanceTests.AdaptiveSamplingDemos;
 /// This test should converge quickly due to low variability.
 /// </summary>
 [WriteToMarkdown]
-[Sailfish(UseAdaptiveSampling = true, TargetCoefficientOfVariation = 0.05, MaximumSampleSize = 100)]
+[Sailfish(UseAdaptiveSampling = true, TargetCoefficientOfVariation = 0.05, MaximumSampleSize = 100, DisableComparison = true)]
 public class ConsistentPerformanceDemo
 {
     [SailfishMethod]
@@ -35,7 +35,7 @@ public class ConsistentPerformanceDemo
 /// This test should reach maximum iterations due to high variability.
 /// </summary>
 [WriteToMarkdown]
-[Sailfish(UseAdaptiveSampling = true, TargetCoefficientOfVariation = 0.25, MaximumSampleSize = 50)]
+[Sailfish(UseAdaptiveSampling = true, TargetCoefficientOfVariation = 0.25, MaximumSampleSize = 50, DisableComparison = true)]
 public class VariablePerformanceDemo
 {
     private static int _counter = 0;
@@ -63,7 +63,7 @@ public class VariablePerformanceDemo
 /// Shows the difference between traditional fixed sampling and adaptive sampling.
 /// </summary>
 [WriteToMarkdown]
-[Sailfish(UseAdaptiveSampling = false, SampleSize = 20)] // Fixed sampling for comparison
+[Sailfish(UseAdaptiveSampling = false, SampleSize = 20, DisableComparison = true)] // Fixed sampling for comparison
 public class FixedSamplingComparison
 {
     [SailfishMethod]
@@ -88,7 +88,7 @@ public class FixedSamplingComparison
 /// Uses stricter convergence criteria and higher maximum iterations.
 /// </summary>
 [WriteToMarkdown]
-[Sailfish(UseAdaptiveSampling = true, TargetCoefficientOfVariation = 0.02, MaximumSampleSize = 200)]
+[Sailfish(UseAdaptiveSampling = true, TargetCoefficientOfVariation = 0.02, MaximumSampleSize = 200, DisableComparison = true)]
 public class StrictConvergenceDemo
 {
     [SailfishMethod]
@@ -107,7 +107,7 @@ public class StrictConvergenceDemo
 /// Demonstrates how adaptive sampling handles various performance patterns.
 /// </summary>
 [WriteToMarkdown]
-[Sailfish(UseAdaptiveSampling = true, TargetCoefficientOfVariation = 0.05, MaximumSampleSize = 150)]
+[Sailfish(UseAdaptiveSampling = true, TargetCoefficientOfVariation = 0.05, MaximumSampleSize = 150, DisableComparison = true)]
 public class WorkloadPatternsDemo
 {
     private static int _cpuIntensiveCounter = 0;
@@ -164,7 +164,7 @@ public class WorkloadPatternsDemo
 /// Tests behavior with very fast operations and extreme scenarios.
 /// </summary>
 [WriteToMarkdown]
-[Sailfish(UseAdaptiveSampling = true, TargetCoefficientOfVariation = 0.1, MaximumSampleSize = 300)]
+[Sailfish(UseAdaptiveSampling = true, TargetCoefficientOfVariation = 0.1, MaximumSampleSize = 300, DisableComparison = true)]
 public class EdgeCasesDemo
 {
     [SailfishMethod]

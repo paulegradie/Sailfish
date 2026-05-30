@@ -6,7 +6,7 @@ namespace PerformanceTests.ExamplePerformanceTests;
 
 [WriteToCsv]
 [WriteToMarkdown]
-[Sailfish(SampleSize = 3, DisableOverheadEstimation = true, NumWarmupIterations = 0)]
+[Sailfish(SampleSize = 3, DisableOverheadEstimation = true, NumWarmupIterations = 0, DisableComparison = true)]
 public class OrderingExample
 {
     [SailfishMethod(Order = 2)]

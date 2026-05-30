@@ -16,8 +16,8 @@ SF1015 | Sailfish.Usage | Error | Properties assigned in the global setup must h
 SF1020 | Sailfish.Usage | Error | Sailfish lifecycle methods must be public
 SF1021 | Sailfish.Usage | Error | Only one Sailfish lifecycle attribute is allowed per method
 SF7000 | Sailfish.Suppression | Hidden | Suppresses warnings when a non nullable property is set in the global setup method
-SF1300 | Sailfish.Usage | Error | IsBaseline=true requires a ComparisonGroup on the SailfishMethod attribute
-SF1301 | Sailfish.Usage | Error | At most one method per ComparisonGroup may set IsBaseline=true
-SF1302 | Sailfish.Usage | Warning | A ComparisonGroup must contain at least two methods to produce a comparison
+SF1300 | Sailfish.Usage | Error | IsBaseline=true on a method that isn't in any comparison group
+SF1301 | Sailfish.Usage | Error | At most one method per comparison group (explicit or implicit) may set IsBaseline=true
+SF1302 | Sailfish.Usage | Warning | A comparison group (explicit or implicit) must contain at least two methods
 
 

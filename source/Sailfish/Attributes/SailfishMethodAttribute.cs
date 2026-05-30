@@ -59,37 +59,52 @@ public sealed class SailfishMethodAttribute : Attribute
     public bool DisableOverheadEstimation { get; set; }
 
     /// <summary>
-    ///     Opts this method into a named comparison group. All methods in the same group
-    ///     within a single test class are compared against each other when the class runs.
-    ///     Leave <c>null</c> (default) to exclude the method from comparison entirely.
+    ///     Opts this method into a named comparison group. Methods that share an explicit
+    ///     <see cref="ComparisonGroup"/> within a single test class are compared against each other.
+    ///     When left <c>null</c> (default), the method joins the implicit class-wide comparison group —
+    ///     unless the enclosing class sets <c>[Sailfish(DisableComparison = true)]</c>, in which case
+    ///     the method runs without producing comparison output.
     /// </summary>
     /// <remarks>
-    ///     Comparison is always opt-in. A method without <see cref="ComparisonGroup"/> set
-    ///     simply runs as a normal Sailfish method with no comparison output.
-    ///
-    ///     Combine with <see cref="IsBaseline"/> to designate a baseline; without one, all
-    ///     methods in the group are compared pairwise (N×N matrix).
+    ///     Most classes never need to set this — every method in a <c>[Sailfish]</c> class is compared
+    ///     by default. Setting <see cref="ComparisonGroup"/> is the advanced path for classes that need
+    ///     multiple distinct comparison groups (e.g. sorting algorithms in one group and hashing
+    ///     algorithms in another).
     ///
     ///     Example:
     ///     <code>
-    ///     [SailfishMethod(ComparisonGroup = "Sort", IsBaseline = true)]
-    ///     public void QuickSort() { /* ... */ }
+    ///     [Sailfish]
+    ///     public class MixedBenchmarks
+    ///     {
+    ///         [SailfishMethod(ComparisonGroup = "Sort", IsBaseline = true)]
+    ///         public void QuickSort() { /* ... */ }
     ///
-    ///     [SailfishMethod(ComparisonGroup = "Sort")]
-    ///     public void BubbleSort() { /* ... */ }
+    ///         [SailfishMethod(ComparisonGroup = "Sort")]
+    ///         public void BubbleSort() { /* ... */ }
+    ///
+    ///         [SailfishMethod(ComparisonGroup = "Hash")]
+    ///         public void Md5() { /* ... */ }
+    ///
+    ///         [SailfishMethod(ComparisonGroup = "Hash")]
+    ///         public void Sha256() { /* ... */ }
+    ///     }
     ///     </code>
     /// </remarks>
     public string? ComparisonGroup { get; set; }
 
     /// <summary>
-    ///     When <c>true</c>, marks this method as the baseline of its <see cref="ComparisonGroup"/>.
+    ///     When <c>true</c>, marks this method as the baseline of its comparison group.
+    ///     The "comparison group" is the explicit <see cref="ComparisonGroup"/> when set, otherwise
+    ///     the enclosing class's implicit class-wide group.
     ///     All other methods in the group are compared against the baseline (N−1 comparisons).
     ///     When no method in a group sets <see cref="IsBaseline"/>, every pair is compared (N×N).
     /// </summary>
     /// <remarks>
-    ///     At most one method per <c>(class, ComparisonGroup)</c> may set <c>IsBaseline = true</c>;
-    ///     the SF1301 analyzer enforces this at build time and the runtime falls back to N×N if violated.
-    ///     <see cref="IsBaseline"/> requires <see cref="ComparisonGroup"/> to be set (enforced by SF1300).
+    ///     At most one method per group may set <c>IsBaseline = true</c>; the SF1301 analyzer
+    ///     enforces this at build time and the runtime falls back to N×N if violated.
+    ///     Setting <see cref="IsBaseline"/> on a method that isn't in any comparison group
+    ///     (e.g. its class is <c>[Sailfish(DisableComparison = true)]</c> and the method has no
+    ///     explicit <see cref="ComparisonGroup"/>) is reported by the SF1300 analyzer.
     /// </remarks>
     public bool IsBaseline { get; set; }
 }

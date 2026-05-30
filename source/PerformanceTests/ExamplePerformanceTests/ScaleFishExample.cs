@@ -6,7 +6,7 @@ using Sailfish.Attributes;
 namespace PerformanceTests.ExamplePerformanceTests;
 
 [WriteToMarkdown]
-[Sailfish(SampleSize = 20, DisableOverheadEstimation = true, Disabled = false)]
+[Sailfish(SampleSize = 20, DisableOverheadEstimation = true, Disabled = false, DisableComparison = true)]
 public class ScaleFishExample
 {
     // Geometric (log-spaced) values — recommended for ScaleFish complexity probes.

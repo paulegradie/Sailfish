@@ -9,7 +9,7 @@ namespace Tests.Analyzers.MethodComparison;
 public class SingleBaselinePerGroupTests
 {
     [Fact]
-    public async Task ReportsErrorWhenTwoMethodsInSameGroupAreBaselines()
+    public async Task ReportsErrorWhenTwoMethodsInSameExplicitGroupAreBaselines()
     {
         const string source = @"
 [Sailfish]
@@ -23,8 +23,28 @@ public class TestCode
 }";
         await AnalyzerVerifier<SingleBaselinePerGroupAnalyzer>.VerifyAnalyzerAsync(
             source.AddSailfishAttributeDependencies(),
-            new DiagnosticResult(SingleBaselinePerGroupAnalyzer.Descriptor).WithLocation(0).WithArguments("g", 2),
-            new DiagnosticResult(SingleBaselinePerGroupAnalyzer.Descriptor).WithLocation(1).WithArguments("g", 2));
+            new DiagnosticResult(SingleBaselinePerGroupAnalyzer.Descriptor).WithLocation(0).WithArguments("'g'", 2),
+            new DiagnosticResult(SingleBaselinePerGroupAnalyzer.Descriptor).WithLocation(1).WithArguments("'g'", 2));
+    }
+
+    [Fact]
+    public async Task ReportsErrorWhenTwoMethodsInImplicitClassGroupAreBaselines()
+    {
+        // Two methods both setting IsBaseline = true in the implicit class-wide group → SF1301.
+        const string source = @"
+[Sailfish]
+public class TestCode
+{
+    [SailfishMethod({|#0:IsBaseline = true|})]
+    public void First() { }
+
+    [SailfishMethod({|#1:IsBaseline = true|})]
+    public void Second() { }
+}";
+        await AnalyzerVerifier<SingleBaselinePerGroupAnalyzer>.VerifyAnalyzerAsync(
+            source.AddSailfishAttributeDependencies(),
+            new DiagnosticResult(SingleBaselinePerGroupAnalyzer.Descriptor).WithLocation(0).WithArguments("(implicit class-wide)", 2),
+            new DiagnosticResult(SingleBaselinePerGroupAnalyzer.Descriptor).WithLocation(1).WithArguments("(implicit class-wide)", 2));
     }
 
     [Fact]

@@ -97,6 +97,9 @@ public static class DiscoveryAnalysisMethods
                     var performanceTestType = performanceTestTypes.SingleOrDefault(x => x.FullName == classFullName);
                     if (performanceTestType is null) continue;
 
+                    // Class-level: does [Sailfish(DisableComparison = true)] suppress the implicit group?
+                    var classDisablesComparison = ClassDisablesComparison(classDeclaration);
+
                     var classMetaData = new ClassMetaData(
                         classFullName: classFullName,
                         performanceTestType: performanceTestType,
@@ -105,7 +108,7 @@ public static class DiscoveryAnalysisMethods
                             from methodDeclaration in methodDeclarations
                             let lineSpan = syntaxTree.GetLineSpan(methodDeclaration.Span)
                             let lineNumber = lineSpan.StartLinePosition.Line + 1
-                            let comparisonGroup = ExtractComparisonInfo(methodDeclaration)
+                            let comparisonGroup = ExtractComparisonInfo(methodDeclaration, classFullName, classDisablesComparison)
                             select new MethodMetaData(
                                 methodDeclaration.Identifier.ValueText,
                                 lineNumber,
@@ -145,17 +148,24 @@ public static class DiscoveryAnalysisMethods
     }
 
     /// <summary>
-    /// Extracts comparison group information from a method declaration's attributes.
-    /// Prefers the new <c>[SailfishMethod(ComparisonGroup = "...")]</c> shape and falls back
-    /// to the obsolete <c>[SailfishComparison("...")]</c> attribute during the deprecation window.
+    /// Sentinel prefix used to encode the implicit class-wide comparison group as a property string.
+    /// Embedding the class's full name keeps per-class implicit groups distinct when batched downstream.
     /// </summary>
-    /// <param name="methodDeclaration">The method declaration to analyze.</param>
-    /// <returns>The comparison group name, or null if no comparison attribute is found.</returns>
-    private static string? ExtractComparisonInfo(MethodDeclarationSyntax methodDeclaration)
+    internal const string ImplicitComparisonGroupPrefix = "__implicit::";
+
+    /// <summary>
+    /// Extracts the comparison-group label for a method:
+    ///   <list type="bullet">
+    ///     <item><description>The explicit <c>ComparisonGroup</c> when set on <c>[SailfishMethod]</c>.</description></item>
+    ///     <item><description><c>"__implicit::{ClassFullName}"</c> when the method has no explicit group and the enclosing class does not set <c>[Sailfish(DisableComparison = true)]</c>.</description></item>
+    ///     <item><description><c>null</c> when neither applies (class has opted out of comparison and the method has no explicit group).</description></item>
+    ///   </list>
+    /// </summary>
+    private static string? ExtractComparisonInfo(MethodDeclarationSyntax methodDeclaration, string classFullName, bool classDisablesComparison)
     {
         try
         {
-            // Preferred: SailfishMethod attribute with a named ComparisonGroup argument.
+            // Explicit ComparisonGroup on [SailfishMethod] wins regardless of class-level setting.
             var sailfishMethodAttr = methodDeclaration.AttributeLists
                 .SelectMany(attrList => attrList.Attributes)
                 .FirstOrDefault(attr =>
@@ -177,21 +187,8 @@ public static class DiscoveryAnalysisMethods
                 }
             }
 
-            // Legacy fallback: standalone SailfishComparison attribute.
-            var comparisonAttribute = methodDeclaration.AttributeLists
-                .SelectMany(attrList => attrList.Attributes)
-                .FirstOrDefault(attr =>
-                    attr.Name.ToString() == "SailfishComparison" ||
-                    attr.Name.ToString() == "SailfishComparisonAttribute");
-
-            if (comparisonAttribute?.ArgumentList?.Arguments == null || comparisonAttribute.ArgumentList.Arguments.Count < 1)
-            {
-                return null;
-            }
-
-            // Extract comparison group (first positional argument).
-            var groupArgument = comparisonAttribute.ArgumentList.Arguments[0];
-            return ExtractStringLiteralValue(groupArgument.Expression);
+            // No explicit group → join the implicit class-wide group unless the class opts out.
+            return classDisablesComparison ? null : ImplicitComparisonGroupPrefix + classFullName;
         }
         catch (ArgumentException ex)
         {
@@ -203,6 +200,30 @@ public static class DiscoveryAnalysisMethods
             Debug.WriteLine($"[Sailfish.TestAdapter] Failed to access comparison attribute expression: {ex.Message}");
             return null;
         }
+    }
+
+    /// <summary>
+    /// Returns true when the class's <c>[Sailfish]</c> attribute sets <c>DisableComparison = true</c>.
+    /// </summary>
+    private static bool ClassDisablesComparison(ClassDeclarationSyntax classDeclaration)
+    {
+        var sailfishAttr = classDeclaration.AttributeLists
+            .SelectMany(attrList => attrList.Attributes)
+            .FirstOrDefault(attr =>
+                attr.Name.ToString() == "Sailfish" ||
+                attr.Name.ToString() == "SailfishAttribute");
+
+        if (sailfishAttr?.ArgumentList?.Arguments == null) return false;
+
+        foreach (var arg in sailfishAttr.ArgumentList.Arguments)
+        {
+            if (arg.NameEquals?.Name.Identifier.ValueText != "DisableComparison") continue;
+            if (arg.Expression is LiteralExpressionSyntax lit && lit.Token.IsKind(SyntaxKind.TrueKeyword))
+            {
+                return true;
+            }
+        }
+        return false;
     }
 
     /// <summary>

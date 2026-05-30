@@ -310,14 +310,14 @@ internal class MethodComparisonTestRunCompletedHandler : INotificationHandler<Te
             return sb.ToString();
         }
 
-        // Group test results by (TestClass, ComparisonGroup). Grouping by name alone would merge
-        // same-named groups from different test classes — each class's lone baseline would be counted
-        // together, and a valid per-class baseline configuration would collapse to N×N. The grouping
-        // domain matches the analyzer: per-class, per-group.
+        // Group by (TestClass, ComparisonGroup). The group label is either an explicit user-given
+        // name, an empty string for the implicit class-wide group, or null (excluded — class set
+        // DisableComparison = true). Per-class scoping prevents same-named groups across classes
+        // from being merged (which would miscount baselines and trigger an unintended N×N fallback).
         var comparisonGroups = allTestResults
-            .Where(tr => HasComparisonAttribute(tr.TestResult, tr.TestClass))
+            .Where(tr => HasComparisonGroup(tr.TestResult, tr.TestClass))
             .GroupBy(tr => new ComparisonGroupKey(tr.TestClass, GetComparisonGroup(tr.TestResult, tr.TestClass)))
-            .Where(g => !string.IsNullOrEmpty(g.Key.GroupName))
+            .Where(g => g.Key.GroupName != null)
             .ToList();
 
         if (comparisonGroups.Any())
@@ -326,7 +326,12 @@ internal class MethodComparisonTestRunCompletedHandler : INotificationHandler<Te
             {
                 var groupName = group.Key.GroupName!;
                 var className = group.Key.TestClass.Name;
-                sb.AppendLine($"## 🔬 Comparison Group: {groupName} ({className})");
+                var isImplicitGroup = groupName.Length == 0;
+                var displayGroupName = isImplicitGroup ? "(implicit class-wide)" : $"'{groupName}'";
+
+                sb.AppendLine(isImplicitGroup
+                    ? $"## 🔬 Comparisons: {className}"
+                    : $"## 🔬 Comparison Group: {groupName} ({className})");
                 sb.AppendLine();
 
                 var members = group.ToList();
@@ -356,9 +361,9 @@ internal class MethodComparisonTestRunCompletedHandler : INotificationHandler<Te
                     if (baselines.Count > 1)
                     {
                         _logger.Log(LogLevel.Warning,
-                            "Comparison group '{0}' in class '{1}' has {2} methods marked IsBaseline=true; expected at most one. " +
+                            "Comparison group {0} in class '{1}' has {2} methods marked IsBaseline=true; expected at most one. " +
                             "Falling back to N×N comparison. The SF1301 analyzer should catch this at build time.",
-                            groupName, className, baselines.Count);
+                            displayGroupName, className, baselines.Count);
                     }
                     sectionHeader = "### Performance Comparison Matrix";
                     comparisonContent = CreateNxNComparisonMatrix(methods);
@@ -393,7 +398,7 @@ internal class MethodComparisonTestRunCompletedHandler : INotificationHandler<Te
 
         // Add section for non-comparison methods
         var nonComparisonMethods = allTestResults
-            .Where(tr => !HasComparisonAttribute(tr.TestResult, tr.TestClass))
+            .Where(tr => !HasComparisonGroup(tr.TestResult, tr.TestClass))
             .Select(tr => tr.TestResult)
             .ToList();
 
@@ -718,68 +723,29 @@ internal class MethodComparisonTestRunCompletedHandler : INotificationHandler<Te
     }
 
     /// <summary>
-    /// Checks if a test result has a comparison attribute.
+    /// Returns true when the test result belongs to a comparison group — either an explicit
+    /// <c>ComparisonGroup</c> on the method, or the implicit class-wide group (when the enclosing
+    /// <c>[Sailfish]</c> class does not set <c>DisableComparison = true</c>).
     /// </summary>
-    /// <param name="testResult">The test result to check.</param>
-    /// <param name="testClass">The test class type.</param>
-    /// <returns>True if the test has a comparison attribute, false otherwise.</returns>
-    private bool HasComparisonAttribute(CompiledTestCaseResultTrackingFormat testResult, Type testClass)
+    private bool HasComparisonGroup(CompiledTestCaseResultTrackingFormat testResult, Type testClass)
     {
-        return !string.IsNullOrEmpty(GetComparisonGroup(testResult, testClass));
+        return GetComparisonGroup(testResult, testClass) != null;
     }
 
     /// <summary>
-    /// Gets the comparison group for a test result by reading the SailfishComparison attribute.
+    /// Returns the comparison-group label for a test result:
+    ///   <list type="bullet">
+    ///     <item><description><c>null</c> — the method is not in any comparison group (e.g. its class is <c>DisableComparison = true</c> and the method has no explicit group).</description></item>
+    ///     <item><description>empty string — the method is in the implicit class-wide group.</description></item>
+    ///     <item><description>non-empty string — the method's explicit <c>ComparisonGroup</c>.</description></item>
+    ///   </list>
     /// </summary>
-    /// <param name="testResult">The test result.</param>
-    /// <param name="testClass">The test class type.</param>
-    /// <returns>The comparison group name, or null if not found.</returns>
     private string? GetComparisonGroup(CompiledTestCaseResultTrackingFormat testResult, Type testClass)
     {
         try
         {
-            var displayName = testResult.TestCaseId?.DisplayName ?? "Unknown";
-            _logger.Log(LogLevel.Debug, "Processing test case: {0}", displayName);
-
-            var methodName = GetMethodName(displayName);
-            _logger.Log(LogLevel.Debug, "Extracted method name: {0}", methodName);
-
-            // Use reflection to find the method and read its SailfishComparison attribute
-            var method = testClass.GetMethod(
-                methodName,
-                BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static | BindingFlags.FlattenHierarchy);
-            if (method == null)
-            {
-                _logger.Log(LogLevel.Debug, "Method '{0}' not found directly, searching all methods", methodName);
-
-                // Try to find method by searching all methods (in case of parameter variations or non-public types)
-                var allMethods = testClass.GetMethods(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static | BindingFlags.FlattenHierarchy);
-                method = allMethods.FirstOrDefault(m =>
-                    string.Equals(m.Name, methodName, StringComparison.Ordinal) ||
-                    displayName.StartsWith(m.Name, StringComparison.Ordinal));
-
-                if (method != null)
-                {
-                    _logger.Log(LogLevel.Debug, "Found method via search: {0}", method.Name);
-                }
-                else
-                {
-                    _logger.Log(LogLevel.Debug, "No matching method found for display name: {0}", displayName);
-                }
-            }
-
-            if (method != null)
-            {
-                var (group, _) = ReadComparisonInfo(method);
-                if (!string.IsNullOrEmpty(group))
-                {
-                    _logger.Log(LogLevel.Debug, "Found comparison group '{0}' for method '{1}'", group, method.Name);
-                    return group;
-                }
-                _logger.Log(LogLevel.Debug, "No comparison attribute found for method '{0}'", method.Name);
-            }
-
-            return null;
+            var method = ResolveMethod(testResult, testClass);
+            return method != null ? ReadComparisonInfo(method, testClass).Group : null;
         }
         catch (Exception ex)
         {
@@ -791,54 +757,42 @@ internal class MethodComparisonTestRunCompletedHandler : INotificationHandler<Te
     }
 
     /// <summary>
-    /// Resolves the comparison group + baseline flag for a method, preferring the new
-    /// <see cref="SailfishMethodAttribute"/> shape and falling back to the obsolete
-    /// <see cref="SailfishComparisonAttribute"/> during the deprecation window.
+    /// Resolves the comparison group (with implicit-group semantics) + baseline flag for a method.
+    /// See <see cref="GetComparisonGroup"/> for the group-string semantics.
     /// </summary>
-    private static (string? Group, bool IsBaseline) ReadComparisonInfo(MethodInfo method)
+    private static (string? Group, bool IsBaseline) ReadComparisonInfo(MethodInfo method, Type testClass)
     {
         var methodAttr = method.GetCustomAttribute<SailfishMethodAttribute>();
-        if (methodAttr != null && !string.IsNullOrEmpty(methodAttr.ComparisonGroup))
+        if (methodAttr is null) return (null, false);
+
+        // Explicit ComparisonGroup wins regardless of class-level setting.
+        if (!string.IsNullOrEmpty(methodAttr.ComparisonGroup))
         {
             return (methodAttr.ComparisonGroup, methodAttr.IsBaseline);
         }
 
-#pragma warning disable CS0618 // Type or member is obsolete
-        var legacyAttr = method.GetCustomAttribute<SailfishComparisonAttribute>();
-#pragma warning restore CS0618
-        if (legacyAttr != null && !legacyAttr.Disabled)
+        // No explicit group → method joins the implicit class-wide group unless the class opted out.
+        var classAttr = testClass.GetCustomAttribute<SailfishAttribute>();
+        if (classAttr is not null && !classAttr.DisableComparison)
         {
-            // Legacy attribute had no baseline concept — treat all members as N×N participants.
-            return (legacyAttr.ComparisonGroup, false);
+            // Empty-string sentinel = implicit class-wide group.
+            return (string.Empty, methodAttr.IsBaseline);
         }
 
-        return (null, false);
+        return (null, methodAttr.IsBaseline);
     }
 
     /// <summary>
-    /// Returns the comparison info (group + baseline flag) for a single test result,
-    /// performing the same method lookup as <see cref="GetComparisonGroup"/>.
+    /// Returns the comparison info (group + baseline flag) for a single test result, doing the same
+    /// method lookup as <see cref="GetComparisonGroup"/>.
     /// </summary>
     private (string? Group, bool IsBaseline) GetComparisonInfoForResult(
         CompiledTestCaseResultTrackingFormat testResult, Type testClass)
     {
         try
         {
-            var displayName = testResult.TestCaseId?.DisplayName ?? "Unknown";
-            var methodName = GetMethodName(displayName);
-
-            var method = testClass.GetMethod(
-                methodName,
-                BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static | BindingFlags.FlattenHierarchy);
-            if (method == null)
-            {
-                var allMethods = testClass.GetMethods(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static | BindingFlags.FlattenHierarchy);
-                method = allMethods.FirstOrDefault(m =>
-                    string.Equals(m.Name, methodName, StringComparison.Ordinal) ||
-                    displayName.StartsWith(m.Name, StringComparison.Ordinal));
-            }
-
-            return method != null ? ReadComparisonInfo(method) : (null, false);
+            var method = ResolveMethod(testResult, testClass);
+            return method != null ? ReadComparisonInfo(method, testClass) : (null, false);
         }
         catch (Exception ex)
         {
@@ -847,5 +801,26 @@ internal class MethodComparisonTestRunCompletedHandler : INotificationHandler<Te
                 testResult.TestCaseId?.DisplayName ?? "Unknown", ex.Message);
             return (null, false);
         }
+    }
+
+    /// <summary>
+    /// Finds the <see cref="MethodInfo"/> on <paramref name="testClass"/> that corresponds to the
+    /// test case display name, accounting for variable-suffixed names and case differences.
+    /// </summary>
+    private MethodInfo? ResolveMethod(CompiledTestCaseResultTrackingFormat testResult, Type testClass)
+    {
+        var displayName = testResult.TestCaseId?.DisplayName ?? "Unknown";
+        var methodName = GetMethodName(displayName);
+
+        var method = testClass.GetMethod(
+            methodName,
+            BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static | BindingFlags.FlattenHierarchy);
+
+        if (method != null) return method;
+
+        var allMethods = testClass.GetMethods(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static | BindingFlags.FlattenHierarchy);
+        return allMethods.FirstOrDefault(m =>
+            string.Equals(m.Name, methodName, StringComparison.Ordinal) ||
+            displayName.StartsWith(m.Name, StringComparison.Ordinal));
     }
 }
