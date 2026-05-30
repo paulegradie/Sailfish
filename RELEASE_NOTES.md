@@ -1,5 +1,51 @@
 ﻿## What's Changed in v0.0.118 (unreleased)
 
+### Mann-Whitney exact distribution: DP recurrence replaces combinatorial enumeration
+
+The Tier-1 Mann-Whitney path still built the exact null distribution by enumerating every
+`C(n1+n2, min(n1,n2))` rank arrangement, cloning each as a `double[]`, and sorting the
+resulting table. At the worst case (N=11,11, 705 K combinations) a single distribution
+construction allocated **~19 MB** of garbage and triggered a Gen2 GC. Under SailDiff's
+default `MaxDegreeOfParallelism = 4`, a CI run with multiple comparisons in the 10–11
+sample regime could spike to hundreds of megabytes of transient pressure and OOM on
+constrained hosts — exactly the regime adaptive sampling lands in when bottoming out at
+`MinimumSampleSize = 10`.
+
+Replaced with the textbook DP recurrence `f(n, m, u) = f(n-1, m, u-m) + f(n, m-1, u)`
+(see Hollander, Wolfe & Chicken, *Nonparametric Statistical Methods*, 3rd ed., §4.1).
+The new `MannWhitneyExactCdf` computes the same exact PMF in `O(n1 · n2²)` time and
+`O(n1 · n2)` peak memory:
+
+| `N1=N2` | Pre-Tier-2 | Post-Tier-2 | Reduction |
+|---:|---:|---:|---:|
+| 8  | 0.83 MB | 0.02 MB | 41× |
+| 10 | 5.96 MB | 0.03 MB | 199× |
+| 11 | 19.26 MB | 0.03 MB | **642×** |
+| 20 | 0.02 MB (normal approx) | 0.16 MB (now DP exact) | — |
+| 30 | 0.04 MB (normal approx) | 0.04 MB (DP exact) | — |
+| 50 | 0.06 MB (normal approx) | 2.06 MB (DP exact at cap) | — |
+| 100 | normal approx | normal approx | unchanged |
+
+The exact-path threshold is now expressed per-side (`ExactMaxN = 50`) rather than via
+a coarse table-size cap. Samples larger than 50 per side fall through to the existing
+normal approximation with tie correction and continuity correction. Inputs with tied
+ranks always use the normal approximation — the DP recurrence assumes integer ranks;
+the prior conditional-permutation path was tie-aware but burned the same memory budget
+and added no statistical value above N ≈ 8 (Conover §5.1).
+
+**Side fixes:**
+- `Vector.Range(long n)` was a fake `IEnumerable<long>` that pre-allocated a `long[n]`
+  on construction (with a silent `(int)n` overflow at large n). Replaced with a real
+  `yield return` generator. Only call site that used the long overload was the dropped
+  Mann-Whitney enumeration; the int overload elsewhere is unchanged.
+- `WilcoxonDistribution.ExactMethod` / `ExactComplement` were `O(n)` linear scans of a
+  *sorted* table; converted to `Array.BinarySearch` with tie-walks for the equal-rank
+  case. Used by the signed-rank path.
+
+**Allocation regression test** in `MannWhitneyAllocationCharacterisation` pins
+per-sample-size byte budgets, plus an explicit "no Gen2 GC at N=11" assertion, so any
+return to the combinatorial path is caught in CI rather than in production.
+
 ### SailDiff statistical rigor (Tier 1)
 
 **Breaking — default test type and alpha changed.** SailDiff's defaults have been wrong for the data Sailfish actually produces. Two related changes:

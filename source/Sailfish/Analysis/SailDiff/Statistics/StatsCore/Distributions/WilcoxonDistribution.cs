@@ -105,20 +105,51 @@ internal sealed class WilcoxonDistribution : UnivariateContinuousDistribution
         return string.Format(formatProvider, "W+(x; R)");
     }
 
+    // Returns the count of table entries strictly greater than `x` divided by table.Length —
+    // equivalently P(U ≤ x) on a sorted ascending table. Was an O(n) linear scan despite the
+    // table being sorted; converted to binary search via Array.BinarySearch.
     internal static double ExactMethod(double x, double[] table)
     {
-        for (var index = 0; index < table.Length; ++index)
-            if (x < table[index])
-                return index / (double)table.Length;
-        return 1.0;
+        var idx = Array.BinarySearch(table, x);
+        // BinarySearch returns the index of any matching entry, or the bitwise-complement of
+        // the first entry strictly greater than `x`. We want the count of entries ≤ x. When
+        // there are matches, walk forward to include all equal entries (table may contain
+        // duplicates from the enumeration that built it).
+        int countLessOrEqual;
+        if (idx >= 0)
+        {
+            countLessOrEqual = idx + 1;
+            while (countLessOrEqual < table.Length && table[countLessOrEqual] == x)
+                countLessOrEqual++;
+        }
+        else
+        {
+            countLessOrEqual = ~idx;
+        }
+        return countLessOrEqual / (double)table.Length;
     }
 
+    // Mirror of ExactMethod returning P(U ≥ x) for the discrete distribution. Pre-Tier-2 this
+    // was a reverse linear scan; now a single binary search plus a backward tie-walk.
     internal static double ExactComplement(double x, double[] table)
     {
-        for (var index = table.Length - 1; index >= 0; --index)
-            if (table[index] < x)
-                return (table.Length - index - 1) / (double)table.Length;
-        return 1.0;
+        var idx = Array.BinarySearch(table, x);
+        int countGreaterOrEqual;
+        if (idx >= 0)
+        {
+            // Walk backwards to find the first occurrence of x. Everything from there to the
+            // end satisfies table[i] ≥ x.
+            while (idx > 0 && table[idx - 1] == x) idx--;
+            countGreaterOrEqual = table.Length - idx;
+        }
+        else
+        {
+            // ~idx is the first index where table[i] > x. Everything from there to the end is
+            // strictly greater than x; since there are no equal entries, that equals the
+            // count ≥ x.
+            countGreaterOrEqual = table.Length - ~idx;
+        }
+        return countGreaterOrEqual / (double)table.Length;
     }
 
     internal static int Count(double x, double[] table)
