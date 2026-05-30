@@ -132,29 +132,11 @@ public class MannWhitneyExactGoldenTests
         dist.DistributionFunction(n1 * n2).ShouldBe(1.0, tolerance: 1e-9);
     }
 
-    [Theory]
-    [InlineData(3, 3)]
-    [InlineData(4, 4)]
-    [InlineData(5, 5)]
-    [InlineData(8, 8)]
-    public void Pmf_Untied_IsSymmetricAroundMean(int n1, int n2)
-    {
-        // The null distribution of U is symmetric around its mean n1*n2/2 when ranks are
-        // untied, so P(U = μ - δ) == P(U = μ + δ). The PMF is the cleanest place to assert
-        // this — it's algorithm-independent and doesn't rely on the asymmetric discrete-CDF
-        // convention.
-        var ranks = Enumerable.Range(1, n1 + n2).Select(i => (double)i).ToArray();
-        var dist = new MannWhitneyDistribution(ranks, n1, n2);
-        var mean = n1 * n2 / 2.0;
-
-        for (var delta = 0; delta <= n1 * n2 / 2.0; delta++)
-        {
-            var lowerPmf = dist.ProbabilityDensityFunction(mean - delta);
-            var upperPmf = dist.ProbabilityDensityFunction(mean + delta);
-            lowerPmf.ShouldBe(upperPmf, tolerance: 1e-9,
-                customMessage: $"Symmetry broken at δ={delta} for n1={n1}, n2={n2}");
-        }
-    }
+    // Note: an earlier Pmf_Untied_IsSymmetricAroundMean Theory iterated over (mean ± delta)
+    // and was vacuous for odd n1·n2 (mean = half-integer → every evaluation at fractional
+    // support → PMF returns 0 either side → 0 == 0 passes trivially). Replaced by
+    // Pmf_Untied_IsSymmetricOnIntegerSupport below, which iterates over integer u and uses
+    // the algebraic identity P(U = u) == P(U = n1·n2 − u) instead.
 
     [Fact]
     public void Pdf_N3_N3_MatchesHandDerivedReference()
@@ -345,5 +327,55 @@ public class MannWhitneyExactGoldenTests
         var dist = new MannWhitneyDistribution(ranks, 4, 4);
 
         dist.Exact.ShouldBeTrue("untied rank vector should still use the DP exact path");
+    }
+
+    [Theory]
+    [InlineData(-1.0)]
+    [InlineData(-0.5)]
+    [InlineData(9.0)]                       // upper edge — integer, valid PMF
+    [InlineData(9.4)]                       // 0.4 away — fractional, fractional-check returns 0
+    [InlineData(9.6)]                       // rounds up to 10; fractional-check returns 0
+    [InlineData(9.999_999_999_9)]           // CR #3 regression — rounds to 10 AND within 1e-9 → tries to index _pmf[10]
+    [InlineData(10.000_000_000_1)]          // just past _pmf.Length; first guard must reject
+    [InlineData(100.0)]                     // far beyond the support
+    public void Pdf_OutOfSupportQueries_DoNotThrow(double x)
+    {
+        // Regression for CodeRabbit review on PR #245: a value within 1e-9 of `_pmf.Length`
+        // rounds up to an index one past the array AND clears the fractional-tolerance
+        // check, throwing an IndexOutOfRangeException. The PMF should saturate to 0 outside
+        // the support no matter how the input drifts.
+        var ranks = new double[] { 1, 2, 3, 4, 5, 6 };
+        var dist = new MannWhitneyDistribution(ranks, 3, 3); // support is {0..9}; _pmf.Length = 10
+
+        var pmf = dist.ProbabilityDensityFunction(x);
+
+        pmf.ShouldBeGreaterThanOrEqualTo(0.0);
+        pmf.ShouldBeLessThanOrEqualTo(1.0);
+    }
+
+    [Theory]
+    [InlineData(3, 3)]
+    [InlineData(4, 4)]
+    [InlineData(5, 5)]
+    [InlineData(8, 8)]
+    [InlineData(3, 5)]
+    public void Pmf_Untied_IsSymmetricOnIntegerSupport(int n1, int n2)
+    {
+        // Replaces an earlier formulation that evaluated PMF at `mean ± delta` — for odd
+        // n1*n2 the mean is a half-integer, every evaluation lands at fractional support,
+        // and the test passed vacuously (0.0 == 0.0). Now we iterate over integer u in
+        // {0..n1*n2} and exploit the algebraic symmetry P(U = u) == P(U = n1*n2 - u),
+        // which holds for any (n1, n2) regardless of parity.
+        var ranks = Enumerable.Range(1, n1 + n2).Select(i => (double)i).ToArray();
+        var dist = new MannWhitneyDistribution(ranks, n1, n2);
+        var maxU = n1 * n2;
+
+        for (var u = 0; u <= maxU; u++)
+        {
+            var lowerPmf = dist.ProbabilityDensityFunction(u);
+            var upperPmf = dist.ProbabilityDensityFunction(maxU - u);
+            lowerPmf.ShouldBe(upperPmf, tolerance: 1e-12,
+                customMessage: $"P(U={u}) ≠ P(U={maxU - u}) for n1={n1}, n2={n2}");
+        }
     }
 }

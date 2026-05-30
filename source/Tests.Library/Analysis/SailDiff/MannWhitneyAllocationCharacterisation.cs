@@ -8,6 +8,14 @@ using Xunit.Abstractions;
 namespace Tests.Library.Analysis.SailDiff;
 
 /// <summary>
+/// xUnit collection that disables parallelization. Tests in this collection observe
+/// process-wide GC state — concurrent test execution on other threads would inflate the
+/// before/after collection counts and make the assertion flaky.
+/// </summary>
+[CollectionDefinition(nameof(GcStateSensitiveCollection), DisableParallelization = true)]
+public sealed class GcStateSensitiveCollection;
+
+/// <summary>
 /// Allocation regression for the Mann-Whitney rank-sum path. Pre-Tier-2, constructing the
 /// distribution at sample sizes near the exact/normal boundary allocated tens of megabytes
 /// per call (~20 MB at N=11,11), promoted into Gen2, and OOM'd in production under
@@ -16,10 +24,18 @@ namespace Tests.Library.Analysis.SailDiff;
 /// (negligible) beyond that.
 /// </summary>
 /// <remarks>
+/// <para>
 /// Budgets here are deliberately generous (~2× observed) so the test is stable on machines
 /// with different JIT/GC behaviour. Anything that exceeds these limits indicates a
 /// regression toward the old combinatorial enumeration.
+/// </para>
+/// <para>
+/// Belongs to <see cref="GcStateSensitiveCollection"/>: <c>GC.CollectionCount</c> is
+/// process-wide and <c>parallelizeTestCollections = true</c> in <c>xunit.runner.json</c>,
+/// so without this isolation the Gen2 assertion would race other tests' allocations.
+/// </para>
 /// </remarks>
+[Collection(nameof(GcStateSensitiveCollection))]
 public class MannWhitneyAllocationCharacterisation
 {
     private readonly ITestOutputHelper _output;

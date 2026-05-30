@@ -184,9 +184,14 @@ internal sealed class MannWhitneyDistribution : UnivariateContinuousDistribution
     {
         if (Exact)
         {
-            // PMF is non-zero only at integer points in the support.
-            if (x < 0 || x >= _pmf!.Length) return 0.0;
+            // PMF is non-zero only at integer points in the support {0, ..., n1*n2}. Three
+            // independent rejections protect the array access: x outside the support, x
+            // strictly between integers (fractional-tolerance), and idx out of range after
+            // rounding. The third guard catches the case `x ∈ (maxU, maxU + 0.5)` where the
+            // first guard accepts and Math.Round produces _pmf.Length.
+            if (x < 0 || x > _pmf!.Length - 1) return 0.0;
             var idx = (int)Math.Round(x);
+            if (idx < 0 || idx >= _pmf.Length) return 0.0;
             return Math.Abs(x - idx) > 1e-9 ? 0.0 : _pmf[idx];
         }
         return _approximation.ProbabilityDensityFunction(x);

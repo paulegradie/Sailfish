@@ -12,8 +12,16 @@ public static class Vector
     /// even though it was only ever consumed as <see cref="IEnumerable{T}"/> sequentially.
     /// Now a true generator: zero allocations beyond the enumerator.
     /// </summary>
+    /// <exception cref="ArgumentOutOfRangeException">
+    /// Thrown when <paramref name="n"/> is negative. The pre-Tier-2 eager implementation
+    /// failed fast (via <c>new long[(int)n]</c>); the lazy form preserves that contract so
+    /// invalid calls aren't masked as empty sequences.
+    /// </exception>
     public static IEnumerable<long> Range(long n)
     {
+        if (n < 0)
+            throw new ArgumentOutOfRangeException(nameof(n), "Count must be non-negative.");
+
         for (long i = 0; i < n; ++i)
             yield return i;
     }
