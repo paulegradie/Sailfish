@@ -6,12 +6,16 @@ namespace Sailfish.Analysis.SailDiff.Statistics.StatsCore.MathOps;
 
 public static class Vector
 {
+    /// <summary>
+    /// Lazy <c>[0, n)</c> generator over <see cref="long"/>. Pre-Tier-2 this eagerly
+    /// allocated a <c>long[n]</c> (cast to <c>(int)n</c> — a latent overflow for huge n)
+    /// even though it was only ever consumed as <see cref="IEnumerable{T}"/> sequentially.
+    /// Now a true generator: zero allocations beyond the enumerator.
+    /// </summary>
     public static IEnumerable<long> Range(long n)
     {
-        var numArray = new long[(int)n];
-        for (var index = 0; index < numArray.Length; ++index)
-            numArray[index] = index;
-        return numArray;
+        for (long i = 0; i < n; ++i)
+            yield return i;
     }
 
     public static int[] Range(int a, int b)

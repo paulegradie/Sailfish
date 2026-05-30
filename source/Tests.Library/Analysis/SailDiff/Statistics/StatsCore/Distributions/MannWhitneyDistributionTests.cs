@@ -35,21 +35,19 @@ public class MannWhitneyDistributionTests
 
         // Assert
         distribution.Exact.ShouldBeTrue();
-        distribution.Table.ShouldNotBeNull();
     }
 
     [Fact]
     public void Constructor_WithLargeSamples_ShouldUseApproximation()
     {
-        // Arrange
-        var ranks = Enumerable.Range(1, 70).Select(x => (double)x).ToArray();
+        // Arrange — N=70,70 is well beyond the DP cap of 50, forcing the normal approximation.
+        var ranks = Enumerable.Range(1, 140).Select(x => (double)x).ToArray();
 
         // Act
-        var distribution = new MannWhitneyDistribution(ranks, 35, 35);
+        var distribution = new MannWhitneyDistribution(ranks, 70, 70);
 
         // Assert
         distribution.Exact.ShouldBeFalse();
-        distribution.Table.ShouldBeNull();
     }
 
     [Fact]
@@ -127,8 +125,8 @@ public class MannWhitneyDistributionTests
     public void DistributionFunction_WithApproximation_ShouldWorkCorrectly()
     {
         // Arrange
-        var ranks = Enumerable.Range(1, 70).Select(x => (double)x).ToArray();
-        var distribution = new MannWhitneyDistribution(ranks, 35, 35);
+        var ranks = Enumerable.Range(1, 140).Select(x => (double)x).ToArray();
+        var distribution = new MannWhitneyDistribution(ranks, 70, 70);
 
         // Act
         var result = distribution.DistributionFunction(distribution.Mean);
@@ -167,8 +165,8 @@ public class MannWhitneyDistributionTests
     public void ProbabilityDensityFunction_WithApproximation_ShouldReturnPositiveValue()
     {
         // Arrange
-        var ranks = Enumerable.Range(1, 70).Select(x => (double)x).ToArray();
-        var distribution = new MannWhitneyDistribution(ranks, 35, 35);
+        var ranks = Enumerable.Range(1, 140).Select(x => (double)x).ToArray();
+        var distribution = new MannWhitneyDistribution(ranks, 70, 70);
 
         // Act
         var result = distribution.ProbabilityDensityFunction(distribution.Mean);
@@ -195,8 +193,8 @@ public class MannWhitneyDistributionTests
     public void InverseDistributionFunction_WithApproximation_ShouldReturnMeanAtHalf()
     {
         // Arrange
-        var ranks = Enumerable.Range(1, 70).Select(x => (double)x).ToArray();
-        var distribution = new MannWhitneyDistribution(ranks, 35, 35);
+        var ranks = Enumerable.Range(1, 140).Select(x => (double)x).ToArray();
+        var distribution = new MannWhitneyDistribution(ranks, 70, 70);
 
         // Act
         var result = distribution.InverseDistributionFunction(0.5);
@@ -288,8 +286,8 @@ public class MannWhitneyDistributionTests
     public void InverseDistributionFunction_WithZero_ShouldReturnNegativeInfinity()
     {
         // Arrange
-        var ranks = Enumerable.Range(1, 70).Select(x => (double)x).ToArray();
-        var distribution = new MannWhitneyDistribution(ranks, 35, 35);
+        var ranks = Enumerable.Range(1, 140).Select(x => (double)x).ToArray();
+        var distribution = new MannWhitneyDistribution(ranks, 70, 70);
 
         // Act
         var result = distribution.InverseDistributionFunction(0.0);
@@ -302,8 +300,8 @@ public class MannWhitneyDistributionTests
     public void InverseDistributionFunction_WithOne_ShouldReturnPositiveInfinity()
     {
         // Arrange
-        var ranks = Enumerable.Range(1, 70).Select(x => (double)x).ToArray();
-        var distribution = new MannWhitneyDistribution(ranks, 35, 35);
+        var ranks = Enumerable.Range(1, 140).Select(x => (double)x).ToArray();
+        var distribution = new MannWhitneyDistribution(ranks, 70, 70);
 
         // Act
         var result = distribution.InverseDistributionFunction(1.0);
