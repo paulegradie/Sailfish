@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Sailfish.Analysis.SailDiff.Statistics;
 using Sailfish.Contracts.Public;
 using Sailfish.Contracts.Public.Models;
 using Sailfish.Extensions.Methods;
@@ -77,7 +78,19 @@ public class StatisticalTestComputer : IStatisticalTestComputer
                 results.Add(new SailDiffResult(testCaseId, result));
             });
 
-        if (settings.DisableOrdering || results.Count > 60) return [.. results];
+        // Apply Benjamini-Hochberg FDR control across the family of comparisons. Pre-Tier-2,
+        // each pair was evaluated at α independently — running 100 comparisons at α=0.05
+        // expects ~5 false positives just by chance. The q-value lives on each result's
+        // StatisticalTestResult so downstream formatters can prefer it over the raw p-value
+        // when judging significance.
+        ApplyBenjaminiHochberg(results);
+
+        // Honour the user's explicit opt-out. The previous code also silently skipped
+        // ordering when results.Count > 60 — an undocumented threshold that produced
+        // different output ordering for large workloads with no warning. Removed; sorting
+        // a few hundred SailDiffResult entries is negligible compared to the test runs
+        // that produced them.
+        if (settings.DisableOrdering) return [.. results];
 
         try
         {
@@ -90,6 +103,41 @@ public class StatisticalTestComputer : IStatisticalTestComputer
                 .. results
                     .OrderByDescending(x => x.TestCaseId.DisplayName)
             ];
+        }
+    }
+
+    private static void ApplyBenjaminiHochberg(ConcurrentBag<SailDiffResult> results)
+    {
+        var pValues = new Dictionary<string, double>();
+        foreach (var r in results)
+        {
+            var stat = r.TestResultsWithOutlierAnalysis?.StatisticalTestResult;
+            // Skip failed tests and any malformed p-values — they shouldn't influence the
+            // BH ranking of the surviving comparisons.
+            if (stat is null || stat.Failed) continue;
+            if (double.IsNaN(stat.PValue)) continue;
+            pValues[r.TestCaseId.DisplayName] = stat.PValue;
+        }
+
+        // No correction needed for fewer than two comparisons — q == p.
+        if (pValues.Count < 2)
+        {
+            foreach (var r in results)
+            {
+                var stat = r.TestResultsWithOutlierAnalysis?.StatisticalTestResult;
+                if (stat is null || stat.Failed || double.IsNaN(stat.PValue)) continue;
+                stat.QValue = stat.PValue;
+            }
+            return;
+        }
+
+        var qValues = MultipleComparisons.BenjaminiHochbergAdjust(pValues);
+        foreach (var r in results)
+        {
+            var stat = r.TestResultsWithOutlierAnalysis?.StatisticalTestResult;
+            if (stat is null) continue;
+            if (qValues.TryGetValue(r.TestCaseId.DisplayName, out var q))
+                stat.QValue = q;
         }
     }
 }

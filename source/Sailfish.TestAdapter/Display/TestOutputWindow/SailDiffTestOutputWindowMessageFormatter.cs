@@ -73,14 +73,23 @@ internal class SailDiffTestOutputWindowMessageFormatter : ISailDiffTestOutputWin
         stringBuilder.AppendLine("PVal Threshold:  " + sailDiffSettings.Alpha);
         stringBuilder.AppendLine("PValue:          " +
                                  sailDiffResult.TestResultsWithOutlierAnalysis.StatisticalTestResult.PValue);
-        var significant = sailDiffResult.TestResultsWithOutlierAnalysis.StatisticalTestResult.PValue <
-                          sailDiffSettings.Alpha;
+        var stats = sailDiffResult.TestResultsWithOutlierAnalysis.StatisticalTestResult;
+        var significant = stats.PValue < sailDiffSettings.Alpha;
         var changeLine = "Change:          "
-                         + sailDiffResult.TestResultsWithOutlierAnalysis.StatisticalTestResult.ChangeDescription
+                         + stats.ChangeDescription
                          + (significant
-                             ? $"  (reason: {sailDiffResult.TestResultsWithOutlierAnalysis.StatisticalTestResult.PValue} < {sailDiffSettings.Alpha} )"
-                             : $"  (reason: {sailDiffResult.TestResultsWithOutlierAnalysis.StatisticalTestResult.PValue} > {sailDiffSettings.Alpha})");
+                             ? $"  (reason: {stats.PValue} < {sailDiffSettings.Alpha} )"
+                             : $"  (reason: {stats.PValue} > {sailDiffSettings.Alpha})");
         stringBuilder.AppendLine(changeLine);
+
+        // Magnitude — shift estimate and standardised effect size. The "by how much"
+        // companions to the binary verdict above; nullable so older paths that don't
+        // populate them stay rendering the same as before Tier 2.
+        if (stats.Difference is { } diff)
+            stringBuilder.AppendLine("Shift:           " + FormatDifference(diff));
+        if (stats.EffectSize is { } effect)
+            stringBuilder.AppendLine("Effect:          " + FormatEffectSize(effect));
+
         stringBuilder.AppendLine();
 
         var tableValues = new List<Table>
@@ -119,10 +128,16 @@ internal class SailDiffTestOutputWindowMessageFormatter : ISailDiffTestOutputWin
         var isSignificant = stats.PValue < sailDiffSettings.Alpha &&
                            !stats.ChangeDescription.Contains("No Change", StringComparison.OrdinalIgnoreCase);
 
+        // Append magnitude details: shift estimate (with CI) and effect size, separated by
+        // pipes on the third line so the impact banner stays scannable. Falls back gracefully
+        // when the underlying test didn't emit either field.
+        var magnitudeLine = BuildMagnitudeLine(stats);
+
         if (!isSignificant)
         {
             return $"⚪ IMPACT: {Math.Abs(percentChange):F1}% difference (NO CHANGE)\n" +
-                   $"   P-Value: {stats.PValue:F6} | Mean: {stats.MeanBefore:F3}ms → {stats.MeanAfter:F3}ms";
+                   $"   P-Value: {stats.PValue:F6} | Mean: {stats.MeanBefore:F3}ms → {stats.MeanAfter:F3}ms"
+                   + magnitudeLine;
         }
 
         var isImprovement = percentChange < 0;
@@ -131,6 +146,32 @@ internal class SailDiffTestOutputWindowMessageFormatter : ISailDiffTestOutputWin
         var icon = isImprovement ? "🟢" : "🔴";
 
         return $"{icon} IMPACT: {Math.Abs(percentChange):F1}% {direction} ({significance})\n" +
-               $"   P-Value: {stats.PValue:F6} | Mean: {stats.MeanBefore:F3}ms → {stats.MeanAfter:F3}ms";
+               $"   P-Value: {stats.PValue:F6} | Mean: {stats.MeanBefore:F3}ms → {stats.MeanAfter:F3}ms"
+               + magnitudeLine;
+    }
+
+    private static string BuildMagnitudeLine(StatisticalTestResult stats)
+    {
+        var parts = new List<string>();
+        if (stats.Difference is { } diff) parts.Add("Shift: " + FormatDifference(diff));
+        if (stats.EffectSize is { } effect) parts.Add("Effect: " + FormatEffectSize(effect));
+        return parts.Count == 0 ? string.Empty : "\n   " + string.Join(" | ", parts);
+    }
+
+    private static string FormatDifference(DifferenceReport diff)
+    {
+        var ci = diff.CiLower.HasValue && diff.CiUpper.HasValue
+            ? $" [{diff.CiLower.Value:F3}, {diff.CiUpper.Value:F3} {diff.Units}]"
+            : string.Empty;
+        var sign = diff.Value >= 0 ? "+" : string.Empty;
+        return $"{diff.Name} = {sign}{diff.Value:F3} {diff.Units}{ci}";
+    }
+
+    private static string FormatEffectSize(EffectSizeReport effect)
+    {
+        var ci = effect.CiLower.HasValue && effect.CiUpper.HasValue
+            ? $" [{effect.CiLower.Value:F3}, {effect.CiUpper.Value:F3}]"
+            : string.Empty;
+        return $"{effect.Name} = {effect.Value:F3}{ci}";
     }
 }

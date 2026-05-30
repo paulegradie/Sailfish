@@ -34,12 +34,22 @@ public class SailDiffSettings
     /// </param>
     /// <param name="maxDegreeOfParallelism"></param>
     /// <param name="disableOrdering"></param>
+    /// <param name="logTransform">
+    ///     If true, the parametric <see cref="TestType.Test"/> path log-transforms both samples
+    ///     before running Welch's t-test. Performance timings are typically log-normal, so a
+    ///     t-test on <c>log(time)</c> is materially more powerful than on raw time and the
+    ///     resulting "shift" is a natural <em>ratio</em> rather than an absolute millisecond
+    ///     difference. Default is <c>false</c> for backward compatibility — flip on when
+    ///     comparing benchmark timings with a wide dynamic range. Ignored by the rank-sum and
+    ///     KS paths, which are already scale-invariant.
+    /// </param>
     public SailDiffSettings(double alpha = 0.05,
         int round = 3,
         bool useOutlierDetection = true,
         TestType testType = TestType.WilcoxonRankSumTest,
         int maxDegreeOfParallelism = 4,
-        bool disableOrdering = false)
+        bool disableOrdering = false,
+        bool logTransform = false)
     {
         Alpha = alpha;
         Round = round;
@@ -47,6 +57,7 @@ public class SailDiffSettings
         TestType = testType;
         MaxDegreeOfParallelism = maxDegreeOfParallelism;
         DisableOrdering = disableOrdering;
+        LogTransform = logTransform;
     }
 
     public SailDiffSettings(SailfishPreset preset) : this()
@@ -60,6 +71,18 @@ public class SailDiffSettings
     public TestType TestType { get; private set; }
     public int MaxDegreeOfParallelism { get; private set; }
     public bool DisableOrdering { get; private set; }
+
+    /// <summary>
+    /// When true, the parametric t-test path runs on <c>log(time)</c> instead of raw time.
+    /// Improves sensitivity for typical log-normal benchmark data; reframes the reported
+    /// "Mean difference" as a multiplicative ratio (after back-transformation).
+    /// </summary>
+    public bool LogTransform { get; private set; }
+
+    public void SetLogTransform(bool enabled)
+    {
+        LogTransform = enabled;
+    }
 
     public void SetAlpha(double alpha)
     {

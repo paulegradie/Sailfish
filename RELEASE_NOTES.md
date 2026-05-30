@@ -1,5 +1,55 @@
 ﻿## What's Changed in v0.0.118 (unreleased)
 
+### SailDiff Tier 2: effect sizes, difference CIs, BH-FDR across pairs, log-transform
+
+A SailDiff verdict pre-Tier-2 was a binary label (`Improved` / `Regressed` / `NoChange`) plus
+a p-value. That answers "is there a difference?" but not "by how much?" — and 100 SailDiff
+pairs at α=0.05 expects 5 false positives just by chance. This release plumbs the magnitude
+answer through every test path and applies family-wise FDR control across the run.
+
+**Effect size on every result.** Each `StatisticalTestResult` now carries an
+`EffectSize` report (typed: name, value, CI lower / upper):
+
+- T-test path → **Hedges' g** (small-sample-corrected Cohen's d) with a normal-approx CI.
+- Rank-sum path → **Cliff's delta** (P(after > before) − P(after < before), bounded in [−1, 1])
+  with a Fisher-z CI.
+
+**Magnitude estimate on every result.** Each `StatisticalTestResult` now carries a
+`Difference` report (typed: name, value, CI lower / upper, units):
+
+- T-test → **mean difference** with the Welch CI at the configured α.
+- Rank-sum → **Hodges-Lehmann shift** (median of all pairwise differences) with a
+  distribution-free CI derived from the rank-sum critical value.
+- T-test with `LogTransform = true` (new flag) → **log-ratio shift**, with bounds
+  exponentiated back to a multiplicative ratio.
+
+**`SailDiffSettings.LogTransform` (default `false`).** Opt-in flag that makes the
+parametric t-test run on `log(time)` instead of raw time. Performance timings are
+typically log-normal so a t-test on the log scale is materially more powerful, and the
+reported "shift" becomes a natural ratio rather than an absolute ms delta. Ignored by
+rank-sum (already scale-invariant) and KS.
+
+**Benjamini-Hochberg FDR across the family of SailDiff pairs.**
+`StatisticalTestComputer.ComputeTest` now applies BH to all p-values in the run and writes
+the resulting q-value back onto each result (`StatisticalTestResult.QValue`). Single-pair
+runs are a no-op (q = p). Formatters that prefer q over p are unblocked.
+
+### Debt cleanup bundled in the same change
+
+- **KS off-by-one fix.** The two-sample Kolmogorov-Smirnov analyser was evaluating F1
+  at `array[i]` and F2 at `array[i + 1]` — an off-by-one that produced a non-zero D
+  statistic even for *identical* samples (specifically D = 1/N). Replaced with a direct
+  walk of the sorted sample union, evaluating both empirical CDFs at every observation.
+  Now `D(sample, sample) == 0` as required.
+- **Signed-rank exact path: DP replaces enumeration.** Same combinatorial-blow-up pattern
+  the Mann-Whitney path suffered, just at smaller scale. Replaced with the textbook
+  subset-sum DP `f(n, w) = f(n-1, w) + f(n-1, w-n)` and routed tied inputs to the normal
+  approximation with tie-corrected variance. The exact-path cap bumps from N ≤ 11 to
+  N ≤ 50 in the process.
+- **`StatisticalTestComputer` no longer skips ordering when `results.Count > 60`.** That
+  undocumented threshold produced inconsistent output ordering for large workloads with no
+  warning. The only switch is now the documented `DisableOrdering` flag.
+
 ### Mann-Whitney exact distribution: DP recurrence replaces combinatorial enumeration
 
 The Tier-1 Mann-Whitney path still built the exact null distribution by enumerating every

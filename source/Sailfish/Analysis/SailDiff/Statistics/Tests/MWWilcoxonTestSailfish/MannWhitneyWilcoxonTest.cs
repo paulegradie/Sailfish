@@ -81,6 +81,16 @@ public class MannWhitneyWilcoxonTest : IMannWhitneyWilcoxonTest
                 after,
                 additionalResults);
 
+            // Effect size: Cliff's delta (P(after > before) − P(after < before)). Natural
+            // companion to the rank-sum test — distribution-free, bounded in [−1, 1], directly
+            // interpretable as stochastic dominance probability.
+            testResults.EffectSize = EffectSizes.CliffsDelta(sample1, sample2, settings.Alpha);
+
+            // Difference: Hodges-Lehmann shift estimator — median of all pairwise differences
+            // (after − before). Robust, distribution-free, and paired with a CI built from
+            // the rank-sum critical value at the user's α.
+            testResults.Difference = EffectSizes.HodgesLehmann(sample1, sample2, settings.Alpha);
+
             return new TestResultWithOutlierAnalysis(testResults, preprocessed1.OutlierAnalysis, preprocessed2.OutlierAnalysis);
         }
         catch (Exception ex)
