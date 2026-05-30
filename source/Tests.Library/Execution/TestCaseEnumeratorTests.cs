@@ -11,6 +11,8 @@ using Sailfish;
 using Sailfish.Analysis.SailDiff;
 using Sailfish.Analysis.SailDiff.Statistics;
 using Sailfish.Contracts.Public.Models;
+using Sailfish.Contracts.Public.Notifications;
+using Sailfish.Exceptions;
 using Sailfish.Execution;
 using Sailfish.Extensions.Types;
 using Sailfish.Logging;
@@ -179,5 +181,102 @@ public class TestCaseEnumerationTests
         sut.TestInstanceContainer.ShouldNotBeNull();
         sut.TestInstanceContainer.GroupingId.ShouldBe("MinimalTest.Minimal");
         sut.TestInstanceContainer.TestCaseId.DisplayName.ShouldBe("MinimalTest.Minimal()");
+    }
+
+    [Fact]
+    public async Task OriginalExceptionSurfacesWhenMoveNextThrowsBeforeFirstItem()
+    {
+        // Reproduces issue #240: when MoveNext() throws before producing the first item
+        // (e.g., ISailfishFixture<T> ctor failure during Autofac resolution),
+        // Current is undefined per IEnumerator<T> contract. The bug was that dereferencing
+        // Current in the catch handler masked the real exception with an NRE.
+        var logger = Substitute.For<ILogger>();
+        var consoleWriter = Substitute.For<IConsoleWriter>();
+        var iterator = Substitute.For<ITestCaseIterator>();
+        var printer = Substitute.For<ITestCaseCountPrinter>();
+        var mediator = Substitute.For<IMediator>();
+        var summaryCompiler = Substitute.For<IClassExecutionSummaryCompiler>();
+        var settings = Substitute.For<IRunSettings>();
+        var engine = new SailfishExecutionEngine(logger, consoleWriter, iterator, printer, mediator, summaryCompiler, settings);
+        var executionState = new ExecutionState();
+
+        var originalException = new InvalidOperationException("clear, actionable message from fixture ctor");
+
+        var enumerator = Substitute.For<IEnumerator<TestInstanceContainer>>();
+        enumerator.MoveNext().Throws(originalException);
+        // Simulate IEnumerator<T> contract: Current throws when MoveNext has not produced an item.
+        enumerator.Current.Throws<InvalidOperationException>();
+
+        var testCaseEnumerator = Substitute.For<IEnumerable<TestInstanceContainer>>();
+        testCaseEnumerator.GetEnumerator().Returns(enumerator);
+
+        var provider = Substitute.For<ITestInstanceContainerProvider>();
+        provider.Test.Returns(typeof(TestCaseEnumerationTests));
+        provider.ProvideNextTestCaseEnumeratorForClass().Returns(testCaseEnumerator);
+
+        var result = await engine.ActivateContainer(
+            1,
+            2,
+            provider,
+            executionState,
+            Some.RandomString(),
+            [],
+            CancellationToken.None);
+
+        result.Count.ShouldBe(1);
+        var execResult = result.Single();
+        execResult.IsSuccess.ShouldBeFalse();
+
+        // The wrapping TestCaseEnumerationException must carry the original exception, not an NRE.
+        execResult.Exception.ShouldBeOfType<TestCaseEnumerationException>();
+        execResult.Exception!.InnerException.ShouldBeSameAs(originalException);
+
+        // The mediator must have received the original exception (not an NRE) so the consumer sees it.
+        await mediator.Received(1).Publish(
+            Arg.Is<TestCaseExceptionNotification>(n => n.Exception == originalException),
+            Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task TestClassInstantiationExceptionSurfacesDirectly()
+    {
+        // When MoveNext() throws a TestClassInstantiationException, the engine returns it
+        // directly (not wrapped). Verify the original exception still reaches the consumer
+        // even when Current is unsafe to read.
+        var logger = Substitute.For<ILogger>();
+        var consoleWriter = Substitute.For<IConsoleWriter>();
+        var iterator = Substitute.For<ITestCaseIterator>();
+        var printer = Substitute.For<ITestCaseCountPrinter>();
+        var mediator = Substitute.For<IMediator>();
+        var summaryCompiler = Substitute.For<IClassExecutionSummaryCompiler>();
+        var settings = Substitute.For<IRunSettings>();
+        var engine = new SailfishExecutionEngine(logger, consoleWriter, iterator, printer, mediator, summaryCompiler, settings);
+        var executionState = new ExecutionState();
+
+        var originalException = new TestClassInstantiationException(
+            typeof(TestCaseEnumerationTests),
+            new InvalidOperationException("fixture ctor blew up"));
+
+        var enumerator = Substitute.For<IEnumerator<TestInstanceContainer>>();
+        enumerator.MoveNext().Throws(originalException);
+        enumerator.Current.Throws<InvalidOperationException>();
+
+        var testCaseEnumerator = Substitute.For<IEnumerable<TestInstanceContainer>>();
+        testCaseEnumerator.GetEnumerator().Returns(enumerator);
+
+        var provider = Substitute.For<ITestInstanceContainerProvider>();
+        provider.Test.Returns(typeof(TestCaseEnumerationTests));
+        provider.ProvideNextTestCaseEnumeratorForClass().Returns(testCaseEnumerator);
+
+        var result = await engine.ActivateContainer(
+            1,
+            2,
+            provider,
+            executionState,
+            Some.RandomString(),
+            [],
+            CancellationToken.None);
+
+        result.Single().Exception.ShouldBeSameAs(originalException);
     }
 }
