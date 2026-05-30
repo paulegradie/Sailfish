@@ -220,12 +220,19 @@ public static class SailDiffDataExtensions
     /// <param name="groupName">Optional group name for the comparison</param>
     /// <param name="primaryMethodName">Name of the primary method</param>
     /// <param name="comparedMethodName">Name of the compared method</param>
+    /// <param name="alpha">
+    /// Significance threshold used by the underlying test. Defaults to
+    /// <see cref="Sailfish.Analysis.SailDiff.Statistics.SailDiffSignificance.FallbackAlpha"/> for back-compat with
+    /// callers that have no access to <see cref="SailDiffSettings"/>; threading the
+    /// real value is preferred wherever possible.
+    /// </param>
     /// <returns>SailDiffComparisonData for unified formatting</returns>
     public static SailDiffComparisonData ToComparisonData(
         this SailDiffResult result,
         string groupName = "",
         string primaryMethodName = "",
-        string comparedMethodName = "")
+        string comparedMethodName = "",
+        double alpha = Sailfish.Analysis.SailDiff.Statistics.SailDiffSignificance.FallbackAlpha)
     {
         return new SailDiffComparisonData
         {
@@ -236,7 +243,7 @@ public static class SailDiffDataExtensions
             Metadata = new ComparisonMetadata
             {
                 SampleSize = result.TestResultsWithOutlierAnalysis.StatisticalTestResult.SampleSizeBefore,
-                AlphaLevel = 0.05, // Default alpha level
+                AlphaLevel = alpha,
                 TestType = "T-Test", // Default test type
                 OutliersRemoved = (result.TestResultsWithOutlierAnalysis.Sample1?.TotalNumOutliers ?? 0) +
                                  (result.TestResultsWithOutlierAnalysis.Sample2?.TotalNumOutliers ?? 0)

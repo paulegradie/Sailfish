@@ -83,10 +83,18 @@ public class ConvergenceChecks
     }
 
     [Fact]
-    public void MannWhitneyWilcoxonTestSailfish_HiStdDevNoChange()
+    public void MannWhitneyWilcoxonTestSailfish_HiStdDevSmallEffectNoChange()
     {
+        // Pre-Tier 1, the Mann-Whitney wrapper down-sampled to N=10 then voted across 25
+        // resamples, which destroyed power and made even very clear differences register as
+        // "NoChange" — exactly the "comparisons are not sensitive enough" complaint. The
+        // original version of this test asserted NoChange for d=1.0, N=30, σ=10 (a real
+        // effect easily detectable by a properly implemented MW). After the rewrite the
+        // engine correctly *does* detect that, so this test now exercises a genuinely small
+        // effect (d≈0.1) at the same noise level — power ≈ 5% at α=0.0001 means NoChange is
+        // still the expected outcome here.
         var bf = GenerateRandomNormalDistribution(30, 10, 10);
-        var af = GenerateRandomNormalDistribution(30, 20, 10);
+        var af = GenerateRandomNormalDistribution(30, 11, 10);
 
         List<TestResultWithOutlierAnalysis> results = [];
 

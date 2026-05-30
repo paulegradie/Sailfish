@@ -12,7 +12,7 @@ title: Method Comparisons
 When a group has at least two methods, Sailfish:
 - Computes a ratio (and a 95% confidence interval on that ratio) between methods.
 - Adjusts p-values across the group with the Benjamini–Hochberg FDR procedure and reports a q-value.
-- Labels each comparison **Improved**, **Slower**, or **Similar** at α = 0.05.
+- Labels each comparison **Improved**, **Slower**, or **Similar** against the configured `SailDiffSettings.Alpha` (default `0.05`).
 - Emits the comparison to the consolidated session Markdown and CSV when `[WriteToMarkdown]` / `[WriteToCsv]` are present on the class.
 
 ## Basic Usage
@@ -237,7 +237,7 @@ _Cell value is ratio vs. row (col/row). CI is 95% on ratio. 'Improved' means sig
 
 - **Improved**: significantly faster than its reference (the baseline in N−1 mode, the row method in N×N mode) after the FDR adjustment.
 - **Slower**: significantly slower than its reference after the FDR adjustment.
-- **Similar**: not significant at α = 0.05 after FDR — either truly indistinguishable, or the sample size is too small to resolve a real difference.
+- **Similar**: not significant at the configured `Alpha` (default 0.05) after FDR — either truly indistinguishable, or the sample size is too small to resolve a real difference.
 
 The 95% confidence interval on the ratio is the most direct measure of magnitude. If the interval doesn't cross 1.0 cleanly, the difference is meaningful at the chosen α.
 
@@ -323,14 +323,14 @@ Method comparisons share the same statistical machinery as historical SailDiff c
 ```json
 {
   "SailDiffSettings": {
-    "TestType": "Test",
+    "TestType": "WilcoxonRankSumTest",
     "Alpha": 0.05,
     "Disabled": false
   }
 }
 ```
 
-The Improved / Slower / Similar labels are decided at α = 0.05 against the BH-adjusted q-value.
+The Improved / Slower / Similar labels are decided against the configured `Alpha` after the BH-FDR adjustment. The N×N matrix and the baseline-vs-contender table both use that same `Alpha` for per-pair significance, and the reported ratio confidence intervals follow the matching `1 − Alpha` level — no hardcoded `0.05` anywhere in the formatters.
 
 ## Troubleshooting
 

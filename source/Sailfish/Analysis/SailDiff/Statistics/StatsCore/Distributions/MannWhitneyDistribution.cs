@@ -12,20 +12,30 @@ internal sealed class MannWhitneyDistribution : UnivariateContinuousDistribution
 {
     private readonly NormalDistribution _approximation;
 
+    // Hard cap on the size of the exact-distribution lookup table. The combinatorial table
+    // size is C(n1+n2, min(n1,n2)); the previous bound of "both ≤ 30" let n1=n2=30 try to
+    // allocate ~1.18e17 doubles, which OOM'd on any realistic benchmark sample. ~2M keeps
+    // the table well under 32 MB and matches the cross-over point where the normal
+    // approximation (with tie + continuity correction, already wired below) is accurate to
+    // ~3 significant figures. See: Conover, Practical Nonparametric Statistics, 3rd ed.
+    private const long ExactTableMax = 2_000_000;
+
     internal MannWhitneyDistribution(double[] ranks, int rank1Length, int rank2Length)
     {
         var num1 = rank1Length + rank2Length;
         NumberOfSamples1 = rank1Length;
         NumberOfSamples2 = rank2Length;
         var mean = rank1Length * rank2Length / 2.0;
-        Exact = rank1Length <= 30 && rank2Length <= 30;
+        var k = Math.Min(NumberOfSamples1, NumberOfSamples2);
+        // Estimate the table size first; only use exact if it fits.
+        var estimatedTableSize = Specials.Binomial(NumberOfSamples1 + NumberOfSamples2, k);
+        Exact = estimatedTableSize >= 1 && estimatedTableSize <= ExactTableMax;
 
         var corrections = Corrections(ranks);
         var stdDev = Math.Sqrt(rank1Length * rank2Length / 12.0 * (num1 + 1.0 - corrections));
         if (Exact)
         {
-            var k = Math.Min(NumberOfSamples1, NumberOfSamples2);
-            var n = (long)Specials.Binomial(NumberOfSamples1 + NumberOfSamples2, k);
+            var n = (long)estimatedTableSize;
             Table = new double[n];
             Parallel
                 .ForEach(ranks.Combinations(k).Zip(Vector.Range(n), (Func<double[], long, Tuple<double[], long>>)((c, i) => new Tuple<double[], long>(c, i))),

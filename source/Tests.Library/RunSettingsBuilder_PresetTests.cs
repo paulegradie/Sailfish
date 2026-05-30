@@ -32,8 +32,8 @@ public class RunSettingsBuilderPresetTests
         settings.GlobalMaximumSampleSize.ShouldBe(1000);
         settings.GlobalUseConfigurableOutlierDetection.ShouldBe(true);
         settings.GlobalOutlierStrategy.ShouldBe(OutlierStrategy.RemoveUpper);
-        settings.SailDiffSettings.Alpha.ShouldBe(0.001);
-        settings.SailDiffSettings.TestType.ShouldBe(TestType.TwoSampleWilcoxonSignedRankTest);
+        settings.SailDiffSettings.Alpha.ShouldBe(0.05);
+        settings.SailDiffSettings.TestType.ShouldBe(TestType.WilcoxonRankSumTest);
     }
 
     [Fact]
@@ -50,8 +50,8 @@ public class RunSettingsBuilderPresetTests
         settings.GlobalMaximumSampleSize.ShouldBe(2000);
         settings.GlobalUseConfigurableOutlierDetection.ShouldBe(true);
         settings.GlobalOutlierStrategy.ShouldBe(OutlierStrategy.RemoveUpper);
-        settings.SailDiffSettings.Alpha.ShouldBe(0.0005);
-        settings.SailDiffSettings.TestType.ShouldBe(TestType.TwoSampleWilcoxonSignedRankTest);
+        settings.SailDiffSettings.Alpha.ShouldBe(0.01);
+        settings.SailDiffSettings.TestType.ShouldBe(TestType.WilcoxonRankSumTest);
     }
 
     [Fact]
@@ -68,8 +68,8 @@ public class RunSettingsBuilderPresetTests
         settings.GlobalMaximumSampleSize.ShouldBe(1000);
         settings.GlobalUseConfigurableOutlierDetection.ShouldBe(true);
         settings.GlobalOutlierStrategy.ShouldBe(OutlierStrategy.Adaptive);
-        settings.SailDiffSettings.Alpha.ShouldBe(0.01);
-        settings.SailDiffSettings.TestType.ShouldBe(TestType.TwoSampleWilcoxonSignedRankTest);
+        settings.SailDiffSettings.Alpha.ShouldBe(0.10);
+        settings.SailDiffSettings.TestType.ShouldBe(TestType.WilcoxonRankSumTest);
     }
 
     [Fact]
@@ -152,30 +152,30 @@ public class RunSettingsBuilderPresetTests
         settings.GlobalTargetCoefficientOfVariation.ShouldBe(0.10);
         settings.GlobalMaxConfidenceIntervalWidth.ShouldBe(0.30);
         settings.GlobalOutlierStrategy.ShouldBe(OutlierStrategy.Adaptive);
-        settings.SailDiffSettings.Alpha.ShouldBe(0.01);
+        settings.SailDiffSettings.Alpha.ShouldBe(0.10);
     }
 
     [Fact]
     public void SailDiffSettings_PresetConstructor_Default_SetsAlpha()
     {
         var s = new SailDiffSettings(SailfishPreset.Default);
-        s.Alpha.ShouldBe(0.001);
-        s.TestType.ShouldBe(TestType.TwoSampleWilcoxonSignedRankTest);
+        s.Alpha.ShouldBe(0.05);
+        s.TestType.ShouldBe(TestType.WilcoxonRankSumTest);
     }
 
     [Fact]
     public void SailDiffSettings_PresetConstructor_Tight_SetsAlpha()
     {
         var s = new SailDiffSettings(SailfishPreset.Tight);
-        s.Alpha.ShouldBe(0.0005);
-        s.TestType.ShouldBe(TestType.TwoSampleWilcoxonSignedRankTest);
+        s.Alpha.ShouldBe(0.01);
+        s.TestType.ShouldBe(TestType.WilcoxonRankSumTest);
     }
 
     [Fact]
     public void SailDiffSettings_PresetConstructor_Relaxed_SetsAlpha()
     {
         var s = new SailDiffSettings(SailfishPreset.Relaxed);
-        s.Alpha.ShouldBe(0.01);
-        s.TestType.ShouldBe(TestType.TwoSampleWilcoxonSignedRankTest);
+        s.Alpha.ShouldBe(0.10);
+        s.TestType.ShouldBe(TestType.WilcoxonRankSumTest);
     }
 }

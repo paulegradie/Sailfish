@@ -473,8 +473,10 @@ internal class MethodComparisonTestRunCompletedHandler : INotificationHandler<Te
                 ? MultipleComparisons.BenjaminiHochbergAdjust(pMap)
                 : new Dictionary<(string, string), double>();
 
+            var alpha = _runSettings?.SailDiffSettings?.Alpha ?? SailDiffSignificance.FallbackAlpha;
+            var confidenceLevel = 1.0 - alpha;
             var sb = new StringBuilder();
-            sb.AppendLine("### 🔢 NxN Comparison Matrix (q-values via BH-FDR, α=0.05)");
+            sb.AppendLine($"### 🔢 NxN Comparison Matrix (q-values via BH-FDR, α={alpha:0.###})");
             sb.Append("| Method |");
             foreach (var col in stats) sb.Append($" {col.Name} |");
             sb.AppendLine();
@@ -494,9 +496,9 @@ internal class MethodComparisonTestRunCompletedHandler : INotificationHandler<Te
                         continue;
                     }
                     var col = stats[j];
-                    var (ratio, lo, hi) = MultipleComparisons.ComputeRatioCi(row.Mean, row.SE, row.N, col.Mean, col.SE, col.N, 0.95);
+                    var (ratio, lo, hi) = MultipleComparisons.ComputeRatioCi(row.Mean, row.SE, row.N, col.Mean, col.SE, col.N, confidenceLevel);
                     qMap.TryGetValue(MultipleComparisons.NormalizePair(row.Id, col.Id), out var q);
-                    var sig = q > 0 && q <= 0.05;
+                    var sig = SailDiffSignificance.IsSignificantPositive(q, alpha);
                     var label = sig ? (ratio < 1.0 ? "Improved" : "Slower") : "Similar";
                     var cell = $"{FormatRatio(ratio, lo, hi)}{(q > 0 ? $" q={FormatP(q)}" : "")} {label}";
                     sb.Append($" {cell} |");
@@ -505,7 +507,7 @@ internal class MethodComparisonTestRunCompletedHandler : INotificationHandler<Te
             }
 
             sb.AppendLine();
-            sb.AppendLine("_Cell value is ratio vs. row (col/row). CI is 95% on ratio. 'Improved' means significantly faster; 'Slower' significantly slower; 'Similar' not significant after FDR._");
+            sb.AppendLine($"_Cell value is ratio vs. row (col/row). CI is {confidenceLevel:P0} on ratio. 'Improved' means significantly faster; 'Slower' significantly slower; 'Similar' not significant after FDR._");
             return sb.ToString();
 
             static string FormatRatio(double ratio, double? lo, double? hi)
@@ -600,17 +602,19 @@ internal class MethodComparisonTestRunCompletedHandler : INotificationHandler<Te
                 ? MultipleComparisons.BenjaminiHochbergAdjust(pMap)
                 : new Dictionary<(string, string), double>();
 
+            var alpha = _runSettings?.SailDiffSettings?.Alpha ?? SailDiffSignificance.FallbackAlpha;
+            var confidenceLevel = 1.0 - alpha;
             var sb = new StringBuilder();
-            sb.AppendLine($"### 📐 Baseline-vs-Contender (baseline = `{baselineStat.Name}`, q-values via BH-FDR, α=0.05)");
-            sb.AppendLine("| Method | Mean | Ratio vs Baseline | 95% CI | q-value | Label |");
+            sb.AppendLine($"### 📐 Baseline-vs-Contender (baseline = `{baselineStat.Name}`, q-values via BH-FDR, α={alpha:0.###})");
+            sb.AppendLine($"| Method | Mean | Ratio vs Baseline | {confidenceLevel:P0} CI | q-value | Label |");
             sb.AppendLine("|--------|------|-------------------|--------|---------|-------|");
             sb.AppendLine($"| `{baselineStat.Name}` _(baseline)_ | {baselineStat.Mean:0.###}ms | — | — | — | — |");
 
             foreach (var c in contenders.OrderBy(s => s.Mean))
             {
-                var (ratio, lo, hi) = MultipleComparisons.ComputeRatioCi(baselineStat.Mean, baselineStat.SE, baselineStat.N, c.Mean, c.SE, c.N, 0.95);
+                var (ratio, lo, hi) = MultipleComparisons.ComputeRatioCi(baselineStat.Mean, baselineStat.SE, baselineStat.N, c.Mean, c.SE, c.N, confidenceLevel);
                 qMap.TryGetValue(MultipleComparisons.NormalizePair(baselineStat.Id, c.Id), out var q);
-                var sig = q > 0 && q <= 0.05;
+                var sig = SailDiffSignificance.IsSignificantPositive(q, alpha);
                 var label = sig ? (ratio < 1.0 ? "Improved" : "Slower") : "Similar";
                 var ciStr = (lo.HasValue && hi.HasValue) ? $"[{lo.Value:0.###}–{hi.Value:0.###}]" : "—";
                 var qStr = q > 0 ? FormatP(q) : "—";

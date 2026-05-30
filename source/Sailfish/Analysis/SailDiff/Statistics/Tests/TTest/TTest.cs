@@ -29,7 +29,10 @@ public class Test : ITTest
             var sample1 = preprocessed1.OutlierAnalysis?.DataWithOutliersRemoved ?? preprocessed1.RawData;
             var sample2 = preprocessed2.OutlierAnalysis?.DataWithOutliersRemoved ?? preprocessed2.RawData;
 
-            var test = TwoSampleTFactory.Create(sample1, sample2, false);
+            // Welch's t-test: independent samples, no equal-variance assumption. Passing the
+            // user's alpha makes the test's reported CI pair with the same threshold used for
+            // the significance decision — 95% CI for alpha=0.05, 99% for alpha=0.01, etc.
+            var test = TwoSampleTFactory.Create(sample1, sample2, false, alpha: settings.Alpha);
 
             var meanBefore = Math.Round(test.EstimatedValue1, sigDig);
             var meanAfter = Math.Round(test.EstimatedValue2, sigDig);

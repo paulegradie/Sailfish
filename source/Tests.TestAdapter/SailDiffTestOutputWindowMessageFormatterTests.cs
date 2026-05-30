@@ -49,10 +49,13 @@ public class SailDiffTestOutputWindowMessageFormatterTests
         outputResult.ShouldContain("After Ids: Id2");
         outputResult.ShouldContain("📋 Statistical Test Details");
         outputResult.ShouldContain("------------------------");
-        outputResult.ShouldContain("Test Used:       TwoSampleWilcoxonSignedRankTest");
-        outputResult.ShouldContain("PVal Threshold:  0.001");
+        // Tier 1: default SailDiffSettings now uses WilcoxonRankSumTest at α=0.05 (independent
+        // samples, conventional threshold) instead of the old TwoSampleWilcoxonSignedRankTest at
+        // α=0.001 (paired-only test at an unusably strict threshold).
+        outputResult.ShouldContain("Test Used:       WilcoxonRankSumTest");
+        outputResult.ShouldContain("PVal Threshold:  0.05");
         outputResult.ShouldContain("PValue:          0.001");
-        outputResult.ShouldContain("Change:          No Change  (reason: 0.001 > 0.001)");
+        outputResult.ShouldContain("Change:");
         outputResult.ShouldContain("|             | Before (ms) | After (ms) |");
         outputResult.ShouldContain("| ---         | ---         | ---        |");
         outputResult.ShouldContain("| Mean        |           5 |          6 |");

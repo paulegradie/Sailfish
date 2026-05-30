@@ -10,7 +10,8 @@ internal static class TwoSampleTFactory
         double[] sample2,
         bool assumeEqualVariances = true,
         double hypothesizedDifference = 0.0,
-        TwoSampleHypothesis alternate = TwoSampleHypothesis.ValuesAreDifferent)
+        TwoSampleHypothesis alternate = TwoSampleHypothesis.ValuesAreDifferent,
+        double alpha = HypothesisTest.DefaultSize)
     {
         return new TwoSampleT(
             sample1.Mean(),
@@ -21,6 +22,7 @@ internal static class TwoSampleTFactory
             sample2.Length,
             assumeEqualVariances,
             hypothesizedDifference,
-            alternate);
+            alternate,
+            alpha);
     }
 }

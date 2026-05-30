@@ -498,8 +498,10 @@ internal class MethodComparisonProcessor : TestCompletionQueueProcessorBase
                     : 0.0
             }).OrderBy(s => s.Mean).ToList();
 
-            // Gather pairwise p-values from metadata
+            // Gather pairwise p-values from metadata, and the alpha used by the upstream
+            // SailDiff comparison so we apply a single configured significance threshold.
             var pMap = new Dictionary<(string A, string B), double>();
+            double? metadataAlpha = null;
             foreach (var m in methods)
             {
                 if (m.Metadata.TryGetValue("PairwisePValues", out var obj) && obj is Dictionary<string, double> dict)
@@ -512,11 +514,17 @@ internal class MethodComparisonProcessor : TestCompletionQueueProcessorBase
                             pMap[key] = p;
                     }
                 }
+                if (metadataAlpha is null && m.Metadata.TryGetValue(SailDiffSignificance.MetadataKey, out var aObj) && aObj is double a)
+                {
+                    metadataAlpha = a;
+                }
             }
+            var alpha = metadataAlpha ?? SailDiffSignificance.FallbackAlpha;
+            var confidenceLevel = 1.0 - alpha;
             var qMap = pMap.Count > 0 ? MultipleComparisons.BenjaminiHochbergAdjust(pMap) : new Dictionary<(string, string), double>();
 
             // NxN matrix
-            sb.AppendLine("### 🔢 NxN Comparison Matrix (q-values via BH-FDR, α=0.05)");
+            sb.AppendLine($"### 🔢 NxN Comparison Matrix (q-values via BH-FDR, α={alpha:0.###})");
             sb.Append("| Method |");
             foreach (var col in stats)
             {
@@ -539,10 +547,10 @@ internal class MethodComparisonProcessor : TestCompletionQueueProcessorBase
                         continue;
                     }
                     var col = stats[j];
-                    var (ratio, lo, hi) = MultipleComparisons.ComputeRatioCi(row.Mean, row.SE, row.N, col.Mean, col.SE, col.N, 0.95);
+                    var (ratio, lo, hi) = MultipleComparisons.ComputeRatioCi(row.Mean, row.SE, row.N, col.Mean, col.SE, col.N, confidenceLevel);
                     var key = MultipleComparisons.NormalizePair(row.Id, col.Id);
                     qMap.TryGetValue(key, out var q);
-                    var sig = q > 0 && q <= 0.05;
+                    var sig = SailDiffSignificance.IsSignificantPositive(q, alpha);
                     var label = sig ? (ratio < 1.0 ? "Improved" : "Slower") : "Similar";
                     var cell = $"{FormatRatio(ratio, lo, hi)}{(q > 0 ? $" q={FormatP(q)}" : "")} {label}";
                     sb.Append($" {cell} |");
@@ -551,7 +559,7 @@ internal class MethodComparisonProcessor : TestCompletionQueueProcessorBase
             }
 
             sb.AppendLine();
-            sb.AppendLine("_Cell value is ratio vs. row (col/row). CI is 95% on ratio. 'Improved' means significantly faster; 'Slower' significantly slower; 'Similar' not significant after FDR._");
+            sb.AppendLine($"_Cell value is ratio vs. row (col/row). CI is {confidenceLevel:P0} on ratio. 'Improved' means significantly faster; 'Slower' significantly slower; 'Similar' not significant after FDR._");
             sb.AppendLine();
             // Add detailed results table to satisfy existing tests and provide clarity
             sb.AppendLine("### Detailed Results");

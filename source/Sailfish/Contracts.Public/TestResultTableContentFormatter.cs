@@ -13,6 +13,19 @@ public interface ISailDiffResultMarkdownConverter
 {
     string ConvertToMarkdownTable(IEnumerable<SailDiffResult> testCaseResults);
     string ConvertToEnhancedMarkdownTable(IEnumerable<SailDiffResult> testCaseResults, OutputContext context = OutputContext.Markdown);
+
+    /// <summary>
+    /// Enhanced variant that threads the user-configured <paramref name="alpha"/> through to the
+    /// unified formatter, so the significance threshold visible in the output matches the
+    /// threshold the test actually used. Prefer this overload when settings are reachable.
+    /// </summary>
+    /// <remarks>
+    /// Default implementation falls back to <see cref="ConvertToEnhancedMarkdownTable(IEnumerable{SailDiffResult}, OutputContext)"/>
+    /// so existing implementers do not need to update. Implementers that want to surface a
+    /// non-default alpha should override this overload.
+    /// </remarks>
+    string ConvertToEnhancedMarkdownTable(IEnumerable<SailDiffResult> testCaseResults, OutputContext context, double alpha)
+        => ConvertToEnhancedMarkdownTable(testCaseResults, context);
 }
 
 public class SailDiffResultMarkdownConverter : ISailDiffResultMarkdownConverter
@@ -37,6 +50,9 @@ public class SailDiffResultMarkdownConverter : ISailDiffResultMarkdownConverter
     }
 
     public string ConvertToEnhancedMarkdownTable(IEnumerable<SailDiffResult> testCaseResults, OutputContext context = OutputContext.Markdown)
+        => ConvertToEnhancedMarkdownTable(testCaseResults, context, Sailfish.Analysis.SailDiff.Statistics.SailDiffSignificance.FallbackAlpha);
+
+    public string ConvertToEnhancedMarkdownTable(IEnumerable<SailDiffResult> testCaseResults, OutputContext context, double alpha)
     {
         var enumeratedResults = testCaseResults.ToList();
 
@@ -48,11 +64,14 @@ public class SailDiffResultMarkdownConverter : ISailDiffResultMarkdownConverter
         // If unified formatter is available, use it for enhanced output
         if (_unifiedFormatter != null)
         {
-            return CreateUnifiedFormattedOutput(enumeratedResults, context);
+            return CreateUnifiedFormattedOutput(enumeratedResults, context, alpha);
         }
 
-        // Fallback to enhanced legacy format
-        return CreateEnhancedLegacyOutput(enumeratedResults, context);
+        // Fallback to enhanced legacy format. Pass the configured alpha so the legacy impact
+        // summary's significance decision honours the user setting — without this the legacy
+        // path silently downgraded a real "Regressed" result to "NO CHANGE" for any p-value
+        // between 0.05 and the configured alpha (e.g. α = 0.10 on the Relaxed preset).
+        return CreateEnhancedLegacyOutput(enumeratedResults, context, alpha);
     }
 
     private string CreateLegacyMarkdownTable(IEnumerable<SailDiffResult> testCaseResults)
@@ -96,7 +115,7 @@ public class SailDiffResultMarkdownConverter : ISailDiffResultMarkdownConverter
             [.. selectors]);
     }
 
-    private string CreateUnifiedFormattedOutput(List<SailDiffResult> enumeratedResults, OutputContext context)
+    private string CreateUnifiedFormattedOutput(List<SailDiffResult> enumeratedResults, OutputContext context, double alpha)
     {
         var sb = new StringBuilder();
 
@@ -108,7 +127,7 @@ public class SailDiffResultMarkdownConverter : ISailDiffResultMarkdownConverter
         }
 
         // Convert each SailDiff result to comparison data and format
-        var comparisons = enumeratedResults.Select(result => ConvertToComparisonData(result)).ToList();
+        var comparisons = enumeratedResults.Select(result => ConvertToComparisonData(result, alpha)).ToList();
 
         if (comparisons.Count == 1)
         {
@@ -126,14 +145,14 @@ public class SailDiffResultMarkdownConverter : ISailDiffResultMarkdownConverter
         return sb.ToString();
     }
 
-    private string CreateEnhancedLegacyOutput(List<SailDiffResult> enumeratedResults, OutputContext context)
+    private string CreateEnhancedLegacyOutput(List<SailDiffResult> enumeratedResults, OutputContext context, double alpha)
     {
         var sb = new StringBuilder();
 
         // Add impact summaries for each result
         foreach (var result in enumeratedResults)
         {
-            var impactSummary = CreateLegacyImpactSummary(result, context);
+            var impactSummary = CreateLegacyImpactSummary(result, context, alpha);
             if (!string.IsNullOrEmpty(impactSummary))
             {
                 sb.AppendLine(impactSummary);
@@ -148,7 +167,7 @@ public class SailDiffResultMarkdownConverter : ISailDiffResultMarkdownConverter
         return sb.ToString();
     }
 
-    private SailDiffComparisonData ConvertToComparisonData(SailDiffResult result)
+    private SailDiffComparisonData ConvertToComparisonData(SailDiffResult result, double alpha)
     {
         return new SailDiffComparisonData
         {
@@ -159,7 +178,7 @@ public class SailDiffResultMarkdownConverter : ISailDiffResultMarkdownConverter
             Metadata = new ComparisonMetadata
             {
                 SampleSize = result.TestResultsWithOutlierAnalysis.StatisticalTestResult.SampleSizeBefore,
-                AlphaLevel = 0.05,
+                AlphaLevel = alpha,
                 TestType = "T-Test",
                 OutliersRemoved = (result.TestResultsWithOutlierAnalysis.Sample1?.TotalNumOutliers ?? 0) +
                                  (result.TestResultsWithOutlierAnalysis.Sample2?.TotalNumOutliers ?? 0)
@@ -168,11 +187,29 @@ public class SailDiffResultMarkdownConverter : ISailDiffResultMarkdownConverter
         };
     }
 
-    private string CreateLegacyImpactSummary(SailDiffResult result, OutputContext context)
+    private string CreateLegacyImpactSummary(SailDiffResult result, OutputContext context, double alpha)
     {
         var stats = result.TestResultsWithOutlierAnalysis.StatisticalTestResult;
         var percentChange = stats.MeanBefore > 0 ? ((stats.MeanAfter - stats.MeanBefore) / stats.MeanBefore) * 100 : 0;
-        var isSignificant = stats.PValue < 0.05 && !stats.ChangeDescription.Contains("No Change", StringComparison.OrdinalIgnoreCase);
+
+        // Prefer the test wrapper's already-computed ChangeDescription as the authoritative
+        // significance signal — that value was produced by the test using the user's α, so
+        // recomputing here would risk disagreeing with the rest of the pipeline. Only when
+        // the wrapper failed to set a recognisable verdict do we fall back to p ≤ α.
+        var hasVerdict = !string.IsNullOrEmpty(stats.ChangeDescription);
+        bool isSignificant;
+        bool isImprovement;
+        if (hasVerdict)
+        {
+            isSignificant = !stats.ChangeDescription.Contains("No Change", StringComparison.OrdinalIgnoreCase);
+            isImprovement = stats.ChangeDescription.Contains("Improved", StringComparison.OrdinalIgnoreCase)
+                            || (isSignificant && percentChange < 0);
+        }
+        else
+        {
+            isSignificant = stats.PValue <= alpha;
+            isImprovement = percentChange < 0;
+        }
 
         if (!isSignificant)
         {
@@ -180,7 +217,6 @@ public class SailDiffResultMarkdownConverter : ISailDiffResultMarkdownConverter
             return $"{noChangeIcon} **{result.TestCaseId.DisplayName}**: {Math.Abs(percentChange):F1}% difference (NO CHANGE)";
         }
 
-        var isImprovement = percentChange < 0;
         var direction = isImprovement ? "faster" : "slower";
         var significance = isImprovement ? "IMPROVED" : "REGRESSED";
         var icon = context switch

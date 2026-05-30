@@ -1,4 +1,24 @@
-﻿## What's Changed in v0.0.117
+﻿## What's Changed in v0.0.118 (unreleased)
+
+### SailDiff statistical rigor (Tier 1)
+
+**Breaking — default test type and alpha changed.** SailDiff's defaults have been wrong for the data Sailfish actually produces. Two related changes:
+
+- **Default test is now `WilcoxonRankSumTest`** (Mann-Whitney U), the correct non-parametric test for two independent samples. The previous default, `TwoSampleWilcoxonSignedRankTest`, requires *paired* samples — each before[i] must be paired with after[i] by experimental design — which independent benchmark iterations are not. Using signed-rank on unpaired data violates the test's assumptions and produces invalid p-values. The signed-rank test remains available for callers who genuinely have paired data; its docstring now states this requirement explicitly.
+- **Default alpha is now 0.05** (was 0.001), aligning with conventional statistical practice and with the 95% confidence intervals reported alongside each result. The previous 0.001 combined with `WilcoxonRankSumTest`'s exact null-distribution constraints made detection essentially impossible at typical Sailfish sample sizes — the core "comparisons aren't sensitive enough" complaint. Presets shift accordingly: `Default` 0.05, `Tight` 0.01, `Relaxed` 0.10.
+
+**Mann-Whitney rewrite — uses your whole sample.** The Mann-Whitney wrapper previously down-sampled both sides to at most 10 observations, ran the test 25 times on different random subsamples, then voted (majority-significant wins) and reported the mean of either the significant or non-significant p-values. None of that is a valid statistical procedure and it destroyed power. The wrapper now runs the test once on the full preprocessed sample. The underlying `MannWhitneyDistribution` already supports both the exact null distribution (small N) and the tie-corrected normal approximation with continuity correction (large N); the exact path is now capped at ~2 × 10⁶ table entries to prevent OOM on samples around N ≈ 30 per side.
+
+**Single source of truth for α.** Three independent paths used to apply a hardcoded `0.05` cutoff regardless of the user's configured alpha — the N×N comparison matrix in test-adapter markdown, in session markdown, and in CSV; the t-test's reported confidence interval (always 95%); and two `ToComparisonData` converters in the formatters. All four sites now thread the configured `SailDiffSettings.Alpha`, propagated either by direct settings injection or via the new `SailDiffSignificance.MetadataKey` per-message metadata. CI widths now follow `1 − α` (95% at α = 0.05, 99% at α = 0.01).
+
+**Deterministic stats.** `TestPreprocessor.DownSampleWithRandomUniform` previously used `new Random()` (wall-clock seed) when no explicit seed was passed, so the down-sample was non-deterministic even when `RunSettingsBuilder.WithSeed` was set. The preprocessor now optionally takes `IRunSettings` via DI and consults `Seed`; the joint-sample form uses offset seed streams so identical-length samples don't draw identical index sets; and selected indices are sorted before extraction so output ordering doesn't depend on `HashSet<int>`'s undocumented enumeration order.
+
+**Migration notes:**
+- Code that constructs `new SailDiffSettings()` without arguments will see different significance verdicts. To keep the old behaviour explicitly: `new SailDiffSettings(alpha: 0.001, testType: TestType.TwoSampleWilcoxonSignedRankTest)`. We don't recommend this — it was incorrect — but the option is preserved.
+- The previously-recorded MW "convergence" test that asserted `NoChange` for an effect of d ≈ 1.0 at N = 30 was effectively documenting the broken behaviour; it now uses a genuinely small effect to test the same property.
+- A new internal helper, `Sailfish.Analysis.SailDiff.Statistics.SailDiffSignificance`, provides `IsSignificant(p, α)` / `IsSignificantPositive(q, α)` / `ReadFromMetadata(...)` for downstream code that needs a consistent cutoff.
+
+## What's Changed in v0.0.117
 
 - Fix: failed `[SailfishComparison]` members now publish `TestOutcome.Failed` instead of `TestOutcome.None`, so IDE Test Explorer surfaces the exception and stack trace correctly (#228, #230)
 - Fix: comparison batch readiness no longer waits on members that failed — single-survivor groups complete cleanly and N×N matrices are computed across the surviving members only (#231)
