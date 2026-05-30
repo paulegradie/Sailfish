@@ -111,29 +111,32 @@ public string Scenario { get; set; } = null!;
 ### ⚖️ **Method Comparisons**
 
 #### [`MethodComparisonExample.cs`](ExamplePerformanceTests/MethodComparisonExample.cs)
-**Algorithm comparison** - demonstrates the method comparison feature, which automatically compares multiple algorithms within a single test run. Set `ComparisonGroup` on `[SailfishMethod]` to opt a method into a named group; mark one method with `IsBaseline = true` to switch from the default N×N matrix to N−1 baseline-vs-contender rows.
+**Algorithm comparison (the default)** — every `[SailfishMethod]` in a `[Sailfish]` class is automatically compared against its siblings. Mark one method with `IsBaseline = true` to switch from an N×N matrix to N−1 baseline-vs-contender rows.
 
 ```csharp
-// Default N×N matrix — no baseline:
-[SailfishMethod(ComparisonGroup = "SumCalculation")]
-public void CalculateSumWithLinq() { /* Implementation */ }
+[Sailfish]
+public class SortBenchmarks
+{
+    [SailfishMethod(IsBaseline = true)]
+    public void SortWithQuickSort() { /* Implementation */ }
 
-[SailfishMethod(ComparisonGroup = "SumCalculation")]
-public void CalculateSumWithLoop() { /* Implementation */ }
+    [SailfishMethod]
+    public void SortWithBubbleSort() { /* Implementation */ }
 
-// N−1 baseline-vs-contender — QuickSort is the reference:
-[SailfishMethod(ComparisonGroup = "SortingAlgorithm", IsBaseline = true)]
-public void SortWithQuickSort() { /* Implementation */ }
-
-[SailfishMethod(ComparisonGroup = "SortingAlgorithm")]
-public void SortWithBubbleSort() { /* Implementation */ }
-
-[SailfishMethod(ComparisonGroup = "SortingAlgorithm")]
-public void SortWithOtherSort() { /* Implementation */ }
+    [SailfishMethod]
+    public void SortWithMergeSort() { /* Implementation */ }
+}
 ```
 
+#### [`MultiGroupComparisonExample.cs`](ExamplePerformanceTests/MultiGroupComparisonExample.cs)
+**Multiple comparisons in one class** — set `ComparisonGroup = "..."` on `[SailfishMethod]` to declare multiple independent comparison groups in the same class (e.g. sorting and hashing in one place).
+
+#### [`DisabledComparisonExample.cs`](ExamplePerformanceTests/DisabledComparisonExample.cs)
+**Opting out of comparison** — set `[Sailfish(DisableComparison = true)]` on classes that aren't really comparing alternatives. Methods then run individually with no comparison section in the output.
+
 **Features:**
-- **Two modes**: N×N matrix (no baseline) or N−1 rows against a chosen baseline
+- **Class-default comparison**: comparison is automatic; explicit `ComparisonGroup` is the advanced path
+- **Two modes per group**: N×N matrix (no baseline) or N−1 rows against a chosen baseline
 - **Statistical analysis**: BH-FDR–adjusted q-values and 95% ratio confidence intervals
 - **Build-time checks**: SF1300/1301/1302 analyzers catch common misconfigurations
 - **Consolidated outputs**: markdown and CSV via `[WriteToMarkdown]` / `[WriteToCsv]`

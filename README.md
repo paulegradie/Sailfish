@@ -27,7 +27,7 @@ Sailfish is a .NET performance testing framework that makes it easy to write, ru
 
 ## Features
 - Statistical rigor: outlier detection, multiple tests, significance analysis
-- Method comparisons via `[SailfishMethod(ComparisonGroup = "…", IsBaseline = true|false)]`
+- **Method comparisons by default** — every `[SailfishMethod]` in a `[Sailfish]` class is automatically compared; opt out per class with `[Sailfish(DisableComparison = true)]`
 - Multiple outputs: test logs, Markdown, CSV
 - Easy CI/CD integration
 - Historical analysis with SailDiff
@@ -53,23 +53,28 @@ public class MyPerformanceTest
 ```
 
 ## Algorithm Comparisons
-Group two or more methods on a class with `ComparisonGroup` and Sailfish compares them automatically. Mark one method as the baseline with `IsBaseline = true` for an N−1 baseline-vs-contender report, or leave all members baseline-less for an N×N matrix. Both modes report ratios with 95% confidence intervals and BH-FDR–adjusted q-values.
+Every `[SailfishMethod]` on a `[Sailfish]` class is automatically compared against its siblings — no extra attributes required. Pick a baseline with `IsBaseline = true` for an N−1 baseline-vs-contender report; without one you get the full N×N matrix. Both modes report ratios with 95% confidence intervals and BH-FDR–adjusted q-values.
 
 ```csharp
 [WriteToMarkdown]  // Generate consolidated markdown output
 [WriteToCsv]       // Generate consolidated CSV output
 [Sailfish(SampleSize = 100)]
-public class AlgorithmComparison
+public class SortBenchmarks
 {
-    [SailfishMethod(ComparisonGroup = "SortingAlgorithms", IsBaseline = true)]
+    [SailfishMethod(IsBaseline = true)]
     public void QuickSort() { /* implementation */ }
 
-    [SailfishMethod(ComparisonGroup = "SortingAlgorithms")]
+    [SailfishMethod]
     public void BubbleSort() { /* implementation */ }
+
+    [SailfishMethod]
+    public void MergeSort() { /* implementation */ }
 }
 ```
 
-See [Method Comparisons](https://paulgradie.com/Sailfish/docs/1/method-comparisons) for the full feature, including the N×N mode (drop `IsBaseline`) and the SF1300/1301/1302 build-time analyzers.
+If a class isn't really doing a comparison (a smoke test that times unrelated operations), set `[Sailfish(DisableComparison = true)]` and the methods run individually with no comparison output. For classes that need multiple distinct comparisons in one place, set `ComparisonGroup = "..."` on individual `[SailfishMethod]`s.
+
+See [Method Comparisons](https://paulgradie.com/Sailfish/docs/1/method-comparisons) for the full feature, including explicit `ComparisonGroup` for multi-group classes and the SF1300/1301/1302 build-time analyzers.
 
 ## Adaptive Sampling
 Adaptive sampling stops collecting samples once results are statistically stable (defaults shown):
