@@ -128,7 +128,21 @@ internal sealed class MannWhitneyDistribution : UnivariateContinuousDistribution
 
     protected override double InnerComplementaryDistributionFunction(double x)
     {
-        return NumberOfSamples1 <= NumberOfSamples2 ? ComplementaryDistributionFunction(x) : DistributionFunction(x);
+        // The U statistic's null distribution is symmetric around n1·n2/2 (because
+        // U1 + U2 = n1·n2 under any rank assignment), so the *same* PMF table serves
+        // both U1 and U2. Pre-fix, this override branched on n1 vs n2 and returned the
+        // CDF (DistributionFunction(x)) when n1 > n2 — that was a leftover hack from
+        // the pre-DP era when the caller swapped samples and the distribution did not
+        // carry its own CCDF table. The bug meant the wrapper's two-tailed formula
+        //
+        //     p = min(2·min(F(U), F_c(U)), 1)
+        //
+        // collapsed to min(2·F(U2), 1) whenever the wrapper picked U2 (n1 ≥ n2). For
+        // a maximally-separated dataset that yields U2 = n1·n2 → F(U2) = 1 → p = 1,
+        // i.e. the test silently fails to reject even when the alternative is true.
+        // The fix unconditionally delegates to the discrete CCDF lookup, which returns
+        // the correct P(U ≥ ⌈x⌉) regardless of which side's U was passed.
+        return ComplementaryDistributionFunction(x);
     }
 
     public override double DistributionFunction(double x)

@@ -122,7 +122,17 @@ namespace Sailfish.Analysis.SailDiff.Statistics
 
         private static double ClampP(double p)
         {
-            if (double.IsNaN(p) || p < 0) return 0.0;
+            // NaN p-values arise from degenerate inputs (e.g. Welch's t with zero variance
+            // on both sides, or KS on constant samples). Map them to 1.0 — the *most
+            // conservative* placement in the BH family — so a single failed test cannot
+            // contaminate the right-to-left running-min that drives the q-values for every
+            // other pair. The pre-fix mapping `NaN → 0` placed the failed pair at the head
+            // of the sorted-ascending vector, dragging unrelated q-values below alpha and
+            // fabricating significance. Treating NaN as p=1 keeps the pair in the family
+            // (so the key/value correspondence with the input dict is preserved) while
+            // ensuring it can never lower another pair's q-value.
+            if (double.IsNaN(p)) return 1.0;
+            if (p < 0) return 0.0;
             if (p > 1) return 1.0;
             return p;
         }

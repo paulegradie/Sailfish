@@ -31,6 +31,35 @@ Sailfish's internal DI container moved from Autofac to `Microsoft.Extensions.Dep
 
 See [Registering Tests Dependencies](docs/1/test-dependencies) for the current docs.
 
+### SailDiff critical bug fixes (post-Tier-3 follow-up)
+
+Two latent correctness bugs surfaced by a deep code review of the SailDiff Tier 1/2/3
+work. Both could cause SailDiff to either **miss a real regression** or
+**fabricate a phantom one**, so they're worth calling out independently of the tier work.
+
+**Mann-Whitney with unequal samples now rejects correctly.** When the post-preprocessing
+sample sizes were unequal (`n1 > n2`) — which routinely happens once Tukey-fence outlier
+detection trims one side — `MannWhitneyDistribution.InnerComplementaryDistributionFunction`
+returned the *CDF* instead of the CCDF. Combined with the wrapper's two-sided p-value
+formula `2·min(F(U), F_c(U))`, the calculation collapsed to `2·F(U)` with `U` chosen as
+the maximum, yielding `p = 1` even on maximally-separated data. The asymmetric branch was
+a leftover from the pre-DP era and is now gone — the discrete CCDF lookup is used
+unconditionally. Regression tests at the distribution level (`Ccdf_*`,
+`TwoSidedPValue_MaxSeparation_*`) and at the wrapper level
+(`MannWhitney_NLargerThanM_MaximallySeparatedSamples_RejectsAtAlpha005`,
+`MannWhitney_NLargerThanM_AndNSmallerThanM_GivesConsistentPValue`) pin both directions of
+the fix.
+
+**Benjamini-Hochberg FDR no longer contaminated by NaN p-values.** The internal `ClampP`
+helper mapped `NaN` to `0.0`, placing any failed pair at the head of the sorted-ascending
+vector and dragging every other pair's q-value down via BH's right-to-left running min.
+A single Welch test that hit zero variance could therefore *fabricate* significance for
+unrelated pairs in the same family. `ClampP` now maps `NaN` to `1.0` (the most
+conservative placement), so failed pairs land at the tail of the family with `q = 1.0`
+and cannot lower any other pair's q-value. New tests in `Tier2CompleteTests`
+(`BenjaminiHochberg_NaNPValuesDoNotContaminateOtherPairsQValues`,
+`BenjaminiHochberg_OnlyNaNPValues_AllQuotedAsOne`) pin the new behavior.
+
 ### SailDiff Tier 3: MDE reporting, permutation test, formatter completeness
 
 Closes out the SailDiff rigor roadmap with power/UX work that turns NoChange verdicts
