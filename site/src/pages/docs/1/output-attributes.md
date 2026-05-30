@@ -13,16 +13,14 @@ The `[WriteToMarkdown]` attribute generates consolidated markdown files containi
 [Sailfish]
 public class PerformanceTest
 {
-    [SailfishMethod]
-    [SailfishComparison("Algorithms")]
-    public void BubbleSort()
+    [SailfishMethod(ComparisonGroup = "Algorithms", IsBaseline = true)]
+    public void QuickSort()
     {
         // Implementation
     }
 
-    [SailfishMethod]
-    [SailfishComparison("Algorithms")]
-    public void QuickSort()
+    [SailfishMethod(ComparisonGroup = "Algorithms")]
+    public void BubbleSort()
     {
         // Implementation
     }
@@ -38,8 +36,9 @@ public class PerformanceTest
 ### Markdown Output Features
 
 - **Session-based consolidation**: Single markdown file per test session
-- **Per-group sections**: NxN comparison matrix and a five-column detailed results table per comparison group
-- **Statistical analysis**: BH-FDR q-values and 95% ratio confidence intervals in the matrix
+- **Per-group sections**: Either a baseline-vs-contender table (when one method is the baseline) or an N×N comparison matrix (when none is), followed by a five-column detailed results table per comparison group
+- **Per-class scoping**: Section header is `## 🔬 Comparison Group: GroupName (ClassName)` so same-named groups in different classes are reported separately
+- **Statistical analysis**: BH-FDR q-values and 95% ratio confidence intervals
 - **Environment & reproducibility headers**: Optional `🏥 Environment Health Check` and `🔁 Reproducibility Summary` sections near the top when enabled
 
 CI95/CI99 margins of error are not embedded in the consolidated session markdown — they're available in the per-class tracking CSV and in the Reproducibility Manifest.
@@ -62,16 +61,14 @@ The `[WriteToCsv]` attribute generates consolidated CSV files containing both in
 [Sailfish]
 public class PerformanceTest
 {
-    [SailfishMethod]
-    [SailfishComparison("Algorithms")]
-    public void BubbleSort()
+    [SailfishMethod(ComparisonGroup = "Algorithms", IsBaseline = true)]
+    public void QuickSort()
     {
         // Implementation
     }
 
-    [SailfishMethod]
-    [SailfishComparison("Algorithms")]
-    public void QuickSort()
+    [SailfishMethod(ComparisonGroup = "Algorithms")]
+    public void BubbleSort()
     {
         // Implementation
     }
@@ -86,7 +83,8 @@ public class PerformanceTest
 
 ### CSV Output Features
 
-- **Two-section format**: Individual test results and pairwise method comparisons
+- **Two-section format**: Individual test results and method comparison rows
+- **Baseline-aware row count**: N−1 rows in baseline mode, N×(N−1)/2 rows in N×N mode
 - **Excel-compatible**: Easy to import and analyze in spreadsheet applications
 - **Session-based consolidation**: Single CSV file per test session
 - **Numeric ratios with confidence intervals and q-values**: Comparison rows include the BH-FDR q-value and 95% ratio CI bounds
@@ -104,8 +102,10 @@ PerformanceTest,RegularMethod,1.000,1.000,0.100,100,,Success
 
 # Method Comparisons
 ComparisonGroup,Method1,Method2,Mean1,Mean2,Ratio,CI95_Lower,CI95_Upper,q_value,Label,ChangeDescription
-Algorithms,BubbleSort,QuickSort,45.200,2.100,0.046,0.040,0.054,1.2e-12,Improved,Improved
+Algorithms,QuickSort,BubbleSort,2.100,45.200,21.524,18.301,24.917,1.2e-12,Slower,Regressed
 ```
+
+In this example QuickSort is the baseline, so Method1 is always QuickSort and one row appears per contender. Ratio = Mean2 / Mean1, so values > 1 indicate Method2 is slower than the baseline.
 
 ## Combined Usage
 
@@ -147,9 +147,9 @@ public class SerializationBenchmarks { }
 Use meaningful comparison group names that clearly indicate what's being compared:
 
 ```csharp
-[SailfishComparison("DatabaseQueries")]     // Good
-[SailfishComparison("SerializationMethods")] // Good
-[SailfishComparison("Group1")]               // Poor
+[SailfishMethod(ComparisonGroup = "DatabaseQueries")]      // Good
+[SailfishMethod(ComparisonGroup = "SerializationMethods")] // Good
+[SailfishMethod(ComparisonGroup = "Group1")]               // Poor
 ```
 
 ### 3. Consider Output Directory

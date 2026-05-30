@@ -36,6 +36,8 @@ public class Example
 
 ### Method Comparison Test
 
+Mark two or more methods with the same `ComparisonGroup` and Sailfish will compare them. Pick one as the baseline via `IsBaseline = true` for an N−1 baseline-vs-contender report, or leave all members baseline-less for an N×N matrix.
+
 ```csharp
 [WriteToMarkdown]  // Generate consolidated markdown output
 [WriteToCsv]       // Generate consolidated CSV output
@@ -50,12 +52,17 @@ public class AlgorithmComparison
         _data = Enumerable.Range(1, 1000).ToList();
     }
 
-    [SailfishMethod]
-    [SailfishComparison("SortingAlgorithms")]
+    [SailfishMethod(ComparisonGroup = "SortingAlgorithms", IsBaseline = true)]
+    public void QuickSort()
+    {
+        var array = _data.ToArray();
+        Array.Sort(array);
+    }
+
+    [SailfishMethod(ComparisonGroup = "SortingAlgorithms")]
     public void BubbleSort()
     {
         var array = _data.ToArray();
-        // Bubble sort implementation
         for (int i = 0; i < array.Length - 1; i++)
         {
             for (int j = 0; j < array.Length - i - 1; j++)
@@ -67,16 +74,10 @@ public class AlgorithmComparison
             }
         }
     }
-
-    [SailfishMethod]
-    [SailfishComparison("SortingAlgorithms")]
-    public void QuickSort()
-    {
-        var array = _data.ToArray();
-        Array.Sort(array);
-    }
 }
 ```
+
+See [Method Comparisons](/docs/1/method-comparisons) for the full feature, including the no-baseline N×N mode and the SF1300/1301/1302 build-time analyzers.
 
 ## 3. Register a Dependency
 
@@ -120,29 +121,18 @@ Adjusted Distribution (ms)
 
 ### Method Comparison Results
 
-When using `[SailfishComparison]`, you'll see detailed comparison results in the test output:
+The individual descriptive statistics for each method appear in the IDE Test Output window as usual. The comparison itself — ratios, 95% confidence intervals, BH-FDR q-values, and Improved/Slower/Similar labels — is written to the consolidated Markdown and CSV files when `[WriteToMarkdown]` / `[WriteToCsv]` are present.
 
-```
-📊 PERFORMANCE COMPARISON
-Group: SortingAlgorithms
-==================================================
+A baseline group renders like:
 
-🔴 IMPACT: BubbleSort() vs QuickSort() - 95.3% slower (REGRESSED)
-   P-Value: 0.000001 | Mean: 45.2ms → 2.1ms
+```markdown
+## 🔬 Comparison Group: SortingAlgorithms (AlgorithmComparison)
 
-📋 DETAILED STATISTICS:
-
-| Metric | Primary Method | Compared Method | Change | P-Value  |
-| ------ | -------------- | --------------- | ------ | -------- |
-| Mean   | 45.2ms         | 2.1ms           | +95.3% | 0.000001 |
-| Median | 44.1ms         | 2.0ms           | +95.0% | -        |
-
-Statistical Test: T-Test
-Alpha Level: 0.05
-Sample Size: 100
-Outliers Removed: 3
-
-==================================================
+### 📐 Baseline-vs-Contender (baseline = `QuickSort`, q-values via BH-FDR, α=0.05)
+| Method | Mean | Ratio vs Baseline | 95% CI | q-value | Label |
+|--------|------|-------------------|--------|---------|-------|
+| `QuickSort` _(baseline)_ | 2.100ms | — | — | — | — |
+| `BubbleSort` | 45.200ms | 21.524x | [18.301–24.917] | 1.2e-12 | Slower |
 ```
 
 ### Output Files
@@ -151,7 +141,7 @@ When using `[WriteToMarkdown]` or `[WriteToCsv]`, consolidated files are generat
 
 **Markdown**: `TestSession_abc12345_MethodComparisons_2025-08-03_10-30-00.md`
 - Session header (Generated, Session ID, Total Test Classes, Total Test Cases)
-- Per‑group comparison sections with N×N matrices
+- Per‑group comparison sections — either a baseline table (N−1) or an N×N matrix
 - Per‑class detailed results table (Method, Mean, Median, Sample Size, Status)
 
 **CSV**: `TestSession_abc12345_Results_20250803_103000.csv`

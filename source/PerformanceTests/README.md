@@ -19,7 +19,7 @@ Welcome to the **Sailfish Performance Testing Examples** project! This comprehen
 This project showcases **Sailfish**, a powerful .NET performance testing framework that enables:
 
 - **Precise Performance Measurement** with statistical analysis
-- **Method Comparisons** with automatic N×N algorithm comparison
+- **Method Comparisons** with automatic N×N matrix or N−1 baseline-vs-contender comparisons
 - **Parameterized Testing** with multiple variable combinations
 - **Scenario-Based Testing** for complex real-world scenarios
 - **IDE Integration** with test adapter support
@@ -111,27 +111,32 @@ public string Scenario { get; set; } = null!;
 ### ⚖️ **Method Comparisons**
 
 #### [`MethodComparisonExample.cs`](ExamplePerformanceTests/MethodComparisonExample.cs)
-**Algorithm comparison** - demonstrates the new method comparison feature that automatically compares multiple algorithms within a single test run.
+**Algorithm comparison** - demonstrates the method comparison feature, which automatically compares multiple algorithms within a single test run. Set `ComparisonGroup` on `[SailfishMethod]` to opt a method into a named group; mark one method with `IsBaseline = true` to switch from the default N×N matrix to N−1 baseline-vs-contender rows.
 
 ```csharp
-[SailfishMethod]
-[SailfishComparison("SortingAlgorithms")]
-public void BubbleSort() { /* Implementation */ }
+// Default N×N matrix — no baseline:
+[SailfishMethod(ComparisonGroup = "SumCalculation")]
+public void CalculateSumWithLinq() { /* Implementation */ }
 
-[SailfishMethod]
-[SailfishComparison("SortingAlgorithms")]
-public void QuickSort() { /* Implementation */ }
+[SailfishMethod(ComparisonGroup = "SumCalculation")]
+public void CalculateSumWithLoop() { /* Implementation */ }
 
-[SailfishMethod]
-[SailfishComparison("SortingAlgorithms")]
-public void LinqSort() { /* Implementation */ }
+// N−1 baseline-vs-contender — QuickSort is the reference:
+[SailfishMethod(ComparisonGroup = "SortingAlgorithm", IsBaseline = true)]
+public void SortWithQuickSort() { /* Implementation */ }
+
+[SailfishMethod(ComparisonGroup = "SortingAlgorithm")]
+public void SortWithBubbleSort() { /* Implementation */ }
+
+[SailfishMethod(ComparisonGroup = "SortingAlgorithm")]
+public void SortWithOtherSort() { /* Implementation */ }
 ```
 
 **Features:**
-- **N×N Comparisons**: Each method shows how it compares to all others
-- **Statistical Analysis**: Powered by SailDiff with significance testing
-- **Perspective-Based Results**: Each method shows comparisons from its viewpoint
-- **Color-Coded Output**: 🟢 Improved, 🔴 Regressed, ⚪ No Change
+- **Two modes**: N×N matrix (no baseline) or N−1 rows against a chosen baseline
+- **Statistical analysis**: BH-FDR–adjusted q-values and 95% ratio confidence intervals
+- **Build-time checks**: SF1300/1301/1302 analyzers catch common misconfigurations
+- **Consolidated outputs**: markdown and CSV via `[WriteToMarkdown]` / `[WriteToCsv]`
 
 ### 🌐 **Real-World Integration**
 

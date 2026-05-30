@@ -15,13 +15,11 @@ Apply the `[WriteToCsv]` attribute to any test class:
 [Sailfish(SampleSize = 100)]
 public class PerformanceTest
 {
-    [SailfishMethod]
-    [SailfishComparison("Algorithms")]
-    public void BubbleSort() { /* implementation */ }
-
-    [SailfishMethod]
-    [SailfishComparison("Algorithms")]
+    [SailfishMethod(ComparisonGroup = "Algorithms", IsBaseline = true)]
     public void QuickSort() { /* implementation */ }
+
+    [SailfishMethod(ComparisonGroup = "Algorithms")]
+    public void BubbleSort() { /* implementation */ }
 
     [SailfishMethod]
     public void RegularMethod() { /* implementation */ }
@@ -49,7 +47,7 @@ PerformanceTest,RegularMethod,1.000,1.000,0.100,100,,Success
 - **MedianTime**: Median execution time in milliseconds
 - **StdDev**: Standard deviation of execution times
 - **SampleSize**: Number of iterations executed
-- **ComparisonGroup**: Comparison group name (if using `[SailfishComparison]`); empty for ungrouped methods
+- **ComparisonGroup**: Comparison group name (set via `SailfishMethod(ComparisonGroup = "...")`); empty for ungrouped methods. The group is scoped per test class — the same name in two different classes is reported as two independent groups, distinguished by the `TestClass` column.
 - **Status**: Test execution status (`Success` / `Failed`)
 
 {% callout title="Where are CI95_MOE / CI99_MOE?" type="note" %}
@@ -58,21 +56,26 @@ The session CSV intentionally keeps the per-test row narrow. The CI95 / CI99 mar
 
 ### Section 2: Method Comparisons
 
+The shape of this section depends on whether the group has a baseline:
+
+- **Baseline mode** (`IsBaseline = true` on one member): N−1 rows. Each row compares the baseline (Method1) to one contender (Method2).
+- **N×N mode** (no baseline): N×(N−1)/2 rows. Every unique pair appears once.
+
 ```csv
 # Method Comparisons
 ComparisonGroup,Method1,Method2,Mean1,Mean2,Ratio,CI95_Lower,CI95_Upper,q_value,Label,ChangeDescription
-Algorithms,BubbleSort,QuickSort,45.200,2.100,21.5,18.3,24.9,0.000,Slower,Regressed
+Algorithms,QuickSort,BubbleSort,2.100,45.200,21.524,18.301,24.917,1.2e-12,Slower,Regressed
 ```
 
 **Fields:**
 - **ComparisonGroup**: Name of the comparison group
-- **Method1 / Method2**: Methods being compared
-- **Mean1 / Mean2**: Mean execution times for each method
-- **Ratio**: `Mean1 / Mean2` (unitless). Values > 1 indicate Method 1 is slower; values < 1 indicate faster.
+- **Method1 / Method2**: The two methods being compared. In baseline mode, Method1 is always the baseline.
+- **Mean1 / Mean2**: Mean execution times (ms) for each method
+- **Ratio**: `Mean2 / Mean1` (unitless). Values > 1 indicate Method 2 is slower than Method 1; values < 1 indicate Method 2 is faster.
 - **CI95_Lower / CI95_Upper**: 95% confidence interval endpoints for the ratio (computed on the log scale)
-- **q_value**: Benjamini–Hochberg adjusted p-value (multiple comparisons correction)
-- **Label**: One of Improved, Similar, or Slower
-- **ChangeDescription**: Legacy summary for backward compatibility (Improved/Regressed/No Change)
+- **q_value**: Benjamini–Hochberg adjusted p-value across the group (multiple comparisons correction)
+- **Label**: One of Improved, Similar, or Slower at α = 0.05
+- **ChangeDescription**: Legacy summary for backward compatibility (Improved / Regressed / No Change)
 
 ## Session-Based Consolidation
 
@@ -127,20 +130,24 @@ When you have multiple comparison groups, each generates its own set of comparis
 ```csv
 # Method Comparisons
 ComparisonGroup,Method1,Method2,Mean1,Mean2,Ratio,CI95_Lower,CI95_Upper,q_value,Label,ChangeDescription
-StringOperations,StringConcat,StringBuilder,15.200,8.100,1.9,1.7,2.2,0.000,Slower,Regressed
-StringOperations,StringConcat,StringInterpolation,15.200,12.300,1.2,1.1,1.4,0.023,Slower,Regressed
-StringOperations,StringBuilder,StringInterpolation,8.100,12.300,0.66,0.60,0.72,0.001,Improved,Improved
-Collections,ListIteration,ArrayIteration,5.400,3.200,1.7,1.5,1.9,0.000,Slower,Regressed
+StringOperations,StringBuilder,StringConcat,8.100,15.200,1.877,1.689,2.085,1.0e-12,Slower,Regressed
+StringOperations,StringBuilder,StringInterpolation,8.100,12.300,1.519,1.371,1.682,2.3e-08,Slower,Regressed
+StringOperations,StringConcat,StringInterpolation,15.200,12.300,0.809,0.731,0.895,3.4e-04,Improved,Improved
+Collections,ArrayIteration,ListIteration,3.200,5.400,1.688,1.523,1.870,4.1e-10,Slower,Regressed
 ```
 
-### N×N Comparison Matrices
+The rows above are an N×N example — none of the methods is marked `IsBaseline`. Add `IsBaseline = true` to one method per group and the section shrinks to N−1 rows, with Method1 always being that baseline.
 
-For groups with multiple methods, all pairwise comparisons are included:
+### Pair counts per group
 
-- **2 methods**: 1 comparison
-- **3 methods**: 3 comparisons (A vs B, A vs C, B vs C)
-- **4 methods**: 6 comparisons
-- **N methods**: N×(N-1)/2 comparisons
+| Methods in group | No-baseline (N×N) rows | Baseline (N−1) rows |
+| --- | --- | --- |
+| 2 | 1 | 1 |
+| 3 | 3 | 2 |
+| 4 | 6 | 3 |
+| N | N × (N−1) / 2 | N − 1 |
+
+Baseline mode is set by adding `IsBaseline = true` to exactly one `[SailfishMethod]` in the group. The CSV row count for that group shrinks accordingly and the FDR adjustment runs over the smaller set, sharpening individual q-values.
 
 ### Mixed Test Types
 
@@ -165,12 +172,10 @@ Use meaningful test class and method names since they appear in the CSV:
 [WriteToCsv]
 public class DatabaseQueryPerformance  // Clear class name
 {
-    [SailfishMethod]
-    [SailfishComparison("QueryTypes")]
+    [SailfishMethod(ComparisonGroup = "QueryTypes", IsBaseline = true)]
     public void SimpleSelect() { }      // Descriptive method name
 
-    [SailfishMethod]
-    [SailfishComparison("QueryTypes")]
+    [SailfishMethod(ComparisonGroup = "QueryTypes")]
     public void ComplexJoin() { }       // Descriptive method name
 }
 ```
@@ -180,9 +185,9 @@ public class DatabaseQueryPerformance  // Clear class name
 Choose comparison group names that clearly indicate what's being compared:
 
 ```csharp
-[SailfishComparison("DatabaseQueries")]     // Good
-[SailfishComparison("SerializationMethods")] // Good
-[SailfishComparison("Group1")]               // Poor
+[SailfishMethod(ComparisonGroup = "DatabaseQueries")]      // Good
+[SailfishMethod(ComparisonGroup = "SerializationMethods")] // Good
+[SailfishMethod(ComparisonGroup = "Group1")]               // Poor
 ```
 
 ### 3. Configure Output Directory
@@ -221,9 +226,9 @@ If CSV files are empty or missing:
 
 If method comparisons are missing from the CSV:
 
-1. **Verify group names**: Ensure methods use identical group names (case-sensitive)
-2. **Check method count**: Need at least 2 methods in a group for comparisons
-3. **Confirm attributes**: Both `[SailfishMethod]` and `[SailfishComparison]` required
+1. **Verify group names**: Ensure methods use identical `ComparisonGroup` values (case-sensitive)
+2. **Check method count**: Need at least 2 methods in a group for comparisons (SF1302 warns at build time)
+3. **Single baseline per group**: At most one method in the group can set `IsBaseline = true` (SF1301 enforces this)
 
 ### Excel Import Issues
 
