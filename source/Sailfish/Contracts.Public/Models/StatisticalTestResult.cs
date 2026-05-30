@@ -81,4 +81,13 @@ public class StatisticalTestResult
     /// <c>null</c> when the test failed or only a single comparison ran.
     /// </summary>
     public double? QValue { get; set; }
+
+    /// <summary>
+    /// Minimum detectable effect — at the configured α and the conventional 80% power, the
+    /// smallest change the run could reliably catch, expressed as a percentage of the
+    /// pooled mean. Large values (say &gt; 10%) mean the run is underpowered for typical
+    /// benchmark regressions. <c>null</c> when the inputs are degenerate (zero variance,
+    /// non-positive mean, or too few samples).
+    /// </summary>
+    public double? MinimumDetectableEffectPercent { get; set; }
 }

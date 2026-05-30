@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using MathNet.Numerics.Statistics;
 using Sailfish.Analysis.SailDiff.Statistics.StatsCore.Analysers.Factories;
+using Sailfish.Analysis.SailDiff.Statistics.StatsCore.MathOps;
 using Sailfish.Contracts.Public;
 using Sailfish.Contracts.Public.Models;
 
@@ -90,6 +91,15 @@ public class MannWhitneyWilcoxonTest : IMannWhitneyWilcoxonTest
             // (after − before). Robust, distribution-free, and paired with a CI built from
             // the rank-sum critical value at the user's α.
             testResults.Difference = EffectSizes.HodgesLehmann(sample1, sample2, settings.Alpha);
+
+            // MDE percentage — what regression size this run could have caught. The MDE
+            // formula uses the t-test sample-variance approximation regardless of which test
+            // actually ran; for rank-based decisions it's a useful order-of-magnitude proxy
+            // because Mann-Whitney's asymptotic relative efficiency vs. the t-test is ~95%.
+            testResults.MinimumDetectableEffectPercent = MinimumDetectableEffect.RelativePercent(
+                sample1.Mean(), sample1.Variance(), sample1.Length,
+                sample2.Mean(), sample2.Variance(), sample2.Length,
+                settings.Alpha);
 
             return new TestResultWithOutlierAnalysis(testResults, preprocessed1.OutlierAnalysis, preprocessed2.OutlierAnalysis);
         }

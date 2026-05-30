@@ -63,8 +63,11 @@ public class SailDiffAnalysisCompleteNotificationHandlerTests : IDisposable
         var files = Directory.GetFiles(outputDirectory);
         var mdContent = await File.ReadAllTextAsync(files.Single(x => x.EndsWith(DefaultFileSettings.MarkdownSuffix)));
         var csvContent = await File.ReadAllTextAsync(files.Single(x => x.EndsWith(DefaultFileSettings.CsvSuffix)));
+        // Tier-3 appended QValue, Effect{Name,Value,CiLower,CiUpper}, Shift{Name,Value,
+        // CiLower,CiUpper,Units}, and MdePercent columns. The fixture's StatisticalTestResult
+        // doesn't populate those, so they render as empty cells (the trailing commas).
         const string expectedCsv = """
-                                   5,6,5,5,345,0.001,No Change,3,3,"1,2,3","9,10,11"
+                                   5,6,5,5,345,0.001,No Change,3,3,"1,2,3","9,10,11",,,,,,,,,,,
                                    """;
         files.Length.ShouldBe(2);
         mdContent.ShouldBe("This is some markdown");

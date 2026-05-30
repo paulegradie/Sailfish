@@ -1,5 +1,44 @@
 ﻿## What's Changed in v0.0.118 (unreleased)
 
+### SailDiff Tier 3: MDE reporting, permutation test, formatter completeness
+
+Closes out the SailDiff rigor roadmap with power/UX work that turns NoChange verdicts
+into actionable signals and surfaces every Tier 2 field through every output path.
+
+**Minimum Detectable Effect (MDE) on every result.** A new
+`StatisticalTestResult.MinimumDetectableEffectPercent` reports, at the configured α and a
+conventional 80% power, the smallest change the run could reliably catch as a percentage
+of the pooled mean. The new public helper `MinimumDetectableEffect` exposes both the
+absolute MDE (raw units) and the inverse — `SampleSizePerGroup(effect, var, α)` —
+answering the planning question "how many iterations to detect a 5% regression?". All four
+test wrappers populate the MDE field uniformly so it's available regardless of which
+TestType was selected.
+
+**Permutation test option** (`TestType.PermutationTest`). Distribution-free two-sample
+test that shuffles the joint pool of labels K times (default 10,000) and counts how often
+a random label assignment yields a mean difference at least as extreme as the observed
+one. Uses the Phipson-Smyth bias correction `(1 + count) / (1 + K)` so a finite Monte
+Carlo sample never reports an impossible p = 0. Robust against heavy-tailed and
+multi-modal timing data where the t-test's normality assumption is shaky. Configurable
+via new `SailDiffSettings.PermutationCount`. Borrows the rank-sum effect-size suite
+(Cliff's delta + Hodges-Lehmann shift) for output consistency.
+
+**Markdown formatter completeness.** The legacy SailDiff markdown table now includes the
+Tier 2 columns: `QValue (BH)`, `Effect`, `Shift`, `MDE %`. Empty cells when the test type
+doesn't produce a particular field.
+
+**CSV formatter completeness.** `SailDiffWriteAsCsvMap` gains 11 new columns from index 12
+onwards: `QValue`, `EffectName`, `EffectValue`, `EffectCiLower`, `EffectCiUpper`,
+`ShiftName`, `ShiftValue`, `ShiftCiLower`, `ShiftCiUpper`, `ShiftUnits`, `MdePercent`.
+Legacy columns 0..11 preserved verbatim for back-compat with existing consumers.
+
+### Debt cleared in the same change
+
+- **Signed-rank descriptive stats consistency.** The wrapper used to report `before.Mean()` /
+  `after.Mean()` on the *raw* input arrays even when outlier detection had shrunk the
+  samples the test actually saw — visible mean and test verdict could describe different
+  data. Now reports on the post-preprocessing sample, matching every other wrapper.
+
 ### SailDiff Tier 2: effect sizes, difference CIs, BH-FDR across pairs, log-transform
 
 A SailDiff verdict pre-Tier-2 was a binary label (`Improved` / `Regressed` / `NoChange`) plus

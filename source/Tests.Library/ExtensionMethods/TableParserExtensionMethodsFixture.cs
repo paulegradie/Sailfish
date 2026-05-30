@@ -51,7 +51,8 @@ public class TableParserExtensionMethodsFixture
             new MannWhitneyWilcoxonTest(preprocessor),
             new Test(preprocessor),
             new TwoSampleWilcoxonSignedRankTest(preprocessor),
-            new KolmogorovSmirnovTest(preprocessor)
+            new KolmogorovSmirnovTest(preprocessor),
+            new Sailfish.Analysis.SailDiff.Statistics.Tests.PermutationTest.PermutationTest(preprocessor)
         ).ExecuteStatisticalTest(
             [2, 2, 4, 4, 5, 5, 6, 7, 6],
             [9, 8, 7, 6, 4, 4, 1, 2, 3, 2],

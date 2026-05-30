@@ -106,6 +106,14 @@ public class Test : ITTest
                     test.Confidence.Min, test.Confidence.Max);
             }
 
+            // MDE on the raw scale, expressed as a percentage of the pooled mean. Answers
+            // "what's the smallest regression this run could have caught?" — actionable when
+            // the result was NoChange but you suspect a real but small effect was missed.
+            testResults.MinimumDetectableEffectPercent = MinimumDetectableEffect.RelativePercent(
+                rawSample1.Mean(), rawSample1.Variance(), rawSample1.Length,
+                rawSample2.Mean(), rawSample2.Variance(), rawSample2.Length,
+                settings.Alpha);
+
             return new TestResultWithOutlierAnalysis(testResults, preprocessed1.OutlierAnalysis, preprocessed2.OutlierAnalysis);
         }
         catch (Exception ex)

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using MathNet.Numerics.Statistics;
 using Sailfish.Analysis.SailDiff.Statistics.StatsCore.Analysers.Factories;
+using Sailfish.Analysis.SailDiff.Statistics.StatsCore.MathOps;
 using Sailfish.Contracts.Public;
 using Sailfish.Contracts.Public.Models;
 
@@ -54,10 +55,15 @@ public class TwoSampleWilcoxonSignedRankTest : ITwoSampleWilcoxonSignedRankTest
 
             var test = TwoSampleWilcoxonSignedRankFactory.Create(sample1, sample2);
 
-            var meanBefore = Math.Round(before.Mean(), sigDig);
-            var meanAfter = Math.Round(after.Mean(), sigDig);
-            var medianBefore = Math.Round(before.Median(), sigDig);
-            var medianAfter = Math.Round(after.Median(), sigDig);
+            // Descriptive stats reported on the *processed* sample (post-outlier-removal /
+            // alignment), matching every other test wrapper and the p-value just computed.
+            // Pre-Tier-3 this branch reported `before.Mean()` / `after.Mean()` on the raw
+            // input arrays, so the visible mean and the test verdict could describe
+            // different data when outlier detection was on.
+            var meanBefore = Math.Round(sample1.Mean(), sigDig);
+            var meanAfter = Math.Round(sample2.Mean(), sigDig);
+            var medianBefore = Math.Round(sample1.Median(), sigDig);
+            var medianAfter = Math.Round(sample2.Median(), sigDig);
             var testStatistic = Math.Round(test.Statistic, sigDig);
             var pval = test.PValue;
             var isSignificant = pval <= settings.Alpha;
@@ -77,6 +83,15 @@ public class TwoSampleWilcoxonSignedRankTest : ITwoSampleWilcoxonSignedRankTest
                 before,
                 after,
                 additionalResults);
+
+            // MDE on the raw scale — consistent with the other wrappers. For paired data the
+            // formula is a slight over-estimate (it ignores the pairing-induced correlation
+            // reduction) but useful as an order-of-magnitude planning number.
+            testResults.MinimumDetectableEffectPercent = MinimumDetectableEffect.RelativePercent(
+                sample1.Mean(), sample1.Variance(), sample1.Length,
+                sample2.Mean(), sample2.Variance(), sample2.Length,
+                settings.Alpha);
+
             return new TestResultWithOutlierAnalysis(testResults, preprocessed1.OutlierAnalysis, preprocessed2.OutlierAnalysis);
         }
         catch (Exception ex)

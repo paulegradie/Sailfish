@@ -79,9 +79,23 @@ public class SailDiffSettings
     /// </summary>
     public bool LogTransform { get; private set; }
 
+    /// <summary>
+    /// Number of label permutations used when <see cref="TestType.PermutationTest"/> is
+    /// selected. Default 10,000 — the Monte Carlo standard error on a p ≈ 0.05 estimate is
+    /// ~0.002 there. Increase for higher resolution at very small p-values; decrease to
+    /// trade precision for speed.
+    /// </summary>
+    public int PermutationCount { get; private set; } = 10_000;
+
     public void SetLogTransform(bool enabled)
     {
         LogTransform = enabled;
+    }
+
+    public void SetPermutationCount(int count)
+    {
+        if (count < 1) throw new ArgumentOutOfRangeException(nameof(count), "PermutationCount must be ≥ 1.");
+        PermutationCount = count;
     }
 
     public void SetAlpha(double alpha)

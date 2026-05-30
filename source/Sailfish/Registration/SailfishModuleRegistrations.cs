@@ -8,6 +8,7 @@ using Sailfish.Analysis.SailDiff.Statistics;
 using Sailfish.Analysis.SailDiff.Statistics.Tests;
 using Sailfish.Analysis.SailDiff.Statistics.Tests.KolmogorovSmirnovTestSailfish;
 using Sailfish.Analysis.SailDiff.Statistics.Tests.MWWilcoxonTestSailfish;
+using Sailfish.Analysis.SailDiff.Statistics.Tests.PermutationTest;
 using Sailfish.Analysis.SailDiff.Statistics.Tests.TTest;
 using Sailfish.Analysis.SailDiff.Statistics.Tests.TwoSampleWilcoxonSignedRankTestSailfish;
 using Sailfish.Analysis.ScaleFish;
@@ -145,6 +146,7 @@ internal class SailfishModuleRegistrations : IProvideAdditionalRegistrations
         builder.RegisterType<MannWhitneyWilcoxonTest>().As<IMannWhitneyWilcoxonTest>();
         builder.RegisterType<TwoSampleWilcoxonSignedRankTest>().As<ITwoSampleWilcoxonSignedRankTest>();
         builder.RegisterType<KolmogorovSmirnovTest>().As<IKolmogorovSmirnovTest>();
+        builder.RegisterType<PermutationTest>().As<IPermutationTest>();
         builder.RegisterType<ScalefishObservationCompiler>().As<IScalefishObservationCompiler>();
         builder.RegisterType<SailDiffConsoleWindowMessageFormatter>().As<ISailDiffConsoleWindowMessageFormatter>();
     }
