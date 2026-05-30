@@ -60,11 +60,11 @@ The section then contains one of:
 
 Either layout is followed by a `### Detailed Results` table:
 
-```markdown
-| Method | Mean Time | Median Time | Sample Size | Status |
-|--------|-----------|-------------|-------------|--------|
-| QuickSort | 2.100ms | 2.000ms | 100 | ✅ Success |
-| BubbleSort | 45.200ms | 44.100ms | 100 | ✅ Success |
+```
+| Method     | Mean Time  | Median Time | Sample Size | Status     |
+|------------|------------|-------------|-------------|------------|
+| QuickSort  | 2.100ms    | 2.000ms     | 100         | ✅ Success |
+| BubbleSort | 45.200ms   | 44.100ms    | 100         | ✅ Success |
 ```
 
 **Columns:**
@@ -170,11 +170,11 @@ Sailfish uses adaptive precision to ensure readability:
 
 The session markdown includes both comparison methods (under per-group sections) and ungrouped methods (under `## 📊 Individual Test Results`). All tables share the same 5-column shape:
 
-```markdown
-| Method | Mean Time | Median Time | Sample Size | Status |
-|--------|-----------|-------------|-------------|--------|
-| RegularMethod        | 1.000ms  | 1.000ms  | 100 | ✅ Success |
-| AnotherRegularMethod | 1.100ms  | 1.000ms  | 100 | ✅ Success |
+```
+| Method               | Mean Time | Median Time | Sample Size | Status     |
+|----------------------|-----------|-------------|-------------|------------|
+| RegularMethod        | 1.000ms   | 1.000ms     | 100         | ✅ Success |
+| AnotherRegularMethod | 1.100ms   | 1.000ms     | 100         | ✅ Success |
 ```
 
 For per-test CI95/CI99 margins of error or standard deviation, consult the per-class tracking CSV or the [Reproducibility Manifest](/docs/1/reproducibility-manifest).
