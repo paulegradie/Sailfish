@@ -125,14 +125,15 @@ The individual descriptive statistics for each method appear in the IDE Test Out
 
 A baseline group renders like:
 
-```markdown
+```
 ## 🔬 Comparison Group: SortingAlgorithms (AlgorithmComparison)
 
 ### 📐 Baseline-vs-Contender (baseline = `QuickSort`, q-values via BH-FDR, α=0.05)
-| Method | Mean | Ratio vs Baseline | 95% CI | q-value | Label |
-|--------|------|-------------------|--------|---------|-------|
-| `QuickSort` _(baseline)_ | 2.100ms | — | — | — | — |
-| `BubbleSort` | 45.200ms | 21.524x | [18.301–24.917] | 1.2e-12 | Slower |
+
+| Method                    | Mean      | Ratio vs Baseline | 95% CI            | q-value | Label  |
+|---------------------------|-----------|-------------------|-------------------|---------|--------|
+| `QuickSort` _(baseline)_  | 2.100ms   | —                 | —                 | —       | —      |
+| `BubbleSort`              | 45.200ms  | 21.524x           | [18.301–24.917]   | 1.2e-12 | Slower |
 ```
 
 ### Output Files

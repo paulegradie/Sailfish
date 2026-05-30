@@ -192,43 +192,45 @@ Format details and the exact column / section layout:
 
 For the `SortingAlgorithm` group above (quicksort baseline, plus bubble sort and a slow sleeper):
 
-```markdown
+```
 ## 🔬 Comparison Group: SortingAlgorithm (SortingComparison)
 
 ### Baseline Comparison
 
 ### 📐 Baseline-vs-Contender (baseline = `SortWithQuickSort`, q-values via BH-FDR, α=0.05)
-| Method | Mean | Ratio vs Baseline | 95% CI | q-value | Label |
-|--------|------|-------------------|--------|---------|-------|
-| `SortWithQuickSort` _(baseline)_ | 0.005ms | — | — | — | — |
-| `SortWithBubbleSort` | 1.730ms | 346.000x | [298.412–401.213] | 1.2e-12 | Slower |
-| `SortWithOtherSort` | 15.622x | 3124.400x | [2901.011–3365.121] | 8.4e-15 | Slower |
+
+| Method                            | Mean     | Ratio vs Baseline | 95% CI                | q-value | Label  |
+|-----------------------------------|----------|-------------------|-----------------------|---------|--------|
+| `SortWithQuickSort` _(baseline)_  | 0.005ms  | —                 | —                     | —       | —      |
+| `SortWithBubbleSort`              | 1.730ms  | 346.000x          | [298.412–401.213]     | 1.2e-12 | Slower |
+| `SortWithOtherSort`               | 15.622ms | 3124.400x         | [2901.011–3365.121]   | 8.4e-15 | Slower |
 
 _Ratio is contender/baseline. 'Improved' means significantly faster than baseline; 'Slower' significantly slower; 'Similar' not significant after FDR._
 
 ### Detailed Results
 
-| Method | Mean Time | Median Time | Sample Size | Status |
-|--------|-----------|-------------|-------------|--------|
-| SortWithQuickSort | 0.005ms | 0.005ms | 100 | ✅ Success |
-| SortWithBubbleSort | 1.730ms | 1.666ms | 100 | ✅ Success |
-| SortWithOtherSort | 15.622ms | 15.530ms | 100 | ✅ Success |
+| Method              | Mean Time | Median Time | Sample Size | Status     |
+|---------------------|-----------|-------------|-------------|------------|
+| SortWithQuickSort   | 0.005ms   | 0.005ms     | 100         | ✅ Success |
+| SortWithBubbleSort  | 1.730ms   | 1.666ms     | 100         | ✅ Success |
+| SortWithOtherSort   | 15.622ms  | 15.530ms    | 100         | ✅ Success |
 ```
 
 ### N×N mode — example output
 
 For the `SumCalculation` group above (no baseline, two methods):
 
-```markdown
+```
 ## 🔬 Comparison Group: SumCalculation (SumComparison)
 
 ### Performance Comparison Matrix
 
 ### 🔢 NxN Comparison Matrix (q-values via BH-FDR, α=0.05)
-| Method | CalculateSumWithLinq | CalculateSumWithLoop |
-|-|-|-|
-| CalculateSumWithLinq | — | 0.987x [0.951–1.024] q=0.512 Similar |
-| CalculateSumWithLoop | 1.013x [0.977–1.052] q=0.512 Similar | — |
+
+| Method                | CalculateSumWithLinq                  | CalculateSumWithLoop                  |
+|-----------------------|---------------------------------------|---------------------------------------|
+| CalculateSumWithLinq  | —                                     | 0.987x [0.951–1.024] q=0.512 Similar  |
+| CalculateSumWithLoop  | 1.013x [0.977–1.052] q=0.512 Similar  | —                                     |
 
 _Cell value is ratio vs. row (col/row). CI is 95% on ratio. 'Improved' means significantly faster; 'Slower' significantly slower; 'Similar' not significant after FDR._
 ```
