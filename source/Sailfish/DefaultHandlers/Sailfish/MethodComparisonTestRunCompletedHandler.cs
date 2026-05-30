@@ -78,7 +78,7 @@ internal class MethodComparisonTestRunCompletedHandler : INotificationHandler<Te
 
     /// <summary>
     /// Full-feature constructor including run settings and reproducibility manifest provider.
-    /// Autofac will select this when all dependencies are available.
+    /// The DI container selects this when all dependencies are available.
     /// </summary>
     public MethodComparisonTestRunCompletedHandler(
         ILogger logger,

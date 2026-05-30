@@ -1,11 +1,9 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
-using Autofac;
 using Microsoft.Extensions.DependencyInjection;
 using Sailfish.Contracts.Public.Models;
 using Sailfish.Execution;
-using Sailfish.Utils;
 
 namespace Sailfish;
 
@@ -41,22 +39,5 @@ public static class SailfishRunner
         CancellationToken cancellationToken = default)
     {
         return await SailfishExecutionCaller.Run(runSettings, configureServices, cancellationToken);
-    }
-
-    /// <summary>
-    ///     Legacy Autofac-typed overload. Use the
-    ///     <see cref="Run(IRunSettings, Action{IServiceCollection}, CancellationToken)"/> overload for new
-    ///     code — your <see cref="ContainerBuilder"/> registrations will be bridged into MS DI for the
-    ///     duration of the run via <see cref="Sailfish.Registration.Bridge.AutofacBridge"/>.
-    /// </summary>
-    [Warning(
-        "This method is not generally recommended, because registrations passed this way are not available via the IDE Test Adapter. Only use this if your project doesn't require IDE play button functionality. In general, prefer to implement IRegisterSailfishServices and let it be auto-discovered.")]
-    [Obsolete("Use Run(IRunSettings, Action<IServiceCollection>, CancellationToken) instead. The Autofac-typed overload is bridged into MS DI for backward compatibility and will be removed in a future major release.", error: false)]
-    public static async Task<SailfishRunResult> Run(
-        IRunSettings runSettings,
-        Action<ContainerBuilder> registerAdditionalTypes,
-        CancellationToken cancellationToken = default)
-    {
-        return await SailfishExecutionCaller.RunLegacy(runSettings, registerAdditionalTypes, cancellationToken);
     }
 }

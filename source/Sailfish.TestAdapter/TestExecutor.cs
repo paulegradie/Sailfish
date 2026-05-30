@@ -207,7 +207,7 @@ public class TestExecutor : ITestExecutor
             // Stop queue services if enabled.
             StopQueueServices(provider);
 
-            // Dispose provider — this also disposes any bridged-in Autofac container (see AutofacBridge.BridgeOwner).
+            // Dispose provider — releases all singletons and any other IDisposable services it owns.
             provider.Dispose();
         }
     }
