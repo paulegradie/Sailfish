@@ -97,6 +97,19 @@ public class CompiledInvokerTests
         await CompiledInvoker.Empty(CancellationToken.None);
     }
 
+    // Regression guard: a public [SailfishMethod] on a top-level INTERNAL class must still invoke
+    // through the compiled delegate (mirrors Tests.E2E.TestSuite/Discoverable/MethodInjections.cs).
+    // The old reflection path ignored visibility; Expression.Compile on net9/net10 also invokes
+    // non-public targets, so internal benchmark classes keep working.
+    [Fact]
+    public async Task PublicMethodOnInternalClass_IsInvoked()
+    {
+        var t = new InternalTarget();
+        var invoke = CompiledInvoker.Build(t, typeof(InternalTarget).GetMethod(nameof(InternalTarget.Run))!);
+        await invoke(CancellationToken.None);
+        t.Calls.ShouldBe(1);
+    }
+
     private sealed class Target
     {
         public int Calls;
@@ -115,4 +128,12 @@ public class CompiledInvokerTests
         public void Throws() => throw new InvalidOperationException("boom");
         public void TwoParams(CancellationToken ct, int extra) { }
     }
+}
+
+// Top-level internal class (mirrors an internal [Sailfish] test class) used to prove the compiled
+// invoker can call a public method declared on a non-public type.
+internal class InternalTarget
+{
+    public int Calls;
+    public void Run() => Calls++;
 }
