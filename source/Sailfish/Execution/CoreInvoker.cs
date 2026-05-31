@@ -106,7 +106,8 @@ internal class CoreInvoker
             return;
         }
 
-        // Aggregate timing over multiple direct invocations within a single measured iteration.
+        // Time a batch of N direct invocations in a single window; StopSailfishMethodExecutionTimer
+        // divides by N so the recorded sample is the per-operation duration, not the batch aggregate.
         var invoke = CompiledMainMethod;
         _testCasePerformanceTimer.StartSailfishMethodExecutionTimer();
         try
@@ -118,7 +119,7 @@ internal class CoreInvoker
         }
         finally
         {
-            _testCasePerformanceTimer.StopSailfishMethodExecutionTimer();
+            _testCasePerformanceTimer.StopSailfishMethodExecutionTimer(operationsPerInvoke);
         }
     }
 
