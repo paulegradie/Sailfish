@@ -24,6 +24,10 @@ internal class CoreInvoker
     private readonly List<MethodInfo> _methodTeardown;
     private readonly PerformanceTimer _testCasePerformanceTimer;
 
+    // Compiled, allocation-free direct-call invoker for the timed method. Built lazily on first
+    // invocation so a malformed signature still surfaces at the same point reflection would have thrown.
+    private Func<CancellationToken, ValueTask>? _compiledInvoke;
+
     public CoreInvoker(object instance, MethodInfo method, PerformanceTimer testCasePerformanceTimer, LifecycleMethodTracker? lifecycleMethodTracker = null)
     {
         _globalSetup = instance.FindMethodsDecoratedWithAttribute<SailfishGlobalSetupAttribute>();
@@ -76,34 +80,47 @@ internal class CoreInvoker
         await InvokeLifecycleMethods<SailfishIterationSetupAttribute>(_iterationSetup, cancellationToken).ConfigureAwait(false);
     }
 
+    // The compiled invoker calls the method directly (no reflection, no per-call argument array).
+    // The await happens inside the timed region so async work is included in the measurement.
+    private Func<CancellationToken, ValueTask> CompiledMainMethod => _compiledInvoke ??= CompiledInvoker.Build(_instance, _mainMethod);
+
     public async Task ExecutionMethod(CancellationToken cancellationToken, bool timed = true)
     {
-        await _mainMethod.TryInvoke(_instance, cancellationToken, timed ? _testCasePerformanceTimer : null).ConfigureAwait(false);
+        var invoke = CompiledMainMethod;
+        if (timed) _testCasePerformanceTimer.StartSailfishMethodExecutionTimer();
+        try
+        {
+            await invoke(cancellationToken).ConfigureAwait(false);
+        }
+        finally
+        {
+            if (timed) _testCasePerformanceTimer.StopSailfishMethodExecutionTimer();
+        }
     }
 
-        public async Task ExecutionMethodWithOperationsPerInvoke(int operationsPerInvoke, CancellationToken cancellationToken)
+    public async Task ExecutionMethodWithOperationsPerInvoke(int operationsPerInvoke, CancellationToken cancellationToken)
+    {
+        if (operationsPerInvoke <= 1)
         {
-            if (operationsPerInvoke <= 1)
-            {
-                await ExecutionMethod(cancellationToken).ConfigureAwait(false);
-                return;
-            }
+            await ExecutionMethod(cancellationToken).ConfigureAwait(false);
+            return;
+        }
 
-            // Aggregate timing over multiple operations within a single measured iteration
-            _testCasePerformanceTimer.StartSailfishMethodExecutionTimer();
-            try
+        // Aggregate timing over multiple direct invocations within a single measured iteration.
+        var invoke = CompiledMainMethod;
+        _testCasePerformanceTimer.StartSailfishMethodExecutionTimer();
+        try
+        {
+            for (var i = 0; i < operationsPerInvoke; i++)
             {
-                for (var i = 0; i < operationsPerInvoke; i++)
-                {
-                    // Invoke without per-call timing; we capture the aggregate
-                    await _mainMethod.TryInvoke(_instance, cancellationToken, null).ConfigureAwait(false);
-                }
-            }
-            finally
-            {
-                _testCasePerformanceTimer.StopSailfishMethodExecutionTimer();
+                await invoke(cancellationToken).ConfigureAwait(false);
             }
         }
+        finally
+        {
+            _testCasePerformanceTimer.StopSailfishMethodExecutionTimer();
+        }
+    }
 
 
     public async Task IterationTearDown(CancellationToken cancellationToken)

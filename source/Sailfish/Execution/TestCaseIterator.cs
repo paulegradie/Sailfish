@@ -46,7 +46,7 @@ internal class TestCaseIterator : ITestCaseIterator
         var beginOverheadTicks = 0;
         if (!disableOverheadEstimation)
         {
-            beginOverheadTicks = await calibrator.CalibrateTicksAsync(testInstanceContainer.ExecutionMethod, cancellationToken);
+            beginOverheadTicks = await calibrator.CalibrateTicksAsync(CompiledInvoker.Empty, cancellationToken);
         }
 
         // Determine which strategy to use
@@ -119,8 +119,16 @@ internal class TestCaseIterator : ITestCaseIterator
             return new TestCaseExecutionResult(testInstanceContainer);
         }
 
-        var endOverheadTicks = await calibrator.CalibrateTicksAsync(testInstanceContainer.ExecutionMethod, cancellationToken);
-        var driftPct = beginOverheadTicks > 0
+        var endOverheadTicks = await calibrator.CalibrateTicksAsync(CompiledInvoker.Empty, cancellationToken);
+        // The compiled-delegate path measures near-zero harness overhead, so the calibrator's
+        // per-sample value is dominated by Stopwatch start/stop quantization and lands at a small,
+        // unstable tick count. A drift *percentage* off such a tiny baseline is just noise (0->1 tick
+        // reads as 100%). Gate the drift signal on an absolute-time floor (frequency-independent):
+        // below ~half a microsecond, harness overhead can't affect any difference worth resolving.
+        const double driftFloorNanoseconds = 500.0;
+        var nsPerTick = 1_000_000_000.0 / System.Diagnostics.Stopwatch.Frequency;
+        var overheadNanoseconds = beginOverheadTicks * nsPerTick;
+        var driftPct = overheadNanoseconds >= driftFloorNanoseconds
             ? (100.0 * Math.Abs(endOverheadTicks - beginOverheadTicks) / beginOverheadTicks)
             : 0.0;
         if (driftPct > 20.0)

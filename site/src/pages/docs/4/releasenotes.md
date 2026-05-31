@@ -12,6 +12,10 @@ Sailfish has moved off Autofac onto the standard .NET DI abstraction (`IServiceC
 Sailfish, `Sailfish.TestAdapter`, and `Sailfish.Analyzers` now target `net9.0` and `net10.0` only. If you're on `net8.0`, stay on Sailfish 0.0.115 or upgrade your project.
 {% /callout %}
 
+{% callout title="Performance: compiled-delegate invocation" type="success" %}
+The timed method is now invoked through a compiled, allocation-free delegate instead of per-call reflection. On .NET 10 this drops per-invocation harness overhead from ~40 ns to ~1.5 ns and eliminates per-call allocations (272 B → 0 B); the overhead baseline is measured with a structurally identical idle delegate so the subtraction cancels almost exactly. The result is a lower, more stable noise floor, so Sailfish resolves smaller differences. Behavior note: a method returning `Task`/`ValueTask` *without* the `async` keyword is now correctly awaited and timed (previously under-measured). [Learn more →](/docs/1/measurement-and-overhead)
+{% /callout %}
+
 {% callout title="Feature: Configuration Recipes via SailfishPreset" type="note" %}
 `RunSettingsBuilder.WithPreset(SailfishPreset.Default | Tight | Relaxed)` seeds adaptive sampling, outlier handling, and SailDiff defaults from a single call. [Learn more →](/docs/1/presets)
 {% /callout %}
