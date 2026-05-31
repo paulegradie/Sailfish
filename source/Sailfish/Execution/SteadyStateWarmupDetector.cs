@@ -31,6 +31,15 @@ public sealed class SteadyStateWarmupResult
 /// </summary>
 public sealed class SteadyStateWarmupDetector
 {
+    /// <summary>Default detector window — recent warmup samples examined (and the effective minimum before a decision).</summary>
+    internal const int DefaultWindow = 6;
+
+    /// <summary>Default max |recentMedian - priorMedian| / priorMedian for the trend to count as flat.</summary>
+    internal const double DefaultMaxRelativeDrift = 0.05;
+
+    /// <summary>Default max coefficient of variation over the window for the timing to count as stable.</summary>
+    internal const double DefaultMaxCoefficientOfVariation = 0.15;
+
     /// <summary>
     ///     Returns whether the tail of <paramref name="warmupDurations" /> looks steady. A decision is only
     ///     made once at least <paramref name="window" /> measurements are available.
