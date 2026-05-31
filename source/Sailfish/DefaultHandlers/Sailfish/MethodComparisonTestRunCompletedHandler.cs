@@ -382,7 +382,9 @@ internal class MethodComparisonTestRunCompletedHandler : INotificationHandler<Te
                 // Add detailed results table
                 sb.AppendLine("### Detailed Results");
                 sb.AppendLine();
-                sb.AppendLine("| Method | Mean Time | Median Time | Sample Size | Status |");
+                var detailUnit = DurationFormatter.SelectUnit(methods.SelectMany(m => new[] { m.PerformanceRunResult?.Mean ?? 0, m.PerformanceRunResult?.Median ?? 0 }));
+                var detailUnitLabel = DurationFormatter.UnitLabel(detailUnit);
+                sb.AppendLine($"| Method | Mean Time ({detailUnitLabel}) | Median Time ({detailUnitLabel}) | Sample Size | Status |");
                 sb.AppendLine("|--------|-----------|-------------|-------------|--------|");
 
                 foreach (var method in methods.OrderBy(m => m.PerformanceRunResult?.Mean ?? double.MaxValue))
@@ -392,7 +394,7 @@ internal class MethodComparisonTestRunCompletedHandler : INotificationHandler<Te
                     var sampleSize = method.PerformanceRunResult?.SampleSize ?? 0;
                     var status = method.Exception == null ? "✅ Success" : "❌ Failed";
 
-                    sb.AppendLine($"| {method.TestCaseId?.DisplayName ?? "Unknown"} | {meanTime:F3}ms | {medianTime:F3}ms | {sampleSize} | {status} |");
+                    sb.AppendLine($"| {method.TestCaseId?.DisplayName ?? "Unknown"} | {DurationFormatter.Format(meanTime, detailUnit, 3)} | {DurationFormatter.Format(medianTime, detailUnit, 3)} | {sampleSize} | {status} |");
                 }
                 sb.AppendLine();
             }
@@ -408,7 +410,9 @@ internal class MethodComparisonTestRunCompletedHandler : INotificationHandler<Te
         {
             sb.AppendLine("## 📊 Individual Test Results");
             sb.AppendLine();
-            sb.AppendLine("| Method | Mean Time | Median Time | Sample Size | Status |");
+            var individualUnit = DurationFormatter.SelectUnit(nonComparisonMethods.SelectMany(m => new[] { m.PerformanceRunResult?.Mean ?? 0, m.PerformanceRunResult?.Median ?? 0 }));
+            var individualUnitLabel = DurationFormatter.UnitLabel(individualUnit);
+            sb.AppendLine($"| Method | Mean Time ({individualUnitLabel}) | Median Time ({individualUnitLabel}) | Sample Size | Status |");
             sb.AppendLine("|--------|-----------|-------------|-------------|--------|");
 
             foreach (var method in nonComparisonMethods.OrderBy(m => m.TestCaseId?.DisplayName ?? "Unknown"))
@@ -418,7 +422,7 @@ internal class MethodComparisonTestRunCompletedHandler : INotificationHandler<Te
                 var sampleSize = method.PerformanceRunResult?.SampleSize ?? 0;
                 var status = method.Exception == null ? "✅ Success" : "❌ Failed";
 
-                sb.AppendLine($"| {method.TestCaseId?.DisplayName ?? "Unknown"} | {meanTime:F3}ms | {medianTime:F3}ms | {sampleSize} | {status} |");
+                sb.AppendLine($"| {method.TestCaseId?.DisplayName ?? "Unknown"} | {DurationFormatter.Format(meanTime, individualUnit, 3)} | {DurationFormatter.Format(medianTime, individualUnit, 3)} | {sampleSize} | {status} |");
             }
             sb.AppendLine();
         }

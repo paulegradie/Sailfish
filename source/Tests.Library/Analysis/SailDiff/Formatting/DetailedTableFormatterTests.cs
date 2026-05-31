@@ -275,6 +275,45 @@ public class DetailedTableFormatterTests
 
     #region Helper Methods
 
+    [Fact]
+    public void CreateDetailedTable_WithSubMicrosecondTimings_RecoversPrecisionAndAutoScalesUnit()
+    {
+        // The scalar means are pre-rounded to 3 ms-decimals (0.001) — identical, which would make
+        // %Δ a degenerate 0.0% and the cells "0.000ms". The raw samples (~1.1 µs vs ~1.4 µs) carry
+        // the real values, so the formatter must recompute from them and auto-scale to microseconds.
+        var data = new SailDiffComparisonData
+        {
+            GroupName = "FastGroup",
+            PrimaryMethodName = "Primary",
+            ComparedMethodName = "Compared",
+            Statistics = new StatisticalTestResult(
+                meanBefore: 0.001,
+                meanAfter: 0.001,
+                medianBefore: 0.001,
+                medianAfter: 0.001,
+                testStatistic: 3.5,
+                pValue: 0.001234,
+                changeDescription: "Regressed",
+                sampleSizeBefore: 100,
+                sampleSizeAfter: 100,
+                rawDataBefore: [0.0010, 0.0011, 0.0012],
+                rawDataAfter: [0.0013, 0.0014, 0.0015],
+                additionalResults: new Dictionary<string, object>()),
+            Metadata = new ComparisonMetadata { SampleSize = 100, AlphaLevel = 0.05, TestType = "T-Test" },
+            IsPerspectiveBased = false
+        };
+
+        var ide = _formatter.CreateDetailedTable(data, OutputContext.Ide);
+        var markdown = _formatter.CreateDetailedTable(data, OutputContext.Markdown);
+
+        ide.ShouldContain("Mean (µs)");
+        ide.ShouldContain("1.100");          // ~1.1 µs, not 0.000ms
+        ide.ShouldContain("1.400");          // ~1.4 µs
+        ide.ShouldContain("+27.3%");         // non-degenerate %Δ recovered from raw data
+        ide.ShouldNotContain("0.000ms");
+        markdown.ShouldContain("Mean (µs)");
+    }
+
     private SailDiffComparisonData CreateSampleComparisonData(
         string primaryMethod = "PrimaryMethod",
         string comparedMethod = "ComparedMethod")

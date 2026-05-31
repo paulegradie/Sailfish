@@ -3,8 +3,10 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using Sailfish.Analysis.SailDiff;
+using Sailfish.Analysis.SailDiff.Formatting;
 using Sailfish.Contracts.Public.Models;
 using Sailfish.Extensions.Methods;
+using Sailfish.Presentation;
 
 namespace Sailfish.TestAdapter.Display.TestOutputWindow;
 
@@ -92,28 +94,23 @@ internal class SailDiffTestOutputWindowMessageFormatter : ISailDiffTestOutputWin
 
         stringBuilder.AppendLine();
 
+        // Recompute from the raw samples (full precision) and pick a magnitude-appropriate unit so
+        // fast methods aren't flattened to 0.000ms. Round honors the configured decimal count.
+        var display = SailDiffDisplayStatistics.From(stats);
+        var unit = DurationFormatter.SelectUnit(new[] { display.MeanBefore, display.MeanAfter, display.MedianBefore, display.MedianAfter });
+        var unitLabel = DurationFormatter.UnitLabel(unit);
+        var decimals = Math.Max(0, sailDiffSettings.Round);
+
         var tableValues = new List<Table>
         {
-            new(
-                "Mean",
-                Math.Round(sailDiffResult.TestResultsWithOutlierAnalysis.StatisticalTestResult.MeanBefore, 4),
-                Math.Round(sailDiffResult.TestResultsWithOutlierAnalysis.StatisticalTestResult.MeanAfter, 4)
-            ),
-            new(
-                "Median",
-                Math.Round(sailDiffResult.TestResultsWithOutlierAnalysis.StatisticalTestResult.MedianBefore, 4),
-                Math.Round(sailDiffResult.TestResultsWithOutlierAnalysis.StatisticalTestResult.MedianAfter, 4)
-            ),
-            new(
-                "Sample Size",
-                sailDiffResult.TestResultsWithOutlierAnalysis.StatisticalTestResult.SampleSizeBefore,
-                sailDiffResult.TestResultsWithOutlierAnalysis.StatisticalTestResult.SampleSizeAfter
-            )
+            new("Mean", DurationFormatter.Format(display.MeanBefore, unit, decimals), DurationFormatter.Format(display.MeanAfter, unit, decimals)),
+            new("Median", DurationFormatter.Format(display.MedianBefore, unit, decimals), DurationFormatter.Format(display.MedianAfter, unit, decimals)),
+            new("Sample Size", stats.SampleSizeBefore.ToString(), stats.SampleSizeAfter.ToString())
         };
 
         stringBuilder.AppendLine(tableValues.ToStringTable(
             new[] { "", "", "" },
-            new[] { "", "Before (ms)", "After (ms)" },
+            new[] { "", $"Before ({unitLabel})", $"After ({unitLabel})" },
             t => t.Name,
             t => t.Before,
             t => t.After));
@@ -124,7 +121,8 @@ internal class SailDiffTestOutputWindowMessageFormatter : ISailDiffTestOutputWin
     private static string CreateImpactSummary(SailDiffResult sailDiffResult, SailDiffSettings sailDiffSettings)
     {
         var stats = sailDiffResult.TestResultsWithOutlierAnalysis.StatisticalTestResult;
-        var percentChange = stats.MeanBefore > 0 ? ((stats.MeanAfter - stats.MeanBefore) / stats.MeanBefore) * 100 : 0;
+        var display = SailDiffDisplayStatistics.From(stats);
+        var percentChange = display.MeanBefore > 0 ? ((display.MeanAfter - display.MeanBefore) / display.MeanBefore) * 100 : 0;
         var isSignificant = stats.PValue < sailDiffSettings.Alpha &&
                            !stats.ChangeDescription.Contains("No Change", StringComparison.OrdinalIgnoreCase);
 
@@ -133,11 +131,13 @@ internal class SailDiffTestOutputWindowMessageFormatter : ISailDiffTestOutputWin
         // when the underlying test didn't emit either field.
         var magnitudeLine = BuildMagnitudeLine(stats);
 
+        // Recompute means from the raw samples and auto-select a unit so fast methods aren't 0.000ms.
+        var unit = DurationFormatter.SelectUnit(new[] { display.MeanBefore, display.MeanAfter });
+        var meanLine = $"   P-Value: {stats.PValue:F6} | Mean: {DurationFormatter.FormatWithUnit(display.MeanBefore, unit, 3)} → {DurationFormatter.FormatWithUnit(display.MeanAfter, unit, 3)}";
+
         if (!isSignificant)
         {
-            return $"⚪ IMPACT: {Math.Abs(percentChange):F1}% difference (NO CHANGE)\n" +
-                   $"   P-Value: {stats.PValue:F6} | Mean: {stats.MeanBefore:F3}ms → {stats.MeanAfter:F3}ms"
-                   + magnitudeLine;
+            return $"⚪ IMPACT: {Math.Abs(percentChange):F1}% difference (NO CHANGE)\n" + meanLine + magnitudeLine;
         }
 
         var isImprovement = percentChange < 0;
@@ -145,9 +145,7 @@ internal class SailDiffTestOutputWindowMessageFormatter : ISailDiffTestOutputWin
         var significance = isImprovement ? "IMPROVED" : "REGRESSED";
         var icon = isImprovement ? "🟢" : "🔴";
 
-        return $"{icon} IMPACT: {Math.Abs(percentChange):F1}% {direction} ({significance})\n" +
-               $"   P-Value: {stats.PValue:F6} | Mean: {stats.MeanBefore:F3}ms → {stats.MeanAfter:F3}ms"
-               + magnitudeLine;
+        return $"{icon} IMPACT: {Math.Abs(percentChange):F1}% {direction} ({significance})\n" + meanLine + magnitudeLine;
     }
 
     private static string BuildMagnitudeLine(StatisticalTestResult stats)

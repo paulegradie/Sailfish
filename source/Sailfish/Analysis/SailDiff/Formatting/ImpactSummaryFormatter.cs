@@ -1,4 +1,5 @@
 using System;
+using Sailfish.Presentation;
 
 namespace Sailfish.Analysis.SailDiff.Formatting;
 
@@ -45,14 +46,18 @@ public class ImpactSummaryFormatter : IImpactSummaryFormatter
     private ComparisonAnalysis AnalyzeComparison(SailDiffComparisonData data)
     {
         var stats = data.Statistics;
-        
+
+        // Use full-precision means recomputed from the raw samples so sub-microsecond differences
+        // aren't lost to the pre-rounded scalar statistics (keeps the %Δ meaningful for fast methods).
+        var display = SailDiffDisplayStatistics.From(stats);
+
         // Calculate percentage change
-        var primaryTime = data.IsPerspectiveBased && data.PerspectiveMethodName == data.ComparedMethodName 
-            ? stats.MeanAfter 
-            : stats.MeanBefore;
-        var comparedTime = data.IsPerspectiveBased && data.PerspectiveMethodName == data.ComparedMethodName 
-            ? stats.MeanBefore 
-            : stats.MeanAfter;
+        var primaryTime = data.IsPerspectiveBased && data.PerspectiveMethodName == data.ComparedMethodName
+            ? display.MeanAfter
+            : display.MeanBefore;
+        var comparedTime = data.IsPerspectiveBased && data.PerspectiveMethodName == data.ComparedMethodName
+            ? display.MeanBefore
+            : display.MeanAfter;
 
         var percentChange = primaryTime > 0 ? ((comparedTime - primaryTime) / primaryTime) * 100 : 0;
         
@@ -101,7 +106,8 @@ public class ImpactSummaryFormatter : IImpactSummaryFormatter
 
         if (analysis.IsStatisticallySignificant)
         {
-            summary += $"\n   P-Value: {analysis.PValue:F6} | Mean: {analysis.PrimaryTime:F3}ms → {analysis.ComparedTime:F3}ms";
+            var unit = DurationFormatter.SelectUnit(new[] { analysis.PrimaryTime, analysis.ComparedTime });
+            summary += $"\n   P-Value: {analysis.PValue:F6} | Mean: {DurationFormatter.FormatWithUnit(analysis.PrimaryTime, unit, 3)} → {DurationFormatter.FormatWithUnit(analysis.ComparedTime, unit, 3)}";
         }
 
         return summary;

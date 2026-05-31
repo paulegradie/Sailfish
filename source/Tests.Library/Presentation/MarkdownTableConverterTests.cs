@@ -457,8 +457,8 @@ public class MarkdownTableConverterTests
 
             // Assert
             result.ShouldContain("- MyTest():");
-            result.ShouldContain("CI ± 0.1235ms");
-            result.ShouldContain("CI ± 0ms");
+            result.ShouldContain("CI ± 0.1235 ms");
+            result.ShouldContain("CI ± 0 ms");
         }
 
         [Fact]
@@ -485,7 +485,7 @@ public class MarkdownTableConverterTests
 
             // Assert
             result.ShouldContain("- LegacyTest():");
-            result.ShouldContain("CI ± 0.0040ms");
+            result.ShouldContain("CI ± 0.0040 ms");
         }
 
         [Fact]
@@ -518,8 +518,8 @@ public class MarkdownTableConverterTests
 
             // Assert
             result.ShouldContain("📊 Performance Summary:");
-            result.ShouldContain("**Fastest:** FastMethod() (100.000ms)");
-            result.ShouldContain("**Slowest:** SlowMethod() (200.000ms)");
+            result.ShouldContain("**Fastest:** FastMethod() (100.000 ms)");
+            result.ShouldContain("**Slowest:** SlowMethod() (200.000 ms)");
             result.ShouldContain("**Performance Gap:** 100.0% difference");
         }
 
@@ -543,7 +543,7 @@ public class MarkdownTableConverterTests
             var result = _markdownTableConverter.ConvertToEnhancedMarkdownTableString(executionSummaries);
 
             // Assert
-            result.ShouldContain("StdDev (N=10)");
+            result.ShouldContain("StdDev (ms, N=10)");
         }
 
         private static IClassExecutionSummary CreateExecutionSummaryFromResults(string className, params ICompiledTestCaseResult[] results)

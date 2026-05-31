@@ -50,16 +50,44 @@ public class MarkdownTableConverter : IMarkdownTableConverter
         _manifestProvider = manifestProvider ?? throw new ArgumentNullException(nameof(manifestProvider));
     }
 
-    private static string FormatAdaptive(double value)
+    // Decimals to show within the auto-selected time unit (e.g. "1.100 µs").
+    private const int Decimals = 3;
+
+    // Picks one magnitude-appropriate time unit for a group from its means/medians/std-devs.
+    private static DurationUnit SelectGroupUnit(IEnumerable<ICompiledTestCaseResult> groupResults)
     {
-        if (value == 0) return "0";
-        var s4 = value.ToString("F4", System.Globalization.CultureInfo.InvariantCulture);
-        if (!s4.Equals("0.0000")) return s4;
-        var s6 = value.ToString("F6", System.Globalization.CultureInfo.InvariantCulture);
-        if (!s6.Equals("0.000000")) return s6;
-        var s8 = value.ToString("F8", System.Globalization.CultureInfo.InvariantCulture);
-        if (!s8.Equals("0.00000000")) return s8;
-        return "0";
+        return DurationFormatter.SelectUnit(
+            groupResults
+                .Where(r => r.PerformanceRunResult != null)
+                .SelectMany(r => new[]
+                {
+                    r.PerformanceRunResult!.Mean,
+                    r.PerformanceRunResult!.Median,
+                    r.PerformanceRunResult!.StdDev
+                }));
+    }
+
+    // Builds the per-group descriptive table with Mean/Median/StdDev in a shared unit (carried in
+    // the header). Variance stays raw — it is ms², not a duration.
+    private static string BuildStatsTable(string typeName, IReadOnlyList<ICompiledTestCaseResult> groupResults, int sampleSize, DurationUnit unit)
+    {
+        var unitLabel = DurationFormatter.UnitLabel(unit);
+        return groupResults.ToStringTable(
+            typeName,
+            new List<string> { "", "", "", "", "" },
+            new List<string>
+            {
+                "Display Name",
+                $"Mean ({unitLabel})",
+                $"Median ({unitLabel})",
+                $"StdDev ({unitLabel}, N={sampleSize})",
+                "Variance"
+            },
+            u => u.TestCaseId!.DisplayName,
+            u => DurationFormatter.Format(u.PerformanceRunResult!.Mean, unit, Decimals),
+            u => DurationFormatter.Format(u.PerformanceRunResult!.Median, unit, Decimals),
+            u => DurationFormatter.Format(u.PerformanceRunResult!.StdDev, unit, Decimals),
+            u => u.PerformanceRunResult!.Variance);
     }
 
     public string ConvertToMarkdownTableString(
@@ -189,31 +217,10 @@ public class MarkdownTableConverter : IMarkdownTableConverter
                 stringBuilder.AppendLine();
             }
 
-            // Add detailed results table
-            var table = groupResults.ToStringTable(
-                typeName,
-                new List<string>
-                {
-                    "",
-                    "ms",
-                    "ms",
-                    "ms",
-                    ""
-                },
-                new List<string>
-                {
-                    "Display Name",
-                    "Mean",
-                    "Median",
-                    $"StdDev (N={n})",
-                    "Variance"
-                },
-                u => u.TestCaseId!.DisplayName,
-                u => u.PerformanceRunResult!.Mean,
-                u => u.PerformanceRunResult!.Median,
-                u => u.PerformanceRunResult!.StdDev,
-                u => u.PerformanceRunResult!.Variance
-            );
+            // Add detailed results table (shared magnitude-aware unit so fast tests aren't 0.000ms)
+            var unit = SelectGroupUnit(groupResults);
+            var unitLabel = DurationFormatter.UnitLabel(unit);
+            var table = BuildStatsTable(typeName, groupResults, n.Value, unit);
 
             stringBuilder.AppendLine(table);
             stringBuilder.AppendLine();
@@ -225,12 +232,12 @@ public class MarkdownTableConverter : IMarkdownTableConverter
                 {
                     var ciParts = pr.ConfidenceIntervals
                         .OrderBy(ci => ci.ConfidenceLevel)
-                        .Select(ci => $"{ci.ConfidenceLevel:P0} CI ± {FormatAdaptive(ci.MarginOfError)}ms");
+                        .Select(ci => $"{ci.ConfidenceLevel:P0} CI ± {DurationFormatter.FormatAdaptive(ci.MarginOfError, unit)} {unitLabel}");
                     stringBuilder.AppendLine($"- {r.TestCaseId!.DisplayName}: {string.Join(", ", ciParts)}");
                 }
                 else
                 {
-                    stringBuilder.AppendLine($"- {r.TestCaseId!.DisplayName}: {pr.ConfidenceLevel:P0} CI ± {FormatAdaptive(pr.MarginOfError)}ms");
+                    stringBuilder.AppendLine($"- {r.TestCaseId!.DisplayName}: {pr.ConfidenceLevel:P0} CI ± {DurationFormatter.FormatAdaptive(pr.MarginOfError, unit)} {unitLabel}");
                 }
             }
             stringBuilder.AppendLine();
@@ -270,8 +277,8 @@ public class MarkdownTableConverter : IMarkdownTableConverter
         {
             var speedDifference = (slowest.PerformanceRunResult!.Mean - fastest.PerformanceRunResult!.Mean) / fastest.PerformanceRunResult!.Mean * 100;
 
-            stringBuilder.AppendLine($"- 🟢 **Fastest:** {fastest.TestCaseId?.DisplayName} ({fastest.PerformanceRunResult!.Mean:F3}ms)");
-            stringBuilder.AppendLine($"- 🔴 **Slowest:** {slowest.TestCaseId?.DisplayName} ({slowest.PerformanceRunResult!.Mean:F3}ms)");
+            stringBuilder.AppendLine($"- 🟢 **Fastest:** {fastest.TestCaseId?.DisplayName} ({DurationFormatter.FormatAuto(fastest.PerformanceRunResult!.Mean, Decimals)})");
+            stringBuilder.AppendLine($"- 🔴 **Slowest:** {slowest.TestCaseId?.DisplayName} ({DurationFormatter.FormatAuto(slowest.PerformanceRunResult!.Mean, Decimals)})");
             stringBuilder.AppendLine($"- 📈 **Performance Gap:** {speedDifference:F1}% difference");
         }
 
@@ -360,31 +367,9 @@ public class MarkdownTableConverter : IMarkdownTableConverter
             var n = group.Select(x => x.PerformanceRunResult?.SampleSize).Distinct().Single();
             if (n is null or 0) continue;
 
-            var table = group.ToStringTable(
-                typeName,
-                new List<string>
-
-                {
-                    "",
-                    "ms",
-                    "ms",
-                    "ms",
-                    ""
-                },
-                new List<string>
-                {
-                    "Display Name",
-                    "Mean",
-                    "Median",
-                    $"StdDev (N={n})",
-                    "Variance"
-                },
-                u => u.TestCaseId!.DisplayName,
-                u => u.PerformanceRunResult!.Mean,
-                u => u.PerformanceRunResult!.Median,
-                u => u.PerformanceRunResult!.StdDev,
-                u => u.PerformanceRunResult!.Variance
-            );
+            var groupResults = group.ToList();
+            var unit = SelectGroupUnit(groupResults);
+            var table = BuildStatsTable(typeName, groupResults, n.Value, unit);
 
             stringBuilder.AppendLine(table);
 

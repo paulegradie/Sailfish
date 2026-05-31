@@ -2,6 +2,7 @@
 using Sailfish.Attributes;
 using Sailfish.Contracts.Private;
 using Sailfish.Logging;
+using Sailfish.Presentation;
 using Sailfish.TestAdapter.Queue.Contracts;
 using System;
 using System.Collections.Generic;
@@ -564,11 +565,13 @@ internal class MethodComparisonProcessor : TestCompletionQueueProcessorBase
             // Add detailed results table to satisfy existing tests and provide clarity
             sb.AppendLine("### Detailed Results");
             sb.AppendLine();
-            sb.AppendLine("| Method | Mean Time | Median Time | Sample Size |");
+            var detailUnit = DurationFormatter.SelectUnit(stats.SelectMany(s => new[] { s.Mean, s.Median }));
+            var detailUnitLabel = DurationFormatter.UnitLabel(detailUnit);
+            sb.AppendLine($"| Method | Mean Time ({detailUnitLabel}) | Median Time ({detailUnitLabel}) | Sample Size |");
             sb.AppendLine("|--------|-----------|-------------|-------------|");
             foreach (var s in stats.OrderBy(s => s.Mean))
             {
-                sb.AppendLine($"| {s.Name} | {s.Mean:F3}ms | {s.Median:F3}ms | {s.N} |");
+                sb.AppendLine($"| {s.Name} | {DurationFormatter.Format(s.Mean, detailUnit, 3)} | {DurationFormatter.Format(s.Median, detailUnit, 3)} | {s.N} |");
             }
             sb.AppendLine();
 
