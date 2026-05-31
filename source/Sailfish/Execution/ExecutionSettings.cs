@@ -42,6 +42,10 @@ public interface IExecutionSettings
     public System.TimeSpan? MaxMeasurementTimePerMethod { get; set; }
     public bool EnableDefaultDiagnosers { get; set; }
     public int? Seed { get; set; }
+
+    // NEW: Steady-state warmup (opt-in). NumWarmupIterations is the floor; MaxWarmupIterations the cap.
+    public bool UseSteadyStateWarmup { get; set; }
+    public int MaxWarmupIterations { get; set; }
 }
 
 public class ExecutionSettings : IExecutionSettings
@@ -99,5 +103,9 @@ public class ExecutionSettings : IExecutionSettings
     public System.TimeSpan? MaxMeasurementTimePerMethod { get; set; } = null;
     public bool EnableDefaultDiagnosers { get; set; } = false;
     public int? Seed { get; set; } = null;
+
+    // NEW: Steady-state warmup (opt-in)
+    public bool UseSteadyStateWarmup { get; set; } = false;
+    public int MaxWarmupIterations { get; set; } = 50;
 
 }
