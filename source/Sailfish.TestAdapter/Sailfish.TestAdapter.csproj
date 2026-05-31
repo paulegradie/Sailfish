@@ -34,7 +34,12 @@
 
         <PackageReference Include="System.ComponentModel.Composition" Version="10.0.8" />
         <PackageReference Include="Microsoft.TestPlatform.ObjectModel" Version="18.6.0" PrivateAssets="All" />
-        <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="5.3.0" />
+        <!-- Floor pinned to 4.14.0 (the mainstream .NET 9 / VS 17.14 Roslyn) for consumer compatibility.
+             Roslyn sub-packages use exact version pins, so a higher floor here forces that exact Common
+             on every consumer and breaks installs for anyone on the 4.x line. As a >= floor, consumers
+             on a newer Roslyn (e.g. 5.3.0) still float up automatically. Keep in lockstep with
+             Sailfish.Analyzers' Microsoft.CodeAnalysis.* version. Only used for CSharpSyntaxTree.ParseText. -->
+        <PackageReference Include="Microsoft.CodeAnalysis.CSharp" Version="4.14.0" />
     </ItemGroup>
     <ItemGroup>
         <ProjectReference Include="..\Sailfish\Sailfish.csproj" />
