@@ -46,7 +46,11 @@ internal static class ExecutionExtensionMethods
             TargetIterationDuration = TimeSpan.FromMilliseconds(sailfishAttribute.TargetIterationDurationMs),
             MaxMeasurementTimePerMethod = sailfishAttribute.MaxMeasurementTimePerMethodMs > 0 ? TimeSpan.FromMilliseconds(sailfishAttribute.MaxMeasurementTimePerMethodMs) : (TimeSpan?)null,
             EnableDefaultDiagnosers = sailfishAttribute.EnableDefaultDiagnosers,
-            UseTimeBudgetController = sailfishAttribute.UseTimeBudgetController
+            UseTimeBudgetController = sailfishAttribute.UseTimeBudgetController,
+
+            // NEW: Steady-state warmup
+            UseSteadyStateWarmup = sailfishAttribute.UseSteadyStateWarmup,
+            MaxWarmupIterations = sailfishAttribute.MaxWarmupIterations
         };
     }
 

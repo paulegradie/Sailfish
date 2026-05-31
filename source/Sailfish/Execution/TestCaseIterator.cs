@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 using Sailfish.Contracts.Public.Models;
@@ -152,6 +154,15 @@ internal class TestCaseIterator : ITestCaseIterator
         TestInstanceContainer testInstanceContainer,
         CancellationToken cancellationToken)
     {
+        return testInstanceContainer.ExecutionSettings.UseSteadyStateWarmup
+            ? await SteadyStateWarmupIterations(testInstanceContainer, cancellationToken).ConfigureAwait(false)
+            : await FixedWarmupIterations(testInstanceContainer, cancellationToken).ConfigureAwait(false);
+    }
+
+    private async Task<TestCaseExecutionResult> FixedWarmupIterations(
+        TestInstanceContainer testInstanceContainer,
+        CancellationToken cancellationToken)
+    {
         for (var i = 0; i < testInstanceContainer.NumWarmupIterations; i++)
         {
             _logger.Log(LogLevel.Information, "      ---- warmup iteration {CurrentIteration} of {TotalIterations}", i + 1, testInstanceContainer.NumWarmupIterations);
@@ -177,6 +188,65 @@ internal class TestCaseIterator : ITestCaseIterator
             }
         }
 
+        return new TestCaseExecutionResult(testInstanceContainer);
+    }
+
+    // Warm up until per-iteration timing stops trending and stabilizes (or the cap is hit). Each warmup
+    // is timed locally (and NOT recorded into the real samples) and fed to the steady-state detector.
+    private async Task<TestCaseExecutionResult> SteadyStateWarmupIterations(
+        TestInstanceContainer testInstanceContainer,
+        CancellationToken cancellationToken)
+    {
+        const int window = 6;
+        const double maxRelativeDrift = 0.05;
+        const double maxCoefficientOfVariation = 0.15;
+
+        var settings = testInstanceContainer.ExecutionSettings;
+        var floor = Math.Max(0, testInstanceContainer.NumWarmupIterations);
+        var max = Math.Max(Math.Max(floor, window), settings.MaxWarmupIterations);
+        var detector = new SteadyStateWarmupDetector();
+        var durations = new List<double>(max);
+
+        for (var i = 0; i < max; i++)
+        {
+            try
+            {
+                await testInstanceContainer.CoreInvoker.IterationSetup(cancellationToken).ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                return CatchAndReturn(testInstanceContainer, ex);
+            }
+
+            var sw = Stopwatch.StartNew();
+            await testInstanceContainer.CoreInvoker.ExecutionMethod(cancellationToken, false).ConfigureAwait(false);
+            sw.Stop();
+            durations.Add(sw.Elapsed.TotalMilliseconds);
+
+            try
+            {
+                await testInstanceContainer.CoreInvoker.IterationTearDown(cancellationToken).ConfigureAwait(false);
+            }
+            catch (Exception ex)
+            {
+                return CatchAndReturn(testInstanceContainer, ex);
+            }
+
+            var count = i + 1;
+            if (count >= floor && count >= window)
+            {
+                var result = detector.Check(durations, window, maxRelativeDrift, maxCoefficientOfVariation);
+                if (result.ReachedSteadyState)
+                {
+                    _logger.Log(LogLevel.Information, "      ---- warmup reached steady state after {Count} iterations ({Reason})", count, result.Reason);
+                    return new TestCaseExecutionResult(testInstanceContainer);
+                }
+            }
+
+            _logger.Log(LogLevel.Information, "      ---- warmup iteration {Count} (steady-state; floor {Floor}, max {Max})", count, floor, max);
+        }
+
+        _logger.Log(LogLevel.Information, "      ---- warmup reached max {Max} iterations without detecting steady state", max);
         return new TestCaseExecutionResult(testInstanceContainer);
     }
 

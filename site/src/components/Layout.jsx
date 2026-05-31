@@ -38,6 +38,7 @@ const navigation = [
             { title: 'Configuration Recipes', href: '/docs/1/presets', badge: 'NEW' },
             { title: 'Iteration Tuning', href: '/docs/1/iteration-tuning', badge: 'NEW' },
             { title: 'Measurement & Overhead', href: '/docs/1/measurement-and-overhead', badge: 'NEW' },
+            { title: 'Steady-State Warmup', href: '/docs/1/steady-state-warmup', badge: 'NEW' },
             { title: 'Confidence Intervals', href: '/docs/1/confidence-intervals', badge: 'NEW' },
             { title: 'Outlier Handling', href: '/docs/1/outlier-handling', badge: 'NEW' },
             { title: 'Environment Health Check', href: '/docs/1/environment-health', badge: 'NEW' },

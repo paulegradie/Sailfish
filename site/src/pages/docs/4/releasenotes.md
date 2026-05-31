@@ -16,6 +16,10 @@ Sailfish, `Sailfish.TestAdapter`, and `Sailfish.Analyzers` now target `net9.0` a
 When `OperationsPerInvoke` > 1 (set explicitly, or chosen by `TargetIterationDurationMs` auto-tuning), Sailfish now divides each measured iteration by the batch size, so reported mean/median/etc. represent the cost of a **single operation** and stay comparable across methods and runs regardless of the batch size. Previously the per-iteration aggregate was reported, which inflated results by the OPI factor. If you use OPI > 1, expect reported durations to drop accordingly — they now reflect true per-op cost. If you persist tracking data for SailDiff history on OPI > 1 tests, baselines recorded before this change will read as a one-time drop; re-baseline after upgrading. [Learn more →](/docs/1/iteration-tuning)
 {% /callout %}
 
+{% callout title="Feature: steady-state warmup (opt-in)" type="note" %}
+`[Sailfish(UseSteadyStateWarmup = true)]` warms up until per-iteration timing stops trending and stabilizes (tiered JIT/OSR has settled) rather than using a fixed count — bounded by `NumWarmupIterations` (floor) and `MaxWarmupIterations` (cap, default 50), stopping early when stable. Default off; the fixed-count warmup path is unchanged. [Learn more →](/docs/1/steady-state-warmup)
+{% /callout %}
+
 {% callout title="Performance: compiled-delegate invocation" type="success" %}
 The timed method is now invoked through a compiled, allocation-free delegate instead of per-call reflection. On .NET 10 this drops per-invocation harness overhead from ~40 ns to ~1.5 ns and eliminates per-call allocations (272 B → 0 B); the overhead baseline is measured with a structurally identical idle delegate so the subtraction cancels almost exactly. The result is a lower, more stable noise floor, so Sailfish resolves smaller differences. Behavior note: a method returning `Task`/`ValueTask` *without* the `async` keyword is now correctly awaited and timed (previously under-measured). [Learn more →](/docs/1/measurement-and-overhead)
 {% /callout %}

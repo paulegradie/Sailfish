@@ -60,10 +60,26 @@ public sealed class SailfishAttribute : Attribute
 
     /// <summary>
     ///     Gets or sets the number of warm-up iterations for each SailfishMethod.
+    ///     When <see cref="UseSteadyStateWarmup" /> is enabled this acts as the lower bound (floor).
     /// </summary>
     /// <value>The number of warm-up iterations.</value>
     [Range(0, int.MaxValue)]
     public int NumWarmupIterations { get; set; }
+
+    /// <summary>
+    ///     Opt-in: warm up until per-iteration timing reaches steady state (the runtime has finished
+    ///     tiered JIT/OSR and timings stop trending) instead of a fixed count. Runs at least
+    ///     <see cref="NumWarmupIterations" /> and at most <see cref="MaxWarmupIterations" /> warmups,
+    ///     stopping early when stable. Default false (fixed-count warmup).
+    /// </summary>
+    public bool UseSteadyStateWarmup { get; set; } = false;
+
+    /// <summary>
+    ///     Upper bound on warmup iterations when <see cref="UseSteadyStateWarmup" /> is enabled. Ignored
+    ///     for fixed-count warmup. Default 50.
+    /// </summary>
+    [Range(1, int.MaxValue)]
+    public int MaxWarmupIterations { get; set; } = 50;
 
     /// <summary>
     ///     Gets or sets a value indicating whether the Sailfish test is disabled.
