@@ -12,7 +12,7 @@ namespace Tests.Library.Integration;
 
 public class SteadyStateWarmupIntegrationTests
 {
-    private const int Window = 6; // detector window (effective minimum before a steady-state decision)
+    private const int Window = SteadyStateWarmupDetector.DefaultWindow; // detector window (effective minimum before a decision)
 
     private static TestCaseIterator NewIterator()
     {

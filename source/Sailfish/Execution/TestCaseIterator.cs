@@ -197,13 +197,9 @@ internal class TestCaseIterator : ITestCaseIterator
         TestInstanceContainer testInstanceContainer,
         CancellationToken cancellationToken)
     {
-        const int window = 6;
-        const double maxRelativeDrift = 0.05;
-        const double maxCoefficientOfVariation = 0.15;
-
         var settings = testInstanceContainer.ExecutionSettings;
         var floor = Math.Max(0, testInstanceContainer.NumWarmupIterations);
-        var max = Math.Max(Math.Max(floor, window), settings.MaxWarmupIterations);
+        var max = Math.Max(Math.Max(floor, SteadyStateWarmupDetector.DefaultWindow), settings.MaxWarmupIterations);
         var detector = new SteadyStateWarmupDetector();
         var durations = new List<double>(max);
 
@@ -233,9 +229,9 @@ internal class TestCaseIterator : ITestCaseIterator
             }
 
             var count = i + 1;
-            if (count >= floor && count >= window)
+            if (count >= floor && count >= SteadyStateWarmupDetector.DefaultWindow)
             {
-                var result = detector.Check(durations, window, maxRelativeDrift, maxCoefficientOfVariation);
+                var result = detector.Check(durations, SteadyStateWarmupDetector.DefaultWindow, SteadyStateWarmupDetector.DefaultMaxRelativeDrift, SteadyStateWarmupDetector.DefaultMaxCoefficientOfVariation);
                 if (result.ReachedSteadyState)
                 {
                     _logger.Log(LogLevel.Information, "      ---- warmup reached steady state after {Count} iterations ({Reason})", count, result.Reason);

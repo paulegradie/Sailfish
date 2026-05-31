@@ -7,9 +7,10 @@ namespace Tests.Library.Execution;
 
 public class SteadyStateWarmupDetectorTests
 {
-    private const int Window = 6;
-    private const double MaxDrift = 0.05;
-    private const double MaxCv = 0.15;
+    // Single source of truth: the production tuning values defined on the detector.
+    private const int Window = SteadyStateWarmupDetector.DefaultWindow;
+    private const double MaxDrift = SteadyStateWarmupDetector.DefaultMaxRelativeDrift;
+    private const double MaxCv = SteadyStateWarmupDetector.DefaultMaxCoefficientOfVariation;
 
     private static SteadyStateWarmupResult Check(IReadOnlyList<double> xs) =>
         new SteadyStateWarmupDetector().Check(xs, Window, MaxDrift, MaxCv);
