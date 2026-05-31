@@ -8,6 +8,7 @@ using MediatR;
 using Sailfish.Contracts.Public.Notifications;
 using Sailfish.Contracts.Public.Serialization.Tracking.V1;
 using Sailfish.Logging;
+using Sailfish.Presentation;
 
 namespace Sailfish.DefaultHandlers.Sailfish;
 
@@ -139,7 +140,9 @@ internal class MethodComparisonTestClassCompletedHandler : INotificationHandler<
                 // Add detailed results table
                 sb.AppendLine("#### 📋 Detailed Results");
                 sb.AppendLine();
-                sb.AppendLine("| Method | Mean Time | Median Time | Sample Size | Status |");
+                var detailUnit = DurationFormatter.SelectUnit(methods.SelectMany(m => new[] { m.PerformanceRunResult?.Mean ?? 0, m.PerformanceRunResult?.Median ?? 0 }));
+                var detailUnitLabel = DurationFormatter.UnitLabel(detailUnit);
+                sb.AppendLine($"| Method | Mean Time ({detailUnitLabel}) | Median Time ({detailUnitLabel}) | Sample Size | Status |");
                 sb.AppendLine("|--------|-----------|-------------|-------------|--------|");
 
                 foreach (var method in methods.OrderBy(m => m.PerformanceRunResult?.Mean ?? double.MaxValue))
@@ -149,7 +152,7 @@ internal class MethodComparisonTestClassCompletedHandler : INotificationHandler<
                     var sampleSize = method.PerformanceRunResult?.SampleSize ?? 0;
                     var status = method.Exception == null ? "✅ Success" : "❌ Failed";
 
-                    sb.AppendLine($"| {method.TestCaseId?.DisplayName ?? "Unknown"} | {meanTime:F3}ms | {medianTime:F3}ms | {sampleSize} | {status} |");
+                    sb.AppendLine($"| {method.TestCaseId?.DisplayName ?? "Unknown"} | {DurationFormatter.Format(meanTime, detailUnit, 3)} | {DurationFormatter.Format(medianTime, detailUnit, 3)} | {sampleSize} | {status} |");
                 }
                 sb.AppendLine();
             }
@@ -161,7 +164,9 @@ internal class MethodComparisonTestClassCompletedHandler : INotificationHandler<
         {
             sb.AppendLine("## 📊 Individual Test Results");
             sb.AppendLine();
-            sb.AppendLine("| Method | Mean Time | Median Time | Sample Size | Status |");
+            var individualUnit = DurationFormatter.SelectUnit(nonComparisonMethods.SelectMany(m => new[] { m.PerformanceRunResult?.Mean ?? 0, m.PerformanceRunResult?.Median ?? 0 }));
+            var individualUnitLabel = DurationFormatter.UnitLabel(individualUnit);
+            sb.AppendLine($"| Method | Mean Time ({individualUnitLabel}) | Median Time ({individualUnitLabel}) | Sample Size | Status |");
             sb.AppendLine("|--------|-----------|-------------|-------------|--------|");
 
             foreach (var method in nonComparisonMethods.OrderBy(m => m.TestCaseId?.DisplayName ?? "Unknown"))
@@ -171,7 +176,7 @@ internal class MethodComparisonTestClassCompletedHandler : INotificationHandler<
                 var sampleSize = method.PerformanceRunResult?.SampleSize ?? 0;
                 var status = method.Exception == null ? "✅ Success" : "❌ Failed";
 
-                sb.AppendLine($"| {method.TestCaseId?.DisplayName ?? "Unknown"} | {meanTime:F3}ms | {medianTime:F3}ms | {sampleSize} | {status} |");
+                sb.AppendLine($"| {method.TestCaseId?.DisplayName ?? "Unknown"} | {DurationFormatter.Format(meanTime, individualUnit, 3)} | {DurationFormatter.Format(medianTime, individualUnit, 3)} | {sampleSize} | {status} |");
             }
             sb.AppendLine();
         }
@@ -202,8 +207,8 @@ internal class MethodComparisonTestClassCompletedHandler : INotificationHandler<
 
             var sb = new StringBuilder();
             sb.AppendLine("**📊 Performance Summary:**");
-            sb.AppendLine($"- 🟢 **Fastest:** {fastest.TestCaseId?.DisplayName ?? "Unknown"} ({fastest.PerformanceRunResult!.Mean:F3}ms)");
-            sb.AppendLine($"- 🔴 **Slowest:** {slowest.TestCaseId?.DisplayName ?? "Unknown"} ({slowest.PerformanceRunResult!.Mean:F3}ms)");
+            sb.AppendLine($"- 🟢 **Fastest:** {fastest.TestCaseId?.DisplayName ?? "Unknown"} ({DurationFormatter.FormatAuto(fastest.PerformanceRunResult!.Mean, 3)})");
+            sb.AppendLine($"- 🔴 **Slowest:** {slowest.TestCaseId?.DisplayName ?? "Unknown"} ({DurationFormatter.FormatAuto(slowest.PerformanceRunResult!.Mean, 3)})");
             
             var percentageDifference = ((slowest.PerformanceRunResult!.Mean - fastest.PerformanceRunResult!.Mean) / fastest.PerformanceRunResult!.Mean) * 100;
             sb.AppendLine($"- 📈 **Performance Gap:** {percentageDifference:F1}% difference");

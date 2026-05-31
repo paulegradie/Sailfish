@@ -121,8 +121,8 @@ public class ImpactSummaryFormatterTests
 
         // Assert
         result.ShouldContain("Mean:");
-        result.ShouldContain("1.500ms");
-        result.ShouldContain("2.500ms");
+        result.ShouldContain("1.500 ms");
+        result.ShouldContain("2.500 ms");
     }
 
     #endregion

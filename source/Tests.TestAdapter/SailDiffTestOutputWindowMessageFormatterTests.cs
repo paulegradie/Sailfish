@@ -43,8 +43,10 @@ public class SailDiffTestOutputWindowMessageFormatterTests
         // Test the key components instead of exact string matching due to formatting complexities
         outputResult.ShouldContain("📊 SAILDIFF PERFORMANCE ANALYSIS");
         outputResult.ShouldContain("==================================================");
-        outputResult.ShouldContain("⚪ IMPACT: 20.0% difference (NO CHANGE)");
-        outputResult.ShouldContain("P-Value: 0.001000 | Mean: 5.000ms → 6.000ms");
+        // Display values are recomputed from the raw samples ([1,2,3] -> 2, [9,10,11] -> 10),
+        // and the unit is auto-selected (ms here). %Δ = (10-2)/2 = 400%.
+        outputResult.ShouldContain("⚪ IMPACT: 400.0% difference (NO CHANGE)");
+        outputResult.ShouldContain("P-Value: 0.001000 | Mean: 2.000 ms → 10.000 ms");
         outputResult.ShouldContain("Before Ids: abc.wow()");
         outputResult.ShouldContain("After Ids: Id2");
         outputResult.ShouldContain("📋 Statistical Test Details");
@@ -58,9 +60,12 @@ public class SailDiffTestOutputWindowMessageFormatterTests
         outputResult.ShouldContain("Change:");
         outputResult.ShouldContain("|             | Before (ms) | After (ms) |");
         outputResult.ShouldContain("| ---         | ---         | ---        |");
-        outputResult.ShouldContain("| Mean        |           5 |          6 |");
-        outputResult.ShouldContain("| Median      |           5 |          5 |");
+        outputResult.ShouldContain("| Mean        |");
+        outputResult.ShouldContain("| Median      |");
         outputResult.ShouldContain("| Sample Size |           3 |          3 |");
+        // Mean/Median recomputed from raw samples and rendered in the chosen unit.
+        outputResult.ShouldContain("2.000");
+        outputResult.ShouldContain("10.000");
     }
 
     [Fact]

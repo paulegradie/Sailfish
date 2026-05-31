@@ -7,6 +7,7 @@ using Sailfish.Execution;
 using Sailfish.Extensions.Methods;
 using Sailfish.Extensions.Types;
 using Sailfish.Logging;
+using Sailfish.Presentation;
 
 namespace Sailfish.TestAdapter.Display.TestOutputWindow;
 
@@ -23,6 +24,9 @@ internal class SailfishConsoleWindowFormatter : ISailfishConsoleWindowFormatter
     {
         _logger = logger;
     }
+
+    // Decimals to show within the auto-selected time unit (e.g. "1.100 µs").
+    private const int DecimalsInUnit = 3;
 
     public string FormConsoleWindowMessageForSailfish(IEnumerable<IClassExecutionSummary> results, OrderedDictionary? tags = null)
     {
@@ -63,12 +67,27 @@ internal class SailfishConsoleWindowFormatter : ISailfishConsoleWindowFormatter
         var results = testCaseResult.PerformanceRunResult!;
 
         var clean = results.DataWithOutliersRemoved;
+        var hasClean = clean.Length > 0;
+        var cleanMin = hasClean ? clean.Min() : 0d;
+        var cleanMax = hasClean ? clean.Max() : 0d;
+
+        // Pick a single, magnitude-appropriate unit (ns/µs/ms/s) for the whole Time column so that
+        // fast benchmarks aren't flattened to 0.000ms. Driven by the central values plus the range.
+        var magnitudeValues = new List<double> { results.Mean, results.Median };
+        if (hasClean)
+        {
+            magnitudeValues.Add(cleanMin);
+            magnitudeValues.Add(cleanMax);
+        }
+
+        var unit = DurationFormatter.SelectUnit(magnitudeValues);
+        var unitLabel = DurationFormatter.UnitLabel(unit);
 
         var momentTable = new List<Row>
         {
             new(clean.Length, "N"),
-            new(Math.Round(results.Mean, 4), "Mean"),
-            new(Math.Round(results.Median, 4), "Median")
+            new(DurationFormatter.Format(results.Mean, unit, DecimalsInUnit), "Mean"),
+            new(DurationFormatter.Format(results.Median, unit, DecimalsInUnit), "Median")
         };
 
         // Add one or more CI rows
@@ -76,23 +95,23 @@ internal class SailfishConsoleWindowFormatter : ISailfishConsoleWindowFormatter
         {
             foreach (var ci in results.ConfidenceIntervals.OrderBy(x => x.ConfidenceLevel))
             {
-                var moeDisplay = FormatAdaptive(ci.MarginOfError);
+                var moeDisplay = DurationFormatter.FormatAdaptive(ci.MarginOfError, unit);
                 momentTable.Add(new Row(moeDisplay, $"{ci.ConfidenceLevel:P0} CI ±"));
             }
         }
         else
         {
             // Fallback to legacy single CI
-            var moeDisplay = FormatAdaptive(results.MarginOfError);
+            var moeDisplay = DurationFormatter.FormatAdaptive(results.MarginOfError, unit);
             momentTable.Add(new Row(moeDisplay, $"{results.ConfidenceLevel:P0} CI ±"));
         }
 
-        if (clean.Length > 0)
+        if (hasClean)
         {
             momentTable.AddRange(new[]
             {
-                new Row(Math.Round(clean.Min(), 4), "Min"),
-                new Row(Math.Round(clean.Max(), 4), "Max")
+                new Row(DurationFormatter.Format(cleanMin, unit, DecimalsInUnit), "Min"),
+                new Row(DurationFormatter.Format(cleanMax, unit, DecimalsInUnit), "Max")
             });
         }
         else
@@ -114,7 +133,7 @@ internal class SailfishConsoleWindowFormatter : ISailfishConsoleWindowFormatter
         stringBuilder.AppendLine(string.Join("", Enumerable.Range(0, textLineStats.Length).Select(x => "-")));
         stringBuilder.AppendLine(momentTable.ToStringTable(
             ["", ""],
-            ["Stat", " Time (ms)"],
+            ["Stat", $" Time ({unitLabel})"],
             x => x.Name, x => x.Item));
 
         // outliers section
@@ -127,20 +146,20 @@ internal class SailfishConsoleWindowFormatter : ISailfishConsoleWindowFormatter
             stringBuilder.AppendLine($"{testCaseResult.PerformanceRunResult.UpperOutliers.Length} Upper Outliers: " +
                                      string.Join(", ",
                                          testCaseResult.PerformanceRunResult.UpperOutliers
-                                             .Select(x => Math.Round(x, 4))));
+                                             .Select(x => DurationFormatter.Format(x, unit, DecimalsInUnit))));
 
         if (testCaseResult.PerformanceRunResult.LowerOutliers.Length > 0)
             stringBuilder.AppendLine($"{testCaseResult.PerformanceRunResult.LowerOutliers.Length} Lower Outliers: " +
                                      string.Join(", ",
                                          testCaseResult.PerformanceRunResult.LowerOutliers
-                                             .Select(x => Math.Round(x, 4))));
+                                             .Select(x => DurationFormatter.Format(x, unit, DecimalsInUnit))));
 
         // distribution
-        const string textLineDist = "Distribution (ms)";
+        var textLineDist = $"Distribution ({unitLabel})";
         stringBuilder.AppendLine();
         stringBuilder.AppendLine(textLineDist);
         stringBuilder.AppendLine(new string('-', textLineDist.Length));
-        stringBuilder.AppendLine(string.Join(", ", results.DataWithOutliersRemoved.Select(x => Math.Round(x, 4))));
+        stringBuilder.AppendLine(string.Join(", ", results.DataWithOutliersRemoved.Select(x => DurationFormatter.Format(x, unit, DecimalsInUnit))));
 
         // validation warnings (if any)
         if (results.Validation?.HasWarnings == true)
@@ -163,17 +182,4 @@ internal class SailfishConsoleWindowFormatter : ISailfishConsoleWindowFormatter
 
         return stringBuilder.ToString();
     }
-
-        private static string FormatAdaptive(double value)
-        {
-            if (value == 0) return "0";
-            var s4 = value.ToString("F4", System.Globalization.CultureInfo.InvariantCulture);
-            if (!s4.Equals("0.0000")) return s4;
-            var s6 = value.ToString("F6", System.Globalization.CultureInfo.InvariantCulture);
-            if (!s6.Equals("0.000000")) return s6;
-            var s8 = value.ToString("F8", System.Globalization.CultureInfo.InvariantCulture);
-            if (!s8.Equals("0.00000000")) return s8;
-            return "0";
-        }
-
 }

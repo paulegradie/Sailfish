@@ -83,8 +83,9 @@ public class MethodComparisonTestClassCompletedHandlerMarkdownTests
         md.ShouldContain("`" + sumFastId.DisplayName + "`");
         md.ShouldContain("`" + sumSlowId.DisplayName + "`");
         md.ShouldContain("Detailed Results");
-        md.ShouldContain("10.500ms");
-        md.ShouldContain("20.000ms");
+        md.ShouldContain("Mean Time (ms)");
+        md.ShouldContain("10.500");
+        md.ShouldContain("20.000");
 
         // SortSolo alone should trigger insufficient methods msg
         md.ShouldContain("Insufficient methods for comparison");
@@ -113,10 +114,10 @@ public class MethodComparisonTestClassCompletedHandlerMarkdownTests
         var summary = InvokePrivate<string>(handler, "CreatePerformanceSummary", list);
         summary.ShouldContain("Fastest:");
         summary.ShouldContain("A");
-        summary.ShouldContain("10.000ms");
+        summary.ShouldContain("10.000 ms");
         summary.ShouldContain("Slowest:");
         summary.ShouldContain("B");
-        summary.ShouldContain("20.000ms");
+        summary.ShouldContain("20.000 ms");
         summary.ShouldContain("Performance Gap");
         summary.ShouldContain("100.0% difference");
     }

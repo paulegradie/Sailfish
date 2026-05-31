@@ -6,6 +6,7 @@ using System.Text;
 using Sailfish.Analysis.SailDiff.Formatting;
 using Sailfish.Contracts.Public.Models;
 using Sailfish.Extensions.Methods;
+using Sailfish.Presentation;
 
 namespace Sailfish.Contracts.Public;
 
@@ -82,13 +83,22 @@ public class SailDiffResultMarkdownConverter : ISailDiffResultMarkdownConverter
         var nBefore = enumeratedResults.Select(x => x.TestResultsWithOutlierAnalysis.StatisticalTestResult.SampleSizeBefore).Distinct().Single();
         var nAfter = enumeratedResults.Select(x => x.TestResultsWithOutlierAnalysis.StatisticalTestResult.SampleSizeAfter).Distinct().Single();
 
+        // Recompute full-precision means/medians from the raw samples and pick a single display
+        // unit (carried in the header) so fast methods aren't flattened to 0.000ms.
+        var unit = DurationFormatter.SelectUnit(enumeratedResults.SelectMany(r =>
+        {
+            var d = SailDiffDisplayStatistics.From(r.TestResultsWithOutlierAnalysis.StatisticalTestResult);
+            return new[] { d.MeanBefore, d.MeanAfter, d.MedianBefore, d.MedianAfter };
+        }));
+        var unitLabel = DurationFormatter.UnitLabel(unit);
+
         var selectors = new List<Expression<Func<SailDiffResult, object>>>
         {
             m => m.TestCaseId.DisplayName,
-            m => m.TestResultsWithOutlierAnalysis.StatisticalTestResult.MeanBefore,
-            m => m.TestResultsWithOutlierAnalysis.StatisticalTestResult.MeanAfter,
-            m => m.TestResultsWithOutlierAnalysis.StatisticalTestResult.MedianBefore,
-            m => m.TestResultsWithOutlierAnalysis.StatisticalTestResult.MedianAfter,
+            m => DurationFormatter.Format(SailDiffDisplayStatistics.From(m.TestResultsWithOutlierAnalysis.StatisticalTestResult).MeanBefore, unit, 3),
+            m => DurationFormatter.Format(SailDiffDisplayStatistics.From(m.TestResultsWithOutlierAnalysis.StatisticalTestResult).MeanAfter, unit, 3),
+            m => DurationFormatter.Format(SailDiffDisplayStatistics.From(m.TestResultsWithOutlierAnalysis.StatisticalTestResult).MedianBefore, unit, 3),
+            m => DurationFormatter.Format(SailDiffDisplayStatistics.From(m.TestResultsWithOutlierAnalysis.StatisticalTestResult).MedianAfter, unit, 3),
             m => m.TestResultsWithOutlierAnalysis.StatisticalTestResult.PValue,
             // Tier-2 fields surface in the legacy markdown so consumers that still depend on
             // this format (and there are several) see the same magnitude story as the IDE
@@ -103,14 +113,14 @@ public class SailDiffResultMarkdownConverter : ISailDiffResultMarkdownConverter
         var headers = new List<string>
         {
             "Display Name",
-            $"MeanBefore (N={nBefore})", $"MeanAfter (N={nAfter})",
-            "MedianBefore", "MedianAfter",
+            $"MeanBefore ({unitLabel}, N={nBefore})", $"MeanAfter ({unitLabel}, N={nAfter})",
+            $"MedianBefore ({unitLabel})", $"MedianAfter ({unitLabel})",
             "PValue", "QValue (BH)", "Effect", "Shift", "MDE",
             "Change Description"
         };
         var columnValueSuffixes = new List<string>
         {
-            "", "ms", "ms", "ms", "ms", "", "", "", "", "%", ""
+            "", "", "", "", "", "", "", "", "", "%", ""
         };
 
         if (enumeratedResults.Any(x => !string.IsNullOrEmpty(x.TestResultsWithOutlierAnalysis.ExceptionMessage)))

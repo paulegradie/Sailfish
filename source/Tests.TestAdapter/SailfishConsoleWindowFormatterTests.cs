@@ -141,6 +141,44 @@ public class SailfishConsoleWindowFormatterTests
     }
 
     [Fact]
+    public void FormConsoleWindowMessageForSailfish_WithSubMicrosecondTimings_RendersMicrosecondsNotZeroMilliseconds()
+    {
+        // Arrange — values are in milliseconds (canonical). ~1.1 µs mean with a ~15 ns CI margin:
+        // historically this flattened to a useless "0.000ms" column.
+        var performanceResult = new PerformanceRunResult(
+            displayName: "FastMethod",
+            mean: 0.0011,
+            stdDev: 0.00002,
+            variance: 0.0000000004,
+            median: 0.0010,
+            rawExecutionResults: new[] { 0.0008, 0.0010, 0.0011, 0.0012, 0.0015 },
+            sampleSize: 100,
+            numWarmupIterations: 5,
+            dataWithOutliersRemoved: new[] { 0.0008, 0.0010, 0.0011, 0.0012, 0.0015 },
+            upperOutliers: Array.Empty<double>(),
+            lowerOutliers: Array.Empty<double>(),
+            totalNumOutliers: 0,
+            standardError: 0.000007,
+            confidenceLevel: 0.95,
+            confidenceIntervalLower: 0.00108,
+            confidenceIntervalUpper: 0.00112,
+            marginOfError: 0.000015);
+        var compiledResult = CreateCompiledResultWithPerformance(performanceResult);
+        var executionSummary = CreateExecutionSummaryWithCompiledResult(compiledResult);
+        var results = new List<IClassExecutionSummary> { executionSummary };
+
+        // Act
+        var output = _formatter.FormConsoleWindowMessageForSailfish(results);
+
+        // Assert — the column auto-scales to microseconds; the mean reads ~1.10 µs, never 0.000ms.
+        output.ShouldContain("Time (µs)");
+        output.ShouldContain("Distribution (µs)");
+        output.ShouldContain("1.100");
+        output.ShouldNotContain("Time (ms)");
+        output.ShouldNotContain("0.000");
+    }
+
+    [Fact]
     public void FormConsoleWindowMessageForSailfish_WithUpperOutliers_ShouldIncludeOutlierInformation()
     {
         // Arrange
