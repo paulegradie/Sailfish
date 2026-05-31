@@ -138,7 +138,11 @@ internal class FrameworkTestCaseEndNotificationHandler : INotificationHandler<Fr
         }
 
         var exMessage = exception.Message;
-        if (exception.StackTrace?.Contains("InvocationReflectionExtensionMethods.TryInvoke") ?? false)
+        // Attribute the failure to the user's code when the throw unwound through a Sailfish invocation
+        // chokepoint: lifecycle methods run via reflection (TryInvoke); the timed method now runs via a
+        // compiled delegate awaited inside CoreInvoker.
+        var stackTrace0 = exception.StackTrace ?? string.Empty;
+        if (stackTrace0.Contains("InvocationReflectionExtensionMethods.TryInvoke") || stackTrace0.Contains("Sailfish.Execution.CoreInvoker"))
             exMessage = $"An unhandled exception was thrown in your SailfishMethod:\n[{currentTestCase.FullyQualifiedName}] ";
 
         var stackTrace = "\nStackTrace:\n\n" + exception.StackTrace;

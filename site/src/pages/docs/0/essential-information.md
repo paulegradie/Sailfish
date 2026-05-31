@@ -5,7 +5,7 @@ title: Essential Information
 - Run order is deterministic
 - Tests are run in-process
 
-Sailfish applies outlier detection and overhead estimation to run results. It does not perform any optimizations that would result in the tests needing to be run out-of-process.
+Sailfish applies outlier detection and overhead estimation to run results. The timed method is invoked through a compiled direct-call delegate (not reflection), and harness overhead is measured with a structurally identical idle baseline and subtracted — see [Measurement & Overhead](/docs/1/measurement-and-overhead). It does not perform any optimizations that would result in the tests needing to be run out-of-process.
 
 
 ## Confidence Intervals
