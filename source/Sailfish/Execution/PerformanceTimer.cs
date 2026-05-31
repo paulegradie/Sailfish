@@ -64,12 +64,19 @@ public sealed class PerformanceTimer
         _iterationTimer.Start();
     }
 
-    public void StopSailfishMethodExecutionTimer()
+    public void StopSailfishMethodExecutionTimer(int operationsPerInvoke = 1)
     {
         if (!_iterationTimer.IsRunning) return;
         _iterationTimer.Stop();
         var executionIterationStop = DateTimeOffset.Now;
-        ExecutionIterationPerformances.Add(new IterationPerformance(_executionIterationStart, executionIterationStop, _iterationTimer.ElapsedTicks));
+        // Normalize to per-operation time. When a measured iteration batches N invocations
+        // (OperationsPerInvoke), divide the aggregate by N so the recorded sample is the cost of a
+        // single operation. This keeps reported statistics per-operation and comparable across
+        // methods and runs regardless of batch size. Dividing here (before overhead subtraction)
+        // is required: the overhead estimate is per-call, so it must be subtracted from a per-op value.
+        var ops = operationsPerInvoke < 1 ? 1 : operationsPerInvoke;
+        var perOperationTicks = _iterationTimer.ElapsedTicks / ops;
+        ExecutionIterationPerformances.Add(new IterationPerformance(_executionIterationStart, executionIterationStop, perOperationTicks));
         _iterationTimer.Reset();
     }
 

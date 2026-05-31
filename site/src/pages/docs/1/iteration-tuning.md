@@ -4,7 +4,7 @@ title: Iteration Tuning (Operations per Invoke)
 
 ## Overview
 
-Iteration tuning helps microbenchmarks reach a suitable per-iteration duration by executing multiple operations within a single measured iteration. This amortizes timer overhead and improves stability of very small operations.
+Iteration tuning helps microbenchmarks reach a suitable per-iteration duration by executing multiple operations within a single measured iteration. This amortizes timer overhead and improves stability of very small operations. Each measured iteration is normalized to per-operation time, so reported statistics always reflect the cost of a single operation regardless of the batch size.
 
 - OperationsPerInvoke (OPI): number of inner operations executed per measured iteration
 - TargetIterationDurationMs: target duration (milliseconds) for each measured iteration
@@ -44,6 +44,6 @@ public class Tuned { ... }
 ## FAQ
 
 - What if my operation is slower than the target? OPI will remain 1.
-- Does tuning change my results? It only changes how many operations are executed within a single measured iteration; statistics are computed from the per‑iteration timings as usual.
+- Does tuning change my reported numbers? Reported statistics are **per-operation**. When OperationsPerInvoke > 1, Sailfish divides each measured iteration by OPI, so results represent the cost of a single operation and stay comparable regardless of the OPI chosen (manually or by the tuner).
 - How do I disable it? Set TargetIterationDurationMs = 0 (the default) or explicitly specify OperationsPerInvoke > 1.
 

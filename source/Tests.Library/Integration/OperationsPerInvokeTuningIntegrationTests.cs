@@ -14,7 +14,7 @@ namespace Tests.Library.Integration;
 public class OperationsPerInvokeTuningIntegrationTests
 {
     [Fact]
-    public async Task TestCaseIterator_AutoTunesOPI_MedianNearTarget()
+    public async Task TestCaseIterator_AutoTunesOPI_RecordsPerOperationTime()
     {
         // Arrange: per-op ~15ms (busy-wait), target ~45ms should yield OPI >= 2
         var logger = Substitute.For<ILogger>();
@@ -23,7 +23,8 @@ public class OperationsPerInvokeTuningIntegrationTests
         var adaptiveStrategy = new AdaptiveIterationStrategy(logger, Substitute.For<IStatisticalConvergenceDetector>());
         var iterator = new TestCaseIterator(runSettings, logger, fixedStrategy, adaptiveStrategy);
 
-        var instance = new DelayWork(15);
+        const double perOpMs = 15.0;
+        var instance = new DelayWork((int)perOpMs);
         var method = typeof(DelayWork).GetMethod(nameof(DelayWork.Run))!;
         var settings = new ExecutionSettings
         {
@@ -40,7 +41,8 @@ public class OperationsPerInvokeTuningIntegrationTests
 
         // Assert
         result.IsSuccess.ShouldBeTrue();
-        container.ExecutionSettings.OperationsPerInvoke.ShouldBeGreaterThanOrEqualTo(2);
+        var opi = container.ExecutionSettings.OperationsPerInvoke;
+        opi.ShouldBeGreaterThanOrEqualTo(2);
 
         var durations = container.CoreInvoker.GetPerformanceResults().ExecutionIterationPerformances
             .Select(p => p.GetDurationFromTicks().MilliSeconds.Duration)
@@ -50,9 +52,41 @@ public class OperationsPerInvokeTuningIntegrationTests
         var median = durations[durations.Length / 2];
 
         var target = settings.TargetIterationDuration.TotalMilliseconds;
-        // Loose bounds to account for timer granularity on CI windows VMs
-        median.ShouldBeGreaterThan(target * 0.6);
-        median.ShouldBeLessThan(target * 1.6);
+
+        // The recorded sample is per-OPERATION (~15ms), NOT the per-ITERATION aggregate (~45ms target).
+        // Loose bounds to account for timer granularity on CI VMs.
+        median.ShouldBeGreaterThan(perOpMs * 0.5);
+        median.ShouldBeLessThan(perOpMs * 2.0); // < 30ms: also proves it is not the inflated ~45ms aggregate
+
+        // The tuned iteration (perOp * OPI) still lands near the target — tuning and normalization agree.
+        var iterationMs = median * opi;
+        iterationMs.ShouldBeGreaterThan(target * 0.5);
+        iterationMs.ShouldBeLessThan(target * 2.0);
+    }
+
+    [Fact]
+    public async Task OperationsPerInvoke_RecordsPerOperationTime_NotAggregate()
+    {
+        // Fixed OPI (no tuner): batching N ops must record per-op time, not the N× aggregate.
+        const double perOpMs = 10.0;
+        const int opi = 4;
+        var instance = new DelayWork((int)perOpMs);
+        var method = typeof(DelayWork).GetMethod(nameof(DelayWork.Run))!;
+        var settings = new ExecutionSettings { NumWarmupIterations = 0, SampleSize = 3, OperationsPerInvoke = opi };
+        var container = TestInstanceContainer.CreateTestInstance(instance, method, Array.Empty<string>(), Array.Empty<object>(), false, settings);
+
+        for (var i = 0; i < 3; i++)
+            await container.CoreInvoker.ExecutionMethodWithOperationsPerInvoke(opi, CancellationToken.None);
+
+        var durations = container.CoreInvoker.GetPerformanceResults().ExecutionIterationPerformances
+            .Select(p => p.GetDurationFromTicks().MilliSeconds.Duration)
+            .OrderBy(x => x)
+            .ToArray();
+        var median = durations[durations.Length / 2];
+
+        // ~10ms per op, NOT the ~40ms (4×) aggregate.
+        median.ShouldBeGreaterThan(perOpMs * 0.5);
+        median.ShouldBeLessThan(perOpMs * 2.5); // < 25ms, well below the ~40ms aggregate
     }
 
     private sealed class DelayWork
@@ -71,4 +105,3 @@ public class OperationsPerInvokeTuningIntegrationTests
         }
     }
 }
-
