@@ -11,8 +11,9 @@ namespace Sailfish.Attributes;
 ///         This attribute should be placed on a single method. Only one method is allowed per Sailfish test class.
 ///     </para>
 ///     <para>
-///         <b>Do not build <see cref="SailfishVariableAttribute" />- or <see cref="SailfishRangeVariableAttribute" />-dependent
-///         state here.</b> GlobalSetup runs only for the first variable set, and the field/property state it produces is
+///         <b>Do not build Sailfish-variable-dependent state here</b> — whether the variable is a
+///         <see cref="SailfishVariableAttribute" />, a <see cref="SailfishRangeVariableAttribute" />, or an
+///         <c>ISailfishVariables&lt;,&gt;</c> property. GlobalSetup runs only for the first variable set, and the field/property state it produces is
 ///         captured and replayed onto every subsequent test-case instance — while the variable property itself is
 ///         re-injected per case. Any field derived from a variable inside GlobalSetup is therefore silently frozen at its
 ///         first value, so the benchmark measures a single input size for all cases (and ScaleFish reports ~O(1)). Build

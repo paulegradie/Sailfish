@@ -98,10 +98,14 @@ public sealed class VariableDependentStateInGlobalSetupAnalyzer : AnalyzerBase<C
                 attributeClass.Name is "SailfishVariableAttribute" or "SailfishRangeVariableAttribute"))
             return true;
 
-        // Interface/class-based variables: a property whose type is (or implements) ISailfishVariables<,>.
-        var propertyType = property.Type;
-        return propertyType.Name == "ISailfishVariables" ||
-               propertyType.AllInterfaces.Any(i => i.Name == "ISailfishVariables");
+        // Interface/class-based variables: a property whose type is (or implements) the generic ISailfishVariables<,>.
+        // Match on arity 2 (not just the simple name) so an unrelated type named "ISailfishVariables" can't false-positive.
+        static bool IsSailfishVariablesInterface(INamedTypeSymbol type) => type is { Name: "ISailfishVariables", Arity: 2 };
+
+        if (property.Type is INamedTypeSymbol namedType && IsSailfishVariablesInterface(namedType))
+            return true;
+
+        return property.Type.AllInterfaces.Any(IsSailfishVariablesInterface);
     }
 
     private static bool IsSimpleAssignmentTarget(IdentifierNameSyntax identifier)

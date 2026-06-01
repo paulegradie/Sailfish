@@ -66,13 +66,18 @@ public sealed class VariableDependentStateInGlobalSetupCodeFixProvider : CodeFix
         var root = await document.GetSyntaxRootAsync(cancellationToken).ConfigureAwait(false);
         if (root is null || globalSetup.Parent is not TypeDeclarationSyntax classDeclaration) return document;
 
-        var offendingStatement = assignment.FirstAncestorOrSelf<StatementSyntax>();
+        // The top-level statement directly under the GlobalSetup block that contains the assignment. The assignment
+        // may be nested (inside an if/for/while), so we relocate the whole containing top-level statement — removing
+        // the nested node from Body.Statements would be a no-op and would duplicate it into MethodSetup.
+        var topLevelStatement = globalSetup.Body is null
+            ? null
+            : assignment.AncestorsAndSelf().OfType<StatementSyntax>().FirstOrDefault(s => s.Parent == globalSetup.Body);
 
         // Sole-purpose GlobalSetup: its entire body is this assignment, so the method should simply have been a
         // MethodSetup. Re-attribute it in place — minimal change, preserves the body and its formatting verbatim.
         var isSolePurpose =
             (globalSetup.ExpressionBody is not null && globalSetup.ExpressionBody.Expression == assignment) ||
-            (globalSetup.Body is { } soleBody && soleBody.Statements.Count == 1 && soleBody.Statements[0] == offendingStatement);
+            (globalSetup.Body is { } soleBody && soleBody.Statements.Count == 1 && soleBody.Statements[0] == topLevelStatement);
 
         if (isSolePurpose)
         {
@@ -80,14 +85,14 @@ public sealed class VariableDependentStateInGlobalSetupCodeFixProvider : CodeFix
             return document.WithSyntaxRoot(root.ReplaceNode(globalSetup, reAttributed));
         }
 
-        // Mixed body: split. Move only the offending statement; leave every unrelated GlobalSetup statement in place.
-        if (offendingStatement is null || globalSetup.Body is null) return document;
+        // Mixed body: split. Move the whole top-level statement; leave every unrelated GlobalSetup statement in place.
+        if (topLevelStatement is null || globalSetup.Body is null) return document;
 
-        var movedStatement = SyntaxFactory.ExpressionStatement(assignment.WithoutTrivia())
+        var movedStatement = topLevelStatement.WithoutTrivia()
             .WithAdditionalAnnotations(Formatter.Annotation);
 
         var trimmedGlobalSetup = globalSetup.WithBody(
-            globalSetup.Body.WithStatements(globalSetup.Body.Statements.Remove(offendingStatement)));
+            globalSetup.Body.WithStatements(globalSetup.Body.Statements.Remove(topLevelStatement)));
 
         var existingMethodSetup = classDeclaration.Members
             .OfType<MethodDeclarationSyntax>()

@@ -228,5 +228,86 @@ public class Bench
             new DiagnosticResult(VariableDependentStateInGlobalSetupAnalyzer.Descriptor).WithLocation(0).WithArguments("N", "SailfishGlobalSetup"));
         await test.RunAsync();
     }
+
+    [Fact]
+    public async Task NestedAssignment_MovesTheWholeTopLevelStatement_WithoutDuplicating()
+    {
+        var testCode = (@"
+using Sailfish.AnalyzerTests;
+[Sailfish]
+public class Bench
+{
+    [SailfishVariable(100, 1000, 10000)]
+    public int N { get; set; }
+
+    private int _connection;
+    private int[] _buffer = new int[0];
+
+    [SailfishGlobalSetup]
+    public void Setup()
+    {
+        _connection = 5;
+        if (_connection > 0)
+        {
+            _buffer = new int[{|#0:N|}];
+        }
+    }
+
+    [SailfishMethod]
+    public void Join()
+    {
+    }
+}
+").NormalizeLineEndings();
+
+        var fixedCode = (@"
+using Sailfish.AnalyzerTests;
+[Sailfish]
+public class Bench
+{
+    [SailfishVariable(100, 1000, 10000)]
+    public int N { get; set; }
+
+    private int _connection;
+    private int[] _buffer = new int[0];
+
+    [SailfishGlobalSetup]
+    public void Setup()
+    {
+        _connection = 5;
+    }
+
+    [SailfishMethodSetup]
+    public void MethodSetup()
+    {
+        if (_connection > 0)
+        {
+            _buffer = new int[N];
+        }
+    }
+
+    [SailfishMethod]
+    public void Join()
+    {
+    }
+}
+").NormalizeLineEndings();
+
+        var test = new CSharpCodeFixTest<VariableDependentStateInGlobalSetupAnalyzer, VariableDependentStateInGlobalSetupCodeFixProvider, XUnitVerifier>
+        {
+            TestState =
+            {
+                Sources = { ("DepsA.cs", DepsAttributes), ("Test.cs", testCode) },
+            },
+            FixedState =
+            {
+                Sources = { ("DepsA.cs", DepsAttributes), ("Test.cs", fixedCode) },
+            },
+        };
+
+        test.TestState.ExpectedDiagnostics.Add(
+            new DiagnosticResult(VariableDependentStateInGlobalSetupAnalyzer.Descriptor).WithLocation(0).WithArguments("N", "SailfishGlobalSetup"));
+        await test.RunAsync();
+    }
 }
 #endif

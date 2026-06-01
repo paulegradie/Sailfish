@@ -10,8 +10,9 @@ namespace Sailfish.Attributes;
 ///         This attribute should be placed on a single method. Only one method is allowed per Sailfish test class.
 ///     </para>
 ///     <para>
-///         Because this hook runs only once, a <see cref="SailfishVariableAttribute" /> read here resolves to a single
-///         value rather than varying per test case. Per-case teardown belongs in
+///         Because this hook runs only once, reading a Sailfish variable here — a <see cref="SailfishVariableAttribute" />,
+///         a <see cref="SailfishRangeVariableAttribute" />, or an <c>ISailfishVariables&lt;,&gt;</c> property — resolves to a
+///         single value rather than varying per test case. Per-case teardown belongs in
 ///         <see cref="SailfishMethodTeardownAttribute" />. The <c>SF1016</c> analyzer flags variable reads in this hook.
 ///     </para>
 /// </remarks>
