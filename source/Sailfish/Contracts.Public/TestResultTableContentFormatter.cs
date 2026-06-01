@@ -70,7 +70,7 @@ public class SailDiffResultMarkdownConverter : ISailDiffResultMarkdownConverter
 
         // Fallback to enhanced legacy format. Pass the configured alpha so the legacy impact
         // summary's significance decision honours the user setting — without this the legacy
-        // path silently downgraded a real "Regressed" result to "NO CHANGE" for any p-value
+        // path silently downgraded a real "Regressed" result to "NOT SIGNIFICANT" for any p-value
         // between 0.05 and the configured alpha (e.g. α = 0.10 on the Relaxed preset).
         return CreateEnhancedLegacyOutput(enumeratedResults, context, alpha);
     }
@@ -259,7 +259,7 @@ public class SailDiffResultMarkdownConverter : ISailDiffResultMarkdownConverter
         if (!isSignificant)
         {
             var noChangeIcon = context == OutputContext.Console ? "[=]" : "⚪";
-            return $"{noChangeIcon} **{result.TestCaseId.DisplayName}**: {Math.Abs(percentChange):F1}% difference (NO CHANGE)";
+            return $"{noChangeIcon} **{result.TestCaseId.DisplayName}**: {Math.Abs(percentChange):F1}% difference from baseline (NOT SIGNIFICANT)";
         }
 
         var direction = isImprovement ? "faster" : "slower";
@@ -270,6 +270,7 @@ public class SailDiffResultMarkdownConverter : ISailDiffResultMarkdownConverter
             _ => isImprovement ? "🟢" : "🔴"
         };
 
-        return $"{icon} **{result.TestCaseId.DisplayName}**: {Math.Abs(percentChange):F1}% {direction} ({significance})";
+        // Before = baseline; name it so "slower/faster" can't be read the wrong way around.
+        return $"{icon} **{result.TestCaseId.DisplayName}**: {Math.Abs(percentChange):F1}% {direction} than baseline ({significance})";
     }
 }

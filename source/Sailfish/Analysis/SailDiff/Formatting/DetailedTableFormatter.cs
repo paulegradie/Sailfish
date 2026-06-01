@@ -80,8 +80,14 @@ public class DetailedTableFormatter : IDetailedTableFormatter
         var unit = SelectUnit(comparisons);
         var unitLabel = DurationFormatter.UnitLabel(unit);
 
-        // Create table headers
-        var headers = new[] { "Metric", "Primary Method", "Compared Method", "Change", "P-Value" };
+        // Create table headers. For a single comparison, name the columns with the real methods and
+        // mark the reference as the baseline so each row is self-describing. For multiple comparisons
+        // the columns are shared across row-groups, so fall back to Baseline/Comparison and let the
+        // per-group "Comparing:" line name the methods.
+        var single = comparisons.Count == 1;
+        var baselineHeader = single ? $"{comparisons[0].PrimaryMethodName} (baseline)" : "Baseline";
+        var comparedHeader = single ? comparisons[0].ComparedMethodName : "Comparison";
+        var headers = new[] { "Metric", baselineHeader, comparedHeader, "Change", "P-Value" };
         var rows = new List<string[]>();
 
         foreach (var data in comparisons)
@@ -98,7 +104,7 @@ public class DetailedTableFormatter : IDetailedTableFormatter
             // Add comparison header if multiple comparisons
             if (comparisons.Count > 1)
             {
-                sb.AppendLine($"Comparing: {data.PrimaryMethodName} vs {data.ComparedMethodName}");
+                sb.AppendLine($"Comparing: {data.ComparedMethodName} vs baseline {data.PrimaryMethodName}");
             }
 
             rows.Add(new[] { $"Mean ({unitLabel})", DurationFormatter.Format(primaryTime, unit, Decimals), DurationFormatter.Format(comparedTime, unit, Decimals), changeText, $"{stats.PValue:F6}" });
@@ -119,6 +125,10 @@ public class DetailedTableFormatter : IDetailedTableFormatter
 
         // Format as aligned table
         sb.Append(FormatAsAlignedTable(headers, rows));
+
+        // Spell out the sign convention so a leading "+" can't be misread as "better".
+        sb.AppendLine();
+        sb.AppendLine("Change = comparison vs. baseline (positive = slower, negative = faster).");
 
         // Add metadata
         if (comparisons.Any())
@@ -160,7 +170,7 @@ public class DetailedTableFormatter : IDetailedTableFormatter
             var changeText = percentChange >= 0 ? $"+{percentChange:F1}%" : $"{percentChange:F1}%";
 
             sb.AppendLine();
-            sb.AppendLine($"| Metric | {data.PrimaryMethodName} | {data.ComparedMethodName} | Change | P-Value |");
+            sb.AppendLine($"| Metric | {data.PrimaryMethodName} (baseline) | {data.ComparedMethodName} | Change | P-Value |");
             sb.AppendLine("|--------|------------|-------------|--------|---------|");
             sb.AppendLine($"| Mean ({unitLabel}) | {DurationFormatter.Format(primaryTime, unit, Decimals)} | {DurationFormatter.Format(comparedTime, unit, Decimals)} | {changeText} | {stats.PValue:F6} |");
 
@@ -171,6 +181,8 @@ public class DetailedTableFormatter : IDetailedTableFormatter
             var medianChangeText = medianChange >= 0 ? $"+{medianChange:F1}%" : $"{medianChange:F1}%";
 
             sb.AppendLine($"| Median ({unitLabel}) | {DurationFormatter.Format(primaryMedian, unit, Decimals)} | {DurationFormatter.Format(comparedMedian, unit, Decimals)} | {medianChangeText} | - |");
+            sb.AppendLine();
+            sb.AppendLine("_Change = comparison vs. baseline (positive = slower, negative = faster)._");
             sb.AppendLine();
         }
 

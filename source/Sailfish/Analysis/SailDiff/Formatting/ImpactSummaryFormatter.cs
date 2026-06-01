@@ -98,11 +98,8 @@ public class ImpactSummaryFormatter : IImpactSummaryFormatter
     private string CreateIdeImpactSummary(SailDiffComparisonData data, ComparisonAnalysis analysis)
     {
         var icon = GetSignificanceIcon(analysis.Significance);
-        var direction = analysis.IsImprovement ? "faster" : "slower";
-        var significanceText = GetSignificanceText(analysis.Significance);
-        
-        var summary = $"{icon} IMPACT: {data.PrimaryMethodName} vs {data.ComparedMethodName} - " +
-                     $"{analysis.PercentageChange:F1}% {direction} ({significanceText})";
+
+        var summary = $"{icon} IMPACT: {BuildVerdict(data, analysis)}";
 
         if (analysis.IsStatisticallySignificant)
         {
@@ -119,11 +116,8 @@ public class ImpactSummaryFormatter : IImpactSummaryFormatter
     private string CreateMarkdownImpactSummary(SailDiffComparisonData data, ComparisonAnalysis analysis)
     {
         var icon = GetMarkdownSignificanceIcon(analysis.Significance);
-        var direction = analysis.IsImprovement ? "faster" : "slower";
-        var significanceText = GetSignificanceText(analysis.Significance);
-        
-        return $"**{icon} IMPACT: {data.PrimaryMethodName} vs {data.ComparedMethodName} - " +
-               $"{analysis.PercentageChange:F1}% {direction} ({significanceText})**";
+
+        return $"**{icon} IMPACT: {BuildVerdict(data, analysis)}**";
     }
 
     /// <summary>
@@ -132,11 +126,8 @@ public class ImpactSummaryFormatter : IImpactSummaryFormatter
     private string CreateConsoleImpactSummary(SailDiffComparisonData data, ComparisonAnalysis analysis)
     {
         var indicator = GetConsoleSignificanceIndicator(analysis.Significance);
-        var direction = analysis.IsImprovement ? "faster" : "slower";
-        var significanceText = GetSignificanceText(analysis.Significance);
-        
-        return $"{indicator} IMPACT: {data.PrimaryMethodName} vs {data.ComparedMethodName} - " +
-               $"{analysis.PercentageChange:F1}% {direction} ({significanceText})";
+
+        return $"{indicator} IMPACT: {BuildVerdict(data, analysis)}";
     }
 
     /// <summary>
@@ -150,6 +141,22 @@ public class ImpactSummaryFormatter : IImpactSummaryFormatter
         return $"{data.PrimaryMethodName},{data.ComparedMethodName}," +
                $"{analysis.PercentageChange:F1}%,{direction},{significanceText}," +
                $"{analysis.PValue:F6},{analysis.PrimaryTime:F3},{analysis.ComparedTime:F3}";
+    }
+
+    /// <summary>
+    /// Builds the one verdict clause shared by every context so the direction can never be misread:
+    /// "{compared} is {pct}% {faster|slower} than baseline {primary} ({significance})".
+    /// The compared method is the grammatical subject and the primary method is named as the
+    /// baseline — the reference the percentage is measured against (see <see cref="AnalyzeComparison"/>,
+    /// where %Δ is always computed relative to the baseline). This avoids the old "A vs B - N% slower"
+    /// phrasing, where it was impossible to tell whether A or B was the slower method.
+    /// </summary>
+    private static string BuildVerdict(SailDiffComparisonData data, ComparisonAnalysis analysis)
+    {
+        var direction = analysis.IsImprovement ? "faster" : "slower";
+        var significanceText = GetSignificanceText(analysis.Significance);
+        return $"{data.ComparedMethodName} is {analysis.PercentageChange:F1}% {direction} " +
+               $"than baseline {data.PrimaryMethodName} ({significanceText})";
     }
 
     /// <summary>
@@ -203,8 +210,8 @@ public class ImpactSummaryFormatter : IImpactSummaryFormatter
         {
             ComparisonSignificance.Improved => "IMPROVED",
             ComparisonSignificance.Regressed => "REGRESSED",
-            ComparisonSignificance.NoChange => "NO CHANGE",
-            _ => "NO CHANGE"
+            ComparisonSignificance.NoChange => "NOT SIGNIFICANT",
+            _ => "NOT SIGNIFICANT"
         };
     }
 }
