@@ -12,6 +12,7 @@ var settings = RunSettingsBuilder
     .WithTestNames(typeof(ReadmeExample).FullName!)
     .WithSailDiff()
     .WithScaleFish()
+    .WithAiAnalysis() // Skipper: explains SailDiff results via the registered ISailfishAgent (see AppRegistrationProvider)
     // .WithGlobalSampleSize(30)
     .WithMinimumLogLevel(LogLevel.Information)
     // .WithCustomLogger(new CustomLogger(new LoggerConfiguration().WriteTo.Console().CreateLogger()))
