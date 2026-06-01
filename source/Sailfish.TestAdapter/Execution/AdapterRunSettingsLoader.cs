@@ -36,6 +36,18 @@ public static class AdapterRunSettingsLoader
         if (parsedSettings.SailfishSettings.TimerCalibration is not null)
             runSettingsBuilder = runSettingsBuilder.WithTimerCalibration(parsedSettings.SailfishSettings.TimerCalibration.Value);
 
+        if (parsedSettings.GlobalSettings.EnableDistributionPlots is not null)
+            runSettingsBuilder = runSettingsBuilder.WithDistributionPlots(parsedSettings.GlobalSettings.EnableDistributionPlots.Value);
+
+        // Canonical home is GlobalSettings; also accept it under SailDiffSettings as a convenience.
+        var plotStyleRaw = parsedSettings.GlobalSettings.DistributionPlotStyle ?? parsedSettings.SailDiffSettings.DistributionPlotStyle;
+        if (!string.IsNullOrWhiteSpace(plotStyleRaw)
+            && System.Enum.TryParse<Sailfish.Presentation.DistributionPlotStyle>(plotStyleRaw, ignoreCase: true, out var plotStyle))
+            runSettingsBuilder = runSettingsBuilder.WithDistributionPlotStyle(plotStyle);
+
+        if (parsedSettings.GlobalSettings.EmitDistributionHtmlReport is not null)
+            runSettingsBuilder = runSettingsBuilder.WithDistributionHtmlReport(parsedSettings.GlobalSettings.EmitDistributionHtmlReport.Value);
+
         var testSettings = MapToTestSettings(parsedSettings);
         var scaleFishSettings = MapToScaleFishSettings(parsedSettings);
         var runSettings = runSettingsBuilder

@@ -124,6 +124,13 @@ public class ComparisonMetadata
     /// Additional context or notes about the comparison
     /// </summary>
     public string? Notes { get; set; }
+
+    /// <summary>
+    /// Per-comparison override for whether to draw the box-and-whisker distribution plot. Defaults to
+    /// <c>true</c>; the global <see cref="Sailfish.Contracts.Public.Models.IRunSettings.EnableDistributionPlots"/>
+    /// flag still applies on top of this.
+    /// </summary>
+    public bool IncludeDistributionPlot { get; set; } = true;
 }
 
 /// <summary>
@@ -140,6 +147,11 @@ public class SailDiffFormattedOutput
     /// Detailed statistical table with all metrics
     /// </summary>
     public string DetailedTable { get; set; } = string.Empty;
+
+    /// <summary>
+    /// Box-and-whisker distribution plot (may be empty when disabled or unavailable)
+    /// </summary>
+    public string DistributionPlot { get; set; } = string.Empty;
 
     /// <summary>
     /// Complete formatted output combining impact summary and detailed table

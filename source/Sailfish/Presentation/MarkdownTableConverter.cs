@@ -29,6 +29,7 @@ public class MarkdownTableConverter : IMarkdownTableConverter
 {
     private readonly ISailDiffUnifiedFormatter? _unifiedFormatter;
     private readonly IReproducibilityManifestProvider? _manifestProvider;
+    private readonly IRunSettings? _runSettings;
 
 
     public MarkdownTableConverter()
@@ -36,18 +37,23 @@ public class MarkdownTableConverter : IMarkdownTableConverter
         // Default constructor for backward compatibility
         _unifiedFormatter = null;
         _manifestProvider = null;
+        _runSettings = null;
     }
 
     public MarkdownTableConverter(ISailDiffUnifiedFormatter unifiedFormatter)
     {
         _unifiedFormatter = unifiedFormatter ?? throw new ArgumentNullException(nameof(unifiedFormatter));
         _manifestProvider = null;
+        _runSettings = null;
     }
 
-    public MarkdownTableConverter(ISailDiffUnifiedFormatter unifiedFormatter, IReproducibilityManifestProvider manifestProvider)
+    // IRunSettings is optional so existing callers/tests keep working; DI injects the registered
+    // instance and uses it to gate the inline distribution plots.
+    public MarkdownTableConverter(ISailDiffUnifiedFormatter unifiedFormatter, IReproducibilityManifestProvider manifestProvider, IRunSettings? runSettings = null)
     {
         _unifiedFormatter = unifiedFormatter ?? throw new ArgumentNullException(nameof(unifiedFormatter));
         _manifestProvider = manifestProvider ?? throw new ArgumentNullException(nameof(manifestProvider));
+        _runSettings = runSettings;
     }
 
     // Decimals to show within the auto-selected time unit (e.g. "1.100 µs").
@@ -189,7 +195,7 @@ public class MarkdownTableConverter : IMarkdownTableConverter
         return stringBuilder.ToString();
     }
 
-    private static void AppendEnhancedResults(string typeName, IEnumerable<ICompiledTestCaseResult> compiledResults, StringBuilder stringBuilder)
+    private void AppendEnhancedResults(string typeName, IEnumerable<ICompiledTestCaseResult> compiledResults, StringBuilder stringBuilder)
     {
         stringBuilder.AppendLine($"## 🧪 {typeName}");
         stringBuilder.AppendLine();
@@ -242,6 +248,9 @@ public class MarkdownTableConverter : IMarkdownTableConverter
             }
             stringBuilder.AppendLine();
 
+            // Box-and-whisker plot of every method in the group on a shared axis (same unit as the table)
+            AppendGroupDistributionPlot(groupResults, unit, stringBuilder);
+
             // Append statistical validation warnings (if any)
             foreach (var r in groupResults.Where(gr => gr.PerformanceRunResult?.Validation?.HasWarnings == true))
             {
@@ -256,6 +265,38 @@ public class MarkdownTableConverter : IMarkdownTableConverter
             }
 
         }
+    }
+
+    // Renders a shared-axis histogram (one row per method in the group), fenced so monospace alignment
+    // survives Markdown rendering. Gated by IRunSettings.EnableDistributionPlots (default on).
+    private void AppendGroupDistributionPlot(IReadOnlyList<ICompiledTestCaseResult> groupResults, DurationUnit unit, StringBuilder stringBuilder)
+    {
+        if (!(_runSettings?.EnableDistributionPlots ?? true)) return;
+
+        var series = groupResults
+            .Where(r => r.PerformanceRunResult is { } pr && pr.DataWithOutliersRemoved.Length > 0)
+            .Select(r =>
+            {
+                var pr = r.PerformanceRunResult!;
+                return new DistributionPlotRenderer.Series(
+                    r.TestCaseId!.DisplayName,
+                    pr.DataWithOutliersRemoved,
+                    pr.Mean,
+                    pr.Median,
+                    pr.UpperOutliers.Concat(pr.LowerOutliers).ToArray());
+            })
+            .ToList();
+
+        var style = _runSettings?.DistributionPlotStyle ?? DistributionPlotStyle.Histogram;
+        var plot = DistributionPlotRenderer.Render(series, unit, style);
+        if (string.IsNullOrEmpty(plot)) return;
+
+        stringBuilder.AppendLine("**Distribution**");
+        stringBuilder.AppendLine();
+        stringBuilder.AppendLine("```text");
+        stringBuilder.Append(plot);
+        stringBuilder.AppendLine("```");
+        stringBuilder.AppendLine();
     }
 
     private static string CreatePerformanceSummary(List<ICompiledTestCaseResult> groupResults)

@@ -15,8 +15,9 @@ public interface IOutputContextAdapter
     /// <param name="detailedTable">Formatted detailed table</param>
     /// <param name="context">Target output context</param>
     /// <param name="groupName">Optional group name for context</param>
+    /// <param name="distributionPlot">Optional box-and-whisker plot block, placed after the detailed table</param>
     /// <returns>Complete formatted output for the context</returns>
-    string AdaptToContext(string impactSummary, string detailedTable, OutputContext context, string? groupName = null);
+    string AdaptToContext(string impactSummary, string detailedTable, OutputContext context, string? groupName = null, string? distributionPlot = null);
 }
 
 /// <summary>
@@ -28,61 +29,68 @@ public class OutputContextAdapter : IOutputContextAdapter
     /// <summary>
     /// Adapts the impact summary and detailed table to the specified output context.
     /// </summary>
-    public string AdaptToContext(string impactSummary, string detailedTable, OutputContext context, string? groupName = null)
+    public string AdaptToContext(string impactSummary, string detailedTable, OutputContext context, string? groupName = null, string? distributionPlot = null)
     {
         return context switch
         {
-            OutputContext.Ide => AdaptForIde(impactSummary, detailedTable, groupName),
-            OutputContext.Markdown => AdaptForMarkdown(impactSummary, detailedTable, groupName),
-            OutputContext.Console => AdaptForConsole(impactSummary, detailedTable, groupName),
+            OutputContext.Ide => AdaptForIde(impactSummary, detailedTable, groupName, distributionPlot),
+            OutputContext.Markdown => AdaptForMarkdown(impactSummary, detailedTable, groupName, distributionPlot),
+            OutputContext.Console => AdaptForConsole(impactSummary, detailedTable, groupName, distributionPlot),
             OutputContext.Csv => AdaptForCsv(impactSummary, detailedTable, groupName),
-            _ => AdaptForConsole(impactSummary, detailedTable, groupName)
+            _ => AdaptForConsole(impactSummary, detailedTable, groupName, distributionPlot)
         };
     }
 
     /// <summary>
     /// Adapts output for IDE test output window with rich formatting and visual hierarchy.
     /// </summary>
-    private string AdaptForIde(string impactSummary, string detailedTable, string? groupName)
+    private string AdaptForIde(string impactSummary, string detailedTable, string? groupName, string? distributionPlot)
     {
         var sb = new StringBuilder();
-        
+
         // Add header with visual separator
         sb.AppendLine();
         sb.AppendLine("📊 PERFORMANCE COMPARISON");
-        
+
         if (!string.IsNullOrEmpty(groupName))
         {
             sb.AppendLine($"Group: {groupName}");
         }
-        
+
         sb.AppendLine(new string('=', 50));
         sb.AppendLine();
-        
+
         // Impact summary with emphasis
         sb.AppendLine(impactSummary);
-        
+
         // Detailed table if available
         if (!string.IsNullOrEmpty(detailedTable))
         {
             sb.AppendLine();
             sb.Append(detailedTable);
         }
-        
+
+        // Distribution plot if available
+        if (!string.IsNullOrEmpty(distributionPlot))
+        {
+            sb.AppendLine();
+            sb.Append(distributionPlot);
+        }
+
         // Footer separator
         sb.AppendLine();
         sb.AppendLine(new string('=', 50));
-        
+
         return sb.ToString();
     }
 
     /// <summary>
     /// Adapts output for Markdown files with GitHub-compatible formatting.
     /// </summary>
-    private string AdaptForMarkdown(string impactSummary, string detailedTable, string? groupName)
+    private string AdaptForMarkdown(string impactSummary, string detailedTable, string? groupName, string? distributionPlot)
     {
         var sb = new StringBuilder();
-        
+
         // Add markdown header
         if (!string.IsNullOrEmpty(groupName))
         {
@@ -94,50 +102,63 @@ public class OutputContextAdapter : IOutputContextAdapter
             sb.AppendLine("### Performance Comparison");
             sb.AppendLine();
         }
-        
+
         // Impact summary as emphasized text
         sb.AppendLine(impactSummary);
-        
+
         // Detailed table if available
         if (!string.IsNullOrEmpty(detailedTable))
         {
             sb.AppendLine();
             sb.Append(detailedTable);
         }
-        
+
+        // Distribution plot if available
+        if (!string.IsNullOrEmpty(distributionPlot))
+        {
+            sb.AppendLine();
+            sb.Append(distributionPlot);
+        }
+
         return sb.ToString();
     }
 
     /// <summary>
     /// Adapts output for console with plain text formatting and clear structure.
     /// </summary>
-    private string AdaptForConsole(string impactSummary, string detailedTable, string? groupName)
+    private string AdaptForConsole(string impactSummary, string detailedTable, string? groupName, string? distributionPlot)
     {
         var sb = new StringBuilder();
-        
+
         // Add console header
         sb.AppendLine();
         sb.AppendLine("PERFORMANCE COMPARISON");
-        
+
         if (!string.IsNullOrEmpty(groupName))
         {
             sb.AppendLine($"Group: {groupName}");
         }
-        
+
         sb.AppendLine(new string('=', 60));
         sb.AppendLine();
-        
+
         // Impact summary
         sb.AppendLine(impactSummary);
-        
+
         // Detailed table if available
         if (!string.IsNullOrEmpty(detailedTable))
         {
             sb.Append(detailedTable);
         }
-        
+
+        // Distribution plot if available
+        if (!string.IsNullOrEmpty(distributionPlot))
+        {
+            sb.Append(distributionPlot);
+        }
+
         sb.AppendLine(new string('=', 60));
-        
+
         return sb.ToString();
     }
 

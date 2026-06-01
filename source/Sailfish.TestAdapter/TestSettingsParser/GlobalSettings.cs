@@ -15,4 +15,14 @@ public class GlobalSettings
 
     [JsonPropertyName("DisableEverything")]
     public bool DisableEverything { get; set; }
+
+    [JsonPropertyName("EnableDistributionPlots")]
+    public bool? EnableDistributionPlots { get; set; }
+
+    // "Histogram" (default) or "BoxPlot"
+    [JsonPropertyName("DistributionPlotStyle")]
+    public string? DistributionPlotStyle { get; set; }
+
+    [JsonPropertyName("EmitDistributionHtmlReport")]
+    public bool? EmitDistributionHtmlReport { get; set; }
 }

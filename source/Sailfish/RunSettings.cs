@@ -48,7 +48,10 @@ internal class RunSettings : IRunSettings
         int? seed = null,
         ScaleFishSettings? scaleFishSettings = null,
         bool useAiAnalysis = false,
-        AiAnalysisSettings? aiAnalysisSettings = null)
+        AiAnalysisSettings? aiAnalysisSettings = null,
+        bool enableDistributionPlots = true,
+        bool emitDistributionHtmlReport = false,
+        DistributionPlotStyle distributionPlotStyle = DistributionPlotStyle.Histogram)
     {
         TestNames = testNames;
         LocalOutputDirectory = localOutputDirectory;
@@ -83,6 +86,9 @@ internal class RunSettings : IRunSettings
         CustomLogger = customLogger;
         EnableEnvironmentHealthCheck = enableEnvironmentHealthCheck;
         TimerCalibration = timerCalibration;
+        EnableDistributionPlots = enableDistributionPlots;
+        EmitDistributionHtmlReport = emitDistributionHtmlReport;
+        DistributionPlotStyle = distributionPlotStyle;
         MinimumLogLevel = minimumLogLevel;
     }
 
@@ -121,6 +127,9 @@ internal class RunSettings : IRunSettings
     public ILogger? CustomLogger { get; }
     public bool EnableEnvironmentHealthCheck { get; }
     public bool TimerCalibration { get; }
+    public bool EnableDistributionPlots { get; }
+    public bool EmitDistributionHtmlReport { get; }
+    public DistributionPlotStyle DistributionPlotStyle { get; }
 
     public LogLevel MinimumLogLevel { get; }
 

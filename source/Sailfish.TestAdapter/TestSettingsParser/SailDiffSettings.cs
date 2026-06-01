@@ -14,4 +14,9 @@ public class SailDiffSettings
 
     [JsonPropertyName("Disabled")]
     public bool Disabled { get; set; }
+
+    // Accepted here as a convenience too — the canonical home is GlobalSettings.DistributionPlotStyle.
+    // "Histogram" (default) or "BoxPlot".
+    [JsonPropertyName("DistributionPlotStyle")]
+    public string? DistributionPlotStyle { get; set; }
 }

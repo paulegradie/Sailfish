@@ -42,6 +42,10 @@ public class RunSettingsBuilder
     private bool _enableEnvironmentHealthCheck = true;
     private bool _timerCalibration = true;
 
+    private bool _enableDistributionPlots = true;
+    private bool _emitDistributionHtmlReport;
+    private DistributionPlotStyle _distributionPlotStyle = DistributionPlotStyle.Histogram;
+
 
     // Optional deterministic randomization seed for reproducible ordering
     private int? _seed;
@@ -115,6 +119,36 @@ public class RunSettingsBuilder
     public RunSettingsBuilder WithTimerCalibration(bool enable = true)
     {
         _timerCalibration = enable;
+        return this;
+    }
+
+    /// <summary>
+    ///     Enables or disables the inline Unicode box-and-whisker distribution plots that accompany the
+    ///     IDE/Markdown readouts (default: true).
+    /// </summary>
+    public RunSettingsBuilder WithDistributionPlots(bool enable = true)
+    {
+        _enableDistributionPlots = enable;
+        return this;
+    }
+
+    /// <summary>
+    ///     Enables emitting a standalone SVG distribution HTML report into the output directory
+    ///     (default: false), mirroring <see cref="WithScaleFish()"/>'s HTML report.
+    /// </summary>
+    public RunSettingsBuilder WithDistributionHtmlReport(bool emit = true)
+    {
+        _emitDistributionHtmlReport = emit;
+        return this;
+    }
+
+    /// <summary>
+    ///     Selects the inline distribution plot style — <see cref="DistributionPlotStyle.Histogram"/>
+    ///     (default) or <see cref="DistributionPlotStyle.BoxPlot"/>.
+    /// </summary>
+    public RunSettingsBuilder WithDistributionPlotStyle(DistributionPlotStyle style)
+    {
+        _distributionPlotStyle = style;
         return this;
     }
 
@@ -383,7 +417,10 @@ public class RunSettingsBuilder
             seed: _seed,
             scaleFishSettings: _sfSettings,
             useAiAnalysis: _aiAnalysis,
-            aiAnalysisSettings: _aiSettings);
+            aiAnalysisSettings: _aiSettings,
+            enableDistributionPlots: _enableDistributionPlots,
+            emitDistributionHtmlReport: _emitDistributionHtmlReport,
+            distributionPlotStyle: _distributionPlotStyle);
     }
 
     private void ApplyPreset(SailfishPreset preset)
