@@ -70,4 +70,32 @@ public static class NodeExtensionMethods
         if (!foundAttributes.Any()) return false;
         return attributeNames.Intersect(foundAttributes).Count() == attributeNames.Length;
     }
+
+    /// <summary>
+    ///     Determines whether a method participates in Sailfish global setup: either it is directly decorated with
+    ///     <c>[SailfishGlobalSetup]</c>, or it is an <c>override</c> of a base "template" method whose declaring type
+    ///     itself defines a <c>[SailfishGlobalSetup]</c> hook (the common pattern where a base global-setup hook invokes
+    ///     a virtual method that derived classes override). Unrelated overrides (e.g. <c>object.ToString</c>,
+    ///     <c>IDisposable.Dispose</c>) are excluded because their declaring types declare no global-setup hook.
+    /// </summary>
+    public static bool IsSailfishGlobalSetupMethod(this MethodDeclarationSyntax method, SemanticModel semanticModel)
+    {
+        if (method.HasAttributeAmong(new[] { "SailfishGlobalSetup" })) return true;
+        if (!method.Modifiers.Any(SyntaxKind.OverrideKeyword)) return false;
+
+        if (semanticModel.GetDeclaredSymbol(method) is not IMethodSymbol methodSymbol) return false;
+
+        for (var overridden = methodSymbol.OverriddenMethod; overridden is not null; overridden = overridden.OverriddenMethod)
+        {
+            var members = overridden.ContainingType?.GetMembers().OfType<IMethodSymbol>();
+            if (members is not null && members.Any(DeclaresGlobalSetup)) return true;
+        }
+
+        return false;
+    }
+
+    private static bool DeclaresGlobalSetup(IMethodSymbol method)
+    {
+        return method.GetAttributes().Any(a => a.AttributeClass?.Name == "SailfishGlobalSetupAttribute");
+    }
 }

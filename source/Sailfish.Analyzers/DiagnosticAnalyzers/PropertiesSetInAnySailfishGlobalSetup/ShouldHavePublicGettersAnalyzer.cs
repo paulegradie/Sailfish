@@ -31,7 +31,7 @@ public class ShouldHavePublicGettersAnalyzer : AnalyzerBase<ClassDeclarationSynt
         var globalSetupMethods = classDeclaration
             .Members
             .OfType<MethodDeclarationSyntax>()
-            .Where(m => m.HasAttributesWithNames("SailfishGlobalSetup"))
+            .Where(m => m.IsSailfishGlobalSetupMethod(semanticModel))
             .ToList();
 
         var thingsAssignedInsideOfTheGlobalSetupMethods = globalSetupMethods
