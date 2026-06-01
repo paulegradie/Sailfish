@@ -24,12 +24,10 @@ public static class AsciiBoxPlotRenderer
     private const int MaxLabelWidth = 28;
 
     private const char Space = ' ';
-    private const char WhiskerLine = '━';
-    private const char WhiskerCapLow = '┣';
-    private const char WhiskerCapHigh = '┫';
-    private const char BoxFill = '▒';
-    private const char BoxEdgeLow = '┫';
-    private const char BoxEdgeHigh = '┣';
+    private const char WhiskerLine = '─';
+    private const char WhiskerCapLow = '├';
+    private const char WhiskerCapHigh = '┤';
+    private const char BoxFill = '▓';
     private const char MedianMark = '┃';
     private const char MeanMark = '◆';
     private const char RulerLine = '─';
@@ -125,19 +123,18 @@ public static class AsciiBoxPlotRenderer
         var q1C = col(s.Q1);
         var q3C = col(s.Q3);
 
-        // Layers, painted low-to-high precedence (later overwrites earlier).
+        // Layers, painted low-to-high precedence (later overwrites earlier). The shaded run itself is
+        // the IQR box — set against the thin whisker line it reads as a crisp block with no need for
+        // bracket edges that could be mistaken for whisker caps.
         for (var i = minC; i <= maxC; i++)
         {
             if (buf[i] == Space) buf[i] = WhiskerLine;
         }
 
-        for (var i = q1C; i <= q3C; i++) buf[i] = BoxFill;
-
-        buf[q1C] = BoxEdgeLow;
-        buf[q3C] = BoxEdgeHigh;
-
         if (minC < q1C) buf[minC] = WhiskerCapLow;
         if (maxC > q3C) buf[maxC] = WhiskerCapHigh;
+
+        for (var i = q1C; i <= q3C; i++) buf[i] = BoxFill;
 
         var meanC = col(s.Mean);
         if (meanC >= 0 && meanC < width) buf[meanC] = MeanMark;

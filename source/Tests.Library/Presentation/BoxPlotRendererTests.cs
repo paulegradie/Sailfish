@@ -73,7 +73,7 @@ public class BoxPlotRendererTests
 
         output.ShouldContain("┃");   // median
         output.ShouldContain("◆");   // mean
-        output.ShouldContain("▒");   // IQR box
+        output.ShouldContain("▓");   // IQR box
         output.ShouldContain("Time (ms)");
         output.ShouldContain("median"); // legend
         output.ShouldContain("n=20");
@@ -148,7 +148,7 @@ public class BoxPlotRendererTests
 
         var laneLine = output.Split('\n').First(l => l.Contains("n=20"));
         // label("x"=>1) + 2 spaces + 30 lane + "  n=20"
-        laneLine.ShouldContain(new string('▒', 1)); // some box drawn
+        laneLine.ShouldContain(new string('▓', 1)); // some box drawn
         laneLine.Length.ShouldBeGreaterThan(30);
     }
 
