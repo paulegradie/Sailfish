@@ -24,6 +24,7 @@ internal sealed class SkipperSailDiffAnalysisHandler : INotificationHandler<Sail
 {
     private readonly ISailfishAgent agent;
     private readonly IConsoleWriter consoleWriter;
+    private readonly ISkipperConsoleFormatter consoleFormatter;
     private readonly IPerformanceNarrativeContextBuilder contextBuilder;
     private readonly ILogger logger;
     private readonly ISkipperResponseCache responseCache;
@@ -37,6 +38,7 @@ internal sealed class SkipperSailDiffAnalysisHandler : INotificationHandler<Sail
         ISkipperReviewWriter reviewWriter,
         ISkipperResponseCache responseCache,
         IConsoleWriter consoleWriter,
+        ISkipperConsoleFormatter consoleFormatter,
         ILogger logger)
     {
         this.runSettings = runSettings;
@@ -45,6 +47,7 @@ internal sealed class SkipperSailDiffAnalysisHandler : INotificationHandler<Sail
         this.reviewWriter = reviewWriter;
         this.responseCache = responseCache;
         this.consoleWriter = consoleWriter;
+        this.consoleFormatter = consoleFormatter;
         this.logger = logger;
     }
 
@@ -66,8 +69,8 @@ internal sealed class SkipperSailDiffAnalysisHandler : INotificationHandler<Sail
             if (settings.WriteReviewArtifact)
                 await reviewWriter.WriteAsync(review, cancellationToken).ConfigureAwait(false);
 
-            if (settings.EmitConsoleSummary && !string.IsNullOrWhiteSpace(review.ConsoleSummary))
-                consoleWriter.WriteString(review.ConsoleSummary);
+            if (settings.EmitConsoleSummary)
+                consoleWriter.WriteString(consoleFormatter.Format(review));
         }
         catch (Exception ex)
         {
