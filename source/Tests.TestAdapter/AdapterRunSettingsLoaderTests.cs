@@ -63,6 +63,32 @@ public class AdapterRunSettingsLoaderTests
         LoadFromConfig(json).DistributionPlotStyle.ShouldBe(DistributionPlotStyle.Histogram);
     }
 
+    [Fact]
+    public void AiAnalysis_Enabled_FlowsTo_RunAiAnalysis_AndSettings()
+    {
+        var json = """
+        {
+          "AiAnalysisSettings": {
+            "Enabled": true,
+            "EmitConsoleSummary": false
+          },
+          "GlobalSettings": {},
+          "SailDiffSettings": {},
+          "ScaleFishSettings": {}
+        }
+        """;
+
+        var runSettings = LoadFromConfig(json);
+        runSettings.RunAiAnalysis.ShouldBeTrue();
+        runSettings.AiAnalysisSettings.EmitConsoleSummary.ShouldBeFalse();
+    }
+
+    [Fact]
+    public void AiAnalysis_DefaultsOff_WhenNoSection()
+    {
+        LoadFromConfig("{ \"GlobalSettings\": {} }").RunAiAnalysis.ShouldBeFalse();
+    }
+
     // Writes the config in a parent dir and runs from a nested dir, because the loader recurses
     // UPWARDS to find .sailfish.json (it doesn't match a file sitting in the current directory).
     private static Sailfish.Contracts.Public.Models.IRunSettings LoadFromConfig(string json)
@@ -85,4 +111,3 @@ public class AdapterRunSettingsLoaderTests
         }
     }
 }
-

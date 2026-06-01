@@ -5,6 +5,7 @@ using Sailfish.TestAdapter.Discovery;
 using Sailfish.TestAdapter.TestSettingsParser;
 using SailDiffSettings = Sailfish.Analysis.SailDiff.SailDiffSettings;
 using RuntimeScaleFishSettings = Sailfish.Analysis.ScaleFish.ScaleFishSettings;
+using CoreAiAnalysisSettings = Sailfish.Analysis.Ai.AiAnalysisSettings;
 
 namespace Sailfish.TestAdapter.Execution;
 
@@ -47,6 +48,14 @@ public static class AdapterRunSettingsLoader
 
         if (parsedSettings.GlobalSettings.EmitDistributionHtmlReport is not null)
             runSettingsBuilder = runSettingsBuilder.WithDistributionHtmlReport(parsedSettings.GlobalSettings.EmitDistributionHtmlReport.Value);
+
+        // Skipper AI analysis is opt-in via .sailfish.json. A custom ISailfishAgent must also be registered
+        // through IRegisterSailfishServices; without one, enabling this is a harmless no-op.
+        if (parsedSettings.AiAnalysisSettings is { Enabled: true } ai)
+            runSettingsBuilder = runSettingsBuilder.WithAiAnalysis(new CoreAiAnalysisSettings(
+                writeReviewArtifact: ai.WriteReviewArtifact ?? true,
+                emitConsoleSummary: ai.EmitConsoleSummary ?? true,
+                useResponseCache: ai.UseResponseCache ?? true));
 
         var testSettings = MapToTestSettings(parsedSettings);
         var scaleFishSettings = MapToScaleFishSettings(parsedSettings);
