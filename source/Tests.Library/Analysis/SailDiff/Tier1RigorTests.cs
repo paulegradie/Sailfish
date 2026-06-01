@@ -240,7 +240,7 @@ public class Tier1RigorTests
         // constructed without an ISailDiffUnifiedFormatter (the public default-ctor surface),
         // the legacy fallback used to hardcode `p < 0.05` and ignore the configured alpha.
         // With Relaxed (α = 0.10) and a Regressed verdict at p = 0.08 the impact line read
-        // "NO CHANGE", contradicting the test wrapper's own verdict. The fix prefers the
+        // "NOT SIGNIFICANT", contradicting the test wrapper's own verdict. The fix prefers the
         // ChangeDescription as the authoritative source and threads alpha as the fallback.
         var testCaseId = new TestCaseId("Suite.MyTest()");
         var stats = new StatisticalTestResult(
@@ -267,14 +267,14 @@ public class Tier1RigorTests
             alpha: 0.10);
 
         output.ShouldContain("REGRESSED");
-        output.ShouldNotContain("(NO CHANGE)");
+        output.ShouldNotContain("(NOT SIGNIFICANT)");
     }
 
     [Fact]
     public void LegacyImpactSummary_RespectsNoChangeVerdict_WhenTestWrapperSaidNoChange()
     {
         // Symmetric check: if the test wrapper produced NoChange (because p > the user's α),
-        // the legacy summary must show NO CHANGE regardless of how the raw p-value compares
+        // the legacy summary must show NOT SIGNIFICANT regardless of how the raw p-value compares
         // to the legacy 0.05 default — the wrapper is the single source of truth.
         var testCaseId = new TestCaseId("Suite.MyTest()");
         var stats = new StatisticalTestResult(
@@ -299,7 +299,7 @@ public class Tier1RigorTests
             Sailfish.Analysis.SailDiff.Formatting.OutputContext.Markdown,
             alpha: 0.01); // strict alpha; wrapper's NoChange already reflects this
 
-        output.ShouldContain("NO CHANGE");
+        output.ShouldContain("NOT SIGNIFICANT");
         output.ShouldNotContain("REGRESSED");
         output.ShouldNotContain("IMPROVED");
     }

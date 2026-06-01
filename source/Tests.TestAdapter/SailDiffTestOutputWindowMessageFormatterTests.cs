@@ -45,7 +45,7 @@ public class SailDiffTestOutputWindowMessageFormatterTests
         outputResult.ShouldContain("==================================================");
         // Display values are recomputed from the raw samples ([1,2,3] -> 2, [9,10,11] -> 10),
         // and the unit is auto-selected (ms here). %Δ = (10-2)/2 = 400%.
-        outputResult.ShouldContain("⚪ IMPACT: 400.0% difference (NO CHANGE)");
+        outputResult.ShouldContain("⚪ IMPACT: 400.0% difference from baseline (NOT SIGNIFICANT)");
         outputResult.ShouldContain("P-Value: 0.001000 | Mean: 2.000 ms → 10.000 ms");
         outputResult.ShouldContain("Before Ids: abc.wow()");
         outputResult.ShouldContain("After Ids: Id2");

@@ -309,7 +309,7 @@ public class SailDiffResultMarkdownConverterTests
         var result = _converterWithoutFormatter.ConvertToEnhancedMarkdownTable(sailDiffResults, OutputContext.Markdown);
 
         // Assert
-        result.ShouldContain("NO CHANGE");
+        result.ShouldContain("NOT SIGNIFICANT");
     }
 
     [Fact]
