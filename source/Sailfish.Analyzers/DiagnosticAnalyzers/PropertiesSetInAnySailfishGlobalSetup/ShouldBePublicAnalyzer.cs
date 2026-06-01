@@ -30,7 +30,7 @@ public class ShouldBePublicAnalyzer : AnalyzerBase<ClassDeclarationSyntax>
         var globalSetupMethods = classDeclaration
             .Members
             .OfType<MethodDeclarationSyntax>()
-            .Where(m => m.HasAttributesWithNames("SailfishGlobalSetup"))
+            .Where(m => m.HasAttributeAmong(new[] { "SailfishGlobalSetup" }) || m.Modifiers.Any(SyntaxKind.OverrideKeyword))
             .ToList();
 
         var thingsAssignedInsideOfTheGlobalSetupMethods = globalSetupMethods
