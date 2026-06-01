@@ -140,6 +140,7 @@ internal static class SailfishModuleRegistrations
         services.TryAddSingleton<ISailfishAgent, NoOpSailfishAgent>();
         services.AddTransient<IPerformanceNarrativeContextBuilder, PerformanceNarrativeContextBuilder>();
         services.AddTransient<ISkipperReviewWriter, SkipperReviewWriter>();
+        services.AddTransient<ISkipperReportWriter, SkipperReportWriter>();
         services.AddTransient<ISkipperResponseCache, FileSkipperResponseCache>();
         services.AddTransient<ISkipperConsoleFormatter, SkipperConsoleFormatter>();
 
