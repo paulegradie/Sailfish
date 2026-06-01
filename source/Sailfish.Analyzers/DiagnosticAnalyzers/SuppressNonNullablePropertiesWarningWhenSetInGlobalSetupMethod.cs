@@ -31,7 +31,7 @@ public class SuppressNonNullablePropertiesWarningWhenSetInGlobalSetupMethod : An
         var globalSetupMethods = classDeclaration
             .Members
             .OfType<MethodDeclarationSyntax>()
-            .Where(m => m.HasAttributeAmong(new[] { "SailfishGlobalSetup" }) || m.Modifiers.Any(SyntaxKind.OverrideKeyword))
+            .Where(m => m.IsSailfishGlobalSetupMethod(semanticModel))
             .ToList();
 
         var thingsAssignedInsideOfTheGlobalSetupMethods = globalSetupMethods

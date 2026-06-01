@@ -118,4 +118,31 @@ public class TestCode
             new DiagnosticResult(ShouldBePublicAnalyzer.Descriptor).WithLocation(1).WithArguments("NonPublicModifier")
         );
     }
+
+    [Fact]
+    public async Task UnrelatedOverrideAssigningNonPublicPropertyShouldNotBeFlagged()
+    {
+        // Regression: an `override` of a non-Sailfish base method (here object.ToString) is not part of global setup,
+        // so assignments inside it must not be flagged. Only overrides whose base type itself declares a
+        // [SailfishGlobalSetup] hook participate in global setup (the base-class template pattern).
+        const string source = @"
+[Sailfish]
+public class TestCode
+{
+    int NonPublicModifier { get; set; }
+
+    public override string ToString()
+    {
+        NonPublicModifier = 5;
+        return string.Empty;
+    }
+
+    [SailfishMethod]
+    public void MainMethod()
+    {
+        // do nothing
+    }
+}";
+        await AnalyzerVerifier<ShouldBePublicAnalyzer>.VerifyAnalyzerAsync(source.AddSailfishAttributeDependencies());
+    }
 }
