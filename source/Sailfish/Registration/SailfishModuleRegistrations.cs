@@ -1,6 +1,8 @@
 using MediatR;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using Sailfish.Analysis;
+using Sailfish.Analysis.Ai;
 using Sailfish.Analysis.SailDiff;
 using Sailfish.Analysis.SailDiff.Statistics;
 using Sailfish.Analysis.SailDiff.Statistics.Tests;
@@ -132,6 +134,13 @@ internal static class SailfishModuleRegistrations
         services.AddTransient<IPermutationTest, PermutationTest>();
         services.AddTransient<IScalefishObservationCompiler, ScalefishObservationCompiler>();
         services.AddTransient<ISailDiffConsoleWindowMessageFormatter, SailDiffConsoleWindowMessageFormatter>();
+
+        // Skipper AI analysis layer. The agent is the only seam a consumer overrides; TryAdd means a
+        // user-registered ISailfishAgent (from IRegisterSailfishServices) wins regardless of registration order.
+        services.TryAddSingleton<ISailfishAgent, NoOpSailfishAgent>();
+        services.AddTransient<IPerformanceNarrativeContextBuilder, PerformanceNarrativeContextBuilder>();
+        services.AddTransient<ISkipperReviewWriter, SkipperReviewWriter>();
+        services.AddTransient<ISkipperResponseCache, FileSkipperResponseCache>();
 
         return services;
     }
