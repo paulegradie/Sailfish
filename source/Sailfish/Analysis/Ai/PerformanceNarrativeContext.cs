@@ -10,7 +10,8 @@ namespace Sailfish.Analysis.Ai;
 public sealed record PerformanceNarrativeContext(
     IReadOnlyList<SailDiffCaseContext> Comparisons,
     string SailDiffMarkdown,
-    EnvironmentSnapshot? Environment);
+    EnvironmentSnapshot? Environment,
+    IReadOnlyList<ComplexityVerdict>? Scaling = null);
 
 /// <summary>Grounded before / after figures for one test case, lifted directly from a SailDiff result.</summary>
 public sealed record SailDiffCaseContext(

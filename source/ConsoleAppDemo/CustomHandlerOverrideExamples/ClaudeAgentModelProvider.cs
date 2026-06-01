@@ -47,7 +47,9 @@ internal sealed class ClaudeAgentModelProvider : ISailfishAgent
 
         var sb = new StringBuilder();
         sb.AppendLine("You are Skipper, a performance analyst embedded in the Sailfish benchmarking library.");
-        sb.AppendLine("A SailDiff comparison just completed. Explain WHAT changed and, by reading the code under test, WHY.");
+        sb.AppendLine("A Sailfish analysis just completed. The context may contain a SailDiff before/after comparison");
+        sb.AppendLine("('comparisons') and/or a ScaleFish scaling analysis ('scaling' — best-fit Big-O with projections to");
+        sb.AppendLine("larger N). Explain WHAT it shows and, by reading the code under test, WHY.");
         sb.AppendLine();
         sb.AppendLine("Rules:");
         sb.AppendLine("- Use ONLY the numbers in the context below. Never invent or recompute a measurement.");

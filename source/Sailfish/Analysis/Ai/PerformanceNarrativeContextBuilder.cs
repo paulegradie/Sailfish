@@ -4,12 +4,15 @@ using Sailfish.Contracts.Public.Models;
 using Sailfish.Contracts.Public.Notifications;
 using Sailfish.Diagnostics.Environment;
 using Sailfish.Results;
+using Sailfish.Analysis.ScaleFish;
 
 namespace Sailfish.Analysis.Ai;
 
 internal interface IPerformanceNarrativeContextBuilder
 {
     PerformanceNarrativeContext Build(SailDiffAnalysisCompleteNotification notification, double alpha);
+
+    PerformanceNarrativeContext BuildScaling(ScaleFishAnalysisCompleteNotification notification);
 }
 
 /// <summary>
@@ -37,6 +40,51 @@ internal sealed class PerformanceNarrativeContextBuilder : IPerformanceNarrative
             .ToList();
 
         return new PerformanceNarrativeContext(comparisons, notification.ResultsAsMarkdown ?? string.Empty, BuildEnvironment());
+    }
+
+    public PerformanceNarrativeContext BuildScaling(ScaleFishAnalysisCompleteNotification notification)
+    {
+        var verdicts = new List<ComplexityVerdict>();
+        foreach (var classModel in notification.TestClassComplexityResults)
+        foreach (var method in classModel.ScaleFishMethodModels)
+        foreach (var property in method.ScaleFishPropertyModels)
+        {
+            var model = property.ScaleFishModel;
+            verdicts.Add(new ComplexityVerdict(
+                method.TestMethodName,
+                property.PropertyName,
+                model.ScaleFishModelFunction.OName,
+                model.GoodnessOfFit,
+                model.NextClosestScaleFishModelFunction.OName,
+                model.NextClosestGoodnessOfFit,
+                model.IsDistinguishable,
+                model.SuggestedNextN,
+                Project(model.ScaleFishModelFunction)));
+        }
+
+        return new PerformanceNarrativeContext(
+            System.Array.Empty<SailDiffCaseContext>(),
+            notification.ScaleFishResultMarkdown ?? string.Empty,
+            BuildEnvironment(),
+            verdicts);
+    }
+
+    private static IReadOnlyList<ComplexityProjection> Project(ScaleFishModelFunction function)
+    {
+        var projections = new List<ComplexityProjection>();
+        foreach (var n in new[] { 100, 1_000, 10_000 })
+        {
+            try
+            {
+                projections.Add(new ComplexityProjection(n, function.Predict(n)));
+            }
+            catch
+            {
+                // Family not fit, or evaluation overflowed at this N — skip the projection rather than fail.
+            }
+        }
+
+        return projections;
     }
 
     /// <summary>

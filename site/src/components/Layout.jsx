@@ -61,6 +61,7 @@ const navigation = [
             { title: 'Sailfish', href: '/docs/2/sailfish' },
             { title: 'SailDiff', href: '/docs/2/saildiff' },
             { title: 'ScaleFish', href: '/docs/2/scalefish' },
+            { title: 'Skipper (AI)', href: '/docs/2/skipper', badge: 'NEW' },
         ]
     },
     {

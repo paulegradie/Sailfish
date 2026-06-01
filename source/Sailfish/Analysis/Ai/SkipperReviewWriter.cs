@@ -10,7 +10,7 @@ namespace Sailfish.Analysis.Ai;
 
 internal interface ISkipperReviewWriter
 {
-    Task WriteAsync(SkipperReview review, CancellationToken cancellationToken);
+    Task WriteAsync(SkipperReview review, string analysisKind, CancellationToken cancellationToken);
 }
 
 /// <summary>
@@ -33,13 +33,13 @@ internal sealed class SkipperReviewWriter : ISkipperReviewWriter
         this.runSettings = runSettings;
     }
 
-    public async Task WriteAsync(SkipperReview review, CancellationToken cancellationToken)
+    public async Task WriteAsync(SkipperReview review, string analysisKind, CancellationToken cancellationToken)
     {
         var directory = runSettings.LocalOutputDirectory;
         Directory.CreateDirectory(directory);
 
         var fileName = DefaultFileSettings.AppendTagsToFilename(
-            $"skipper-review_{runSettings.TimeStamp:yyyyMMdd_HHmmss}.json",
+            $"skipper-review_{runSettings.TimeStamp:yyyyMMdd_HHmmss}_{analysisKind}.json",
             runSettings.Tags);
         var filePath = Path.Join(directory, fileName);
 
