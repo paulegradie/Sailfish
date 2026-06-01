@@ -6,6 +6,7 @@ using PerformanceTestingUserInvokedConsoleApp.CustomHandlerOverrideExamples;
 using Sailfish.Analysis.Ai;
 using Sailfish.Contracts.Public.Notifications;
 using Sailfish.Registration;
+using PerformanceTests.Skipper;
 
 namespace PerformanceTestingUserInvokedConsoleApp;
 

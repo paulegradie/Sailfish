@@ -1,25 +1,37 @@
+using System;
+using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
+using System.Linq;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using System.Threading;
+using System.Threading.Tasks;
 using Sailfish.Analysis.Ai;
 
-namespace PerformanceTestingUserInvokedConsoleApp.CustomHandlerOverrideExamples;
+namespace PerformanceTests.Skipper;
 
 /// <summary>
-///     Reference <see cref="ISailfishAgent" /> that drives the <c>claude</c> CLI as an agentic, code-aware
-///     analyst. This is the "one seam, two power levels" payoff: the same interface that accepts a dumb one-shot
-///     completion also accepts a full agent that <em>reads the code under test</em> and cites <c>file:line</c>.
+///     Reference <see cref="ISailfishAgent" /> that drives the local <c>claude</c> CLI as an agentic, code-aware
+///     analyst — the "one seam, two power levels" payoff: the same interface that accepts a one-shot completion
+///     also accepts a full agent that <em>reads the code under test</em> and cites <c>file:line</c>.
+///     <para>
+///         This single copy is shared by both demos: the programmatic <c>ConsoleAppDemo</c> registers it directly,
+///         and the test-adapter <c>PerformanceTests</c> project registers it from its <c>RegistrationProvider</c>.
+///         Copy it into your own project and swap the transport (Anthropic SDK, Bedrock, a local model) to taste.
+///     </para>
 ///     <para>
 ///         It hands Skipper's grounded context to <c>claude -p</c> with read-only tools (Read/Grep/Glob) scoped to
-///         the repository root, then parses the returned JSON into a <see cref="SkipperReview" />. Everything
-///         degrades gracefully — if the CLI is absent or errors, a short note is returned and the benchmark run is
-///         unaffected. Copy this into your own project and adapt the transport (Anthropic SDK, Bedrock, a local
-///         model) to taste; the CLI flags below may need tweaking for your installed version.
+///         the repository root, parses the returned JSON into a <see cref="SkipperReview" />, and degrades
+///         gracefully — a missing/offline CLI, a non-zero exit, or a timeout yields a short note and never throws
+///         into the benchmark run.
 ///     </para>
 /// </summary>
-internal sealed class ClaudeAgentModelProvider : ISailfishAgent
+public sealed class ClaudeAgentModelProvider : ISailfishAgent
 {
+    private static readonly TimeSpan Timeout = TimeSpan.FromMinutes(2);
+
     private static readonly JsonSerializerOptions JsonOptions = new()
     {
         PropertyNameCaseInsensitive = true,
@@ -36,7 +48,7 @@ internal sealed class ClaudeAgentModelProvider : ISailfishAgent
         }
         catch (Exception ex)
         {
-            // The CLI may be missing, unauthenticated, or offline. Skipper is strictly additive — never throw.
+            // The CLI may be missing, unauthenticated, offline, or slow. Skipper is strictly additive — never throw.
             return SkipperReview.Empty with { ConsoleSummary = $"(Skipper unavailable: {ex.Message})" };
         }
     }
@@ -83,23 +95,36 @@ internal sealed class ClaudeAgentModelProvider : ISailfishAgent
             UseShellExecute = false,
             WorkingDirectory = Directory.Exists(repositoryRoot) ? repositoryRoot : Directory.GetCurrentDirectory()
         };
-        startInfo.ArgumentList.Add("-p");                 // headless "print" mode; prompt arrives on stdin
+        startInfo.ArgumentList.Add("-p");             // headless "print" mode; the prompt arrives on stdin
         startInfo.ArgumentList.Add("--output-format");
         startInfo.ArgumentList.Add("text");
-        startInfo.ArgumentList.Add("--allowedTools");     // read-only investigation only
-        startInfo.ArgumentList.Add("Read");
-        startInfo.ArgumentList.Add("Grep");
-        startInfo.ArgumentList.Add("Glob");
+        startInfo.ArgumentList.Add("--allowedTools"); // read-only investigation only (space-separated list)
+        startInfo.ArgumentList.Add("Read Grep Glob");
+
+        using var timeout = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+        timeout.CancelAfter(Timeout);
 
         using var process = new Process { StartInfo = startInfo };
         process.Start();
 
-        await process.StandardInput.WriteAsync(prompt);
+        await process.StandardInput.WriteAsync(prompt.AsMemory(), timeout.Token);
         process.StandardInput.Close();
 
-        var stdout = await process.StandardOutput.ReadToEndAsync(cancellationToken);
-        var stderr = await process.StandardError.ReadToEndAsync(cancellationToken);
-        await process.WaitForExitAsync(cancellationToken);
+        var stdoutTask = process.StandardOutput.ReadToEndAsync(timeout.Token);
+        var stderrTask = process.StandardError.ReadToEndAsync(timeout.Token);
+
+        try
+        {
+            await process.WaitForExitAsync(timeout.Token);
+        }
+        catch (OperationCanceledException)
+        {
+            try { process.Kill(entireProcessTree: true); } catch { /* best effort */ }
+            throw new TimeoutException($"The claude CLI did not respond within {Timeout.TotalSeconds:F0}s.");
+        }
+
+        var stdout = await stdoutTask;
+        var stderr = await stderrTask;
 
         if (process.ExitCode != 0)
             throw new InvalidOperationException($"claude exited with code {process.ExitCode}: {stderr}");
