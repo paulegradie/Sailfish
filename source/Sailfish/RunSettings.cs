@@ -5,6 +5,7 @@ using Sailfish.Analysis.SailDiff;
 using Sailfish.Analysis;
 using Sailfish.Analysis.ScaleFish;
 using Sailfish.Analysis.Ai;
+using Sailfish.Trawl;
 
 using Sailfish.Contracts.Public.Models;
 using Sailfish.Extensions.Types;
@@ -51,7 +52,8 @@ internal class RunSettings : IRunSettings
         AiAnalysisSettings? aiAnalysisSettings = null,
         bool enableDistributionPlots = true,
         bool emitDistributionHtmlReport = false,
-        DistributionPlotStyle distributionPlotStyle = DistributionPlotStyle.Histogram)
+        DistributionPlotStyle distributionPlotStyle = DistributionPlotStyle.Histogram,
+        TrawlSettings? trawlSettings = null)
     {
         TestNames = testNames;
         LocalOutputDirectory = localOutputDirectory;
@@ -89,6 +91,7 @@ internal class RunSettings : IRunSettings
         EnableDistributionPlots = enableDistributionPlots;
         EmitDistributionHtmlReport = emitDistributionHtmlReport;
         DistributionPlotStyle = distributionPlotStyle;
+        TrawlSettings = trawlSettings ?? new TrawlSettings();
         MinimumLogLevel = minimumLogLevel;
     }
 
@@ -130,6 +133,7 @@ internal class RunSettings : IRunSettings
     public bool EnableDistributionPlots { get; }
     public bool EmitDistributionHtmlReport { get; }
     public DistributionPlotStyle DistributionPlotStyle { get; }
+    public TrawlSettings TrawlSettings { get; }
 
     public LogLevel MinimumLogLevel { get; }
 

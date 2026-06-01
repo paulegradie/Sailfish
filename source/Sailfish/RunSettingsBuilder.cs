@@ -4,6 +4,7 @@ using Sailfish.Analysis.SailDiff;
 using Sailfish.Analysis;
 using Sailfish.Analysis.ScaleFish;
 using Sailfish.Analysis.Ai;
+using Sailfish.Trawl;
 
 using Sailfish.Contracts.Public.Models;
 using Sailfish.Extensions.Types;
@@ -45,6 +46,7 @@ public class RunSettingsBuilder
     private bool _enableDistributionPlots = true;
     private bool _emitDistributionHtmlReport;
     private DistributionPlotStyle _distributionPlotStyle = DistributionPlotStyle.Histogram;
+    private TrawlSettings? _trawlSettings;
 
 
     // Optional deterministic randomization seed for reproducible ordering
@@ -149,6 +151,38 @@ public class RunSettingsBuilder
     public RunSettingsBuilder WithDistributionPlotStyle(DistributionPlotStyle style)
     {
         _distributionPlotStyle = style;
+        return this;
+    }
+
+    /// <summary>
+    ///     Supplies run-wide Trawl (load testing) settings/overrides. Unlike SailDiff/ScaleFish, Trawl is not
+    ///     gated by a builder flag — a scenario runs whenever a method carries <c>[Trawl]</c>. These settings
+    ///     only reshape or disable those scenarios at run time.
+    /// </summary>
+    public RunSettingsBuilder WithTrawl(TrawlSettings settings)
+    {
+        _trawlSettings = settings;
+        return this;
+    }
+
+    /// <summary>Overrides the number of virtual users for every closed-model Trawl scenario.</summary>
+    public RunSettingsBuilder WithTrawlVirtualUsers(int virtualUsers)
+    {
+        (_trawlSettings ??= new TrawlSettings()).VirtualUsersOverride = virtualUsers;
+        return this;
+    }
+
+    /// <summary>Caps the sustained (measured) load duration in seconds for every Trawl scenario.</summary>
+    public RunSettingsBuilder WithTrawlMaxDuration(double seconds)
+    {
+        (_trawlSettings ??= new TrawlSettings()).MaxDurationSecondsOverride = seconds;
+        return this;
+    }
+
+    /// <summary>Disables every <c>[Trawl]</c> load scenario for this run (the rest of the run proceeds normally).</summary>
+    public RunSettingsBuilder DisableTrawl()
+    {
+        (_trawlSettings ??= new TrawlSettings()).Disabled = true;
         return this;
     }
 
@@ -420,7 +454,8 @@ public class RunSettingsBuilder
             aiAnalysisSettings: _aiSettings,
             enableDistributionPlots: _enableDistributionPlots,
             emitDistributionHtmlReport: _emitDistributionHtmlReport,
-            distributionPlotStyle: _distributionPlotStyle);
+            distributionPlotStyle: _distributionPlotStyle,
+            trawlSettings: _trawlSettings);
     }
 
     private void ApplyPreset(SailfishPreset preset)

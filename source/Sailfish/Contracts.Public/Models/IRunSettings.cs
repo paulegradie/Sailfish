@@ -4,6 +4,7 @@ using Sailfish.Analysis.SailDiff;
 using Sailfish.Analysis;
 using Sailfish.Analysis.ScaleFish;
 using Sailfish.Analysis.Ai;
+using Sailfish.Trawl;
 
 using Sailfish.Extensions.Types;
 using Sailfish.Logging;
@@ -21,6 +22,9 @@ public interface IRunSettings
     SailDiffSettings SailDiffSettings { get; }
     ScaleFishSettings ScaleFishSettings { get; }
     AiAnalysisSettings AiAnalysisSettings { get; }
+
+    // Trawl (load testing) global settings/overrides for [Trawl] load scenarios
+    TrawlSettings TrawlSettings { get; }
     IEnumerable<Type> TestLocationAnchors { get; }
     IEnumerable<Type> RegistrationProviderAnchors { get; }
     OrderedDictionary Tags { get; }
