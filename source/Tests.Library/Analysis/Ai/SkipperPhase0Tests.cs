@@ -7,6 +7,9 @@ using Sailfish.Analysis.Ai;
 using Sailfish.Analysis.SailDiff.Statistics.Tests;
 using Sailfish.Contracts.Public.Models;
 using Sailfish.Contracts.Public.Notifications;
+using Sailfish.Diagnostics.Environment;
+using Sailfish.Results;
+using NSubstitute;
 using Shouldly;
 using Xunit;
 
@@ -74,7 +77,7 @@ public class NoOpSailfishAgentTests
         var agent = new NoOpSailfishAgent();
         var session = new SkipperSession(
             SkipperRole.Explain,
-            new PerformanceNarrativeContext(Array.Empty<SailDiffCaseContext>(), string.Empty),
+            new PerformanceNarrativeContext(Array.Empty<SailDiffCaseContext>(), string.Empty, null),
             new CapabilityRegistry(Array.Empty<ISkipperCapability>()),
             "/tmp");
 
@@ -87,7 +90,9 @@ public class NoOpSailfishAgentTests
 public class PerformanceNarrativeContextBuilderTests
 {
     private const double Alpha = 0.05;
-    private readonly PerformanceNarrativeContextBuilder builder = new();
+    private readonly PerformanceNarrativeContextBuilder builder = new(
+        Substitute.For<IReproducibilityManifestProvider>(),
+        Substitute.For<IEnvironmentHealthReportProvider>());
 
     [Fact]
     public void SignificantSlowdown_IsRegressed_WithCorrectPercentChange()
@@ -130,6 +135,19 @@ public class PerformanceNarrativeContextBuilderTests
         c.Failed.ShouldBeTrue();
     }
 
+    [Fact]
+    public void EffectSizeAndMde_FlowIntoContext()
+    {
+        var context = Build(MakeResult("A", meanBefore: 100, meanAfter: 118, pValue: 0.001,
+            effectSize: new EffectSizeReport("Cliff's delta", 0.8, 0.5, 0.95),
+            minimumDetectableEffectPercent: 3.2));
+
+        var c = context.Comparisons.Single();
+        c.EffectSizeName.ShouldBe("Cliff's delta");
+        c.EffectSizeValue!.Value.ShouldBe(0.8, 1e-9);
+        c.MinimumDetectableEffectPercent!.Value.ShouldBe(3.2, 1e-9);
+    }
+
     private PerformanceNarrativeContext Build(params SailDiffResult[] results) =>
         builder.Build(new SailDiffAnalysisCompleteNotification(results, "## markdown"), Alpha);
 
@@ -139,7 +157,9 @@ public class PerformanceNarrativeContextBuilderTests
         double meanAfter = 0,
         double pValue = 1.0,
         double? qValue = null,
-        bool failed = false)
+        bool failed = false,
+        EffectSizeReport? effectSize = null,
+        double? minimumDetectableEffectPercent = null)
     {
         StatisticalTestResult stats;
         if (failed)
@@ -158,7 +178,9 @@ public class PerformanceNarrativeContextBuilderTests
                 rawDataBefore: Array.Empty<double>(), rawDataAfter: Array.Empty<double>(),
                 additionalResults: new Dictionary<string, object>())
             {
-                QValue = qValue
+                QValue = qValue,
+                EffectSize = effectSize,
+                MinimumDetectableEffectPercent = minimumDetectableEffectPercent
             };
         }
 

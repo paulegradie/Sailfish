@@ -2,6 +2,8 @@ using System.Collections.Generic;
 using System.Linq;
 using Sailfish.Contracts.Public.Models;
 using Sailfish.Contracts.Public.Notifications;
+using Sailfish.Diagnostics.Environment;
+using Sailfish.Results;
 
 namespace Sailfish.Analysis.Ai;
 
@@ -17,13 +19,57 @@ internal interface IPerformanceNarrativeContextBuilder
 /// </summary>
 internal sealed class PerformanceNarrativeContextBuilder : IPerformanceNarrativeContextBuilder
 {
+    private readonly IEnvironmentHealthReportProvider healthProvider;
+    private readonly IReproducibilityManifestProvider manifestProvider;
+
+    public PerformanceNarrativeContextBuilder(
+        IReproducibilityManifestProvider manifestProvider,
+        IEnvironmentHealthReportProvider healthProvider)
+    {
+        this.manifestProvider = manifestProvider;
+        this.healthProvider = healthProvider;
+    }
+
     public PerformanceNarrativeContext Build(SailDiffAnalysisCompleteNotification notification, double alpha)
     {
         var comparisons = notification.TestCaseResults
             .Select(result => ToCaseContext(result, alpha))
             .ToList();
 
-        return new PerformanceNarrativeContext(comparisons, notification.ResultsAsMarkdown ?? string.Empty);
+        return new PerformanceNarrativeContext(comparisons, notification.ResultsAsMarkdown ?? string.Empty, BuildEnvironment());
+    }
+
+    /// <summary>
+    ///     Projects the reproducibility manifest and environment health report (if captured) into a concise
+    ///     snapshot. Returns null when neither is available — the narrative simply proceeds without environment
+    ///     context. Both are read defensively so timing of capture never breaks the analysis.
+    /// </summary>
+    private EnvironmentSnapshot? BuildEnvironment()
+    {
+        var manifest = manifestProvider.Current;
+        var health = healthProvider.Current;
+        if (manifest is null && health is null) return null;
+
+        var concerns = health?.Entries
+            .Where(entry => entry.Status is HealthStatus.Warn or HealthStatus.Fail)
+            .Select(entry => new EnvironmentConcern(entry.Name, entry.Status.ToString(), entry.Details, entry.Recommendation))
+            .ToList() ?? new List<EnvironmentConcern>();
+
+        return new EnvironmentSnapshot(
+            manifest?.DotNetRuntime ?? string.Empty,
+            manifest?.Os ?? string.Empty,
+            manifest?.OsArchitecture ?? string.Empty,
+            manifest?.ProcessArchitecture ?? string.Empty,
+            manifest?.CpuModel,
+            manifest?.GcMode ?? string.Empty,
+            manifest?.Jit ?? string.Empty,
+            manifest?.CpuAffinity ?? string.Empty,
+            manifest?.Timer ?? string.Empty,
+            manifest?.EnvironmentHealthScore ?? health?.Score ?? 0,
+            manifest?.EnvironmentHealthLabel ?? health?.SummaryLabel,
+            manifest?.CiSystem,
+            manifest?.CommitSha,
+            concerns);
     }
 
     private static SailDiffCaseContext ToCaseContext(SailDiffResult result, double alpha)
@@ -57,7 +103,10 @@ internal sealed class PerformanceNarrativeContextBuilder : IPerformanceNarrative
             stats.ChangeDescription,
             stats.SampleSizeBefore,
             stats.SampleSizeAfter,
-            Failed: false);
+            Failed: false,
+            EffectSizeName: stats.EffectSize?.Name,
+            EffectSizeValue: stats.EffectSize?.Value,
+            MinimumDetectableEffectPercent: stats.MinimumDetectableEffectPercent);
     }
 
     private static SkipperVerdict DeriveVerdict(StatisticalTestResult stats, double alpha)
