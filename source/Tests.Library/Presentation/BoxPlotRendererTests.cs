@@ -141,6 +141,20 @@ public class BoxPlotRendererTests
     }
 
     [Fact]
+    public void Render_PadsAxisSoWhiskersDoNotPinToEdges()
+    {
+        var series = BoxPlotData.FromSamples("M", Ramp(40), mean: 20.5);
+        var output = AsciiBoxPlotRenderer.Render(new[] { series }, DurationUnit.Milliseconds, width: 60);
+
+        var rulerLine = output.Split('\n').First(l => l.Contains('└'));
+        var laneLine = output.Split('\n').First(l => l.Contains('├'));
+
+        // The axis ruler (└────┘) spans the full width; the data whiskers (├──┤) must sit inside it.
+        laneLine.IndexOf('├').ShouldBeGreaterThan(rulerLine.IndexOf('└'));
+        laneLine.IndexOf('┤').ShouldBeLessThan(rulerLine.IndexOf('┘'));
+    }
+
+    [Fact]
     public void Render_RespectsRequestedWidth()
     {
         var series = BoxPlotData.FromSamples("x", Ramp(20), mean: 10.5);

@@ -23,6 +23,10 @@ public static class AsciiBoxPlotRenderer
     private const int MinWidth = 24;
     private const int MaxLabelWidth = 28;
 
+    // Fraction of the data range to pad onto each side of the axis. 0.25 each side leaves the data
+    // spanning the central 2/3 of the lane, so whiskers sit around 1/6 and 5/6 of the width.
+    private const double AxisPaddingFraction = 0.25;
+
     private const char Space = ' ';
     private const char WhiskerLine = '─';
     private const char WhiskerCapLow = '├';
@@ -57,8 +61,11 @@ public static class AsciiBoxPlotRenderer
         if (axisValuesMs.Count == 0) return string.Empty;
 
         width = Math.Max(MinWidth, width);
-        var axisMinMs = axisValuesMs.Min();
-        var axisMaxMs = axisValuesMs.Max();
+
+        // Pad the axis by a fraction of the data range on each side so the whiskers float inside the
+        // lane (data spans ~2/3 of the width) instead of always pinning to both edges — otherwise every
+        // plot looks maxed out and the shape is hard to read.
+        var (axisMinMs, axisMaxMs) = PadAxis(axisValuesMs.Min(), axisValuesMs.Max());
         var minU = DurationFormatter.ToUnit(axisMinMs, unit);
         var maxU = DurationFormatter.ToUnit(axisMaxMs, unit);
         var spanU = maxU - minU;
@@ -197,6 +204,16 @@ public static class AsciiBoxPlotRenderer
             var col = (int)Math.Round(fraction * (width - 1));
             if (seen.Add(col)) yield return col;
         }
+    }
+
+    // Symmetrically pads the data range so the whiskers don't pin to the lane edges. A zero-width
+    // range (single value / all equal) is left untouched — the renderer centres it instead.
+    private static (double Min, double Max) PadAxis(double dataMin, double dataMax)
+    {
+        var range = dataMax - dataMin;
+        if (range <= 0) return (dataMin, dataMax);
+        var pad = range * AxisPaddingFraction;
+        return (dataMin - pad, dataMax + pad);
     }
 
     private static int AxisDecimals(double spanU)

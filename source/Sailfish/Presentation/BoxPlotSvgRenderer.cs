@@ -36,8 +36,15 @@ public static class BoxPlotSvgRenderer
         if (axisValuesMs.Count == 0) return string.Empty;
 
         width = Math.Max(360, width);
-        var axisMinMs = axisValuesMs.Min();
-        var axisMaxMs = axisValuesMs.Max();
+
+        // Pad the axis by 1/4 of the data range each side so whiskers float in the central ~2/3 of the
+        // plot rather than always pinning to both edges (matches AsciiBoxPlotRenderer).
+        var dataMinMs = axisValuesMs.Min();
+        var dataMaxMs = axisValuesMs.Max();
+        var dataRangeMs = dataMaxMs - dataMinMs;
+        var padMs = dataRangeMs > 0 ? dataRangeMs * 0.25 : 0;
+        var axisMinMs = dataMinMs - padMs;
+        var axisMaxMs = dataMaxMs + padMs;
         var minU = DurationFormatter.ToUnit(axisMinMs, unit);
         var maxU = DurationFormatter.ToUnit(axisMaxMs, unit);
         var spanU = maxU - minU;
