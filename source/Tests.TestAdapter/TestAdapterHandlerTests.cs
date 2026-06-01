@@ -99,6 +99,61 @@ public class TestAdapterHandlerTests
         recordResultArgs.Length.ShouldBe(1);
         var result = recordResultArgs.First() as TestResult;
         result.ShouldNotBeNull();
+        // The recorded TestResult must itself carry Outcome = Failed — recording it with the
+        // default TestOutcome.None makes Rider report "Outcome value None is not understood".
+        result.Outcome.ShouldBe(TestOutcome.Failed);
+    }
+
+    [Fact]
+    public async Task TestCaseExceptionNotificationHandler_WithNullInstanceContainer_FailsEveryCaseWithFlattenedException()
+    {
+        // Whole-class activation failure: the test instance was never built (constructor threw,
+        // a fixture failed to activate, or a constructor dependency couldn't be resolved), so the
+        // engine publishes a notification with TestInstanceContainer == null and the wrapped exception.
+        // Every test case in the group must be reported as Failed (not TestOutcome.None) with the
+        // real, innermost reason flattened into ErrorMessage.
+        var frameworkWriter = Substitute.For<ITestFrameworkWriter>();
+        var logger = Substitute.For<ILogger>();
+
+        var testCases = new[]
+        {
+            new TestCase(Some.RandomString(), TestExecutor.ExecutorUri, Some.RandomString()),
+            new TestCase(Some.RandomString(), TestExecutor.ExecutorUri, Some.RandomString()),
+            new TestCase(Some.RandomString(), TestExecutor.ExecutorUri, Some.RandomString())
+        };
+
+        // Mirror TypeActivator: the actionable cause ("Cannot reach the database...") is the
+        // InnerException of a TestClassInstantiationException-style outer message.
+        const string innerMessage = "Cannot reach the database — is it running?";
+        const string outerMessage = "Failed to resolve constructor dependencies for test class 'MyBenchmarks'.";
+        var exception = new InvalidOperationException(outerMessage, new InvalidOperationException(innerMessage));
+
+        var notification = new TestCaseExceptionNotification(null, testCases, exception);
+        var handler = new TestCaseExceptionNotificationHandler(frameworkWriter, logger);
+
+        await handler.Handle(notification, CancellationToken.None);
+
+        foreach (var testCase in testCases)
+        {
+            frameworkWriter.Received(1).RecordEnd(testCase, TestOutcome.Failed);
+        }
+
+        var recordedResults = frameworkWriter.ReceivedCalls()
+            .Where(call => call.GetMethodInfo().Name == "RecordResult")
+            .Select(call => call.GetArguments().First() as TestResult)
+            .ToList();
+
+        recordedResults.Count.ShouldBe(testCases.Length);
+        foreach (var result in recordedResults)
+        {
+            result.ShouldNotBeNull();
+            result.Outcome.ShouldBe(TestOutcome.Failed);
+            // The chain must be flattened so the user sees both the wrapper and the real cause.
+            result.ErrorMessage.ShouldNotBeNull();
+            result.ErrorMessage.ShouldContain(outerMessage);
+            result.ErrorMessage.ShouldContain(innerMessage);
+            result.ErrorStackTrace.ShouldNotBeNull();
+        }
     }
 
     [Fact]
