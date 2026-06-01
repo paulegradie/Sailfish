@@ -10,6 +10,9 @@
     "Disabled": false
   },
   "ScaleFishSettings": {},
+  "AiAnalysisSettings": {
+    "Enabled": true
+  },
   "GlobalSettings": {
     "DisableOutlierDetection": false,
     "ResultsDirectory": "SailfishIDETestOutput",
