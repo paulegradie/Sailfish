@@ -10,6 +10,7 @@ using Sailfish.Contracts.Public.Models;
 using Sailfish.Contracts.Public.Notifications;
 using Sailfish.Contracts.Public.Requests;
 using Sailfish.Contracts.Public.Serialization.Tracking.V1;
+using Sailfish.Logging;
 using Sailfish.Presentation;
 using Sailfish.Presentation.Console;
 
@@ -24,6 +25,7 @@ internal class ScaleFish : IScaleFish, IScaleFishInternal
 {
     private readonly IComplexityComputer _complexityComputer;
     private readonly IConsoleWriter _consoleWriter;
+    private readonly ILogger _logger;
     private readonly IMarkdownTableConverter _markdownTableConverter;
     private readonly IMediator _mediator;
     private readonly IRunSettings _runSettings;
@@ -32,10 +34,12 @@ internal class ScaleFish : IScaleFish, IScaleFishInternal
         IRunSettings runSettings,
         IComplexityComputer complexityComputer,
         IMarkdownTableConverter markdownTableConverter,
-        IConsoleWriter consoleWriter)
+        IConsoleWriter consoleWriter,
+        ILogger logger)
     {
         _complexityComputer = complexityComputer;
         _consoleWriter = consoleWriter;
+        _logger = logger;
         _markdownTableConverter = markdownTableConverter;
         _mediator = mediator;
         _runSettings = runSettings;
@@ -58,6 +62,19 @@ internal class ScaleFish : IScaleFish, IScaleFishInternal
         {
             var analysisResult = _complexityComputer.AnalyzeComplexityWithMeasurements(executionSummaries);
             var complexityResults = analysisResult.Classes.ToList();
+
+            // Runtime backstop for the "frozen scaling variable" trap: warn (never fail) when a
+            // scaleFish variable's fit looks ~O(1). Complements the static SF1016 analyzer by also
+            // catching indirection that static analysis can't see. Wrapped so a hint never breaks output.
+            try
+            {
+                WarnOnConstantScalingVariables(complexityResults, analysisResult.MeasurementsByPropertyKey);
+            }
+            catch (Exception ex)
+            {
+                _logger.Log(LogLevel.Debug, "ScaleFish ~O(1) backstop skipped: {0}", ex.Message);
+            }
+
             var complexityMarkdown = _markdownTableConverter.ConvertScaleFishResultToMarkdown(complexityResults);
 
             // Optional trend tracking — persist a snapshot of every fit and diff against the most-recent
@@ -112,6 +129,33 @@ internal class ScaleFish : IScaleFish, IScaleFishInternal
         catch (Exception ex)
         {
             _consoleWriter.WriteString(ex.Message);
+        }
+    }
+
+    /// <summary>
+    /// Emits a Warning-level hint for every scaleFish variable whose already-computed fit looks ~O(1).
+    /// Phrased as a question — genuinely constant work is legitimate, so this never fails the run. Reuses
+    /// the fit and the measurement vectors already on hand (no curve refitting).
+    /// </summary>
+    private void WarnOnConstantScalingVariables(
+        IReadOnlyList<ScalefishClassModel> complexityResults,
+        IReadOnlyDictionary<string, ComplexityMeasurement[]> measurementsByKey)
+    {
+        foreach (var classModel in complexityResults)
+        foreach (var methodModel in classModel.ScaleFishMethodModels)
+        foreach (var propModel in methodModel.ScaleFishPropertyModels)
+        {
+            var model = propModel.ScaleFishModel;
+            if (model?.ScaleFishModelFunction is null) continue;
+
+            // PropertyName is the "MethodName.PropertyName" key the computer used to store measurements.
+            measurementsByKey.TryGetValue(propModel.PropertyName, out var measurements);
+
+            if (!ConstantComplexityDetector.IsLikelyConstant(model, measurements)) continue;
+
+            // Report the bare variable name (drop the "Method." prefix) so the message reads naturally.
+            var variableName = propModel.PropertyName.Split('.').Last();
+            _logger.Log(LogLevel.Warning, "{0}", ConstantComplexityDetector.BuildWarningMessage(variableName, model));
         }
     }
 
