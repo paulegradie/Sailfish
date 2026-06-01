@@ -141,6 +141,45 @@ public class SailfishConsoleWindowFormatterTests
     }
 
     [Fact]
+    public void FormConsoleWindowMessageForSailfish_IncludesDistributionPlotByDefault()
+    {
+        // Arrange
+        var performanceResult = CreatePerformanceRunResult();
+        var compiledResult = CreateCompiledResultWithPerformance(performanceResult);
+        var executionSummary = CreateExecutionSummaryWithCompiledResult(compiledResult);
+        var results = new List<IClassExecutionSummary> { executionSummary };
+
+        // Act
+        var output = _formatter.FormConsoleWindowMessageForSailfish(results);
+
+        // Assert — plots default on; a box (median bar) and the legend are present.
+        output.ShouldContain("Distribution Plot");
+        output.ShouldContain("┃"); // median marker
+        output.ShouldContain("median"); // legend
+    }
+
+    [Fact]
+    public void FormConsoleWindowMessageForSailfish_WhenDistributionPlotsDisabled_OmitsPlot()
+    {
+        // Arrange
+        var runSettings = Substitute.For<IRunSettings>();
+        runSettings.EnableDistributionPlots.Returns(false);
+        var formatter = new SailfishConsoleWindowFormatter(_logger, runSettings);
+
+        var performanceResult = CreatePerformanceRunResult();
+        var compiledResult = CreateCompiledResultWithPerformance(performanceResult);
+        var executionSummary = CreateExecutionSummaryWithCompiledResult(compiledResult);
+        var results = new List<IClassExecutionSummary> { executionSummary };
+
+        // Act
+        var output = formatter.FormConsoleWindowMessageForSailfish(results);
+
+        // Assert — the statistics still render, but the plot section is gone.
+        output.ShouldContain("Descriptive Statistics");
+        output.ShouldNotContain("Distribution Plot");
+    }
+
+    [Fact]
     public void FormConsoleWindowMessageForSailfish_WithSubMicrosecondTimings_RendersMicrosecondsNotZeroMilliseconds()
     {
         // Arrange — values are in milliseconds (canonical). ~1.1 µs mean with a ~15 ns CI margin:

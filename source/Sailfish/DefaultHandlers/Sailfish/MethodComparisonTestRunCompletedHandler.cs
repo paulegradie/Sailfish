@@ -397,6 +397,9 @@ internal class MethodComparisonTestRunCompletedHandler : INotificationHandler<Te
                     sb.AppendLine($"| {method.TestCaseId?.DisplayName ?? "Unknown"} | {DurationFormatter.Format(meanTime, detailUnit, 3)} | {DurationFormatter.Format(medianTime, detailUnit, 3)} | {sampleSize} | {status} |");
                 }
                 sb.AppendLine();
+
+                // Box-and-whisker plot of every method in the group on a shared axis
+                AppendComparisonDistributionPlot(methods, sb);
             }
         }
 
@@ -428,6 +431,53 @@ internal class MethodComparisonTestRunCompletedHandler : INotificationHandler<Te
         }
 
         return sb.ToString();
+    }
+
+    /// <summary>
+    /// Appends a fenced Unicode box-and-whisker plot showing every method in the group on one shared
+    /// axis. Gated by <see cref="IRunSettings.EnableDistributionPlots"/> (default on). Best-effort —
+    /// a rendering failure must never break the markdown report.
+    /// </summary>
+    private void AppendComparisonDistributionPlot(List<CompiledTestCaseResultTrackingFormat> methods, StringBuilder sb)
+    {
+        if (!(_runSettings?.EnableDistributionPlots ?? true)) return;
+
+        try
+        {
+            var series = methods
+                .Where(m => m.PerformanceRunResult is { } pr && pr.DataWithOutliersRemoved is { Length: > 0 })
+                .Select(m =>
+                {
+                    var pr = m.PerformanceRunResult!;
+                    var outliers = (pr.UpperOutliers ?? Array.Empty<double>())
+                        .Concat(pr.LowerOutliers ?? Array.Empty<double>())
+                        .ToArray();
+                    return BoxPlotData.FromSamples(
+                        GetMethodName(m.TestCaseId?.DisplayName ?? pr.DisplayName),
+                        pr.DataWithOutliersRemoved,
+                        pr.Mean,
+                        outliers);
+                })
+                .Where(s => !s.IsEmpty)
+                .ToList();
+
+            if (series.Count == 0) return;
+
+            var unit = DurationFormatter.SelectUnit(series.SelectMany(s => new[] { s.Min, s.Max }));
+            var plot = AsciiBoxPlotRenderer.Render(series, unit);
+            if (string.IsNullOrEmpty(plot)) return;
+
+            sb.AppendLine("### Distribution");
+            sb.AppendLine();
+            sb.AppendLine("```text");
+            sb.Append(plot);
+            sb.AppendLine("```");
+            sb.AppendLine();
+        }
+        catch (Exception ex)
+        {
+            _logger.Log(LogLevel.Debug, ex, "Failed to append comparison distribution plot: {0}", ex.Message);
+        }
     }
 
     /// <summary>

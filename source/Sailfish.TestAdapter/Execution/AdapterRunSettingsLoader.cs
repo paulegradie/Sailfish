@@ -36,6 +36,12 @@ public static class AdapterRunSettingsLoader
         if (parsedSettings.SailfishSettings.TimerCalibration is not null)
             runSettingsBuilder = runSettingsBuilder.WithTimerCalibration(parsedSettings.SailfishSettings.TimerCalibration.Value);
 
+        if (parsedSettings.GlobalSettings.EnableDistributionPlots is not null)
+            runSettingsBuilder = runSettingsBuilder.WithDistributionPlots(parsedSettings.GlobalSettings.EnableDistributionPlots.Value);
+
+        if (parsedSettings.GlobalSettings.EmitDistributionHtmlReport is not null)
+            runSettingsBuilder = runSettingsBuilder.WithDistributionHtmlReport(parsedSettings.GlobalSettings.EmitDistributionHtmlReport.Value);
+
         var testSettings = MapToTestSettings(parsedSettings);
         var scaleFishSettings = MapToScaleFishSettings(parsedSettings);
         var runSettings = runSettingsBuilder

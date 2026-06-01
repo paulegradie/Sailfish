@@ -38,5 +38,28 @@ internal class SailfishWriteToMarkdownHandler : INotificationHandler<WriteToMark
             // Fallback to legacy formatting if enhanced is not implemented
             await _markdownWriter.Write(notification.ClassExecutionSummaries, filePath, cancellationToken).ConfigureAwait(false);
         }
+
+        await EmitDistributionHtmlReport(notification, outputDirectory, cancellationToken).ConfigureAwait(false);
+    }
+
+    // Optional standalone SVG distribution report, mirroring ScaleFish's EmitHtmlReport. Best-effort:
+    // a failure here must never fail the run or block the (already-written) markdown/CSV output.
+    private async Task EmitDistributionHtmlReport(WriteToMarkDownNotification notification, string outputDirectory, CancellationToken cancellationToken)
+    {
+        if (!_runSettings.EmitDistributionHtmlReport) return;
+
+        try
+        {
+            var html = PerformanceDistributionHtmlReportBuilder.Build(notification.ClassExecutionSummaries);
+            if (string.IsNullOrEmpty(html)) return;
+
+            var htmlName = DefaultFileSettings.AppendTagsToFilename(
+                $"DistributionReport_{_runSettings.TimeStamp:yyyyMMdd-HHmmss}.html", _runSettings.Tags);
+            await File.WriteAllTextAsync(Path.Combine(outputDirectory, htmlName), html, cancellationToken).ConfigureAwait(false);
+        }
+        catch
+        {
+            // best-effort: optional report
+        }
     }
 }

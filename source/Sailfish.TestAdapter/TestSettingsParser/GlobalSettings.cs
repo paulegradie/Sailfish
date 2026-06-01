@@ -15,4 +15,10 @@ public class GlobalSettings
 
     [JsonPropertyName("DisableEverything")]
     public bool DisableEverything { get; set; }
+
+    [JsonPropertyName("EnableDistributionPlots")]
+    public bool? EnableDistributionPlots { get; set; }
+
+    [JsonPropertyName("EmitDistributionHtmlReport")]
+    public bool? EmitDistributionHtmlReport { get; set; }
 }

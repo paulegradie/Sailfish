@@ -15,6 +15,7 @@ public class SailDiffUnifiedFormatter : ISailDiffUnifiedFormatter
     private readonly IImpactSummaryFormatter _impactFormatter;
     private readonly IDetailedTableFormatter _tableFormatter;
     private readonly IOutputContextAdapter _contextAdapter;
+    private readonly IDistributionPlotFormatter _distributionFormatter;
 
     /// <summary>
     /// Initializes a new instance of the SailDiffUnifiedFormatter.
@@ -22,14 +23,17 @@ public class SailDiffUnifiedFormatter : ISailDiffUnifiedFormatter
     /// <param name="impactFormatter">Formatter for creating impact summaries</param>
     /// <param name="tableFormatter">Formatter for creating detailed tables</param>
     /// <param name="contextAdapter">Adapter for context-specific formatting</param>
+    /// <param name="distributionFormatter">Formatter for the box-and-whisker distribution plot</param>
     public SailDiffUnifiedFormatter(
         IImpactSummaryFormatter impactFormatter,
         IDetailedTableFormatter tableFormatter,
-        IOutputContextAdapter contextAdapter)
+        IOutputContextAdapter contextAdapter,
+        IDistributionPlotFormatter distributionFormatter)
     {
         _impactFormatter = impactFormatter ?? throw new ArgumentNullException(nameof(impactFormatter));
         _tableFormatter = tableFormatter ?? throw new ArgumentNullException(nameof(tableFormatter));
         _contextAdapter = contextAdapter ?? throw new ArgumentNullException(nameof(contextAdapter));
+        _distributionFormatter = distributionFormatter ?? throw new ArgumentNullException(nameof(distributionFormatter));
     }
 
     /// <summary>
@@ -45,10 +49,13 @@ public class SailDiffUnifiedFormatter : ISailDiffUnifiedFormatter
         
         // Generate detailed table
         var detailedTable = _tableFormatter.CreateDetailedTable(data, context);
-        
+
+        // Generate distribution plot
+        var distributionPlot = _distributionFormatter.CreatePlot(data, context);
+
         // Adapt to context
-        var fullOutput = _contextAdapter.AdaptToContext(impactSummary, detailedTable, context, data.GroupName);
-        
+        var fullOutput = _contextAdapter.AdaptToContext(impactSummary, detailedTable, context, data.GroupName, distributionPlot);
+
         // Analyze significance
         var significance = DetermineSignificance(data.Statistics, data.Metadata.AlphaLevel);
         var percentageChange = CalculatePercentageChange(data);
@@ -58,6 +65,7 @@ public class SailDiffUnifiedFormatter : ISailDiffUnifiedFormatter
         {
             ImpactSummary = impactSummary,
             DetailedTable = detailedTable,
+            DistributionPlot = distributionPlot,
             FullOutput = fullOutput,
             Significance = significance,
             PercentageChange = Math.Abs(percentageChange),
@@ -93,12 +101,15 @@ public class SailDiffUnifiedFormatter : ISailDiffUnifiedFormatter
         // Create combined detailed table
         var detailedTable = _tableFormatter.CreateDetailedTable(comparisonList, context);
 
+        // Create combined distribution plot (one box per distinct method)
+        var distributionPlot = _distributionFormatter.CreatePlot(comparisonList, context);
+
         // Combine impact summaries based on context
         var combinedImpactSummary = CombineImpactSummaries(impactSummaries, context);
 
         // Use the first comparison's group name for context
         var groupName = comparisonList.First().GroupName;
-        var fullOutput = _contextAdapter.AdaptToContext(combinedImpactSummary, detailedTable, context, groupName);
+        var fullOutput = _contextAdapter.AdaptToContext(combinedImpactSummary, detailedTable, context, groupName, distributionPlot);
 
         // Determine overall significance (most significant change)
         var mostSignificantComparison = comparisonList
@@ -113,6 +124,7 @@ public class SailDiffUnifiedFormatter : ISailDiffUnifiedFormatter
         {
             ImpactSummary = combinedImpactSummary,
             DetailedTable = detailedTable,
+            DistributionPlot = distributionPlot,
             FullOutput = fullOutput,
             Significance = overallSignificance,
             PercentageChange = overallPercentageChange,
@@ -203,8 +215,9 @@ public static class SailDiffUnifiedFormatterFactory
         var impactFormatter = new ImpactSummaryFormatter();
         var tableFormatter = new DetailedTableFormatter();
         var contextAdapter = new OutputContextAdapter();
+        var distributionFormatter = new DistributionPlotFormatter();
 
-        return new SailDiffUnifiedFormatter(impactFormatter, tableFormatter, contextAdapter);
+        return new SailDiffUnifiedFormatter(impactFormatter, tableFormatter, contextAdapter, distributionFormatter);
     }
 }
 

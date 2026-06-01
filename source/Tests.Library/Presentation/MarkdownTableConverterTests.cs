@@ -524,6 +524,44 @@ public class MarkdownTableConverterTests
         }
 
         [Fact]
+        public void ConvertToEnhancedMarkdownTableString_IncludesFencedDistributionPlotForGroup()
+        {
+            // Arrange — two methods in one group
+            var a = CreateCompiledResult("GroupX", "AlphaMethod", mean: 100.0, median: 100.0, stdDev: 1.0, variance: 1.0, sampleSize: 10);
+            var b = CreateCompiledResult("GroupX", "BetaMethod", mean: 200.0, median: 200.0, stdDev: 2.0, variance: 4.0, sampleSize: 10);
+            var summary = CreateExecutionSummaryFromResults("TestClass1", a, b);
+
+            // Act
+            var result = _markdownTableConverter.ConvertToEnhancedMarkdownTableString(new List<IClassExecutionSummary> { summary });
+
+            // Assert — fenced box plot with both methods present
+            result.ShouldContain("**Distribution**");
+            result.ShouldContain("```text");
+            result.ShouldContain("┃"); // median marker
+            result.ShouldContain("AlphaMethod");
+            result.ShouldContain("BetaMethod");
+        }
+
+        [Fact]
+        public void ConvertToEnhancedMarkdownTableString_WhenDistributionPlotsDisabled_OmitsPlot()
+        {
+            // Arrange — converter with plots disabled via run settings
+            var runSettings = Substitute.For<IRunSettings>();
+            runSettings.EnableDistributionPlots.Returns(false);
+            var converter = new MarkdownTableConverter(_mockUnifiedFormatter, new TestManifestProvider(), runSettings);
+
+            var a = CreateCompiledResult("GroupX", "AlphaMethod", mean: 100.0, median: 100.0, stdDev: 1.0, variance: 1.0, sampleSize: 10);
+            var summary = CreateExecutionSummaryFromResults("TestClass1", a);
+
+            // Act
+            var result = converter.ConvertToEnhancedMarkdownTableString(new List<IClassExecutionSummary> { summary });
+
+            // Assert — the table still renders, but no plot block
+            result.ShouldContain("StdDev (ms");
+            result.ShouldNotContain("**Distribution**");
+        }
+
+        [Fact]
         public void ConvertToEnhancedMarkdownTableString_TableShouldIncludeSampleSizeInStdDevHeader()
         {
             // Arrange

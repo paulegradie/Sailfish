@@ -45,7 +45,9 @@ internal class RunSettings : IRunSettings
         bool enableEnvironmentHealthCheck = true,
         bool timerCalibration = true,
         int? seed = null,
-        ScaleFishSettings? scaleFishSettings = null)
+        ScaleFishSettings? scaleFishSettings = null,
+        bool enableDistributionPlots = true,
+        bool emitDistributionHtmlReport = false)
     {
         TestNames = testNames;
         LocalOutputDirectory = localOutputDirectory;
@@ -78,6 +80,8 @@ internal class RunSettings : IRunSettings
         CustomLogger = customLogger;
         EnableEnvironmentHealthCheck = enableEnvironmentHealthCheck;
         TimerCalibration = timerCalibration;
+        EnableDistributionPlots = enableDistributionPlots;
+        EmitDistributionHtmlReport = emitDistributionHtmlReport;
         MinimumLogLevel = minimumLogLevel;
     }
 
@@ -114,6 +118,8 @@ internal class RunSettings : IRunSettings
     public ILogger? CustomLogger { get; }
     public bool EnableEnvironmentHealthCheck { get; }
     public bool TimerCalibration { get; }
+    public bool EnableDistributionPlots { get; }
+    public bool EmitDistributionHtmlReport { get; }
 
     public LogLevel MinimumLogLevel { get; }
 

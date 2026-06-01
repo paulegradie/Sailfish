@@ -151,6 +151,7 @@ internal static class TestAdapterRegistrations
             services.AddTransient<Sailfish.Analysis.SailDiff.Formatting.IImpactSummaryFormatter, Sailfish.Analysis.SailDiff.Formatting.ImpactSummaryFormatter>();
             services.AddTransient<Sailfish.Analysis.SailDiff.Formatting.IDetailedTableFormatter, Sailfish.Analysis.SailDiff.Formatting.DetailedTableFormatter>();
             services.AddTransient<Sailfish.Analysis.SailDiff.Formatting.IOutputContextAdapter, Sailfish.Analysis.SailDiff.Formatting.OutputContextAdapter>();
+            services.AddTransient<Sailfish.Analysis.SailDiff.Formatting.IDistributionPlotFormatter, Sailfish.Analysis.SailDiff.Formatting.DistributionPlotFormatter>();
             services.AddTransient<Sailfish.Analysis.SailDiff.Formatting.ISailDiffUnifiedFormatter, Sailfish.Analysis.SailDiff.Formatting.SailDiffUnifiedFormatter>();
 
             services.AddTransient<ITestCompletionQueueProcessor, MethodComparisonProcessor>();

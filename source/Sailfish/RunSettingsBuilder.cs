@@ -39,6 +39,9 @@ public class RunSettingsBuilder
     private bool _enableEnvironmentHealthCheck = true;
     private bool _timerCalibration = true;
 
+    private bool _enableDistributionPlots = true;
+    private bool _emitDistributionHtmlReport;
+
 
     // Optional deterministic randomization seed for reproducible ordering
     private int? _seed;
@@ -112,6 +115,26 @@ public class RunSettingsBuilder
     public RunSettingsBuilder WithTimerCalibration(bool enable = true)
     {
         _timerCalibration = enable;
+        return this;
+    }
+
+    /// <summary>
+    ///     Enables or disables the inline Unicode box-and-whisker distribution plots that accompany the
+    ///     IDE/Markdown readouts (default: true).
+    /// </summary>
+    public RunSettingsBuilder WithDistributionPlots(bool enable = true)
+    {
+        _enableDistributionPlots = enable;
+        return this;
+    }
+
+    /// <summary>
+    ///     Enables emitting a standalone SVG distribution HTML report into the output directory
+    ///     (default: false), mirroring <see cref="WithScaleFish()"/>'s HTML report.
+    /// </summary>
+    public RunSettingsBuilder WithDistributionHtmlReport(bool emit = true)
+    {
+        _emitDistributionHtmlReport = emit;
         return this;
     }
 
@@ -358,7 +381,9 @@ public class RunSettingsBuilder
             _enableEnvironmentHealthCheck,
             _timerCalibration,
             seed: _seed,
-            scaleFishSettings: _sfSettings);
+            scaleFishSettings: _sfSettings,
+            enableDistributionPlots: _enableDistributionPlots,
+            emitDistributionHtmlReport: _emitDistributionHtmlReport);
     }
 
     private void ApplyPreset(SailfishPreset preset)

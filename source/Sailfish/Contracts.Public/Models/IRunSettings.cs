@@ -42,6 +42,12 @@ public interface IRunSettings
     // Timer calibration toggle (default: true)
     bool TimerCalibration { get; }
 
+    // Inline Unicode box-and-whisker distribution plots in IDE / Markdown output (default: true)
+    bool EnableDistributionPlots { get; }
+
+    // Emit a standalone SVG distribution HTML report alongside the run output (default: false)
+    bool EmitDistributionHtmlReport { get; }
+
     // Global adaptive sampling overrides (null = no override)
     bool? GlobalUseAdaptiveSampling { get; }
     double? GlobalTargetCoefficientOfVariation { get; }
