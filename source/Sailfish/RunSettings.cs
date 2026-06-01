@@ -4,6 +4,7 @@ using System.IO;
 using Sailfish.Analysis.SailDiff;
 using Sailfish.Analysis;
 using Sailfish.Analysis.ScaleFish;
+using Sailfish.Analysis.Ai;
 
 using Sailfish.Contracts.Public.Models;
 using Sailfish.Extensions.Types;
@@ -45,7 +46,9 @@ internal class RunSettings : IRunSettings
         bool enableEnvironmentHealthCheck = true,
         bool timerCalibration = true,
         int? seed = null,
-        ScaleFishSettings? scaleFishSettings = null)
+        ScaleFishSettings? scaleFishSettings = null,
+        bool useAiAnalysis = false,
+        AiAnalysisSettings? aiAnalysisSettings = null)
     {
         TestNames = testNames;
         LocalOutputDirectory = localOutputDirectory;
@@ -54,6 +57,8 @@ internal class RunSettings : IRunSettings
         RunScaleFish = useScaleFish;
         SailDiffSettings = sailDiffSettings;
         ScaleFishSettings = scaleFishSettings ?? new ScaleFishSettings();
+        RunAiAnalysis = useAiAnalysis;
+        AiAnalysisSettings = aiAnalysisSettings ?? new AiAnalysisSettings();
         TestLocationAnchors = testLocationAnchors;
         RegistrationProviderAnchors = registrationProviderAnchors;
         Tags = tags;
@@ -86,8 +91,10 @@ internal class RunSettings : IRunSettings
     public bool CreateTrackingFiles { get; }
     public bool RunSailDiff { get; }
     public bool RunScaleFish { get; }
+    public bool RunAiAnalysis { get; }
     public SailDiffSettings SailDiffSettings { get; }
     public ScaleFishSettings ScaleFishSettings { get; }
+    public AiAnalysisSettings AiAnalysisSettings { get; }
     public IEnumerable<Type> TestLocationAnchors { get; }
     public IEnumerable<Type> RegistrationProviderAnchors { get; }
     public OrderedDictionary Tags { get; }

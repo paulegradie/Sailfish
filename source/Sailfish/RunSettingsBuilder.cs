@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using Sailfish.Analysis.SailDiff;
 using Sailfish.Analysis;
 using Sailfish.Analysis.ScaleFish;
+using Sailfish.Analysis.Ai;
 
 using Sailfish.Contracts.Public.Models;
 using Sailfish.Extensions.Types;
@@ -32,6 +33,8 @@ public class RunSettingsBuilder
     private bool _scaleFish;
     private SailDiffSettings? _sdSettings;
     private ScaleFishSettings? _sfSettings;
+    private bool _aiAnalysis;
+    private AiAnalysisSettings? _aiSettings;
     private bool _setDebug;
     private bool _streamTrackingUpdates = true;
     private DateTime? _timeStamp;
@@ -186,6 +189,26 @@ public class RunSettingsBuilder
     {
         _scaleFish = true;
         _sfSettings = settings;
+        return this;
+    }
+
+    /// <summary>
+    ///     Enables the Skipper AI analysis layer for the current run. Requires an <c>ISailfishAgent</c> to be
+    ///     registered via <c>IRegisterSailfishServices</c>; otherwise the run proceeds completely unchanged.
+    /// </summary>
+    public RunSettingsBuilder WithAiAnalysis()
+    {
+        _aiAnalysis = true;
+        return this;
+    }
+
+    /// <summary>
+    ///     Enables the Skipper AI analysis layer with a custom <see cref="AiAnalysisSettings" /> object.
+    /// </summary>
+    public RunSettingsBuilder WithAiAnalysis(AiAnalysisSettings settings)
+    {
+        _aiAnalysis = true;
+        _aiSettings = settings;
         return this;
     }
 
@@ -358,7 +381,9 @@ public class RunSettingsBuilder
             _enableEnvironmentHealthCheck,
             _timerCalibration,
             seed: _seed,
-            scaleFishSettings: _sfSettings);
+            scaleFishSettings: _sfSettings,
+            useAiAnalysis: _aiAnalysis,
+            aiAnalysisSettings: _aiSettings);
     }
 
     private void ApplyPreset(SailfishPreset preset)
