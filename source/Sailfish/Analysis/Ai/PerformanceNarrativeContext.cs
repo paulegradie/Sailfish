@@ -9,7 +9,8 @@ namespace Sailfish.Analysis.Ai;
 /// </summary>
 public sealed record PerformanceNarrativeContext(
     IReadOnlyList<SailDiffCaseContext> Comparisons,
-    string SailDiffMarkdown);
+    string SailDiffMarkdown,
+    EnvironmentSnapshot? Environment);
 
 /// <summary>Grounded before / after figures for one test case, lifted directly from a SailDiff result.</summary>
 public sealed record SailDiffCaseContext(
@@ -25,4 +26,7 @@ public sealed record SailDiffCaseContext(
     string ChangeDescription,
     int SampleSizeBefore,
     int SampleSizeAfter,
-    bool Failed);
+    bool Failed,
+    string? EffectSizeName = null,
+    double? EffectSizeValue = null,
+    double? MinimumDetectableEffectPercent = null);
