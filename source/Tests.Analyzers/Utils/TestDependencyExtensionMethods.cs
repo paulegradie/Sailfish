@@ -147,6 +147,31 @@ public class SailfishVariableAttribute : Attribute
     }
 }
 
+[AttributeUsage(AttributeTargets.Property)]
+public class SailfishRangeVariableAttribute : Attribute
+{
+    public SailfishRangeVariableAttribute(int start, int count, int step = 1)
+    {
+        Start = start;
+        Count = count;
+        Step = step;
+    }
+
+    public SailfishRangeVariableAttribute(bool scaleFish, int start, int count, int step = 1) : this(start, count, step)
+    {
+        ScaleFish = scaleFish;
+    }
+
+    public int Start { get; }
+    public int Count { get; }
+    public int Step { get; }
+    public bool ScaleFish { get; }
+}
+
+public interface ISailfishVariables<TType, TTypeProvider>
+{
+}
+
 [AttributeUsage(AttributeTargets.Class)]
 public sealed class SuppressConsoleAttribute : Attribute
 {

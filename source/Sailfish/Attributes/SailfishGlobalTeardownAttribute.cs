@@ -3,10 +3,18 @@ using System;
 namespace Sailfish.Attributes;
 
 /// <summary>
-///     Specifies that the attributed method is responsible for Sailfish global teardown.
+///     Specifies that the attributed method runs <b>once per test class</b>, after all test cases have executed.
 /// </summary>
 /// <remarks>
-///     This attribute should be placed on a single method. Only one method is allowed per Sailfish test class.
+///     <para>
+///         This attribute should be placed on a single method. Only one method is allowed per Sailfish test class.
+///     </para>
+///     <para>
+///         Because this hook runs only once, reading a Sailfish variable here — a <see cref="SailfishVariableAttribute" />,
+///         a <see cref="SailfishRangeVariableAttribute" />, or an <c>ISailfishVariables&lt;,&gt;</c> property — resolves to a
+///         single value rather than varying per test case. Per-case teardown belongs in
+///         <see cref="SailfishMethodTeardownAttribute" />. The <c>SF1016</c> analyzer flags variable reads in this hook.
+///     </para>
 /// </remarks>
 /// <seealso href="https://paulgradie.com/Sailfish/docs/2/sailfish-lifecycle-method-attributes">
 ///     Sailfish Lifecycle Method
