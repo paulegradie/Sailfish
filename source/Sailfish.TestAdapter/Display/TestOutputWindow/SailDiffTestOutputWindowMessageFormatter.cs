@@ -137,7 +137,7 @@ internal class SailDiffTestOutputWindowMessageFormatter : ISailDiffTestOutputWin
 
         if (!isSignificant)
         {
-            return $"⚪ IMPACT: {Math.Abs(percentChange):F1}% difference (NO CHANGE)\n" + meanLine + magnitudeLine;
+            return $"⚪ IMPACT: {Math.Abs(percentChange):F1}% difference from baseline (NOT SIGNIFICANT)\n" + meanLine + magnitudeLine;
         }
 
         var isImprovement = percentChange < 0;
@@ -145,7 +145,8 @@ internal class SailDiffTestOutputWindowMessageFormatter : ISailDiffTestOutputWin
         var significance = isImprovement ? "IMPROVED" : "REGRESSED";
         var icon = isImprovement ? "🟢" : "🔴";
 
-        return $"{icon} IMPACT: {Math.Abs(percentChange):F1}% {direction} ({significance})\n" + meanLine + magnitudeLine;
+        // Before = baseline, After = the run under test; name the baseline so "slower/faster" has a referent.
+        return $"{icon} IMPACT: {Math.Abs(percentChange):F1}% {direction} than baseline ({significance})\n" + meanLine + magnitudeLine;
     }
 
     private static string BuildMagnitudeLine(StatisticalTestResult stats)

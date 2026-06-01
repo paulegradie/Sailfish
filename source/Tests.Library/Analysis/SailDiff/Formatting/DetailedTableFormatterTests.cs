@@ -135,8 +135,8 @@ public class DetailedTableFormatterTests
         var result = _formatter.CreateDetailedTable(comparisons, OutputContext.Ide);
 
         // Assert
-        result.ShouldContain("Comparing: Method1 vs Method2");
-        result.ShouldContain("Comparing: Method3 vs Method4");
+        result.ShouldContain("Comparing: Method2 vs baseline Method1");
+        result.ShouldContain("Comparing: Method4 vs baseline Method3");
     }
 
     #endregion
