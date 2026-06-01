@@ -267,8 +267,8 @@ public class MarkdownTableConverter : IMarkdownTableConverter
         }
     }
 
-    // Renders one box-and-whisker per method in the group, fenced so monospace alignment survives
-    // Markdown rendering. Gated by IRunSettings.EnableDistributionPlots (default on).
+    // Renders a shared-axis histogram (one row per method in the group), fenced so monospace alignment
+    // survives Markdown rendering. Gated by IRunSettings.EnableDistributionPlots (default on).
     private void AppendGroupDistributionPlot(IReadOnlyList<ICompiledTestCaseResult> groupResults, DurationUnit unit, StringBuilder stringBuilder)
     {
         if (!(_runSettings?.EnableDistributionPlots ?? true)) return;
@@ -278,15 +278,17 @@ public class MarkdownTableConverter : IMarkdownTableConverter
             .Select(r =>
             {
                 var pr = r.PerformanceRunResult!;
-                return BoxPlotData.FromSamples(
+                return new DistributionPlotRenderer.Series(
                     r.TestCaseId!.DisplayName,
                     pr.DataWithOutliersRemoved,
                     pr.Mean,
+                    pr.Median,
                     pr.UpperOutliers.Concat(pr.LowerOutliers).ToArray());
             })
             .ToList();
 
-        var plot = AsciiBoxPlotRenderer.Render(series, unit);
+        var style = _runSettings?.DistributionPlotStyle ?? DistributionPlotStyle.Histogram;
+        var plot = DistributionPlotRenderer.Render(series, unit, style);
         if (string.IsNullOrEmpty(plot)) return;
 
         stringBuilder.AppendLine("**Distribution**");

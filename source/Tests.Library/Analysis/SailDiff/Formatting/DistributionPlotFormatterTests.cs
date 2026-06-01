@@ -37,12 +37,13 @@ public class DistributionPlotFormatterTests
     }
 
     [Fact]
-    public void CreatePlot_Ide_IncludesPlotHeaderBoxesAndBothMethods()
+    public void CreatePlot_Ide_IncludesPlotHeaderHistogramAndBothMethods()
     {
         var output = _formatter.CreatePlot(CreateComparison(), OutputContext.Ide);
 
         output.ShouldContain("📊 DISTRIBUTION");
-        output.ShouldContain("┃");        // median marker
+        output.ShouldContain("█");                 // histogram block glyph
+        output.ShouldContain("count per bin");      // legend
         output.ShouldContain("Primary");
         output.ShouldContain("Compared");
     }
@@ -103,8 +104,8 @@ public class DistributionPlotFormatterTests
         output.ShouldContain("Tracked");
         output.ShouldContain("NoTracking");
         output.ShouldContain("Projected");
-        // "Tracked" is rendered as a single lane (its label starts a line exactly once).
-        output.Split('\n').Count(l => l.TrimStart().StartsWith("Tracked ")).ShouldBe(1);
+        // "Tracked" is shared across both comparisons but de-duplicated to a single summary row.
+        output.Split('\n').Count(l => l.Contains("Tracked") && l.Contains("n=")).ShouldBe(1);
     }
 
     [Fact]

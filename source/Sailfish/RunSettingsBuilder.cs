@@ -41,6 +41,7 @@ public class RunSettingsBuilder
 
     private bool _enableDistributionPlots = true;
     private bool _emitDistributionHtmlReport;
+    private DistributionPlotStyle _distributionPlotStyle = DistributionPlotStyle.Histogram;
 
 
     // Optional deterministic randomization seed for reproducible ordering
@@ -135,6 +136,16 @@ public class RunSettingsBuilder
     public RunSettingsBuilder WithDistributionHtmlReport(bool emit = true)
     {
         _emitDistributionHtmlReport = emit;
+        return this;
+    }
+
+    /// <summary>
+    ///     Selects the inline distribution plot style — <see cref="DistributionPlotStyle.Histogram"/>
+    ///     (default) or <see cref="DistributionPlotStyle.BoxPlot"/>.
+    /// </summary>
+    public RunSettingsBuilder WithDistributionPlotStyle(DistributionPlotStyle style)
+    {
+        _distributionPlotStyle = style;
         return this;
     }
 
@@ -383,7 +394,8 @@ public class RunSettingsBuilder
             seed: _seed,
             scaleFishSettings: _sfSettings,
             enableDistributionPlots: _enableDistributionPlots,
-            emitDistributionHtmlReport: _emitDistributionHtmlReport);
+            emitDistributionHtmlReport: _emitDistributionHtmlReport,
+            distributionPlotStyle: _distributionPlotStyle);
     }
 
     private void ApplyPreset(SailfishPreset preset)

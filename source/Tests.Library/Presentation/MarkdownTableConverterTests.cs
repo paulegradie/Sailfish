@@ -534,10 +534,10 @@ public class MarkdownTableConverterTests
             // Act
             var result = _markdownTableConverter.ConvertToEnhancedMarkdownTableString(new List<IClassExecutionSummary> { summary });
 
-            // Assert — fenced box plot with both methods present
+            // Assert — fenced histogram with both methods present
             result.ShouldContain("**Distribution**");
             result.ShouldContain("```text");
-            result.ShouldContain("┃"); // median marker
+            result.ShouldContain("█"); // histogram block glyph
             result.ShouldContain("AlphaMethod");
             result.ShouldContain("BetaMethod");
         }

@@ -38,7 +38,7 @@ public static class BoxPlotSvgRenderer
         width = Math.Max(360, width);
 
         // Pad the axis by 1/4 of the data range each side so whiskers float in the central ~2/3 of the
-        // plot rather than always pinning to both edges (matches AsciiBoxPlotRenderer).
+        // plot rather than always pinning to both edges.
         var dataMinMs = axisValuesMs.Min();
         var dataMaxMs = axisValuesMs.Max();
         var dataRangeMs = dataMaxMs - dataMinMs;

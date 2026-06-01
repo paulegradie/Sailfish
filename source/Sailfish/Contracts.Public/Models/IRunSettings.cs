@@ -42,8 +42,11 @@ public interface IRunSettings
     // Timer calibration toggle (default: true)
     bool TimerCalibration { get; }
 
-    // Inline Unicode box-and-whisker distribution plots in IDE / Markdown output (default: true)
+    // Inline Unicode distribution plots in IDE / Markdown output (default: true)
     bool EnableDistributionPlots { get; }
+
+    // Which inline distribution plot to render — histogram (default) or box-and-whisker
+    Sailfish.Presentation.DistributionPlotStyle DistributionPlotStyle { get; }
 
     // Emit a standalone SVG distribution HTML report alongside the run output (default: false)
     bool EmitDistributionHtmlReport { get; }

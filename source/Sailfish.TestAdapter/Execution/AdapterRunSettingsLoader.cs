@@ -39,6 +39,10 @@ public static class AdapterRunSettingsLoader
         if (parsedSettings.GlobalSettings.EnableDistributionPlots is not null)
             runSettingsBuilder = runSettingsBuilder.WithDistributionPlots(parsedSettings.GlobalSettings.EnableDistributionPlots.Value);
 
+        if (!string.IsNullOrWhiteSpace(parsedSettings.GlobalSettings.DistributionPlotStyle)
+            && System.Enum.TryParse<Sailfish.Presentation.DistributionPlotStyle>(parsedSettings.GlobalSettings.DistributionPlotStyle, ignoreCase: true, out var plotStyle))
+            runSettingsBuilder = runSettingsBuilder.WithDistributionPlotStyle(plotStyle);
+
         if (parsedSettings.GlobalSettings.EmitDistributionHtmlReport is not null)
             runSettingsBuilder = runSettingsBuilder.WithDistributionHtmlReport(parsedSettings.GlobalSettings.EmitDistributionHtmlReport.Value);
 

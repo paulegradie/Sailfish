@@ -452,19 +452,21 @@ internal class MethodComparisonTestRunCompletedHandler : INotificationHandler<Te
                     var outliers = (pr.UpperOutliers ?? Array.Empty<double>())
                         .Concat(pr.LowerOutliers ?? Array.Empty<double>())
                         .ToArray();
-                    return BoxPlotData.FromSamples(
+                    return new DistributionPlotRenderer.Series(
                         GetMethodName(m.TestCaseId?.DisplayName ?? pr.DisplayName),
                         pr.DataWithOutliersRemoved,
                         pr.Mean,
+                        pr.Median,
                         outliers);
                 })
-                .Where(s => !s.IsEmpty)
+                .Where(s => s.Samples is { Count: > 0 })
                 .ToList();
 
             if (series.Count == 0) return;
 
-            var unit = DurationFormatter.SelectUnit(series.SelectMany(s => new[] { s.Min, s.Max }));
-            var plot = AsciiBoxPlotRenderer.Render(series, unit);
+            var unit = DurationFormatter.SelectUnit(series.SelectMany(s => s.Samples));
+            var style = _runSettings?.DistributionPlotStyle ?? DistributionPlotStyle.Histogram;
+            var plot = DistributionPlotRenderer.Render(series, unit, style);
             if (string.IsNullOrEmpty(plot)) return;
 
             sb.AppendLine("### Distribution");

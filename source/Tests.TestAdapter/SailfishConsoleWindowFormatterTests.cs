@@ -152,10 +152,31 @@ public class SailfishConsoleWindowFormatterTests
         // Act
         var output = _formatter.FormConsoleWindowMessageForSailfish(results);
 
-        // Assert — plots default on; a box (median bar) and the legend are present.
+        // Assert — plots default on; a histogram and the legend are present.
         output.ShouldContain("Distribution Plot");
-        output.ShouldContain("┃"); // median marker
-        output.ShouldContain("median"); // legend
+        output.ShouldContain("█"); // histogram block glyph
+        output.ShouldContain("count per bin"); // legend
+    }
+
+    [Fact]
+    public void FormConsoleWindowMessageForSailfish_PlotAppearsUnderDescriptiveStatsBeforeRawData()
+    {
+        var performanceResult = CreatePerformanceRunResult();
+        var compiledResult = CreateCompiledResultWithPerformance(performanceResult);
+        var executionSummary = CreateExecutionSummaryWithCompiledResult(compiledResult);
+        var results = new List<IClassExecutionSummary> { executionSummary };
+
+        var output = _formatter.FormConsoleWindowMessageForSailfish(results);
+
+        var stats = output.IndexOf("Descriptive Statistics", StringComparison.Ordinal);
+        var plot = output.IndexOf("Distribution Plot", StringComparison.Ordinal);
+        var outliers = output.IndexOf("Outliers Removed", StringComparison.Ordinal);
+        var rawDist = output.IndexOf("Distribution (", StringComparison.Ordinal);
+
+        stats.ShouldBeGreaterThanOrEqualTo(0);
+        plot.ShouldBeGreaterThan(stats);      // plot sits under Descriptive Statistics
+        outliers.ShouldBeGreaterThan(plot);   // raw outlier dump moved below the plot
+        rawDist.ShouldBeGreaterThan(plot);    // raw distribution dump moved below the plot
     }
 
     [Fact]

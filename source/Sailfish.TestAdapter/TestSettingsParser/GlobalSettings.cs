@@ -19,6 +19,10 @@ public class GlobalSettings
     [JsonPropertyName("EnableDistributionPlots")]
     public bool? EnableDistributionPlots { get; set; }
 
+    // "Histogram" (default) or "BoxPlot"
+    [JsonPropertyName("DistributionPlotStyle")]
+    public string? DistributionPlotStyle { get; set; }
+
     [JsonPropertyName("EmitDistributionHtmlReport")]
     public bool? EmitDistributionHtmlReport { get; set; }
 }

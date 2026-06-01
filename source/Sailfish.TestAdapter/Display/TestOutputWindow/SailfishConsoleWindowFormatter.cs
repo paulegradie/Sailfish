@@ -138,6 +138,31 @@ internal class SailfishConsoleWindowFormatter : ISailfishConsoleWindowFormatter
             ["Stat", $" Time ({unitLabel})"],
             x => x.Name, x => x.Item));
 
+        // distribution plot (histogram) — sits directly under Descriptive Statistics; the raw outlier
+        // and distribution dumps follow below.
+        if ((_runSettings?.EnableDistributionPlots ?? true) && hasClean)
+        {
+            var series = new[]
+            {
+                new DistributionPlotRenderer.Series(
+                    string.Empty,
+                    results.DataWithOutliersRemoved,
+                    results.Mean,
+                    results.Median,
+                    results.UpperOutliers.Concat(results.LowerOutliers).ToArray())
+            };
+            var style = _runSettings?.DistributionPlotStyle ?? DistributionPlotStyle.Histogram;
+            var plot = DistributionPlotRenderer.Render(series, unit, style);
+            if (!string.IsNullOrEmpty(plot))
+            {
+                stringBuilder.AppendLine();
+                const string textLinePlot = "Distribution Plot";
+                stringBuilder.AppendLine(textLinePlot);
+                stringBuilder.AppendLine(new string('-', textLinePlot.Length));
+                stringBuilder.Append(plot);
+            }
+        }
+
         // outliers section
         stringBuilder.AppendLine();
         var textLineOutliers = $"Outliers Removed ({testCaseResult.PerformanceRunResult.TotalNumOutliers})";
@@ -156,31 +181,12 @@ internal class SailfishConsoleWindowFormatter : ISailfishConsoleWindowFormatter
                                          testCaseResult.PerformanceRunResult.LowerOutliers
                                              .Select(x => DurationFormatter.Format(x, unit, DecimalsInUnit))));
 
-        // distribution
+        // distribution (raw cleaned samples)
         var textLineDist = $"Distribution ({unitLabel})";
         stringBuilder.AppendLine();
         stringBuilder.AppendLine(textLineDist);
         stringBuilder.AppendLine(new string('-', textLineDist.Length));
         stringBuilder.AppendLine(string.Join(", ", results.DataWithOutliersRemoved.Select(x => DurationFormatter.Format(x, unit, DecimalsInUnit))));
-
-        // box-and-whisker plot of the cleaned distribution (reuses the unit picked above)
-        if ((_runSettings?.EnableDistributionPlots ?? true) && hasClean)
-        {
-            var series = BoxPlotData.FromSamples(
-                string.Empty,
-                results.DataWithOutliersRemoved,
-                results.Mean,
-                results.UpperOutliers.Concat(results.LowerOutliers).ToArray());
-            var plot = AsciiBoxPlotRenderer.Render(new[] { series }, unit);
-            if (!string.IsNullOrEmpty(plot))
-            {
-                stringBuilder.AppendLine();
-                const string textLinePlot = "Distribution Plot";
-                stringBuilder.AppendLine(textLinePlot);
-                stringBuilder.AppendLine(new string('-', textLinePlot.Length));
-                stringBuilder.Append(plot);
-            }
-        }
 
         // validation warnings (if any)
         if (results.Validation?.HasWarnings == true)
