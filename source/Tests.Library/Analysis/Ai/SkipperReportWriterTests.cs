@@ -26,7 +26,7 @@ public class SkipperReportWriterTests
                 "summary",
                 "# Skipper Report\n\nParseHeaders regressed — regex compiled in loop (Parser.cs:88).");
 
-            await writer.WriteAsync(review, CancellationToken.None);
+            await writer.WriteAsync(review, "saildiff", CancellationToken.None);
 
             var file = Directory.GetFiles(dir, "skipper-report_*.md").ShouldHaveSingleItem();
             (await File.ReadAllTextAsync(file)).ShouldContain("Parser.cs:88");
@@ -47,7 +47,7 @@ public class SkipperReportWriterTests
             var writer = new SkipperReportWriter(settings);
             var review = SkipperReview.Empty with { ConsoleSummary = "summary only" };
 
-            await writer.WriteAsync(review, CancellationToken.None);
+            await writer.WriteAsync(review, "saildiff", CancellationToken.None);
 
             Directory.GetFiles(dir, "skipper-report_*.md").ShouldBeEmpty();
         }

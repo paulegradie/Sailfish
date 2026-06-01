@@ -143,6 +143,7 @@ internal static class SailfishModuleRegistrations
         services.AddTransient<ISkipperReportWriter, SkipperReportWriter>();
         services.AddTransient<ISkipperResponseCache, FileSkipperResponseCache>();
         services.AddTransient<ISkipperConsoleFormatter, SkipperConsoleFormatter>();
+        services.AddTransient<ISkipperAnalysisRunner, SkipperAnalysisRunner>();
 
         return services;
     }
