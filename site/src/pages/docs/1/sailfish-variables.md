@@ -457,3 +457,7 @@ When using ScaleFish:
 
 `SailfishRangeVariable` also has a ScaleFish overload — `(bool scaleFish, int start, int count, int step = 1)`.
 {% /callout %}
+
+{% callout title="Build variable-dependent input in MethodSetup, not GlobalSetup" type="warning" %}
+A frequent cause of a ScaleFish fit that collapses to ~`O(1)` is building the variable-dependent input inside `[SailfishGlobalSetup]`. GlobalSetup runs **once** for the whole class, and the field/property state it produces is captured and replayed onto every test case — so the input is frozen at the first variable value while the variable property keeps advancing. Build the scaling input in `[SailfishMethodSetup]` instead, which runs once per variable set. The `SF1016` analyzer flags this at compile time. See [The Sailfish Test Lifecycle](/docs/1/sailfish-test-lifecycle) for the full mechanism.
+{% /callout %}

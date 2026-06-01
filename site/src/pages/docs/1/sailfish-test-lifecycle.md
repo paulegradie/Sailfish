@@ -96,6 +96,27 @@ public Task ShareFixture(CancellationToken ct) => InitializeOnce(ct);
 
 When multiple test cases are created for a class, distinct instances of the class are created. Properties and Fields that are set in the global lifecycle methods must therefore be cloned to new instances that do not execute the global lifecycle method.
 
+> ⚠️ **Do not build `[SailfishVariable]`-dependent state in `[SailfishGlobalSetup]`.**
+>
+> `GlobalSetup` runs **once** for the whole class — only for the first variable set. The field/property state it produces is captured and then *replayed* onto every later test-case instance, while the `[SailfishVariable]` property itself is re-injected per case. So any field you derive from a variable inside `GlobalSetup` is silently **frozen at its first value**: every test case measures the same input size, and `ScaleFish` fits ~`O(1)` no matter how the variable scales.
+>
+> Build variable-dependent state in **`[SailfishMethodSetup]`** instead — it runs once per variable set, after injection and after the replay. The `SF1016` analyzer flags variable reads inside `[SailfishGlobalSetup]`/`[SailfishGlobalTeardown]`.
+>
+> ```csharp
+> [SailfishVariable(scaleFish: true, 100, 1_000, 10_000)]
+> public int N { get; set; }
+>
+> private int[] _buffer = [];
+>
+> // ❌ frozen at N = 100 for every case
+> [SailfishGlobalSetup]
+> public void GlobalSetup() => _buffer = new int[N];
+>
+> // ✅ rebuilt for each value of N
+> [SailfishMethodSetup]
+> public void MethodSetup() => _buffer = new int[N];
+> ```
+
 The following modifiers are allowed when creating a property or field where the data is a set during lifecycle invocation:
 
 ### Properties
