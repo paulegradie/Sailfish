@@ -37,6 +37,27 @@ public class MyRegistration : IRegisterSailfishServices
 
 That's it. With no agent registered, `.WithAiAnalysis()` is a no-op — the feature stays completely invisible.
 
+### In a test project (`dotnet test` / Test Explorer)
+
+When you run `[Sailfish]` tests through the VS Test Adapter instead of the programmatic `SailfishRunner`, there's no builder to call — the adapter loads its configuration from a **`.sailfish.json`** file at (or above) your test directory. Turn Skipper on there:
+
+```json
+{
+  "AiAnalysisSettings": {
+    "Enabled": true
+  }
+}
+```
+
+Then register your agent from an `IRegisterSailfishServices` provider in the test project (exactly as shown above) — the adapter discovers it automatically. Optional keys mirror the programmatic settings: `WriteReviewArtifact`, `EmitConsoleSummary`, `UseResponseCache`. Without a registered agent, enabling this is a harmless no-op.
+
+### Working examples in the repo
+
+A complete, runnable reference ships in the repo. `ClaudeAgentModelProvider` (a reference agent that drives the local `claude` CLI with read-only tools) is registered two ways:
+
+- **Test Adapter path** — the `PerformanceTests` project registers it in its `RegistrationProvider` and enables Skipper via `.sailfish.json`. Run a single benchmark test to see it (the agent is invoked once per analyzed comparison, so target one test rather than the whole suite).
+- **Programmatic path** — `ConsoleAppDemo` reuses the same provider and enables Skipper with `.WithAiAnalysis()`.
+
 ## The one interface you implement
 
 ```csharp

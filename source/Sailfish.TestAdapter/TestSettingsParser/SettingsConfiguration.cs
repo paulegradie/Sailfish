@@ -8,6 +8,8 @@ public class SettingsConfiguration
 
     public ScaleFishSettings ScaleFishSettings { get; set; } = new();
 
+    public AiAnalysisSettings AiAnalysisSettings { get; set; } = new();
+
     public GlobalSettings GlobalSettings { get; set; } = new();
 
     public TrawlSettings TrawlSettings { get; set; } = new();
