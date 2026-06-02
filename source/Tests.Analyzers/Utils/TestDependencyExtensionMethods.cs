@@ -64,6 +64,17 @@ public sealed class SailfishAttribute : Attribute
     public int NumWarmupIterations { get; set; }
     public bool Disabled { get; set; }
     public bool DisableComparison { get; set; }
+    public SailfishLifetime Lifetime { get; set; } = SailfishLifetime.SharedInstance;
+}
+
+public enum SailfishLifetime
+{
+    SharedInstance = 0,
+    PerCase = 1
+}
+
+public sealed class TestCaseId
+{
 }
 
 [AttributeUsage(AttributeTargets.Method, Inherited = false, AllowMultiple = false)]

@@ -51,7 +51,7 @@ public class TestInstanceContainerProviderTests
 
         // Will be called to create the instance
         typeActivator.CreateDehydratedTestInstance(typeof(ProviderTestClass), Arg.Any<TestCaseId>(), Arg.Any<bool>())
-            .Returns(ci => new ProviderTestClass());
+            .Returns(ci => new TestInstanceActivation(new ProviderTestClass(), null));
 
         var containers = provider.ProvideNextTestCaseEnumeratorForClass().ToList();
 
@@ -79,7 +79,7 @@ public class TestInstanceContainerProviderTests
             {
                 var inst = new ProviderTestClass();
                 capturedInstance = inst;
-                return inst;
+                return new TestInstanceActivation(inst, null);
             });
 
         var containers = provider.ProvideNextTestCaseEnumeratorForClass().ToList();
@@ -98,7 +98,7 @@ public class TestInstanceContainerProviderTests
         var provider = new TestInstanceContainerProvider(runSettings, typeActivator, typeof(DisabledClass), [], method);
 
         typeActivator.CreateDehydratedTestInstance(typeof(DisabledClass), Arg.Any<TestCaseId>(), Arg.Any<bool>())
-            .Returns(ci => new DisabledClass());
+            .Returns(ci => new TestInstanceActivation(new DisabledClass(), null));
 
         var container = provider.ProvideNextTestCaseEnumeratorForClass().Single();
         container.Disabled.ShouldBeTrue();

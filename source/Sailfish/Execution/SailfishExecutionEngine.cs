@@ -1,11 +1,11 @@
 using System;
 using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using MediatR;
+using Microsoft.Extensions.DependencyInjection;
 using Sailfish.Attributes;
 using Sailfish.Contracts.Public.Models;
 using Sailfish.Contracts.Public.Notifications;
@@ -15,26 +15,37 @@ using Sailfish.Extensions.Methods;
 using Sailfish.Logging;
 using Sailfish.Presentation;
 using Sailfish.Presentation.Console;
-using Sailfish.Utils;
 
 namespace Sailfish.Execution;
 
 internal interface ISailfishExecutionEngine
 {
     Task<List<TestCaseExecutionResult>> ActivateContainer(
-        int testProviderIndex,
-        int totalTestProviderCount,
         ITestInstanceContainerProvider testProvider,
-        IExecutionState executionState,
-        string providerPropertiesCacheKey,
         CancellationToken cancellationToken = default);
 
     Task<List<TestCaseExecutionResult>> ActivateContainer(
-        int testProviderIndex,
-        int totalTestProviderCount,
         ITestInstanceContainerProvider testProvider,
-        IExecutionState executionState,
-        string providerPropertiesCacheKey,
+        List<dynamic> testCaseGroup,
+        CancellationToken cancellationToken = default);
+
+    /// <summary>
+    ///     Runs one provider (one <c>[SailfishMethod]</c>) for a class.
+    /// </summary>
+    /// <param name="providerIndex">0-based index of this provider among the class's providers.</param>
+    /// <param name="providerCount">Total number of providers for the class.</param>
+    /// <param name="sharedInstance">
+    ///     Non-null for <see cref="SailfishLifetime.SharedInstance" />: the one class-level instance every case
+    ///     reuses. GlobalSetup runs once on the first provider, GlobalTeardown once on the last provider; the engine
+    ///     does not create or dispose instances. Null for <see cref="SailfishLifetime.PerCase" />: a fresh instance
+    ///     per case, with GlobalSetup/GlobalTeardown and disposal per case. The caller owns the shared instance's
+    ///     lifetime (creation and disposal).
+    /// </param>
+    Task<List<TestCaseExecutionResult>> ActivateContainer(
+        int providerIndex,
+        int providerCount,
+        ITestInstanceContainerProvider testProvider,
+        TestInstanceActivation? sharedInstance,
         List<dynamic> testCaseGroup,
         CancellationToken cancellationToken = default);
 }
@@ -67,54 +78,30 @@ internal class SailfishExecutionEngine : ISailfishExecutionEngine
         _testCaseIterator = testCaseIterator;
     }
 
-    public async Task<List<TestCaseExecutionResult>> ActivateContainer(
-        [Range(1, int.MaxValue)] int testProviderIndex,
-        [Range(1, int.MaxValue)] int totalTestProviderCount,
+    public Task<List<TestCaseExecutionResult>> ActivateContainer(
         ITestInstanceContainerProvider testProvider,
-        IExecutionState executionState,
-        string providerPropertiesCacheKey,
         CancellationToken cancellationToken = default)
-    {
-        return await ActivateContainer(
-            testProviderIndex,
-            totalTestProviderCount,
-            testProvider,
-            executionState,
-            providerPropertiesCacheKey,
-            [],
-            cancellationToken);
-    }
+        => ActivateContainer(0, 1, testProvider, null, [], cancellationToken);
 
-    /// <summary>
-    ///     This method is the main entry point for execution in both the main library, as well as the test adapter
-    ///     A test instance container is basically a single SailfishMethod from a Sailfish test type. The property
-    ///     matrix is provided to each test instance container, and each container will produce as many instances
-    ///     as are specified by the property tensor
-    /// </summary>
-    /// <param name="testProviderIndex"></param>
-    /// <param name="totalTestProviderCount"></param>
-    /// <param name="testProvider"></param>
-    /// <param name="executionState"></param>
-    /// <param name="providerPropertiesCacheKey"></param>
-    /// <param name="testCaseGroup"></param>
-    /// <param name="cancellationToken"></param>
-    /// <returns></returns>
-    public async Task<List<TestCaseExecutionResult>> ActivateContainer(
-        [Range(1, int.MaxValue)] int testProviderIndex,
-        [Range(1, int.MaxValue)] int totalTestProviderCount,
+    public Task<List<TestCaseExecutionResult>> ActivateContainer(
         ITestInstanceContainerProvider testProvider,
-        IExecutionState executionState,
-        string providerPropertiesCacheKey,
+        List<dynamic> testCaseGroup,
+        CancellationToken cancellationToken = default)
+        => ActivateContainer(0, 1, testProvider, null, testCaseGroup, cancellationToken);
+
+    public async Task<List<TestCaseExecutionResult>> ActivateContainer(
+        int providerIndex,
+        int providerCount,
+        ITestInstanceContainerProvider testProvider,
+        TestInstanceActivation? sharedInstance,
         List<dynamic> testCaseGroup,
         CancellationToken cancellationToken = default)
     {
-        if (testProviderIndex > totalTestProviderCount)
-            throw new SailfishException(
-                $"The test provider index {testProviderIndex} cannot be greater than total test provider count {totalTestProviderCount}");
+        var shared = sharedInstance is not null;
+        var isFirstProvider = providerIndex <= 0;
+        var isLastProvider = providerIndex >= providerCount - 1;
 
-        var currentVariableSetIndex = 0;
-        var totalNumVariableSets = Math.Max(testProvider.GetNumberOfPropertySetsInTheQueue() - 1, 0);
-        var testCaseEnumerator = testProvider.ProvideNextTestCaseEnumeratorForClass().GetEnumerator();
+        var testCaseEnumerator = testProvider.ProvideNextTestCaseEnumeratorForClass(sharedInstance?.Instance).GetEnumerator();
 
         try
         {
@@ -127,7 +114,7 @@ internal class SailfishExecutionEngine : ISailfishExecutionEngine
             await _mediator.Publish(
                 new TestCaseExceptionNotification(currentInstance?.ToExternal(), testCaseGroup, ex),
                 cancellationToken);
-            await DisposeOfTestInstance(currentInstance);
+            if (!shared) await DisposeOfTestInstance(currentInstance);
             testCaseEnumerator.Dispose();
             var msg = $"Error resolving test from {testProvider.Test.FullName}";
             _logger.Log(LogLevel.Fatal, ex, msg);
@@ -149,8 +136,27 @@ internal class SailfishExecutionEngine : ISailfishExecutionEngine
             await _mediator.Publish(
                 new TestCaseDisabledNotification(testCaseEnumerator.Current.ToExternal(), testCaseGroup, true),
                 cancellationToken);
+            if (!shared) await DisposeOfTestInstance(testCaseEnumerator.Current);
             testCaseEnumerator.Dispose();
             return results;
+        }
+
+        // SharedInstance: GlobalSetup runs ONCE for the class (first provider only), on the shared instance.
+        // The first case's CoreInvoker is bound to that shared instance; reuse it for GlobalSetup, and keep a
+        // reference so GlobalTeardown can run after the loop on the last provider.
+        var sharedInvoker = shared ? testCaseEnumerator.Current.CoreInvoker : null;
+        if (shared && isFirstProvider)
+        {
+            try
+            {
+                await testCaseEnumerator.Current.CoreInvoker.GlobalSetup(cancellationToken);
+            }
+            catch (Exception ex)
+            {
+                var failure = await CatchAndReturn(ex, testCaseEnumerator.Current, testCaseGroup, cancellationToken);
+                testCaseEnumerator.Dispose();
+                return failure;
+            }
         }
 
         do
@@ -158,40 +164,29 @@ internal class SailfishExecutionEngine : ISailfishExecutionEngine
             var testCase = testCaseEnumerator.Current;
             try
             {
-                if (!testCase.Disabled && executionState.Contains(providerPropertiesCacheKey))
-                {
-                    var savedState = executionState.GetState(providerPropertiesCacheKey);
-                    savedState?.ApplyPropertiesAndFieldsTo(testCase.Instance);
-                }
-
-                await _mediator.Publish(new TestCaseStartedNotification(testCase.ToExternal(), testCaseGroup), cancellationToken);
-                _testCaseCountPrinter.PrintCaseUpdate(testCase.TestCaseId.DisplayName);
-
-                if (ShouldCallGlobalSetup(testProviderIndex, currentVariableSetIndex))
-                {
-                    try
-                    {
-                        await testCase.CoreInvoker.GlobalSetup(cancellationToken);
-                        if (!testCase.Disabled)
-                        {
-                            executionState.SetState(providerPropertiesCacheKey, testCase.Instance.RetrievePropertiesAndFields());
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        return await CatchAndReturn(ex, testCase, testCaseGroup, cancellationToken);
-                    }
-                }
-
                 if (testCase.Disabled)
                 {
                     await _mediator.Publish(
                         new TestCaseDisabledNotification(testCase.ToExternal(), testCaseGroup, false),
                         cancellationToken);
-
-                    currentVariableSetIndex += 1;
-                    await TryMoveNextOrThrow(testCaseEnumerator, testCaseGroup, cancellationToken);
                     continue;
+                }
+
+                await _mediator.Publish(new TestCaseStartedNotification(testCase.ToExternal(), testCaseGroup), cancellationToken);
+                _testCaseCountPrinter.PrintCaseUpdate(testCase.TestCaseId.DisplayName);
+
+                // PerCase: GlobalSetup runs on every fresh instance (after its variables are injected, so
+                // variable-derived state is correct per case). SharedInstance: it already ran once above.
+                if (!shared)
+                {
+                    try
+                    {
+                        await testCase.CoreInvoker.GlobalSetup(cancellationToken);
+                    }
+                    catch (Exception ex)
+                    {
+                        return await CatchAndReturn(ex, testCase, testCaseGroup, cancellationToken);
+                    }
                 }
 
                 try
@@ -205,7 +200,6 @@ internal class SailfishExecutionEngine : ISailfishExecutionEngine
 
                 var executionResult = await IterateOverVariableCombos(testCase, testCaseGroup, cancellationToken);
 
-                // TODO: Allow users to force method teardown on failure
                 if (!executionResult.IsSuccess) return [executionResult];
 
                 try
@@ -217,17 +211,18 @@ internal class SailfishExecutionEngine : ISailfishExecutionEngine
                     return await CatchAndReturn(ex, testCase, testCaseGroup, cancellationToken);
                 }
 
-                if (ShouldCallGlobalTeardown(testProviderIndex, totalTestProviderCount, currentVariableSetIndex,
-                        totalNumVariableSets))
+                // PerCase: GlobalTeardown per case. SharedInstance: deferred to after the loop (last provider).
+                if (!shared)
+                {
                     try
                     {
                         await testCase.CoreInvoker.GlobalTeardown(cancellationToken);
-                        if (!testCase.Disabled) executionState.RemoveState(providerPropertiesCacheKey);
                     }
                     catch (Exception ex)
                     {
                         return await CatchAndReturn(ex, testCase, testCaseGroup, cancellationToken);
                     }
+                }
 
                 var testCaseSummary = _classExecutionSummaryCompiler.CompileToSummaries([
                     new TestClassResultGroup(
@@ -237,19 +232,34 @@ internal class SailfishExecutionEngine : ISailfishExecutionEngine
                 await _mediator.Publish(new TestClassCompletedNotification(testCaseSummary.ToTrackingFormat().Single(), testCase.ToExternal(), testCaseGroup), cancellationToken);
 
                 results.Add(executionResult);
-
-                if (ShouldDisposeOfInstance(currentVariableSetIndex, totalNumVariableSets)) await DisposeOfTestInstance(testCase);
-
-                currentVariableSetIndex += 1;
             }
             catch (Exception ex)
             {
                 var errorResult = new TestCaseExecutionResult(testCase, ex);
                 results.Add(errorResult);
             }
+            finally
+            {
+                // PerCase: dispose each fresh instance + its scope. SharedInstance: the caller owns the shared
+                // instance's lifetime, so the engine never disposes it here.
+                if (!shared) await DisposeOfTestInstance(testCase);
+            }
         } while (await TryMoveNextOrThrow(testCaseEnumerator, testCaseGroup, cancellationToken));
 
         testCaseEnumerator.Dispose();
+
+        // SharedInstance: GlobalTeardown runs ONCE for the class (last provider only), on the shared instance.
+        if (shared && isLastProvider && sharedInvoker is not null)
+        {
+            try
+            {
+                await sharedInvoker.GlobalTeardown(cancellationToken);
+            }
+            catch (Exception ex)
+            {
+                results.Add(new TestCaseExecutionResult(ex));
+            }
+        }
 
         return results;
     }
@@ -268,7 +278,6 @@ internal class SailfishExecutionEngine : ISailfishExecutionEngine
         {
             var currentInstance = TryGetCurrent(instanceContainerEnumerator);
             await _mediator.Publish(new TestCaseExceptionNotification(currentInstance?.ToExternal(), testCaseGroup, ex), ct);
-            await DisposeOfTestInstance(currentInstance);
             continueIterating = true;
             _consoleWriter.WriteString(ex.Message);
         }
@@ -357,24 +366,10 @@ internal class SailfishExecutionEngine : ISailfishExecutionEngine
         return methodDisabled || classDisabled;
     }
 
-    private static bool ShouldCallGlobalTeardown(int methodIndex, int totalMethodCount, int currentVariableSetIndex,
-        int totalNumVariableSets)
-    {
-        return methodIndex == totalMethodCount && currentVariableSetIndex == totalNumVariableSets;
-    }
-
-    private static bool ShouldDisposeOfInstance(int currentVariableSetIndex, int totalNumVariableSets)
-    {
-        return currentVariableSetIndex == totalNumVariableSets;
-    }
-
-    private static bool ShouldCallGlobalSetup(int testProviderIndex, int currentTestProviderIndex)
-    {
-        return testProviderIndex == 0 && currentTestProviderIndex == 0;
-    }
-
     private static async Task DisposeOfTestInstance(TestInstanceContainer? instanceContainer)
     {
+        // Dispose the instance first so it can still use its scoped dependencies during teardown, then dispose
+        // the per-case DI scope (which disposes any scoped/transient dependencies resolved for this case).
         switch (instanceContainer?.Instance)
         {
             case IAsyncDisposable asyncDisposable:
@@ -391,6 +386,17 @@ internal class SailfishExecutionEngine : ISailfishExecutionEngine
 
                     break;
                 }
+        }
+
+        switch (instanceContainer?.ServiceScope)
+        {
+            case IAsyncDisposable asyncDisposableScope:
+                await asyncDisposableScope.DisposeAsync();
+                break;
+
+            case IDisposable disposableScope:
+                disposableScope.Dispose();
+                break;
         }
     }
 }
