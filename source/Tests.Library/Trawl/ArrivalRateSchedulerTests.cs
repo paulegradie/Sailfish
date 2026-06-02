@@ -66,4 +66,21 @@ public class ArrivalRateSchedulerTests
         sw.Elapsed.ShouldBeLessThan(TimeSpan.FromSeconds(3));
         data.ShouldNotBeNull();
     }
+
+    [Fact]
+    public async Task HungScenario_IsAbandonedAfterDrainGrace_RatherThanBlockingForever()
+    {
+        var scheduler = new ArrivalRateScheduler();
+        // Each request ignores cancellation and runs far longer than the run window + drain grace; once
+        // maxInFlight requests are stuck the drain must give up after the grace instead of waiting on them.
+        Func<CancellationToken, ValueTask> invoke = async _ => await Task.Delay(TimeSpan.FromSeconds(30), CancellationToken.None);
+
+        var sw = Stopwatch.StartNew();
+        var data = await scheduler.RunAsync(invoke, requestsPerSecond: 50, TimeSpan.FromMilliseconds(150),
+            maxInFlight: 4, record: true, CancellationToken.None, drainTimeout: TimeSpan.FromMilliseconds(300));
+        sw.Stop();
+
+        sw.Elapsed.ShouldBeLessThan(TimeSpan.FromSeconds(3));
+        data.ShouldNotBeNull();
+    }
 }
