@@ -36,6 +36,16 @@ public sealed record TrawlResult
 
     /// <summary>Latency distribution summary (milliseconds).</summary>
     public LatencyStats Latency { get; init; } = LatencyStats.Empty;
+
+    /// <summary>
+    ///     A (possibly down-sampled) sample of per-request latencies in milliseconds, retained for the
+    ///     distribution plot and for downstream statistical comparison. The summary percentiles in
+    ///     <see cref="Latency" /> are computed from the full sample set; this array may be capped.
+    /// </summary>
+    public double[] LatencySamplesMs { get; init; } = Array.Empty<double>();
+
+    /// <summary>Per-second throughput and tail latency over the run, or null if not captured.</summary>
+    public TrawlTimeSeries? TimeSeries { get; init; }
 }
 
 /// <summary>
@@ -69,4 +79,32 @@ public sealed record LatencyStats
 
     /// <summary>An all-zero instance, used before a run has produced measurements.</summary>
     public static LatencyStats Empty => new();
+}
+
+/// <summary>
+///     Per-second time-series for a Trawl run: throughput and tail latency bucketed by whole-second offset
+///     from the start of the measured window.
+/// </summary>
+public sealed record TrawlTimeSeries
+{
+    /// <summary>Whole-second offsets from the start of the measured window (0, 1, 2, ...).</summary>
+    public double[] SecondOffsets { get; init; } = Array.Empty<double>();
+
+    /// <summary>Completed requests in each one-second bucket (i.e. throughput for that second).</summary>
+    public double[] RequestsPerSecond { get; init; } = Array.Empty<double>();
+
+    /// <summary>p99 latency (ms) within each one-second bucket.</summary>
+    public double[] P99Ms { get; init; } = Array.Empty<double>();
+
+    public static TrawlTimeSeries Empty => new();
+}
+
+/// <summary>
+///     A persisted Trawl run: a <see cref="TrawlResult" /> plus the wall-clock timestamp it was captured at.
+///     Written to the tracking directory as JSON and read back by regression analysis.
+/// </summary>
+public sealed record TrawlRunRecord
+{
+    public DateTime TimestampUtc { get; init; }
+    public TrawlResult Result { get; init; } = new();
 }
