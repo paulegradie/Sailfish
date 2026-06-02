@@ -23,13 +23,21 @@ namespace Sailfish.Execution;
 /// </summary>
 internal sealed class ArrivalRateScheduler
 {
+    /// <summary>
+    ///     How long the post-run drain waits for in-flight requests to finish before abandoning them. A
+    ///     scenario that hangs and ignores cancellation must not hang the whole run forever; this bounds the
+    ///     worst case to (run duration + this grace).
+    /// </summary>
+    private static readonly TimeSpan DefaultDrainGrace = TimeSpan.FromSeconds(30);
+
     public async Task<LoadRunData> RunAsync(
         Func<CancellationToken, ValueTask> invoke,
         double requestsPerSecond,
         TimeSpan duration,
         int maxInFlight,
         bool record,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken,
+        TimeSpan? drainTimeout = null)
     {
         if (invoke is null) throw new ArgumentNullException(nameof(invoke));
         if (requestsPerSecond <= 0) requestsPerSecond = 1;
@@ -59,14 +67,23 @@ internal sealed class ArrivalRateScheduler
             await PaceUntilAsync(scheduledTimestamp, frequency, cancellationToken).ConfigureAwait(false);
             if (cancellationToken.IsCancellationRequested) break;
 
+            // Acquire an in-flight slot, but bound the wait by the time left until the deadline: under
+            // sustained overload every slot can be occupied, and an unbounded wait here would block dispatch
+            // (and the whole run) past the run duration — indefinitely if a request hangs. If no slot frees
+            // before the deadline, the run is over, so stop dispatching.
+            var remainingToDeadline = TimeSpan.FromSeconds((deadlineTimestamp - Stopwatch.GetTimestamp()) / frequency);
+            if (remainingToDeadline <= TimeSpan.Zero) break;
+            bool acquiredSlot;
             try
             {
-                await inFlight.WaitAsync(cancellationToken).ConfigureAwait(false);
+                acquiredSlot = await inFlight.WaitAsync(remainingToDeadline, cancellationToken).ConfigureAwait(false);
             }
             catch (OperationCanceledException)
             {
                 break;
             }
+
+            if (!acquiredSlot) break; // deadline reached while saturated
 
             var scheduled = scheduledTimestamp;
             _ = Task.Run(async () =>
@@ -96,9 +113,23 @@ internal sealed class ArrivalRateScheduler
             index++;
         }
 
-        // Drain: acquiring every permit can only succeed once all in-flight requests have released theirs.
-        for (var i = 0; i < maxInFlight; i++)
-            await inFlight.WaitAsync(CancellationToken.None).ConfigureAwait(false);
+        // Drain (bounded): acquiring every permit can only succeed once all in-flight requests have released
+        // theirs. A SUT that hangs and ignores cancellation must not hang the whole run forever, so we wait at
+        // most the drain grace and then abandon any stragglers. We dispose the semaphore only after a *full*
+        // drain — if we abandoned stragglers, one may still Release() it later, so disposing would risk an
+        // ObjectDisposedException on that abandoned task.
+        var grace = drainTimeout ?? DefaultDrainGrace;
+        var graceDeadline = Stopwatch.GetTimestamp() + (long)(Math.Max(0, grace.TotalSeconds) * frequency);
+        var acquired = 0;
+        while (acquired < maxInFlight)
+        {
+            var remaining = TimeSpan.FromSeconds((graceDeadline - Stopwatch.GetTimestamp()) / frequency);
+            if (remaining <= TimeSpan.Zero) break;
+            if (!await inFlight.WaitAsync(remaining, CancellationToken.None).ConfigureAwait(false)) break;
+            acquired++;
+        }
+
+        if (acquired == maxInFlight) inFlight.Dispose();
 
         var elapsedTimestamp = Stopwatch.GetTimestamp() - runStartTimestamp;
         var elapsed = TimeSpan.FromSeconds((double)elapsedTimestamp / frequency);

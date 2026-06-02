@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -63,12 +64,20 @@ internal sealed class LoadRunData
 /// </summary>
 internal sealed class ClosedModelScheduler
 {
+    /// <summary>
+    ///     How long to wait, beyond the run duration, for workers to finish before abandoning them. A scenario
+    ///     invocation that hangs (ignoring cancellation) would otherwise block the whole run forever; this
+    ///     bounds the worst case to (run duration + this grace).
+    /// </summary>
+    private static readonly TimeSpan DefaultDrainGrace = TimeSpan.FromSeconds(30);
+
     public async Task<LoadRunData> RunAsync(
         Func<CancellationToken, ValueTask> invoke,
         int virtualUsers,
         TimeSpan duration,
         bool record,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken,
+        TimeSpan? drainTimeout = null)
     {
         if (invoke is null) throw new ArgumentNullException(nameof(invoke));
         if (virtualUsers < 1) virtualUsers = 1;
@@ -84,7 +93,7 @@ internal sealed class ClosedModelScheduler
             workers[i] = Task.Run(() => RunWorkerAsync(invoke, deadlineTimestamp, record, cancellationToken), CancellationToken.None);
         }
 
-        var workerResults = await Task.WhenAll(workers).ConfigureAwait(false);
+        var workerResults = await DrainWorkersAsync(workers, duration, drainTimeout ?? DefaultDrainGrace).ConfigureAwait(false);
 
         var elapsedTimestamp = Stopwatch.GetTimestamp() - runStartTimestamp;
         var elapsed = TimeSpan.FromSeconds((double)elapsedTimestamp / Stopwatch.Frequency);
@@ -141,6 +150,30 @@ internal sealed class ClosedModelScheduler
         }
 
         return new WorkerResult(samples ?? (IReadOnlyList<RequestSample>)Array.Empty<RequestSample>(), success, errors);
+    }
+
+    /// <summary>
+    ///     Awaits the virtual-user workers, but only up to the run duration plus a drain grace. Workers
+    ///     normally self-terminate at the deadline, so this completes promptly; if a scenario invocation hangs
+    ///     (ignoring cancellation) the budget elapses and we return the results of the workers that finished,
+    ///     abandoning the stuck ones rather than blocking the whole run forever.
+    /// </summary>
+    private static async Task<WorkerResult[]> DrainWorkersAsync(Task<WorkerResult>[] workers, TimeSpan duration, TimeSpan grace)
+    {
+        var all = Task.WhenAll(workers);
+        var budget = (duration > TimeSpan.Zero ? duration : TimeSpan.Zero) + grace;
+
+        using var graceCts = new CancellationTokenSource();
+        var finished = await Task.WhenAny(all, Task.Delay(budget, graceCts.Token)).ConfigureAwait(false);
+        if (finished == all)
+        {
+            graceCts.Cancel(); // release the pending timer
+            return await all.ConfigureAwait(false);
+        }
+
+        // Grace elapsed with workers still running — collect what completed, abandon the rest. RunWorkerAsync
+        // never throws, so a still-running worker is genuinely stuck rather than faulted.
+        return workers.Where(w => w.IsCompletedSuccessfully).Select(w => w.Result).ToArray();
     }
 
     private readonly struct WorkerResult

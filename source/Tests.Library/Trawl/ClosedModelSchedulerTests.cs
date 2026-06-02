@@ -93,4 +93,21 @@ public class ClosedModelSchedulerTests
         sw.Elapsed.ShouldBeLessThan(TimeSpan.FromSeconds(3));
         data.ShouldNotBeNull();
     }
+
+    [Fact]
+    public async Task HungScenario_IsAbandonedAfterDrainGrace_RatherThanBlockingForever()
+    {
+        var scheduler = new ClosedModelScheduler();
+        // Ignores cancellation and runs far longer than the run window + drain grace.
+        Func<CancellationToken, ValueTask> invoke = async _ => await Task.Delay(TimeSpan.FromSeconds(30), CancellationToken.None);
+
+        var sw = Stopwatch.StartNew();
+        var data = await scheduler.RunAsync(invoke, virtualUsers: 3, TimeSpan.FromMilliseconds(150),
+            record: true, CancellationToken.None, drainTimeout: TimeSpan.FromMilliseconds(300));
+        sw.Stop();
+
+        // run window (~150ms) + drain grace (~300ms) + slack — nowhere near the 30s hung invocation.
+        sw.Elapsed.ShouldBeLessThan(TimeSpan.FromSeconds(3));
+        data.ShouldNotBeNull();
+    }
 }
