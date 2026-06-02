@@ -16,7 +16,10 @@ public sealed record TrawlResult
     /// <summary>The load model that was applied.</summary>
     public LoadModel Model { get; init; }
 
-    /// <summary>The number of concurrent virtual users used (closed model).</summary>
+    /// <summary>
+    ///     The configured virtual-user count: the number of concurrent users in the closed model, or the
+    ///     cap on concurrent in-flight requests (connection-pool size) in the open model.
+    /// </summary>
     public int VirtualUsers { get; init; }
 
     /// <summary>The measured (post-warmup) wall-clock duration of the run.</summary>
