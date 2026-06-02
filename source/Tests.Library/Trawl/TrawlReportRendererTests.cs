@@ -20,7 +20,7 @@ public class TrawlReportRendererTests
         TotalErrors = 6,
         RequestsPerSecond = 100,
         ErrorRate = 0.02,
-        Latency = new LatencyStats { Min = 1, Mean = 6, P50 = 5, P90 = 12, P95 = 18, P99 = 40, Max = 80 },
+        Latency = new LatencyStats { Min = 1, Mean = 6, P50 = 5, P75 = 8, P90 = 12, P95 = 18, P99 = 40, Max = 80 },
         LatencySamplesMs = new[] { 1.0, 2, 3, 5, 8, 12, 18, 40, 80 },
         TimeSeries = new TrawlTimeSeries
         {
@@ -37,6 +37,7 @@ public class TrawlReportRendererTests
 
         report.ShouldContain("Trawl — My.Load(scenario: 1)");
         report.ShouldContain("req/s");
+        report.ShouldContain("p75"); // the p75 percentile is now surfaced in the table
         report.ShouldContain("p99");
         report.ShouldContain("Throughput/s");
     }

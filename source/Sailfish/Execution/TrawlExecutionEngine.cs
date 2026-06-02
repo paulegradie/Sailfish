@@ -164,7 +164,7 @@ internal sealed class TrawlExecutionEngine
         var stats = LatencyStatsCalculator.Compute(latenciesMs);
         var throughput = runData.Elapsed.TotalSeconds > 0 ? totalRequests / runData.Elapsed.TotalSeconds : 0;
         var errorRate = totalRequests > 0 ? (double)runData.ErrorCount / totalRequests : 0;
-        var timeSeries = TrawlTimeSeriesCalculator.Compute(runData.Samples, runData.RunStartTimestamp, frequency);
+        var timeSeries = TrawlTimeSeriesCalculator.Compute(runData.Samples, runData.RunStartTimestamp, frequency, runData.Elapsed.TotalSeconds);
 
         var trawlResult = new TrawlResult
         {
@@ -234,13 +234,21 @@ internal sealed class TrawlExecutionEngine
         }
     }
 
+    /// <summary>
+    ///     Uniform down-sampling stride so that at most <see cref="MaxInjectedSamples" /> items survive.
+    ///     Shared by <see cref="Downsample" /> and <see cref="InjectSamples" /> so the persisted/plotted sample
+    ///     set and the timer-injected set stay in lockstep.
+    /// </summary>
+    private static int DownsampleStride(int count)
+        => count > MaxInjectedSamples ? (int)Math.Ceiling(count / (double)MaxInjectedSamples) : 1;
+
     /// <summary>Caps the latency sample array for plotting/persistence via uniform stride down-sampling.</summary>
     private static double[] Downsample(double[] all)
     {
         var count = all.Length;
         if (count <= MaxInjectedSamples) return all;
 
-        var stride = (int)Math.Ceiling(count / (double)MaxInjectedSamples);
+        var stride = DownsampleStride(count);
         var size = (count + stride - 1) / stride;
         var result = new double[size];
         var j = 0;
@@ -260,7 +268,7 @@ internal sealed class TrawlExecutionEngine
         var count = samples.Count;
         if (count == 0) return;
 
-        var stride = count > MaxInjectedSamples ? (int)Math.Ceiling(count / (double)MaxInjectedSamples) : 1;
+        var stride = DownsampleStride(count);
         for (var i = 0; i < count; i += stride)
         {
             var sample = samples[i];
