@@ -62,10 +62,9 @@ internal class TestListValidator : ITestListValidator
 
     private static bool TypeHasMoreThanZeroExecutionMethods(Type type)
     {
-        return type
-            .GetMethodsWithAttribute<SailfishMethodAttribute>()
-            .ToArray()
-            .Length > 0;
+        // A runnable execution method is either a [SailfishMethod] microbenchmark or a [Trawl] load scenario.
+        return type.GetMethodsWithAttribute<SailfishMethodAttribute>().Any()
+            || type.GetMethodsWithAttribute<TrawlAttribute>().Any();
     }
 
     private static bool TestsAreRequestedButFailedToDisambiguate(

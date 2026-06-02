@@ -88,9 +88,7 @@ public static class DiscoveryAnalysisMethods
                         .OfType<MethodDeclarationSyntax>()
                         .Where(method => method.AttributeLists
                             .SelectMany(attrList => attrList.Attributes)
-                            .Any(attr =>
-                                attr.Name.ToString() == methodAttributePrefix
-                                || attr.Name.ToString() == $"{methodAttributePrefix}Attribute"));
+                            .Any(attr => IsRunnableMethodAttribute(attr.Name.ToString(), methodAttributePrefix)));
 
                     // var className = classDeclaration.Identifier.ValueText;
                     var classFullName = RetrieveClassFullName(classDeclaration);
@@ -108,7 +106,7 @@ public static class DiscoveryAnalysisMethods
                             from methodDeclaration in methodDeclarations
                             let lineSpan = syntaxTree.GetLineSpan(methodDeclaration.Span)
                             let lineNumber = lineSpan.StartLinePosition.Line + 1
-                            let comparisonGroup = ExtractComparisonInfo(methodDeclaration, classFullName, classDisablesComparison)
+                            let comparisonGroup = IsTrawlMethod(methodDeclaration) ? null : ExtractComparisonInfo(methodDeclaration, classFullName, classDisablesComparison)
                             select new MethodMetaData(
                                 methodDeclaration.Identifier.ValueText,
                                 lineNumber,
@@ -122,6 +120,25 @@ public static class DiscoveryAnalysisMethods
 
         if (!result.IsCompleted) throw new TestAdapterException("Exception encountered while reading and parsing source files");
         return classMetas;
+    }
+
+    /// <summary>
+    /// Both [SailfishMethod] microbenchmarks and [Trawl] load scenarios are runnable test cases that the
+    /// adapter should surface to VSTest.
+    /// </summary>
+    private static bool IsRunnableMethodAttribute(string attributeName, string methodAttributePrefix)
+    {
+        return attributeName == methodAttributePrefix
+               || attributeName == $"{methodAttributePrefix}Attribute"
+               || attributeName == "Trawl"
+               || attributeName == "TrawlAttribute";
+    }
+
+    private static bool IsTrawlMethod(MethodDeclarationSyntax method)
+    {
+        return method.AttributeLists
+            .SelectMany(attrList => attrList.Attributes)
+            .Any(attr => attr.Name.ToString() == "Trawl" || attr.Name.ToString() == "TrawlAttribute");
     }
 
     private static string RetrieveClassFullName(ClassDeclarationSyntax classDeclarationSyntax)

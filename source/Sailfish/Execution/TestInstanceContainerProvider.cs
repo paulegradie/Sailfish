@@ -97,11 +97,20 @@ internal class TestInstanceContainerProvider : ITestInstanceContainerProvider
         }
     }
 
-    private static bool TestIsDisabled(MemberInfo test, MemberInfo method)
+    private bool TestIsDisabled(MemberInfo test, MemberInfo method)
     {
         var typeIsDisabled = test.GetCustomAttributes<SailfishAttribute>().Single().Disabled;
-        var methodIsDisabled = method.GetCustomAttributes<SailfishMethodAttribute>().Single().Disabled;
-        return methodIsDisabled || typeIsDisabled;
+
+        // A method is either a [SailfishMethod] microbenchmark or a [Trawl] load scenario (SF1022 forbids
+        // both), so use SingleOrDefault and consider whichever is present.
+        var sailfishMethod = method.GetCustomAttributes<SailfishMethodAttribute>().SingleOrDefault();
+        var trawl = method.GetCustomAttributes<TrawlAttribute>().SingleOrDefault();
+        var methodIsDisabled = (sailfishMethod?.Disabled ?? false) || (trawl?.Disabled ?? false);
+
+        // Run-wide kill switch: a globally disabled Trawl skips load scenarios but leaves benchmarks alone.
+        var trawlGloballyDisabled = trawl is not null && _runSettings.TrawlSettings.Disabled;
+
+        return typeIsDisabled || methodIsDisabled || trawlGloballyDisabled;
     }
 
     private static void HydrateInstanceTestProperties(object obj, PropertySet propertySet)

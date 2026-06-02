@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
+using Sailfish.Attributes;
 using Sailfish.Contracts.Public.Models;
 using Sailfish.Execution.Tuning;
 using Sailfish.Logging;
@@ -41,6 +43,15 @@ internal class TestCaseIterator : ITestCaseIterator
         bool disableOverheadEstimation,
         CancellationToken cancellationToken)
     {
+        // Load scenarios ([Trawl]) run concurrently for a duration rather than as sequential timed
+        // iterations, so they bypass warmup, overhead calibration, and the iteration strategy entirely.
+        var trawlAttribute = testInstanceContainer.ExecutionMethod.GetCustomAttribute<TrawlAttribute>();
+        if (trawlAttribute is not null)
+        {
+            var trawlEngine = new TrawlExecutionEngine(_logger, _runSettings);
+            return await trawlEngine.RunAsync(testInstanceContainer, trawlAttribute, cancellationToken).ConfigureAwait(false);
+        }
+
         var calibrator = new HarnessBaselineCalibrator();
         var warmupResult = await WarmupIterations(testInstanceContainer, cancellationToken);
         if (!warmupResult.IsSuccess) return warmupResult;

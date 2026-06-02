@@ -78,6 +78,15 @@ var settings = RunSettingsBuilder
     .Build();
 ```
 
+## What you get today
+
+Run a `[Trawl]` scenario (via `dotnet test`, the IDE, or the programmatic runner) and Sailfish executes the **closed model**: the configured number of virtual users hammer the scenario concurrently for the duration, after an unmeasured warmup. Each successful request's latency is recorded; failures are counted toward the error rate. Sailfish reports:
+
+- **Throughput** (requests/second) and **error rate**
+- **Latency percentiles** — p50/p90/p95/p99 and max — computed from the *full* sample set with **no outlier removal** (the slow tail is the point of a load test)
+
+The latency distribution flows through Sailfish's normal output, so a load case shows up like any other test case. A scenario with zero successful requests fails the case.
+
 ## Status
 
-Trawl is being delivered in phases. This release establishes the public surface — the `[Trawl]` attribute, `TrawlSettings`, the `TrawlResult` shape, and the SF1022 analyzer. The concurrent execution engine, reporting/plots, SailDiff regression gating, and ScaleFish saturation analysis land in subsequent releases.
+Trawl is being delivered in phases. Shipping now: the public surface (`[Trawl]`, `TrawlSettings`, `TrawlResult`, SF1022) and the **closed-model execution engine**. Still landing in subsequent releases: the open (arrival-rate) model with load profiles and coordinated-omission correction, dedicated reporting/plots and result persistence, SailDiff regression gating, and ScaleFish saturation analysis.
