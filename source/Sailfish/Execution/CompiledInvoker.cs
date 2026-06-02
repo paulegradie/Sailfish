@@ -9,7 +9,7 @@ namespace Sailfish.Execution;
 
 /// <summary>
 ///     Builds a compiled, allocation-free delegate that invokes a Sailfish benchmark method
-///     <b>directly</b> — no <see cref="MethodInfo.Invoke" /> per call — normalizing every supported
+///     <b>directly</b> — no <c>MethodInfo.Invoke</c> per call — normalizing every supported
 ///     return shape (<c>void</c>, <see cref="Task" />, <c>Task&lt;T&gt;</c>, <see cref="ValueTask" />,
 ///     <c>ValueTask&lt;T&gt;</c>) to a single <see cref="Func{CancellationToken, ValueTask}" /> shape.
 ///     <para>

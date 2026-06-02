@@ -99,6 +99,7 @@ public sealed record TrawlTimeSeries
     /// <summary>p99 latency (ms) within each one-second bucket.</summary>
     public double[] P99Ms { get; init; } = Array.Empty<double>();
 
+    /// <summary>An empty instance (all arrays zero-length), used when no time series was captured.</summary>
     public static TrawlTimeSeries Empty => new();
 }
 
@@ -108,6 +109,9 @@ public sealed record TrawlTimeSeries
 /// </summary>
 public sealed record TrawlRunRecord
 {
+    /// <summary>UTC wall-clock time at which this run was captured and persisted.</summary>
     public DateTime TimestampUtc { get; init; }
+
+    /// <summary>The captured run summary.</summary>
     public TrawlResult Result { get; init; } = new();
 }

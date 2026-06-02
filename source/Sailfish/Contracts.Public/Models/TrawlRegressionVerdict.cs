@@ -22,6 +22,7 @@ public enum TrawlRegressionOutcome
 /// </summary>
 public sealed record TrawlRegressionVerdict
 {
+    /// <summary>The categorical outcome of the comparison (improved / regressed / not significant / inconclusive).</summary>
     public TrawlRegressionOutcome Outcome { get; init; }
 
     /// <summary>Percentage change in mean latency vs baseline; positive means slower (a regression).</summary>

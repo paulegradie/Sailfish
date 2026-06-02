@@ -11,6 +11,14 @@
         <TargetFrameworks>net9.0;net10.0</TargetFrameworks>
         <LangVersion>latest</LangVersion>
         <Nullable>enable</Nullable>
+        <!-- Emit the XML documentation file and pack it alongside the DLL so the /// summaries on our
+             public API (Trawl attributes/settings, the RunSettings builder, the public contracts, ...)
+             surface in consumers' IntelliSense. Without this, none of those comments ever reach a package
+             consumer. CS1591 ("missing XML comment for publicly visible type or member") is suppressed
+             repo-wide: we document the public surface incrementally and do not gate the build on full
+             coverage. The XML still ships docs for every member that IS documented. -->
+        <GenerateDocumentationFile>true</GenerateDocumentationFile>
+        <NoWarn>$(NoWarn);CS1591</NoWarn>
         <IsPackable>true</IsPackable>
         <DebugSymbols>True</DebugSymbols>
         <DebugType>Embedded</DebugType>

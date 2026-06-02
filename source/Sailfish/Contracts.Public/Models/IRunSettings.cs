@@ -23,7 +23,11 @@ public interface IRunSettings
     ScaleFishSettings ScaleFishSettings { get; }
     AiAnalysisSettings AiAnalysisSettings { get; }
 
-    // Trawl (load testing) global settings/overrides for [Trawl] load scenarios
+    /// <summary>
+    ///     Run-wide Trawl (load testing) settings and overrides applied to every <c>[Trawl]</c> load
+    ///     scenario in the run (kill switch, virtual-user / duration / warmup overrides, the regression
+    ///     gate, and run retention). See <see cref="Sailfish.Trawl.TrawlSettings" />.
+    /// </summary>
     TrawlSettings TrawlSettings { get; }
     IEnumerable<Type> TestLocationAnchors { get; }
     IEnumerable<Type> RegistrationProviderAnchors { get; }
