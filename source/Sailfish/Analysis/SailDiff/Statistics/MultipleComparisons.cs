@@ -82,7 +82,7 @@ namespace Sailfish.Analysis.SailDiff.Statistics
         /// <summary>
         /// Compute a ratio-based effect size and CI using a log-normal (delta-method) approximation.
         /// ratio = meanB / meanA. CI computed on log scale using SEs, then exponentiated.
-        /// If inputs are degenerate (means <= 0 or SEs not available), returns ratio with null CI.
+        /// If inputs are degenerate (means &lt;= 0 or SEs not available), returns ratio with null CI.
         /// </summary>
         public static (double Ratio, double? Lower, double? Upper) ComputeRatioCi(
             double meanA, double seA, int nA,

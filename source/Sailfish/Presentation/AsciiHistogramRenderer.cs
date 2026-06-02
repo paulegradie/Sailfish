@@ -38,6 +38,7 @@ public static class AsciiHistogramRenderer
     /// <param name="unit">Display unit; samples (ms) are converted to it for the axis and labels.</param>
     /// <param name="measure">Axis title prefix, e.g. "Time" → "Time (ms)".</param>
     /// <param name="plotWidth">Width of the plot area in characters.</param>
+    /// <param name="bins">Number of histogram bins the value range is divided into.</param>
     public static string Render(IReadOnlyList<DistributionData> distributions, DurationUnit unit, string measure = "Time", int plotWidth = DefaultPlotWidth, int bins = 12)
     {
         if (distributions is null) return string.Empty;

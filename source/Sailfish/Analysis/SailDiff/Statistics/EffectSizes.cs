@@ -16,8 +16,8 @@ namespace Sailfish.Analysis.SailDiff.Statistics;
 /// both the significance decision <em>and</em> the magnitude band the user sees.
 /// </para>
 /// <para>
-/// References: Hedges & Olkin (1985) for Hedges' g; Cliff (1993) and Romano et al. (2006)
-/// for Cliff's delta variance; Hollander, Wolfe & Chicken §4.2 for the Hodges-Lehmann
+/// References: Hedges &amp; Olkin (1985) for Hedges' g; Cliff (1993) and Romano et al. (2006)
+/// for Cliff's delta variance; Hollander, Wolfe &amp; Chicken §4.2 for the Hodges-Lehmann
 /// estimator and its distribution-free CI.
 /// </para>
 /// </remarks>
@@ -120,7 +120,7 @@ internal static class EffectSizes
     /// </summary>
     /// <remarks>
     /// CI uses the distribution-free formula based on the rank-sum critical value
-    /// (Hollander, Wolfe & Chicken §4.2, "Estimation Associated with the Wilcoxon Rank Sum
+    /// (Hollander, Wolfe &amp; Chicken §4.2, "Estimation Associated with the Wilcoxon Rank Sum
     /// Test"): the kth and (n1·n2 − k + 1)th smallest pairwise differences, where k is
     /// chosen so the CI's coverage is at least <c>1 − alpha</c>. The exact k comes from
     /// the rank-sum critical value at α/2.

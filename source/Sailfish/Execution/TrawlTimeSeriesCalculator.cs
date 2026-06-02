@@ -11,6 +11,9 @@ namespace Sailfish.Execution;
 /// </summary>
 internal static class TrawlTimeSeriesCalculator
 {
+    /// <param name="samples">The per-request latency samples captured during the measured window.</param>
+    /// <param name="runStartTimestamp">Stopwatch timestamp marking the start of the measured window.</param>
+    /// <param name="frequency">Stopwatch tick frequency (ticks per second), used to convert raw timestamps to seconds.</param>
     /// <param name="measuredSeconds">
     ///     The measured window's total duration in seconds. When provided (&gt; 0) and the run's final whole
     ///     second is a partial second, that last bucket's count is scaled up to a per-second rate so the

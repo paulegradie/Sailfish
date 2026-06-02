@@ -22,8 +22,6 @@ public sealed class SailfishMethodAttribute : Attribute
     /// <summary>
     ///     Initializes a new instance of the <see cref="SailfishMethodAttribute" /> class.
     /// </summary>
-    /// <param name="disabled">Whether or not to ignore the given test method</param>
-    /// <param name="disableComplexity">Whether or not to disable complexity analysis for this method</param>
     public SailfishMethodAttribute()
     {
     }

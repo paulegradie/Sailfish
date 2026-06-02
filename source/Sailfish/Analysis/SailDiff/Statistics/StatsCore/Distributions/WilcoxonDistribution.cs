@@ -19,7 +19,7 @@ namespace Sailfish.Analysis.SailDiff.Statistics.StatsCore.Distributions;
 /// </para>
 /// <para>
 /// <strong>Discrete CDF convention.</strong> Both
-/// <see cref="DistributionFunction"/> and <see cref="ComplementaryDistributionFunction"/>
+/// <c>DistributionFunction</c> and <c>ComplementaryDistributionFunction</c>
 /// include the queried point: <c>F(w) = P(W+ ≤ w)</c> and <c>F_c(w) = P(W+ ≥ w)</c>.
 /// Together they sum to <c>1 + P(W+ = w)</c>, not 1 — the same convention used by
 /// <see cref="MannWhitneyDistribution"/> so the signed-rank wrapper's two-tailed p-value

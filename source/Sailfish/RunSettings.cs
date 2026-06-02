@@ -133,6 +133,7 @@ internal class RunSettings : IRunSettings
     public bool EnableDistributionPlots { get; }
     public bool EmitDistributionHtmlReport { get; }
     public DistributionPlotStyle DistributionPlotStyle { get; }
+    /// <inheritdoc />
     public TrawlSettings TrawlSettings { get; }
 
     public LogLevel MinimumLogLevel { get; }
