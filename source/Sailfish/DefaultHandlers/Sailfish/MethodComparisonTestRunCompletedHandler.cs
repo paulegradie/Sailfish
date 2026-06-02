@@ -345,61 +345,36 @@ internal class MethodComparisonTestRunCompletedHandler : INotificationHandler<Te
                     continue;
                 }
 
-                // Determine baselines (zero, one, or — incorrectly — many).
-                var baselines = members
-                    .Where(m => GetComparisonInfoForResult(m.TestResult, m.TestClass).IsBaseline)
-                    .Select(m => m.TestResult)
+                // Compare only WITHIN the same variable set (same problem size). Pairing across different
+                // SailfishVariable values mixes problem sizes and is meaningless, so each distinct variable
+                // set is rendered as its own comparison block — which also lets a scaled baseline resolve
+                // to exactly one case per size instead of tripping the ">1 baseline" N×N fallback.
+                // A single-variable-set group (the common case) renders exactly one block, unchanged.
+                var testClass = group.Key.TestClass;
+                var cohorts = methods
+                    .GroupBy(m => GetVariableSection(m.TestCaseId?.DisplayName ?? string.Empty), StringComparer.Ordinal)
+                    .OrderBy(c => c.Key, StringComparer.Ordinal)
                     .ToList();
 
-                string comparisonContent;
-                string sectionHeader;
-                if (baselines.Count == 1)
+                if (cohorts.Count <= 1)
                 {
-                    sectionHeader = "### Baseline Comparison";
-                    comparisonContent = CreateBaselineComparisonTable(baselines[0], methods);
+                    RenderComparisonCohort(methods, testClass, displayGroupName, sb);
                 }
                 else
                 {
-                    if (baselines.Count > 1)
+                    foreach (var cohort in cohorts)
                     {
-                        _logger.Log(LogLevel.Warning,
-                            "Comparison group {0} in class '{1}' has {2} methods marked IsBaseline=true; expected at most one. " +
-                            "Falling back to N×N comparison. The SF1301 analyzer should catch this at build time.",
-                            displayGroupName, className, baselines.Count);
+                        var cohortMethods = cohort.ToList();
+                        if (cohortMethods.Count < 2)
+                        {
+                            continue; // a lone case at this problem size has nothing to compare against
+                        }
+
+                        sb.AppendLine($"### Variables: {(string.IsNullOrEmpty(cohort.Key) ? "(none)" : cohort.Key)}");
+                        sb.AppendLine();
+                        RenderComparisonCohort(cohortMethods, testClass, displayGroupName, sb);
                     }
-                    sectionHeader = "### Performance Comparison Matrix";
-                    comparisonContent = CreateNxNComparisonMatrix(methods);
                 }
-
-                if (!string.IsNullOrEmpty(comparisonContent))
-                {
-                    sb.AppendLine(sectionHeader);
-                    sb.AppendLine();
-                    sb.AppendLine(comparisonContent);
-                    sb.AppendLine();
-                }
-
-                // Add detailed results table
-                sb.AppendLine("### Detailed Results");
-                sb.AppendLine();
-                var detailUnit = DurationFormatter.SelectUnit(methods.SelectMany(m => new[] { m.PerformanceRunResult?.Mean ?? 0, m.PerformanceRunResult?.Median ?? 0 }));
-                var detailUnitLabel = DurationFormatter.UnitLabel(detailUnit);
-                sb.AppendLine($"| Method | Mean Time ({detailUnitLabel}) | Median Time ({detailUnitLabel}) | Sample Size | Status |");
-                sb.AppendLine("|--------|-----------|-------------|-------------|--------|");
-
-                foreach (var method in methods.OrderBy(m => m.PerformanceRunResult?.Mean ?? double.MaxValue))
-                {
-                    var meanTime = method.PerformanceRunResult?.Mean ?? 0;
-                    var medianTime = method.PerformanceRunResult?.Median ?? 0;
-                    var sampleSize = method.PerformanceRunResult?.SampleSize ?? 0;
-                    var status = method.Exception == null ? "✅ Success" : "❌ Failed";
-
-                    sb.AppendLine($"| {method.TestCaseId?.DisplayName ?? "Unknown"} | {DurationFormatter.Format(meanTime, detailUnit, 3)} | {DurationFormatter.Format(medianTime, detailUnit, 3)} | {sampleSize} | {status} |");
-                }
-                sb.AppendLine();
-
-                // Box-and-whisker plot of every method in the group on a shared axis
-                AppendComparisonDistributionPlot(methods, sb);
             }
         }
 
@@ -431,6 +406,83 @@ internal class MethodComparisonTestRunCompletedHandler : INotificationHandler<Te
         }
 
         return sb.ToString();
+    }
+
+    /// <summary>
+    /// Renders one comparison cohort (a single variable set) into <paramref name="sb"/>: a
+    /// baseline-vs-contender table when exactly one method is the baseline, otherwise an N×N matrix,
+    /// followed by the detailed-results table and the distribution plot.
+    /// </summary>
+    private void RenderComparisonCohort(
+        List<CompiledTestCaseResultTrackingFormat> methods,
+        Type testClass,
+        string displayGroupName,
+        StringBuilder sb)
+    {
+        // Determine baselines (zero, one, or — incorrectly — many) within this variable set.
+        var baselines = methods
+            .Where(m => GetComparisonInfoForResult(m, testClass).IsBaseline)
+            .ToList();
+
+        string comparisonContent;
+        string sectionHeader;
+        if (baselines.Count == 1)
+        {
+            sectionHeader = "### Baseline Comparison";
+            comparisonContent = CreateBaselineComparisonTable(baselines[0], methods);
+        }
+        else
+        {
+            if (baselines.Count > 1)
+            {
+                _logger.Log(LogLevel.Warning,
+                    "Comparison group {0} in class '{1}' has {2} methods marked IsBaseline=true within one variable set; " +
+                    "expected at most one. Falling back to N×N comparison. The SF1301 analyzer should catch this at build time.",
+                    displayGroupName, testClass.Name, baselines.Count);
+            }
+            sectionHeader = "### Performance Comparison Matrix";
+            comparisonContent = CreateNxNComparisonMatrix(methods);
+        }
+
+        if (!string.IsNullOrEmpty(comparisonContent))
+        {
+            sb.AppendLine(sectionHeader);
+            sb.AppendLine();
+            sb.AppendLine(comparisonContent);
+            sb.AppendLine();
+        }
+
+        // Add detailed results table
+        sb.AppendLine("### Detailed Results");
+        sb.AppendLine();
+        var detailUnit = DurationFormatter.SelectUnit(methods.SelectMany(m => new[] { m.PerformanceRunResult?.Mean ?? 0, m.PerformanceRunResult?.Median ?? 0 }));
+        var detailUnitLabel = DurationFormatter.UnitLabel(detailUnit);
+        sb.AppendLine($"| Method | Mean Time ({detailUnitLabel}) | Median Time ({detailUnitLabel}) | Sample Size | Status |");
+        sb.AppendLine("|--------|-----------|-------------|-------------|--------|");
+
+        foreach (var method in methods.OrderBy(m => m.PerformanceRunResult?.Mean ?? double.MaxValue))
+        {
+            var meanTime = method.PerformanceRunResult?.Mean ?? 0;
+            var medianTime = method.PerformanceRunResult?.Median ?? 0;
+            var sampleSize = method.PerformanceRunResult?.SampleSize ?? 0;
+            var status = method.Exception == null ? "✅ Success" : "❌ Failed";
+
+            sb.AppendLine($"| {method.TestCaseId?.DisplayName ?? "Unknown"} | {DurationFormatter.Format(meanTime, detailUnit, 3)} | {DurationFormatter.Format(medianTime, detailUnit, 3)} | {sampleSize} | {status} |");
+        }
+        sb.AppendLine();
+
+        // Box-and-whisker plot of every method in the cohort on a shared axis
+        AppendComparisonDistributionPlot(methods, sb);
+    }
+
+    /// <summary>
+    /// The variable-set section of a test case display name (e.g. <c>"(N: 100)"</c>), or <c>""</c>
+    /// when the method is not parameterized. Used to keep comparisons within a single problem size.
+    /// </summary>
+    private static string GetVariableSection(string displayName)
+    {
+        var idx = displayName.IndexOf('(');
+        return idx >= 0 ? displayName.Substring(idx) : string.Empty;
     }
 
     /// <summary>

@@ -107,10 +107,12 @@ public static class DiscoveryAnalysisMethods
                             let lineSpan = syntaxTree.GetLineSpan(methodDeclaration.Span)
                             let lineNumber = lineSpan.StartLinePosition.Line + 1
                             let comparisonGroup = IsTrawlMethod(methodDeclaration) ? null : ExtractComparisonInfo(methodDeclaration, classFullName, classDisablesComparison)
+                            let isBaseline = comparisonGroup != null && ExtractIsBaseline(methodDeclaration)
                             select new MethodMetaData(
                                 methodDeclaration.Identifier.ValueText,
                                 lineNumber,
-                                comparisonGroup))
+                                comparisonGroup,
+                                isBaseline))
                         .ToArray(),
                         syntaxTree: syntaxTree);
 
@@ -217,6 +219,33 @@ public static class DiscoveryAnalysisMethods
             Debug.WriteLine($"[Sailfish.TestAdapter] Failed to access comparison attribute expression: {ex.Message}");
             return null;
         }
+    }
+
+    /// <summary>
+    /// Returns true when the method's <c>[SailfishMethod]</c> attribute sets <c>IsBaseline = true</c>.
+    /// Carried downstream as ComparisonRole="Baseline" so the comparison reporter can name the
+    /// baseline-flagged method as the reference for every other method in its group.
+    /// </summary>
+    private static bool ExtractIsBaseline(MethodDeclarationSyntax methodDeclaration)
+    {
+        var sailfishMethodAttr = methodDeclaration.AttributeLists
+            .SelectMany(attrList => attrList.Attributes)
+            .FirstOrDefault(attr =>
+                attr.Name.ToString() == "SailfishMethod" ||
+                attr.Name.ToString() == "SailfishMethodAttribute");
+
+        if (sailfishMethodAttr?.ArgumentList?.Arguments == null) return false;
+
+        foreach (var arg in sailfishMethodAttr.ArgumentList.Arguments)
+        {
+            if (arg.NameEquals?.Name.Identifier.ValueText != "IsBaseline") continue;
+            if (arg.Expression is LiteralExpressionSyntax lit && lit.Token.IsKind(SyntaxKind.TrueKeyword))
+            {
+                return true;
+            }
+        }
+
+        return false;
     }
 
     /// <summary>

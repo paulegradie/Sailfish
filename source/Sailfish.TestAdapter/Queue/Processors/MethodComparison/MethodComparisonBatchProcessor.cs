@@ -138,25 +138,53 @@ internal class MethodComparisonBatchProcessor
             return;
         }
 
-        // Note: Already logged in ProcessBatch, no need to log again here
+        // Compare only WITHIN the same variable set (same problem size). Pairing across different
+        // SailfishVariable values — e.g. (N: 100) vs (N: 10000) — mixes problem sizes and is
+        // meaningless, so each distinct variable set forms its own comparison cohort.
+        var cohorts = testCases
+            .GroupBy(tc => ExtractVariableSection(tc.TestCaseId), StringComparer.Ordinal)
+            .ToList();
 
-        // For true N×N comparison, each method needs to be compared with every other method
-        // We need to ensure each method gets its own perspective on all other methods
-        var allPairs = new HashSet<(string, string)>();
-
-        // Generate all unique pairs for SailDiff comparison (avoid duplicate SailDiff calls)
-        for (var i = 0; i < testCases.Count; i++)
+        foreach (var cohort in cohorts)
         {
-            for (var j = i + 1; j < testCases.Count; j++)
+            var members = cohort.ToList();
+            if (members.Count < 2)
             {
-                var methodA = testCases[i];
-                var methodB = testCases[j];
-                var pairKey = (methodA.TestCaseId, methodB.TestCaseId);
+                _logger.Log(LogLevel.Debug,
+                    "Comparison cohort '{0}' in group '{1}' has fewer than 2 methods ({2}); nothing to compare",
+                    cohort.Key, groupName, members.Count);
+                continue;
+            }
 
-                if (allPairs.Add(pairKey))
+            // A method flagged [SailfishMethod(IsBaseline = true)] is carried as ComparisonRole="Baseline"
+            // (set during discovery in TestCaseItemCreator and forwarded through the message mappers).
+            var baselines = members.Where(IsBaselineRole).ToList();
+
+            if (baselines.Count == 1)
+            {
+                // Baseline-vs-contender: every other method is reported relative to the single baseline,
+                // and the baseline-flagged method is always the one named "baseline".
+                var baseline = baselines[0];
+                foreach (var contender in members.Where(m => !ReferenceEquals(m, baseline)))
                 {
-                    // Perform comparison between the two methods (this will generate perspective-specific output for both)
-                    await PerformMethodComparison(methodA, methodB, groupName, cancellationToken);
+                    CompareBaselineToContender(baseline, contender, groupName);
+                }
+            }
+            else
+            {
+                if (baselines.Count > 1)
+                {
+                    _logger.Log(LogLevel.Warning,
+                        "Comparison cohort '{0}' in group '{1}' has {2} methods marked IsBaseline=true; expected at most one. " +
+                        "Falling back to N×N. The SF1301 analyzer should catch this at build time.",
+                        cohort.Key, groupName, baselines.Count);
+                }
+
+                // No designated baseline → full N×N, each method reported from its own perspective.
+                for (var i = 0; i < members.Count; i++)
+                for (var j = i + 1; j < members.Count; j++)
+                {
+                    CompareNxNPair(members[i], members[j], groupName);
                 }
             }
         }
@@ -187,91 +215,125 @@ internal class MethodComparisonBatchProcessor
     }
 
     /// <summary>
-    /// Performs SailDiff comparison between a Before and After method.
+    /// True when the message is the comparison group's designated baseline
+    /// (a <c>[SailfishMethod(IsBaseline = true)]</c> method, carried as ComparisonRole="Baseline").
     /// </summary>
-    private Task PerformMethodComparison(
-        TestCompletionQueueMessage beforeMethod,
-        TestCompletionQueueMessage afterMethod,
-        string groupName,
-        CancellationToken cancellationToken)
+    private bool IsBaselineRole(TestCompletionQueueMessage message)
+        => string.Equals(ExtractComparisonRole(message), "Baseline", StringComparison.OrdinalIgnoreCase);
+
+    /// <summary>
+    /// The variable-set section of a TestCaseId (e.g. <c>"(N: 100)"</c>), or <c>""</c> when the method
+    /// is not parameterized. Comparisons are scoped to a single variable set so different problem sizes
+    /// are never compared against each other.
+    /// </summary>
+    private static string ExtractVariableSection(string testCaseId)
+    {
+        var idx = testCaseId.IndexOf('(');
+        return idx >= 0 ? testCaseId.Substring(idx) : string.Empty;
+    }
+
+    /// <summary>
+    /// Compares a single contender against the group's baseline and accumulates one baseline-oriented
+    /// verdict (the baseline is always named "baseline") onto BOTH the contender's and the baseline's rows.
+    /// </summary>
+    private void CompareBaselineToContender(
+        TestCompletionQueueMessage baseline,
+        TestCompletionQueueMessage contender,
+        string groupName)
     {
         try
         {
-            // Extract performance data from messages
-            var beforeData = CreatePerformanceRunResultFromMessage(beforeMethod);
-            var afterData = CreatePerformanceRunResultFromMessage(afterMethod);
+            // before = baseline, after = contender ⇒ MeanBefore is the baseline's mean (no swap needed).
+            var comparisonResult = ComputeDiff(baseline, contender, groupName);
+            StorePairwisePValue(baseline, contender, comparisonResult);
 
-            // Create combined class execution summary from both methods
-            var classExecutionSummary = CreateCombinedClassExecutionSummary(beforeMethod, afterMethod);
+            var output = FormatOriented(comparisonResult, groupName, primary: baseline, compared: contender, swap: false);
 
-            // Debug: Log class execution summary contents
-            _logger.Log(LogLevel.Debug,
-                "Class execution summary contains {0} compiled test case results",
-                classExecutionSummary.CompiledTestCaseResults.Count());
-
-            foreach (var result in classExecutionSummary.CompiledTestCaseResults)
-            {
-                _logger.Log(LogLevel.Debug,
-                    "Compiled result: DisplayName='{0}', HasPerformanceResult={1}",
-                    result.PerformanceRunResult?.DisplayName ?? "null", result.PerformanceRunResult != null);
-            }
-
-            // Perform SailDiff comparison using the comparison group name as a common test case ID
-            // This allows SailDiff to compare different methods by treating them as before/after versions
-            var commonTestCaseId = $"Comparison_{groupName}";
-
-            _logger.Log(LogLevel.Debug,
-                "Calling SailDiff.ComputeTestCaseDiff for group '{0}' with before: '{1}', after: '{2}', using common ID: '{3}'",
-                groupName, beforeMethod.TestCaseId, afterMethod.TestCaseId, commonTestCaseId);
-
-            var comparisonResult = _sailDiff.ComputeTestCaseDiff(
-                [commonTestCaseId],
-                [commonTestCaseId],
-                commonTestCaseId,
-                CreateModifiedClassExecutionSummary(classExecutionSummary, beforeMethod, afterMethod, commonTestCaseId),
-                CreateModifiedPerformanceResult(beforeData, commonTestCaseId));
-
-            _logger.Log(LogLevel.Debug,
-                "SailDiff comparison completed for group '{0}'. Results count: {1}",
-                groupName, comparisonResult?.SailDiffResults?.Count ?? 0);
-
-            // Store pairwise p-value for NxN FDR adjustment later. Also store the alpha used
-            // for the comparison so downstream formatters apply the user-configured threshold
-            // when labelling matrix cells, rather than the previously hardcoded 0.05.
-            var pNullable = comparisonResult?.SailDiffResults?.FirstOrDefault()?.TestResultsWithOutlierAnalysis?.StatisticalTestResult?.PValue;
-            if (pNullable.HasValue)
-            {
-                var fdrAlpha = comparisonResult?.TestSettings?.Alpha
-                               ?? Sailfish.Analysis.SailDiff.Statistics.SailDiffSignificance.FallbackAlpha;
-                UpdatePairwisePValueMetadata(beforeMethod, afterMethod, pNullable.Value, fdrAlpha);
-            }
-
-            // Format comparison results from each method's perspective
-            var beforeMethodOutput = FormatComparisonResults(comparisonResult, groupName, beforeMethod.TestCaseId,
-                afterMethod.TestCaseId, beforeMethod.TestCaseId);
-            var afterMethodOutput = FormatComparisonResults(comparisonResult, groupName, beforeMethod.TestCaseId,
-                afterMethod.TestCaseId, afterMethod.TestCaseId);
-
-            // Enhance test output messages with perspective-specific results
-            EnhanceTestOutputWithComparison(beforeMethod, afterMethod, beforeMethodOutput, afterMethodOutput,
-                cancellationToken);
-
-            // Note: We don't remove suppression flags or republish here
-            // This will be done after ALL comparisons in the group are complete
+            // The same baseline-oriented line is correct from either row's point of view.
+            EnhanceTestOutputWithComparison(baseline, contender, output, output, CancellationToken.None);
 
             _logger.Log(LogLevel.Information,
-                "Completed comparison for group '{0}': {1} vs {2}",
-                groupName, beforeMethod.TestCaseId, afterMethod.TestCaseId);
-
-            return Task.CompletedTask;
+                "Completed baseline comparison for group '{0}': {1} vs baseline {2}",
+                groupName, contender.TestCaseId, baseline.TestCaseId);
         }
         catch (Exception ex)
         {
             _logger.Log(LogLevel.Error, ex,
-                "Failed to perform comparison for group '{0}': {1}",
-                groupName, ex.Message);
-            return Task.CompletedTask;
+                "Failed baseline comparison for group '{0}': {1}", groupName, ex.Message);
         }
+    }
+
+    /// <summary>
+    /// Compares two methods with no designated baseline (N×N). Each method's row shows the pair from
+    /// its own perspective, with the statistics oriented so the named baseline always carries its own mean.
+    /// </summary>
+    private void CompareNxNPair(
+        TestCompletionQueueMessage methodA,
+        TestCompletionQueueMessage methodB,
+        string groupName)
+    {
+        try
+        {
+            // before = A, after = B ⇒ MeanBefore is A's mean.
+            var comparisonResult = ComputeDiff(methodA, methodB, groupName);
+            StorePairwisePValue(methodA, methodB, comparisonResult);
+
+            // A's row: A is the reference (no swap). B's row: B is the reference (swap before/after).
+            var outputA = FormatOriented(comparisonResult, groupName, primary: methodA, compared: methodB, swap: false);
+            var outputB = FormatOriented(comparisonResult, groupName, primary: methodB, compared: methodA, swap: true);
+
+            EnhanceTestOutputWithComparison(methodA, methodB, outputA, outputB, CancellationToken.None);
+
+            _logger.Log(LogLevel.Information,
+                "Completed comparison for group '{0}': {1} vs {2}",
+                groupName, methodA.TestCaseId, methodB.TestCaseId);
+        }
+        catch (Exception ex)
+        {
+            _logger.Log(LogLevel.Error, ex,
+                "Failed to perform comparison for group '{0}': {1}", groupName, ex.Message);
+        }
+    }
+
+    /// <summary>
+    /// Runs the SailDiff comparison for an ordered (before, after) pair. The result's
+    /// MeanBefore/RawDataBefore describe <paramref name="beforeMethod"/>.
+    /// </summary>
+    private TestCaseSailDiffResult ComputeDiff(
+        TestCompletionQueueMessage beforeMethod,
+        TestCompletionQueueMessage afterMethod,
+        string groupName)
+    {
+        var beforeData = CreatePerformanceRunResultFromMessage(beforeMethod);
+        var classExecutionSummary = CreateCombinedClassExecutionSummary(beforeMethod, afterMethod);
+
+        // A common test case ID lets SailDiff treat the two distinct methods as before/after versions.
+        var commonTestCaseId = $"Comparison_{groupName}";
+
+        _logger.Log(LogLevel.Debug,
+            "Calling SailDiff.ComputeTestCaseDiff for group '{0}' with before: '{1}', after: '{2}', using common ID: '{3}'",
+            groupName, beforeMethod.TestCaseId, afterMethod.TestCaseId, commonTestCaseId);
+
+        return _sailDiff.ComputeTestCaseDiff(
+            [commonTestCaseId],
+            [commonTestCaseId],
+            commonTestCaseId,
+            CreateModifiedClassExecutionSummary(classExecutionSummary, beforeMethod, afterMethod, commonTestCaseId),
+            CreateModifiedPerformanceResult(beforeData, commonTestCaseId));
+    }
+
+    /// <summary>
+    /// Stores the pairwise p-value (and the configured alpha) on both messages for the later
+    /// BH-FDR adjustment of the N×N matrix.
+    /// </summary>
+    private void StorePairwisePValue(TestCompletionQueueMessage a, TestCompletionQueueMessage b, TestCaseSailDiffResult? comparisonResult)
+    {
+        var pNullable = comparisonResult?.SailDiffResults?.FirstOrDefault()?.TestResultsWithOutlierAnalysis?.StatisticalTestResult?.PValue;
+        if (!pNullable.HasValue) return;
+
+        var fdrAlpha = comparisonResult?.TestSettings?.Alpha
+                       ?? Sailfish.Analysis.SailDiff.Statistics.SailDiffSignificance.FallbackAlpha;
+        UpdatePairwisePValueMetadata(a, b, pNullable.Value, fdrAlpha);
     }
 
     /// <summary>
@@ -435,53 +497,86 @@ internal class MethodComparisonBatchProcessor
     }
 
     /// <summary>
-    /// Formats SailDiff comparison results for display from a specific method's perspective using the unified formatter.
+    /// Formats a comparison for display with <paramref name="primary"/> named the baseline and
+    /// <paramref name="compared"/> the contender. The statistics are oriented (see
+    /// <see cref="OrientStatistics"/>) so MeanBefore/RawDataBefore always describe
+    /// <paramref name="primary"/> — the named baseline therefore always carries its own mean, which is
+    /// what makes the verdict direction correct. <paramref name="swap"/> is true when
+    /// <paramref name="primary"/> was the SailDiff "after" operand.
     /// </summary>
-    private string FormatComparisonResults(TestCaseSailDiffResult? comparisonResult, string groupName,
-        string beforeMethodName, string afterMethodName, string perspectiveMethodName)
+    private string FormatOriented(
+        TestCaseSailDiffResult? comparisonResult,
+        string groupName,
+        TestCompletionQueueMessage primary,
+        TestCompletionQueueMessage compared,
+        bool swap)
     {
-        _logger.Log(LogLevel.Debug,
-            "Formatting comparison results for group '{0}' from perspective '{1}'. ComparisonResult is null: {2}, SailDiffResults count: {3}",
-            groupName, ExtractMethodName(perspectiveMethodName), comparisonResult == null,
-            comparisonResult?.SailDiffResults?.Count() ?? 0);
-
         if (comparisonResult?.SailDiffResults?.Any() != true)
         {
             return "\n❌ No comparison results available\n";
         }
 
-        // Convert SailDiff result to unified comparison data
         var result = comparisonResult.SailDiffResults.First();
-        var isBeforePerspective = perspectiveMethodName == beforeMethodName;
-        var primaryMethod = ExtractMethodName(perspectiveMethodName);
-        var comparedMethod = ExtractMethodName(isBeforePerspective ? afterMethodName : beforeMethodName);
+        var statistics = OrientStatistics(result.TestResultsWithOutlierAnalysis.StatisticalTestResult, swap);
+        var primaryMethod = ExtractMethodName(primary.TestCaseId);
+        var comparedMethod = ExtractMethodName(compared.TestCaseId);
 
         var comparisonData = new SailDiffComparisonData
         {
             GroupName = groupName,
             PrimaryMethodName = primaryMethod,
             ComparedMethodName = comparedMethod,
-            Statistics = result.TestResultsWithOutlierAnalysis.StatisticalTestResult,
+            Statistics = statistics,
             Metadata = new ComparisonMetadata
             {
-                SampleSize = result.TestResultsWithOutlierAnalysis.StatisticalTestResult.SampleSizeBefore,
+                SampleSize = statistics.SampleSizeBefore,
                 AlphaLevel = comparisonResult.TestSettings.Alpha,
                 TestType = GetTestTypeDisplayName(comparisonResult.TestSettings.TestType),
                 OutliersRemoved = (result.TestResultsWithOutlierAnalysis.Sample1?.TotalNumOutliers ?? 0) +
                                   (result.TestResultsWithOutlierAnalysis.Sample2?.TotalNumOutliers ?? 0)
             },
-            IsPerspectiveBased = true,
-            PerspectiveMethodName = perspectiveMethodName
+            // Statistics are pre-oriented to match the named methods, so no perspective swap is needed
+            // downstream (the historical perspective heuristic in the formatters is a no-op).
+            IsPerspectiveBased = false
         };
 
-        // Format using unified formatter for IDE context
         var formattedOutput = _unifiedFormatter.Format(comparisonData, OutputContext.Ide);
 
         _logger.Log(LogLevel.Debug,
-            "Unified formatter generated output for '{0}' vs '{1}'. Significance: {2}, Change: {3:F1}%",
+            "Unified formatter generated output for baseline '{0}' vs contender '{1}'. Significance: {2}, Change: {3:F1}%",
             primaryMethod, comparedMethod, formattedOutput.Significance, formattedOutput.PercentageChange);
 
         return formattedOutput.FullOutput;
+    }
+
+    /// <summary>
+    /// Returns the test result oriented so MeanBefore/MedianBefore/RawDataBefore describe the method
+    /// being named the baseline. When <paramref name="swap"/> is true the before/after sides are
+    /// exchanged. The p-value and "No Change" detection are orientation-symmetric and preserved as-is.
+    /// </summary>
+    private static StatisticalTestResult OrientStatistics(StatisticalTestResult s, bool swap)
+    {
+        if (!swap) return s;
+
+        return new StatisticalTestResult(
+            meanBefore: s.MeanAfter,
+            meanAfter: s.MeanBefore,
+            medianBefore: s.MedianAfter,
+            medianAfter: s.MedianBefore,
+            testStatistic: s.TestStatistic,
+            pValue: s.PValue,
+            changeDescription: s.ChangeDescription,
+            sampleSizeBefore: s.SampleSizeAfter,
+            sampleSizeAfter: s.SampleSizeBefore,
+            rawDataBefore: s.RawDataAfter,
+            rawDataAfter: s.RawDataBefore,
+            additionalResults: s.AdditionalResults)
+        {
+            EffectSize = s.EffectSize,
+            Difference = s.Difference,
+            QValue = s.QValue,
+            MinimumDetectableEffectPercent = s.MinimumDetectableEffectPercent
+        };
     }
 
     /// <summary>
