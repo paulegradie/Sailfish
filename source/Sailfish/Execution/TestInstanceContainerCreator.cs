@@ -53,8 +53,13 @@ internal class TestInstanceContainerCreator : ITestInstanceContainerCreator
             variableSetsList = variableSetsList.OrderBy(_ => rngForProps.Next()).ToList();
         }
 
-        // Preserve explicit method Order; randomize only among unordered methods when seeded
-        var allMethods = testType.GetMethodsWithAttribute<SailfishMethodAttribute>().ToList();
+        // Preserve explicit method Order; randomize only among unordered methods when seeded.
+        // [Trawl] load-scenario methods are discovered alongside [SailfishMethod] microbenchmarks; they
+        // carry no SailfishMethodAttribute, so they fall through to the unordered set below.
+        var allMethods = testType.GetMethodsWithAttribute<SailfishMethodAttribute>()
+            .Concat(testType.GetMethodsWithAttribute<TrawlAttribute>())
+            .Distinct()
+            .ToList();
         var orderedMethods = allMethods
             .Select(m => new { Method = m, Attr = m.GetCustomAttribute<SailfishMethodAttribute>() })
             .Where(x => (x.Attr?.Order ?? int.MaxValue) < int.MaxValue)
