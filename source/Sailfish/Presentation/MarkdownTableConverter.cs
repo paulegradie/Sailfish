@@ -205,7 +205,15 @@ public class MarkdownTableConverter : IMarkdownTableConverter
             if (group.Key is null) continue;
 
             var groupResults = group.ToList();
-            var n = groupResults.Select(x => x.PerformanceRunResult?.SampleSize).Distinct().Single();
+            // A group can legitimately contain heterogeneous or missing sample sizes: adaptive sampling
+            // converges per case, and (since a failed case no longer aborts its siblings) a group may mix
+            // successful results with failed ones that have no PerformanceRunResult. Pick a representative
+            // non-null sample size rather than assuming exactly one.
+            var n = groupResults
+                .Select(x => x.PerformanceRunResult?.SampleSize)
+                .Where(s => s is > 0)
+                .DefaultIfEmpty(null)
+                .Max();
             if (n is null or 0) continue;
 
             // Add group header if there are multiple groups

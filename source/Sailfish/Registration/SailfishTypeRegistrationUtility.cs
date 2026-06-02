@@ -73,7 +73,10 @@ internal static class SailfishTypeRegistrationUtility
         var genericTypeArgs = typesInsideTheGenericISailfishFixture.SelectMany(GetISailfishFixtureGenericArgs).Distinct();
         foreach (var genericArgType in genericTypeArgs)
         {
-            services.AddTransient(genericArgType);
+            // Fixtures are shared, created-once resources (e.g. a server held warm across all cases). A run-scoped
+            // singleton delivers the xUnit-style "one fixture instance" semantics the ISailfishFixture<T> contract
+            // promises: every fresh per-case instance receives the same fixture via constructor injection.
+            services.AddSingleton(genericArgType);
         }
     }
 
