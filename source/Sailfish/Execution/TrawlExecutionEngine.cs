@@ -6,6 +6,7 @@ using Sailfish.Attributes;
 using Sailfish.Contracts.Public.Models;
 using Sailfish.Exceptions;
 using Sailfish.Logging;
+using Sailfish.Trawl;
 
 namespace Sailfish.Execution;
 
@@ -39,13 +40,19 @@ internal sealed class TrawlExecutionEngine : ITrawlExecutionEngine
 
     private readonly ILogger _logger;
     private readonly IRunSettings _runSettings;
-    private readonly ClosedModelScheduler _scheduler;
+    private readonly ClosedModelScheduler _closedModelScheduler;
+    private readonly ArrivalRateScheduler _arrivalRateScheduler;
 
-    public TrawlExecutionEngine(ILogger logger, IRunSettings runSettings, ClosedModelScheduler? scheduler = null)
+    public TrawlExecutionEngine(
+        ILogger logger,
+        IRunSettings runSettings,
+        ClosedModelScheduler? closedModelScheduler = null,
+        ArrivalRateScheduler? arrivalRateScheduler = null)
     {
         _logger = logger;
         _runSettings = runSettings;
-        _scheduler = scheduler ?? new ClosedModelScheduler();
+        _closedModelScheduler = closedModelScheduler ?? new ClosedModelScheduler();
+        _arrivalRateScheduler = arrivalRateScheduler ?? new ArrivalRateScheduler();
     }
 
     public async Task<TestCaseExecutionResult> RunAsync(TestInstanceContainer container, TrawlAttribute attribute, CancellationToken cancellationToken)
@@ -83,18 +90,43 @@ internal sealed class TrawlExecutionEngine : ITrawlExecutionEngine
             return new TestCaseExecutionResult(container, ex);
         }
 
+        // Select the load model. Closed: a fixed number of virtual users loop as fast as the system allows.
+        // Open: requests arrive at a target rate regardless of in-flight count, with coordinated-omission
+        // correction; there VirtualUsers caps concurrent in-flight requests (the connection-pool size).
+        Func<TimeSpan, bool, Task<LoadRunData>> runPhase;
+        if (attribute.Model == LoadModel.OpenModel)
+        {
+            var rate = attribute.TargetRequestsPerSecond;
+            if (rate <= 0)
+            {
+                return new TestCaseExecutionResult(container, new SailfishException(
+                    $"Trawl scenario '{container.TestCaseId.DisplayName}' uses LoadModel.OpenModel but TargetRequestsPerSecond is not set (must be > 0)."));
+            }
+
+            runPhase = (phaseDuration, phaseRecord) =>
+                _arrivalRateScheduler.RunAsync(invoke, rate, phaseDuration, maxInFlight: virtualUsers, phaseRecord, cancellationToken);
+        }
+        else
+        {
+            runPhase = (phaseDuration, phaseRecord) =>
+                _closedModelScheduler.RunAsync(invoke, virtualUsers, phaseDuration, phaseRecord, cancellationToken);
+        }
+
         LoadRunData runData;
         try
         {
             _logger.Log(LogLevel.Information,
-                "      ---- Trawl: {VirtualUsers} virtual users, warmup {Warmup}s, duration {Duration}s ({Model})",
-                virtualUsers, warmup.TotalSeconds, duration.TotalSeconds, attribute.Model);
+                "      ---- Trawl: {Model} | {VirtualUsers} {Unit} | warmup {Warmup}s | duration {Duration}s{RateSuffix}",
+                attribute.Model, virtualUsers,
+                attribute.Model == LoadModel.OpenModel ? "max in-flight" : "virtual users",
+                warmup.TotalSeconds, duration.TotalSeconds,
+                attribute.Model == LoadModel.OpenModel ? $" | {attribute.TargetRequestsPerSecond:0.#} req/s target" : string.Empty);
 
             if (warmup > TimeSpan.Zero)
-                await _scheduler.RunAsync(invoke, virtualUsers, warmup, record: false, cancellationToken).ConfigureAwait(false);
+                await runPhase(warmup, false).ConfigureAwait(false);
 
             container.CoreInvoker.SetTestCaseStart();
-            runData = await _scheduler.RunAsync(invoke, virtualUsers, duration, record: true, cancellationToken).ConfigureAwait(false);
+            runData = await runPhase(duration, true).ConfigureAwait(false);
             container.CoreInvoker.SetTestCaseStop();
         }
         catch (Exception ex)

@@ -87,6 +87,17 @@ Run a `[Trawl]` scenario (via `dotnet test`, the IDE, or the programmatic runner
 
 The latency distribution flows through Sailfish's normal output, so a load case shows up like any other test case. A scenario with zero successful requests fails the case.
 
+## Closed vs open model
+
+By default a scenario runs the **closed model**: `VirtualUsers` concurrent users, each looping as fast as the system allows. Throughput is emergent.
+
+Set `Model = LoadModel.OpenModel` with a `TargetRequestsPerSecond` to run the **open model**: requests are dispatched at the target arrival rate regardless of how many are already in flight (`VirtualUsers` then caps concurrent in-flight requests — think connection-pool size). The open model is what exposes a system that can't keep up, and it applies **coordinated-omission correction**: latency is measured from each request's *intended* send time, so a stall is counted as latency on the requests that "should" have been sent during it — rather than being silently omitted (an overloaded system otherwise looks deceptively healthy).
+
+```csharp
+[Trawl(Model = LoadModel.OpenModel, TargetRequestsPerSecond = 500, VirtualUsers = 64, DurationSeconds = 120)]
+public async Task Checkout(CancellationToken ct) { /* ... */ }
+```
+
 ## Status
 
-Trawl is being delivered in phases. Shipping now: the public surface (`[Trawl]`, `TrawlSettings`, `TrawlResult`, SF1022) and the **closed-model execution engine**. Still landing in subsequent releases: the open (arrival-rate) model with load profiles and coordinated-omission correction, dedicated reporting/plots and result persistence, SailDiff regression gating, and ScaleFish saturation analysis.
+Trawl is being delivered in phases. Shipping now: the public surface (`[Trawl]`, `TrawlSettings`, `TrawlResult`, SF1022), the **closed-model engine**, and the **open arrival-rate model with coordinated-omission correction**. Still landing in subsequent releases: multi-stage load profiles (ramp/step) and time-series capture, dedicated reporting/plots and result persistence, SailDiff regression gating, and ScaleFish saturation analysis.
