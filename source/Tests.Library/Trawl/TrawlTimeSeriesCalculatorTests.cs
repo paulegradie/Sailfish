@@ -41,4 +41,25 @@ public class TrawlTimeSeriesCalculatorTests
         ts.P99Ms[0].ShouldBe(30, 0.5); // nearest-rank p99 of {10,20,30}
         ts.P99Ms[1].ShouldBe(50, 0.5);
     }
+
+    [Fact]
+    public void NormalizesTrailingPartialSecond_WhenMeasuredDurationProvided()
+    {
+        const long runStart = 5_000_000;
+        var samples = new List<RequestSample>
+        {
+            // second 0: three requests (a full second)
+            new(At(0.1, runStart), Ms(10)),
+            new(At(0.5, runStart), Ms(10)),
+            new(At(0.9, runStart), Ms(10)),
+            // second 1: two requests, but the run only ran 0.4s into this second
+            new(At(1.1, runStart), Ms(20)),
+            new(At(1.3, runStart), Ms(20)),
+        };
+
+        var ts = TrawlTimeSeriesCalculator.Compute(samples, runStart, Freq, measuredSeconds: 1.4);
+
+        ts.RequestsPerSecond[0].ShouldBe(3);       // full second — left as the raw count
+        ts.RequestsPerSecond[1].ShouldBe(5, 0.01); // 2 requests / 0.4s ≈ 5 req/s, not a misleading "2"
+    }
 }

@@ -24,9 +24,9 @@ internal static class TrawlReportRenderer
         sb.AppendLine($"- Model: **{result.Model}** | Virtual users: **{result.VirtualUsers}** | Duration: **{result.Duration.TotalSeconds:0.##}s**");
         sb.AppendLine($"- Throughput: **{result.RequestsPerSecond:0.#} req/s** | Requests: **{result.TotalRequests}** | Errors: **{result.TotalErrors}** ({result.ErrorRate:0.##%})");
         sb.AppendLine();
-        sb.AppendLine("| latency (ms) | p50 | p90 | p95 | p99 | max | mean | min |");
-        sb.AppendLine("|---|----:|----:|----:|----:|----:|-----:|----:|");
-        sb.AppendLine($"| | {latency.P50:0.##} | {latency.P90:0.##} | {latency.P95:0.##} | {latency.P99:0.##} | {latency.Max:0.##} | {latency.Mean:0.##} | {latency.Min:0.##} |");
+        sb.AppendLine("| latency (ms) | p50 | p75 | p90 | p95 | p99 | max | mean | min |");
+        sb.AppendLine("|---|----:|----:|----:|----:|----:|----:|-----:|----:|");
+        sb.AppendLine($"| | {latency.P50:0.##} | {latency.P75:0.##} | {latency.P90:0.##} | {latency.P95:0.##} | {latency.P99:0.##} | {latency.Max:0.##} | {latency.Mean:0.##} | {latency.Min:0.##} |");
         sb.AppendLine();
 
         if (result.LatencySamplesMs.Length > 0)

@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using Sailfish.Contracts.Public.Models;
 
@@ -10,7 +11,12 @@ namespace Sailfish.Execution;
 /// </summary>
 internal static class TrawlTimeSeriesCalculator
 {
-    public static TrawlTimeSeries Compute(IReadOnlyList<RequestSample> samples, long runStartTimestamp, long frequency)
+    /// <param name="measuredSeconds">
+    ///     The measured window's total duration in seconds. When provided (&gt; 0) and the run's final whole
+    ///     second is a partial second, that last bucket's count is scaled up to a per-second rate so the
+    ///     throughput series doesn't show a misleading dip at the tail. Pass 0 to bucket by raw counts only.
+    /// </param>
+    public static TrawlTimeSeries Compute(IReadOnlyList<RequestSample> samples, long runStartTimestamp, long frequency, double measuredSeconds = 0)
     {
         if (samples is null || samples.Count == 0 || frequency <= 0) return TrawlTimeSeries.Empty;
 
@@ -40,6 +46,18 @@ internal static class TrawlTimeSeriesCalculator
             rps[i] = bucket.Value.Count; // a one-second bucket, so the count is requests/second
             p99[i] = LatencyStatsCalculator.Compute(bucket.Value).P99;
             i++;
+        }
+
+        // The run's final whole second is usually only partially elapsed, so its raw count understates the
+        // rate — a misleading dip at the tail, which in a load test is exactly where degradation shows. When
+        // the measured duration is known and its last whole second is the final populated bucket, scale that
+        // bucket up to a per-second rate by the fraction of a second it actually spans.
+        if (measuredSeconds > 0)
+        {
+            var last = count - 1;
+            var fraction = measuredSeconds - offsets[last];
+            if (offsets[last] == Math.Floor(measuredSeconds) && fraction > 1e-6 && fraction < 1.0)
+                rps[last] /= fraction;
         }
 
         return new TrawlTimeSeries { SecondOffsets = offsets, RequestsPerSecond = rps, P99Ms = p99 };
