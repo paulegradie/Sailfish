@@ -37,25 +37,72 @@ public class MyRegistration : IRegisterSailfishServices
 
 That's it. With no agent registered, `.WithAiAnalysis()` is a no-op — the feature stays completely invisible.
 
-### In a test project (`dotnet test` / Test Explorer)
+### Running Skipper from the IDE — the green "play" button
 
-When you run `[Sailfish]` tests through the VS Test Adapter instead of the programmatic `SailfishRunner`, there's no builder to call — the adapter loads its configuration from a **`.sailfish.json`** file at (or above) your test directory. Turn Skipper on there:
+Sailfish benchmarks run as ordinary tests: install the **`Sailfish.TestAdapter`** package in your test project and every `[Sailfish]` class and `[SailfishMethod]` gets a gutter **"play" button** in Visual Studio, Rider, and VS Code, and runs under `dotnet test`. (If the play buttons don't appear — especially in Rider, which needs VSTest discovery switched on — see [Getting the gutter "play" buttons to appear](/docs/2/sailfish).)
 
-```json
+There's no `RunSettingsBuilder` in this path — the adapter runs in its own process and never sees programmatic registration — so Skipper is configured by **file**, not code. Three things must be true before the play button will produce a Skipper verdict.
+
+**1. SailDiff and/or ScaleFish must be enabled.** Skipper explains *their* output, so at least one has to produce a comparison. In the **`.sailfish.json`** at (or above) your test directory:
+
+```jsonc
 {
-  "AiAnalysisSettings": {
-    "Enabled": true
-  }
+  "SailDiffSettings": { "Disabled": false },
+  "ScaleFishSettings": {}
 }
 ```
 
-Then register your agent from an `IRegisterSailfishServices` provider in the test project (exactly as shown above) — the adapter discovers it automatically. Optional keys mirror the programmatic settings: `WriteReviewArtifact`, `EmitConsoleSummary`, `UseResponseCache`. Without a registered agent, enabling this is a harmless no-op.
+**2. Skipper must be turned on**, in that same `.sailfish.json`:
+
+```jsonc
+{
+  "AiAnalysisSettings": { "Enabled": true }
+}
+```
+
+**3. An agent must be registered** from an `IRegisterSailfishServices` provider in the test project — the adapter discovers it automatically, and it's the *only* registration seam the play-button path can see:
+
+```csharp
+public class RegistrationProvider : IRegisterSailfishServices
+{
+    public Task RegisterAsync(IServiceCollection services, CancellationToken ct = default)
+    {
+        services.AddSingleton<ISailfishAgent, ClaudeAgentModelProvider>();
+        return Task.CompletedTask;
+    }
+}
+```
+
+For the reference `ClaudeAgentModelProvider`, the `claude` CLI must be installed and on your `PATH`. Without *any* registered agent, `Enabled: true` is a harmless no-op.
+
+**The loop is run-twice.** SailDiff compares your latest run against the previous one, so a single run has nothing to diff:
+
+1. Click the play button once — this records the **baseline** (no comparison yet).
+2. Change your code.
+3. Click play again — SailDiff produces the before/after, and Skipper explains it.
+
+{% callout title="Run one test, not the whole suite" type="note" %}
+The agent is invoked **once per analyzed comparison** — running the entire suite fans out into one call per test (and, for the reference agent, one `claude` invocation each). While you iterate, click the play button on a **single** benchmark. The Skipper verdict prints to the **test output window**, right beneath the SailDiff table; the `skipper-review_*.json` and `skipper-report_*.md` artifacts land in your results directory (`GlobalSettings.ResultsDirectory`).
+{% /callout %}
+
+A complete, copy-pasteable `.sailfish.json` — this is the one the repo's `PerformanceTests` project ships:
+
+```jsonc
+{
+  "SailDiffSettings": { "TestType": "TwoSampleWilcoxonSignedRankTest", "Alpha": 0.005, "Disabled": false },
+  "ScaleFishSettings": {},
+  "AiAnalysisSettings": { "Enabled": true },
+  "GlobalSettings": { "ResultsDirectory": "SailfishIDETestOutput", "Round": 5 }
+}
+```
+
+The optional `AiAnalysisSettings` keys mirror the programmatic settings: `WriteReviewArtifact`, `EmitConsoleSummary`, `UseResponseCache` (all default `true`). `Role` is programmatic-only — the test-adapter path always runs the default `Explain` role.
 
 ### Working examples in the repo
 
 A complete, runnable reference ships in the repo. `ClaudeAgentModelProvider` (a reference agent that drives the local `claude` CLI with read-only tools) is registered two ways:
 
-- **Test Adapter path** — the `PerformanceTests` project registers it in its `RegistrationProvider` and enables Skipper via `.sailfish.json`. Run a single benchmark test to see it (the agent is invoked once per analyzed comparison, so target one test rather than the whole suite).
+- **Test Adapter path** — the `PerformanceTests` project registers it in its `RegistrationProvider` and enables Skipper via `.sailfish.json` (the exact setup shown above). Click the play button on a single benchmark to see it.
 - **Programmatic path** — `ConsoleAppDemo` reuses the same provider and enables Skipper with `.WithAiAnalysis()`.
 
 ## The one interface you implement
@@ -75,7 +122,7 @@ A `SkipperReview` is structured, not just prose:
 - **`Findings`** — per-test diagnoses, each with its own verdict, a summary, and the `file:line` locations it cited.
 - **`ConsoleSummary`** and **`MarkdownReport`** — the terse and the deep renderings.
 
-A reference **agentic** implementation that drives the `claude` CLI (read-only `Read`/`Grep`/`Glob` scoped to the repo) ships in the `ConsoleAppDemo` project — `ClaudeAgentModelProvider`. Copy it and swap the transport to taste.
+A reference **agentic** implementation that drives the `claude` CLI (read-only `Read`/`Grep`/`Glob` scoped to the repo) ships in the repo as `ClaudeAgentModelProvider`, in the `PerformanceTests/Skipper` folder (`ConsoleAppDemo` reuses it). Copy it and swap the transport to taste.
 
 ## What Skipper produces
 

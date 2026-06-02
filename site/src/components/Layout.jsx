@@ -62,6 +62,7 @@ const navigation = [
             { title: 'SailDiff', href: '/docs/2/saildiff' },
             { title: 'ScaleFish', href: '/docs/2/scalefish' },
             { title: 'Skipper (AI)', href: '/docs/2/skipper', badge: 'NEW' },
+            { title: 'Trawl (Load Testing)', href: '/docs/2/trawl', badge: 'NEW' },
         ]
     },
     {
