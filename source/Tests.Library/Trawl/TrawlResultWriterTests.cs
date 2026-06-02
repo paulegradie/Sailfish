@@ -62,4 +62,62 @@ public class TrawlResultWriterTests
             try { Directory.Delete(dir, true); } catch { /* ignore */ }
         }
     }
+
+    [Fact]
+    public void PruneOldRecords_KeepsNewest_DeletesOlderPairs_AndLeavesOtherScenariosAlone()
+    {
+        var dir = Path.Combine(Path.GetTempPath(), "trawl_prune_" + Guid.NewGuid().ToString("N"));
+        try
+        {
+            var writer = new TrawlResultWriter();
+            var baseTime = DateTime.UtcNow;
+
+            // Five runs of one scenario (json + md each), plus one run of an unrelated scenario.
+            for (var i = 0; i < 5; i++)
+            {
+                var t = baseTime.AddSeconds(i);
+                var r = new TrawlResult { DisplayName = "Svc.Run", RequestsPerSecond = i, LatencySamplesMs = new[] { 1.0 } };
+                writer.PersistRecord(r, t, dir);
+                writer.WriteReport($"# run {i}", r, t, dir);
+            }
+            var other = new TrawlResult { DisplayName = "Other.Run", LatencySamplesMs = new[] { 1.0 } };
+            writer.PersistRecord(other, baseTime, dir);
+            writer.WriteReport("# other", other, baseTime, dir);
+
+            writer.PruneOldRecords(new TrawlResult { DisplayName = "Svc.Run" }, dir, maxRetained: 2);
+
+            var trawlDir = TrawlResultWriter.TrawlDirectory(dir);
+            Directory.GetFiles(trawlDir, "Svc.Run_*.json").Length.ShouldBe(2); // newest two kept
+            Directory.GetFiles(trawlDir, "Svc.Run_*.md").Length.ShouldBe(2);   // matching reports pruned too
+            Directory.GetFiles(trawlDir, "Other.Run_*.json").Length.ShouldBe(1); // unrelated scenario untouched
+
+            // The most recent record (i = 4) must survive, so baseline comparison is unaffected.
+            new TrawlBaselineProvider().GetLatestBaseline("Svc.Run", dir)!.Result.RequestsPerSecond.ShouldBe(4);
+        }
+        finally
+        {
+            try { Directory.Delete(dir, true); } catch { /* ignore */ }
+        }
+    }
+
+    [Fact]
+    public void PruneOldRecords_WithNonPositiveCap_KeepsEverything()
+    {
+        var dir = Path.Combine(Path.GetTempPath(), "trawl_prune_zero_" + Guid.NewGuid().ToString("N"));
+        try
+        {
+            var writer = new TrawlResultWriter();
+            var baseTime = DateTime.UtcNow;
+            for (var i = 0; i < 3; i++)
+                writer.PersistRecord(new TrawlResult { DisplayName = "Svc.Run", LatencySamplesMs = new[] { 1.0 } }, baseTime.AddSeconds(i), dir);
+
+            writer.PruneOldRecords(new TrawlResult { DisplayName = "Svc.Run" }, dir, maxRetained: 0);
+
+            Directory.GetFiles(TrawlResultWriter.TrawlDirectory(dir), "Svc.Run_*.json").Length.ShouldBe(3);
+        }
+        finally
+        {
+            try { Directory.Delete(dir, true); } catch { /* ignore */ }
+        }
+    }
 }

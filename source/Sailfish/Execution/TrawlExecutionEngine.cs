@@ -226,6 +226,7 @@ internal sealed class TrawlExecutionEngine
             var outputDirectory = _runSettings.LocalOutputDirectory;
             writer.PersistRecord(result, timestamp, outputDirectory);
             writer.WriteReport(report, result, timestamp, outputDirectory);
+            writer.PruneOldRecords(result, outputDirectory, _runSettings.TrawlSettings.MaxRetainedRunsPerScenario);
         }
         catch (Exception ex)
         {
