@@ -24,4 +24,8 @@ public class TrawlSettings
     /// <summary>Override the warmup duration in seconds for every scenario.</summary>
     [JsonPropertyName("WarmupSecondsOverride")]
     public double? WarmupSecondsOverride { get; set; }
+
+    /// <summary>Fail a scenario's test case when it regresses significantly vs its prior run (CI gate).</summary>
+    [JsonPropertyName("FailOnRegression")]
+    public bool? FailOnRegression { get; set; }
 }

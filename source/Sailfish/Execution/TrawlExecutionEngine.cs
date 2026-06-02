@@ -2,6 +2,7 @@ using System;
 using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
+using Sailfish.Analysis.SailDiff;
 using Sailfish.Attributes;
 using Sailfish.Contracts.Public.Models;
 using Sailfish.Exceptions;
@@ -42,15 +43,18 @@ internal sealed class TrawlExecutionEngine : ITrawlExecutionEngine
     private readonly IRunSettings _runSettings;
     private readonly ClosedModelScheduler _closedModelScheduler;
     private readonly ArrivalRateScheduler _arrivalRateScheduler;
+    private readonly IStatisticalTestExecutor? _statExecutor;
 
     public TrawlExecutionEngine(
         ILogger logger,
         IRunSettings runSettings,
         ClosedModelScheduler? closedModelScheduler = null,
-        ArrivalRateScheduler? arrivalRateScheduler = null)
+        ArrivalRateScheduler? arrivalRateScheduler = null,
+        IStatisticalTestExecutor? statExecutor = null)
     {
         _logger = logger;
         _runSettings = runSettings;
+        _statExecutor = statExecutor;
         _closedModelScheduler = closedModelScheduler ?? new ClosedModelScheduler();
         _arrivalRateScheduler = arrivalRateScheduler ?? new ArrivalRateScheduler();
     }
@@ -182,10 +186,36 @@ internal sealed class TrawlExecutionEngine : ITrawlExecutionEngine
             TimeSeries = timeSeries
         };
 
+        // Compare against the latest prior run BEFORE persisting this one (so it isn't its own baseline).
+        var verdict = TryCompareRegression(trawlResult);
+        if (verdict is not null)
+            _logger.Log(LogLevel.Information, "      ---- Trawl regression: {Verdict}", verdict.Message);
+
         InjectSamples(container, runData, frequency);
         ReportAndPersist(trawlResult);
 
+        if (verdict is not null && _runSettings.TrawlSettings.FailOnRegression && verdict.Outcome == TrawlRegressionOutcome.Regressed)
+            return new TestCaseExecutionResult(container, new SailfishException($"Trawl regression gate failed — {verdict.Message}"));
+
         return new TestCaseExecutionResult(container);
+    }
+
+    private TrawlRegressionVerdict? TryCompareRegression(TrawlResult current)
+    {
+        if (_statExecutor is null || current.LatencySamplesMs.Length == 0) return null;
+
+        var baseline = new TrawlBaselineProvider().GetLatestBaseline(current.DisplayName, _runSettings.LocalOutputDirectory);
+        if (baseline is null || baseline.Result.LatencySamplesMs.Length == 0) return null;
+
+        return new TrawlRegressionAnalyzer(_statExecutor)
+            .Compare(baseline.Result.LatencySamplesMs, current.LatencySamplesMs, BuildTrawlSailDiffSettings());
+    }
+
+    private SailDiffSettings BuildTrawlSailDiffSettings()
+    {
+        var source = _runSettings.SailDiffSettings;
+        // Keep the slow tail (no outlier removal) — for a load test the tail is the signal, not noise.
+        return new SailDiffSettings(alpha: source.Alpha, round: 3, useOutlierDetection: false, testType: source.TestType);
     }
 
     private void ReportAndPersist(TrawlResult result)

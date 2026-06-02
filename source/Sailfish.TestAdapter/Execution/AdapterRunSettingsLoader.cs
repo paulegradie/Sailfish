@@ -101,6 +101,7 @@ public static class AdapterRunSettingsLoader
         if (parsed.VirtualUsersOverride is not null) mapped.VirtualUsersOverride = parsed.VirtualUsersOverride.Value;
         if (parsed.MaxDurationSecondsOverride is not null) mapped.MaxDurationSecondsOverride = parsed.MaxDurationSecondsOverride.Value;
         if (parsed.WarmupSecondsOverride is not null) mapped.WarmupSecondsOverride = parsed.WarmupSecondsOverride.Value;
+        if (parsed.FailOnRegression is not null) mapped.FailOnRegression = parsed.FailOnRegression.Value;
         return mapped;
     }
 

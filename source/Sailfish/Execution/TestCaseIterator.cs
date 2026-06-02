@@ -4,6 +4,7 @@ using System.Diagnostics;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
+using Sailfish.Analysis.SailDiff;
 using Sailfish.Attributes;
 using Sailfish.Contracts.Public.Models;
 using Sailfish.Execution.Tuning;
@@ -25,17 +26,20 @@ internal class TestCaseIterator : ITestCaseIterator
     private readonly IRunSettings _runSettings;
     private readonly IIterationStrategy _fixedIterationStrategy;
     private readonly IIterationStrategy _adaptiveIterationStrategy;
+    private readonly IStatisticalTestExecutor? _statExecutor;
 
     public TestCaseIterator(
         IRunSettings runSettings,
         ILogger logger,
         IIterationStrategy fixedIterationStrategy,
-        IIterationStrategy adaptiveIterationStrategy)
+        IIterationStrategy adaptiveIterationStrategy,
+        IStatisticalTestExecutor? statExecutor = null)
     {
         _logger = logger;
         _runSettings = runSettings;
         _fixedIterationStrategy = fixedIterationStrategy;
         _adaptiveIterationStrategy = adaptiveIterationStrategy;
+        _statExecutor = statExecutor;
     }
 
     public async Task<TestCaseExecutionResult> Iterate(
@@ -48,7 +52,7 @@ internal class TestCaseIterator : ITestCaseIterator
         var trawlAttribute = testInstanceContainer.ExecutionMethod.GetCustomAttribute<TrawlAttribute>();
         if (trawlAttribute is not null)
         {
-            var trawlEngine = new TrawlExecutionEngine(_logger, _runSettings);
+            var trawlEngine = new TrawlExecutionEngine(_logger, _runSettings, statExecutor: _statExecutor);
             return await trawlEngine.RunAsync(testInstanceContainer, trawlAttribute, cancellationToken).ConfigureAwait(false);
         }
 
