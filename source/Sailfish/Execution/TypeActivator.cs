@@ -31,8 +31,16 @@ public class TypeActivator : ITypeActivator
             // Disabled tests are never executed, so they are not resolved through the container (no scope).
             try
             {
+                // The parameterless-args Activator.CreateInstance overload only finds PUBLIC constructors; include
+                // non-public so a disabled test with a non-public constructor still materializes (matching the
+                // enabled path, which discovers non-public constructors via GetConstructors).
                 return new TestInstanceActivation(
-                    Activator.CreateInstance(test, ctorArgTypes.Select(_ => null! as object).ToArray())!,
+                    Activator.CreateInstance(
+                        test,
+                        BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic,
+                        binder: null,
+                        args: ctorArgTypes.Select(_ => null! as object).ToArray(),
+                        culture: null)!,
                     null);
             }
             catch (Exception ex)

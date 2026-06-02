@@ -83,7 +83,18 @@ internal class ClassExecutionDispatcher : IClassExecutionDispatcher
                 // failures carry a real TestCaseId and run on the shared instance. (In SharedInstance mode the
                 // provider hands back the shared instance rather than constructing a new one, so this does not
                 // re-run the constructor.)
-                var representativeCase = providers[0].ProvideNextTestCaseEnumeratorForClass(sharedInstance.Instance).First();
+                TestInstanceContainer representativeCase;
+                try
+                {
+                    representativeCase = providers[0].ProvideNextTestCaseEnumeratorForClass(sharedInstance.Instance).First();
+                }
+                catch (Exception ex)
+                {
+                    // Materializing the first case failed (e.g. variable hydration threw) before GlobalSetup. Report
+                    // it as a whole-class failure rather than letting it escape Dispatch unreported.
+                    await _mediator.Publish(new TestCaseExceptionNotification(null, testCaseGroup, ex), cancellationToken);
+                    return [new TestCaseExecutionResult(ex)];
+                }
 
                 try
                 {
@@ -136,24 +147,30 @@ internal class ClassExecutionDispatcher : IClassExecutionDispatcher
 
     private static async Task DisposeActivation(TestInstanceActivation activation)
     {
-        switch (activation.Instance)
+        try
         {
-            case IAsyncDisposable asyncDisposable:
-                await asyncDisposable.DisposeAsync();
-                break;
-            case IDisposable disposable:
-                disposable.Dispose();
-                break;
+            switch (activation.Instance)
+            {
+                case IAsyncDisposable asyncDisposable:
+                    await asyncDisposable.DisposeAsync();
+                    break;
+                case IDisposable disposable:
+                    disposable.Dispose();
+                    break;
+            }
         }
-
-        switch (activation.Scope)
+        finally
         {
-            case IAsyncDisposable asyncDisposableScope:
-                await asyncDisposableScope.DisposeAsync();
-                break;
-            case IDisposable disposableScope:
-                disposableScope.Dispose();
-                break;
+            // Always dispose the DI scope, even if the instance's own disposal threw.
+            switch (activation.Scope)
+            {
+                case IAsyncDisposable asyncDisposableScope:
+                    await asyncDisposableScope.DisposeAsync();
+                    break;
+                case IDisposable disposableScope:
+                    disposableScope.Dispose();
+                    break;
+            }
         }
     }
 }

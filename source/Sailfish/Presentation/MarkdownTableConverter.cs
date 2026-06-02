@@ -413,7 +413,14 @@ public class MarkdownTableConverter : IMarkdownTableConverter
         {
             if (group.Key is null) continue;
             stringBuilder.AppendLine();
-            var n = group.Select(x => x.PerformanceRunResult?.SampleSize).Distinct().Single();
+            // A group can legitimately contain heterogeneous or missing sample sizes (adaptive sampling, or a
+            // failed case alongside successful ones), so pick a representative non-null size rather than assuming
+            // exactly one — mirrors the enhanced path.
+            var n = group
+                .Select(x => x.PerformanceRunResult?.SampleSize)
+                .Where(s => s is > 0)
+                .DefaultIfEmpty(null)
+                .Max();
             if (n is null or 0) continue;
 
             var groupResults = group.ToList();

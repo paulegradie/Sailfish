@@ -334,34 +334,40 @@ internal class SailfishExecutionEngine : ISailfishExecutionEngine
     private static async Task DisposeOfTestInstance(TestInstanceContainer? instanceContainer)
     {
         // Dispose the instance first so it can still use its scoped dependencies during teardown, then dispose
-        // the per-case DI scope (which disposes any scoped/transient dependencies resolved for this case).
-        switch (instanceContainer?.Instance)
+        // the per-case DI scope (which disposes any scoped/transient dependencies resolved for this case). The
+        // scope disposal is in a finally so it always runs, even if the instance's own disposal throws.
+        try
         {
-            case IAsyncDisposable asyncDisposable:
-                await asyncDisposable.DisposeAsync();
-                break;
-
-            case IDisposable disposable:
-                disposable.Dispose();
-                break;
-
-            default:
-                {
-                    if (instanceContainer is not null) instanceContainer.Instance = null!;
-
+            switch (instanceContainer?.Instance)
+            {
+                case IAsyncDisposable asyncDisposable:
+                    await asyncDisposable.DisposeAsync();
                     break;
-                }
+
+                case IDisposable disposable:
+                    disposable.Dispose();
+                    break;
+
+                default:
+                    {
+                        if (instanceContainer is not null) instanceContainer.Instance = null!;
+
+                        break;
+                    }
+            }
         }
-
-        switch (instanceContainer?.ServiceScope)
+        finally
         {
-            case IAsyncDisposable asyncDisposableScope:
-                await asyncDisposableScope.DisposeAsync();
-                break;
+            switch (instanceContainer?.ServiceScope)
+            {
+                case IAsyncDisposable asyncDisposableScope:
+                    await asyncDisposableScope.DisposeAsync();
+                    break;
 
-            case IDisposable disposableScope:
-                disposableScope.Dispose();
-                break;
+                case IDisposable disposableScope:
+                    disposableScope.Dispose();
+                    break;
+            }
         }
     }
 }
