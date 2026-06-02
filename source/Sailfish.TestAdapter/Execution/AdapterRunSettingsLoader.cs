@@ -5,6 +5,7 @@ using Sailfish.TestAdapter.Discovery;
 using Sailfish.TestAdapter.TestSettingsParser;
 using SailDiffSettings = Sailfish.Analysis.SailDiff.SailDiffSettings;
 using RuntimeScaleFishSettings = Sailfish.Analysis.ScaleFish.ScaleFishSettings;
+using RuntimeTrawlSettings = Sailfish.Trawl.TrawlSettings;
 using CoreAiAnalysisSettings = Sailfish.Analysis.Ai.AiAnalysisSettings;
 
 namespace Sailfish.TestAdapter.Execution;
@@ -59,10 +60,12 @@ public static class AdapterRunSettingsLoader
 
         var testSettings = MapToTestSettings(parsedSettings);
         var scaleFishSettings = MapToScaleFishSettings(parsedSettings);
+        var trawlSettings = MapToTrawlSettings(parsedSettings);
         var runSettings = runSettingsBuilder
             .CreateTrackingFiles()
             .WithSailDiff(testSettings)
             .WithScaleFish(scaleFishSettings)
+            .WithTrawl(trawlSettings)
             .Build();
         return runSettings;
     }
@@ -84,6 +87,20 @@ public static class AdapterRunSettingsLoader
         if (parsed.TailPercentiles is not null && parsed.TailPercentiles.Length > 0) mapped.TailPercentiles = parsed.TailPercentiles;
         if (parsed.EnableTrendTracking is not null) mapped.EnableTrendTracking = parsed.EnableTrendTracking.Value;
         if (parsed.EmitHtmlReport is not null) mapped.EmitHtmlReport = parsed.EmitHtmlReport.Value;
+        return mapped;
+    }
+
+    private static RuntimeTrawlSettings MapToTrawlSettings(SettingsConfiguration settingsConfiguration)
+    {
+        var mapped = new RuntimeTrawlSettings();
+        var parsed = settingsConfiguration.TrawlSettings;
+        // `SettingsConfiguration.TrawlSettings` is initialized inline to a default instance, but a user can
+        // explicitly set the JSON property to null. Return defaults in that case rather than NRE.
+        if (parsed is null) return mapped;
+        if (parsed.Disabled is not null) mapped.Disabled = parsed.Disabled.Value;
+        if (parsed.VirtualUsersOverride is not null) mapped.VirtualUsersOverride = parsed.VirtualUsersOverride.Value;
+        if (parsed.MaxDurationSecondsOverride is not null) mapped.MaxDurationSecondsOverride = parsed.MaxDurationSecondsOverride.Value;
+        if (parsed.WarmupSecondsOverride is not null) mapped.WarmupSecondsOverride = parsed.WarmupSecondsOverride.Value;
         return mapped;
     }
 

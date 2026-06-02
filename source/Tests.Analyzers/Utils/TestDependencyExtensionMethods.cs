@@ -104,6 +104,14 @@ public sealed class SailfishMethodAttribute : Attribute
     public bool IsBaseline { get; set; }
 }
 
+[AttributeUsage(AttributeTargets.Method)]
+public sealed class TrawlAttribute : Attribute
+{
+    public int VirtualUsers { get; set; }
+    public double DurationSeconds { get; set; }
+    public double WarmupSeconds { get; set; }
+}
+
 [AttributeUsage(AttributeTargets.Method, AllowMultiple = false)]
 public sealed class SailfishMethodSetupAttribute : Attribute, IInnerLifecycleAttribute
 {

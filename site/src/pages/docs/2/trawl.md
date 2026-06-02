@@ -1,0 +1,83 @@
+---
+title: Trawl (Load Testing)
+---
+
+## Introduction
+
+**Trawl** is Sailfish's **load-testing** mode. Where a `[SailfishMethod]` micro-benchmarks a method by running it sequentially many times, a `[Trawl]` method is invoked **concurrently by many virtual users for a sustained duration** — and Sailfish reports the things load tests care about: **throughput, latency percentiles (p50/p90/p95/p99), and error rate**.
+
+A trawler drags a heavy net through the water under sustained load; that is exactly what this mode does to your system under test. It sits alongside the rest of the family — **SailDiff** (is this change a real regression?), **ScaleFish** (how does it scale?), and **Skipper** (why?) — and is designed to reuse them: the same statistical rigor that tells you a benchmark regressed will tell you a load profile regressed, and the same curve-fitting that classifies algorithmic complexity will find the **saturation knee** of a service.
+
+> **Design principle — thin engine, deep analysis.** Sailfish does not aim to out-generate dedicated load generators. Its edge is turning load numbers into *trustworthy, explained, regression-gating* answers — the quadrant every existing tool leaves empty. Trawl is the minimum concurrent-load engine; the value compounds with SailDiff, ScaleFish, and Skipper.
+
+## Authoring a load scenario
+
+A Trawl scenario is just a method in a normal `[Sailfish]` class, marked with `[Trawl]` instead of `[SailfishMethod]`:
+
+```csharp
+[Sailfish]
+public class CheckoutLoad
+{
+    private HttpClient client = null!;
+
+    [SailfishGlobalSetup]
+    public void Setup() => client = new HttpClient { BaseAddress = new Uri("https://localhost:5001") };
+
+    [Trawl(VirtualUsers = 50, DurationSeconds = 120, WarmupSeconds = 15)]
+    public async Task Checkout(CancellationToken ct)
+    {
+        var response = await client.PostAsJsonAsync("/checkout", Payload, ct);
+        response.EnsureSuccessStatusCode();
+    }
+}
+```
+
+The scenario method is protocol-agnostic — it is any `async` method. Sailfish does not care whether it makes an HTTP call, a database query, or a gRPC request; it only measures how the method behaves under concurrency.
+
+### Lifecycle and thread-safety
+
+The enclosing class is an ordinary `[Sailfish]` class, so the usual hooks apply — warm a shared `HttpClient` or seed data in `[SailfishGlobalSetup]`. Because **all virtual users share the one test instance**, any scenario state must be thread-safe (a shared `HttpClient` is; a mutable field updated per request is not).
+
+### A method is one mode or the other
+
+A method is either a microbenchmark (`[SailfishMethod]`) or a load scenario (`[Trawl]`) — never both. The **SF1022** analyzer enforces this at build time.
+
+## The `[Trawl]` attribute
+
+| Property | Default | Meaning |
+|---|---|---|
+| `VirtualUsers` | `10` | Concurrent virtual users (closed model). |
+| `DurationSeconds` | `30` | Sustained, measured load duration (after warmup). |
+| `WarmupSeconds` | `5` | Warmup duration; traffic is generated but not measured. |
+| `Model` | `ClosedModel` | `ClosedModel` (fixed VUs) or `OpenModel` (target arrival rate). |
+| `TargetRequestsPerSecond` | `0` | Target rate for the open model. |
+| `Disabled` | `false` | Skip this scenario. |
+
+## Run-wide settings (`.sailfish.json`)
+
+The per-scenario attribute authors the scenario; run-wide **`TrawlSettings`** lets you reshape every scenario at run time without editing the test source — most usefully to shrink a load run in CI:
+
+```jsonc
+{
+  "TrawlSettings": {
+    "Disabled": false,            // global kill switch for all [Trawl] scenarios
+    "VirtualUsersOverride": 5,    // clamp every closed-model scenario to 5 VUs
+    "MaxDurationSecondsOverride": 10, // cap sustained duration at 10s
+    "WarmupSecondsOverride": 2
+  }
+}
+```
+
+Every override is absent (`null`) by default, meaning "use the per-scenario attribute value". The same settings are available programmatically:
+
+```csharp
+var settings = RunSettingsBuilder
+    .CreateBuilder()
+    .WithTrawlVirtualUsers(5)
+    .WithTrawlMaxDuration(10)
+    .Build();
+```
+
+## Status
+
+Trawl is being delivered in phases. This release establishes the public surface — the `[Trawl]` attribute, `TrawlSettings`, the `TrawlResult` shape, and the SF1022 analyzer. The concurrent execution engine, reporting/plots, SailDiff regression gating, and ScaleFish saturation analysis land in subsequent releases.
