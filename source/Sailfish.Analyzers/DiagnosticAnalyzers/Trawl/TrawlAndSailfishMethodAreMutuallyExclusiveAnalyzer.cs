@@ -15,8 +15,8 @@ namespace Sailfish.Analyzers.DiagnosticAnalyzers.Trawl;
 [DiagnosticAnalyzer(LanguageNames.CSharp)]
 public class TrawlAndSailfishMethodAreMutuallyExclusiveAnalyzer : AnalyzerBase<ClassDeclarationSyntax>
 {
-    private static readonly string[] SailfishMethodNames = { "SailfishMethod", "SailfishMethodAttribute" };
-    private static readonly string[] TrawlNames = { "Trawl", "TrawlAttribute" };
+    private const string SailfishMethodAttributeName = "SailfishMethodAttribute";
+    private const string TrawlAttributeName = "TrawlAttribute";
 
     public static readonly DiagnosticDescriptor Descriptor = new(
         "SF1022",
@@ -36,14 +36,25 @@ public class TrawlAndSailfishMethodAreMutuallyExclusiveAnalyzer : AnalyzerBase<C
 
         foreach (var method in classDeclaration.Members.OfType<MethodDeclarationSyntax>())
         {
-            var attributeNames = method
-                .AttributeLists
-                .SelectMany(list => list.Attributes)
-                .Select(attribute => attribute.Name.ToString())
-                .ToList();
+            // Resolve attributes semantically (via the bound symbol) rather than by syntactic name, so
+            // namespace-qualified, global::-qualified, or aliased usages are still detected. Mirrors the
+            // codebase's other semantic attribute checks (e.g. the global-setup analyzers).
+            if (semanticModel.GetDeclaredSymbol(method) is not { } methodSymbol) continue;
 
-            var hasSailfishMethod = attributeNames.Any(name => SailfishMethodNames.Contains(name));
-            var hasTrawl = attributeNames.Any(name => TrawlNames.Contains(name));
+            var hasSailfishMethod = false;
+            var hasTrawl = false;
+            foreach (var attribute in methodSymbol.GetAttributes())
+            {
+                switch (attribute.AttributeClass?.Name)
+                {
+                    case SailfishMethodAttributeName:
+                        hasSailfishMethod = true;
+                        break;
+                    case TrawlAttributeName:
+                        hasTrawl = true;
+                        break;
+                }
+            }
 
             if (hasSailfishMethod && hasTrawl)
                 context.ReportDiagnostic(Diagnostic.Create(Descriptor, method.Identifier.GetLocation(), method.Identifier.Text));
