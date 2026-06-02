@@ -1,4 +1,6 @@
+using System;
 using System.IO;
+using System.Linq;
 using System.Text.Json;
 using Sailfish.Contracts.Public.Models;
 
@@ -16,8 +18,20 @@ internal sealed class TrawlBaselineProvider
         var dir = TrawlResultWriter.TrawlDirectory(outputDirectory);
         if (!Directory.Exists(dir)) return null;
 
-        TrawlRunRecord? latest = null;
-        foreach (var file in Directory.EnumerateFiles(dir, "*.json"))
+        // Records are named "{Sanitize(displayName)}_{sortable-UTC-timestamp}.json", and the embedded
+        // timestamp equals the record's TimestampUtc, so the lexically-greatest matching filename is the most
+        // recent run. Filter to this scenario's candidates by name prefix (a cheap directory listing, no
+        // reads), sort newest-first, then deserialize lazily and return the first exact DisplayName match —
+        // touching at most a handful of files instead of deserializing every record in the directory.
+        //
+        // The prefix can still over-match a sibling whose sanitized name shares it (e.g. distinct names that
+        // sanitize identically), which is why we verify DisplayName after deserializing.
+        var prefix = TrawlResultWriter.Sanitize(displayName) + "_";
+        var candidates = Directory.EnumerateFiles(dir, "*.json")
+            .Where(path => Path.GetFileName(path).StartsWith(prefix, StringComparison.Ordinal))
+            .OrderByDescending(Path.GetFileName, StringComparer.Ordinal);
+
+        foreach (var file in candidates)
         {
             TrawlRunRecord? record;
             try
@@ -30,9 +44,9 @@ internal sealed class TrawlBaselineProvider
             }
 
             if (record is null || record.Result.DisplayName != displayName) continue;
-            if (latest is null || record.TimestampUtc > latest.TimestampUtc) latest = record;
+            return record;
         }
 
-        return latest;
+        return null;
     }
 }

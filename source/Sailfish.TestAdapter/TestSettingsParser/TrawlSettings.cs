@@ -28,4 +28,8 @@ public class TrawlSettings
     /// <summary>Fail a scenario's test case when it regresses significantly vs its prior run (CI gate).</summary>
     [JsonPropertyName("FailOnRegression")]
     public bool? FailOnRegression { get; set; }
+
+    /// <summary>Keep at most this many persisted runs per scenario (0/absent = keep all).</summary>
+    [JsonPropertyName("MaxRetainedRunsPerScenario")]
+    public int? MaxRetainedRunsPerScenario { get; set; }
 }

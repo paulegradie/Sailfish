@@ -102,6 +102,7 @@ public static class AdapterRunSettingsLoader
         if (parsed.MaxDurationSecondsOverride is not null) mapped.MaxDurationSecondsOverride = parsed.MaxDurationSecondsOverride.Value;
         if (parsed.WarmupSecondsOverride is not null) mapped.WarmupSecondsOverride = parsed.WarmupSecondsOverride.Value;
         if (parsed.FailOnRegression is not null) mapped.FailOnRegression = parsed.FailOnRegression.Value;
+        if (parsed.MaxRetainedRunsPerScenario is not null) mapped.MaxRetainedRunsPerScenario = parsed.MaxRetainedRunsPerScenario.Value;
         return mapped;
     }
 

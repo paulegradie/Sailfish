@@ -43,6 +43,14 @@ public class TrawlSettings
     /// </summary>
     public bool FailOnRegression { get; set; }
 
+    /// <summary>
+    ///     Maximum number of persisted run records to keep <i>per scenario</i> under
+    ///     <c>&lt;output&gt;/trawl/</c>. After persisting a new run, the oldest records (and their Markdown
+    ///     reports) beyond this count are pruned. <c>0</c> (default) keeps every run — no pruning. The most
+    ///     recent run is always retained, so baseline comparison is unaffected by any positive value.
+    /// </summary>
+    public int MaxRetainedRunsPerScenario { get; set; }
+
     /// <summary>A fresh instance with all-default (no-override) values.</summary>
     public static TrawlSettings Default => new();
 }

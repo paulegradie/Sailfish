@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Linq;
 using System.Text;
 using System.Text.Json;
 using Sailfish.Contracts.Public.Models;
@@ -31,6 +32,46 @@ internal sealed class TrawlResultWriter
         return path;
     }
 
+    /// <summary>
+    ///     Prunes a scenario's persisted runs (the <c>.json</c> record and its matching <c>.md</c> report) down
+    ///     to the <paramref name="maxRetained" /> most recent, by filename timestamp. A value &lt;= 0 (the
+    ///     default) keeps every run — no pruning. Best-effort: a file that can't be deleted is skipped, never
+    ///     thrown. Records are matched by the same sanitized-name prefix used to write them, so two display
+    ///     names that sanitize to an identical stem share one retention pool.
+    /// </summary>
+    public void PruneOldRecords(TrawlResult result, string outputDirectory, int maxRetained)
+    {
+        if (maxRetained <= 0) return;
+
+        var dir = TrawlDirectory(outputDirectory);
+        if (!Directory.Exists(dir)) return;
+
+        var prefix = Sanitize(result.DisplayName) + "_";
+        var stale = Directory.EnumerateFiles(dir, "*.json")
+            .Where(path => Path.GetFileName(path).StartsWith(prefix, StringComparison.Ordinal))
+            .OrderByDescending(Path.GetFileName, StringComparer.Ordinal) // newest first (timestamp stem sorts lexically)
+            .Skip(maxRetained)
+            .ToList();
+
+        foreach (var json in stale)
+        {
+            TryDelete(json);
+            TryDelete(Path.ChangeExtension(json, ".md"));
+        }
+    }
+
+    private static void TryDelete(string path)
+    {
+        try
+        {
+            if (File.Exists(path)) File.Delete(path);
+        }
+        catch
+        {
+            // Best-effort cleanup — a locked/removed artifact must never fail the run.
+        }
+    }
+
     private static string EnsureDirectory(string outputDirectory)
     {
         var dir = TrawlDirectory(outputDirectory);
@@ -41,7 +82,12 @@ internal sealed class TrawlResultWriter
     private static string Stem(TrawlResult result, DateTime timestampUtc)
         => $"{Sanitize(result.DisplayName)}_{timestampUtc:yyyy-MM-ddTHH-mm-ss-fffZ}";
 
-    private static string Sanitize(string name)
+    /// <summary>
+    ///     Maps a display name to the filename stem prefix used for its persisted records: invalid filename
+    ///     characters and spaces become <c>_</c>. Shared with <see cref="TrawlBaselineProvider" /> so baseline
+    ///     lookup can enumerate only a scenario's own candidate files.
+    /// </summary>
+    internal static string Sanitize(string name)
     {
         var invalid = Path.GetInvalidFileNameChars();
         var sb = new StringBuilder(name.Length);
