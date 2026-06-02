@@ -11,11 +11,6 @@ using Sailfish.Trawl;
 
 namespace Sailfish.Execution;
 
-internal interface ITrawlExecutionEngine
-{
-    Task<TestCaseExecutionResult> RunAsync(TestInstanceContainer container, TrawlAttribute attribute, CancellationToken cancellationToken);
-}
-
 /// <summary>
 ///     Runs a <c>[Trawl]</c> method as a concurrent load scenario instead of a sequential microbenchmark.
 ///     <para>
@@ -29,7 +24,7 @@ internal interface ITrawlExecutionEngine
 ///         its latency distribution through the normal pipeline.
 ///     </para>
 /// </summary>
-internal sealed class TrawlExecutionEngine : ITrawlExecutionEngine
+internal sealed class TrawlExecutionEngine
 {
     /// <summary>
     ///     Upper bound on the number of latency samples injected into the shared <see cref="PerformanceTimer" />.
