@@ -17,6 +17,7 @@ SF1016 | Sailfish.Usage | Warning | Variable-dependent state built in a once-per
 SF1020 | Sailfish.Usage | Error | Sailfish lifecycle methods must be public
 SF1021 | Sailfish.Usage | Error | Only one Sailfish lifecycle attribute is allowed per method
 SF1022 | Sailfish.Usage | Error | A method may not be decorated with both [SailfishMethod] and [Trawl]
+SF1023 | Sailfish.Usage | Warning | A [Trawl] load scenario writes to mutable shared-instance state without synchronization
 SF7000 | Sailfish.Suppression | Hidden | Suppresses warnings when a non nullable property is set in the global setup method
 SF1300 | Sailfish.Usage | Error | IsBaseline=true on a method that isn't in any comparison group
 SF1301 | Sailfish.Usage | Error | At most one method per comparison group (explicit or implicit) may set IsBaseline=true
