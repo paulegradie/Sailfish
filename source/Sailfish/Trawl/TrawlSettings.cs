@@ -37,6 +37,12 @@ public class TrawlSettings
     /// </summary>
     public double? WarmupSecondsOverride { get; set; }
 
+    /// <summary>
+    ///     When <c>true</c>, a Trawl scenario that has regressed significantly against its most recent prior
+    ///     run (per SailDiff) fails the test case — a CI regression gate. Default <c>false</c>.
+    /// </summary>
+    public bool FailOnRegression { get; set; }
+
     /// <summary>A fresh instance with all-default (no-override) values.</summary>
     public static TrawlSettings Default => new();
 }

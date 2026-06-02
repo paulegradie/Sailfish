@@ -102,6 +102,16 @@ public async Task Checkout(CancellationToken ct) { /* ... */ }
 
 Each scenario prints a report — a summary line, a latency-percentile table, a latency **distribution plot** (honoring your configured `DistributionPlotStyle`), and Unicode **sparklines** of throughput and p99 over time. The same report is written to `<output>/trawl/<scenario>_<timestamp>.md`, and a machine-readable `…​.json` record (summary + a capped latency sample + the per-second time-series) is written alongside it — that JSON is what later regression analysis reads as a baseline.
 
+## Regression gating
+
+Every run is compared against its **most recent prior run** (the baseline persisted under `<output>/trawl/`) using SailDiff's statistical machinery — the exact same significance test the microbenchmark path uses, applied to the two latency distributions (outlier removal off, so the slow tail counts). The verdict reads either `Current is N% slower/faster than baseline …` or `NOT SIGNIFICANT`.
+
+Turn it into a **CI gate** with `FailOnRegression` — a scenario that regressed significantly then fails its test case (non-zero `dotnet test`):
+
+```jsonc
+{ "TrawlSettings": { "FailOnRegression": true } }
+```
+
 ## Status
 
-Trawl is being delivered in phases. Shipping now: the public surface (`[Trawl]`, `TrawlSettings`, `TrawlResult`, SF1022), the **closed-model engine**, the **open arrival-rate model with coordinated-omission correction**, and **reporting** (console + Markdown report, distribution plot, time-series sparklines, JSON persistence). Still landing in subsequent releases: multi-stage load profiles (ramp/step) and streaming histograms for long soaks, SailDiff regression gating, and ScaleFish saturation analysis.
+Trawl is being delivered in phases. Shipping now: the public surface (`[Trawl]`, `TrawlSettings`, `TrawlResult`, SF1022), the **closed-model engine**, the **open arrival-rate model with coordinated-omission correction**, **reporting** (console + Markdown report, distribution plot, time-series sparklines, JSON persistence), and **SailDiff regression gating** (`FailOnRegression`). Still landing in subsequent releases: multi-stage load profiles (ramp/step), streaming histograms for long soaks, and ScaleFish saturation analysis.

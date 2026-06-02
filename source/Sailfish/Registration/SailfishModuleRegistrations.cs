@@ -81,7 +81,8 @@ internal static class SailfishModuleRegistrations
             sp.GetRequiredService<IRunSettings>(),
             sp.GetRequiredService<ILogger>(),
             sp.GetRequiredKeyedService<IIterationStrategy>(FixedIterationStrategyKey),
-            sp.GetRequiredKeyedService<IIterationStrategy>(AdaptiveIterationStrategyKey)));
+            sp.GetRequiredKeyedService<IIterationStrategy>(AdaptiveIterationStrategyKey),
+            sp.GetService<IStatisticalTestExecutor>()));
 
         services.AddTransient<IStatisticsCompiler, StatisticsCompiler>();
         services.AddTransient<IClassExecutionSummaryCompiler, ClassExecutionSummaryCompiler>();
