@@ -186,6 +186,23 @@ public class RunSettingsBuilder
         return this;
     }
 
+    /// <summary>Overrides the warmup duration in seconds for every Trawl scenario (traffic generated but not measured).</summary>
+    public RunSettingsBuilder WithTrawlWarmup(double seconds)
+    {
+        (_trawlSettings ??= new TrawlSettings()).WarmupSecondsOverride = seconds;
+        return this;
+    }
+
+    /// <summary>
+    ///     Turns the Trawl regression gate on or off: when enabled, a scenario that has regressed
+    ///     significantly against its most recent prior run (per SailDiff) fails its test case.
+    /// </summary>
+    public RunSettingsBuilder WithTrawlFailOnRegression(bool failOnRegression = true)
+    {
+        (_trawlSettings ??= new TrawlSettings()).FailOnRegression = failOnRegression;
+        return this;
+    }
+
 
     /// <summary>
     ///     Provide a string array of class names to execute. This will run all test cases in a class decorated with the

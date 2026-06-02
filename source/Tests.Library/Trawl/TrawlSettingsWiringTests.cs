@@ -43,11 +43,25 @@ public class TrawlSettingsWiringTests
         var settings = RunSettingsBuilder.CreateBuilder()
             .WithTrawlVirtualUsers(16)
             .WithTrawlMaxDuration(45)
+            .WithTrawlWarmup(7)
+            .WithTrawlFailOnRegression()
             .DisableTrawl()
             .Build();
 
         settings.TrawlSettings.VirtualUsersOverride.ShouldBe(16);
         settings.TrawlSettings.MaxDurationSecondsOverride.ShouldBe(45.0);
+        settings.TrawlSettings.WarmupSecondsOverride.ShouldBe(7.0);
+        settings.TrawlSettings.FailOnRegression.ShouldBeTrue();
         settings.TrawlSettings.Disabled.ShouldBeTrue();
+    }
+
+    [Fact]
+    public void Builder_WithTrawlFailOnRegression_CanDisableExplicitly()
+    {
+        var settings = RunSettingsBuilder.CreateBuilder()
+            .WithTrawlFailOnRegression(false)
+            .Build();
+
+        settings.TrawlSettings.FailOnRegression.ShouldBeFalse();
     }
 }
