@@ -31,6 +31,7 @@ internal static class TestCaseItemCreator
                     propertyNames,
                     propertyValues,
                     methodMetaData.ComparisonGroup,
+                    methodMetaData.IsBaseline,
                     hashAlgorithm);
             }
         }
@@ -45,6 +46,7 @@ internal static class TestCaseItemCreator
         IEnumerable<string> propertyNames,
         IEnumerable<object> propertyValues,
         string? comparisonGroup,
+        bool isBaseline,
         IHashAlgorithm hasher)
     {
         var testCaseId = DisplayNameHelper.CreateTestCaseId(testType, methodName, propertyNames.ToArray(), propertyValues.ToArray());
@@ -87,6 +89,13 @@ internal static class TestCaseItemCreator
         if (!string.IsNullOrEmpty(comparisonGroup))
         {
             testCase.SetPropertyValue(SailfishManagedProperty.SailfishComparisonGroupProperty, comparisonGroup);
+
+            // Carry the baseline flag so the comparison reporter names this method the baseline for
+            // every other method in its group. Only the baseline role is set; contenders are left unset.
+            if (isBaseline)
+            {
+                testCase.SetPropertyValue(SailfishManagedProperty.SailfishComparisonRoleProperty, "Baseline");
+            }
         }
 
         return testCase;

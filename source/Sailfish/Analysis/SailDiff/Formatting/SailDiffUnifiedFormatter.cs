@@ -158,14 +158,10 @@ public class SailDiffUnifiedFormatter : ISailDiffUnifiedFormatter
     private static double CalculatePercentageChange(SailDiffComparisonData data)
     {
         var stats = data.Statistics;
-        
-        // Handle perspective-based comparisons
-        var primaryTime = data.IsPerspectiveBased && data.PerspectiveMethodName == data.ComparedMethodName 
-            ? stats.MeanAfter 
-            : stats.MeanBefore;
-        var comparedTime = data.IsPerspectiveBased && data.PerspectiveMethodName == data.ComparedMethodName 
-            ? stats.MeanBefore 
-            : stats.MeanAfter;
+
+        // Comparison data arrives pre-oriented: MeanBefore is the baseline, MeanAfter the contender.
+        var primaryTime = stats.MeanBefore;
+        var comparedTime = stats.MeanAfter;
 
         return primaryTime > 0 ? ((comparedTime - primaryTime) / primaryTime) * 100 : 0;
     }

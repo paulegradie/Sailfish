@@ -28,6 +28,12 @@ public class MethodComparisonTestRunCompletedHandlerTests
     private readonly IMediator _mockMediator;
     private readonly MethodComparisonTestRunCompletedHandler _handler;
 
+    // Methods in a comparison group always share the same SailfishVariable set in real runs, so every
+    // built test case uses the same variable section. (TestCaseIdBuilder otherwise defaults to a random
+    // per-call variable, which would scatter a group's methods across distinct same-size cohorts.)
+    private static readonly global::Sailfish.Contracts.Public.Models.TestCaseVariable[] SharedComparisonVariables =
+        { new("N", 100) };
+
     public MethodComparisonTestRunCompletedHandlerTests()
     {
         _mockLogger = Substitute.For<ILogger>();
@@ -377,7 +383,7 @@ public class MethodComparisonTestRunCompletedHandlerTests
         var classExecutionSummary = ClassExecutionSummaryTrackingFormatBuilder.Create()
             .WithTestClass(typeof(TestClassWithWriteToMarkdown))
             .WithCompiledTestCaseResult(b => b
-                .WithTestCaseId(TestCaseIdBuilder.Create().WithTestCaseName("TestMethod1").Build())
+                .WithTestCaseId(TestCaseIdBuilder.Create().WithTestCaseVariables(SharedComparisonVariables).WithTestCaseName("TestMethod1").Build())
                 .WithPerformanceRunResult(PerformanceRunResultTrackingFormatBuilder.Create()
                     .WithMean(10.5)
                     .WithMedian(10.0)
@@ -393,7 +399,7 @@ public class MethodComparisonTestRunCompletedHandlerTests
         var classExecutionSummary = ClassExecutionSummaryTrackingFormatBuilder.Create()
             .WithTestClass(typeof(TestClassWithoutWriteToMarkdown))
             .WithCompiledTestCaseResult(b => b
-                .WithTestCaseId(TestCaseIdBuilder.Create().WithTestCaseName("TestMethod1").Build())
+                .WithTestCaseId(TestCaseIdBuilder.Create().WithTestCaseVariables(SharedComparisonVariables).WithTestCaseName("TestMethod1").Build())
                 .WithPerformanceRunResult(PerformanceRunResultTrackingFormatBuilder.Create().Build()))
             .Build();
 
@@ -405,14 +411,14 @@ public class MethodComparisonTestRunCompletedHandlerTests
         var summary1 = ClassExecutionSummaryTrackingFormatBuilder.Create()
             .WithTestClass(typeof(TestClassWithWriteToMarkdown))
             .WithCompiledTestCaseResult(b => b
-                .WithTestCaseId(TestCaseIdBuilder.Create().WithTestCaseName("TestMethod1").Build())
+                .WithTestCaseId(TestCaseIdBuilder.Create().WithTestCaseVariables(SharedComparisonVariables).WithTestCaseName("TestMethod1").Build())
                 .WithPerformanceRunResult(PerformanceRunResultTrackingFormatBuilder.Create().Build()))
             .Build();
 
         var summary2 = ClassExecutionSummaryTrackingFormatBuilder.Create()
             .WithTestClass(typeof(TestClassWithoutWriteToMarkdown))
             .WithCompiledTestCaseResult(b => b
-                .WithTestCaseId(TestCaseIdBuilder.Create().WithTestCaseName("TestMethod2").Build())
+                .WithTestCaseId(TestCaseIdBuilder.Create().WithTestCaseVariables(SharedComparisonVariables).WithTestCaseName("TestMethod2").Build())
                 .WithPerformanceRunResult(PerformanceRunResultTrackingFormatBuilder.Create().Build()))
             .Build();
 
@@ -424,14 +430,14 @@ public class MethodComparisonTestRunCompletedHandlerTests
         var classExecutionSummary = ClassExecutionSummaryTrackingFormatBuilder.Create()
             .WithTestClass(typeof(TestClassWithComparison))
             .WithCompiledTestCaseResult(b => b
-                .WithTestCaseId(TestCaseIdBuilder.Create().WithTestCaseName("Method1").Build())
+                .WithTestCaseId(TestCaseIdBuilder.Create().WithTestCaseVariables(SharedComparisonVariables).WithTestCaseName("Method1").Build())
                 .WithPerformanceRunResult(PerformanceRunResultTrackingFormatBuilder.Create()
                     .WithMean(10.0)
                     .WithMedian(9.5)
                     .WithSampleSize(100)
                     .Build()))
             .WithCompiledTestCaseResult(b => b
-                .WithTestCaseId(TestCaseIdBuilder.Create().WithTestCaseName("Method2").Build())
+                .WithTestCaseId(TestCaseIdBuilder.Create().WithTestCaseVariables(SharedComparisonVariables).WithTestCaseName("Method2").Build())
                 .WithPerformanceRunResult(PerformanceRunResultTrackingFormatBuilder.Create()
                     .WithMean(20.0)
                     .WithMedian(19.5)
@@ -447,14 +453,14 @@ public class MethodComparisonTestRunCompletedHandlerTests
         var classExecutionSummary = ClassExecutionSummaryTrackingFormatBuilder.Create()
             .WithTestClass(typeof(TestClassWithBaselineComparison))
             .WithCompiledTestCaseResult(b => b
-                .WithTestCaseId(TestCaseIdBuilder.Create().WithTestCaseName("Baseline").Build())
+                .WithTestCaseId(TestCaseIdBuilder.Create().WithTestCaseVariables(SharedComparisonVariables).WithTestCaseName("Baseline").Build())
                 .WithPerformanceRunResult(PerformanceRunResultTrackingFormatBuilder.Create()
                     .WithMean(10.0)
                     .WithMedian(9.5)
                     .WithSampleSize(100)
                     .Build()))
             .WithCompiledTestCaseResult(b => b
-                .WithTestCaseId(TestCaseIdBuilder.Create().WithTestCaseName("Contender").Build())
+                .WithTestCaseId(TestCaseIdBuilder.Create().WithTestCaseVariables(SharedComparisonVariables).WithTestCaseName("Contender").Build())
                 .WithPerformanceRunResult(PerformanceRunResultTrackingFormatBuilder.Create()
                     .WithMean(20.0)
                     .WithMedian(19.5)
@@ -470,11 +476,11 @@ public class MethodComparisonTestRunCompletedHandlerTests
         var classA = ClassExecutionSummaryTrackingFormatBuilder.Create()
             .WithTestClass(typeof(TestClassWithBaselineComparison))
             .WithCompiledTestCaseResult(b => b
-                .WithTestCaseId(TestCaseIdBuilder.Create().WithTestCaseName("Baseline").Build())
+                .WithTestCaseId(TestCaseIdBuilder.Create().WithTestCaseVariables(SharedComparisonVariables).WithTestCaseName("Baseline").Build())
                 .WithPerformanceRunResult(PerformanceRunResultTrackingFormatBuilder.Create()
                     .WithMean(10.0).WithMedian(9.5).WithSampleSize(100).Build()))
             .WithCompiledTestCaseResult(b => b
-                .WithTestCaseId(TestCaseIdBuilder.Create().WithTestCaseName("Contender").Build())
+                .WithTestCaseId(TestCaseIdBuilder.Create().WithTestCaseVariables(SharedComparisonVariables).WithTestCaseName("Contender").Build())
                 .WithPerformanceRunResult(PerformanceRunResultTrackingFormatBuilder.Create()
                     .WithMean(20.0).WithMedian(19.5).WithSampleSize(100).Build()))
             .Build();
@@ -482,11 +488,11 @@ public class MethodComparisonTestRunCompletedHandlerTests
         var classB = ClassExecutionSummaryTrackingFormatBuilder.Create()
             .WithTestClass(typeof(OtherTestClassWithBaselineComparison))
             .WithCompiledTestCaseResult(b => b
-                .WithTestCaseId(TestCaseIdBuilder.Create().WithTestCaseName("Baseline").Build())
+                .WithTestCaseId(TestCaseIdBuilder.Create().WithTestCaseVariables(SharedComparisonVariables).WithTestCaseName("Baseline").Build())
                 .WithPerformanceRunResult(PerformanceRunResultTrackingFormatBuilder.Create()
                     .WithMean(30.0).WithMedian(29.5).WithSampleSize(100).Build()))
             .WithCompiledTestCaseResult(b => b
-                .WithTestCaseId(TestCaseIdBuilder.Create().WithTestCaseName("Contender").Build())
+                .WithTestCaseId(TestCaseIdBuilder.Create().WithTestCaseVariables(SharedComparisonVariables).WithTestCaseName("Contender").Build())
                 .WithPerformanceRunResult(PerformanceRunResultTrackingFormatBuilder.Create()
                     .WithMean(40.0).WithMedian(39.5).WithSampleSize(100).Build()))
             .Build();
@@ -499,11 +505,11 @@ public class MethodComparisonTestRunCompletedHandlerTests
         var classExecutionSummary = ClassExecutionSummaryTrackingFormatBuilder.Create()
             .WithTestClass(typeof(TestClassWithImplicitGroup))
             .WithCompiledTestCaseResult(b => b
-                .WithTestCaseId(TestCaseIdBuilder.Create().WithTestCaseName("MethodA").Build())
+                .WithTestCaseId(TestCaseIdBuilder.Create().WithTestCaseVariables(SharedComparisonVariables).WithTestCaseName("MethodA").Build())
                 .WithPerformanceRunResult(PerformanceRunResultTrackingFormatBuilder.Create()
                     .WithMean(10.0).WithMedian(9.5).WithSampleSize(100).Build()))
             .WithCompiledTestCaseResult(b => b
-                .WithTestCaseId(TestCaseIdBuilder.Create().WithTestCaseName("MethodB").Build())
+                .WithTestCaseId(TestCaseIdBuilder.Create().WithTestCaseVariables(SharedComparisonVariables).WithTestCaseName("MethodB").Build())
                 .WithPerformanceRunResult(PerformanceRunResultTrackingFormatBuilder.Create()
                     .WithMean(20.0).WithMedian(19.5).WithSampleSize(100).Build()))
             .Build();
@@ -516,11 +522,11 @@ public class MethodComparisonTestRunCompletedHandlerTests
         var classExecutionSummary = ClassExecutionSummaryTrackingFormatBuilder.Create()
             .WithTestClass(typeof(TestClassWithImplicitGroupAndBaseline))
             .WithCompiledTestCaseResult(b => b
-                .WithTestCaseId(TestCaseIdBuilder.Create().WithTestCaseName("Reference").Build())
+                .WithTestCaseId(TestCaseIdBuilder.Create().WithTestCaseVariables(SharedComparisonVariables).WithTestCaseName("Reference").Build())
                 .WithPerformanceRunResult(PerformanceRunResultTrackingFormatBuilder.Create()
                     .WithMean(10.0).WithMedian(9.5).WithSampleSize(100).Build()))
             .WithCompiledTestCaseResult(b => b
-                .WithTestCaseId(TestCaseIdBuilder.Create().WithTestCaseName("Alternative").Build())
+                .WithTestCaseId(TestCaseIdBuilder.Create().WithTestCaseVariables(SharedComparisonVariables).WithTestCaseName("Alternative").Build())
                 .WithPerformanceRunResult(PerformanceRunResultTrackingFormatBuilder.Create()
                     .WithMean(20.0).WithMedian(19.5).WithSampleSize(100).Build()))
             .Build();
@@ -533,11 +539,11 @@ public class MethodComparisonTestRunCompletedHandlerTests
         var classExecutionSummary = ClassExecutionSummaryTrackingFormatBuilder.Create()
             .WithTestClass(typeof(TestClassWithComparisonDisabled))
             .WithCompiledTestCaseResult(b => b
-                .WithTestCaseId(TestCaseIdBuilder.Create().WithTestCaseName("OperationA").Build())
+                .WithTestCaseId(TestCaseIdBuilder.Create().WithTestCaseVariables(SharedComparisonVariables).WithTestCaseName("OperationA").Build())
                 .WithPerformanceRunResult(PerformanceRunResultTrackingFormatBuilder.Create()
                     .WithMean(10.0).WithMedian(9.5).WithSampleSize(100).Build()))
             .WithCompiledTestCaseResult(b => b
-                .WithTestCaseId(TestCaseIdBuilder.Create().WithTestCaseName("OperationB").Build())
+                .WithTestCaseId(TestCaseIdBuilder.Create().WithTestCaseVariables(SharedComparisonVariables).WithTestCaseName("OperationB").Build())
                 .WithPerformanceRunResult(PerformanceRunResultTrackingFormatBuilder.Create()
                     .WithMean(20.0).WithMedian(19.5).WithSampleSize(100).Build()))
             .Build();
@@ -550,7 +556,7 @@ public class MethodComparisonTestRunCompletedHandlerTests
         var classExecutionSummary = ClassExecutionSummaryTrackingFormatBuilder.Create()
             .WithTestClass(typeof(TestClassWithWriteToMarkdown))
             .WithCompiledTestCaseResult(b => b
-                .WithTestCaseId(TestCaseIdBuilder.Create().WithTestCaseName("RegularMethod").Build())
+                .WithTestCaseId(TestCaseIdBuilder.Create().WithTestCaseVariables(SharedComparisonVariables).WithTestCaseName("RegularMethod").Build())
                 .WithPerformanceRunResult(PerformanceRunResultTrackingFormatBuilder.Create()
                     .WithMean(15.0)
                     .WithMedian(14.5)
@@ -575,7 +581,7 @@ public class MethodComparisonTestRunCompletedHandlerTests
         var summary1 = ClassExecutionSummaryTrackingFormatBuilder.Create()
             .WithTestClass(typeof(TestClassWithWriteToMarkdown))
             .WithCompiledTestCaseResult(b => b
-                .WithTestCaseId(TestCaseIdBuilder.Create().WithTestCaseName("TestMethod1").Build())
+                .WithTestCaseId(TestCaseIdBuilder.Create().WithTestCaseVariables(SharedComparisonVariables).WithTestCaseName("TestMethod1").Build())
                 .WithPerformanceRunResult(PerformanceRunResultTrackingFormatBuilder.Create()
                     .WithMean(10.0)
                     .Build()))
@@ -584,7 +590,7 @@ public class MethodComparisonTestRunCompletedHandlerTests
         var summary2 = ClassExecutionSummaryTrackingFormatBuilder.Create()
             .WithTestClass(typeof(AnotherTestClassWithWriteToMarkdown))
             .WithCompiledTestCaseResult(b => b
-                .WithTestCaseId(TestCaseIdBuilder.Create().WithTestCaseName("TestMethod2").Build())
+                .WithTestCaseId(TestCaseIdBuilder.Create().WithTestCaseVariables(SharedComparisonVariables).WithTestCaseName("TestMethod2").Build())
                 .WithPerformanceRunResult(PerformanceRunResultTrackingFormatBuilder.Create()
                     .WithMean(20.0)
                     .Build()))
@@ -797,7 +803,7 @@ public class MethodComparisonTestRunCompletedHandlerTests
             var methods = new List<CompiledTestCaseResultTrackingFormat>
             {
                 CompiledTestCaseResultTrackingFormatBuilder.Create()
-                    .WithTestCaseId(TestCaseIdBuilder.Create().WithTestCaseName("Alpha").Build())
+                    .WithTestCaseId(TestCaseIdBuilder.Create().WithTestCaseVariables(SharedComparisonVariables).WithTestCaseName("Alpha").Build())
                     .WithPerformanceRunResult(
                         PerformanceRunResultTrackingFormatBuilder.Create()
                             .WithMean(10.0)
@@ -807,7 +813,7 @@ public class MethodComparisonTestRunCompletedHandlerTests
                             .Build())
                     .Build(),
                 CompiledTestCaseResultTrackingFormatBuilder.Create()
-                    .WithTestCaseId(TestCaseIdBuilder.Create().WithTestCaseName("Beta").Build())
+                    .WithTestCaseId(TestCaseIdBuilder.Create().WithTestCaseVariables(SharedComparisonVariables).WithTestCaseName("Beta").Build())
                     .WithPerformanceRunResult(
                         PerformanceRunResultTrackingFormatBuilder.Create()
                             .WithMean(10.5)
@@ -839,7 +845,7 @@ public class MethodComparisonTestRunCompletedHandlerTests
             var methods = new List<CompiledTestCaseResultTrackingFormat>
             {
                 CompiledTestCaseResultTrackingFormatBuilder.Create()
-                    .WithTestCaseId(TestCaseIdBuilder.Create().WithTestCaseName("Alpha").Build())
+                    .WithTestCaseId(TestCaseIdBuilder.Create().WithTestCaseVariables(SharedComparisonVariables).WithTestCaseName("Alpha").Build())
                     .WithPerformanceRunResult(
                         PerformanceRunResultTrackingFormatBuilder.Create()
                             .WithMean(10.0)
@@ -849,7 +855,7 @@ public class MethodComparisonTestRunCompletedHandlerTests
                             .Build())
                     .Build(),
                 CompiledTestCaseResultTrackingFormatBuilder.Create()
-                    .WithTestCaseId(TestCaseIdBuilder.Create().WithTestCaseName("Beta").Build())
+                    .WithTestCaseId(TestCaseIdBuilder.Create().WithTestCaseVariables(SharedComparisonVariables).WithTestCaseName("Beta").Build())
                     .WithPerformanceRunResult(
                         PerformanceRunResultTrackingFormatBuilder.Create()
                             .WithMean(20.0)

@@ -94,9 +94,9 @@ public class DetailedTableFormatter : IDetailedTableFormatter
         {
             var stats = data.Statistics;
             var display = SailDiffDisplayStatistics.From(stats);
-            var swap = data.IsPerspectiveBased && data.PerspectiveMethodName == data.ComparedMethodName;
-            var primaryTime = swap ? display.MeanAfter : display.MeanBefore;
-            var comparedTime = swap ? display.MeanBefore : display.MeanAfter;
+            // Statistics are pre-oriented: MeanBefore/MedianBefore describe the baseline (primary).
+            var primaryTime = display.MeanBefore;
+            var comparedTime = display.MeanAfter;
 
             var percentChange = primaryTime > 0 ? ((comparedTime - primaryTime) / primaryTime) * 100 : 0;
             var changeText = percentChange >= 0 ? $"+{percentChange:F1}%" : $"{percentChange:F1}%";
@@ -109,8 +109,8 @@ public class DetailedTableFormatter : IDetailedTableFormatter
 
             rows.Add(new[] { $"Mean ({unitLabel})", DurationFormatter.Format(primaryTime, unit, Decimals), DurationFormatter.Format(comparedTime, unit, Decimals), changeText, $"{stats.PValue:F6}" });
 
-            var primaryMedian = swap ? display.MedianAfter : display.MedianBefore;
-            var comparedMedian = swap ? display.MedianBefore : display.MedianAfter;
+            var primaryMedian = display.MedianBefore;
+            var comparedMedian = display.MedianAfter;
 
             var medianChange = primaryMedian > 0 ? ((comparedMedian - primaryMedian) / primaryMedian) * 100 : 0;
             var medianChangeText = medianChange >= 0 ? $"+{medianChange:F1}%" : $"{medianChange:F1}%";
@@ -162,9 +162,9 @@ public class DetailedTableFormatter : IDetailedTableFormatter
         {
             var stats = data.Statistics;
             var display = SailDiffDisplayStatistics.From(stats);
-            var swap = data.IsPerspectiveBased && data.PerspectiveMethodName == data.ComparedMethodName;
-            var primaryTime = swap ? display.MeanAfter : display.MeanBefore;
-            var comparedTime = swap ? display.MeanBefore : display.MeanAfter;
+            // Statistics are pre-oriented: MeanBefore/MedianBefore describe the baseline (primary).
+            var primaryTime = display.MeanBefore;
+            var comparedTime = display.MeanAfter;
 
             var percentChange = primaryTime > 0 ? ((comparedTime - primaryTime) / primaryTime) * 100 : 0;
             var changeText = percentChange >= 0 ? $"+{percentChange:F1}%" : $"{percentChange:F1}%";
@@ -174,8 +174,8 @@ public class DetailedTableFormatter : IDetailedTableFormatter
             sb.AppendLine("|--------|------------|-------------|--------|---------|");
             sb.AppendLine($"| Mean ({unitLabel}) | {DurationFormatter.Format(primaryTime, unit, Decimals)} | {DurationFormatter.Format(comparedTime, unit, Decimals)} | {changeText} | {stats.PValue:F6} |");
 
-            var primaryMedian = swap ? display.MedianAfter : display.MedianBefore;
-            var comparedMedian = swap ? display.MedianBefore : display.MedianAfter;
+            var primaryMedian = display.MedianBefore;
+            var comparedMedian = display.MedianAfter;
 
             var medianChange = primaryMedian > 0 ? ((comparedMedian - primaryMedian) / primaryMedian) * 100 : 0;
             var medianChangeText = medianChange >= 0 ? $"+{medianChange:F1}%" : $"{medianChange:F1}%";
@@ -212,9 +212,9 @@ public class DetailedTableFormatter : IDetailedTableFormatter
                 sb.AppendLine(new string('-', 40));
             }
 
-            var swap = data.IsPerspectiveBased && data.PerspectiveMethodName == data.ComparedMethodName;
-            var primaryTime = swap ? display.MeanAfter : display.MeanBefore;
-            var comparedTime = swap ? display.MeanBefore : display.MeanAfter;
+            // Statistics are pre-oriented: MeanBefore/MedianBefore describe the baseline (primary).
+            var primaryTime = display.MeanBefore;
+            var comparedTime = display.MeanAfter;
 
             sb.AppendLine($"Mean:     {DurationFormatter.FormatWithUnit(primaryTime, unit, Decimals)} -> {DurationFormatter.FormatWithUnit(comparedTime, unit, Decimals)}");
             sb.AppendLine($"P-Value:  {stats.PValue:F6}");
@@ -237,18 +237,11 @@ public class DetailedTableFormatter : IDetailedTableFormatter
         foreach (var data in comparisons)
         {
             var stats = data.Statistics;
-            var primaryTime = data.IsPerspectiveBased && data.PerspectiveMethodName == data.ComparedMethodName
-                ? stats.MeanAfter
-                : stats.MeanBefore;
-            var comparedTime = data.IsPerspectiveBased && data.PerspectiveMethodName == data.ComparedMethodName
-                ? stats.MeanBefore
-                : stats.MeanAfter;
-            var primaryMedian = data.IsPerspectiveBased && data.PerspectiveMethodName == data.ComparedMethodName
-                ? stats.MedianAfter
-                : stats.MedianBefore;
-            var comparedMedian = data.IsPerspectiveBased && data.PerspectiveMethodName == data.ComparedMethodName
-                ? stats.MedianBefore
-                : stats.MedianAfter;
+            // Statistics are pre-oriented: Before describes the baseline (primary), After the contender.
+            var primaryTime = stats.MeanBefore;
+            var comparedTime = stats.MeanAfter;
+            var primaryMedian = stats.MedianBefore;
+            var comparedMedian = stats.MedianAfter;
 
             sb.AppendLine($"{data.PrimaryMethodName},{data.ComparedMethodName}," +
                          $"{primaryTime:F3},{comparedTime:F3}," +

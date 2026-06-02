@@ -51,13 +51,11 @@ public class ImpactSummaryFormatter : IImpactSummaryFormatter
         // aren't lost to the pre-rounded scalar statistics (keeps the %Δ meaningful for fast methods).
         var display = SailDiffDisplayStatistics.From(stats);
 
-        // Calculate percentage change
-        var primaryTime = data.IsPerspectiveBased && data.PerspectiveMethodName == data.ComparedMethodName
-            ? display.MeanAfter
-            : display.MeanBefore;
-        var comparedTime = data.IsPerspectiveBased && data.PerspectiveMethodName == data.ComparedMethodName
-            ? display.MeanBefore
-            : display.MeanAfter;
+        // Calculate percentage change. Comparison data arrives pre-oriented: MeanBefore is the
+        // baseline (PrimaryMethodName) and MeanAfter the contender (ComparedMethodName), so the named
+        // baseline always carries its own mean and the direction can never be misread.
+        var primaryTime = display.MeanBefore;
+        var comparedTime = display.MeanAfter;
 
         var percentChange = primaryTime > 0 ? ((comparedTime - primaryTime) / primaryTime) * 100 : 0;
         

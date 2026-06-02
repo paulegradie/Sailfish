@@ -80,14 +80,11 @@ public class DistributionPlotFormatter : IDistributionPlotFormatter
         return Wrap(RenderSeries(series), context);
     }
 
-    // Honors the perspective swap the other SailDiff formatters apply: when the comparison is viewed
-    // from the compared method's perspective, before/after are exchanged.
+    // Comparison data arrives pre-oriented from the producer: RawDataBefore describes the baseline
+    // (primary) and RawDataAfter the contender, so no perspective swap is applied here.
     private static (double[]? Primary, double[]? Compared) OrientedSamples(SailDiffComparisonData data)
     {
-        var swap = data.IsPerspectiveBased && data.PerspectiveMethodName == data.ComparedMethodName;
-        return swap
-            ? (data.Statistics.RawDataAfter, data.Statistics.RawDataBefore)
-            : (data.Statistics.RawDataBefore, data.Statistics.RawDataAfter);
+        return (data.Statistics.RawDataBefore, data.Statistics.RawDataAfter);
     }
 
     private static void AddDistinct(List<DistributionPlotRenderer.Series> series, HashSet<string> seen, string label, double[]? data)
