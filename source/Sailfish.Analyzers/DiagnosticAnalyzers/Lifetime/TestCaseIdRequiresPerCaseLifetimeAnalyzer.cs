@@ -42,11 +42,9 @@ public sealed class TestCaseIdRequiresPerCaseLifetimeAnalyzer : AnalyzerBase<Cla
         var typeSymbol = semanticModel.GetDeclaredSymbol(classDeclaration);
         if (typeSymbol is null) return;
 
-        // Lifetime is read from THIS class's own [Sailfish] attribute. A class that is a Sailfish test only by
-        // inheritance (the attribute lives on a base) has no Lifetime of its own to evaluate here.
-        var sailfishAttribute = typeSymbol
-            .GetAttributes()
-            .FirstOrDefault(attribute => attribute.AttributeClass?.Name == "SailfishAttribute");
+        // [Sailfish] is Inherited, so read the effective Lifetime from this class or the nearest base that declares
+        // the attribute — matching how the runtime resolves it.
+        var sailfishAttribute = GetEffectiveSailfishAttribute(typeSymbol);
         if (sailfishAttribute is null) return;
 
         // Only PerCase makes constructor-injected TestCaseId meaningful. The default (and SharedInstance) do not.
@@ -60,6 +58,17 @@ public sealed class TestCaseIdRequiresPerCaseLifetimeAnalyzer : AnalyzerBase<Cla
 
             context.ReportDiagnostic(Diagnostic.Create(Descriptor, parameter.GetLocation(), typeSymbol.Name));
         }
+    }
+
+    private static AttributeData? GetEffectiveSailfishAttribute(ISymbol? symbol)
+    {
+        for (var current = symbol as INamedTypeSymbol; current is not null; current = current.BaseType)
+        {
+            var attribute = current.GetAttributes().FirstOrDefault(a => a.AttributeClass?.Name == "SailfishAttribute");
+            if (attribute is not null) return attribute;
+        }
+
+        return null;
     }
 
     private static bool IsPerCase(AttributeData sailfishAttribute)
