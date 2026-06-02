@@ -165,6 +165,7 @@ internal sealed class TrawlExecutionEngine : ITrawlExecutionEngine
         var stats = LatencyStatsCalculator.Compute(latenciesMs);
         var throughput = runData.Elapsed.TotalSeconds > 0 ? totalRequests / runData.Elapsed.TotalSeconds : 0;
         var errorRate = totalRequests > 0 ? (double)runData.ErrorCount / totalRequests : 0;
+        var timeSeries = TrawlTimeSeriesCalculator.Compute(runData.Samples, runData.RunStartTimestamp, frequency);
 
         var trawlResult = new TrawlResult
         {
@@ -176,16 +177,49 @@ internal sealed class TrawlExecutionEngine : ITrawlExecutionEngine
             TotalErrors = runData.ErrorCount,
             RequestsPerSecond = throughput,
             ErrorRate = errorRate,
-            Latency = stats
+            Latency = stats,
+            LatencySamplesMs = Downsample(latenciesMs),
+            TimeSeries = timeSeries
         };
 
         InjectSamples(container, runData, frequency);
-
-        _logger.Log(LogLevel.Information,
-            "      ---- Trawl result: {Rps:0.#} req/s | p50 {P50:0.##}ms p95 {P95:0.##}ms p99 {P99:0.##}ms max {Max:0.##}ms | errors {Errors}/{Total} ({Rate:0.##%})",
-            trawlResult.RequestsPerSecond, stats.P50, stats.P95, stats.P99, stats.Max, trawlResult.TotalErrors, trawlResult.TotalRequests, trawlResult.ErrorRate);
+        ReportAndPersist(trawlResult);
 
         return new TestCaseExecutionResult(container);
+    }
+
+    private void ReportAndPersist(TrawlResult result)
+    {
+        var report = TrawlReportRenderer.Render(result, _runSettings.DistributionPlotStyle);
+        _logger.Log(LogLevel.Information, "{TrawlReport}", Environment.NewLine + report);
+
+        // Best-effort: an IO failure persisting artifacts must not fail the test case.
+        try
+        {
+            var writer = new TrawlResultWriter();
+            var timestamp = DateTime.UtcNow;
+            var outputDirectory = _runSettings.LocalOutputDirectory;
+            writer.PersistRecord(result, timestamp, outputDirectory);
+            writer.WriteReport(report, result, timestamp, outputDirectory);
+        }
+        catch (Exception ex)
+        {
+            _logger.Log(LogLevel.Warning, ex, "      ---- Trawl: failed to persist result/report");
+        }
+    }
+
+    /// <summary>Caps the latency sample array for plotting/persistence via uniform stride down-sampling.</summary>
+    private static double[] Downsample(double[] all)
+    {
+        var count = all.Length;
+        if (count <= MaxInjectedSamples) return all;
+
+        var stride = (int)Math.Ceiling(count / (double)MaxInjectedSamples);
+        var size = (count + stride - 1) / stride;
+        var result = new double[size];
+        var j = 0;
+        for (var i = 0; i < count && j < size; i += stride) result[j++] = all[i];
+        return result;
     }
 
     /// <summary>
