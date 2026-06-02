@@ -38,6 +38,8 @@ The scenario method is protocol-agnostic — it is any `async` method. Sailfish 
 
 The enclosing class is an ordinary `[Sailfish]` class, so the usual hooks apply — warm a shared `HttpClient` or seed data in `[SailfishGlobalSetup]`. Because **all virtual users share the one test instance**, any scenario state must be thread-safe (a shared `HttpClient` is; a mutable field updated per request is not).
 
+Trawl scenarios should also be **`async` and non-blocking**. In the closed model each virtual user is an independent task, so a scenario that blocks a thread synchronously (rather than `await`-ing) ties up a thread-pool thread for the whole run; at high `VirtualUsers` counts that can starve the pool and distort the ramp. Prefer `await`-ing genuinely asynchronous work.
+
 ### A method is one mode or the other
 
 A method is either a microbenchmark (`[SailfishMethod]`) or a load scenario (`[Trawl]`) — never both. The **SF1022** analyzer enforces this at build time.
