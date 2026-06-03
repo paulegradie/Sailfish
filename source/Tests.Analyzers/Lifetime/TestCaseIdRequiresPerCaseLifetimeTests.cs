@@ -93,4 +93,44 @@ public class TestCode
         await AnalyzerVerifier<TestCaseIdRequiresPerCaseLifetimeAnalyzer>.VerifyAnalyzerAsync(
             source.AddSailfishAttributeDependencies());
     }
+
+    [Fact]
+    public async Task ReportsErrorWhenTestCaseIdInjectedOnClassInheritingSailfishFromBase()
+    {
+        // [Sailfish] is Inherited; the derived class is a test type too (default SharedInstance), so a
+        // TestCaseId constructor parameter on it is flagged.
+        const string source = @"
+[Sailfish]
+public class BaseBench { }
+
+public class DerivedBench : BaseBench
+{
+    public DerivedBench({|#0:TestCaseId testCaseId|}) { }
+
+    [SailfishMethod]
+    public void M() { }
+}";
+        await AnalyzerVerifier<TestCaseIdRequiresPerCaseLifetimeAnalyzer>.VerifyAnalyzerAsync(
+            source.AddSailfishAttributeDependencies(),
+            new DiagnosticResult(TestCaseIdRequiresPerCaseLifetimeAnalyzer.Descriptor)
+                .WithLocation(0)
+                .WithArguments("DerivedBench"));
+    }
+
+    [Fact]
+    public async Task ReportsErrorWhenTestCaseIdInjectedViaPrimaryConstructor()
+    {
+        const string source = @"
+[Sailfish]
+public class TestCode({|#0:TestCaseId testCaseId|})
+{
+    [SailfishMethod]
+    public void M() { _ = testCaseId; }
+}";
+        await AnalyzerVerifier<TestCaseIdRequiresPerCaseLifetimeAnalyzer>.VerifyAnalyzerAsync(
+            source.AddSailfishAttributeDependencies(),
+            new DiagnosticResult(TestCaseIdRequiresPerCaseLifetimeAnalyzer.Descriptor)
+                .WithLocation(0)
+                .WithArguments("TestCode"));
+    }
 }

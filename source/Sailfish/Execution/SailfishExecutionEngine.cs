@@ -32,6 +32,7 @@ internal interface ISailfishExecutionEngine
     /// <summary>
     ///     Runs one provider (one <c>[SailfishMethod]</c>) for a class.
     /// </summary>
+    /// <param name="testProvider">Provider for one <c>[SailfishMethod]</c>; iterating it yields one case per variable combination.</param>
     /// <param name="sharedInstance">
     ///     Non-null for <see cref="SailfishLifetime.SharedInstance" />: the one class-level instance every case
     ///     reuses. The engine runs only the per-case hooks (MethodSetup → iterate → MethodTeardown) on it and does
@@ -40,6 +41,8 @@ internal interface ISailfishExecutionEngine
     ///     Null for <see cref="SailfishLifetime.PerCase" />: a fresh instance per case, with GlobalSetup/Teardown
     ///     and disposal per case.
     /// </param>
+    /// <param name="testCaseGroup">Adapter test cases for this class group; empty in the main-library path.</param>
+    /// <param name="cancellationToken">Token used to cancel execution.</param>
     Task<List<TestCaseExecutionResult>> ActivateContainer(
         ITestInstanceContainerProvider testProvider,
         TestInstanceActivation? sharedInstance,

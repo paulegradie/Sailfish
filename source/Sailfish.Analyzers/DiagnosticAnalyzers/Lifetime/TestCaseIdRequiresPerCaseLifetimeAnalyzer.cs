@@ -3,7 +3,6 @@ using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
 using Microsoft.CodeAnalysis.Diagnostics;
 using Sailfish.Analyzers.Utils;
-using Sailfish.Analyzers.Utils.TreeParsingExtensionMethods;
 
 namespace Sailfish.Analyzers.DiagnosticAnalyzers.Lifetime;
 
@@ -37,13 +36,12 @@ public sealed class TestCaseIdRequiresPerCaseLifetimeAnalyzer : AnalyzerBase<Cla
 
     protected override void AnalyzeNode(TypeDeclarationSyntax classDeclaration, SemanticModel semanticModel, SyntaxNodeAnalysisContext context)
     {
-        if (!classDeclaration.IsASailfishTestType(semanticModel)) return;
-
         var typeSymbol = semanticModel.GetDeclaredSymbol(classDeclaration);
         if (typeSymbol is null) return;
 
-        // [Sailfish] is Inherited, so read the effective Lifetime from this class or the nearest base that declares
-        // the attribute — matching how the runtime resolves it.
+        // Gate on the effective [Sailfish] attribute — this class, or the nearest base that declares it (the
+        // attribute is Inherited). This both decides "is this a Sailfish test type" and yields the Lifetime, so a
+        // class that only inherits [Sailfish] from a base is covered exactly as the runtime treats it.
         var sailfishAttribute = GetEffectiveSailfishAttribute(typeSymbol);
         if (sailfishAttribute is null) return;
 
