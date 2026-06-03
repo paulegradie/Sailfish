@@ -20,7 +20,10 @@ public enum DurationUnit
 /// (see <c>PerformanceRunResult.ConvertFromPerfTimer</c>), so all inputs here are milliseconds.
 /// A representative magnitude is used to pick a single, human-friendly unit (ns / µs / ms / s)
 /// for a whole table column so that values land at roughly one-to-four significant figures,
-/// BenchmarkDotNet-style. This is presentation only — it never changes stored or persisted values.
+/// BenchmarkDotNet-style. Nanoseconds are always rendered as whole numbers: no supported timer
+/// resolves below 1 ns (Stopwatch tops out at one tick/ns, and the hardware is usually far
+/// coarser), so fractional-ns digits would be false precision. This is presentation only — it
+/// never changes stored or persisted values.
 /// </summary>
 public static class DurationFormatter
 {
@@ -84,7 +87,7 @@ public static class DurationFormatter
     public static string Format(double milliseconds, DurationUnit unit, int decimals)
     {
         var value = ToUnit(milliseconds, unit);
-        return value.ToString("F" + Math.Max(0, decimals), CultureInfo.InvariantCulture);
+        return value.ToString("F" + EffectiveDecimals(unit, decimals), CultureInfo.InvariantCulture);
     }
 
     /// <summary>
@@ -106,13 +109,16 @@ public static class DurationFormatter
     /// Formats a millisecond value in the supplied unit, escalating decimals (4 → 6 → 8) so a
     /// small-but-non-zero value never collapses to "0.0000". Used for confidence-interval margins,
     /// which can be far smaller than the column's central values. No unit suffix.
+    /// Nanoseconds render as whole numbers (sub-ns is false precision); the escalating fractional
+    /// steps are only reached for a sub-1ns margin that would otherwise collapse to "0".
     /// </summary>
     public static string FormatAdaptive(double milliseconds, DurationUnit unit)
     {
         var value = ToUnit(milliseconds, unit);
         if (value == 0) return "0";
 
-        foreach (var decimals in AdaptiveDecimalSteps)
+        var steps = unit == DurationUnit.Nanoseconds ? NanosecondAdaptiveDecimalSteps : AdaptiveDecimalSteps;
+        foreach (var decimals in steps)
         {
             var formatted = value.ToString("F" + decimals, CultureInfo.InvariantCulture);
             if (!IsAllZero(formatted)) return formatted;
@@ -122,6 +128,19 @@ public static class DurationFormatter
     }
 
     private static readonly int[] AdaptiveDecimalSteps = { 4, 6, 8 };
+
+    // Nanoseconds try whole numbers first; fractional digits are a last resort that only a
+    // sub-1ns margin (which would otherwise render "0") ever reaches.
+    private static readonly int[] NanosecondAdaptiveDecimalSteps = { 0, 4, 6, 8 };
+
+    /// <summary>
+    /// Clamps the caller's requested decimal count to what the chosen unit can meaningfully express.
+    /// Nanoseconds are the finest resolution any supported timer reports, so fractional nanoseconds
+    /// are pure formatting noise — a "417.000 ns" sample really only carries "417 ns" — and are
+    /// always rendered as whole numbers. Coarser units (µs / ms / s) keep the requested precision.
+    /// </summary>
+    private static int EffectiveDecimals(DurationUnit unit, int requestedDecimals)
+        => unit == DurationUnit.Nanoseconds ? 0 : Math.Max(0, requestedDecimals);
 
     private static DurationUnit PickUnit(double magnitudeMs)
     {

@@ -62,10 +62,22 @@ public class DurationFormatterTests
     [InlineData(0.0011, DurationUnit.Nanoseconds, 0, "1100")]
     [InlineData(12.0, DurationUnit.Milliseconds, 2, "12.00")]
     [InlineData(1500.0, DurationUnit.Seconds, 2, "1.50")]
-    [InlineData(1.5e-6, DurationUnit.Nanoseconds, 2, "1.50")]
+    [InlineData(4.1667e-4, DurationUnit.Nanoseconds, 3, "417")] // 416.67 ns: ns ignores requested decimals -> whole number
     public void Format_renders_value_in_unit(double milliseconds, DurationUnit unit, int decimals, string expected)
     {
         DurationFormatter.Format(milliseconds, unit, decimals).ShouldBe(expected);
+    }
+
+    [Fact]
+    public void Format_renders_nanoseconds_as_whole_numbers_ignoring_requested_decimals()
+    {
+        // No supported timer resolves below 1 ns, so fractional-ns digits are false precision.
+        // A 416.67 ns sample (0.00041667 ms) must render "417", never "416.670" — regardless of
+        // the requested decimal count. Repro from the IDE "Distribution (ns)" dump showing "417.000".
+        DurationFormatter.Format(0.00041667, DurationUnit.Nanoseconds, 3).ShouldBe("417");
+        DurationFormatter.FormatWithUnit(0.00041667, DurationUnit.Nanoseconds, 3).ShouldBe("417 ns");
+        // Coarser units are unaffected and keep their decimals.
+        DurationFormatter.Format(0.0011, DurationUnit.Microseconds, 3).ShouldBe("1.100");
     }
 
     [Fact]
@@ -75,7 +87,7 @@ public class DurationFormatterTests
     }
 
     [Theory]
-    [InlineData(1.5e-6, 2, "1.50 ns")]   // 1.5 ns
+    [InlineData(4.1667e-4, 2, "417 ns")] // 416.67 ns -> whole ns (decimals ignored)
     [InlineData(0.0011, 2, "1.10 µs")]   // 1.1 µs — the headline acceptance case
     [InlineData(12.0, 2, "12.00 ms")]
     [InlineData(1500.0, 2, "1.50 s")]
@@ -113,6 +125,22 @@ public class DurationFormatterTests
     public void FormatAdaptive_returns_zero_for_zero()
     {
         DurationFormatter.FormatAdaptive(0.0, DurationUnit.Microseconds).ShouldBe("0");
+    }
+
+    [Fact]
+    public void FormatAdaptive_renders_a_nanosecond_margin_as_a_whole_number()
+    {
+        // A 12.7 ns CI margin shares a ns column with whole-number means/medians, so it must
+        // render "13", not "12.7000" — sub-ns digits are false precision.
+        DurationFormatter.FormatAdaptive(12.7e-6, DurationUnit.Nanoseconds).ShouldBe("13");
+    }
+
+    [Fact]
+    public void FormatAdaptive_keeps_a_sub_nanosecond_margin_visible()
+    {
+        // A 0.3 ns margin would collapse to "0" at whole-ns precision, so the adaptive fallback
+        // escalates decimals to keep the (tiny but nonzero) value visible.
+        DurationFormatter.FormatAdaptive(0.3e-6, DurationUnit.Nanoseconds).ShouldBe("0.3000");
     }
 
     [Theory]
