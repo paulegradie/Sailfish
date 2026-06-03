@@ -380,6 +380,14 @@ public class RunSettingsBuilder
         return this;
     }
 
+    /// <summary>
+    ///     Sets the effective sample size for every test case, overriding per-class
+    ///     <c>[Sailfish(SampleSize = ...)]</c> values. This is an upper bound: with adaptive
+    ///     sampling (enabled by default) a case may converge with fewer samples, but never more.
+    ///     The value is honoured even when it is below the configured minimum sample size — an
+    ///     explicit override wins over the default floor, so e.g. <c>WithGlobalSampleSize(8)</c>
+    ///     yields ~8 samples rather than being clamped back up to the minimum.
+    /// </summary>
     public RunSettingsBuilder WithGlobalSampleSize(int sampleSize)
     {
         _globalSampleSize = Math.Max(sampleSize, 1);
