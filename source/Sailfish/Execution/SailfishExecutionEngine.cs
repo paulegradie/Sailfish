@@ -341,6 +341,20 @@ internal class SailfishExecutionEngine : ISailfishExecutionEngine
         // scope disposal is in a finally so it always runs, even if the instance's own disposal throws.
         try
         {
+            // A disabled test is materialized WITHOUT running its constructor (#300: TypeActivator allocates it
+            // via RuntimeHelpers.GetUninitializedObject), so the instance is uninitialized. Never invoke its
+            // IDisposable/IAsyncDisposable.Dispose here — running user teardown against an object whose
+            // constructor never ran breaks the "no user code for disabled tests" guarantee and can throw on
+            // fields the ctor would have set, reporting a disabled test as failed. This covers both a disabled
+            // class and a disabled method in an enabled class (both reach disposal with a dehydrated instance).
+            // Just drop the reference; the DI scope (disposed in the finally) is null for disabled tests anyway,
+            // but is still released defensively if one is ever present.
+            if (instanceContainer is { Disabled: true })
+            {
+                instanceContainer.Instance = null!;
+                return;
+            }
+
             switch (instanceContainer?.Instance)
             {
                 case IAsyncDisposable asyncDisposable:
