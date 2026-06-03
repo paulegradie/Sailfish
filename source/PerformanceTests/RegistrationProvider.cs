@@ -16,8 +16,9 @@ public class RegistrationProvider : IRegisterSailfishServices
         await Task.CompletedTask;
         services.AddTransient<WebApplicationFactory<DemoApp>>();
 
-        // Skipper AI analysis: register the agentic provider. Combined with "AiAnalysisSettings": { "Enabled": true }
+        // Skipper AI analysis: register the reference transport. AddSkipperTransport wires the framework's
+        // prompt-building + parsing pipeline around it. Combined with "AiAnalysisSettings": { "Enabled": true }
         // in .sailfish.json, this lights up Skipper for the Test Adapter (dotnet test / Test Explorer) path.
-        services.AddSingleton<ISailfishAgent, ClaudeAgentModelProvider>();
+        services.AddSkipperTransport<ClaudeCliSkipperTransport>();
     }
 }
