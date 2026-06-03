@@ -13,9 +13,11 @@ public class TestCaseIdConverter : JsonConverter<TestCaseId?>
         using var doc = JsonDocument.ParseValue(ref reader);
         var testCaseId = doc.RootElement;
 
-        var testCaseName = testCaseId.GetProperty("TestCaseName").Deserialize<TestCaseName>()
+        // Pass options through so nested deserialization resolves via the same (source-gen) resolver
+        // rather than the reflection-based default, which is disabled in AOT / trimmed / file-based hosts.
+        var testCaseName = testCaseId.GetProperty("TestCaseName").Deserialize<TestCaseName>(options)
                            ?? throw new SailfishException("Failed to deserialize 'TestCaseName'");
-        var testCaseVariables = testCaseId.GetProperty("TestCaseVariables").Deserialize<TestCaseVariables>() ??
+        var testCaseVariables = testCaseId.GetProperty("TestCaseVariables").Deserialize<TestCaseVariables>(options) ??
                                 throw new SailfishException("Failed to deserialize 'TestCaseVariables'");
         return new TestCaseId(testCaseName, testCaseVariables);
     }
