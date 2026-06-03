@@ -72,17 +72,24 @@ internal class TestCaseIterator : ITestCaseIterator
 
         var strategy = useAdaptive ? _adaptiveIterationStrategy : _fixedIterationStrategy;
 
-        // Apply sample size override if specified
+        // Apply an explicit run-level sample-size override. It is authoritative and is honoured
+        // even below MinimumSampleSize: previously the adaptive branch raised only the maximum to
+        // Math.Max(override, MinimumSampleSize), so an override below the minimum — e.g. 8 against a
+        // default 10 — was silently clamped back up and ignored.
         if (_runSettings.SampleSizeOverride.HasValue)
         {
+            var target = Math.Max(_runSettings.SampleSizeOverride.Value, 1);
             if (useAdaptive)
             {
-                executionSettings.MaximumSampleSize = Math.Max(_runSettings.SampleSizeOverride.Value,
-                                                              executionSettings.MinimumSampleSize);
+                // Cap at the override; lower the floor to match when the override is smaller so
+                // adaptive sampling can actually stop at the requested size (otherwise the floor
+                // would exceed the cap and the requested size would be unreachable).
+                executionSettings.MinimumSampleSize = Math.Min(executionSettings.MinimumSampleSize, target);
+                executionSettings.MaximumSampleSize = target;
             }
             else
             {
-                executionSettings.SampleSize = Math.Max(_runSettings.SampleSizeOverride.Value, 1);
+                executionSettings.SampleSize = target;
             }
         }
 

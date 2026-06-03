@@ -5,6 +5,7 @@ using Sailfish.Contracts.Public.Notifications;
 using Sailfish.Diagnostics.Environment;
 using Sailfish.Results;
 using Sailfish.Analysis.ScaleFish;
+using Sailfish.Analysis.SailDiff.Formatting;
 
 namespace Sailfish.Analysis.Ai;
 
@@ -134,17 +135,24 @@ internal sealed class PerformanceNarrativeContextBuilder : IPerformanceNarrative
                 ChangeDescription: stats.ChangeDescription, SampleSizeBefore: 0, SampleSizeAfter: 0, Failed: true);
         }
 
-        var percentChangeMean = stats.MeanBefore != 0
-            ? (stats.MeanAfter - stats.MeanBefore) / stats.MeanBefore * 100.0
+        // Use full-precision means/medians recomputed from the raw samples. The scalar
+        // Mean*/Median* on StatisticalTestResult are pre-rounded to SailDiffSettings.Round decimals
+        // (ms), which collapses sub-millisecond values to ~0.001 — that zeroes the percent-change,
+        // flips the verdict direction when both means round equal, and feeds the agent rounded
+        // figures that disagree with the embedded results markdown.
+        var display = SailDiffDisplayStatistics.From(stats);
+
+        var percentChangeMean = display.MeanBefore != 0
+            ? (display.MeanAfter - display.MeanBefore) / display.MeanBefore * 100.0
             : 0.0;
 
         return new SailDiffCaseContext(
             displayName,
-            DeriveVerdict(stats, alpha),
-            stats.MeanBefore,
-            stats.MeanAfter,
-            stats.MedianBefore,
-            stats.MedianAfter,
+            DeriveVerdict(display, stats, alpha),
+            display.MeanBefore,
+            display.MeanAfter,
+            display.MedianBefore,
+            display.MedianAfter,
             percentChangeMean,
             stats.PValue,
             stats.QValue,
@@ -157,13 +165,15 @@ internal sealed class PerformanceNarrativeContextBuilder : IPerformanceNarrative
             MinimumDetectableEffectPercent: stats.MinimumDetectableEffectPercent);
     }
 
-    private static SkipperVerdict DeriveVerdict(StatisticalTestResult stats, double alpha)
+    private static SkipperVerdict DeriveVerdict(SailDiffDisplayStatistics display, StatisticalTestResult stats, double alpha)
     {
         // Prefer the BH-FDR adjusted q-value when present (it controls the family-wise error rate across the
         // pairs in an N×N method comparison); otherwise fall back to the raw p-value.
         var p = stats.QValue ?? stats.PValue;
         if (double.IsNaN(p) || p >= alpha) return SkipperVerdict.NotSignificant;
 
-        return stats.MeanAfter > stats.MeanBefore ? SkipperVerdict.Regressed : SkipperVerdict.Improved;
+        // Direction from the full-precision means (see ToCaseContext): the rounded scalars can
+        // collapse a real sub-resolution change to equal and mislabel the direction.
+        return display.MeanAfter > display.MeanBefore ? SkipperVerdict.Regressed : SkipperVerdict.Improved;
     }
 }

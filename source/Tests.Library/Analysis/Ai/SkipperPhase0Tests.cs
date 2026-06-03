@@ -148,6 +148,35 @@ public class PerformanceNarrativeContextBuilderTests
         c.MinimumDetectableEffectPercent!.Value.ShouldBe(3.2, 1e-9);
     }
 
+    [Fact]
+    public void SubMillisecondChange_UsesFullPrecisionMeans_NotRoundedScalars()
+    {
+        // Real data: before ≈ 0.0006 ms, after ≈ 0.000625 ms (a ~4% regression). The statistical
+        // tests pre-round the scalar means to SailDiffSettings.Round (3) → both 0.001, which would
+        // zero the percent-change and flip the verdict to Improved. The context must recompute from
+        // the raw arrays so the agent sees the real, correctly-directed change.
+        var before = Enumerable.Range(0, 10).Select(i => 0.000595 + i * 1e-6).ToArray();
+        var after = Enumerable.Range(0, 10).Select(i => 0.000620 + i * 1e-6).ToArray();
+        var stats = new StatisticalTestResult(
+            meanBefore: Math.Round(before.Average(), 3),  // 0.001 — the pre-rounded scalar
+            meanAfter: Math.Round(after.Average(), 3),    // 0.001 — identical once rounded
+            medianBefore: Math.Round(before.Average(), 3),
+            medianAfter: Math.Round(after.Average(), 3),
+            testStatistic: 0, pValue: 0.01, changeDescription: "desc",
+            sampleSizeBefore: 10, sampleSizeAfter: 10,
+            rawDataBefore: before, rawDataAfter: after,
+            additionalResults: new Dictionary<string, object>());
+        var result = new SailDiffResult(new TestCaseId("WithJoin"), new TestResultWithOutlierAnalysis(stats, null, null));
+
+        var c = builder.Build(new SailDiffAnalysisCompleteNotification(new[] { result }, "## md"), Alpha).Comparisons.Single();
+
+        c.MeanBefore.ShouldBe(before.Average(), 1e-12); // full precision, not the rounded 0.001
+        c.MeanAfter.ShouldBe(after.Average(), 1e-12);
+        c.MeanBefore.ShouldNotBe(c.MeanAfter);          // would have been equal with the rounded scalars
+        c.PercentChangeMean.ShouldBeGreaterThan(3.0);   // the real change is visible, not zeroed
+        c.Verdict.ShouldBe(SkipperVerdict.Regressed);   // and correctly directed
+    }
+
     private PerformanceNarrativeContext Build(params SailDiffResult[] results) =>
         builder.Build(new SailDiffAnalysisCompleteNotification(results, "## markdown"), Alpha);
 

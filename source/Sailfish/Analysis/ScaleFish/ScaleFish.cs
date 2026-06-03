@@ -128,6 +128,10 @@ internal class ScaleFish : IScaleFish, IScaleFishInternal
         }
         catch (Exception ex)
         {
+            // Surface the failure. A silently-swallowed exception here is exactly why a null-key
+            // crash in the complexity computer produced no ScaleFish output — and no error — for
+            // so long; log it at Warning so the next regression is visible.
+            _logger.Log(LogLevel.Warning, ex, "ScaleFish analysis failed: {0}", ex.Message);
             _consoleWriter.WriteString(ex.Message);
         }
     }
