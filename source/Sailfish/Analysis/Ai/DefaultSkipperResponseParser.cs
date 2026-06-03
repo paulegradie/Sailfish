@@ -64,7 +64,10 @@ internal sealed class DefaultSkipperResponseParser : ISkipperResponseParser
         }
         catch
         {
-            return SkipperReview.Empty with { ConsoleSummary = modelText.Trim() };
+            // Mirror the JSON-extraction-failure path above: surface the raw text in BOTH renderings so the
+            // persisted artifact is identical regardless of which degradation path was hit.
+            var raw = modelText.Trim();
+            return SkipperReview.Empty with { ConsoleSummary = raw, MarkdownReport = raw };
         }
     }
 

@@ -68,6 +68,10 @@ public sealed class ClaudeCliSkipperTransport : ISkipperTransport
         catch (OperationCanceledException)
         {
             try { process.Kill(entireProcessTree: true); } catch { /* best effort */ }
+            // The timeout token is linked to the caller's token, so this fires for BOTH a real timeout and a
+            // caller cancellation. Honor the caller's cancellation; only the timeout becomes a TimeoutException.
+            if (cancellationToken.IsCancellationRequested)
+                throw;
             throw new TimeoutException($"The claude CLI did not respond within {Timeout.TotalSeconds:F0}s.");
         }
 

@@ -171,6 +171,19 @@ public class DefaultSkipperResponseParserTests
         parser.Parse(string.Empty).HasContent.ShouldBeFalse();
         parser.Parse("   ").HasContent.ShouldBeFalse();
     }
+
+    [Fact]
+    public void Parse_MalformedJsonObject_DegradesToRawText_InBothRenderings()
+    {
+        // Has braces (so extraction succeeds) but fails to deserialize -> both renderings carry the raw text,
+        // matching the no-JSON fallback so the persisted artifact is identical across degradation paths.
+        const string raw = "{ this is not valid json }";
+
+        var review = parser.Parse(raw);
+
+        review.ConsoleSummary.ShouldBe(raw);
+        review.MarkdownReport.ShouldBe(raw);
+    }
 }
 
 /// <summary>
@@ -259,6 +272,37 @@ public class PromptDrivenSailfishAgentTests
         review.HasContent.ShouldBeFalse();
     }
 
+    [Fact]
+    public async Task CallerCancellation_IsPropagated_NotSwallowedAsEmpty()
+    {
+        using var cts = new CancellationTokenSource();
+        cts.Cancel();
+        var agent = new PromptDrivenSailfishAgent(
+            new DefaultSkipperPromptBuilder(SkipperPromptTestHelpers.DefaultSections()),
+            new CanceledTransport(),
+            new DefaultSkipperResponseParser(),
+            logger);
+
+        await Should.ThrowAsync<OperationCanceledException>(() =>
+            agent.RunAsync(SkipperPromptTestHelpers.Session(SkipperPromptTestHelpers.EmptyContext()), cts.Token));
+    }
+
+    [Fact]
+    public async Task OperationCanceled_WithoutCallerCancellation_IsSwallowedToEmpty()
+    {
+        // A transport that throws OCE without the caller's token being cancelled is just a failure -> stay invisible.
+        var agent = new PromptDrivenSailfishAgent(
+            new DefaultSkipperPromptBuilder(SkipperPromptTestHelpers.DefaultSections()),
+            new CanceledTransport(),
+            new DefaultSkipperResponseParser(),
+            logger);
+
+        var review = await agent.RunAsync(
+            SkipperPromptTestHelpers.Session(SkipperPromptTestHelpers.EmptyContext()), CancellationToken.None);
+
+        review.HasContent.ShouldBeFalse();
+    }
+
     private sealed class StubTransport : ISkipperTransport
     {
         private readonly string response;
@@ -278,6 +322,12 @@ public class PromptDrivenSailfishAgentTests
     {
         public Task<string> CompleteAsync(string prompt, SkipperSession session, CancellationToken cancellationToken) =>
             throw new InvalidOperationException("claude CLI offline");
+    }
+
+    private sealed class CanceledTransport : ISkipperTransport
+    {
+        public Task<string> CompleteAsync(string prompt, SkipperSession session, CancellationToken cancellationToken) =>
+            throw new OperationCanceledException(cancellationToken);
     }
 }
 

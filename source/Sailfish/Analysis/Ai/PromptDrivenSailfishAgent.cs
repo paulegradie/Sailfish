@@ -50,6 +50,11 @@ internal sealed class PromptDrivenSailfishAgent : ISailfishAgent
             var modelText = await transport.CompleteAsync(prompt, session, cancellationToken).ConfigureAwait(false);
             return responseParser.Parse(modelText);
         }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
+            // The run is being cancelled (e.g. host shutdown) — propagate rather than masking it as "no analysis".
+            throw;
+        }
         catch (Exception ex)
         {
             // Skipper is strictly additive: a missing / offline / slow model must never throw into a run.
