@@ -1,8 +1,11 @@
-﻿using Sailfish.Attributes;
+using Sailfish.Attributes;
 using Shouldly;
 
 namespace Tests.E2E.TestSuite.Discoverable;
 
+// Validates the default SharedInstance lifetime: ONE instance for the whole class, [SailfishGlobalSetup] runs
+// once, every case (method × variable) runs on that instance, and [SailfishGlobalTeardown] runs once at the end
+// — so state can accumulate across cases (here, into a static list asserted in teardown).
 [Sailfish(1, 0, Disabled = Constants.Disabled)]
 public class VariablesIterateTest
 {

@@ -1,5 +1,6 @@
-﻿using System;
+using System;
 using System.Reflection;
+using Microsoft.Extensions.DependencyInjection;
 using Sailfish.Contracts.Public.Models;
 using Sailfish.Exceptions;
 using Sailfish.Utils;
@@ -19,7 +20,8 @@ internal class TestInstanceContainer
         TestCaseId testCaseId,
         IExecutionSettings executionSettings,
         CoreInvoker coreInvoker,
-        bool disabled)
+        bool disabled,
+        IServiceScope? serviceScope)
     {
         Type = type;
         Instance = instance;
@@ -28,6 +30,7 @@ internal class TestInstanceContainer
         ExecutionSettings = executionSettings;
         CoreInvoker = coreInvoker;
         Disabled = disabled;
+        ServiceScope = serviceScope;
         GroupingId = $"{instance.GetType().Name}.{method.Name}";
     }
 
@@ -44,6 +47,13 @@ internal class TestInstanceContainer
     public CoreInvoker CoreInvoker { get; }
     public bool Disabled { get; }
 
+    /// <summary>
+    ///     The per-case DI scope this instance was resolved from, or <c>null</c> for disabled tests / instances
+    ///     created outside the container. The engine disposes this scope after the case completes, which in turn
+    ///     disposes any scoped/transient dependencies resolved for the case.
+    /// </summary>
+    public IServiceScope? ServiceScope { get; }
+
     public static TestInstanceContainer CreateTestInstance(
         object instance,
         MethodInfo method,
@@ -51,7 +61,8 @@ internal class TestInstanceContainer
         object[] variables,
         bool disabled,
         IExecutionSettings executionSettings,
-        LifecycleMethodTracker? lifecycleMethodTracker = null
+        LifecycleMethodTracker? lifecycleMethodTracker = null,
+        IServiceScope? serviceScope = null
     )
     {
         if (propertyNames.Length != variables.Length) throw new SailfishException("Property names and variables do not match");
@@ -65,7 +76,8 @@ internal class TestInstanceContainer
             testCaseId,
             executionSettings,
             new CoreInvoker(instance, method, new PerformanceTimer(), lifecycleMethodTracker),
-            disabled);
+            disabled,
+            serviceScope);
     }
 
     public void ApplyOverheadEstimates(int overheadEstimate)

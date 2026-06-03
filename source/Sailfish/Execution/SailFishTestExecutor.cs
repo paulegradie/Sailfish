@@ -18,7 +18,7 @@ internal interface ISailFishTestExecutor
 
 internal class SailFishTestExecutor : ISailFishTestExecutor
 {
-    private readonly ISailfishExecutionEngine _engine;
+    private readonly IClassExecutionDispatcher _dispatcher;
     private readonly ILogger _logger;
     private readonly ITestCaseCountPrinter _testCaseCountPrinter;
     private readonly ITestInstanceContainerCreator _testInstanceContainerCreator;
@@ -26,9 +26,9 @@ internal class SailFishTestExecutor : ISailFishTestExecutor
     public SailFishTestExecutor(ILogger logger,
         ITestCaseCountPrinter testCaseCountPrinter,
         ITestInstanceContainerCreator testInstanceContainerCreator,
-        ISailfishExecutionEngine engine)
+        IClassExecutionDispatcher dispatcher)
     {
-        _engine = engine;
+        _dispatcher = dispatcher;
         _logger = logger;
         _testCaseCountPrinter = testCaseCountPrinter;
         _testInstanceContainerCreator = testInstanceContainerCreator;
@@ -82,27 +82,13 @@ internal class SailFishTestExecutor : ISailFishTestExecutor
         IReadOnlyCollection<TestInstanceContainerProvider> testInstanceContainerProviders,
         CancellationToken cancellationToken = default)
     {
-        var results = new List<TestCaseExecutionResult>();
+        if (testInstanceContainerProviders.Count == 0) return new List<TestCaseExecutionResult>();
 
-        var testProviderIndex = 0;
-        var totalMethodCount = testInstanceContainerProviders.Count - 1;
-        var executionState = new ExecutionState();
         foreach (var testProvider in testInstanceContainerProviders)
-        {
-            var providerPropertiesCacheKey = testProvider.Test.FullName ?? throw new SailfishException($"Failed to read the FullName of {testProvider.Test.Name}");
             _testCaseCountPrinter.PrintMethodUpdate(testProvider.Method);
-            var executionResults = await _engine.ActivateContainer(
-                testProviderIndex,
-                totalMethodCount,
-                testProvider,
-                executionState,
-                providerPropertiesCacheKey,
-                cancellationToken);
-            results.AddRange(executionResults);
-            testProviderIndex += 1;
-        }
 
-        return results;
+        var testType = testInstanceContainerProviders.First().Test;
+        return await _dispatcher.Dispatch(testType, testInstanceContainerProviders.ToList(), [], cancellationToken);
     }
 
     private static bool FilterEnabledType(IEnumerable<Type> testTypes, out Type[] enabledTypes)
