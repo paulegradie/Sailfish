@@ -171,7 +171,15 @@ namespace Sailfish.Results
             if (!Directory.Exists(outputDirectory)) Directory.CreateDirectory(outputDirectory);
             fileName ??= $"Manifest_{manifest.TimestampUtc.ToString(Presentation.DefaultFileSettings.SortableFormat)}.json";
             var path = Path.Combine(outputDirectory, fileName);
-            var json = JsonSerializer.Serialize(manifest, new JsonSerializerOptions { WriteIndented = true });
+            // Use Sailfish's shared type-info resolver so the manifest also serializes in hosts where
+            // reflection-based serialization is disabled (Native AOT / trimmed / file-based). The manifest
+            // contract is registered in SailfishJsonContext.
+            var options = new JsonSerializerOptions
+            {
+                WriteIndented = true,
+                TypeInfoResolver = Contracts.Public.Serialization.SailfishSerializer.TypeInfoResolver
+            };
+            var json = JsonSerializer.Serialize(manifest, options);
             File.WriteAllText(path, json);
         }
 

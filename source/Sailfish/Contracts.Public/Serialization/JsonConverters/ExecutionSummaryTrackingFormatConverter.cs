@@ -19,12 +19,15 @@ public class ExecutionSummaryTrackingFormatConverter : JsonConverter<ClassExecut
 
         var type = Type.GetType(typeName);
 
+        // Thread the caller's options through so nested deserialization uses the same (source-gen)
+        // resolver. Without this, these calls fall back to the reflection-based default resolver, which
+        // throws in AOT / trimmed / file-based hosts where reflection serialization is disabled.
         var settings = jsonElementClassExecutionSummary
             .GetProperty(nameof(TrackingFileSerializationHelper.ExecutionSettings))
-            .Deserialize<ExecutionSettingsTrackingFormat>() ?? throw new SailfishException("Failed to deserialize 'Settings'");
+            .Deserialize<ExecutionSettingsTrackingFormat>(options) ?? throw new SailfishException("Failed to deserialize 'Settings'");
         var compiledTestCaseResults = jsonElementClassExecutionSummary
             .GetProperty(nameof(TrackingFileSerializationHelper.CompiledTestCaseResults))
-            .Deserialize<IEnumerable<CompiledTestCaseResultTrackingFormat>>() ?? throw new SailfishException("Failed to deserialize 'CompiledTestCaseResults'");
+            .Deserialize<IEnumerable<CompiledTestCaseResultTrackingFormat>>(options) ?? throw new SailfishException("Failed to deserialize 'CompiledTestCaseResults'");
 
         return new ClassExecutionSummaryTrackingFormat(type!, settings, compiledTestCaseResults);
     }
