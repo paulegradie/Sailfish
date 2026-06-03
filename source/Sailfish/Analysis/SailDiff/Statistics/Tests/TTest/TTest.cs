@@ -46,15 +46,19 @@ public class Test : ITTest
 
             // Means / medians reported on the raw scale so the user sees their familiar ms
             // numbers regardless of whether the test ran on log(time).
-            var meanBefore = Math.Round(rawSample1.Mean(), sigDig);
-            var meanAfter = Math.Round(rawSample2.Mean(), sigDig);
+            var rawMeanBefore = rawSample1.Mean();
+            var rawMeanAfter = rawSample2.Mean();
+            var meanBefore = Math.Round(rawMeanBefore, sigDig);
+            var meanAfter = Math.Round(rawMeanAfter, sigDig);
             var medianBefore = Math.Round(rawSample1.Median(), sigDig);
             var medianAfter = Math.Round(rawSample2.Median(), sigDig);
             var testStatistic = Math.Round(test.Statistic, sigDig);
             var dof = Math.Round(test.DegreesOfFreedom, sigDig);
             var isSignificant = test.PValue <= settings.Alpha;
             var pVal = Math.Round(test.PValue, TestConstants.PValueSigDig);
-            var changeDirection = meanAfter > meanBefore ? SailfishChangeDirection.Regressed : SailfishChangeDirection.Improved;
+            // Direction from the unrounded means — rounding for display can collapse a real
+            // sub-resolution difference to equal and flip the verdict to Improved.
+            var changeDirection = rawMeanAfter > rawMeanBefore ? SailfishChangeDirection.Regressed : SailfishChangeDirection.Improved;
             var description = isSignificant ? changeDirection : SailfishChangeDirection.NoChange;
             var additionalResults = new Dictionary<string, object> { { AdditionalResults.DegreesOfFreedom, dof } };
             // SampleSize* / RawData* describe the data the test actually consumed (after
