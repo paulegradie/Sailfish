@@ -267,6 +267,78 @@ public class SailfishExecutorTests
             Arg.Is<object[]>(os => os.Length == 1 && Equals(os[0], 123)));
     }
 
+    [Fact]
+    public async Task Run_WhenPostMeasurementAnalysisThrows_DoesNotCrash_AndReturnsTimingsWithFailure()
+    {
+        // Arrange: measurement succeeds, but ScaleFish analysis blows up (e.g. a serialization failure in a
+        // reflection-disabled host). The run must NOT propagate the exception (previously exit 134) — it must
+        // preserve the collected timings, report a graceful failure, and still call the other stages.
+        var testType = typeof(object);
+        var testInitResult = TestInitializationResult.CreateSuccess(new[] { testType });
+        var classExecutionSummary =
+            new ClassExecutionSummary(testType, new ExecutionSettings(), new List<ICompiledTestCaseResult>());
+
+        _testFilter.FilterAndValidate(Arg.Any<IEnumerable<Type>>(), Arg.Any<IEnumerable<string>>())
+            .Returns(testInitResult);
+        _sailFishTestExecutor.Execute(Arg.Any<IEnumerable<Type>>(), Arg.Any<CancellationToken>())
+            .Returns(new List<TestClassResultGroup>());
+        _classExecutionSummaryCompiler.CompileToSummaries(Arg.Any<IEnumerable<TestClassResultGroup>>())
+            .Returns(new List<IClassExecutionSummary> { classExecutionSummary }.AsEnumerable());
+        _runSettings.TestNames.Returns(new List<string>());
+        _runSettings.TestLocationAnchors.Returns(new List<Type>());
+        _runSettings.Seed.Returns((int?)null);
+        _runSettings.Args.Returns(new Sailfish.Extensions.Types.OrderedDictionary());
+        _runSettings.RunSailDiff.Returns(true);
+        _runSettings.RunScaleFish.Returns(true);
+
+        var boom = new InvalidOperationException("analysis blew up");
+        _scaleFish.Analyze(Arg.Any<CancellationToken>()).Returns<Task>(_ => throw boom);
+
+        var executor = new SailfishExecutor(_mediator, _sailFishTestExecutor, _testCollector, _testFilter,
+            _classExecutionSummaryCompiler, _executionSummaryWriter, _sailDiff, _scaleFish, _runSettings, _logger);
+
+        // Act — must not throw.
+        var result = await executor.Run(CancellationToken.None);
+
+        // Assert: timings preserved, failure surfaced, sibling stages still ran.
+        result.ShouldNotBeNull();
+        result.ExecutionSummaries.ShouldNotBeEmpty();
+        result.IsValid.ShouldBeFalse();
+        result.Exceptions.ShouldContain(boom);
+        await _sailDiff.Received(1).Analyze(Arg.Any<CancellationToken>()); // SailDiff still ran despite ScaleFish failing
+        _logger.Received().Log(LogLevel.Error, boom, Arg.Any<string>(), Arg.Any<object[]>());
+    }
+
+    [Fact]
+    public async Task Run_WhenCancelledDuringAnalysis_PropagatesCancellation()
+    {
+        // Cancellation is a control-flow signal, not an analysis failure — it must propagate, not be swallowed.
+        var testType = typeof(object);
+        var testInitResult = TestInitializationResult.CreateSuccess(new[] { testType });
+        var classExecutionSummary =
+            new ClassExecutionSummary(testType, new ExecutionSettings(), new List<ICompiledTestCaseResult>());
+
+        _testFilter.FilterAndValidate(Arg.Any<IEnumerable<Type>>(), Arg.Any<IEnumerable<string>>())
+            .Returns(testInitResult);
+        _sailFishTestExecutor.Execute(Arg.Any<IEnumerable<Type>>(), Arg.Any<CancellationToken>())
+            .Returns(new List<TestClassResultGroup>());
+        _classExecutionSummaryCompiler.CompileToSummaries(Arg.Any<IEnumerable<TestClassResultGroup>>())
+            .Returns(new List<IClassExecutionSummary> { classExecutionSummary }.AsEnumerable());
+        _runSettings.TestNames.Returns(new List<string>());
+        _runSettings.TestLocationAnchors.Returns(new List<Type>());
+        _runSettings.Seed.Returns((int?)null);
+        _runSettings.Args.Returns(new Sailfish.Extensions.Types.OrderedDictionary());
+        _runSettings.RunSailDiff.Returns(false);
+        _runSettings.RunScaleFish.Returns(true);
+
+        _scaleFish.Analyze(Arg.Any<CancellationToken>()).Returns<Task>(_ => throw new OperationCanceledException());
+
+        var executor = new SailfishExecutor(_mediator, _sailFishTestExecutor, _testCollector, _testFilter,
+            _classExecutionSummaryCompiler, _executionSummaryWriter, _sailDiff, _scaleFish, _runSettings, _logger);
+
+        await Should.ThrowAsync<OperationCanceledException>(() => executor.Run(CancellationToken.None));
+    }
+
     [Theory]
     [InlineData("seed")]
     [InlineData("SEED")]

@@ -81,4 +81,25 @@ public class TrackingFileParserTests
         data.ExecutionSettings.AsMarkdown.ShouldBeFalse();
         data.GetSuccessfulTestCases().Count().ShouldBe(1);
     }
+
+    [Fact]
+    public async Task NonSerializationExceptionFromSerializer_IsReportedAsFailure_NotThrown()
+    {
+        // #292: the parser must be genuinely non-throwing. Previously it only caught SerializationException,
+        // so a serializer that threw anything else (e.g. InvalidOperationException — exactly what
+        // System.Text.Json throws when reflection serialization is disabled) propagated and crashed the run.
+        var throwingSerialization = Substitute.For<ITrackingFileSerialization>();
+        throwingSerialization
+            .Deserialize(Arg.Any<string>())
+            .Returns(_ => throw new System.InvalidOperationException("reflection serialization disabled"));
+        var parser = new TrackingFileParser(throwingSerialization, Substitute.For<ILogger>());
+
+        var file = TempFileHelper.WriteStringToTempFile(Some.RandomString());
+        var datalist = new TrackingFileDataList();
+
+        var result = await parser.TryParse(file, datalist, CancellationToken.None);
+
+        result.ShouldBeFalse();
+        datalist.ShouldBeEmpty();
+    }
 }

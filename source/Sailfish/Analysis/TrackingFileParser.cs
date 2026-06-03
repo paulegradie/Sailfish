@@ -71,12 +71,22 @@ internal class TrackingFileParser : ITrackingFileParser
             data.AddRange(trackingFormatData);
             return true;
         }
-        catch (SerializationException ex)
+        catch (OperationCanceledException)
         {
+            // Cancellation is a control-flow signal — let it propagate to the caller.
+            throw;
+        }
+        catch (Exception ex)
+        {
+            // Genuinely non-throwing: any failure (corrupt/non-V1 data, an I/O error, or a serializer that
+            // throws something other than SerializationException) is reported as a parse failure rather than
+            // propagated. The post-measurement error boundary in SailfishExecutor relies on this so a bad
+            // tracking file can never crash the run. (#294 refines this to per-file resilience.)
             _logger.Log(
                 LogLevel.Warning,
-                $"Failed to deserialize data into {nameof(PerformanceRunResultTrackingFormat)}. Please remove any non-V1 (or corrupt) tracking data from your tracking directory.\n\n",
-                ex);
+                ex,
+                "Failed to deserialize data into {TrackingFormat}. Please remove any non-V1 (or corrupt) tracking data from your tracking directory.",
+                nameof(PerformanceRunResultTrackingFormat));
             return false;
         }
     }
