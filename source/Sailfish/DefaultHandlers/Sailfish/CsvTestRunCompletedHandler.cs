@@ -11,7 +11,6 @@ using Sailfish.Contracts.Private;
 using Sailfish.Contracts.Public.Notifications;
 using Sailfish.Contracts.Public.Serialization.Tracking.V1;
 using Sailfish.Logging;
-using MathNet.Numerics.Distributions;
 using Sailfish.Analysis.SailDiff.Statistics;
 using Sailfish.Contracts.Public.Models;
 
@@ -298,7 +297,7 @@ internal class CsvTestRunCompletedHandler : INotificationHandler<TestRunComplete
                 {
                     var a = stats[i];
                     var b = stats[j];
-                    var p = ComputeLogRatioPValue(a.Mean, a.SE, a.N, b.Mean, b.SE, b.N);
+                    var p = MultipleComparisons.LogRatioPValue(a.Mean, a.SE, a.N, b.Mean, b.SE, b.N);
                     if (!double.IsNaN(p) && p > 0)
                     {
                         pMap[MultipleComparisons.NormalizePair(a.Id, b.Id)] = p;
@@ -351,19 +350,6 @@ internal class CsvTestRunCompletedHandler : INotificationHandler<TestRunComplete
             return p.ToString("0.###");
         }
 
-        static double ComputeLogRatioPValue(double meanA, double seA, int nA, double meanB, double seB, int nB)
-        {
-            if (!(meanA > 0) || !(meanB > 0)) return double.NaN;
-            var seLog = Math.Sqrt(SafeDiv(seA, meanA) * SafeDiv(seA, meanA) + SafeDiv(seB, meanB) * SafeDiv(seB, meanB));
-            if (seLog <= 0) return double.NaN;
-            var t = Math.Abs(Math.Log(meanB / meanA)) / seLog;
-            var dof = Math.Max(1, Math.Min(Math.Max(0, nA - 1), Math.Max(0, nB - 1)));
-            var cdf = StudentT.CDF(0, 1, dof, t);
-            var p = 2 * Math.Max(0.0, 1.0 - cdf);
-            return p;
-        }
-
-        static double SafeDiv(double a, double b) => Math.Abs(b) < double.Epsilon ? 0 : a / b;
     }
 
     /// <summary>

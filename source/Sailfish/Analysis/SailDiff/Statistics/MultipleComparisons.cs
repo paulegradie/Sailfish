@@ -10,6 +10,13 @@ namespace Sailfish.Analysis.SailDiff.Statistics
     /// </summary>
     public static class MultipleComparisons
     {
+        // Smallest p-value the comparison helpers report for a genuine difference. A literal 0
+        // is indistinguishable downstream from "no comparison computed": it BH-adjusts to q = 0,
+        // which the q-value cell labels (SailDiffSignificance.IsSignificantPositive) treat as not
+        // significant. So an extreme-but-real difference must never collapse to exactly 0.
+        // See LogRatioPValue.
+        private const double MinPositivePValue = 1e-300;
+
         /// <summary>
         /// Apply Benjamini–Hochberg False Discovery Rate control to a set of p-values.
         /// Returns adjusted q-values (FDR) mapped to the same pair keys.
@@ -113,6 +120,46 @@ namespace Sailfish.Analysis.SailDiff.Statistics
             var lower = Math.Exp(logR - delta);
             var upper = Math.Exp(logR + delta);
             return (ratio, lower, upper);
+        }
+
+        /// <summary>
+        /// Two-sided p-value for H0: meanA == meanB on the log scale, using the same delta-method
+        /// standard error and conservative degrees of freedom as <see cref="ComputeRatioCi"/>.
+        /// Returns <see cref="double.NaN"/> when the test is undefined — a mean is non-positive, or
+        /// neither side has any usable variance (nothing to test against). Otherwise the result is
+        /// always strictly positive — see remarks.
+        /// </summary>
+        /// <remarks>
+        /// The tail is evaluated as <c>2·StudentT.CDF(−|t|)</c> — the lower tail, which MathNet
+        /// returns directly — rather than the algebraically-equivalent <c>2·(1 − StudentT.CDF(|t|))</c>.
+        /// The latter is catastrophic for large <c>t</c>: once the true tail drops below the ULP of
+        /// 1.0 (~1.1e-16) the CDF rounds to exactly 1.0, so <c>1 − CDF</c> becomes 0 and the *most
+        /// significant* comparisons collapse to <c>p = 0</c>. A 0 is then indistinguishable from
+        /// "no comparison computed" and is reported as not significant ("Similar") — the exact
+        /// failure where a 400×, perfectly-separated difference was labelled not significant.
+        /// Evaluating the lower tail keeps the small-but-positive value (≈1e-18); the floor
+        /// guarantees a strictly positive result even past the point where the tail itself
+        /// underflows.
+        /// </remarks>
+        public static double LogRatioPValue(double meanA, double seA, int nA, double meanB, double seB, int nB)
+        {
+            if (!(meanA > 0) || !(meanB > 0)) return double.NaN;
+
+            var logRatio = Math.Abs(Math.Log(meanB / meanA));
+            var seLog = Math.Sqrt(Square(SafeDiv(seA, meanA)) + Square(SafeDiv(seB, meanB)));
+
+            // No usable variance on either side (e.g. N = 1, or StdDev collapsed to 0): there is
+            // nothing to run a variance-based test against, so abstain. NaN routes to "not
+            // significant" downstream — the deliberate "Similar, no q-value" behaviour for cells
+            // whose standard error is unavailable. (The reported zero-variance bug is the *other*
+            // case: one side constant, the other with real spread, so seLog > 0 and the tail
+            // computation below correctly reports significance.)
+            if (seLog <= 0) return double.NaN;
+
+            var t = logRatio / seLog;
+            var dof = Math.Max(1, Math.Min(Math.Max(0, nA - 1), Math.Max(0, nB - 1)));
+            var p = 2.0 * StudentT.CDF(0, 1, dof, -t);
+            return Math.Max(p, MinPositivePValue);
         }
 
         public static (string A, string B) NormalizePair(string a, string b)

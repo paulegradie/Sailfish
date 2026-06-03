@@ -34,8 +34,10 @@ public class KolmogorovSmirnovTest : IKolmogorovSmirnovTest
 
             var test = TwoSampleKolmogorovSmirnovFactory.Create(sample1, sample2);
 
-            var meanBefore = Math.Round(sample1.Mean(), sigDig);
-            var meanAfter = Math.Round(sample2.Mean(), sigDig);
+            var rawMeanBefore = sample1.Mean();
+            var rawMeanAfter = sample2.Mean();
+            var meanBefore = Math.Round(rawMeanBefore, sigDig);
+            var meanAfter = Math.Round(rawMeanAfter, sigDig);
 
             var medianBefore = Math.Round(sample1.Median(), sigDig);
             var medianAfter = Math.Round(sample2.Median(), sigDig);
@@ -44,7 +46,9 @@ public class KolmogorovSmirnovTest : IKolmogorovSmirnovTest
             var pVal = Math.Round(test.PValue, TestConstants.PValueSigDig);
 
             var isSignificant = test.PValue <= settings.Alpha;
-            var changeDirection = meanAfter > meanBefore ? SailfishChangeDirection.Regressed : SailfishChangeDirection.Improved;
+            // Direction from the unrounded means — rounding for display can collapse a real
+            // sub-resolution difference to equal and flip the verdict to Improved.
+            var changeDirection = rawMeanAfter > rawMeanBefore ? SailfishChangeDirection.Regressed : SailfishChangeDirection.Improved;
 
             var description = isSignificant ? changeDirection : SailfishChangeDirection.NoChange;
 
