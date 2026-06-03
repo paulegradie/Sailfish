@@ -16,8 +16,14 @@ public class JsonNanConverter : JsonConverter<double>
         // ever reached, which made any tracking file containing a NaN/Infinity double unreadable.
         if (reader.TokenType == JsonTokenType.Number && reader.TryGetDouble(out var value)) return value;
 
-        var stringValue = reader.GetString()
-                          ?? throw new JsonException("Unable to parse a null token as a double (using custom parser).");
+        // Anything that isn't a JSON number must be one of our string encodings. GetString() — like
+        // TryGetDouble — THROWS InvalidOperationException on a mismatched token type (it only returns null for
+        // a Null token), so reject any other token (Null, Boolean, object/array start, ...) with a
+        // deterministic JsonException rather than letting an InvalidOperationException escape.
+        if (reader.TokenType != JsonTokenType.String)
+            throw new JsonException($"Unexpected token '{reader.TokenType}' when reading a double (using custom parser).");
+
+        var stringValue = reader.GetString()!; // a String token always yields a non-null string
 
         return stringValue switch
         {

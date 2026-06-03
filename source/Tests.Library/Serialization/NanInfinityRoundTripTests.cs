@@ -71,4 +71,27 @@ public class NanInfinityRoundTripTests
 
         roundTripped.ShouldBe(value);
     }
+
+    // CodeRabbit (#316): a token that is neither a number nor a string (object/array/boolean/null) must
+    // surface a deterministic JsonException, not the InvalidOperationException that Utf8JsonReader.GetString()
+    // throws on a mismatched token type.
+    [Theory]
+    [InlineData("true")]
+    [InlineData("{}")]
+    [InlineData("[]")]
+    public void JsonNanConverter_ThrowsJsonException_OnNonNumericNonStringToken(string json)
+    {
+        var options = new JsonSerializerOptions { Converters = { new JsonNanConverter() } };
+        Should.Throw<JsonException>(() => JsonSerializer.Deserialize<double>(json, options));
+    }
+
+    [Theory]
+    [InlineData("true")]
+    [InlineData("{}")]
+    [InlineData("[]")]
+    public void InfinityConverter_ThrowsJsonException_OnNonNumericNonStringToken(string json)
+    {
+        var options = new JsonSerializerOptions { Converters = { new InfinityConverter() } };
+        Should.Throw<JsonException>(() => JsonSerializer.Deserialize<double>(json, options));
+    }
 }

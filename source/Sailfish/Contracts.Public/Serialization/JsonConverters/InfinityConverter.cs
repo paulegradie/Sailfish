@@ -14,8 +14,12 @@ public class InfinityConverter : JsonConverter<double>
         // up before the string handling below.
         if (reader.TokenType == JsonTokenType.Number && reader.TryGetDouble(out var value)) return value;
 
-        var stringValue = reader.GetString()
-                          ?? throw new JsonException("Unable to parse a null token as a double (using custom parser).");
+        // GetString() throws InvalidOperationException on a mismatched (non-string, non-null) token type, so
+        // reject any non-string token with a deterministic JsonException instead.
+        if (reader.TokenType != JsonTokenType.String)
+            throw new JsonException($"Unexpected token '{reader.TokenType}' when reading a double (using custom parser).");
+
+        var stringValue = reader.GetString()!; // a String token always yields a non-null string
 
         return stringValue switch
         {
