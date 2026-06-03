@@ -13,13 +13,17 @@ public class TestCaseName
     private const char OpenBracket = '(';
     private const char Dot = '.';
 
-    [JsonConstructor]
 #pragma warning disable CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
     public TestCaseName()
 #pragma warning restore CS8618 // Non-nullable field must contain a non-null value when exiting constructor. Consider declaring as nullable.
     {
     }
 
+    // Deserialization target. Name/Parts are get-only, so the serializer cannot populate them via a
+    // parameterless ctor — that left Name null after every tracking-file round-trip, which silently
+    // broke ScaleFish (it groups observations by TestCaseName.Name). Binding them through this ctor
+    // (params match the serialized "Name"/"Parts") restores a faithful round-trip.
+    [JsonConstructor]
     public TestCaseName(string name, IReadOnlyList<string> parts)
     {
         Name = name;
