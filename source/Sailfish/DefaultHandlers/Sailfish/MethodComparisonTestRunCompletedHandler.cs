@@ -153,7 +153,7 @@ internal class MethodComparisonTestRunCompletedHandler : INotificationHandler<Te
             }
             catch (Exception ex)
             {
-                _logger.Log(LogLevel.Debug, ex, "Failed to create/write reproducibility manifest: {0}", ex.Message);
+                _logger.Log(LogLevel.Debug, ex, "Failed to create/write reproducibility manifest");
             }
 
             // Generate consolidated markdown content for the entire session (after manifest is available)
@@ -253,7 +253,7 @@ internal class MethodComparisonTestRunCompletedHandler : INotificationHandler<Te
             }
             catch (Exception ex)
             {
-                _logger.Log(LogLevel.Debug, ex, "Failed to append environment health section: {0}", ex.Message);
+                _logger.Log(LogLevel.Debug, ex, "Failed to append environment health section");
             }
         }
 
@@ -293,7 +293,7 @@ internal class MethodComparisonTestRunCompletedHandler : INotificationHandler<Te
             }
             catch (Exception ex)
             {
-                _logger.Log(LogLevel.Debug, ex, "Failed to append reproducibility summary: {0}", ex.Message);
+                _logger.Log(LogLevel.Debug, ex, "Failed to append reproducibility summary");
             }
         }
 
@@ -529,7 +529,7 @@ internal class MethodComparisonTestRunCompletedHandler : INotificationHandler<Te
         }
         catch (Exception ex)
         {
-            _logger.Log(LogLevel.Debug, ex, "Failed to append comparison distribution plot: {0}", ex.Message);
+            _logger.Log(LogLevel.Debug, ex, "Failed to append comparison distribution plot");
         }
     }
 
@@ -640,7 +640,7 @@ internal class MethodComparisonTestRunCompletedHandler : INotificationHandler<Te
         }
         catch (Exception ex)
         {
-            _logger.Log(LogLevel.Warning, ex, "Failed to create NxN comparison matrix (FDR/CI): {0}", ex.Message);
+            _logger.Log(LogLevel.Warning, ex, "Failed to create NxN comparison matrix (FDR/CI)");
             return string.Empty;
         }
     }
@@ -734,7 +734,7 @@ internal class MethodComparisonTestRunCompletedHandler : INotificationHandler<Te
         }
         catch (Exception ex)
         {
-            _logger.Log(LogLevel.Warning, ex, "Failed to create baseline comparison table: {0}", ex.Message);
+            _logger.Log(LogLevel.Warning, ex, "Failed to create baseline comparison table");
             return string.Empty;
         }
     }
