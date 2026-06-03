@@ -29,6 +29,11 @@ internal class DefaultLogger : ILogger
         { LogLevel.Fatal, "FATAL" }
     };
 
+    // Signature of the most recently logged exception, used to collapse a burst of identical exception logs
+    // (e.g. one root failure surfacing once per test case) instead of printing N identical full stacks.
+    private string? _lastExceptionSignature;
+    private int _repeatCount;
+
     public DefaultLogger(LogLevel minimumLogLevel)
     {
         _allowedLogLevels = new List<LogLevel>
@@ -51,7 +56,26 @@ internal class DefaultLogger : ILogger
 
     public void Log(LogLevel level, Exception ex, string template, params object[] values)
     {
-        var lines = new List<string> { template, ex.Message };
+        // Fill in the message template with the supplied values. This overload previously logged the raw
+        // template, so structured placeholders ({0}, {Stage}, ...) were printed verbatim and the supplied
+        // arguments were dropped entirely.
+        var message = FormatTemplate(template, values);
+
+        // Collapse repeated identical exceptions: the same root cause surfacing once per test case used to
+        // print its full stack N times. Log it in full once, then drop subsequent identical occurrences to a
+        // terse Debug line (with a running count) so they don't bury the console.
+        var signature = $"{level}|{message}|{ex.Message}|{ex.StackTrace}";
+        if (signature == _lastExceptionSignature)
+        {
+            _repeatCount++;
+            JoinAndWriteLines(LogLevel.Debug, new[] { $"(previous error repeated, occurrence #{_repeatCount + 1}): {ex.Message}" });
+            return;
+        }
+
+        _lastExceptionSignature = signature;
+        _repeatCount = 0;
+
+        var lines = new List<string> { message, ex.Message };
         if (ex.StackTrace is not null)
             lines.Add(ex.StackTrace);
 
