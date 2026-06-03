@@ -66,12 +66,20 @@ public class ComplexityComputer : IComplexityComputer
 
         foreach (var testClassSummary in executionSummaries)
         {
+            // A summary whose TestClass could not be resolved (e.g. loaded from a tracking file where
+            // Type.GetType(assemblyQualifiedName) returned null because the type isn't loadable in this
+            // process) would otherwise crash Dictionary<Type, ...>.Add with ArgumentNullException("key").
+            // Skip it so analysis degrades to "no model for this class" instead of taking down the run.
+            // The normal path now feeds ScaleFish the current run's in-memory summaries (real Type), so this
+            // guard is defensive for the file-loaded path.
+            if (testClassSummary.TestClass is null) continue;
+
             var observationSet = _scalefishObservationCompiler.CompileObservationSet(testClassSummary);
             if (observationSet is null) continue;
 
             var resultsByMethod = ComputeComplexityMethodResult(observationSet, measurementsByKey);
 
-            finalResult.Add(testClassSummary.TestClass, resultsByMethod);
+            finalResult[testClassSummary.TestClass] = resultsByMethod;
         }
 
         var classes = ScalefishClassModel.ParseResults(finalResult).ToList();

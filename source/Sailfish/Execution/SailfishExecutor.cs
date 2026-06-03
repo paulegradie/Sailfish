@@ -89,7 +89,7 @@ internal class SailfishExecutor
                 await RunPostMeasurementStage("SailDiff analysis", () => _sailDiff.Analyze(cancellationToken), analysisExceptions).ConfigureAwait(false);
 
             if (_runSettings.RunScaleFish)
-                await RunPostMeasurementStage("ScaleFish analysis", () => _scaleFish.Analyze(cancellationToken), analysisExceptions).ConfigureAwait(false);
+                await RunPostMeasurementStage("ScaleFish analysis", () => _scaleFish.Analyze(classExecutionSummaries, cancellationToken), analysisExceptions).ConfigureAwait(false);
 
             var exceptions = classExecutionSummaries
                 .SelectMany(classExecutionSummary =>
