@@ -30,7 +30,7 @@ public class DistributionPlotRendererTests
         var output = DistributionPlotRenderer.Render(new[] { Series() }, DurationUnit.Milliseconds, DistributionPlotStyle.BoxPlot);
 
         output.ShouldContain("IQR box");          // box-plot legend
-        output.ShouldContain("▓");                 // IQR box fill
+        output.ShouldContain("┌");                 // IQR box corner (hollow rectangle outline)
         output.ShouldNotContain("count per bin");  // not the histogram legend
     }
 

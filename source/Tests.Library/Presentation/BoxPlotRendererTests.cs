@@ -71,9 +71,9 @@ public class BoxPlotRendererTests
         var series = BoxPlotData.FromSamples("Method", Ramp(20), mean: 10.5);
         var output = AsciiBoxPlotRenderer.Render(new[] { series }, DurationUnit.Milliseconds);
 
-        output.ShouldContain("┃");   // median
-        output.ShouldContain("◆");   // mean
-        output.ShouldContain("▓");   // IQR box
+        output.ShouldContain("┿");   // median (heavy vertical crossing the centre line)
+        output.ShouldContain("×");   // mean
+        output.ShouldContain("┌");   // IQR box corner (hollow rectangle)
         output.ShouldContain("Time (ms)");
         output.ShouldContain("median"); // legend
         output.ShouldContain("n=20");
@@ -87,14 +87,13 @@ public class BoxPlotRendererTests
 
         var output = AsciiBoxPlotRenderer.Render(new[] { primary, compared }, DurationUnit.Milliseconds);
 
-        var laneLines = output
-            .Split('\n')
-            .Where(l => l.Contains("n=")) // series lanes are suffixed with the sample count
-            .ToList();
+        // Each series prints its sample count on its box-bottom row.
+        var countLines = output.Split('\n').Where(l => l.Contains("n=")).ToList();
+        countLines.Count.ShouldBe(2);
 
-        laneLines.Count.ShouldBe(2);
-        // Lanes share the same total width (labels are padded to equal length).
-        laneLines.Select(l => l.Length).Distinct().Count().ShouldBe(1);
+        // Exactly one shared axis ruler underlies both series (the only line carrying both a └ corner
+        // and the ┬ ticks; box tops have ┬ but no └, box bottoms have └ but no ┬).
+        output.Split('\n').Count(l => l.Contains('┬') && l.Contains('└')).ShouldBe(1);
     }
 
     [Fact]
@@ -115,7 +114,7 @@ public class BoxPlotRendererTests
         var output = AsciiBoxPlotRenderer.Render(new[] { series }, DurationUnit.Milliseconds);
 
         output.ShouldNotBeNullOrEmpty();
-        output.ShouldContain("◆");
+        output.ShouldContain("×");
     }
 
     [Fact]
@@ -146,12 +145,15 @@ public class BoxPlotRendererTests
         var series = BoxPlotData.FromSamples("M", Ramp(40), mean: 20.5);
         var output = AsciiBoxPlotRenderer.Render(new[] { series }, DurationUnit.Milliseconds, width: 60);
 
-        var rulerLine = output.Split('\n').First(l => l.Contains('└'));
-        var laneLine = output.Split('\n').First(l => l.Contains('├'));
+        // The ruler is the LAST line carrying a └ (every series' box bottom also has └, but the ruler
+        // comes after them; the tick-labels and legend below it have none). The whisker caps live on the
+        // whisker row, which carries the median ┿ (the count is on the box-bottom row, not here).
+        var rulerLine = output.Split('\n').Last(l => l.Contains('└'));
+        var laneLine = output.Split('\n').First(l => l.Contains('┿'));
 
-        // The axis ruler (└────┘) spans the full width; the data whiskers (├──┤) must sit inside it.
+        // The axis ruler (└────┘) spans the full width; the data whisker caps (├ … ┤) must sit inside it.
         laneLine.IndexOf('├').ShouldBeGreaterThan(rulerLine.IndexOf('└'));
-        laneLine.IndexOf('┤').ShouldBeLessThan(rulerLine.IndexOf('┘'));
+        laneLine.LastIndexOf('┤').ShouldBeLessThan(rulerLine.LastIndexOf('┘'));
     }
 
     [Fact]
@@ -160,10 +162,11 @@ public class BoxPlotRendererTests
         var series = BoxPlotData.FromSamples("x", Ramp(20), mean: 10.5);
         var output = AsciiBoxPlotRenderer.Render(new[] { series }, DurationUnit.Milliseconds, width: 30);
 
-        var laneLine = output.Split('\n').First(l => l.Contains("n=20"));
-        // label("x"=>1) + 2 spaces + 30 lane + "  n=20"
-        laneLine.ShouldContain(new string('▓', 1)); // some box drawn
-        laneLine.Length.ShouldBeGreaterThan(30);
+        output.ShouldContain("┿"); // a box with a median was drawn
+        // With captions above the boxes there is no label column, so the axis ruler is exactly the
+        // requested plot width (nothing widens the line).
+        var rulerLine = output.Split('\n').Last(l => l.Contains('└'));
+        rulerLine.Length.ShouldBe(30);
     }
 
     #endregion

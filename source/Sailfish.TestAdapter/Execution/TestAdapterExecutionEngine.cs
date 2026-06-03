@@ -22,17 +22,17 @@ internal interface ITestAdapterExecutionEngine
 internal class TestAdapterExecutionEngine : ITestAdapterExecutionEngine
 {
     private readonly IClassExecutionSummaryCompiler _classExecutionSummaryCompiler;
-    private readonly ISailfishExecutionEngine _engine;
+    private readonly IClassExecutionDispatcher _dispatcher;
     private readonly ILogger _logger;
     private readonly ITestInstanceContainerCreator _testInstanceContainerCreator;
 
     public TestAdapterExecutionEngine(ITestInstanceContainerCreator testInstanceContainerCreator,
         IClassExecutionSummaryCompiler classExecutionSummaryCompiler,
-        ISailfishExecutionEngine engine,
+        IClassExecutionDispatcher dispatcher,
         ILogger logger)
     {
         _classExecutionSummaryCompiler = classExecutionSummaryCompiler;
-        _engine = engine;
+        _dispatcher = dispatcher;
         _logger = logger;
         _testInstanceContainerCreator = testInstanceContainerCreator;
     }
@@ -62,29 +62,11 @@ internal class TestAdapterExecutionEngine : ITestAdapterExecutionEngine
                         testCases)),
                     lifecycleMethodTracker);
 
-            var totalTestProviderCount = providerForCurrentTestCases.Count - 1;
-
-            var executionState = new ExecutionState();
-            var groupResults = new List<TestCaseExecutionResult>();
-            for (var i = 0; i < providerForCurrentTestCases.Count; i++)
-            {
-                var testProvider = providerForCurrentTestCases[i];
-                var providerPropertiesStateKey = testProvider.Test.FullName ??
-                                                 throw new SailfishException(
-                                                     $"Failed to read the FullName of {testProvider.Test.Name}");
-                var results = await _engine.ActivateContainer(
-                    i,
-                    totalTestProviderCount,
-                    testProvider,
-                    executionState,
-                    providerPropertiesStateKey,
-                    unsortedTestCaseGroup.Cast<dynamic>().ToList(), // gross, but we need to send the object model testcase through the core lib. hmm
-                    cancellationToken);
-                groupResults.AddRange(results);
-
-                // deref to free up memory
-                providerForCurrentTestCases[i] = null!;
-            }
+            var groupResults = await _dispatcher.Dispatch(
+                testType,
+                providerForCurrentTestCases,
+                unsortedTestCaseGroup.Cast<dynamic>().ToList(), // gross, but we need to send the object model testcase through the core lib. hmm
+                cancellationToken);
 
             rawExecutionResults.Add((unsortedTestCaseGroup.Key, new TestClassResultGroup(testType, groupResults)));
         }

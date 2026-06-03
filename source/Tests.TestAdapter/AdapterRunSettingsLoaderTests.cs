@@ -57,10 +57,10 @@ public class AdapterRunSettingsLoaderTests
     }
 
     [Fact]
-    public void DistributionPlotStyle_DefaultsToHistogram_WhenUnset()
+    public void DistributionPlotStyle_DefaultsToBoxPlot_WhenUnset()
     {
         var json = "{ \"GlobalSettings\": {}, \"SailDiffSettings\": {}, \"SailfishSettings\": {}, \"ScaleFishSettings\": {} }";
-        LoadFromConfig(json).DistributionPlotStyle.ShouldBe(DistributionPlotStyle.Histogram);
+        LoadFromConfig(json).DistributionPlotStyle.ShouldBe(DistributionPlotStyle.BoxPlot);
     }
 
     [Fact]

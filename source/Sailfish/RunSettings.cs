@@ -52,7 +52,7 @@ internal class RunSettings : IRunSettings
         AiAnalysisSettings? aiAnalysisSettings = null,
         bool enableDistributionPlots = true,
         bool emitDistributionHtmlReport = false,
-        DistributionPlotStyle distributionPlotStyle = DistributionPlotStyle.Histogram,
+        DistributionPlotStyle distributionPlotStyle = DistributionPlotStyle.BoxPlot,
         TrawlSettings? trawlSettings = null)
     {
         TestNames = testNames;

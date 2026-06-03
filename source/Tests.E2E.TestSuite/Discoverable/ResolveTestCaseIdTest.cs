@@ -5,7 +5,9 @@ using Tests.E2E.TestSuite.Utils;
 
 namespace Tests.E2E.TestSuite.Discoverable;
 
-[Sailfish(3, 0, Disabled = Constants.Disabled)]
+// Injects TestCaseId, which identifies a specific case — inherently per-case, so this class opts into PerCase
+// lifetime (under the default SharedInstance, the constructor runs once and there is no single case id).
+[Sailfish(3, 0, Disabled = Constants.Disabled, Lifetime = SailfishLifetime.PerCase)]
 public class ResolveTestCaseIdTest
 {
     private readonly TestCaseId _testCaseId;
@@ -22,7 +24,7 @@ public class ResolveTestCaseIdTest
     }
 }
 
-[Sailfish]
+[Sailfish(Lifetime = SailfishLifetime.PerCase)]
 public class ResolveTestCaseIdTestMultipleCtorArgs
 {
     private readonly TestCaseId _testCaseId;

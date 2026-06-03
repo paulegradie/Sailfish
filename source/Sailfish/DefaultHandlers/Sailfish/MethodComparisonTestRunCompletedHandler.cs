@@ -15,7 +15,6 @@ using Sailfish.Diagnostics.Environment;
 using Sailfish.Logging;
 using Sailfish.Presentation;
 using Sailfish.Results;
-using MathNet.Numerics.Distributions;
 using Sailfish.Analysis.SailDiff.Statistics;
 
 using Sailfish.Execution;
@@ -517,7 +516,7 @@ internal class MethodComparisonTestRunCompletedHandler : INotificationHandler<Te
             if (series.Count == 0) return;
 
             var unit = DurationFormatter.SelectUnit(series.SelectMany(s => s.Samples));
-            var style = _runSettings?.DistributionPlotStyle ?? DistributionPlotStyle.Histogram;
+            var style = _runSettings?.DistributionPlotStyle ?? DistributionPlotStyle.BoxPlot;
             var plot = DistributionPlotRenderer.Render(series, unit, style);
             if (string.IsNullOrEmpty(plot)) return;
 
@@ -577,7 +576,7 @@ internal class MethodComparisonTestRunCompletedHandler : INotificationHandler<Te
                 {
                     var a = stats[i];
                     var b = stats[j];
-                    var p = ComputeLogRatioPValue(a.Mean, a.SE, a.N, b.Mean, b.SE, b.N);
+                    var p = MultipleComparisons.LogRatioPValue(a.Mean, a.SE, a.N, b.Mean, b.SE, b.N);
                     if (!double.IsNaN(p) && p > 0)
                     {
                         pMap[MultipleComparisons.NormalizePair(a.Id, b.Id)] = p;
@@ -638,20 +637,6 @@ internal class MethodComparisonTestRunCompletedHandler : INotificationHandler<Te
                 return p.ToString("0.###");
             }
 
-            static double ComputeLogRatioPValue(double meanA, double seA, int nA, double meanB, double seB, int nB)
-            {
-                if (!(meanA > 0) || !(meanB > 0)) return double.NaN;
-                var seLog = Math.Sqrt(Square(SafeDiv(seA, meanA)) + Square(SafeDiv(seB, meanB)));
-                if (seLog <= 0) return double.NaN;
-                var t = Math.Abs(Math.Log(meanB / meanA)) / seLog;
-                var dof = Math.Max(1, Math.Min(Math.Max(0, nA - 1), Math.Max(0, nB - 1)));
-                var cdf = StudentT.CDF(0, 1, dof, t);
-                var p = 2 * Math.Max(0.0, 1.0 - cdf);
-                return p;
-            }
-
-            static double SafeDiv(double a, double b) => Math.Abs(b) < double.Epsilon ? 0 : a / b;
-            static double Square(double x) => x * x;
         }
         catch (Exception ex)
         {
@@ -707,7 +692,7 @@ internal class MethodComparisonTestRunCompletedHandler : INotificationHandler<Te
             var pMap = new Dictionary<(string A, string B), double>();
             foreach (var c in contenders)
             {
-                var p = ComputeLogRatioPValue(baselineStat.Mean, baselineStat.SE, baselineStat.N, c.Mean, c.SE, c.N);
+                var p = MultipleComparisons.LogRatioPValue(baselineStat.Mean, baselineStat.SE, baselineStat.N, c.Mean, c.SE, c.N);
                 if (!double.IsNaN(p) && p > 0)
                 {
                     pMap[MultipleComparisons.NormalizePair(baselineStat.Id, c.Id)] = p;
@@ -746,20 +731,6 @@ internal class MethodComparisonTestRunCompletedHandler : INotificationHandler<Te
                 return p.ToString("0.###");
             }
 
-            static double ComputeLogRatioPValue(double meanA, double seA, int nA, double meanB, double seB, int nB)
-            {
-                if (!(meanA > 0) || !(meanB > 0)) return double.NaN;
-                var seLog = Math.Sqrt(Square(SafeDiv(seA, meanA)) + Square(SafeDiv(seB, meanB)));
-                if (seLog <= 0) return double.NaN;
-                var t = Math.Abs(Math.Log(meanB / meanA)) / seLog;
-                var dof = Math.Max(1, Math.Min(Math.Max(0, nA - 1), Math.Max(0, nB - 1)));
-                var cdf = StudentT.CDF(0, 1, dof, t);
-                var p = 2 * Math.Max(0.0, 1.0 - cdf);
-                return p;
-            }
-
-            static double SafeDiv(double a, double b) => Math.Abs(b) < double.Epsilon ? 0 : a / b;
-            static double Square(double x) => x * x;
         }
         catch (Exception ex)
         {

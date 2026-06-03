@@ -62,12 +62,16 @@ public class TwoSampleWilcoxonSignedRankTest : ITwoSampleWilcoxonSignedRankTest
             // different data when outlier detection was on.
             var meanBefore = Math.Round(sample1.Mean(), sigDig);
             var meanAfter = Math.Round(sample2.Mean(), sigDig);
-            var medianBefore = Math.Round(sample1.Median(), sigDig);
-            var medianAfter = Math.Round(sample2.Median(), sigDig);
+            var rawMedianBefore = sample1.Median();
+            var rawMedianAfter = sample2.Median();
+            var medianBefore = Math.Round(rawMedianBefore, sigDig);
+            var medianAfter = Math.Round(rawMedianAfter, sigDig);
             var testStatistic = Math.Round(test.Statistic, sigDig);
             var pval = test.PValue;
             var isSignificant = pval <= settings.Alpha;
-            var changeDirection = medianAfter > medianBefore ? SailfishChangeDirection.Regressed : SailfishChangeDirection.Improved;
+            // Direction from the unrounded median — rounding for display can collapse a real
+            // sub-resolution difference to equal and flip the verdict to Improved.
+            var changeDirection = rawMedianAfter > rawMedianBefore ? SailfishChangeDirection.Regressed : SailfishChangeDirection.Improved;
             var description = isSignificant ? changeDirection : SailfishChangeDirection.NoChange;
             var additionalResults = new Dictionary<string, object>();
             // SampleSize* / RawData* describe the data the test actually consumed (after

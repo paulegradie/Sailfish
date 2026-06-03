@@ -45,7 +45,7 @@ public class RunSettingsBuilder
 
     private bool _enableDistributionPlots = true;
     private bool _emitDistributionHtmlReport;
-    private DistributionPlotStyle _distributionPlotStyle = DistributionPlotStyle.Histogram;
+    private DistributionPlotStyle _distributionPlotStyle = DistributionPlotStyle.BoxPlot;
     private TrawlSettings? _trawlSettings;
 
 
@@ -145,8 +145,8 @@ public class RunSettingsBuilder
     }
 
     /// <summary>
-    ///     Selects the inline distribution plot style — <see cref="DistributionPlotStyle.Histogram"/>
-    ///     (default) or <see cref="DistributionPlotStyle.BoxPlot"/>.
+    ///     Selects the inline distribution plot style — <see cref="DistributionPlotStyle.BoxPlot"/>
+    ///     (default) or <see cref="DistributionPlotStyle.Histogram"/>.
     /// </summary>
     public RunSettingsBuilder WithDistributionPlotStyle(DistributionPlotStyle style)
     {

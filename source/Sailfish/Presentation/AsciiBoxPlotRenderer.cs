@@ -10,7 +10,10 @@ namespace Sailfish.Presentation;
 /// single shared axis. Output is plain monospace text, so it lines up in IDE test-output windows and
 /// inside fenced code blocks in Markdown. No external dependencies.
 /// <para>
-/// Glyphs: <c>┣━┫</c> whisker (min–max), <c>▒</c> IQR box, <c>┃</c> median, <c>◆</c> mean.
+/// Glyphs: <c>├─┤</c> whisker (min–max); a three-row rectangle (<c>┌─┐</c> / <c>└─┘</c>) for the IQR
+/// box, with the whisker centre line running straight through the box sides (<c>┼</c>); a heavy
+/// vertical (<c>┿</c>) for the median; and <c>×</c> for the mean. Each series spans three rows so the
+/// IQR reads as a real box rather than a flat bar.
 /// The axis is scaled to the <em>cleaned</em> min–max so the distribution shape stays legible; any
 /// outliers Sailfish removed are reported as a count beside the lane rather than stretching the axis
 /// (their exact values are listed in the surrounding text). The axis unit (ns/µs/ms/s) is chosen by
@@ -21,7 +24,6 @@ public static class AsciiBoxPlotRenderer
 {
     private const int DefaultWidth = 54;
     private const int MinWidth = 24;
-    private const int MaxLabelWidth = 28;
 
     // Fraction of the data range to pad onto each side of the axis. 0.25 each side leaves the data
     // spanning the central 2/3 of the lane, so whiskers sit around 1/6 and 5/6 of the width.
@@ -31,9 +33,23 @@ public static class AsciiBoxPlotRenderer
     private const char WhiskerLine = '─';
     private const char WhiskerCapLow = '├';
     private const char WhiskerCapHigh = '┤';
-    private const char BoxFill = '▓';
-    private const char MedianMark = '┃';
-    private const char MeanMark = '◆';
+
+    // The IQR box is a real rectangle drawn across three rows (top edge, whisker row, bottom edge).
+    // The corners and the middle-row sides are connecting box-drawing glyphs, so the whisker line
+    // flows straight into the box with no gap.
+    private const char BoxTopLeft = '┌';
+    private const char BoxTopRight = '┐';
+    private const char BoxBottomLeft = '└';
+    private const char BoxBottomRight = '┘';
+    private const char BoxSide = '┼';  // Q1/Q3 sides on the whisker row — the whisker line runs through
+
+    // Median: a heavy vertical through the box that the whisker centre line passes through (┿), capped
+    // with light tees where it meets the box edges. Mean: a single glyph on the centre line.
+    private const char MedianTop = '┬';
+    private const char MedianLine = '┿';
+    private const char MedianBottom = '┴';
+    private const char MeanMark = '×';
+
     private const char RulerLine = '─';
     private const char RulerTick = '┬';
     private const char RulerCornerLow = '└';
@@ -44,7 +60,7 @@ public static class AsciiBoxPlotRenderer
     /// </summary>
     /// <param name="series">Series to draw on a shared axis (1 = single box, 2 = comparison, N = group).</param>
     /// <param name="unit">Display unit for the axis (typically <see cref="DurationFormatter.SelectUnit(System.Collections.Generic.IEnumerable{double})"/>).</param>
-    /// <param name="width">Plot width in characters (the drawable lane, excluding the label column).</param>
+    /// <param name="width">Plot width in characters. Captions sit above each box, so no line exceeds this.</param>
     public static string Render(IReadOnlyList<BoxPlotSeries> series, DurationUnit unit, int width = DefaultWidth)
     {
         if (series is null) return string.Empty;
@@ -80,75 +96,121 @@ public static class AsciiBoxPlotRenderer
             return Math.Clamp(col, 0, width - 1);
         }
 
-        var labelWidth = Math.Clamp(drawable.Max(s => (s.Label ?? string.Empty).Length), 0, MaxLabelWidth);
-        var labelPad = new string(Space, labelWidth);
         var decimals = AxisDecimals(spanU);
 
         var sb = new StringBuilder();
 
-        // Header: unit, right-aligned over the lane.
-        var unitHeader = $"Time ({DurationFormatter.UnitLabel(unit)})";
-        sb.Append(labelPad).Append("  ").AppendLine(PadCentreOrRight(unitHeader, width));
+        // Header: unit label, right-aligned over the plot.
+        sb.AppendLine(PadCentreOrRight($"Time ({DurationFormatter.UnitLabel(unit)})", width));
+        sb.AppendLine();
 
-        // One lane per series.
+        // Each series: a caption line (method name + sample count) ABOVE its box, with the box and the
+        // shared axis all left-aligned at column 0. There is no label column, so a rendered line is never
+        // wider than the plot itself — it won't wrap on a narrower terminal window.
         foreach (var s in drawable)
         {
-            sb.Append(TruncatePad(s.Label ?? string.Empty, labelWidth)).Append("  ");
-            sb.Append(Lane(s, width, Col));
-            sb.Append("  n=").Append(s.N);
-            if (s.OutlierCount > 0) sb.Append(" (+").Append(s.OutlierCount).Append(" outliers)");
+            var (top, mid, bottom) = BuildBox(s, width, Col);
+
+            sb.AppendLine(Caption(s.Label ?? string.Empty, CountLabel(s), width));
+            sb.AppendLine(top.TrimEnd());
+            sb.AppendLine(mid.TrimEnd());
+            sb.AppendLine(bottom.TrimEnd());
             sb.AppendLine();
         }
 
         // Shared axis ruler + tick labels.
-        sb.Append(labelPad).Append("  ").AppendLine(Ruler(width, spanU));
-        sb.Append(labelPad).Append("  ").AppendLine(TickLabels(width, axisMinMs, axisMaxMs, unit, decimals, spanU));
+        sb.AppendLine(Ruler(width, spanU));
+        sb.AppendLine(TickLabels(width, axisMinMs, axisMaxMs, unit, decimals, spanU));
+        sb.AppendLine();
 
         // Legend.
-        sb.Append("  ").Append(MedianMark).Append(" median  ")
+        sb.Append(MedianLine).Append(" median  ")
             .Append(MeanMark).Append(" mean  ")
-            .Append(BoxFill).Append(" IQR box  ")
+            .Append(BoxTopLeft).Append(WhiskerLine).Append(BoxTopRight).Append(" IQR box  ")
             .Append(WhiskerCapLow).Append(WhiskerLine).Append(WhiskerCapHigh).Append(" min–max");
         sb.AppendLine();
 
         return sb.ToString();
     }
 
-    private static string Lane(BoxPlotSeries s, int width, Func<double, int> col)
+    // Builds the three rows of one series' box-and-whisker: the box top edge, the whisker row (with the
+    // box sides, the median line and the mean glyph), and the box bottom edge. All three share the same
+    // column mapping, so they stack into a real rectangle on the shared axis.
+    private static (string Top, string Mid, string Bottom) BuildBox(BoxPlotSeries s, int width, Func<double, int> col)
     {
-        var buf = new char[width];
-        for (var i = 0; i < width; i++) buf[i] = Space;
+        var top = new char[width];
+        var mid = new char[width];
+        var bottom = new char[width];
+        Array.Fill(top, Space);
+        Array.Fill(mid, Space);
+        Array.Fill(bottom, Space);
 
         if (s.HasNoSpread)
         {
-            buf[col(s.Median)] = MeanMark;
-            return new string(buf);
+            // A single value (or an all-equal sample) has no box; just mark the point on the whisker row.
+            mid[col(s.Median)] = MeanMark;
+            return (new string(top), new string(mid), new string(bottom));
         }
 
         var minC = col(s.Min);
         var maxC = col(s.Max);
         var q1C = col(s.Q1);
         var q3C = col(s.Q3);
+        var medianC = col(s.Median);
+        var meanC = col(s.Mean);
 
-        // Layers, painted low-to-high precedence (later overwrites earlier). The shaded run itself is
-        // the IQR box — set against the thin whisker line it reads as a crisp block with no need for
-        // bracket edges that could be mistaken for whisker caps.
+        // Whisker line spans the cleaned min–max on the middle row, and runs straight through the box
+        // interior (the box is an outline, not a fill — but its centre line stays connected, no gap).
         for (var i = minC; i <= maxC; i++)
+            if (mid[i] == Space) mid[i] = WhiskerLine;
+
+        if (minC < q1C) mid[minC] = WhiskerCapLow;
+        if (maxC > q3C) mid[maxC] = WhiskerCapHigh;
+
+        if (q3C > q1C)
         {
-            if (buf[i] == Space) buf[i] = WhiskerLine;
+            // Box outline: top and bottom edges spanning the quartiles, with corners; on the whisker row
+            // the sides are crossings (┼) so the centre line passes through them with no gap.
+            for (var i = q1C; i <= q3C; i++)
+            {
+                top[i] = WhiskerLine;
+                bottom[i] = WhiskerLine;
+            }
+
+            top[q1C] = BoxTopLeft;
+            top[q3C] = BoxTopRight;
+            bottom[q1C] = BoxBottomLeft;
+            bottom[q3C] = BoxBottomRight;
+            mid[q1C] = BoxSide;
+            mid[q3C] = BoxSide;
+
+            // Mean: a single glyph on the centre line (anywhere between the whiskers). Never let it
+            // clobber a box side.
+            if (meanC >= 0 && meanC < width && meanC != q1C && meanC != q3C)
+                mid[meanC] = MeanMark;
+
+            // Median: a heavy vertical through the box, crossing the centre line (┿) and capped with
+            // light tees on the box edges.
+            if (medianC > q1C && medianC < q3C)
+            {
+                top[medianC] = MedianTop;
+                mid[medianC] = MedianLine;
+                bottom[medianC] = MedianBottom;
+            }
+            else if (medianC >= 0 && medianC < width)
+            {
+                mid[medianC] = MedianLine;
+            }
+        }
+        else
+        {
+            // Degenerate IQR (quartiles land on a single column): no room for a box, so draw just the
+            // median plus the mean glyph on the whisker line.
+            if (meanC >= 0 && meanC < width && meanC != medianC) mid[meanC] = MeanMark;
+            if (medianC >= 0 && medianC < width) mid[medianC] = MedianLine;
         }
 
-        if (minC < q1C) buf[minC] = WhiskerCapLow;
-        if (maxC > q3C) buf[maxC] = WhiskerCapHigh;
-
-        for (var i = q1C; i <= q3C; i++) buf[i] = BoxFill;
-
-        var meanC = col(s.Mean);
-        if (meanC >= 0 && meanC < width) buf[meanC] = MeanMark;
-
-        buf[col(s.Median)] = MedianMark; // highest precedence
-
-        return new string(buf);
+        return (new string(top), new string(mid), new string(bottom));
     }
 
     private static string Ruler(int width, double spanU)
@@ -224,15 +286,17 @@ public static class AsciiBoxPlotRenderer
         return 3;
     }
 
-    private static string TruncatePad(string label, int labelWidth)
-    {
-        if (labelWidth == 0) return string.Empty;
-        if (label.Length > labelWidth)
-        {
-            return labelWidth <= 1 ? label[..labelWidth] : label[..(labelWidth - 1)] + "…";
-        }
+    private static string CountLabel(BoxPlotSeries s)
+        => s.OutlierCount > 0 ? $"n={s.N} (+{s.OutlierCount} outliers)" : $"n={s.N}";
 
-        return label.PadRight(labelWidth);
+    // "<label>  <count>" caption sitting above a box, trimmed so it never exceeds the plot width: the
+    // count is kept whole and an over-long method name is ellipsized (or dropped if there's no room).
+    private static string Caption(string label, string count, int width)
+    {
+        var maxLabel = width - 2 - count.Length;
+        if (label.Length > maxLabel)
+            label = maxLabel <= 1 ? string.Empty : label[..(maxLabel - 1)] + "…";
+        return label.Length == 0 ? count : label + "  " + count;
     }
 
     private static string PadCentreOrRight(string text, int width)

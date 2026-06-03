@@ -4,6 +4,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using MediatR;
+using Microsoft.Extensions.DependencyInjection;
 using NSubstitute;
 using NSubstitute.ExceptionExtensions;
 using Sailfish;
@@ -36,7 +37,6 @@ public class TestCaseEnumerationTests
         var summaryCompiler = Substitute.For<IClassExecutionSummaryCompiler>();
         var settings = Substitute.For<IRunSettings>();
         var engine = new SailfishExecutionEngine(logger, consoleWriter, iterator, printer, mediator, summaryCompiler, settings);
-        var executionState = new ExecutionState();
         var enumerator = Substitute.For<IEnumerator<TestInstanceContainer>>();
         enumerator.MoveNext().Throws<Exception>();
         var instanceContainer = TestInstanceContainer.CreateTestInstance(
@@ -56,11 +56,7 @@ public class TestCaseEnumerationTests
         provider.ProvideNextTestCaseEnumeratorForClass().Returns(testCaseEnumerator);
 
         var result = await engine.ActivateContainer(
-            1,
-            2,
             provider,
-            executionState,
-            Some.RandomString(),
             [],
             CancellationToken.None);
 
@@ -156,22 +152,17 @@ public class TestCaseEnumerationTests
         var iterator = new TestCaseIterator(runSettings, logger, mockFixedStrategy, mockAdaptiveStrategy);
         var summaryCompiler = new ClassExecutionSummaryCompiler(new StatisticsCompiler(), runSettings); //Substitute.For<IClassExecutionSummaryCompiler>());
         var engine = new SailfishExecutionEngine(logger, consoleWriter, iterator, printer, mediator, summaryCompiler, settings);
-        var executionState = new ExecutionState();
 
         var provider = new TestInstanceContainerProvider(
             runSettings,
             new TypeActivator(
-                Substitute.For<IServiceProvider>()),
+                new ServiceCollection().BuildServiceProvider()),
             typeof(MinimalTest),
             new List<PropertySet>(),
             typeof(MinimalTest).GetMethods().First());
 
         var result = await engine.ActivateContainer(
-            1,
-            2,
             provider,
-            executionState,
-            Some.RandomString(),
             [],
             CancellationToken.None);
 
@@ -197,7 +188,6 @@ public class TestCaseEnumerationTests
         var summaryCompiler = Substitute.For<IClassExecutionSummaryCompiler>();
         var settings = Substitute.For<IRunSettings>();
         var engine = new SailfishExecutionEngine(logger, consoleWriter, iterator, printer, mediator, summaryCompiler, settings);
-        var executionState = new ExecutionState();
 
         var originalException = new InvalidOperationException("clear, actionable message from fixture ctor");
 
@@ -214,11 +204,7 @@ public class TestCaseEnumerationTests
         provider.ProvideNextTestCaseEnumeratorForClass().Returns(testCaseEnumerator);
 
         var result = await engine.ActivateContainer(
-            1,
-            2,
             provider,
-            executionState,
-            Some.RandomString(),
             [],
             CancellationToken.None);
 
@@ -250,7 +236,6 @@ public class TestCaseEnumerationTests
         var summaryCompiler = Substitute.For<IClassExecutionSummaryCompiler>();
         var settings = Substitute.For<IRunSettings>();
         var engine = new SailfishExecutionEngine(logger, consoleWriter, iterator, printer, mediator, summaryCompiler, settings);
-        var executionState = new ExecutionState();
 
         var originalException = new TestClassInstantiationException(
             typeof(TestCaseEnumerationTests),
@@ -268,11 +253,7 @@ public class TestCaseEnumerationTests
         provider.ProvideNextTestCaseEnumeratorForClass().Returns(testCaseEnumerator);
 
         var result = await engine.ActivateContainer(
-            1,
-            2,
             provider,
-            executionState,
-            Some.RandomString(),
             [],
             CancellationToken.None);
 
