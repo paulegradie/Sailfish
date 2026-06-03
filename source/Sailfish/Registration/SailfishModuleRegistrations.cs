@@ -137,9 +137,25 @@ internal static class SailfishModuleRegistrations
         services.AddTransient<IScalefishObservationCompiler, ScalefishObservationCompiler>();
         services.AddTransient<ISailDiffConsoleWindowMessageFormatter, SailDiffConsoleWindowMessageFormatter>();
 
-        // Skipper AI analysis layer. The agent is the only seam a consumer overrides; TryAdd means a
-        // user-registered ISailfishAgent (from IRegisterSailfishServices) wins regardless of registration order.
+        // Skipper AI analysis layer. Two seams a consumer can override:
+        //   • ISkipperTransport — the common case: the model call only. Register with AddSkipperTransport<T>(),
+        //     which also selects PromptDrivenSailfishAgent so the framework owns prompt-building and parsing.
+        //   • ISailfishAgent — the advanced case: own the whole flow (prompt + transport + parse).
+        // TryAdd keeps the no-op defaults for "nothing registered" (a hard-registered agent/transport wins
+        // regardless of order), so when nobody wires Skipper the runner early-outs and it stays invisible.
         services.TryAddSingleton<ISailfishAgent, NoOpSailfishAgent>();
+        services.TryAddSingleton<ISkipperTransport, NoOpSkipperTransport>();
+
+        // The framework owns the intelligence: a rigorous default prompt (grounding preamble + composable body
+        // sections + a sealed output-schema contract) and the parser that reads that schema back. Consumers extend
+        // the prompt by registering additional ISkipperPromptSection implementations — they compose by Order.
+        services.AddTransient<ISkipperPromptBuilder, DefaultSkipperPromptBuilder>();
+        services.AddTransient<ISkipperResponseParser, DefaultSkipperResponseParser>();
+        services.AddTransient<ISkipperPromptSection, ComparisonsPromptSection>();
+        services.AddTransient<ISkipperPromptSection, ScalingPromptSection>();
+        services.AddTransient<ISkipperPromptSection, EnvironmentPromptSection>();
+        services.AddTransient<ISkipperPromptSection, ResultTablePromptSection>();
+
         services.AddTransient<IPerformanceNarrativeContextBuilder, PerformanceNarrativeContextBuilder>();
         services.AddTransient<ISkipperReviewWriter, SkipperReviewWriter>();
         services.AddTransient<ISkipperReportWriter, SkipperReportWriter>();

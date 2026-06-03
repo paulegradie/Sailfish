@@ -6,13 +6,13 @@ title: Skipper (AI)
 
 **Skipper** is Sailfish's optional **AI analysis layer** — the crewmate that reads the instruments (SailDiff and ScaleFish) and tells you, in plain language, **what changed and why**. Where SailDiff tells you a method got 18% slower and ScaleFish tells you it scales like O(n²), Skipper reads the *code under test*, explains the likely cause, and cites the exact `file:line`.
 
-Skipper is **strictly additive and opt-in**. It ships with no model dependencies and no API keys. You bring your own agent — a one-shot completion, a local model, or a full agentic loop (e.g. the Claude Agent SDK / `claude` CLI) — by implementing a single interface. If you don't register one, Sailfish behaves exactly as before.
+Skipper is **strictly additive and opt-in**. It ships with no model dependencies and no API keys. You bring your own model — a one-shot completion, a local model, or a full agentic loop (e.g. the Claude Agent SDK / `claude` CLI) — by implementing a single, thin **transport** interface. If you don't register one, Sailfish behaves exactly as before.
 
-The guiding principle: **Sailfish owns the intelligence; you own the transport.** Sailfish assembles a *grounded* context packet from the authoritative SailDiff/ScaleFish numbers and your environment, and the model **reasons over those figures — it never recomputes or invents them**. For any claim about your code, it cites a real `file:line` it actually read.
+The guiding principle: **Sailfish owns the intelligence; you own the transport.** Sailfish assembles a *grounded* context packet from the authoritative SailDiff/ScaleFish numbers and your environment, builds a **rigorous, disciplined prompt** around it ("these numbers are authoritative — explain the *why* and cite `file:line`"), calls your transport with that prompt, and **parses the structured reply back for you**. Your transport does one job: send the prompt to a model and return its text. The model **reasons over the grounded figures — it never recomputes or invents them**.
 
 ## Enabling Skipper
 
-Two steps: turn it on in the builder, and register an agent.
+Two steps: turn it on in the builder, and register a transport.
 
 ```csharp
 var settings = RunSettingsBuilder
@@ -24,18 +24,18 @@ var settings = RunSettingsBuilder
 ```
 
 ```csharp
-// Register your agent from an IRegisterSailfishServices provider.
+// Register a transport from an IRegisterSailfishServices provider.
 public class MyRegistration : IRegisterSailfishServices
 {
     public Task RegisterAsync(IServiceCollection services, CancellationToken ct = default)
     {
-        services.AddSingleton<ISailfishAgent, MyAgent>();
+        services.AddSkipperTransport<MyTransport>();
         return Task.CompletedTask;
     }
 }
 ```
 
-That's it. With no agent registered, `.WithAiAnalysis()` is a no-op — the feature stays completely invisible.
+`AddSkipperTransport<T>()` registers your transport **and** wires the framework's prompt-building + response-parsing pipeline around it. That's it. With no transport registered, `.WithAiAnalysis()` is a no-op — the feature stays completely invisible.
 
 ### Running Skipper from the IDE — the green "play" button
 
@@ -60,20 +60,20 @@ There's no `RunSettingsBuilder` in this path — the adapter runs in its own pro
 }
 ```
 
-**3. An agent must be registered** from an `IRegisterSailfishServices` provider in the test project — the adapter discovers it automatically, and it's the *only* registration seam the play-button path can see:
+**3. A transport must be registered** from an `IRegisterSailfishServices` provider in the test project — the adapter discovers it automatically, and it's the *only* registration seam the play-button path can see:
 
 ```csharp
 public class RegistrationProvider : IRegisterSailfishServices
 {
     public Task RegisterAsync(IServiceCollection services, CancellationToken ct = default)
     {
-        services.AddSingleton<ISailfishAgent, ClaudeAgentModelProvider>();
+        services.AddSkipperTransport<ClaudeCliSkipperTransport>();
         return Task.CompletedTask;
     }
 }
 ```
 
-For the reference `ClaudeAgentModelProvider`, the `claude` CLI must be installed and on your `PATH`. Without *any* registered agent, `Enabled: true` is a harmless no-op.
+For the reference `ClaudeCliSkipperTransport`, the `claude` CLI must be installed and on your `PATH`. Without *any* registered transport, `Enabled: true` is a harmless no-op.
 
 **The loop is run-twice.** SailDiff compares your latest run against the previous one, so a single run has nothing to diff:
 
@@ -100,21 +100,24 @@ The optional `AiAnalysisSettings` keys mirror the programmatic settings: `WriteR
 
 ### Working examples in the repo
 
-A complete, runnable reference ships in the repo. `ClaudeAgentModelProvider` (a reference agent that drives the local `claude` CLI with read-only tools) is registered two ways:
+A complete, runnable reference ships in the repo. `ClaudeCliSkipperTransport` (a reference transport that drives the local `claude` CLI with read-only tools) is registered two ways:
 
 - **Test Adapter path** — the `PerformanceTests` project registers it in its `RegistrationProvider` and enables Skipper via `.sailfish.json` (the exact setup shown above). Click the play button on a single benchmark to see it.
-- **Programmatic path** — `ConsoleAppDemo` reuses the same provider and enables Skipper with `.WithAiAnalysis()`.
+- **Programmatic path** — `ConsoleAppDemo` reuses the same transport and enables Skipper with `.WithAiAnalysis()`.
 
-## The one interface you implement
+## The interface you implement
+
+Most consumers implement exactly one thing — a **transport** — and let Sailfish own the prompt and the parsing:
 
 ```csharp
-public interface ISailfishAgent
+public interface ISkipperTransport
 {
-    Task<SkipperReview> RunAsync(SkipperSession session, CancellationToken cancellationToken);
+    // Send the framework-built prompt to a model; return its raw text. That's the whole job.
+    Task<string> CompleteAsync(string prompt, SkipperSession session, CancellationToken cancellationToken);
 }
 ```
 
-`SkipperSession` carries everything your agent needs: the role, the grounded `PerformanceNarrativeContext` (the authoritative numbers), the **capabilities** it has been granted (locally, read-only code access scoped to your repository), and the repository root. Your implementation simply forwards this to a model and returns a `SkipperReview`.
+`SkipperSession` carries everything the transport might need to scope the call: the role, the grounded `PerformanceNarrativeContext` (the authoritative numbers), the **capabilities** it has been granted (locally, read-only code access scoped to your repository), and the repository root. The model reasons over the prompt; Sailfish parses the reply into a structured `SkipperReview` for you.
 
 A `SkipperReview` is structured, not just prose:
 
@@ -122,7 +125,33 @@ A `SkipperReview` is structured, not just prose:
 - **`Findings`** — per-test diagnoses, each with its own verdict, a summary, and the `file:line` locations it cited.
 - **`ConsoleSummary`** and **`MarkdownReport`** — the terse and the deep renderings.
 
-A reference **agentic** implementation that drives the `claude` CLI (read-only `Read`/`Grep`/`Glob` scoped to the repo) ships in the repo as `ClaudeAgentModelProvider`, in the `PerformanceTests/Skipper` folder (`ConsoleAppDemo` reuses it). Copy it and swap the transport to taste.
+A reference **agentic** transport that drives the `claude` CLI (read-only `Read`/`Grep`/`Glob` scoped to the repo) ships in the repo as `ClaudeCliSkipperTransport`, in the `PerformanceTests/Skipper` folder (`ConsoleAppDemo` reuses it). Copy it and swap the transport to taste.
+
+### Extending the default prompt
+
+The default prompt is built from a framework-owned **grounding preamble** ("these numbers are authoritative — explain the why, cite `file:line`"), a set of composable **body sections** (the SailDiff comparisons, ScaleFish fits, environment snapshot, and the verbatim result table), and a framework-owned **output-schema contract** that the parser reads back. The preamble and the contract are fixed — they're the half of the contract that must never drift from the parser — but you can slot your own grounding in between by registering an `ISkipperPromptSection`:
+
+```csharp
+public sealed class ServiceTopologySection : ISkipperPromptSection
+{
+    // Compose just before the SailDiff comparisons. See SkipperPromptOrder for the default slots.
+    public int Order => SkipperPromptOrder.Comparisons - 1;
+
+    public void Contribute(StringBuilder prompt, SkipperSession session)
+    {
+        prompt.AppendLine("## Service topology");
+        prompt.AppendLine("The method under test calls into our caching layer; weight allocations heavily.");
+        prompt.AppendLine();
+    }
+}
+
+// Register it alongside your transport:
+services.AddSingleton<ISkipperPromptSection, ServiceTopologySection>();
+```
+
+### Full control
+
+Need wholly different framing, or a model with native structured output? Replace `ISkipperPromptBuilder` / `ISkipperResponseParser`, or implement the lower-level `ISailfishAgent` directly (`Task<SkipperReview> RunAsync(SkipperSession, CancellationToken)`) and register it with `services.AddSingleton<ISailfishAgent, MyAgent>()`. An agent you register wins over the default pipeline.
 
 ## What Skipper produces
 
@@ -182,6 +211,6 @@ SailDiff produces the before/after, and Skipper explains it — no file paths to
 
 ## Privacy & safety
 
-- **Nothing leaves your machine** unless *your* agent sends it. Sailfish only assembles the context and calls your `ISailfishAgent`.
-- Skipper runs **after** your numbers are computed and printed, and **never throws into a run** — if the agent is missing, offline, or errors, your benchmark output is completely unaffected.
+- **Nothing leaves your machine** unless *your* transport sends it. Sailfish only assembles the context, builds the prompt, and calls your `ISkipperTransport`.
+- Skipper runs **after** your numbers are computed and printed, and **never throws into a run** — if the transport is missing, offline, or errors, your benchmark output is completely unaffected.
 - The reference agent grants **read-only** code access; Skipper proposes, it does not act.

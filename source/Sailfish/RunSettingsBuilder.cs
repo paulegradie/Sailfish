@@ -278,8 +278,9 @@ public class RunSettingsBuilder
     }
 
     /// <summary>
-    ///     Enables the Skipper AI analysis layer for the current run. Requires an <c>ISailfishAgent</c> to be
-    ///     registered via <c>IRegisterSailfishServices</c>; otherwise the run proceeds completely unchanged.
+    ///     Enables the Skipper AI analysis layer for the current run. Requires a Skipper transport to be registered
+    ///     via <c>IRegisterSailfishServices</c> (<c>services.AddSkipperTransport&lt;T&gt;()</c>), or a custom
+    ///     <c>ISailfishAgent</c>; otherwise the run proceeds completely unchanged.
     /// </summary>
     public RunSettingsBuilder WithAiAnalysis()
     {
