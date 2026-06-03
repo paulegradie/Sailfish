@@ -50,6 +50,7 @@ const navigation = [
     {
         title: 'Outputs',
         links: [
+            { title: 'Reading the Console Output', href: '/docs/1/console-output', badge: 'NEW' },
             { title: 'Output Attributes', href: '/docs/1/output-attributes' },
             { title: 'Markdown Output', href: '/docs/1/markdown-output' },
             { title: 'CSV Output', href: '/docs/1/csv-output' },
