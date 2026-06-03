@@ -190,8 +190,9 @@ public class SailfishExecutorTests
         // Act
         await executor.Run(CancellationToken.None);
 
-        // Assert
-        await _scaleFish.Received(1).Analyze(Arg.Any<CancellationToken>());
+        // Assert — ScaleFish now analyzes the current run's in-memory summaries directly (#296), decoupled
+        // from the SailDiff tracking-file retrieval.
+        await _scaleFish.Received(1).Analyze(Arg.Any<IEnumerable<IClassExecutionSummary>>(), Arg.Any<CancellationToken>());
     }
 
     [Fact]
@@ -292,7 +293,7 @@ public class SailfishExecutorTests
         _runSettings.RunScaleFish.Returns(true);
 
         var boom = new InvalidOperationException("analysis blew up");
-        _scaleFish.Analyze(Arg.Any<CancellationToken>()).Returns<Task>(_ => throw boom);
+        _scaleFish.Analyze(Arg.Any<IEnumerable<IClassExecutionSummary>>(), Arg.Any<CancellationToken>()).Returns<Task>(_ => throw boom);
 
         var executor = new SailfishExecutor(_mediator, _sailFishTestExecutor, _testCollector, _testFilter,
             _classExecutionSummaryCompiler, _executionSummaryWriter, _sailDiff, _scaleFish, _runSettings, _logger);
@@ -331,7 +332,7 @@ public class SailfishExecutorTests
         _runSettings.RunSailDiff.Returns(false);
         _runSettings.RunScaleFish.Returns(true);
 
-        _scaleFish.Analyze(Arg.Any<CancellationToken>()).Returns<Task>(_ => throw new OperationCanceledException());
+        _scaleFish.Analyze(Arg.Any<IEnumerable<IClassExecutionSummary>>(), Arg.Any<CancellationToken>()).Returns<Task>(_ => throw new OperationCanceledException());
 
         var executor = new SailfishExecutor(_mediator, _sailFishTestExecutor, _testCollector, _testFilter,
             _classExecutionSummaryCompiler, _executionSummaryWriter, _sailDiff, _scaleFish, _runSettings, _logger);

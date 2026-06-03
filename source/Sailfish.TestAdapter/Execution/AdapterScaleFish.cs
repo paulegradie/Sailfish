@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -7,6 +8,7 @@ using Sailfish.Analysis.ScaleFish;
 using Sailfish.Contracts.Public.Models;
 using Sailfish.Contracts.Public.Notifications;
 using Sailfish.Contracts.Public.Requests;
+using Sailfish.Execution;
 using Sailfish.Logging;
 using Sailfish.Presentation;
 
@@ -43,7 +45,19 @@ internal class AdapterScaleFish : IAdapterScaleFish
         if (!_runSettings.RunScaleFish) return;
 
         var response = await _mediator.Send(new GetLatestExecutionSummaryRequest(), cancellationToken);
-        var executionSummaries = response.LatestExecutionSummaries;
+        await AnalyzeCore(response.LatestExecutionSummaries.ToList(), cancellationToken);
+    }
+
+    // Decoupled entry point — analyze the current run's in-memory summaries directly (no tracking-file
+    // retrieval, no baseline dependency, no Type.GetType round-trip). See IScaleFishInternal.
+    public async Task Analyze(IEnumerable<IClassExecutionSummary> executionSummaries, CancellationToken cancellationToken)
+    {
+        if (!_runSettings.RunScaleFish) return;
+        await AnalyzeCore(executionSummaries.ToList(), cancellationToken);
+    }
+
+    private async Task AnalyzeCore(List<IClassExecutionSummary> executionSummaries, CancellationToken cancellationToken)
+    {
         if (!executionSummaries.Any()) return;
 
         try

@@ -10,6 +10,7 @@ using Sailfish.Contracts.Public.Models;
 using Sailfish.Contracts.Public.Notifications;
 using Sailfish.Contracts.Public.Requests;
 using Sailfish.Contracts.Public.Serialization.Tracking.V1;
+using Sailfish.Execution;
 using Sailfish.Logging;
 using Sailfish.Presentation;
 using Sailfish.Presentation.Console;
@@ -50,12 +51,29 @@ internal class ScaleFish : IScaleFish, IScaleFishInternal
         throw new NotImplementedException();
     }
 
+    // IAnalyzeFromFile entry point — retained for compatibility (ad-hoc / IDE callers). Reads the most
+    // recent tracking file, then runs the same core analysis. The run pipeline uses the in-memory overload
+    // below instead.
     public async Task Analyze(CancellationToken cancellationToken)
     {
         if (!_runSettings.RunScaleFish) return;
 
         var response = await _mediator.Send(new GetLatestExecutionSummaryRequest(), cancellationToken);
-        var executionSummaries = response.LatestExecutionSummaries;
+        await AnalyzeCore(response.LatestExecutionSummaries.ToList(), cancellationToken).ConfigureAwait(false);
+    }
+
+    // Decoupled entry point: analyze the CURRENT run's in-memory summaries directly. No tracking-file
+    // retrieval, no baseline dependency, and no Type.GetType round-trip — so ScaleFish (and therefore
+    // Skipper, which fires off the completion notification) runs on a single run even when SailDiff has no
+    // before/after, and the ArgumentNullException("key") from an unresolved test-class Type can't occur.
+    public async Task Analyze(IEnumerable<IClassExecutionSummary> executionSummaries, CancellationToken cancellationToken)
+    {
+        if (!_runSettings.RunScaleFish) return;
+        await AnalyzeCore(executionSummaries.ToList(), cancellationToken).ConfigureAwait(false);
+    }
+
+    private async Task AnalyzeCore(List<IClassExecutionSummary> executionSummaries, CancellationToken cancellationToken)
+    {
         if (!executionSummaries.Any()) return;
 
         try
