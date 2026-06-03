@@ -152,10 +152,9 @@ public class SailfishConsoleWindowFormatterTests
         // Act
         var output = _formatter.FormConsoleWindowMessageForSailfish(results);
 
-        // Assert — plots default on; a histogram and the legend are present.
+        // Assert — plots default on; the box plot (default style) and its legend are present.
         output.ShouldContain("Distribution Plot");
-        output.ShouldContain("█"); // histogram block glyph
-        output.ShouldContain("count per bin"); // legend
+        output.ShouldContain("IQR box"); // box-plot legend
     }
 
     [Fact]
