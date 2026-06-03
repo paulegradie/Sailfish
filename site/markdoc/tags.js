@@ -1,7 +1,14 @@
 import { Callout } from '@/components/Callout'
 import { QuickLink, QuickLinks } from '@/components/QuickLinks'
+import { Terminal } from '@/components/Terminal'
 
 const tags = {
+  terminal: {
+    attributes: {
+      title: { type: String },
+    },
+    render: Terminal,
+  },
   callout: {
     attributes: {
       title: { type: String },
