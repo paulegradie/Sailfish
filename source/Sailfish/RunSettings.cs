@@ -56,7 +56,17 @@ internal class RunSettings : IRunSettings
         TrawlSettings? trawlSettings = null)
     {
         TestNames = testNames;
-        LocalOutputDirectory = localOutputDirectory;
+        // Resolve the output directory to an absolute path exactly once, anchored to the current directory
+        // at construction time, and store the absolute form. Relative resolution used to compound across
+        // successive runs — the default output directory nested one level deeper each run
+        // (sailfish_default_output -> .../sailfish_tracking_output/sailfish_default_output -> ...), so each
+        // run wrote into a fresh nested directory and SailDiff could no longer discover the previous run's
+        // tracking file. Path.GetFullPath is idempotent for an already-absolute path, so an explicitly
+        // configured absolute directory is preserved as-is and re-resolving never adds another level.
+        LocalOutputDirectory = Path.GetFullPath(
+            string.IsNullOrWhiteSpace(localOutputDirectory)
+                ? DefaultFileSettings.DefaultOutputDirectory
+                : localOutputDirectory);
         CreateTrackingFiles = createTrackingFiles;
         RunSailDiff = useSailDiff;
         RunScaleFish = useScaleFish;
