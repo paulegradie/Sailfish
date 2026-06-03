@@ -209,7 +209,25 @@ public class EnvironmentHealthChecker : IEnvironmentHealthChecker
             // 1) High-resolution performance counter (Stopwatch)
             var freq = Stopwatch.Frequency; // ticks per second
             var isHighRes = Stopwatch.IsHighResolution;
-            var resolutionNs = 1_000_000_000.0 / freq;
+            var reportedResolutionNs = 1_000_000_000.0 / freq; // what the API advertises: one tick
+
+            // 1b) EFFECTIVE resolution. Stopwatch.Frequency only states the tick UNIT, not how often
+            // the counter actually advances. On several platforms the advertised value is far finer
+            // than reality — e.g. Apple Silicon reports Frequency == 1e9 ("1 ns/tick") while the
+            // hardware timebase only advances every ~41.7 ns (24 MHz). Probe the smallest non-zero
+            // GetTimestamp() delta to recover the true granularity. We take the MIN because scheduler
+            // hiccups only ever inflate a delta and so cannot mask the real quantum.
+            double effectiveResolutionNs;
+            try
+            {
+                effectiveResolutionNs = MeasureEffectiveResolutionNs(freq);
+            }
+            catch
+            {
+                effectiveResolutionNs = double.NaN; // best effort only
+            }
+
+            var haveEffective = !double.IsNaN(effectiveResolutionNs) && effectiveResolutionNs > 0;
 
             // 2) Effective OS scheduler quantization for sleeps (cross‑platform)
             // Measure median elapsed for Thread.Sleep(1) across a small sample to infer the scheduler tick.
@@ -239,10 +257,17 @@ public class EnvironmentHealthChecker : IEnvironmentHealthChecker
                 sleepMedianMs = double.NaN; // best effort only
             }
 
-            var timerDetails = isHighRes
-                ? $"High-resolution timer: ~{resolutionNs:F0} ns"
-                : $"Timer resolution ~{resolutionNs:F0} ns (low resolution)";
+            // The gate (and the user's mental model) should reflect what the timer can ACTUALLY
+            // resolve, not what it advertises. Fall back to the reported value if the probe failed.
+            var gateResolutionNs = haveEffective ? effectiveResolutionNs : reportedResolutionNs;
 
+            var timerKind = isHighRes ? "High-resolution timer" : "Low-resolution timer";
+            var resolutionText = haveEffective
+                ? $"reported ~{reportedResolutionNs:F0} ns, effective ~{effectiveResolutionNs:F0} ns"
+                : $"reported ~{reportedResolutionNs:F0} ns";
+            var timerDetails = isHighRes
+                ? $"{timerKind}: {resolutionText}"
+                : $"{timerKind}: {resolutionText} (low resolution)";
 
             var sleepDetails = double.IsNaN(sleepMedianMs)
                 ? "Sleep(1) median: n/a"
@@ -250,19 +275,68 @@ public class EnvironmentHealthChecker : IEnvironmentHealthChecker
 
             var details = $"{timerDetails}; {sleepDetails}";
 
-            // Preserve original PASS/WARN logic based on Stopwatch; include guidance referencing sleep granularity
-            if (isHighRes && resolutionNs <= 200) // ~<=0.2us
+            // PASS when the timer can actually resolve sub-µs work (~<=0.2µs of EFFECTIVE granularity).
+            if (isHighRes && gateResolutionNs <= 200)
             {
                 return new("Timer", HealthStatus.Pass, details);
             }
 
-            var recommendation = "Ensure high-resolution timers; sub-tick sleeps will quantize to the OS scheduler tick";
+            // When the effective granularity is far coarser than advertised, the actionable fix is to
+            // raise the work per measurement rather than chase a finer timer.
+            var recommendation = haveEffective && effectiveResolutionNs > reportedResolutionNs * 4
+                ? "Effective timer granularity is much coarser than advertised; for sub-µs operations raise the work per measurement (OperationsPerInvoke / batch the call) so each sample sits well above the timer floor"
+                : "Ensure high-resolution timers; sub-tick sleeps will quantize to the OS scheduler tick";
             return new("Timer", HealthStatus.Warn, details, recommendation);
         }
         catch (Exception ex)
         {
             return new("Timer", HealthStatus.Unknown, ex.Message);
         }
+    }
+
+    /// <summary>
+    /// Probes the smallest non-zero <see cref="Stopwatch.GetTimestamp"/> delta to estimate the timer's
+    /// TRUE granularity, which <see cref="Stopwatch.Frequency"/> does not reveal (it only states the tick
+    /// unit). Tight-loops sampling deltas, ignoring zeros (counter hasn't advanced yet), until enough
+    /// non-zero deltas are gathered or the iteration cap is hit.
+    /// </summary>
+    private static double MeasureEffectiveResolutionNs(long freq)
+    {
+        const int targetNonZeroSamples = 200;
+        const int maxIterations = 100_000;
+        var deltas = new List<long>(targetNonZeroSamples);
+        var previous = Stopwatch.GetTimestamp(); // first reading is discarded (no delta recorded for it)
+        var nonZero = 0;
+        for (var i = 0; i < maxIterations && nonZero < targetNonZeroSamples; i++)
+        {
+            var now = Stopwatch.GetTimestamp();
+            var delta = now - previous;
+            previous = now;
+            if (delta <= 0) continue; // 0 = sub-tick (counter unchanged); <0 guards against any wrap
+            deltas.Add(delta);
+            nonZero++;
+        }
+
+        return EffectiveResolutionNsFromTickDeltas(deltas, freq);
+    }
+
+    /// <summary>
+    /// Pure, deterministic core of the effective-resolution probe (exposed for unit tests). The
+    /// smallest non-zero tick delta is the observed quantum; converting via 1e9/freq yields nanoseconds.
+    /// Returns <see cref="double.NaN"/> when no advance was observed so callers can fall back to the
+    /// reported resolution.
+    /// </summary>
+    internal static double EffectiveResolutionNsFromTickDeltas(IReadOnlyList<long> deltaTicks, long stopwatchFrequency)
+    {
+        if (deltaTicks is null || deltaTicks.Count == 0) return double.NaN;
+        var nsPerTick = 1_000_000_000.0 / Math.Max(1, stopwatchFrequency);
+        var minNonZero = long.MaxValue;
+        foreach (var delta in deltaTicks)
+        {
+            if (delta > 0 && delta < minNonZero) minNonZero = delta;
+        }
+
+        return minNonZero == long.MaxValue ? double.NaN : minNonZero * nsPerTick;
     }
 
     private static HealthCheckEntry CheckOsPowerHints()

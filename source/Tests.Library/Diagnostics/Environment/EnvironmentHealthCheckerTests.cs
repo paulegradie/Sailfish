@@ -243,6 +243,9 @@ public class EnvironmentHealthCheckerTests
         timer.ShouldNotBeNull();
         timer.Status.ShouldBeOneOf(HealthStatus.Pass, HealthStatus.Warn);
         timer.Details.ShouldNotBeNullOrWhiteSpace();
+        // Details now state the advertised resolution explicitly (the probed "effective ~N ns" value
+        // is appended whenever the live probe observed the counter advance, which it does on real timers).
+        timer.Details.ShouldContain("reported ~");
     }
 
     [Fact]
