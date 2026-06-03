@@ -295,7 +295,7 @@ public class MarkdownTableConverter : IMarkdownTableConverter
             })
             .ToList();
 
-        var style = _runSettings?.DistributionPlotStyle ?? DistributionPlotStyle.Histogram;
+        var style = _runSettings?.DistributionPlotStyle ?? DistributionPlotStyle.BoxPlot;
         var plot = DistributionPlotRenderer.Render(series, unit, style);
         if (string.IsNullOrEmpty(plot)) return;
 

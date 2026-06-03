@@ -37,13 +37,12 @@ public class DistributionPlotFormatterTests
     }
 
     [Fact]
-    public void CreatePlot_Ide_IncludesPlotHeaderHistogramAndBothMethods()
+    public void CreatePlot_Ide_IncludesPlotHeaderBoxPlotAndBothMethods()
     {
         var output = _formatter.CreatePlot(CreateComparison(), OutputContext.Ide);
 
         output.ShouldContain("📊 DISTRIBUTION");
-        output.ShouldContain("█");                 // histogram block glyph
-        output.ShouldContain("count per bin");      // legend
+        output.ShouldContain("IQR box");            // box-plot legend (the default style)
         output.ShouldContain("Primary");
         output.ShouldContain("Compared");
     }
@@ -104,8 +103,8 @@ public class DistributionPlotFormatterTests
         output.ShouldContain("Tracked");
         output.ShouldContain("NoTracking");
         output.ShouldContain("Projected");
-        // "Tracked" is shared across both comparisons but de-duplicated to a single summary row.
-        output.Split('\n').Count(l => l.Contains("Tracked") && l.Contains("n=")).ShouldBe(1);
+        // "Tracked" is shared across both comparisons but de-duplicated to a single labelled row.
+        output.Split('\n').Count(l => l.Contains("Tracked")).ShouldBe(1);
     }
 
     [Fact]
