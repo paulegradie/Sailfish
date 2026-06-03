@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.CompilerServices;
 using Microsoft.Extensions.DependencyInjection;
 using Sailfish.Contracts.Public.Models;
 using Sailfish.Exceptions;
@@ -25,29 +26,26 @@ public class TypeActivator : ITypeActivator
 
     public TestInstanceActivation CreateDehydratedTestInstance(Type test, TestCaseId testCaseId, bool disabled)
     {
-        var ctorArgTypes = test.GetCtorParamTypes();
         if (disabled)
         {
-            // Disabled tests are never executed, so they are not resolved through the container (no scope).
+            // A disabled test (or a disabled class) is never executed, so materializing it must run NO user
+            // code: it has to report cleanly as disabled even when its constructor would throw or its DI
+            // dependencies are unresolved. Allocate the instance WITHOUT invoking any constructor
+            // (GetUninitializedObject) and without touching the DI container (no scope). The reporting /
+            // notification plumbing only describes the case by type (the instance is referenced solely via
+            // GetType()), so an uninitialized instance is sufficient while the user's constructor side
+            // effects — and any unresolved-dependency failures — never occur. (#300)
             try
             {
-                // The parameterless-args Activator.CreateInstance overload only finds PUBLIC constructors; include
-                // non-public so a disabled test with a non-public constructor still materializes (matching the
-                // enabled path, which discovers non-public constructors via GetConstructors).
-                return new TestInstanceActivation(
-                    Activator.CreateInstance(
-                        test,
-                        BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic,
-                        binder: null,
-                        args: ctorArgTypes.Select(_ => null! as object).ToArray(),
-                        culture: null)!,
-                    null);
+                return new TestInstanceActivation(RuntimeHelpers.GetUninitializedObject(test), null);
             }
             catch (Exception ex)
             {
                 throw new TestClassInstantiationException(test, ex);
             }
         }
+
+        var ctorArgTypes = test.GetCtorParamTypes();
 
         if (ctorArgTypes.Length != ctorArgTypes.Distinct().Count()) throw new SailfishException($"Multiple ctor arguments of the same type were found in {test.Name}");
 
