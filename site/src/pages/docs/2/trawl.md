@@ -36,7 +36,7 @@ The scenario method is protocol-agnostic — it is any `async` method. Sailfish 
 
 ### Lifecycle and thread-safety
 
-The enclosing class is an ordinary `[Sailfish]` class, so the usual hooks apply — warm a shared `HttpClient` or seed data in `[SailfishGlobalSetup]`. Because **all virtual users share the one test instance**, any scenario state must be thread-safe (a shared `HttpClient` is; a mutable field updated per request is not).
+The enclosing class is an ordinary `[Sailfish]` class, so the usual hooks apply — warm a shared `HttpClient` or seed data in `[SailfishGlobalSetup]`. Because **all virtual users share the one test instance**, any scenario state must be thread-safe (a shared `HttpClient` is; a mutable field updated per request is not). The **SF1023** analyzer warns when a `[Trawl]` method writes to mutable instance state (an instance field or auto-property) without synchronization — keep per-request state in locals, or guard shared writes with `lock`/`Interlocked`.
 
 Trawl scenarios should also be **`async` and non-blocking**. In the closed model each virtual user is an independent task, so a scenario that blocks a thread synchronously (rather than `await`-ing) ties up a thread-pool thread for the whole run; at high `VirtualUsers` counts that can starve the pool and distort the ramp. Prefer `await`-ing genuinely asynchronous work.
 
@@ -116,4 +116,4 @@ Turn it into a **CI gate** with `FailOnRegression` — a scenario that regressed
 
 ## Status
 
-Trawl is being delivered in phases. Shipping now: the public surface (`[Trawl]`, `TrawlSettings`, `TrawlResult`, SF1022), the **closed-model engine**, the **open arrival-rate model with coordinated-omission correction**, **reporting** (console + Markdown report, distribution plot, time-series sparklines, JSON persistence), and **SailDiff regression gating** (`FailOnRegression`). Still landing in subsequent releases: multi-stage load profiles (ramp/step), streaming histograms for long soaks, and ScaleFish saturation analysis.
+Trawl is being delivered in phases. Shipping now: the public surface (`[Trawl]`, `TrawlSettings`, `TrawlResult`, SF1022, SF1023), the **closed-model engine**, the **open arrival-rate model with coordinated-omission correction**, **reporting** (console + Markdown report, distribution plot, time-series sparklines, JSON persistence), and **SailDiff regression gating** (`FailOnRegression`). Still landing in subsequent releases: multi-stage load profiles (ramp/step), streaming histograms for long soaks, and ScaleFish saturation analysis.
