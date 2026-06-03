@@ -68,12 +68,28 @@ internal class SailfishExecutor
             var testClassResultGroups = await _sailFishTestExecutor.Execute(testsList, cancellationToken).ConfigureAwait(false);
             var classExecutionSummaries = _classExecutionSummaryCompiler.CompileToSummaries(testClassResultGroups).ToList();
 
-            await _executionSummaryWriter.Write(classExecutionSummaries, cancellationToken);
-            await _mediator.Publish(new TestRunCompletedNotification(classExecutionSummaries.ToTrackingFormat()), cancellationToken).ConfigureAwait(false);
+            // Benchmarks are measured at this point. From here on every artifact-writing / analysis step runs
+            // inside an error boundary: a failure in post-measurement work (serialization, reporting, SailDiff,
+            // ScaleFish) must never lose the collected timings or crash the host. Previously an unhandled
+            // exception here aborted the process with exit 134. Each stage degrades independently and the
+            // failure is surfaced on the result (a graceful non-zero outcome) rather than thrown.
+            var analysisExceptions = new List<Exception>();
 
-            if (_runSettings.RunSailDiff) await _sailDiff.Analyze(cancellationToken).ConfigureAwait(false);
+            await RunPostMeasurementStage(
+                "write execution summaries",
+                () => _executionSummaryWriter.Write(classExecutionSummaries, cancellationToken),
+                analysisExceptions).ConfigureAwait(false);
 
-            if (_runSettings.RunScaleFish) await _scaleFish.Analyze(cancellationToken).ConfigureAwait(false);
+            await RunPostMeasurementStage(
+                "publish test-run-completed notification",
+                () => _mediator.Publish(new TestRunCompletedNotification(classExecutionSummaries.ToTrackingFormat()), cancellationToken),
+                analysisExceptions).ConfigureAwait(false);
+
+            if (_runSettings.RunSailDiff)
+                await RunPostMeasurementStage("SailDiff analysis", () => _sailDiff.Analyze(cancellationToken), analysisExceptions).ConfigureAwait(false);
+
+            if (_runSettings.RunScaleFish)
+                await RunPostMeasurementStage("ScaleFish analysis", () => _scaleFish.Analyze(cancellationToken), analysisExceptions).ConfigureAwait(false);
 
             var exceptions = classExecutionSummaries
                 .SelectMany(classExecutionSummary =>
@@ -83,6 +99,11 @@ internal class SailfishExecutor
                         .Select(c => c.Exception))
                 .Cast<Exception>()
                 .ToList();
+
+            // Surface post-measurement failures alongside measurement exceptions so a run whose analysis
+            // failed reports a graceful, non-crashing failure (IsValid == false) while still returning the
+            // collected timings and whatever artifacts were produced.
+            exceptions.AddRange(analysisExceptions);
 
             return SailfishRunResult.CreateResult(classExecutionSummaries, exceptions);
         }
@@ -102,6 +123,34 @@ internal class SailfishExecutor
         }
 
         return SailfishRunResult.CreateResult(Array.Empty<IClassExecutionSummary>(), testDiscoveryExceptions);
+    }
+
+    /// <summary>
+    ///     Runs a single post-measurement stage (artifact write, notification publish, or an analyzer) inside
+    ///     an error boundary. A throw is logged as a structured error and recorded in
+    ///     <paramref name="analysisExceptions" /> so the stage fails soft — the collected timings survive,
+    ///     the remaining stages still run, and the process is never aborted. Cancellation is a control-flow
+    ///     signal rather than an analysis failure, so it is allowed to propagate.
+    /// </summary>
+    private async Task RunPostMeasurementStage(string stageName, Func<Task> stage, List<Exception> analysisExceptions)
+    {
+        try
+        {
+            await stage().ConfigureAwait(false);
+        }
+        catch (OperationCanceledException)
+        {
+            throw;
+        }
+        catch (Exception ex)
+        {
+            analysisExceptions.Add(ex);
+            _logger.Log(
+                LogLevel.Error,
+                ex,
+                "Post-measurement stage '{Stage}' failed after benchmarks were measured. The collected timings are preserved and the remaining stages continue; this step's artifacts/analysis were skipped.",
+                stageName);
+        }
     }
 
     private static int? TryParseSeed(Extensions.Types.OrderedDictionary args)
