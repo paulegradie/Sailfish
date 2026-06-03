@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -80,6 +81,46 @@ public class TrackingFileParserTests
         data.TestClass.Name.ShouldBe(nameof(ClassExecutionSummaryTrackingFormatBuilder.TestClass));
         data.ExecutionSettings.AsMarkdown.ShouldBeFalse();
         data.GetSuccessfulTestCases().Count().ShouldBe(1);
+    }
+
+    [Fact]
+    public async Task OneValidPlusOneGenuinelyCorruptFile_ReturnsValid_AndWarnsOnceNamingTheBadFile()
+    {
+        // #294: a single corrupt file must not abort the batch. The valid run is still returned and a single
+        // skip warning names the offending file.
+        var parserLogger = Substitute.For<ILogger>();
+        var parser = new TrackingFileParser(new TrackingFileSerialization(Substitute.For<ILogger>()), parserLogger);
+
+        var corruptFile = TempFileHelper.WriteStringToTempFile(Some.RandomString()); // not valid JSON
+        var goodFile = TempFileHelper.WriteStringToTempFile(SailfishSerializer.Serialize(
+            new List<ClassExecutionSummaryTrackingFormat> { ClassExecutionSummaryTrackingFormatBuilder.Create().Build() }));
+
+        var datalist = new TrackingFileDataList();
+        var result = await parser.TryParseMany(new List<string> { corruptFile, goodFile }, datalist, CancellationToken.None);
+
+        result.ShouldBeTrue();
+        datalist.Count.ShouldBe(1);
+        datalist.Single().Single().TestClass.Name.ShouldBe(nameof(ClassExecutionSummaryTrackingFormatBuilder.TestClass));
+
+        parserLogger.Received(1).Log(
+            LogLevel.Warning,
+            Arg.Any<Exception>(),
+            Arg.Is<string>(s => s.Contains("Skipping tracking file")),
+            Arg.Is<object[]>(args => args.Length == 1 && Equals(args[0], corruptFile)));
+    }
+
+    [Fact]
+    public async Task OnlyCorruptFiles_ReturnsFalse_WithEmptyResult_AndDoesNotThrow()
+    {
+        // #294: when every file is corrupt, retrieval degrades gracefully — empty result, no throw/abort.
+        var corruptA = TempFileHelper.WriteStringToTempFile(Some.RandomString());
+        var corruptB = TempFileHelper.WriteStringToTempFile(Some.RandomString());
+
+        var datalist = new TrackingFileDataList();
+        var result = await _parser.TryParseMany(new List<string> { corruptA, corruptB }, datalist, CancellationToken.None);
+
+        result.ShouldBeFalse();
+        datalist.ShouldBeEmpty();
     }
 
     [Fact]
