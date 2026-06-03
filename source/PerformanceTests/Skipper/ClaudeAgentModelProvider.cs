@@ -65,6 +65,9 @@ public sealed class ClaudeAgentModelProvider : ISailfishAgent
         sb.AppendLine();
         sb.AppendLine("Rules:");
         sb.AppendLine("- Use ONLY the numbers in the context below. Never invent or recompute a measurement.");
+        sb.AppendLine("- Your mechanistic explanation MUST be consistent with the measured ordering: rank candidates by");
+        sb.AppendLine("  their means in the context, and never claim a candidate is faster than one the numbers show it is");
+        sb.AppendLine("  slower than, nor attribute a speed-up (e.g. SIMD/JIT intrinsics) to a candidate measured as slower.");
         sb.AppendLine("- You MAY read files under the repository root to find the cause. Cite each as path:line.");
         sb.AppendLine("- If the environment shows concerns, or a change is not statistically significant, say so and temper the verdict.");
         sb.AppendLine("- Respond with ONLY a JSON object (no prose, no code fences) matching this schema:");
