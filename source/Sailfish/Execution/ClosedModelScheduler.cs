@@ -127,7 +127,13 @@ internal sealed class ClosedModelScheduler
         long success = 0;
         long errors = 0;
 
-        while (!cancellationToken.IsCancellationRequested && Stopwatch.GetTimestamp() < deadlineTimestamp)
+        // Each virtual user performs at least one request unless the run was cancelled before it started.
+        // The deadline is checked at the BOTTOM of the loop (not the top) so that a worker whose thread-pool
+        // start is delayed past a short deadline still contributes one request rather than recording nothing.
+        // Without this, a brief scheduling stall on a busy machine makes a perfectly healthy scenario look
+        // like it "produced no requests" — the empty-run guard in TrawlExecutionEngine should mean the work
+        // could not complete a single request, not that the scheduler was slow to get going.
+        while (!cancellationToken.IsCancellationRequested)
         {
             var start = Stopwatch.GetTimestamp();
             try
@@ -147,6 +153,8 @@ internal sealed class ClosedModelScheduler
                 // a time-to-failure is rarely comparable to a successful-response latency.
                 errors++;
             }
+
+            if (Stopwatch.GetTimestamp() >= deadlineTimestamp) break;
         }
 
         return new WorkerResult(samples ?? (IReadOnlyList<RequestSample>)Array.Empty<RequestSample>(), success, errors);
