@@ -1,4 +1,5 @@
 using System;
+using System.IO;
 using System.Linq;
 using NSubstitute;
 using Sailfish;
@@ -133,7 +134,8 @@ public class RunSettingsBuilderTests
 
         result.ShouldBeSameAs(builder);
         var settings = builder.Build();
-        settings.LocalOutputDirectory.ShouldBe(customDir);
+        // The output directory is resolved to an absolute path once at construction (#295).
+        settings.LocalOutputDirectory.ShouldBe(Path.GetFullPath(customDir));
     }
 
     [Fact]
@@ -483,7 +485,7 @@ public class RunSettingsBuilderTests
         var settings = builder.Build();
 
         settings.TestNames.ShouldBeEmpty();
-        settings.LocalOutputDirectory.ShouldBe(DefaultFileSettings.DefaultOutputDirectory);
+        settings.LocalOutputDirectory.ShouldBe(Path.GetFullPath(DefaultFileSettings.DefaultOutputDirectory));
         settings.CreateTrackingFiles.ShouldBeTrue(); // Default is true
         settings.RunSailDiff.ShouldBeFalse(); // Default is false
         settings.RunScaleFish.ShouldBeFalse(); // Default is false
@@ -512,7 +514,44 @@ public class RunSettingsBuilderTests
 
         var settings = builder.Build();
 
-        settings.LocalOutputDirectory.ShouldBe(DefaultFileSettings.DefaultOutputDirectory);
+        settings.LocalOutputDirectory.ShouldBe(Path.GetFullPath(DefaultFileSettings.DefaultOutputDirectory));
+    }
+
+    [Fact]
+    public void LocalOutputDirectory_IsResolvedToAbsolute_DeterministicAndIdempotent()
+    {
+        // #295: the output directory is resolved to an absolute path once at construction, so it does not
+        // drift / nest across successive runs, and re-resolving an already-absolute path is idempotent.
+        var run1 = RunSettingsBuilder.CreateBuilder().Build();
+        var run2 = RunSettingsBuilder.CreateBuilder().Build();
+
+        Path.IsPathRooted(run1.LocalOutputDirectory).ShouldBeTrue();
+        run1.LocalOutputDirectory.ShouldBe(run2.LocalOutputDirectory); // no per-run drift
+
+        // Feeding run 1's resolved (absolute) directory back in must NOT add another level — the anti-nesting
+        // guarantee that the per-run directory growth depended on.
+        var run3 = RunSettingsBuilder.CreateBuilder().WithLocalOutputDirectory(run1.LocalOutputDirectory).Build();
+        run3.LocalOutputDirectory.ShouldBe(run1.LocalOutputDirectory);
+    }
+
+    [Fact]
+    public void TrackingDirectory_IsAbsoluteOutputDirPlusSubfolder_NeverDeeper()
+    {
+        var temp = Path.Combine(Path.GetTempPath(), "sf-" + Guid.NewGuid().ToString("N"));
+        try
+        {
+            var settings = RunSettingsBuilder.CreateBuilder().WithLocalOutputDirectory(temp).Build();
+
+            settings.LocalOutputDirectory.ShouldBe(Path.GetFullPath(temp));
+
+            var tracking = settings.GetRunSettingsTrackingDirectoryPath();
+            Path.IsPathRooted(tracking).ShouldBeTrue();
+            tracking.ShouldBe(Path.Combine(settings.LocalOutputDirectory, DefaultFileSettings.DefaultExecutionSummaryTrackingDirectory));
+        }
+        finally
+        {
+            if (Directory.Exists(temp)) Directory.Delete(temp, recursive: true);
+        }
     }
 
     [Fact]
@@ -618,7 +657,7 @@ public class RunSettingsBuilderTests
         settings.StreamTrackingUpdates.ShouldBeFalse();
         settings.TestNames.ShouldContain("Test1");
         settings.TestNames.ShouldContain("Test2");
-        settings.LocalOutputDirectory.ShouldBe("custom_output");
+        settings.LocalOutputDirectory.ShouldBe(Path.GetFullPath("custom_output"));
         settings.CreateTrackingFiles.ShouldBeFalse();
         settings.RunSailDiff.ShouldBeTrue();
         settings.SailDiffSettings.ShouldBeSameAs(customSailDiffSettings);
