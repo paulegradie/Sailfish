@@ -8,10 +8,10 @@ namespace Sailfish.Presentation;
 /// </summary>
 public enum DistributionPlotStyle
 {
-    /// <summary>Compact shared-axis histograms (default).</summary>
+    /// <summary>Compact shared-axis histograms.</summary>
     Histogram = 0,
 
-    /// <summary>Horizontal box-and-whisker plots.</summary>
+    /// <summary>Horizontal box-and-whisker plots (default).</summary>
     BoxPlot = 1
 }
 

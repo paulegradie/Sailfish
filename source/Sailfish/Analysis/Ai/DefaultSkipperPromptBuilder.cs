@@ -54,6 +54,12 @@ internal sealed class DefaultSkipperPromptBuilder : ISkipperPromptBuilder
         prompt.AppendLine(
             "The benchmark numbers below are AUTHORITATIVE — do not recompute, contradict, or invent figures.");
         prompt.AppendLine(
+            "Your mechanistic explanation MUST be consistent with the measured ordering: rank candidates by their");
+        prompt.AppendLine(
+            "means in the context, and never claim a candidate is faster than one the numbers show it is slower");
+        prompt.AppendLine(
+            "than, nor attribute a speed-up (e.g. SIMD/JIT intrinsics) to a candidate measured as slower.");
+        prompt.AppendLine(
             "Your job is to EXPLAIN them: read the code under test to determine WHY performance changed or");
         prompt.AppendLine(
             "scales the way it does (allocations, query shape, a lost fast-path, etc.) and cite concrete");

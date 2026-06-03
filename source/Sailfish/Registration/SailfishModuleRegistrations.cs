@@ -103,6 +103,7 @@ internal static class SailfishModuleRegistrations
 
         services.AddTransient<ISailDiffResultMarkdownConverter, SailDiffResultMarkdownConverter>();
         services.AddTransient<ISailfishExecutionEngine, SailfishExecutionEngine>();
+        services.AddTransient<IClassExecutionDispatcher, ClassExecutionDispatcher>();
         services.AddSingleton<IReproducibilityManifestProvider, ReproducibilityManifestProvider>();
         services.AddSingleton<IEnvironmentHealthReportProvider, EnvironmentHealthReportProvider>();
 

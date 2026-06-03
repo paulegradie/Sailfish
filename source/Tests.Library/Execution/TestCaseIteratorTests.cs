@@ -177,6 +177,27 @@ public class TestCaseIteratorTests
     }
 
     [Fact]
+    public async Task Iterate_AdaptiveSampleSizeOverrideBelowMinimum_CapsBothBoundsAtOverride()
+    {
+        // Regression (Issue 7): an override below the minimum used to be clamped back up via
+        // Math.Max(override, minimum), so WithGlobalSampleSize(8) under a default minimum of 10
+        // yielded 10. The explicit override must win as both the floor and the cap so adaptive
+        // sampling can actually stop at the requested size.
+        var executionSettings = Substitute.For<IExecutionSettings>();
+        executionSettings.UseAdaptiveSampling.Returns(true);
+        executionSettings.MinimumSampleSize.Returns(10);
+        executionSettings.MaximumSampleSize.Returns(1000);
+        var method = typeof(TestClass).GetMethod(nameof(TestClass.TestMethod))!;
+        var container = TestInstanceContainer.CreateTestInstance(new TestClass(), method, [], [], false, executionSettings);
+        _mockRunSettings.SampleSizeOverride.Returns(8);
+
+        await _testCaseIterator.Iterate(container, true, CancellationToken.None);
+
+        executionSettings.MaximumSampleSize.ShouldBe(8);
+        executionSettings.MinimumSampleSize.ShouldBe(8);
+    }
+
+    [Fact]
     public async Task Iterate_WithOverheadEstimationEnabled_ShouldApplyOverheadEstimates()
     {
         // Arrange

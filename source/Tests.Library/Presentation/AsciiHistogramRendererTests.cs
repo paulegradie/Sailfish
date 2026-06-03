@@ -23,10 +23,10 @@ public class AsciiHistogramRendererTests
 
         output.IndexOfAny("▁▂▃▄▅▆▇█".ToCharArray()).ShouldBeGreaterThanOrEqualTo(0); // histogram glyphs present
         output.ShouldContain("count per bin");
-        // Old inline box-plot glyphs must be gone.
-        output.ShouldNotContain("◆");
-        output.ShouldNotContain("┃");
-        output.ShouldNotContain("▓");
+        // Box-plot glyphs must not leak into the histogram.
+        output.ShouldNotContain("×");   // box-plot mean
+        output.ShouldNotContain("┿");   // box-plot median
+        output.ShouldNotContain("┌");   // box-plot corner
     }
 
     [Fact]

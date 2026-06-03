@@ -100,7 +100,7 @@ public class DistributionPlotFormatter : IDistributionPlotFormatter
         if (drawable.Count == 0) return string.Empty;
 
         var unit = DurationFormatter.SelectUnit(drawable.SelectMany(s => s.Samples));
-        var style = _runSettings?.DistributionPlotStyle ?? DistributionPlotStyle.Histogram;
+        var style = _runSettings?.DistributionPlotStyle ?? DistributionPlotStyle.BoxPlot;
         return DistributionPlotRenderer.Render(drawable, unit, style, PlotWidth);
     }
 

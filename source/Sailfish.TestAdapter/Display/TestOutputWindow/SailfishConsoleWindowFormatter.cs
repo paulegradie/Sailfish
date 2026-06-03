@@ -151,7 +151,7 @@ internal class SailfishConsoleWindowFormatter : ISailfishConsoleWindowFormatter
                     results.Median,
                     results.UpperOutliers.Concat(results.LowerOutliers).ToArray())
             };
-            var style = _runSettings?.DistributionPlotStyle ?? DistributionPlotStyle.Histogram;
+            var style = _runSettings?.DistributionPlotStyle ?? DistributionPlotStyle.BoxPlot;
             var plot = DistributionPlotRenderer.Render(series, unit, style);
             if (!string.IsNullOrEmpty(plot))
             {

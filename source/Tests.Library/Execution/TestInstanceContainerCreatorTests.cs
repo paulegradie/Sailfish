@@ -152,7 +152,7 @@ public class TestInstanceContainerCreatorTests
         _runSettings.Args.Returns(args);
         _propertySetGenerator.GenerateSailfishVariableSets(Arg.Any<Type>(), out _).Returns(new List<PropertySet>());
         _typeActivator.CreateDehydratedTestInstance(typeof(TestClassWithMethods), Arg.Any<TestCaseId>(), Arg.Any<bool>())
-            .Returns(ci => new TestClassWithMethods());
+            .Returns(ci => new TestInstanceActivation(new TestClassWithMethods(), null));
 
         var creator = new TestInstanceContainerCreator(_runSettings, _typeActivator, _propertySetGenerator);
 
@@ -181,7 +181,7 @@ public class TestInstanceContainerCreatorTests
         _runSettings.Args.Returns(args);
         _propertySetGenerator.GenerateSailfishVariableSets(Arg.Any<Type>(), out _).Returns(new List<PropertySet>());
         _typeActivator.CreateDehydratedTestInstance(typeof(TestClassWithMethods), Arg.Any<TestCaseId>(), Arg.Any<bool>())
-            .Returns(ci => new TestClassWithMethods());
+            .Returns(ci => new TestInstanceActivation(new TestClassWithMethods(), null));
 
         var creator = new TestInstanceContainerCreator(_runSettings, _typeActivator, _propertySetGenerator);
 
@@ -210,7 +210,7 @@ public class TestInstanceContainerCreatorTests
         _runSettings.Args.Returns(args);
         _propertySetGenerator.GenerateSailfishVariableSets(Arg.Any<Type>(), out _).Returns(new List<PropertySet>());
         _typeActivator.CreateDehydratedTestInstance(typeof(TestClassWithMethods), Arg.Any<TestCaseId>(), Arg.Any<bool>())
-            .Returns(ci => new TestClassWithMethods());
+            .Returns(ci => new TestInstanceActivation(new TestClassWithMethods(), null));
 
         var creator = new TestInstanceContainerCreator(_runSettings, _typeActivator, _propertySetGenerator);
 

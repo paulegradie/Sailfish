@@ -52,15 +52,20 @@ public class MannWhitneyWilcoxonTest : IMannWhitneyWilcoxonTest
 
             var test = MannWhitneyWilcoxonFactory.Create(sample1, sample2);
 
-            var meanBefore = Math.Round(sample1.Mean(), sigDig);
-            var meanAfter = Math.Round(sample2.Mean(), sigDig);
+            var rawMeanBefore = sample1.Mean();
+            var rawMeanAfter = sample2.Mean();
+            var meanBefore = Math.Round(rawMeanBefore, sigDig);
+            var meanAfter = Math.Round(rawMeanAfter, sigDig);
             var medianBefore = Math.Round(sample1.Median(), sigDig);
             var medianAfter = Math.Round(sample2.Median(), sigDig);
             var testStatistic = Math.Round(test.Statistic, sigDig);
             var pVal = Math.Round(test.PValue, TestConstants.PValueSigDig);
             var isSignificant = test.PValue <= settings.Alpha;
+            // Direction from the unrounded means. Rounding for display (settings.Round) can
+            // collapse a small-but-real difference to equal, and `meanAfter > meanBefore` would
+            // then fall through to the Improved branch — mislabelling a regression as improved.
             var description = isSignificant
-                ? meanAfter > meanBefore ? SailfishChangeDirection.Regressed : SailfishChangeDirection.Improved
+                ? rawMeanAfter > rawMeanBefore ? SailfishChangeDirection.Regressed : SailfishChangeDirection.Improved
                 : SailfishChangeDirection.NoChange;
             var additionalResults = new Dictionary<string, object>
             {

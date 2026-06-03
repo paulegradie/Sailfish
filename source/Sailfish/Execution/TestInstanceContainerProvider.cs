@@ -1,7 +1,8 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using Microsoft.Extensions.DependencyInjection;
 using Sailfish.Attributes;
 using Sailfish.Contracts.Public.Models;
 using Sailfish.Extensions.Methods;
@@ -13,7 +14,13 @@ internal interface ITestInstanceContainerProvider
 {
     public Type Test { get; }
     int GetNumberOfPropertySetsInTheQueue();
-    IEnumerable<TestInstanceContainer> ProvideNextTestCaseEnumeratorForClass();
+
+    /// <param name="sharedInstance">
+    ///     When non-null (SharedInstance lifetime), every yielded case reuses this one class-level instance and
+    ///     carries no DI scope of its own (the caller owns the shared instance's scope). When null (PerCase
+    ///     lifetime), a fresh instance + per-case scope is created for each case.
+    /// </param>
+    IEnumerable<TestInstanceContainer> ProvideNextTestCaseEnumeratorForClass(object? sharedInstance = null);
 }
 
 internal class TestInstanceContainerProvider : ITestInstanceContainerProvider
@@ -48,26 +55,15 @@ internal class TestInstanceContainerProvider : ITestInstanceContainerProvider
         return _propertySets.Count();
     }
 
-    public IEnumerable<TestInstanceContainer> ProvideNextTestCaseEnumeratorForClass()
+    public IEnumerable<TestInstanceContainer> ProvideNextTestCaseEnumeratorForClass(object? sharedInstance = null)
     {
         var disabled = TestIsDisabled(Test, Method);
         if (GetNumberOfPropertySetsInTheQueue() is 0)
         {
             var testCaseId = DisplayNameHelper.CreateTestCaseId(Test, Method.Name, [], []); // a uniq id
-            var instance = _typeActivator.CreateDehydratedTestInstance(Test, testCaseId, disabled);
-            var executionSettings = instance.GetType().RetrieveExecutionTestSettings(
-                _runSettings.SampleSizeOverride,
-                _runSettings.NumWarmupIterationsOverride,
-                _runSettings.GlobalUseAdaptiveSampling,
-                _runSettings.GlobalTargetCoefficientOfVariation,
-                _runSettings.GlobalMaximumSampleSize,
-                _runSettings.GlobalUseConfigurableOutlierDetection,
-                _runSettings.GlobalOutlierStrategy,
-                _runSettings.GlobalMaxConfidenceIntervalWidth,
-                _runSettings.GlobalMinimumSampleSize);
-            var seed = TryParseSeed(_runSettings.Args);
-            if (seed.HasValue) executionSettings.Seed = seed;
-            yield return TestInstanceContainer.CreateTestInstance(instance, Method, [], [], disabled, executionSettings, _lifecycleMethodTracker);
+            var (instance, scope) = AcquireInstance(sharedInstance, testCaseId, disabled);
+            var executionSettings = BuildExecutionSettings(instance);
+            yield return TestInstanceContainer.CreateTestInstance(instance, Method, [], [], disabled, executionSettings, _lifecycleMethodTracker, scope);
         }
         else
         {
@@ -77,24 +73,42 @@ internal class TestInstanceContainerProvider : ITestInstanceContainerProvider
                 var variableValues = nextPropertySet.GetPropertyValues().ToArray();
                 var testCaseId = DisplayNameHelper.CreateTestCaseId(Test, Method.Name, propertyNames, variableValues); // a uniq id
 
-                var instance = _typeActivator.CreateDehydratedTestInstance(Test, testCaseId, disabled);
+                var (instance, scope) = AcquireInstance(sharedInstance, testCaseId, disabled);
+                // Re-inject this case's variable values. In SharedInstance mode this re-hydrates the one shared
+                // instance before each case; lazy sequential enumeration guarantees the engine finishes one case
+                // before the next is yielded, so re-hydrating here is safe.
                 HydrateInstanceTestProperties(instance, nextPropertySet);
-
-                var executionSettings = instance.GetType().RetrieveExecutionTestSettings(
-                    _runSettings.SampleSizeOverride,
-                    _runSettings.NumWarmupIterationsOverride,
-                    _runSettings.GlobalUseAdaptiveSampling,
-                    _runSettings.GlobalTargetCoefficientOfVariation,
-                    _runSettings.GlobalMaximumSampleSize,
-                    _runSettings.GlobalUseConfigurableOutlierDetection,
-                    _runSettings.GlobalOutlierStrategy,
-                    _runSettings.GlobalMaxConfidenceIntervalWidth,
-                    _runSettings.GlobalMinimumSampleSize);
-                var seed = TryParseSeed(_runSettings.Args);
-                if (seed.HasValue) executionSettings.Seed = seed;
-                yield return TestInstanceContainer.CreateTestInstance(instance, Method, propertyNames, variableValues, disabled, executionSettings, _lifecycleMethodTracker);
+                var executionSettings = BuildExecutionSettings(instance);
+                yield return TestInstanceContainer.CreateTestInstance(instance, Method, propertyNames, variableValues, disabled, executionSettings, _lifecycleMethodTracker, scope);
             }
         }
+    }
+
+    private (object instance, IServiceScope? scope) AcquireInstance(object? sharedInstance, TestCaseId testCaseId, bool disabled)
+    {
+        // SharedInstance mode: every case reuses the one class-level instance; its DI scope is owned and disposed
+        // by the engine, so the container carries no scope of its own.
+        if (sharedInstance is not null) return (sharedInstance, null);
+
+        var activation = _typeActivator.CreateDehydratedTestInstance(Test, testCaseId, disabled);
+        return (activation.Instance, activation.Scope);
+    }
+
+    private IExecutionSettings BuildExecutionSettings(object instance)
+    {
+        var executionSettings = instance.GetType().RetrieveExecutionTestSettings(
+            _runSettings.SampleSizeOverride,
+            _runSettings.NumWarmupIterationsOverride,
+            _runSettings.GlobalUseAdaptiveSampling,
+            _runSettings.GlobalTargetCoefficientOfVariation,
+            _runSettings.GlobalMaximumSampleSize,
+            _runSettings.GlobalUseConfigurableOutlierDetection,
+            _runSettings.GlobalOutlierStrategy,
+            _runSettings.GlobalMaxConfidenceIntervalWidth,
+            _runSettings.GlobalMinimumSampleSize);
+        var seed = TryParseSeed(_runSettings.Args);
+        if (seed.HasValue) executionSettings.Seed = seed;
+        return executionSettings;
     }
 
     private bool TestIsDisabled(MemberInfo test, MemberInfo method)

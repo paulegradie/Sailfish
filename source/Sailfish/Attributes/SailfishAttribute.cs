@@ -88,6 +88,13 @@ public sealed class SailfishAttribute : Attribute
     public bool Disabled { get; set; }
 
     /// <summary>
+    ///     Controls how the test-class instance is managed across the class's cases. Defaults to
+    ///     <see cref="SailfishLifetime.SharedInstance" /> (constructor + GlobalSetup run once per class).
+    ///     Use <see cref="SailfishLifetime.PerCase" /> for a fresh, isolated instance per case.
+    /// </summary>
+    public SailfishLifetime Lifetime { get; set; } = SailfishLifetime.SharedInstance;
+
+    /// <summary>
     ///     Gets/Sets whether to disable overhead estimation for the entire class.
     /// </summary>
     public bool DisableOverheadEstimation { get; set; }
