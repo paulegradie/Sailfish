@@ -13,8 +13,8 @@ public static class GoldenNormalization
 
         // Replace dynamic header values
         s = Regex.Replace(s, @"\*\*Generated:\*\* .* UTC", "**Generated:** <TS> UTC");
-        s = Regex.Replace(s, @"\*\*Session ID:\*\* [a-f0-9]{8}", "**Session ID:** <ID8>");
-        s = Regex.Replace(s, @"TestSession_[a-f0-9]{8}", "TestSession_<ID8>", RegexOptions.IgnoreCase);
+        s = Regex.Replace(s, @"\*\*Session ID:\*\* (?:[a-f0-9]{8}|\d{8}_\d{6})", "**Session ID:** <ID8>");
+        s = Regex.Replace(s, @"TestSession_(?:[a-f0-9]{8}|\d{8}_\d{6})", "TestSession_<ID8>", RegexOptions.IgnoreCase);
 
         // Versions and runtime info
         s = Regex.Replace(s, @"Sailfish\s+[0-9]+\.[0-9]+\.[0-9]+(?:[^\s]*)?", "Sailfish <VER>", RegexOptions.IgnoreCase);
@@ -63,7 +63,7 @@ public static class GoldenNormalization
 
         // Session metadata row: <id>,<timestampZ>,classes,tests
         s = Regex.Replace(s,
-            pattern: @"^(?<id>[a-f0-9]{8}),(?<ts>\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z),",
+            pattern: @"^(?<id>[a-f0-9]{8}|\d{8}_\d{6}),(?<ts>\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}Z),",
             replacement: "<ID8>,<TSZ>,",
             options: RegexOptions.Multiline | RegexOptions.IgnoreCase);
 

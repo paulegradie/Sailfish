@@ -11,6 +11,7 @@ using Sailfish.Contracts.Private;
 using Sailfish.Contracts.Public.Notifications;
 using Sailfish.Contracts.Public.Serialization.Tracking.V1;
 using Sailfish.Logging;
+using Sailfish.Presentation;
 using Sailfish.Analysis.SailDiff.Statistics;
 using Sailfish.Contracts.Public.Models;
 
@@ -87,8 +88,8 @@ internal class CsvTestRunCompletedHandler : INotificationHandler<TestRunComplete
 
             if (!string.IsNullOrEmpty(csvContent))
             {
-                // Generate unique session ID and timestamp
-                var sessionId = Guid.NewGuid().ToString("N")[..8];
+                // Per-run session id (shared with the console output and the other TestSession_* files).
+                var sessionId = DefaultFileSettings.SessionId(_runSettings?.TimeStamp ?? DateTime.UtcNow);
                 var timestamp = DateTime.UtcNow;
 
                 // Publish notification to generate CSV file with session-based naming
@@ -129,7 +130,7 @@ internal class CsvTestRunCompletedHandler : INotificationHandler<TestRunComplete
     {
         var sb = new StringBuilder();
         var timestamp = DateTime.UtcNow;
-        var sessionId = Guid.NewGuid().ToString("N")[..8];
+        var sessionId = DefaultFileSettings.SessionId(_runSettings?.TimeStamp ?? DateTime.UtcNow);
 
         // Add session metadata section
         sb.AppendLine("# Session Metadata");

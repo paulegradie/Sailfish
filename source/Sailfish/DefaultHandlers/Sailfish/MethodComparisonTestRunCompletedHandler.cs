@@ -161,8 +161,8 @@ internal class MethodComparisonTestRunCompletedHandler : INotificationHandler<Te
 
             if (!string.IsNullOrEmpty(markdownContent))
             {
-                // Generate unique session ID and timestamp
-                var sessionId = Guid.NewGuid().ToString("N")[..8];
+                // Per-run session id (shared with the console output and the other TestSession_* files).
+                var sessionId = DefaultFileSettings.SessionId(_runSettings?.TimeStamp ?? DateTime.UtcNow);
                 var timestamp = DateTime.UtcNow;
 
                 // Publish notification to generate markdown file with session-based naming
@@ -204,7 +204,7 @@ internal class MethodComparisonTestRunCompletedHandler : INotificationHandler<Te
     {
         var sb = new StringBuilder();
         var timestamp = DateTime.UtcNow;
-        var sessionId = Guid.NewGuid().ToString("N")[..8];
+        var sessionId = DefaultFileSettings.SessionId(_runSettings?.TimeStamp ?? DateTime.UtcNow);
 
         // Add document header
         sb.AppendLine("# 📊 Test Session Results");
