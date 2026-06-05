@@ -3,13 +3,13 @@ using System.Collections.Generic;
 using System.Linq;
 using Sailfish.Contracts.Public.Models;
 using Sailfish.Execution;
-using Sailfish.TestAdapter.Queue.Processors.MethodComparison;
+using Sailfish.TestAdapter.Comparison;
 using Shouldly;
 using Tests.Common.Builders;
 using Tests.Common.Utils;
 using Xunit;
 
-namespace Tests.TestAdapter.Queue;
+namespace Tests.TestAdapter.Comparison;
 
 public class CombinedClassExecutionSummaryTests
 {

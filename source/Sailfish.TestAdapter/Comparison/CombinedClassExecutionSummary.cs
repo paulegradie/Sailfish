@@ -4,7 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace Sailfish.TestAdapter.Queue.Processors.MethodComparison;
+namespace Sailfish.TestAdapter.Comparison;
 
 /// <summary>
 /// A combined class execution summary that merges results from multiple individual test case summaries.

@@ -16,13 +16,12 @@ using Sailfish.Execution;
 using Sailfish.Logging;
 using Sailfish.TestAdapter.Execution;
 using Sailfish.TestAdapter.Handlers.FrameworkHandlers;
-using Sailfish.TestAdapter.Queue.Contracts;
-using Sailfish.TestAdapter.Queue.Processors.MethodComparison;
+using Sailfish.TestAdapter.Comparison;
 using Shouldly;
 using Xunit;
 using Xunit.Abstractions;
 
-namespace Tests.TestAdapter.Queue;
+namespace Tests.TestAdapter.Comparison;
 
 /// <summary>
 /// Regression coverage for the inverted-baseline reporting bug in the IDE method-comparison
@@ -291,11 +290,11 @@ public class MethodComparisonBatchProcessorBaselineInversionTests
         return s.Trim();
     }
 
-    private TestCompletionQueueMessage CreateMessage(string methodWithVariables, double meanMs, bool isBaseline)
+    private TestCompletionMessage CreateMessage(string methodWithVariables, double meanMs, bool isBaseline)
     {
         var fqn = $"{ClassName}.{methodWithVariables}";
         var testCase = new TestCase(fqn, new Uri("executor://sailfish"), "Sailfish");
-        return new TestCompletionQueueMessage
+        return new TestCompletionMessage
         {
             TestCaseId = fqn,
             TestResult = new TestExecutionResult { IsSuccess = true },
@@ -360,7 +359,7 @@ public class MethodComparisonBatchProcessorBaselineInversionTests
             new Sailfish.Analysis.SailDiff.SailDiffSettings());
     }
 
-    private static void AttachClassExecutionSummary(params TestCompletionQueueMessage[] messages)
+    private static void AttachClassExecutionSummary(params TestCompletionMessage[] messages)
     {
         var compiled = new List<ICompiledTestCaseResult>();
         foreach (var m in messages)

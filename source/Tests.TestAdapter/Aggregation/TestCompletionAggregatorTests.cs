@@ -8,21 +8,22 @@ using NSubstitute;
 using Sailfish.Analysis.SailDiff.Formatting;
 using Sailfish.Execution;
 using Sailfish.Logging;
+using Sailfish.TestAdapter;
+using Sailfish.TestAdapter.Comparison;
 using Sailfish.TestAdapter.Execution;
 using Sailfish.TestAdapter.Execution.Aggregation;
 using Sailfish.TestAdapter.Handlers.FrameworkHandlers;
-using Sailfish.TestAdapter.Queue.Contracts;
-using Sailfish.TestAdapter.Queue.Processors.MethodComparison;
+using Sailfish.TestAdapter.TestProperties;
 using Shouldly;
 using Xunit;
 
 namespace Tests.TestAdapter.Aggregation;
 
 /// <summary>
-///     SPIKE proof: the synchronous <see cref="TestCompletionAggregator" /> reproduces the queue's
-///     test-completion behaviour while reusing the real <see cref="MethodComparisonBatchProcessor" />.
-///     These tests assert routing and exactly-once firing — the behaviours the 9k-line queue subsystem
-///     existed to provide — without any of its transport/lifecycle machinery.
+///     Tests for <see cref="TestCompletionAggregator" />: routing (stream non-comparison/failed immediately,
+///     buffer successful comparison members), exactly-once firing by known count, end-of-run flush, the sink
+///     seam, and the TestExecutor comparison-group seeding that feeds it. Drives the real
+///     <see cref="MethodComparisonBatchProcessor" />.
 /// </summary>
 public class TestCompletionAggregatorTests
 {
@@ -169,7 +170,42 @@ public class TestCompletionAggregatorTests
         sink.RunCompleted.ShouldBe(1);
     }
 
-    private static TestCompletionQueueMessage CreateMessage(string method, string? comparisonGroup, bool success = true)
+    [Fact]
+    public async Task SeededFromTestCases_FiresComparisonAtTheDiscoveredCount()
+    {
+        // Validates the TestExecutor seam: SeedComparisonGroups derives each group's expected count from the
+        // discovered TestCases (via the comparison-group property), so the comparison fires exactly once when
+        // that many members complete — and ungrouped cases are ignored by seeding.
+        var aggregator = NewAggregator();
+        var testCases = new List<TestCase>
+        {
+            ComparisonTestCase("MethodA", "G"),
+            ComparisonTestCase("MethodB", "G"),
+            new("TestClass1.Solo", new Uri("executor://sailfishexecutor/v1"), "Sailfish")
+        };
+
+        TestExecutor.SeedComparisonGroups(aggregator, testCases);
+
+        await aggregator.ReceiveAsync(CreateMessage("MethodA", "G"), CancellationToken.None);
+        await _mediator.DidNotReceive().Publish(Arg.Any<FrameworkTestCaseEndNotification>(), Arg.Any<CancellationToken>());
+
+        await aggregator.ReceiveAsync(CreateMessage("MethodB", "G"), CancellationToken.None);
+        await _mediator.Received(1).Publish(
+            Arg.Is<FrameworkTestCaseEndNotification>(n => n.TestCase.FullyQualifiedName.EndsWith("MethodA")),
+            Arg.Any<CancellationToken>());
+        await _mediator.Received(1).Publish(
+            Arg.Is<FrameworkTestCaseEndNotification>(n => n.TestCase.FullyQualifiedName.EndsWith("MethodB")),
+            Arg.Any<CancellationToken>());
+    }
+
+    private static TestCase ComparisonTestCase(string method, string comparisonGroup)
+    {
+        var testCase = new TestCase($"TestClass1.{method}", new Uri("executor://sailfishexecutor/v1"), "Sailfish");
+        testCase.SetPropertyValue(SailfishManagedProperty.SailfishComparisonGroupProperty, comparisonGroup);
+        return testCase;
+    }
+
+    private static TestCompletionMessage CreateMessage(string method, string? comparisonGroup, bool success = true)
     {
         var fullyQualifiedName = $"TestClass1.{method}";
         var testCase = new TestCase(fullyQualifiedName, new Uri("executor://sailfishexecutor/v1"), "Sailfish");
@@ -182,7 +218,7 @@ public class TestCompletionAggregatorTests
         };
         if (comparisonGroup != null) metadata["ComparisonGroup"] = comparisonGroup;
 
-        return new TestCompletionQueueMessage
+        return new TestCompletionMessage
         {
             TestCaseId = fullyQualifiedName,
             CompletedAt = DateTime.UtcNow,
@@ -210,7 +246,7 @@ public class TestCompletionAggregatorTests
         public int Completed { get; private set; }
         public int RunCompleted { get; private set; }
 
-        public Task OnTestCompletedAsync(TestCompletionQueueMessage message, CancellationToken cancellationToken)
+        public Task OnTestCompletedAsync(TestCompletionMessage message, CancellationToken cancellationToken)
         {
             Completed++;
             return Task.CompletedTask;

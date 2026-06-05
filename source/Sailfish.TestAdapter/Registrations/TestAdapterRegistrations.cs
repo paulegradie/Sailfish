@@ -14,7 +14,7 @@ using Sailfish.TestAdapter.Execution.Aggregation;
 using Sailfish.TestAdapter.Execution.EnvironmentHealth;
 using Sailfish.TestAdapter.Handlers.FrameworkHandlers;
 using Sailfish.TestAdapter.Handlers.TestCaseEvents;
-using Sailfish.TestAdapter.Queue.Processors.MethodComparison;
+using Sailfish.TestAdapter.Comparison;
 
 namespace Sailfish.TestAdapter.Registrations;
 

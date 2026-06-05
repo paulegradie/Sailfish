@@ -17,7 +17,7 @@ using Sailfish.TestAdapter.Execution;
 using Sailfish.TestAdapter.Execution.Aggregation;
 using Sailfish.TestAdapter.Handlers.FrameworkHandlers;
 using Sailfish.TestAdapter.Handlers.TestCaseEvents;
-using Sailfish.TestAdapter.Queue.Processors.MethodComparison;
+using Sailfish.TestAdapter.Comparison;
 using Shouldly;
 using Tests.Common.Builders;
 using Tests.Common.Utils;

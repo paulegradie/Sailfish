@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 
-namespace Sailfish.TestAdapter.Queue.Contracts;
+namespace Sailfish.TestAdapter.Comparison;
 
 /// <summary>
 ///     A group of related test-completion messages handed to
@@ -15,7 +15,7 @@ internal class TestCaseBatch
     public string BatchId { get; set; } = string.Empty;
 
     /// <summary>The test-completion messages belonging to this comparison group.</summary>
-    public List<TestCompletionQueueMessage> TestCases { get; set; } = new();
+    public List<TestCompletionMessage> TestCases { get; set; } = new();
 
     /// <summary>The batch status. Retained for compatibility with the comparison processor and its tests.</summary>
     public BatchStatus Status { get; set; } = BatchStatus.Pending;

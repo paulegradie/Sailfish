@@ -191,7 +191,8 @@ public class TestExecutor : ITestExecutor
             }
 
             // Seed comparison-group sizes so the aggregator can fire each comparison exactly once when complete.
-            SeedComparisonGroups(provider, testCases);
+            var aggregator = provider.GetService<TestCompletionAggregator>();
+            if (aggregator is not null) SeedComparisonGroups(aggregator, testCases);
 
             // Execute tests.
             _testExecution.ExecuteTests(testCases, provider, frameworkHandle, _cancellationTokenSource.Token);
@@ -243,11 +244,8 @@ public class TestExecutor : ITestExecutor
     ///     discovery. This deterministic completeness signal lets each cross-method comparison fire exactly once,
     ///     the moment its group is whole.
     /// </summary>
-    private static void SeedComparisonGroups(IServiceProvider provider, List<TestCase> testCases)
+    internal static void SeedComparisonGroups(TestCompletionAggregator aggregator, List<TestCase> testCases)
     {
-        var aggregator = provider.GetService<TestCompletionAggregator>();
-        if (aggregator is null) return;
-
         var counts = new Dictionary<string, int>(StringComparer.Ordinal);
         foreach (var testCase in testCases)
         {

@@ -14,12 +14,11 @@ using Sailfish.Execution;
 using Sailfish.Logging;
 using Sailfish.TestAdapter.Execution;
 using Sailfish.TestAdapter.Handlers.FrameworkHandlers;
-using Sailfish.TestAdapter.Queue.Contracts;
-using Sailfish.TestAdapter.Queue.Processors.MethodComparison;
+using Sailfish.TestAdapter.Comparison;
 using Shouldly;
 using Xunit;
 
-namespace Tests.TestAdapter.Queue;
+namespace Tests.TestAdapter.Comparison;
 
 public class MethodComparisonBatchProcessorAccumulateAndPublishTests
 {
@@ -33,11 +32,11 @@ public class MethodComparisonBatchProcessorAccumulateAndPublishTests
         return new MethodComparisonBatchProcessor(_sailDiff, _mediator, _logger, _formatter);
     }
 
-    private static TestCompletionQueueMessage CreateMessage(string className, string methodName, string group, double meanMs)
+    private static TestCompletionMessage CreateMessage(string className, string methodName, string group, double meanMs)
     {
         var fqn = $"{className}.{methodName}";
         var testCase = new TestCase(fqn, new Uri("executor://sailfish"), "Sailfish");
-        return new TestCompletionQueueMessage
+        return new TestCompletionMessage
         {
             TestCaseId = fqn,
             TestResult = new TestExecutionResult { IsSuccess = true },
@@ -91,7 +90,7 @@ public class MethodComparisonBatchProcessorAccumulateAndPublishTests
         return new TestCaseSailDiffResult(new List<SailDiffResult> { diff }, new TestIds(new[] { "A" }, new[] { "B" }), new Sailfish.Analysis.SailDiff.SailDiffSettings());
     }
 
-    private static void AttachClassExecutionSummary(params TestCompletionQueueMessage[] messages)
+    private static void AttachClassExecutionSummary(params TestCompletionMessage[] messages)
     {
         // Build a minimal IClassExecutionSummary with compiled results for all provided messages
         var compiled = new List<ICompiledTestCaseResult>();
@@ -185,7 +184,7 @@ public class MethodComparisonBatchProcessorAccumulateAndPublishTests
         var batch = new TestCaseBatch
         {
             BatchId = "Comparison_TestClass1_GroupX",
-            TestCases = new List<TestCompletionQueueMessage> { m1, m2 },
+            TestCases = new List<TestCompletionMessage> { m1, m2 },
             Status = BatchStatus.Complete,
             CreatedAt = DateTime.UtcNow,
             CompletedAt = DateTime.UtcNow,
@@ -230,7 +229,7 @@ public class MethodComparisonBatchProcessorAccumulateAndPublishTests
         var batch = new TestCaseBatch
         {
             BatchId = "Comparison_TestClass1_GroupY",
-            TestCases = new List<TestCompletionQueueMessage> { a, b, c },
+            TestCases = new List<TestCompletionMessage> { a, b, c },
             Status = BatchStatus.Complete,
             CreatedAt = DateTime.UtcNow,
             CompletedAt = DateTime.UtcNow,

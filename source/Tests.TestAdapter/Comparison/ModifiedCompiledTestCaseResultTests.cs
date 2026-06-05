@@ -1,11 +1,11 @@
 using System;
 using NSubstitute;
 using Sailfish.Contracts.Public.Models;
-using Sailfish.TestAdapter.Queue.Processors.MethodComparison;
+using Sailfish.TestAdapter.Comparison;
 using Shouldly;
 using Xunit;
 
-namespace Tests.TestAdapter.Queue;
+namespace Tests.TestAdapter.Comparison;
 
 public class ModifiedCompiledTestCaseResultTests
 {

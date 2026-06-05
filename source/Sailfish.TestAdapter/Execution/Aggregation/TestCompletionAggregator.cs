@@ -9,41 +9,35 @@ using Microsoft.VisualStudio.TestPlatform.ObjectModel;
 using Sailfish.Execution;
 using Sailfish.Logging;
 using Sailfish.TestAdapter.Handlers.FrameworkHandlers;
-using Sailfish.TestAdapter.Queue.Contracts;
-using Sailfish.TestAdapter.Queue.Processors.MethodComparison;
+using Sailfish.TestAdapter.Comparison;
 
 namespace Sailfish.TestAdapter.Execution.Aggregation;
 
 /// <summary>
-///     SPIKE: a synchronous, in-process replacement for the test-completion queue subsystem
-///     (InMemoryTestCompletionQueue + publisher + consumer + manager + batching service + timeout handler +
-///     health check + the per-message MethodComparisonProcessor).
-///
-///     It does the one job that subsystem actually existed for — buffer the members of a comparison group until
-///     the group is whole, then run the cross-method comparison and publish — and nothing else. The behaviour-
-///     bearing comparison math is reused untouched: <see cref="MethodComparisonBatchProcessor.ProcessBatch" />.
+///     The synchronous, in-process owner of cross-method comparison for the test adapter. It buffers the members
+///     of a comparison group until the group is whole, then runs the comparison once and publishes — and nothing
+///     else. The behaviour-bearing comparison math is reused untouched via
+///     <see cref="MethodComparisonBatchProcessor.ProcessBatch" />.
 /// </summary>
 /// <remarks>
-///     Why this can be synchronous and small (the answer to "are you sure we can delete the queue?"):
-///     completions arrive from a sequential in-process <c>foreach … await</c> loop (ClassExecutionDispatcher),
-///     the membership of every comparison group is known up front from discovery, and the run has a definite
-///     end. So completeness is a deterministic counter — <c>arrived == expected</c> — not the queue's
-///     <c>>= 2 successful</c> heuristic that fires <c>ProcessBatch</c> repeatedly and produces the documented
-///     double-publish scar tissue (see MethodComparisonProcessor.cs and the #229/#230 regression tests).
+///     Why this can be synchronous and small: completions arrive from a sequential in-process
+///     <c>foreach … await</c> loop (ClassExecutionDispatcher), the membership of every comparison group is known
+///     up front from discovery, and the run has a definite end. So completeness is a deterministic counter —
+///     <c>arrived == expected</c> — rather than a <c>>= 2 successful</c> count-and-hope heuristic (which fired
+///     <c>ProcessBatch</c> repeatedly and produced the #229/#230 double-publish scar tissue).
 ///
-///     Routing mirrors the queue exactly:
+///     Routing:
 ///     <list type="bullet">
-///         <item>non-comparison case → published immediately (streamed live), as FrameworkPublishingProcessor did;</item>
+///         <item>non-comparison case → published immediately (streamed live);</item>
 ///         <item>failed comparison member → published immediately as Failed, and counted toward completion but never buffered;</item>
 ///         <item>successful comparison member → buffered; when the group is complete it is handed to ProcessBatch once.</item>
 ///     </list>
 ///     Stragglers (a sibling that crashed and will never complete) are resolved deterministically at
-///     <see cref="FlushAsync" /> — end of run — which is what makes the queue's BatchTimeoutHandler unnecessary.
+///     <see cref="FlushAsync" /> — end of run — so no batch-completion timeout is needed.
 ///
-///     Thread-safe via per-group locking so it also covers a future parallel execution path without the queue.
-///     A fully serializable message envelope (for a future distributed publisher) is intentionally NOT part of
-///     this spike: the metadata dictionary still carries live objects (TestCase, IClassExecutionSummary), so a
-///     wire-ready DTO is follow-up work — see ITestCompletionSink for where a distributed publisher would attach.
+///     Thread-safe via per-group locking so it also covers a future parallel execution path. Note the message
+///     metadata dictionary still carries live objects (TestCase, IClassExecutionSummary), so a wire-ready DTO for
+///     a future distributed publisher is follow-up work — see ITestCompletionSink for where one would attach.
 /// </remarks>
 internal sealed class TestCompletionAggregator
 {
@@ -85,7 +79,7 @@ internal sealed class TestCompletionAggregator
     ///     Accepts one completed test case. Non-comparison and failed cases publish immediately; successful
     ///     comparison members are buffered and the comparison is run once the group is complete.
     /// </summary>
-    public async Task ReceiveAsync(TestCompletionQueueMessage message, CancellationToken cancellationToken)
+    public async Task ReceiveAsync(TestCompletionMessage message, CancellationToken cancellationToken)
     {
         if (message is null) throw new ArgumentNullException(nameof(message));
 
@@ -107,7 +101,7 @@ internal sealed class TestCompletionAggregator
             // It still counts toward the group's expected arrivals below so a doomed sibling can't wedge the group.
             await PublishImmediately(message, cancellationToken).ConfigureAwait(false);
 
-        List<TestCompletionQueueMessage>? readyToCompare = null;
+        List<TestCompletionMessage>? readyToCompare = null;
         var buffer = _groups.GetOrAdd(comparisonGroup!, static _ => new GroupBuffer());
         lock (buffer)
         {
@@ -139,7 +133,7 @@ internal sealed class TestCompletionAggregator
     /// </summary>
     public async Task FlushAsync(CancellationToken cancellationToken)
     {
-        var leftovers = new List<(string Group, List<TestCompletionQueueMessage> Successes)>();
+        var leftovers = new List<(string Group, List<TestCompletionMessage> Successes)>();
         foreach (var entry in _groups)
         {
             var buffer = entry.Value;
@@ -158,7 +152,7 @@ internal sealed class TestCompletionAggregator
             await sink.OnRunCompletedAsync(cancellationToken).ConfigureAwait(false);
     }
 
-    private async Task RunComparison(string comparisonGroup, List<TestCompletionQueueMessage> successes, CancellationToken cancellationToken)
+    private async Task RunComparison(string comparisonGroup, List<TestCompletionMessage> successes, CancellationToken cancellationToken)
     {
         // Hand the complete group to the unchanged comparison processor. It performs the variable-set cohort
         // grouping, baseline-vs-contender / N×N orientation, BH-FDR p-value accumulation, and the enhanced
@@ -180,12 +174,12 @@ internal sealed class TestCompletionAggregator
         await _comparisonProcessor.ProcessBatch(batch, cancellationToken).ConfigureAwait(false);
     }
 
-    private async Task PublishImmediately(TestCompletionQueueMessage message, CancellationToken cancellationToken)
+    private async Task PublishImmediately(TestCompletionMessage message, CancellationToken cancellationToken)
     {
         await _mediator.Publish(CreateFrameworkNotification(message), cancellationToken).ConfigureAwait(false);
     }
 
-    private static FrameworkTestCaseEndNotification CreateFrameworkNotification(TestCompletionQueueMessage message)
+    private static FrameworkTestCaseEndNotification CreateFrameworkNotification(TestCompletionMessage message)
     {
         // Mirrors MethodComparisonBatchProcessor.CreateFrameworkNotification — the live-object metadata contract
         // both paths share. A serializable envelope would replace this lookup; see the class remarks.
@@ -219,7 +213,7 @@ internal sealed class TestCompletionAggregator
             exception);
     }
 
-    private string? ExtractComparisonGroup(TestCompletionQueueMessage message)
+    private string? ExtractComparisonGroup(TestCompletionMessage message)
         => message.Metadata.TryGetValue(ComparisonGroupKey, out var group) ? group?.ToString() : null;
 
     private static string ExtractClassName(string testCaseId)
@@ -233,6 +227,6 @@ internal sealed class TestCompletionAggregator
         public int Expected { get; set; } = -1;
         public int Arrived { get; set; }
         public bool Processed { get; set; }
-        public List<TestCompletionQueueMessage> Successes { get; } = new();
+        public List<TestCompletionMessage> Successes { get; } = new();
     }
 }

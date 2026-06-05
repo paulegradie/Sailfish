@@ -1,6 +1,6 @@
 using System.Threading;
 using System.Threading.Tasks;
-using Sailfish.TestAdapter.Queue.Contracts;
+using Sailfish.TestAdapter.Comparison;
 
 namespace Sailfish.TestAdapter.Execution.Aggregation;
 
@@ -20,7 +20,7 @@ namespace Sailfish.TestAdapter.Execution.Aggregation;
 internal interface ITestCompletionSink
 {
     /// <summary>Called once for every test case as it completes, in arrival order.</summary>
-    Task OnTestCompletedAsync(TestCompletionQueueMessage message, CancellationToken cancellationToken);
+    Task OnTestCompletedAsync(TestCompletionMessage message, CancellationToken cancellationToken);
 
     /// <summary>Called once after the last test case, when the run is being torn down.</summary>
     Task OnRunCompletedAsync(CancellationToken cancellationToken);

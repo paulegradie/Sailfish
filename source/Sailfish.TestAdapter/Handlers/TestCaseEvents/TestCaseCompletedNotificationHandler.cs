@@ -16,13 +16,13 @@ using Sailfish.Presentation;
 using Sailfish.TestAdapter.Display.TestOutputWindow;
 using Sailfish.TestAdapter.Execution;
 using Sailfish.TestAdapter.Execution.Aggregation;
-using Sailfish.TestAdapter.Queue.Contracts;
+using Sailfish.TestAdapter.Comparison;
 using Sailfish.TestAdapter.TestProperties;
 
 namespace Sailfish.TestAdapter.Handlers.TestCaseEvents;
 
 /// <summary>
-///     Builds a <see cref="TestCompletionQueueMessage" /> for each finished test case (including any
+///     Builds a <see cref="TestCompletionMessage" /> for each finished test case (including any
 ///     run-over-run SailDiff already applied to its formatted output) and hands it to the
 ///     <see cref="TestCompletionAggregator" />. The aggregator streams ordinary results immediately and
 ///     buffers comparison-group members until the group is whole, then runs the cross-method comparison once.
@@ -93,7 +93,7 @@ internal class TestCaseCompletedNotificationHandler : INotificationHandler<TestC
     ///     SailDiff when prior runs exist, extracts performance metrics, and packs the metadata the aggregator and
     ///     comparison processor read (TestCase, formatted message, timing, comparison group/role, summaries).
     /// </summary>
-    private async Task<TestCompletionQueueMessage> CreateCompletionMessage(TestCaseCompletedNotification notification, CancellationToken cancellationToken)
+    private async Task<TestCompletionMessage> CreateCompletionMessage(TestCaseCompletedNotification notification, CancellationToken cancellationToken)
     {
         var classExecutionSummaries = notification.ClassExecutionSummaryTrackingFormat.ToSummaryFormat();
         var testOutputWindowMessage = _sailfishConsoleWindowFormatter.FormConsoleWindowMessageForSailfish([classExecutionSummaries]);
@@ -141,7 +141,7 @@ internal class TestCaseCompletedNotificationHandler : INotificationHandler<TestC
         var medianTestRuntime = compiledTestCaseResult.Exception is not null ? 0 :
             (compiledTestCaseResult.PerformanceRunResult?.Median ?? 0);
 
-        var queueMessage = new TestCompletionQueueMessage
+        var queueMessage = new TestCompletionMessage
         {
             TestCaseId = notification.TestInstanceContainerExternal.TestCaseId.DisplayName,
             CompletedAt = DateTime.UtcNow,
