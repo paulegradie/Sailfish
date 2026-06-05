@@ -80,10 +80,9 @@ internal class MethodComparisonBatchProcessor
         }
 
         // Group test cases by comparison group. Failed members are excluded:
-        // FrameworkPublishingProcessor already publishes them as Failed (see
-        // its IsComparisonMethod guard), so re-publishing here would emit a
-        // duplicate notification, and a failed case has no usable samples to
-        // contribute to an N×N comparison anyway.
+        // the aggregator already publishes them as Failed immediately (a failed case
+        // can't take part in N×N analysis), so re-publishing here would emit a
+        // duplicate notification.
         var comparisonGroups = batch.TestCases
             .Where(HasComparisonMetadata)
             .Where(tc => tc.TestResult.IsSuccess)
@@ -111,7 +110,7 @@ internal class MethodComparisonBatchProcessor
             {
                 // A single-method comparison group still needs to be published as a regular
                 // pass/fail framework notification — otherwise VSTest/Rider sees TestOutcome.None
-                // and renders "Inconclusive" because FrameworkPublishingProcessor deferred to us.
+                // and renders "Inconclusive" (the aggregator deferred this group to us).
                 _logger.Log(LogLevel.Information,
                     "Publishing single-method comparison group '{0}' without comparison enhancement",
                     group.Key ?? "null");

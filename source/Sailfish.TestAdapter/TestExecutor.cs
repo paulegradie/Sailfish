@@ -17,9 +17,7 @@ using Sailfish.Results;
 using Sailfish.TestAdapter.Discovery;
 using Sailfish.TestAdapter.Execution;
 using Sailfish.TestAdapter.Execution.EnvironmentHealth;
-using Sailfish.TestAdapter.Queue.Configuration;
-using Sailfish.TestAdapter.Queue.Contracts;
-using Sailfish.TestAdapter.Queue.Implementation;
+using Sailfish.TestAdapter.Execution.Aggregation;
 using Sailfish.TestAdapter.Registrations;
 using Sailfish.TestAdapter.TestProperties;
 
@@ -192,8 +190,8 @@ public class TestExecutor : ITestExecutor
                 frameworkHandle.SendMessage(TestMessageLevel.Warning, $"Environment health check failed: {ex.Message}");
             }
 
-            // Start queue services if enabled.
-            StartQueueServices(provider);
+            // Seed comparison-group sizes so the aggregator can fire each comparison exactly once when complete.
+            SeedComparisonGroups(provider, testCases);
 
             // Execute tests.
             _testExecution.ExecuteTests(testCases, provider, frameworkHandle, _cancellationTokenSource.Token);
@@ -204,8 +202,8 @@ public class TestExecutor : ITestExecutor
         }
         finally
         {
-            // Stop queue services if enabled.
-            StopQueueServices(provider);
+            // Flush the aggregator: publish any comparison group that never completed (deterministic, end-of-run).
+            FlushComparisonAggregator(provider);
 
             // Dispose provider — releases all singletons and any other IDisposable services it owns.
             provider.Dispose();
@@ -241,183 +239,48 @@ public class TestExecutor : ITestExecutor
     }
 
     /// <summary>
-    ///     Starts queue services if the queue system is enabled. Handles startup failures gracefully by
-    ///     logging errors but allowing test execution to continue with direct framework publishing as a
-    ///     fallback mechanism.
+    ///     Seeds the comparison aggregator with the number of test cases in each comparison group, as known from
+    ///     discovery. This deterministic completeness signal lets each cross-method comparison fire exactly once,
+    ///     the moment its group is whole.
     /// </summary>
-    private void StartQueueServices(IServiceProvider provider)
+    private static void SeedComparisonGroups(IServiceProvider provider, List<TestCase> testCases)
+    {
+        var aggregator = provider.GetService<TestCompletionAggregator>();
+        if (aggregator is null) return;
+
+        var counts = new Dictionary<string, int>(StringComparer.Ordinal);
+        foreach (var testCase in testCases)
+        {
+            var group = testCase.GetPropertyValue<string>(SailfishManagedProperty.SailfishComparisonGroupProperty, null);
+            if (string.IsNullOrEmpty(group)) continue;
+            counts[group] = counts.TryGetValue(group, out var current) ? current + 1 : 1;
+        }
+
+        foreach (var (group, count) in counts)
+        {
+            aggregator.RegisterComparisonGroup(group, count);
+        }
+    }
+
+    /// <summary>
+    ///     Flushes the comparison aggregator at end of run: any comparison group that never reached its expected
+    ///     count (e.g. a sibling crashed) is published with whatever successful members arrived. Best-effort.
+    /// </summary>
+    private static void FlushComparisonAggregator(IServiceProvider provider)
     {
         try
         {
-            StartQueueServicesAsync(provider, _cancellationTokenSource.Token)
+            provider.GetService<TestCompletionAggregator>()
+                ?.FlushAsync(CancellationToken.None)
                 .ConfigureAwait(false)
                 .GetAwaiter()
                 .GetResult();
         }
         catch (Exception ex)
         {
-            var logger = provider.GetService<ILogger>();
-            logger?.Log(LogLevel.Warning, ex,
-                "Failed to start queue services. Test execution will continue with direct framework publishing. Error: {0}",
-                ex.Message);
+            provider.GetService<ILogger>()?.Log(LogLevel.Warning, ex,
+                "Failed to flush the comparison aggregator during cleanup. Error: {0}", ex.Message);
         }
     }
 
-    /// <summary>
-    ///     Stops queue services if the queue system is enabled. Ensures all pending batches are processed
-    ///     before stopping the queue services.
-    /// </summary>
-    private void StopQueueServices(IServiceProvider provider)
-    {
-        try
-        {
-            StopQueueServicesAsync(provider, _cancellationTokenSource.Token)
-                .ConfigureAwait(false)
-                .GetAwaiter()
-                .GetResult();
-        }
-        catch (Exception ex)
-        {
-            var logger = provider.GetService<ILogger>();
-            logger?.Log(LogLevel.Warning, ex,
-                "Failed to stop queue services during cleanup. Error: {0}",
-                ex.Message);
-        }
-    }
-
-    /// <summary>
-    ///     Asynchronously starts queue services including the queue manager and batching service.
-    /// </summary>
-    private async Task StartQueueServicesAsync(IServiceProvider provider, CancellationToken cancellationToken)
-    {
-        var queueConfiguration = provider.GetService<QueueConfiguration>();
-
-        if (queueConfiguration == null || !queueConfiguration.IsEnabled)
-        {
-            return;
-        }
-
-        var logger = provider.GetService<ILogger>();
-        logger?.Log(LogLevel.Information, "Starting queue services for test execution...");
-        logger?.Log(LogLevel.Information, "Queue configuration - IsEnabled: {0}, EnableMethodComparison: {1}",
-            queueConfiguration.IsEnabled, queueConfiguration.EnableMethodComparison);
-
-        var queueManager = provider.GetService<TestCompletionQueueManager>();
-        var batchingService = provider.GetService<ITestCaseBatchingService>();
-        var timeoutHandler = provider.GetService<IBatchTimeoutHandler>();
-
-        if (queueManager == null)
-        {
-            logger?.Log(LogLevel.Warning, "TestCompletionQueueManager not found in container. Queue services will not be started.");
-            return;
-        }
-
-        if (batchingService == null)
-        {
-            logger?.Log(LogLevel.Warning, "ITestCaseBatchingService not found in container. Queue services will not be started.");
-            return;
-        }
-
-        if (timeoutHandler == null)
-        {
-            logger?.Log(LogLevel.Warning, "IBatchTimeoutHandler not found in container. Timeout handling will not be available.");
-        }
-
-        await batchingService.StartAsync(cancellationToken).ConfigureAwait(false);
-        logger?.Log(LogLevel.Debug, "Test case batching service started successfully");
-
-        if (timeoutHandler != null)
-        {
-            await timeoutHandler.StartAsync(cancellationToken).ConfigureAwait(false);
-            logger?.Log(LogLevel.Debug, "Batch timeout handler started successfully");
-        }
-
-        await queueManager.StartAsync(queueConfiguration, cancellationToken).ConfigureAwait(false);
-        logger?.Log(LogLevel.Information, "Queue services started successfully");
-    }
-
-    /// <summary>
-    ///     Asynchronously stops queue services with proper batch completion handling.
-    /// </summary>
-    private async Task StopQueueServicesAsync(IServiceProvider provider, CancellationToken cancellationToken)
-    {
-        var queueConfiguration = provider.GetService<QueueConfiguration>();
-        if (queueConfiguration == null || !queueConfiguration.IsEnabled)
-        {
-            return;
-        }
-
-        var logger = provider.GetService<ILogger>();
-        logger?.Log(LogLevel.Information, "Stopping queue services and completing pending batches...");
-
-        var queueManager = provider.GetService<TestCompletionQueueManager>();
-        var batchingService = provider.GetService<ITestCaseBatchingService>();
-        var timeoutHandler = provider.GetService<IBatchTimeoutHandler>();
-
-        if (queueManager == null && batchingService == null && timeoutHandler == null)
-        {
-            return;
-        }
-
-        // Queue shutdown uses a dedicated CTS bounded only by BatchCompletionTimeoutMs — NOT linked to
-        // the execution cancellation token. If the test run was cancelled, we still want to flush
-        // pending batches and gracefully stop the queue services; reusing the execution token would
-        // short-circuit CompleteAsync/StopAsync the moment cancellation is requested and skip the drain.
-        // The execution token is observed by 'cancellationToken' parameter recipients (the queue services
-        // themselves can still cooperate with it if they choose), but we don't enforce it here.
-        _ = cancellationToken; // intentionally not linked into shutdown — see comment above
-        using var shutdownCts = new CancellationTokenSource(TimeSpan.FromMilliseconds(queueConfiguration.BatchCompletionTimeoutMs));
-        var shutdownToken = shutdownCts.Token;
-
-        try
-        {
-            if (batchingService != null)
-            {
-                await batchingService.CompleteAsync(shutdownToken).ConfigureAwait(false);
-                logger?.Log(LogLevel.Debug, "Test case batching service completed successfully");
-            }
-
-            if (queueManager != null)
-            {
-                await queueManager.CompleteAsync(shutdownToken).ConfigureAwait(false);
-                await queueManager.StopAsync(shutdownToken).ConfigureAwait(false);
-                logger?.Log(LogLevel.Debug, "Queue manager stopped successfully");
-            }
-
-            if (timeoutHandler != null)
-            {
-                await timeoutHandler.StopAsync(shutdownToken).ConfigureAwait(false);
-                logger?.Log(LogLevel.Debug, "Batch timeout handler stopped successfully");
-            }
-
-            if (batchingService != null)
-            {
-                await batchingService.StopAsync(shutdownToken).ConfigureAwait(false);
-                logger?.Log(LogLevel.Debug, "Test case batching service stopped successfully");
-            }
-
-            logger?.Log(LogLevel.Information, "Queue services stopped successfully");
-        }
-        catch (OperationCanceledException) when (shutdownToken.IsCancellationRequested)
-        {
-            logger?.Log(LogLevel.Warning,
-                "Batch completion timeout ({0}ms) expired. Proceeding with queue shutdown.",
-                queueConfiguration.BatchCompletionTimeoutMs);
-
-            // Force a final unconditional stop — if the shutdown timeout fired we don't want to compound
-            // it with another cancellation on the StopAsync calls below.
-            if (queueManager != null)
-            {
-                await queueManager.StopAsync(CancellationToken.None).ConfigureAwait(false);
-            }
-            if (timeoutHandler != null)
-            {
-                await timeoutHandler.StopAsync(CancellationToken.None).ConfigureAwait(false);
-            }
-            if (batchingService != null)
-            {
-                await batchingService.StopAsync(CancellationToken.None).ConfigureAwait(false);
-            }
-        }
-    }
 }
