@@ -58,7 +58,11 @@ internal class SailfishConsoleWindowFormatter : ISailfishConsoleWindowFormatter
 
         var consoleOutputString = FormOutputTable(compiledResults);
         _logger.Log(LogLevel.Information, "{MarkdownTable}", consoleOutputString);
-        return consoleOutputString;
+        if (string.IsNullOrEmpty(consoleOutputString)) return consoleOutputString;
+
+        // Print the per-run session id so this console output can be matched to its TestSession_* output files.
+        var sessionId = DefaultFileSettings.SessionId(_runSettings?.TimeStamp ?? DateTime.UtcNow);
+        return $"Session: {sessionId}\n\n{consoleOutputString}";
     }
 
     private string FormOutputTable(ICompiledTestCaseResult testCaseResult)

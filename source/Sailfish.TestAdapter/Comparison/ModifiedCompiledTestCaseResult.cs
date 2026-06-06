@@ -1,7 +1,7 @@
 using Sailfish.Contracts.Public.Models;
 using System;
 
-namespace Sailfish.TestAdapter.Queue.Processors.MethodComparison;
+namespace Sailfish.TestAdapter.Comparison;
 
 /// <summary>
 /// A wrapper for ICompiledTestCaseResult that allows modifying the PerformanceRunResult.

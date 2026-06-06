@@ -2,14 +2,14 @@
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
 
-namespace Sailfish.TestAdapter.Queue.Contracts;
+namespace Sailfish.TestAdapter.Comparison;
 
 /// <summary>
 /// Represents a message containing test completion data for queue processing.
 /// This message is published when a test case completes execution and contains
 /// all relevant information for asynchronous processing by queue processors.
 /// </summary>
-public class TestCompletionQueueMessage
+public class TestCompletionMessage
 {
     /// <summary>
     /// Gets or sets the unique identifier for the test case.

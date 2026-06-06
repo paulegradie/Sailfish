@@ -22,6 +22,12 @@ public static class DefaultFileSettings
     public const string DefaultOutputDirectory = "sailfish_default_output";
     public static readonly string SortableFormat = "yyyyMMdd_HHmmss";
 
+    /// <summary>
+    ///     The per-run session identifier: the run's timestamp in sortable form. Shared by the console output and
+    ///     the <c>TestSession_*</c> result/markdown/csv files so a console run can be matched to its output files.
+    /// </summary>
+    public static string SessionId(DateTime runTimestamp) => runTimestamp.ToUniversalTime().ToString(SortableFormat);
+
     public static readonly Func<DateTime, string> DefaultPerformanceResultsFileNameStem = // for WriteToMarkdown & co.
         timestamp => $"PerformanceResults_{timestamp.ToString(SortableFormat)}"; // sortable file name with date
 

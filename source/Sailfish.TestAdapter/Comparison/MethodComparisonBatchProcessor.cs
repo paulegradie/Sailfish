@@ -7,14 +7,14 @@ using Sailfish.Execution;
 using Sailfish.Logging;
 using Sailfish.TestAdapter.Execution;
 using Sailfish.TestAdapter.Handlers.FrameworkHandlers;
-using Sailfish.TestAdapter.Queue.Contracts;
+using Sailfish.TestAdapter.Comparison;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace Sailfish.TestAdapter.Queue.Processors.MethodComparison;
+namespace Sailfish.TestAdapter.Comparison;
 
 /// <summary>
 /// Batch processor for handling method comparisons across multiple test cases.
@@ -80,10 +80,9 @@ internal class MethodComparisonBatchProcessor
         }
 
         // Group test cases by comparison group. Failed members are excluded:
-        // FrameworkPublishingProcessor already publishes them as Failed (see
-        // its IsComparisonMethod guard), so re-publishing here would emit a
-        // duplicate notification, and a failed case has no usable samples to
-        // contribute to an N×N comparison anyway.
+        // the aggregator already publishes them as Failed immediately (a failed case
+        // can't take part in N×N analysis), so re-publishing here would emit a
+        // duplicate notification.
         var comparisonGroups = batch.TestCases
             .Where(HasComparisonMetadata)
             .Where(tc => tc.TestResult.IsSuccess)
@@ -111,7 +110,7 @@ internal class MethodComparisonBatchProcessor
             {
                 // A single-method comparison group still needs to be published as a regular
                 // pass/fail framework notification — otherwise VSTest/Rider sees TestOutcome.None
-                // and renders "Inconclusive" because FrameworkPublishingProcessor deferred to us.
+                // and renders "Inconclusive" (the aggregator deferred this group to us).
                 _logger.Log(LogLevel.Information,
                     "Publishing single-method comparison group '{0}' without comparison enhancement",
                     group.Key ?? "null");
@@ -127,7 +126,7 @@ internal class MethodComparisonBatchProcessor
     /// <param name="testCases">The test cases in the comparison group.</param>
     /// <param name="cancellationToken">Cancellation token for the operation.</param>
     /// <returns>A task representing the asynchronous processing operation.</returns>
-    private async Task ProcessComparisonGroup(string groupName, List<TestCompletionQueueMessage> testCases,
+    private async Task ProcessComparisonGroup(string groupName, List<TestCompletionMessage> testCases,
         CancellationToken cancellationToken)
     {
         if (testCases.Count < 2)
@@ -199,17 +198,17 @@ internal class MethodComparisonBatchProcessor
         await PublishEnhancedFrameworkNotificationsForGroup(testCases, cancellationToken);
     }
 
-    private static bool HasComparisonMetadata(TestCompletionQueueMessage message)
+    private static bool HasComparisonMetadata(TestCompletionMessage message)
     {
         return message.Metadata.ContainsKey("ComparisonGroup");
     }
 
-    private string? ExtractComparisonGroup(TestCompletionQueueMessage message)
+    private string? ExtractComparisonGroup(TestCompletionMessage message)
     {
         return message.Metadata.TryGetValue("ComparisonGroup", out var group) ? group?.ToString() : null;
     }
 
-    private string? ExtractComparisonRole(TestCompletionQueueMessage message)
+    private string? ExtractComparisonRole(TestCompletionMessage message)
     {
         return message.Metadata.TryGetValue("ComparisonRole", out var role) ? role?.ToString() : null;
     }
@@ -218,7 +217,7 @@ internal class MethodComparisonBatchProcessor
     /// True when the message is the comparison group's designated baseline
     /// (a <c>[SailfishMethod(IsBaseline = true)]</c> method, carried as ComparisonRole="Baseline").
     /// </summary>
-    private bool IsBaselineRole(TestCompletionQueueMessage message)
+    private bool IsBaselineRole(TestCompletionMessage message)
         => string.Equals(ExtractComparisonRole(message), "Baseline", StringComparison.OrdinalIgnoreCase);
 
     /// <summary>
@@ -237,8 +236,8 @@ internal class MethodComparisonBatchProcessor
     /// verdict (the baseline is always named "baseline") onto BOTH the contender's and the baseline's rows.
     /// </summary>
     private void CompareBaselineToContender(
-        TestCompletionQueueMessage baseline,
-        TestCompletionQueueMessage contender,
+        TestCompletionMessage baseline,
+        TestCompletionMessage contender,
         string groupName)
     {
         try
@@ -268,8 +267,8 @@ internal class MethodComparisonBatchProcessor
     /// its own perspective, with the statistics oriented so the named baseline always carries its own mean.
     /// </summary>
     private void CompareNxNPair(
-        TestCompletionQueueMessage methodA,
-        TestCompletionQueueMessage methodB,
+        TestCompletionMessage methodA,
+        TestCompletionMessage methodB,
         string groupName)
     {
         try
@@ -300,8 +299,8 @@ internal class MethodComparisonBatchProcessor
     /// MeanBefore/RawDataBefore describe <paramref name="beforeMethod"/>.
     /// </summary>
     private TestCaseSailDiffResult ComputeDiff(
-        TestCompletionQueueMessage beforeMethod,
-        TestCompletionQueueMessage afterMethod,
+        TestCompletionMessage beforeMethod,
+        TestCompletionMessage afterMethod,
         string groupName)
     {
         var beforeData = CreatePerformanceRunResultFromMessage(beforeMethod);
@@ -326,7 +325,7 @@ internal class MethodComparisonBatchProcessor
     /// Stores the pairwise p-value (and the configured alpha) on both messages for the later
     /// BH-FDR adjustment of the N×N matrix.
     /// </summary>
-    private void StorePairwisePValue(TestCompletionQueueMessage a, TestCompletionQueueMessage b, TestCaseSailDiffResult? comparisonResult)
+    private void StorePairwisePValue(TestCompletionMessage a, TestCompletionMessage b, TestCaseSailDiffResult? comparisonResult)
     {
         var pNullable = comparisonResult?.SailDiffResults?.FirstOrDefault()?.TestResultsWithOutlierAnalysis?.StatisticalTestResult?.PValue;
         if (!pNullable.HasValue) return;
@@ -337,10 +336,10 @@ internal class MethodComparisonBatchProcessor
     }
 
     /// <summary>
-    /// Creates a PerformanceRunResult from a TestCompletionQueueMessage.
+    /// Creates a PerformanceRunResult from a TestCompletionMessage.
     /// Computes CI fields since PerformanceMetrics does not carry them.
     /// </summary>
-    private PerformanceRunResult CreatePerformanceRunResultFromMessage(TestCompletionQueueMessage message)
+    private PerformanceRunResult CreatePerformanceRunResultFromMessage(TestCompletionMessage message)
     {
         var metrics = message.PerformanceMetrics;
 
@@ -392,8 +391,8 @@ internal class MethodComparisonBatchProcessor
     /// </summary>
     private IClassExecutionSummary CreateModifiedClassExecutionSummary(
         IClassExecutionSummary originalSummary,
-        TestCompletionQueueMessage beforeMethod,
-        TestCompletionQueueMessage afterMethod,
+        TestCompletionMessage beforeMethod,
+        TestCompletionMessage afterMethod,
         string commonTestCaseId)
     {
         // Find the after method's result in the original summary
@@ -450,8 +449,8 @@ internal class MethodComparisonBatchProcessor
     /// This ensures SailDiff has access to both test results for comparison.
     /// </summary>
     private CombinedClassExecutionSummary CreateCombinedClassExecutionSummary(
-        TestCompletionQueueMessage beforeMethod,
-        TestCompletionQueueMessage afterMethod)
+        TestCompletionMessage beforeMethod,
+        TestCompletionMessage afterMethod)
     {
         var beforeSummary = ExtractClassExecutionSummary(beforeMethod);
         var afterSummary = ExtractClassExecutionSummary(afterMethod);
@@ -476,7 +475,7 @@ internal class MethodComparisonBatchProcessor
     /// <summary>
     /// Extracts class execution summary from message metadata.
     /// </summary>
-    private IClassExecutionSummary ExtractClassExecutionSummary(TestCompletionQueueMessage message)
+    private IClassExecutionSummary ExtractClassExecutionSummary(TestCompletionMessage message)
     {
         if (message.Metadata.TryGetValue("ClassExecutionSummaries", out var summariesObj))
         {
@@ -507,8 +506,8 @@ internal class MethodComparisonBatchProcessor
     private string FormatOriented(
         TestCaseSailDiffResult? comparisonResult,
         string groupName,
-        TestCompletionQueueMessage primary,
-        TestCompletionQueueMessage compared,
+        TestCompletionMessage primary,
+        TestCompletionMessage compared,
         bool swap)
     {
         if (comparisonResult?.SailDiffResults?.Any() != true)
@@ -609,8 +608,8 @@ internal class MethodComparisonBatchProcessor
     /// Accumulates multiple comparison results for methods that are compared with multiple other methods.
     /// </summary>
     private void EnhanceTestOutputWithComparison(
-        TestCompletionQueueMessage beforeMethod,
-        TestCompletionQueueMessage afterMethod,
+        TestCompletionMessage beforeMethod,
+        TestCompletionMessage afterMethod,
         string beforeMethodOutput,
         string afterMethodOutput,
         CancellationToken cancellationToken)
@@ -625,7 +624,7 @@ internal class MethodComparisonBatchProcessor
     /// <summary>
     /// Accumulates comparison output for a method, preserving existing comparisons.
     /// </summary>
-    private void AccumulateComparisonOutput(TestCompletionQueueMessage method, string newComparisonOutput)
+    private void AccumulateComparisonOutput(TestCompletionMessage method, string newComparisonOutput)
     {
         const string comparisonResultsKey = "AccumulatedComparisons";
 
@@ -680,7 +679,7 @@ internal class MethodComparisonBatchProcessor
     /// Publishes enhanced framework notifications for all methods in a comparison group.
     /// </summary>
     private async Task PublishEnhancedFrameworkNotificationsForGroup(
-        List<TestCompletionQueueMessage> testCases,
+        List<TestCompletionMessage> testCases,
         CancellationToken cancellationToken)
     {
         foreach (var testCase in testCases)
@@ -695,9 +694,9 @@ internal class MethodComparisonBatchProcessor
     }
 
     /// <summary>
-    /// Creates a FrameworkTestCaseEndNotification from a TestCompletionQueueMessage.
+    /// Creates a FrameworkTestCaseEndNotification from a TestCompletionMessage.
     /// </summary>
-    private FrameworkTestCaseEndNotification CreateFrameworkNotification(TestCompletionQueueMessage message)
+    private FrameworkTestCaseEndNotification CreateFrameworkNotification(TestCompletionMessage message)
     {
         var enhancedMessage = message.Metadata.TryGetValue("FormattedMessage", out var msgObj)
             ? msgObj?.ToString() ?? string.Empty
@@ -740,10 +739,10 @@ internal class MethodComparisonBatchProcessor
             exception);
     }
 
-    private static void UpdatePairwisePValueMetadata(TestCompletionQueueMessage a, TestCompletionQueueMessage b, double pValue, double alpha)
+    private static void UpdatePairwisePValueMetadata(TestCompletionMessage a, TestCompletionMessage b, double pValue, double alpha)
     {
         const string key = "PairwisePValues";
-        static void Update(TestCompletionQueueMessage msg, string otherId, double p, double a)
+        static void Update(TestCompletionMessage msg, string otherId, double p, double a)
         {
             if (!msg.Metadata.TryGetValue(key, out var obj) || obj is not Dictionary<string, double> dict)
             {
