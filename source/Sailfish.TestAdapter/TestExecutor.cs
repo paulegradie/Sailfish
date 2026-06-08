@@ -63,7 +63,9 @@ public class TestExecutor : ITestExecutor
         var tests = testCases?.ToList() ?? throw new TestAdapterException("Tests was null in the test case list!");
         if (runContext is null || frameworkHandle is null) throw new TestAdapterException("Wow more nulls");
 
-        ExecuteTests(tests, frameworkHandle);
+        // Honor `dotnet test --filter` / Test Explorer's filter box (previously runContext was ignored).
+        var filtered = TestCaseFilter.Filter(tests, runContext, frameworkHandle);
+        ExecuteTests(filtered, frameworkHandle);
     }
 
     public void Cancel()
