@@ -126,6 +126,22 @@ public class TestCaseItemCreatorTests
     }
 
     [Fact]
+    public void AssembleTestCases_WithExplicitComparisonGroup_ShouldAddComparisonGroupTrait()
+    {
+        // Arrange
+        var classMetaData = CreateClassMetaDataWithComparison();
+        var hashAlgorithm = Substitute.For<IHashAlgorithm>();
+        hashAlgorithm.GuidFromString(Arg.Any<string>()).Returns(Guid.NewGuid());
+
+        // Act
+        var testCases = TestCaseItemCreator.AssembleTestCases(classMetaData, "source.dll", hashAlgorithm).ToList();
+
+        // Assert — the explicit group is surfaced as a Trait so it shows in Test Explorer and is filterable.
+        var testCase = testCases.First();
+        testCase.Traits.ShouldContain(trait => trait.Name == "ComparisonGroup" && trait.Value == "TestGroup");
+    }
+
+    [Fact]
     public void AssembleTestCases_WithEmptyMethods_ShouldReturnEmptyList()
     {
         // Arrange

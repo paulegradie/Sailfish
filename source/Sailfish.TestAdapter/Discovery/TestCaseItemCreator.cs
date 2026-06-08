@@ -90,6 +90,14 @@ internal static class TestCaseItemCreator
         {
             testCase.SetPropertyValue(SailfishManagedProperty.SailfishComparisonGroupProperty, comparisonGroup);
 
+            // Surface an EXPLICIT comparison group as a Trait so it appears in Test Explorer and is filterable
+            // via `dotnet test --filter "ComparisonGroup=<name>"`. Implicit (class-wide) groups are skipped:
+            // they're already grouped by the class hierarchy and the synthetic prefix isn't user-facing.
+            if (!comparisonGroup.StartsWith(DiscoveryAnalysisMethods.ImplicitComparisonGroupPrefix, StringComparison.Ordinal))
+            {
+                testCase.Traits.Add(new Trait("ComparisonGroup", comparisonGroup));
+            }
+
             // Carry the baseline flag so the comparison reporter names this method the baseline for
             // every other method in its group. Only the baseline role is set; contenders are left unset.
             if (isBaseline)

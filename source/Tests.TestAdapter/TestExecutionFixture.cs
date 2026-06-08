@@ -81,6 +81,7 @@ public class TestExecutionFixture
     public void StartupExceptionsAreHandled()
     {
         var context = Substitute.For<IRunContext>();
+        context.GetTestCaseFilter(default!, default!).ReturnsForAnyArgs((ITestCaseFilterExpression?)null); // no --filter → run all
 
         var execution = Substitute.For<ITestExecution>();
         execution
