@@ -46,6 +46,14 @@ public interface IExecutionSettings
     // NEW: Steady-state warmup (opt-in). NumWarmupIterations is the floor; MaxWarmupIterations the cap.
     public bool UseSteadyStateWarmup { get; set; }
     public int MaxWarmupIterations { get; set; }
+
+    // NEW: Contamination control
+    // Force a full GC between measured iterations so a deferred collection doesn't land in the next sample.
+    public bool ForceGcBetweenIterations { get; set; }
+    // Opt-in process-level environment control (raise process priority) for the duration of the run.
+    public bool UseEnvironmentControl { get; set; }
+    // Opt-in: pin the process to a single CPU core for the duration of the run.
+    public bool PinToSingleCore { get; set; }
 }
 
 public class ExecutionSettings : IExecutionSettings
@@ -107,5 +115,10 @@ public class ExecutionSettings : IExecutionSettings
     // NEW: Steady-state warmup (opt-in)
     public bool UseSteadyStateWarmup { get; set; } = false;
     public int MaxWarmupIterations { get; set; } = 50;
+
+    // NEW: Contamination control. GC-settle defaults on (BDN parity); environment control is opt-in.
+    public bool ForceGcBetweenIterations { get; set; } = true;
+    public bool UseEnvironmentControl { get; set; } = false;
+    public bool PinToSingleCore { get; set; } = false;
 
 }

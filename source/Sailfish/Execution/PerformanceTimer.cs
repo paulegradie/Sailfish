@@ -60,7 +60,9 @@ public sealed class PerformanceTimer
     public void StartSailfishMethodExecutionTimer()
     {
         if (_iterationTimer.IsRunning) return;
-        _executionIterationStart = DateTimeOffset.Now;
+        // UtcNow avoids the timezone resolution that DateTimeOffset.Now performs on every iteration;
+        // this timestamp is captured outside the measured region and only records wall-clock metadata.
+        _executionIterationStart = DateTimeOffset.UtcNow;
         _iterationTimer.Start();
     }
 
@@ -68,14 +70,16 @@ public sealed class PerformanceTimer
     {
         if (!_iterationTimer.IsRunning) return;
         _iterationTimer.Stop();
-        var executionIterationStop = DateTimeOffset.Now;
+        var executionIterationStop = DateTimeOffset.UtcNow;
         // Normalize to per-operation time. When a measured iteration batches N invocations
         // (OperationsPerInvoke), divide the aggregate by N so the recorded sample is the cost of a
         // single operation. This keeps reported statistics per-operation and comparable across
         // methods and runs regardless of batch size. Dividing here (before overhead subtraction)
         // is required: the overhead estimate is per-call, so it must be subtracted from a per-op value.
         var ops = operationsPerInvoke < 1 ? 1 : operationsPerInvoke;
-        var perOperationTicks = _iterationTimer.ElapsedTicks / ops;
+        // Divide the batch in floating point so the per-operation duration keeps sub-tick resolution
+        // (integer division truncated toward zero, biasing every batched sample slightly low).
+        var perOperationTicks = (double)_iterationTimer.ElapsedTicks / ops;
         ExecutionIterationPerformances.Add(new IterationPerformance(_executionIterationStart, executionIterationStop, perOperationTicks));
         _iterationTimer.Reset();
     }

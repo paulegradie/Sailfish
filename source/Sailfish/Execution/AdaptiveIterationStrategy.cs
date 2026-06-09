@@ -229,6 +229,9 @@ internal class AdaptiveIterationStrategy : IIterationStrategy
         CancellationToken cancellationToken)
     {
         await testInstanceContainer.CoreInvoker.IterationSetup(cancellationToken).ConfigureAwait(false);
+        // Settle the heap between iterations (outside the timed region) so a deferred collection
+        // doesn't land in this iteration's measurement.
+        if (testInstanceContainer.ExecutionSettings.ForceGcBetweenIterations) GcSettler.Settle();
         var opi = Math.Max(1, testInstanceContainer.ExecutionSettings.OperationsPerInvoke);
         if (opi > 1)
         {

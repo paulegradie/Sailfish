@@ -214,7 +214,7 @@ public class InvocationReflectionExtensionMethodsTests
         var result = type.GetWarmupIterations();
 
         // Assert
-        result.ShouldBe(3); // Default value
+        result.ShouldBe(10); // Default value
     }
 
     [Fact]

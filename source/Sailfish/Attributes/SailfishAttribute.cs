@@ -21,8 +21,10 @@ namespace Sailfish.Attributes;
 [AttributeUsage(AttributeTargets.Class)]
 public sealed class SailfishAttribute : Attribute
 {
-    private const int DefaultNumIterations = 3;
-    private const int DefaultNumWarmupIterations = 3;
+    // Defaults raised from 3/3 (too thin to resolve small differences or to engage outlier detection,
+    // which is skipped at N<=3) to BenchmarkDotNet-comparable values. Override per class via the ctor.
+    private const int DefaultNumIterations = 15;
+    private const int DefaultNumWarmupIterations = 10;
 
     internal SailfishAttribute()
     {
@@ -190,8 +192,28 @@ public sealed class SailfishAttribute : Attribute
 
     /// <summary>
     /// Opt-in to settings-driven outlier handling for this class. When false (default),
-    /// the legacy SailfishOutlierDetector path is used to preserve backward compatibility.
+    /// the shared <c>SailfishOutlierDetector</c> path is used (trims the upper tail only).
     /// </summary>
     public bool UseConfigurableOutlierDetection { get; set; } = false;
+
+    /// <summary>
+    /// Force a full GC (collect + wait-for-finalizers + collect) between measured iterations so a
+    /// collection deferred from one iteration does not land in the next iteration's measured window.
+    /// Mirrors BenchmarkDotNet's default behavior. Default true.
+    /// </summary>
+    public bool ForceGcBetweenIterations { get; set; } = true;
+
+    /// <summary>
+    /// Opt-in: apply process-level environment control while this class runs — raises the process
+    /// priority class to <c>High</c> to reduce scheduler preemption noise. Reverted when the class
+    /// completes. Best-effort; ignored if the platform denies the change. Default false.
+    /// </summary>
+    public bool UseEnvironmentControl { get; set; } = false;
+
+    /// <summary>
+    /// Opt-in: pin the process to a single CPU core while this class runs to minimize cross-core
+    /// migration jitter. Reverted when the class completes. Only honored on Windows/Linux. Default false.
+    /// </summary>
+    public bool PinToSingleCore { get; set; } = false;
 
 }

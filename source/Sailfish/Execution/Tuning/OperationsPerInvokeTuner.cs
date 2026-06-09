@@ -1,8 +1,6 @@
 using Sailfish.Logging;
 using System;
-using System.Collections.Generic;
 using System.Diagnostics;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -11,9 +9,11 @@ namespace Sailfish.Execution.Tuning;
 internal class OperationsPerInvokeTuner
 {
     private const int WarmupCount = 3;
-    private const int SampleCount = 5;
     private const int MaxRefinements = 2;
     private const int MaxOpsPerInvoke = 1_000_000;
+
+    // The aggregate estimate window must be large enough to time reliably above the Stopwatch floor.
+    private const double MinMeasurableMs = 2.0;
 
     public async Task<int> TuneAsync(
         TestInstanceContainer container,
@@ -32,20 +32,25 @@ internal class OperationsPerInvokeTuner
             await container.CoreInvoker.ExecutionMethod(cancellationToken, timed: false).ConfigureAwait(false);
         }
 
-        // Measure single-operation time across a few samples, take median
-        var perOpSamplesMs = new List<double>(SampleCount);
-        for (var i = 0; i < SampleCount; i++)
+        // Estimate per-operation time from a BATCH, not a single call. Timing one fast invocation
+        // quantizes to ~0 on coarse timers, which previously made the tuner give up (return OPI=1) for
+        // exactly the sub-microsecond operations that most need batching. Grow the batch geometrically
+        // until the aggregate window is large enough to time reliably, then divide back out.
+        var batch = 1;
+        var batchMs = 0.0;
+        while (true)
         {
-            var sw = Stopwatch.StartNew();
-            await container.CoreInvoker.ExecutionMethod(cancellationToken, timed: false).ConfigureAwait(false);
-            sw.Stop();
-            perOpSamplesMs.Add(sw.Elapsed.TotalMilliseconds);
+            batchMs = await MeasureAggregateAsync(container, batch, cancellationToken).ConfigureAwait(false);
+            if (batchMs >= MinMeasurableMs || batch >= MaxOpsPerInvoke) break;
+            var next = batch * 4;
+            if (next <= batch) break; // overflow guard
+            batch = Math.Min(next, MaxOpsPerInvoke);
         }
 
-        var perOpMs = Median(perOpSamplesMs);
+        var perOpMs = batchMs / batch;
         if (perOpMs <= 0)
         {
-            // Extremely fast operation; fall back to a small batch
+            // Even the largest batch was unmeasurable; fall back to the configured value.
             return Math.Max(1, container.ExecutionSettings.OperationsPerInvoke);
         }
 
@@ -72,7 +77,7 @@ internal class OperationsPerInvokeTuner
         }
 
         logger.Log(LogLevel.Information,
-            "      ---- Auto-tuned OperationsPerInvoke: perOp={PerOpMs:F3}ms, target={TargetMs:F1}ms -> OPI={OPI}",
+            "      ---- Auto-tuned OperationsPerInvoke: perOp={PerOpMs:F6}ms, target={TargetMs:F1}ms -> OPI={OPI}",
             perOpMs, targetMs, ops);
 
         return ops;
@@ -88,16 +93,4 @@ internal class OperationsPerInvokeTuner
         sw.Stop();
         return sw.Elapsed.TotalMilliseconds;
     }
-
-    private static double Median(IReadOnlyList<double> values)
-    {
-        if (values.Count == 0) return 0;
-        var ordered = values.OrderBy(v => v).ToArray();
-        var n = ordered.Length;
-        if (n % 2 == 1) return ordered[n / 2];
-        var a = ordered[(n / 2) - 1];
-        var b = ordered[n / 2];
-        return a + ((b - a) / 2.0);
-    }
 }
-

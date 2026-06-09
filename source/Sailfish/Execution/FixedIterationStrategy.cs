@@ -66,6 +66,9 @@ internal class FixedIterationStrategy : IIterationStrategy
             try
             {
                 await testInstanceContainer.CoreInvoker.IterationSetup(cancellationToken).ConfigureAwait(false);
+                // Settle the heap between iterations (outside the timed region) so a deferred collection
+                // doesn't land in this iteration's measurement.
+                if (executionSettings.ForceGcBetweenIterations) GcSettler.Settle();
                 var opi = Math.Max(1, executionSettings.OperationsPerInvoke);
                 if (opi > 1)
                 {

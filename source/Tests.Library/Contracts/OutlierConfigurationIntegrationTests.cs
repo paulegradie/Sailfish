@@ -26,20 +26,21 @@ public class OutlierConfigurationIntegrationTests
     private static TestCaseId MakeTestId() => new(new TestCaseName(["C","M"]), new TestCaseVariables([]));
 
     [Fact]
-    public void Legacy_RemoveAll_Is_Default_When_OptIn_Flag_Is_False()
+    public void Default_Path_Removes_Upper_Only_When_OptIn_Flag_Is_False()
     {
         // Arrange: baseline cluster around 10ms, with clear lower and upper outliers
         var timer = TimerFromMs(0.0, 9.0, 10.0, 10.5, 11.0, 1000.0);
         var settings = new ExecutionSettings(asCsv: false, asConsole: false, asMarkdown: false, sampleSize: 6, numWarmupIterations: 0)
         {
-            UseConfigurableOutlierDetection = false // legacy path -> RemoveAll
+            UseConfigurableOutlierDetection = false // default shared path -> RemoveUpper
         };
 
         // Act
         var pr = PerformanceRunResult.ConvertFromPerfTimer(MakeTestId(), timer, settings);
 
-        // Assert: both extremes removed
-        pr.DataWithOutliersRemoved.ShouldNotContain(0.0);
+        // Assert: the slow (upper) sample is removed; the fast (lower) sample is detected but retained,
+        // because the fastest samples are the cleanest estimate of the true cost.
+        pr.DataWithOutliersRemoved.ShouldContain(0.0);
         pr.DataWithOutliersRemoved.ShouldNotContain(1000.0);
         pr.LowerOutliers.ShouldContain(0.0);
         pr.UpperOutliers.ShouldContain(1000.0);

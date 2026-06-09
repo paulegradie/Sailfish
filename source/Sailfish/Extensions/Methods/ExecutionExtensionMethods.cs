@@ -50,7 +50,12 @@ internal static class ExecutionExtensionMethods
 
             // NEW: Steady-state warmup
             UseSteadyStateWarmup = sailfishAttribute.UseSteadyStateWarmup,
-            MaxWarmupIterations = sailfishAttribute.MaxWarmupIterations
+            MaxWarmupIterations = sailfishAttribute.MaxWarmupIterations,
+
+            // NEW: Contamination control
+            ForceGcBetweenIterations = sailfishAttribute.ForceGcBetweenIterations,
+            UseEnvironmentControl = sailfishAttribute.UseEnvironmentControl,
+            PinToSingleCore = sailfishAttribute.PinToSingleCore
         };
     }
 

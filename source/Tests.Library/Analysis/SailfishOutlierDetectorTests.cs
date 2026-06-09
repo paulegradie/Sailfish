@@ -147,7 +147,9 @@ public class SailfishOutlierDetectorTests
         result.OriginalData.Length.ShouldBe(8);
         result.LowerOutliers.ShouldNotBeEmpty();
         result.TotalNumOutliers.ShouldBeGreaterThan(0);
-        result.DataWithOutliersRemoved.Length.ShouldBeLessThan(result.OriginalData.Length);
+        // Upper-only default: lower outliers are detected but retained (not removed), since the fastest
+        // samples are the cleanest estimate of the true cost.
+        result.DataWithOutliersRemoved.Length.ShouldBe(result.OriginalData.Length);
     }
 
     [Fact]
@@ -292,7 +294,9 @@ public class SailfishOutlierDetectorTests
 
         // Assert
         result.ShouldNotBeNull();
-        var totalProcessed = result.DataWithOutliersRemoved.Length + result.TotalNumOutliers;
+        // Upper-only default: only upper outliers are removed from the cleaned set; lower outliers are
+        // detected but retained. So cleaned + upper-outliers == original.
+        var totalProcessed = result.DataWithOutliersRemoved.Length + result.UpperOutliers.Count();
         totalProcessed.ShouldBe(result.OriginalData.Length);
     }
 

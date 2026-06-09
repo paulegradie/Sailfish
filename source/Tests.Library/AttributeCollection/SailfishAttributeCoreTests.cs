@@ -16,8 +16,8 @@ public class SailfishAttributeCoreTests
         ctor.ShouldNotBeNull();
         var attr = (SailfishAttribute)ctor!.Invoke(null);
 
-        attr.SampleSize.ShouldBe(3);
-        attr.NumWarmupIterations.ShouldBe(3);
+        attr.SampleSize.ShouldBe(15);
+        attr.NumWarmupIterations.ShouldBe(10);
         attr.Disabled.ShouldBeFalse();
         attr.DisableOverheadEstimation.ShouldBeFalse();
         attr.UseAdaptiveSampling.ShouldBeFalse();
@@ -29,8 +29,8 @@ public class SailfishAttributeCoreTests
     public void PublicConstructor_DefaultsAndSetters_Work()
     {
         var attr = new SailfishAttribute();
-        attr.SampleSize.ShouldBe(3);
-        attr.NumWarmupIterations.ShouldBe(3);
+        attr.SampleSize.ShouldBe(15);
+        attr.NumWarmupIterations.ShouldBe(10);
         attr.Disabled.ShouldBeFalse();
 
         // Set a few knobs
