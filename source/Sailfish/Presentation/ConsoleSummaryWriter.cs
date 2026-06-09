@@ -30,6 +30,9 @@ internal class ConsoleSummaryWriter : IConsoleSummaryWriter
 
     public Task Write(List<IClassExecutionSummary> executionSummaries, CancellationToken cancellationToken)
     {
+        // The underlying console write is synchronous and takes no token, so honour cancellation here to stay
+        // consistent with the markdown/CSV writers (which thread the token into their awaited file writes).
+        cancellationToken.ThrowIfCancellationRequested();
         _consoleWriter.WriteToConsole(executionSummaries, _runSettings.Tags);
         return Task.CompletedTask;
     }

@@ -111,6 +111,28 @@ public class MediatorTests
     }
 
     [Fact]
+    public async Task Send_SameRequestType_DifferentResponseTypes_RoutesEachToItsOwnHandler()
+    {
+        // Regression: the wrapper cache must key on (request type, response type), not request type alone.
+        // One request type can implement IRequest<T> for more than one T (and IRequest<out TResponse> is
+        // covariant). Keying on request type alone hands the first send's RequestHandlerWrapper<int> back to
+        // the second send and throws InvalidCastException when casting it to RequestHandlerWrapper<string>.
+        var provider = BuildProvider(s =>
+        {
+            s.AddTransient<IRequestHandler<MultiResponseRequest, int>, MultiIntHandler>();
+            s.AddTransient<IRequestHandler<MultiResponseRequest, string>, MultiStringHandler>();
+        });
+        var sender = provider.GetRequiredService<ISender>();
+        var request = new MultiResponseRequest();
+
+        var asInt = await sender.Send<int>(request);
+        var asString = await sender.Send<string>(request);
+
+        asInt.ShouldBe(42);
+        asString.ShouldBe("forty-two");
+    }
+
+    [Fact]
     public async Task Send_WhenMultipleHandlersRegistered_LastRegistrationWins()
     {
         // This is the documented override mechanism for requests: a consumer registers their handler after
@@ -180,5 +202,21 @@ public class MediatorTests
     {
         public Task<int> Handle(AddRequest request, CancellationToken cancellationToken)
             => Task.FromResult(999);
+    }
+
+    // A single request type that produces two different response types — exercises the (request, response)
+    // wrapper-cache key.
+    public sealed class MultiResponseRequest : IRequest<int>, IRequest<string>;
+
+    public sealed class MultiIntHandler : IRequestHandler<MultiResponseRequest, int>
+    {
+        public Task<int> Handle(MultiResponseRequest request, CancellationToken cancellationToken)
+            => Task.FromResult(42);
+    }
+
+    public sealed class MultiStringHandler : IRequestHandler<MultiResponseRequest, string>
+    {
+        public Task<string> Handle(MultiResponseRequest request, CancellationToken cancellationToken)
+            => Task.FromResult("forty-two");
     }
 }

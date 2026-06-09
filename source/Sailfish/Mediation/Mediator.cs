@@ -23,11 +23,18 @@ namespace Sailfish.Mediation;
 /// </remarks>
 internal sealed class Mediator(IServiceProvider serviceProvider, ILogger logger) : IPublisher, ISender
 {
-    // Wrappers are keyed by the message's runtime type and are immutable once built, so a static cache is
-    // safe and avoids re-reflecting on every publish/send.
+    // Wrappers are immutable once built, so a static cache is safe and avoids re-reflecting on every
+    // publish/send. Notifications key on the message's runtime type alone; requests key on both the request
+    // runtime type and the response type, because one request type can implement IRequest<T> for more than
+    // one T (and IRequest<out TResponse> is covariant). Keying requests on type alone would hand a cached
+    // RequestHandlerWrapper<T1> back for an IRequest<T2> send and throw InvalidCastException on the cast.
     private static readonly Dictionary<Type, NotificationHandlerWrapper> NotificationWrappers = new();
-    private static readonly Dictionary<Type, RequestHandlerWrapper> RequestWrappers = new();
+    private static readonly Dictionary<RequestWrapperKey, RequestHandlerWrapper> RequestWrappers = new();
     private static readonly object WrapperLock = new();
+
+    // Composite cache key for request wrappers: a record struct (not a value tuple) so its element names
+    // survive when it flows through GetOrAddWrapper's generic TKey parameter.
+    private readonly record struct RequestWrapperKey(Type RequestType, Type ResponseType);
 
     public Task Publish<TNotification>(TNotification notification, CancellationToken cancellationToken = default)
         where TNotification : INotification
@@ -49,14 +56,15 @@ internal sealed class Mediator(IServiceProvider serviceProvider, ILogger logger)
 
         var wrapper = (RequestHandlerWrapper<TResponse>)GetOrAddWrapper(
             RequestWrappers,
-            request.GetType(),
-            static t => (RequestHandlerWrapper)Activator.CreateInstance(
-                typeof(RequestHandlerWrapperImpl<,>).MakeGenericType(t, typeof(TResponse)))!);
+            new RequestWrapperKey(request.GetType(), typeof(TResponse)),
+            static key => (RequestHandlerWrapper)Activator.CreateInstance(
+                typeof(RequestHandlerWrapperImpl<,>).MakeGenericType(key.RequestType, key.ResponseType))!);
 
         return wrapper.Handle(request, serviceProvider, cancellationToken);
     }
 
-    private static TWrapper GetOrAddWrapper<TWrapper>(Dictionary<Type, TWrapper> cache, Type key, Func<Type, TWrapper> factory)
+    private static TWrapper GetOrAddWrapper<TKey, TWrapper>(Dictionary<TKey, TWrapper> cache, TKey key, Func<TKey, TWrapper> factory)
+        where TKey : notnull
     {
         lock (WrapperLock)
         {
