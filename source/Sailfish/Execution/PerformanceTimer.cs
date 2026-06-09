@@ -37,8 +37,18 @@ public sealed class PerformanceTimer
         IsValid = false;
     }
 
+    private bool _overheadApplied;
+
     public void ApplyOverheadEstimate(int overheadEstimate)
     {
+        // Apply exactly once. GetPerformanceResults() re-invokes this on every call, and the engine reads
+        // results more than once per case (it builds the TestCaseExecutionResult, then calls ToExternal()
+        // for the completion notification). Without this guard the per-call overhead was subtracted
+        // repeatedly, under-reporting fast benchmarks — latent until the calibrator started returning a
+        // real, non-zero overhead.
+        if (_overheadApplied) return;
+        _overheadApplied = true;
+
         foreach (var executionIterationPerformance in ExecutionIterationPerformances)
         {
             executionIterationPerformance.ApplyOverheadEstimate(overheadEstimate);
@@ -49,12 +59,12 @@ public sealed class PerformanceTimer
 
     public void SetTestCaseStart()
     {
-        _testCaseStart = DateTimeOffset.Now;
+        _testCaseStart = DateTimeOffset.UtcNow;
     }
 
     public void SetTestCaseStop()
     {
-        _testCaseStop = DateTimeOffset.Now;
+        _testCaseStop = DateTimeOffset.UtcNow;
     }
 
     public void StartSailfishMethodExecutionTimer()
