@@ -1,7 +1,7 @@
 ﻿using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using MediatR;
+using Sailfish.Mediation;
 using Sailfish.Analysis;
 using Sailfish.Contracts.Public;
 using Sailfish.Contracts.Public.Requests;

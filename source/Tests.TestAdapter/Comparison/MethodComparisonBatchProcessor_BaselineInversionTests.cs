@@ -5,7 +5,7 @@ using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
-using MediatR;
+using Sailfish.Mediation;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel;
 using NSubstitute;
 using Sailfish.Analysis;
@@ -62,7 +62,7 @@ public class MethodComparisonBatchProcessorBaselineInversionTests
 
     private readonly ITestOutputHelper _output;
     private readonly IAdapterSailDiff _sailDiff = Substitute.For<IAdapterSailDiff>();
-    private readonly IMediator _mediator = Substitute.For<IMediator>();
+    private readonly IPublisher _mediator = Substitute.For<IPublisher>();
     private readonly ILogger _logger = Substitute.For<ILogger>();
 
     // The REAL unified formatter — the bug lives in the formatting/operand path, so a mocked

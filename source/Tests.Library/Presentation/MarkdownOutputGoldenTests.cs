@@ -5,7 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using MediatR;
+using Sailfish.Mediation;
 using NSubstitute;
 using Sailfish;
 using Sailfish.Contracts.Private;
@@ -131,7 +131,7 @@ public class MarkdownOutputGoldenTests
 
             var (notification, healthProvider, runSettings, manifestProvider, timerProvider) = CreateDeterministicContext();
 
-            var mediator = Substitute.For<IMediator>();
+            var mediator = Substitute.For<IPublisher>();
             string? actualMarkdown = null;
             mediator
                 .When(m => m.Publish(Arg.Any<WriteMethodComparisonMarkdownNotification>(), Arg.Any<CancellationToken>()))

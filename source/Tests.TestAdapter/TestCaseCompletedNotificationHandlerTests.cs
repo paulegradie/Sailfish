@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using MediatR;
+using Sailfish.Mediation;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel;
 using NSubstitute;
 using Sailfish.Analysis.SailDiff.Formatting;
@@ -30,14 +30,14 @@ public class TestCaseCompletedNotificationHandlerTests
 {
     // The handler now builds a completion message and hands it to the aggregator (which publishes it). A real
     // aggregator sharing the test's mediator lets us observe the published FrameworkTestCaseEndNotification.
-    private static TestCompletionAggregator CreateAggregator(IMediator mediator)
+    private static TestCompletionAggregator CreateAggregator(IPublisher publisher)
     {
         var batchProcessor = new MethodComparisonBatchProcessor(
             Substitute.For<IAdapterSailDiff>(),
-            mediator,
+            publisher,
             Substitute.For<ILogger>(),
             Substitute.For<ISailDiffUnifiedFormatter>());
-        return new TestCompletionAggregator(mediator, batchProcessor, Substitute.For<ILogger>());
+        return new TestCompletionAggregator(publisher, batchProcessor, Substitute.For<ILogger>());
     }
 
     [Fact]
@@ -47,10 +47,10 @@ public class TestCaseCompletedNotificationHandlerTests
             Substitute.For<ISailfishConsoleWindowFormatter>(),
             Substitute.For<ISailDiffTestOutputWindowMessageFormatter>(),
             Substitute.For<IRunSettings>(),
-            Substitute.For<IMediator>(),
+            Substitute.For<ISender>(),
             Substitute.For<IAdapterSailDiff>(),
             Substitute.For<ILogger>(),
-            CreateAggregator(Substitute.For<IMediator>())
+            CreateAggregator(Substitute.For<IPublisher>())
         );
 
         var summaryTrackingFormat = new ClassExecutionSummaryTrackingFormat(
@@ -84,10 +84,10 @@ public class TestCaseCompletedNotificationHandlerTests
             Substitute.For<ISailfishConsoleWindowFormatter>(),
             Substitute.For<ISailDiffTestOutputWindowMessageFormatter>(),
             Substitute.For<IRunSettings>(),
-            Substitute.For<IMediator>(),
+            Substitute.For<ISender>(),
             Substitute.For<IAdapterSailDiff>(),
             Substitute.For<ILogger>(),
-            CreateAggregator(Substitute.For<IMediator>())
+            CreateAggregator(Substitute.For<IPublisher>())
         );
 
         var summaryTrackingFormat = new ClassExecutionSummaryTrackingFormat(
@@ -108,15 +108,15 @@ public class TestCaseCompletedNotificationHandlerTests
     [Fact]
     public async Task TestCaseCompleteNotificationHandlerReturnsOnDetectedException()
     {
-        var mediatorSub = Substitute.For<IMediator>();
+        var publisherSub = Substitute.For<IPublisher>();
         var handler = new TestCaseCompletedNotificationHandler(
             Substitute.For<ISailfishConsoleWindowFormatter>(),
             Substitute.For<ISailDiffTestOutputWindowMessageFormatter>(),
             Substitute.For<IRunSettings>(),
-            mediatorSub,
+            Substitute.For<ISender>(),
             Substitute.For<IAdapterSailDiff>(),
             Substitute.For<ILogger>(),
-            CreateAggregator(mediatorSub));
+            CreateAggregator(publisherSub));
 
         var exMsg = Some.RandomString();
         var summaryTrackingFormat = new ClassExecutionSummaryTrackingFormat(
@@ -144,7 +144,7 @@ public class TestCaseCompletedNotificationHandlerTests
 
         await handler.Handle(notification, CancellationToken.None);
 
-        var notificationResult = mediatorSub.ReceivedCalls()
+        var notificationResult = publisherSub.ReceivedCalls()
             .Select(call => call.GetArguments().FirstOrDefault())
             .OfType<FrameworkTestCaseEndNotification>()
             .FirstOrDefault();

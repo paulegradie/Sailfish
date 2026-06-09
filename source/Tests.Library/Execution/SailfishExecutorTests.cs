@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using MediatR;
+using Sailfish.Mediation;
 using NSubstitute;
 using Sailfish.Analysis.SailDiff;
 using Sailfish.Analysis.ScaleFish;
@@ -21,7 +21,7 @@ namespace Tests.Library.Execution;
 
 public class SailfishExecutorTests
 {
-    private readonly IMediator _mediator = Substitute.For<IMediator>();
+    private readonly IPublisher _mediator = Substitute.For<IPublisher>();
     private readonly ISailFishTestExecutor _sailFishTestExecutor = Substitute.For<ISailFishTestExecutor>();
     private readonly ITestCollector _testCollector = Substitute.For<ITestCollector>();
     private readonly ITestFilter _testFilter = Substitute.For<ITestFilter>();

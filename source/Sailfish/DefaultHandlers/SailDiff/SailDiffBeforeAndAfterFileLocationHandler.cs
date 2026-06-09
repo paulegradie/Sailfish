@@ -3,7 +3,7 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using MediatR;
+using Sailfish.Mediation;
 using Sailfish.Analysis.SailDiff;
 using Sailfish.Contracts.Public.Models;
 using Sailfish.Contracts.Public.Requests;

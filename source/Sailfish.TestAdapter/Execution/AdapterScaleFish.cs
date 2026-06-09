@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using MediatR;
+using Sailfish.Mediation;
 using Sailfish.Analysis.ScaleFish;
 using Sailfish.Contracts.Public.Models;
 using Sailfish.Contracts.Public.Notifications;
@@ -23,17 +23,20 @@ internal class AdapterScaleFish : IAdapterScaleFish
     private readonly IComplexityComputer _complexityComputer;
     private readonly ILogger _logger;
     private readonly IMarkdownTableConverter _markdownTableConverter;
-    private readonly IMediator _mediator;
+    private readonly IPublisher _publisher;
+    private readonly ISender _sender;
     private readonly IRunSettings _runSettings;
 
     public AdapterScaleFish(
-        IMediator mediator,
+        IPublisher publisher,
+        ISender sender,
         IRunSettings runSettings,
         IComplexityComputer complexityComputer,
         IMarkdownTableConverter markdownTableConverter,
         ILogger logger)
     {
-        _mediator = mediator;
+        _publisher = publisher;
+        _sender = sender;
         _runSettings = runSettings;
         _complexityComputer = complexityComputer;
         _markdownTableConverter = markdownTableConverter;
@@ -44,7 +47,7 @@ internal class AdapterScaleFish : IAdapterScaleFish
     {
         if (!_runSettings.RunScaleFish) return;
 
-        var response = await _mediator.Send(new GetLatestExecutionSummaryRequest(), cancellationToken);
+        var response = await _sender.Send(new GetLatestExecutionSummaryRequest(), cancellationToken);
         await AnalyzeCore(response.LatestExecutionSummaries.ToList(), cancellationToken);
     }
 
@@ -67,7 +70,7 @@ internal class AdapterScaleFish : IAdapterScaleFish
 
             var complexityMarkdown = _markdownTableConverter.ConvertScaleFishResultToMarkdown(complexityResults);
             _logger.Log(LogLevel.Information, complexityMarkdown);
-            await _mediator.Publish(new ScaleFishAnalysisCompleteNotification(complexityMarkdown, complexityResults), cancellationToken);
+            await _publisher.Publish(new ScaleFishAnalysisCompleteNotification(complexityMarkdown, complexityResults), cancellationToken);
         }
         catch (Exception ex)
         {

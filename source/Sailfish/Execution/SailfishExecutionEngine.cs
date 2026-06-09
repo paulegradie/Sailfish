@@ -4,7 +4,7 @@ using System.Linq;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
-using MediatR;
+using Sailfish.Mediation;
 using Microsoft.Extensions.DependencyInjection;
 using Sailfish.Attributes;
 using Sailfish.Contracts.Public.Models;
@@ -55,7 +55,7 @@ internal class SailfishExecutionEngine : ISailfishExecutionEngine
     private readonly IClassExecutionSummaryCompiler _classExecutionSummaryCompiler;
     private readonly IConsoleWriter _consoleWriter;
     private readonly ILogger _logger;
-    private readonly IMediator _mediator;
+    private readonly IPublisher _publisher;
     private readonly IRunSettings _runSettings;
     private readonly ITestCaseCountPrinter _testCaseCountPrinter;
     private readonly ITestCaseIterator _testCaseIterator;
@@ -65,14 +65,14 @@ internal class SailfishExecutionEngine : ISailfishExecutionEngine
         IConsoleWriter consoleWriter,
         ITestCaseIterator testCaseIterator,
         ITestCaseCountPrinter testCaseCountPrinter,
-        IMediator mediator,
+        IPublisher publisher,
         IClassExecutionSummaryCompiler classExecutionSummaryCompiler,
         IRunSettings runSettings)
     {
         _classExecutionSummaryCompiler = classExecutionSummaryCompiler;
         _logger = logger;
         _consoleWriter = consoleWriter;
-        _mediator = mediator;
+        _publisher = publisher;
         _runSettings = runSettings;
         _testCaseCountPrinter = testCaseCountPrinter;
         _testCaseIterator = testCaseIterator;
@@ -110,7 +110,7 @@ internal class SailfishExecutionEngine : ISailfishExecutionEngine
         {
             var currentInstance = TryGetCurrent(testCaseEnumerator);
 
-            await _mediator.Publish(
+            await _publisher.Publish(
                 new TestCaseExceptionNotification(currentInstance?.ToExternal(), testCaseGroup, ex),
                 cancellationToken);
             if (!shared) await DisposeOfTestInstance(currentInstance);
@@ -132,7 +132,7 @@ internal class SailfishExecutionEngine : ISailfishExecutionEngine
 
         if (testProvider.IsDisabled())
         {
-            await _mediator.Publish(
+            await _publisher.Publish(
                 new TestCaseDisabledNotification(testCaseEnumerator.Current.ToExternal(), testCaseGroup, true),
                 cancellationToken);
             if (!shared) await DisposeOfTestInstance(testCaseEnumerator.Current);
@@ -147,13 +147,13 @@ internal class SailfishExecutionEngine : ISailfishExecutionEngine
             {
                 if (testCase.Disabled)
                 {
-                    await _mediator.Publish(
+                    await _publisher.Publish(
                         new TestCaseDisabledNotification(testCase.ToExternal(), testCaseGroup, false),
                         cancellationToken);
                     continue;
                 }
 
-                await _mediator.Publish(new TestCaseStartedNotification(testCase.ToExternal(), testCaseGroup), cancellationToken);
+                await _publisher.Publish(new TestCaseStartedNotification(testCase.ToExternal(), testCaseGroup), cancellationToken);
                 _testCaseCountPrinter.PrintCaseUpdate(testCase.TestCaseId.DisplayName);
 
                 // PerCase: GlobalSetup runs on every fresh instance (after its variables are injected, so
@@ -210,7 +210,7 @@ internal class SailfishExecutionEngine : ISailfishExecutionEngine
                         executionResult.TestInstanceContainer!.Type,
                         [executionResult])
                 ]);
-                await _mediator.Publish(new TestClassCompletedNotification(testCaseSummary.ToTrackingFormat().Single(), testCase.ToExternal(), testCaseGroup), cancellationToken);
+                await _publisher.Publish(new TestClassCompletedNotification(testCaseSummary.ToTrackingFormat().Single(), testCase.ToExternal(), testCaseGroup), cancellationToken);
 
                 results.Add(executionResult);
             }
@@ -245,7 +245,7 @@ internal class SailfishExecutionEngine : ISailfishExecutionEngine
         catch (Exception ex)
         {
             var currentInstance = TryGetCurrent(instanceContainerEnumerator);
-            await _mediator.Publish(new TestCaseExceptionNotification(currentInstance?.ToExternal(), testCaseGroup, ex), ct);
+            await _publisher.Publish(new TestCaseExceptionNotification(currentInstance?.ToExternal(), testCaseGroup, ex), ct);
             continueIterating = true;
             _consoleWriter.WriteString(ex.Message);
         }
@@ -275,7 +275,7 @@ internal class SailfishExecutionEngine : ISailfishExecutionEngine
             ex = new NullReferenceException(ex.Message + Environment.NewLine + $"Null variable or property encountered in method: {testCase.ExecutionMethod.Name}");
         }
 
-        await _mediator.Publish(new TestCaseExceptionNotification(testCase.ToExternal(), testCaseGroup, ex), cancellationToken);
+        await _publisher.Publish(new TestCaseExceptionNotification(testCase.ToExternal(), testCaseGroup, ex), cancellationToken);
         return [new TestCaseExecutionResult(testCase, ex)];
     }
 
@@ -295,7 +295,7 @@ internal class SailfishExecutionEngine : ISailfishExecutionEngine
 
             if (!testCaseExecutionResult.IsSuccess)
             {
-                await _mediator.Publish(new TestCaseExceptionNotification(testInstanceContainer.ToExternal(), testCaseGroup, testCaseExecutionResult.Exception), cancellationToken);
+                await _publisher.Publish(new TestCaseExceptionNotification(testInstanceContainer.ToExternal(), testCaseGroup, testCaseExecutionResult.Exception), cancellationToken);
                 return new TestCaseExecutionResult(testInstanceContainer,
                     testCaseExecutionResult.Exception!.InnerException ?? testCaseExecutionResult.Exception);
             }
@@ -305,7 +305,7 @@ internal class SailfishExecutionEngine : ISailfishExecutionEngine
             testCaseExecutionResult = new TestCaseExecutionResult(testInstanceContainer, ex);
         }
 
-        await _mediator.Publish(
+        await _publisher.Publish(
             new TestCaseCompletedNotification(
                 MapResultToTrackingFormat(testInstanceContainer.Type, testCaseExecutionResult),
                 testInstanceContainer.ToExternal(),

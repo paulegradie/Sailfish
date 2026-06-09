@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using MediatR;
+using Sailfish.Mediation;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel;
 using Sailfish.Contracts.Public.Models;
 using Sailfish.Contracts.Public.Notifications;
@@ -36,7 +36,7 @@ internal class TestCaseCompletedNotificationHandler : INotificationHandler<TestC
 {
     private readonly TestCompletionAggregator _aggregator;
     private readonly ILogger _logger;
-    private readonly IMediator _mediator;
+    private readonly ISender _sender;
     private readonly IRunSettings _runSettings;
     private readonly IAdapterSailDiff _sailDiff;
     private readonly ISailDiffTestOutputWindowMessageFormatter _sailDiffTestOutputWindowMessageFormatter;
@@ -46,7 +46,7 @@ internal class TestCaseCompletedNotificationHandler : INotificationHandler<TestC
         ISailfishConsoleWindowFormatter sailfishConsoleWindowFormatter,
         ISailDiffTestOutputWindowMessageFormatter sailDiffTestOutputWindowMessageFormatter,
         IRunSettings runSettings,
-        IMediator mediator,
+        ISender sender,
         IAdapterSailDiff sailDiff,
         ILogger logger,
         TestCompletionAggregator aggregator)
@@ -54,7 +54,7 @@ internal class TestCaseCompletedNotificationHandler : INotificationHandler<TestC
         _sailfishConsoleWindowFormatter = sailfishConsoleWindowFormatter;
         _sailDiffTestOutputWindowMessageFormatter = sailDiffTestOutputWindowMessageFormatter;
         _runSettings = runSettings;
-        _mediator = mediator;
+        _sender = sender;
         _sailDiff = sailDiff;
         _logger = logger;
         _aggregator = aggregator;
@@ -226,7 +226,7 @@ internal class TestCaseCompletedNotificationHandler : INotificationHandler<TestC
 
         try
         {
-            var response = await _mediator.Send(
+            var response = await _sender.Send(
                 new GetAllTrackingDataOrderedChronologicallyRequest(),
                 cancellationToken);
             preloadedLastRunsIfAvailable.AddRange(response.TrackingData.Skip(1)); // the most recent is the current run

@@ -2,7 +2,7 @@
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using MediatR;
+using Sailfish.Mediation;
 using Sailfish.Contracts.Public;
 using Sailfish.Contracts.Public.Models;
 using Sailfish.Contracts.Public.Notifications;
@@ -17,19 +17,21 @@ public interface ISailDiffInternal : IAnalyzeFromFile;
 
 public interface ISailDiff
 {
-    void Analyze(TestData beforeData, TestData afterData, SailDiffSettings settings);
+    Task Analyze(TestData beforeData, TestData afterData, SailDiffSettings settings);
 }
 
 internal class SailDiff : ISailDiffInternal, ISailDiff
 {
     private readonly IConsoleWriter _consoleWriter;
     private readonly ILogger _logger;
-    private readonly IMediator _mediator;
+    private readonly IPublisher _publisher;
+    private readonly ISender _sender;
     private readonly IRunSettings _runSettings;
     private readonly ISailDiffConsoleWindowMessageFormatter _sailDiffConsoleWindowMessageFormatter;
     private readonly IStatisticalTestComputer _statisticalTestComputer;
 
-    public SailDiff(IMediator mediator,
+    public SailDiff(IPublisher publisher,
+        ISender sender,
         IRunSettings runSettings,
         ILogger logger,
         IStatisticalTestComputer statisticalTestComputer,
@@ -38,13 +40,14 @@ internal class SailDiff : ISailDiffInternal, ISailDiff
     {
         _consoleWriter = consoleWriter;
         _logger = logger;
-        _mediator = mediator;
+        _publisher = publisher;
+        _sender = sender;
         _runSettings = runSettings;
         _sailDiffConsoleWindowMessageFormatter = sailDiffConsoleWindowMessageFormatter;
         _statisticalTestComputer = statisticalTestComputer;
     }
 
-    public void Analyze(TestData beforeData, TestData afterData, SailDiffSettings settings)
+    public async Task Analyze(TestData beforeData, TestData afterData, SailDiffSettings settings)
     {
         if (beforeData is null || afterData is null)
         {
@@ -68,17 +71,17 @@ internal class SailDiff : ISailDiffInternal, ISailDiff
 
         _logger.Log(LogLevel.Information, resultsAsMarkdown);
 
-        // Publish notification for subscribers (e.g., adapters/formatters)
-        _mediator.Publish(new SailDiffAnalysisCompleteNotification(testResults, resultsAsMarkdown), CancellationToken.None)
-            .GetAwaiter()
-            .GetResult();
+        // Publish notification for subscribers (e.g., adapters/formatters). Awaited — the former
+        // .GetAwaiter().GetResult() sync-over-async (a deadlock/thread-starvation hazard) is gone now that
+        // this method is async.
+        await _publisher.Publish(new SailDiffAnalysisCompleteNotification(testResults, resultsAsMarkdown), CancellationToken.None).ConfigureAwait(false);
     }
 
     public async Task Analyze(CancellationToken cancellationToken)
     {
         if (!_runSettings.RunSailDiff) return;
         var beforeAndAfterFileLocations =
-            await _mediator.Send(new BeforeAndAfterFileLocationRequest(_runSettings.ProvidedBeforeTrackingFiles), cancellationToken).ConfigureAwait(false);
+            await _sender.Send(new BeforeAndAfterFileLocationRequest(_runSettings.ProvidedBeforeTrackingFiles), cancellationToken).ConfigureAwait(false);
 
         if (!beforeAndAfterFileLocations.AfterFilePaths.Any() || !beforeAndAfterFileLocations.BeforeFilePaths.Any())
         {
@@ -93,7 +96,7 @@ internal class SailDiff : ISailDiffInternal, ISailDiff
             _logger.Log(LogLevel.Warning, "{Message}", msg);
         }
 
-        var beforeAndAfterData = await _mediator
+        var beforeAndAfterData = await _sender
             .Send(new ReadInBeforeAndAfterDataRequest(beforeAndAfterFileLocations.BeforeFilePaths, beforeAndAfterFileLocations.AfterFilePaths), cancellationToken)
             .ConfigureAwait(false);
 
@@ -120,6 +123,6 @@ internal class SailDiff : ISailDiffInternal, ISailDiff
         _logger.Log(LogLevel.Information, resultsAsMarkdown);
 
 
-        await _mediator.Publish(new SailDiffAnalysisCompleteNotification(testResults, resultsAsMarkdown), cancellationToken).ConfigureAwait(false);
+        await _publisher.Publish(new SailDiffAnalysisCompleteNotification(testResults, resultsAsMarkdown), cancellationToken).ConfigureAwait(false);
     }
 }

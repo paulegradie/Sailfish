@@ -5,7 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using MediatR;
+using Sailfish.Mediation;
 using NSubstitute;
 using Sailfish.Contracts.Private;
 using Sailfish.Contracts.Public.Notifications;
@@ -79,7 +79,7 @@ public class CsvOutputGoldenTests
             CultureInfo.CurrentCulture = CultureInfo.InvariantCulture;
             CultureInfo.CurrentUICulture = CultureInfo.InvariantCulture;
 
-            var mediator = Substitute.For<IMediator>();
+            var mediator = Substitute.For<IPublisher>();
             string? actualCsv = null;
             mediator
                 .When(m => m.Publish(Arg.Any<WriteMethodComparisonCsvNotification>(), Arg.Any<CancellationToken>()))

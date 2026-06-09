@@ -5,7 +5,7 @@ using System.Reflection;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using MediatR;
+using Sailfish.Mediation;
 using Sailfish.Attributes;
 using Sailfish.Contracts.Private;
 using Sailfish.Contracts.Public.Models;
@@ -29,7 +29,7 @@ namespace Sailfish.DefaultHandlers.Sailfish;
 internal class MethodComparisonTestRunCompletedHandler : INotificationHandler<TestRunCompletedNotification>
 {
     private readonly ILogger _logger;
-    private readonly IMediator _mediator;
+    private readonly IPublisher _publisher;
     private readonly IEnvironmentHealthReportProvider? _healthProvider;
     private readonly IRunSettings? _runSettings;
     private readonly IReproducibilityManifestProvider? _manifestProvider;
@@ -41,11 +41,11 @@ internal class MethodComparisonTestRunCompletedHandler : INotificationHandler<Te
     /// Initializes a new instance of the MethodComparisonTestRunCompletedHandler class.
     /// </summary>
     /// <param name="logger">The logger for diagnostic output.</param>
-    /// <param name="mediator">The mediator for publishing notifications.</param>
-    public MethodComparisonTestRunCompletedHandler(ILogger logger, IMediator mediator)
+    /// <param name="publisher">The publisher for publishing notifications.</param>
+    public MethodComparisonTestRunCompletedHandler(ILogger logger, IPublisher publisher)
     {
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-        _mediator = mediator ?? throw new ArgumentNullException(nameof(mediator));
+        _publisher = publisher ?? throw new ArgumentNullException(nameof(publisher));
         _healthProvider = null; // backward compatible path
         _runSettings = null;
         _manifestProvider = null;
@@ -55,20 +55,20 @@ internal class MethodComparisonTestRunCompletedHandler : INotificationHandler<Te
     /// <summary>
     /// Preferred constructor that can optionally receive environment health report provider via DI.
     /// </summary>
-    public MethodComparisonTestRunCompletedHandler(ILogger logger, IMediator mediator, IEnvironmentHealthReportProvider healthProvider)
-        : this(logger, mediator)
+    public MethodComparisonTestRunCompletedHandler(ILogger logger, IPublisher publisher, IEnvironmentHealthReportProvider healthProvider)
+        : this(logger, publisher)
     {
         _healthProvider = healthProvider;
     }
 
     public MethodComparisonTestRunCompletedHandler(
         ILogger logger,
-        IMediator mediator,
+        IPublisher publisher,
         IEnvironmentHealthReportProvider healthProvider,
         IRunSettings runSettings,
         IReproducibilityManifestProvider manifestProvider,
         ITimerCalibrationResultProvider timerProvider)
-        : this(logger, mediator, healthProvider)
+        : this(logger, publisher, healthProvider)
     {
         _runSettings = runSettings;
         _manifestProvider = manifestProvider;
@@ -83,11 +83,11 @@ internal class MethodComparisonTestRunCompletedHandler : INotificationHandler<Te
     /// </summary>
     public MethodComparisonTestRunCompletedHandler(
         ILogger logger,
-        IMediator mediator,
+        IPublisher publisher,
         IEnvironmentHealthReportProvider healthProvider,
         IRunSettings runSettings,
         IReproducibilityManifestProvider manifestProvider)
-        : this(logger, mediator, healthProvider)
+        : this(logger, publisher, healthProvider)
     {
         _runSettings = runSettings;
         _manifestProvider = manifestProvider;
@@ -174,7 +174,7 @@ internal class MethodComparisonTestRunCompletedHandler : INotificationHandler<Te
                     Timestamp = timestamp
                 };
 
-                await _mediator.Publish(markdownNotification, cancellationToken);
+                await _publisher.Publish(markdownNotification, cancellationToken);
 
                 _logger.Log(LogLevel.Information,
                     "Published consolidated session WriteMethodComparisonMarkdownNotification for {0} test classes",

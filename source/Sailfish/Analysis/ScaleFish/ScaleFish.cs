@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using MediatR;
+using Sailfish.Mediation;
 using Sailfish.Analysis.ScaleFish.Trends;
 using Sailfish.Contracts.Public.Models;
 using Sailfish.Contracts.Public.Notifications;
@@ -28,10 +28,12 @@ internal class ScaleFish : IScaleFish, IScaleFishInternal
     private readonly IConsoleWriter _consoleWriter;
     private readonly ILogger _logger;
     private readonly IMarkdownTableConverter _markdownTableConverter;
-    private readonly IMediator _mediator;
+    private readonly IPublisher _publisher;
+    private readonly ISender _sender;
     private readonly IRunSettings _runSettings;
 
-    public ScaleFish(IMediator mediator,
+    public ScaleFish(IPublisher publisher,
+        ISender sender,
         IRunSettings runSettings,
         IComplexityComputer complexityComputer,
         IMarkdownTableConverter markdownTableConverter,
@@ -42,7 +44,8 @@ internal class ScaleFish : IScaleFish, IScaleFishInternal
         _consoleWriter = consoleWriter;
         _logger = logger;
         _markdownTableConverter = markdownTableConverter;
-        _mediator = mediator;
+        _publisher = publisher;
+        _sender = sender;
         _runSettings = runSettings;
     }
 
@@ -58,7 +61,7 @@ internal class ScaleFish : IScaleFish, IScaleFishInternal
     {
         if (!_runSettings.RunScaleFish) return;
 
-        var response = await _mediator.Send(new GetLatestExecutionSummaryRequest(), cancellationToken);
+        var response = await _sender.Send(new GetLatestExecutionSummaryRequest(), cancellationToken);
         await AnalyzeCore(response.LatestExecutionSummaries.ToList(), cancellationToken).ConfigureAwait(false);
     }
 
@@ -132,13 +135,13 @@ internal class ScaleFish : IScaleFish, IScaleFishInternal
                 }
             }
 
-            await _mediator.Publish(new ScaleFishAnalysisCompleteNotification(fullMarkdown, complexityResults), cancellationToken).ConfigureAwait(false);
+            await _publisher.Publish(new ScaleFishAnalysisCompleteNotification(fullMarkdown, complexityResults), cancellationToken).ConfigureAwait(false);
 
             // Surface complexity-regression transitions via a dedicated notification so downstream
             // consumers (CI scripts, IDE plugins) can react without parsing markdown.
             if (transitions.Any(t => t.IsRegression))
             {
-                await _mediator.Publish(new ComplexityRegressionDetectedNotification(
+                await _publisher.Publish(new ComplexityRegressionDetectedNotification(
                         transitions.Where(t => t.IsRegression).ToList()),
                         cancellationToken)
                     .ConfigureAwait(false);

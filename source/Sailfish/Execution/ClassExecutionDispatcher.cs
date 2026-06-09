@@ -4,7 +4,7 @@ using System.Linq;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
-using MediatR;
+using Sailfish.Mediation;
 using Sailfish.Attributes;
 using Sailfish.Contracts.Public.Models;
 using Sailfish.Contracts.Public.Notifications;
@@ -35,14 +35,14 @@ internal interface IClassExecutionDispatcher
 internal class ClassExecutionDispatcher : IClassExecutionDispatcher
 {
     private readonly ISailfishExecutionEngine _engine;
-    private readonly IMediator _mediator;
+    private readonly IPublisher _publisher;
     private readonly ITypeActivator _typeActivator;
 
-    public ClassExecutionDispatcher(ISailfishExecutionEngine engine, ITypeActivator typeActivator, IMediator mediator)
+    public ClassExecutionDispatcher(ISailfishExecutionEngine engine, ITypeActivator typeActivator, IPublisher publisher)
     {
         _engine = engine;
         _typeActivator = typeActivator;
-        _mediator = mediator;
+        _publisher = publisher;
     }
 
     public async Task<List<TestCaseExecutionResult>> Dispatch(
@@ -73,7 +73,7 @@ internal class ClassExecutionDispatcher : IClassExecutionDispatcher
                 // The class never instantiated (ctor / dependency-resolution failure). Publish so the adapter fails
                 // every case in the group (its handler keys off a null container for exactly this whole-class
                 // failure) — never silently.
-                await _mediator.Publish(new TestCaseExceptionNotification(null, testCaseGroup, ex), cancellationToken);
+                await _publisher.Publish(new TestCaseExceptionNotification(null, testCaseGroup, ex), cancellationToken);
                 return [new TestCaseExecutionResult(ex)];
             }
 
@@ -92,7 +92,7 @@ internal class ClassExecutionDispatcher : IClassExecutionDispatcher
                 {
                     // Materializing the first case failed (e.g. variable hydration threw) before GlobalSetup. Report
                     // it as a whole-class failure rather than letting it escape Dispatch unreported.
-                    await _mediator.Publish(new TestCaseExceptionNotification(null, testCaseGroup, ex), cancellationToken);
+                    await _publisher.Publish(new TestCaseExceptionNotification(null, testCaseGroup, ex), cancellationToken);
                     return [new TestCaseExecutionResult(ex)];
                 }
 
@@ -103,7 +103,7 @@ internal class ClassExecutionDispatcher : IClassExecutionDispatcher
                 catch (Exception ex)
                 {
                     // Abort the class — do not run the methods against a half-initialized instance — and report it.
-                    await _mediator.Publish(new TestCaseExceptionNotification(representativeCase.ToExternal(), testCaseGroup, ex), cancellationToken);
+                    await _publisher.Publish(new TestCaseExceptionNotification(representativeCase.ToExternal(), testCaseGroup, ex), cancellationToken);
                     return [new TestCaseExecutionResult(representativeCase, ex)];
                 }
 
@@ -125,7 +125,7 @@ internal class ClassExecutionDispatcher : IClassExecutionDispatcher
                     }
                     catch (Exception ex)
                     {
-                        await _mediator.Publish(new TestCaseExceptionNotification(lastContainer.ToExternal(), testCaseGroup, ex), cancellationToken);
+                        await _publisher.Publish(new TestCaseExceptionNotification(lastContainer.ToExternal(), testCaseGroup, ex), cancellationToken);
                         results.Add(new TestCaseExecutionResult(ex));
                     }
                 }

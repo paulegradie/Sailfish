@@ -2,7 +2,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using MediatR;
+using Sailfish.Mediation;
 using Sailfish.Analysis.SailDiff;
 using Sailfish.Contracts.Public;
 using Sailfish.Contracts.Public.Models;
@@ -26,19 +26,22 @@ internal interface IAdapterSailDiff : ISailDiffInternal
 internal class AdapterSailDiff : IAdapterSailDiff
 {
     private readonly ILogger _logger;
-    private readonly IMediator _mediator;
+    private readonly IPublisher _publisher;
+    private readonly ISender _sender;
     private readonly IRunSettings _runSettings;
     private readonly ISailDiffConsoleWindowMessageFormatter _sailDiffConsoleWindowMessageFormatter;
     private readonly IStatisticalTestComputer _statisticalTestComputer;
 
     public AdapterSailDiff(
-        IMediator mediator,
+        IPublisher publisher,
+        ISender sender,
         IRunSettings runSettings,
         ISailDiffConsoleWindowMessageFormatter sailDiffConsoleWindowMessageFormatter,
         IStatisticalTestComputer statisticalTestComputer,
         ILogger logger)
     {
-        _mediator = mediator;
+        _publisher = publisher;
+        _sender = sender;
         _runSettings = runSettings;
         _sailDiffConsoleWindowMessageFormatter = sailDiffConsoleWindowMessageFormatter;
         _statisticalTestComputer = statisticalTestComputer;
@@ -49,11 +52,11 @@ internal class AdapterSailDiff : IAdapterSailDiff
     {
         if (!_runSettings.RunSailDiff) return;
 
-        var beforeAndAfterFileLocations = await _mediator
+        var beforeAndAfterFileLocations = await _sender
             .Send(new BeforeAndAfterFileLocationRequest(_runSettings.ProvidedBeforeTrackingFiles), cancellationToken)
             .ConfigureAwait(false);
 
-        var beforeAndAfterData = await _mediator
+        var beforeAndAfterData = await _sender
             .Send(
                 new ReadInBeforeAndAfterDataRequest(beforeAndAfterFileLocations.BeforeFilePaths,
                     beforeAndAfterFileLocations.AfterFilePaths), cancellationToken)
@@ -79,7 +82,7 @@ internal class AdapterSailDiff : IAdapterSailDiff
         var testIds = new TestIds(beforeAndAfterData.BeforeData.TestIds, beforeAndAfterData.AfterData.TestIds);
         var resultsAsMarkdown = _sailDiffConsoleWindowMessageFormatter.FormConsoleWindowMessageForSailDiff(testResults, testIds, _runSettings.SailDiffSettings, cancellationToken);
 
-        await _mediator
+        await _publisher
             .Publish(new SailDiffAnalysisCompleteNotification(testResults, resultsAsMarkdown), cancellationToken)
             .ConfigureAwait(false);
     }

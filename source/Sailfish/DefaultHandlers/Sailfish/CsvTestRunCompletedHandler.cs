@@ -5,7 +5,7 @@ using System.Reflection;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using MediatR;
+using Sailfish.Mediation;
 using Sailfish.Attributes;
 using Sailfish.Contracts.Private;
 using Sailfish.Contracts.Public.Notifications;
@@ -25,18 +25,18 @@ namespace Sailfish.DefaultHandlers.Sailfish;
 internal class CsvTestRunCompletedHandler : INotificationHandler<TestRunCompletedNotification>
 {
     private readonly ILogger _logger;
-    private readonly IMediator _mediator;
+    private readonly IPublisher _publisher;
     private readonly IRunSettings? _runSettings;
 
     /// <summary>
     /// Initializes a new instance of the CsvTestRunCompletedHandler class.
     /// </summary>
     /// <param name="logger">The logger for diagnostic output.</param>
-    /// <param name="mediator">The mediator for publishing notifications.</param>
-    public CsvTestRunCompletedHandler(ILogger logger, IMediator mediator)
+    /// <param name="publisher">The publisher for publishing notifications.</param>
+    public CsvTestRunCompletedHandler(ILogger logger, IPublisher publisher)
     {
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
-        _mediator = mediator ?? throw new ArgumentNullException(nameof(mediator));
+        _publisher = publisher ?? throw new ArgumentNullException(nameof(publisher));
         _runSettings = null;
     }
 
@@ -44,10 +44,10 @@ internal class CsvTestRunCompletedHandler : INotificationHandler<TestRunComplete
     /// Preferred constructor: takes the optional <see cref="IRunSettings"/> so the BH-FDR
     /// q-value threshold honours the user-configured <c>SailDiffSettings.Alpha</c>
     /// instead of defaulting to 0.05. The DI container selects this overload when all
-    /// dependencies are available (multiple ctors → MediatR picks the longest match).
+    /// dependencies are available (multiple ctors → the container picks the longest constructor it can satisfy).
     /// </summary>
-    public CsvTestRunCompletedHandler(ILogger logger, IMediator mediator, IRunSettings runSettings)
-        : this(logger, mediator)
+    public CsvTestRunCompletedHandler(ILogger logger, IPublisher publisher, IRunSettings runSettings)
+        : this(logger, publisher)
     {
         _runSettings = runSettings;
     }
@@ -101,7 +101,7 @@ internal class CsvTestRunCompletedHandler : INotificationHandler<TestRunComplete
                     Timestamp = timestamp
                 };
 
-                await _mediator.Publish(csvNotification, cancellationToken);
+                await _publisher.Publish(csvNotification, cancellationToken);
 
                 _logger.Log(LogLevel.Information,
                     "Published consolidated session WriteMethodComparisonCsvNotification for {0} test classes",

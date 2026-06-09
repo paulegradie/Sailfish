@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using MediatR;
+using Sailfish.Mediation;
 using NSubstitute;
 using NSubstitute.ExceptionExtensions;
 using Sailfish.Analysis.SailDiff;
@@ -21,7 +21,8 @@ namespace Tests.Library.Analysis.SailDiff;
 
 public class SailDiffTests
 {
-    private readonly IMediator _mockMediator;
+    private readonly IPublisher _mockPublisher;
+    private readonly ISender _mockSender;
     private readonly IRunSettings _mockRunSettings;
     private readonly ILogger _mockLogger;
     private readonly IStatisticalTestComputer _mockStatisticalTestComputer;
@@ -31,7 +32,8 @@ public class SailDiffTests
 
     public SailDiffTests()
     {
-        _mockMediator = Substitute.For<IMediator>();
+        _mockPublisher = Substitute.For<IPublisher>();
+        _mockSender = Substitute.For<ISender>();
         _mockRunSettings = Substitute.For<IRunSettings>();
         _mockLogger = Substitute.For<ILogger>();
         _mockStatisticalTestComputer = Substitute.For<IStatisticalTestComputer>();
@@ -39,7 +41,8 @@ public class SailDiffTests
         _mockConsoleWriter = Substitute.For<IConsoleWriter>();
 
         _sailDiff = new Sailfish.Analysis.SailDiff.SailDiff(
-            _mockMediator,
+            _mockPublisher,
+            _mockSender,
             _mockRunSettings,
             _mockLogger,
             _mockStatisticalTestComputer,
@@ -52,7 +55,8 @@ public class SailDiffTests
     {
         // Arrange & Act
         var instance = new Sailfish.Analysis.SailDiff.SailDiff(
-            _mockMediator,
+            _mockPublisher,
+            _mockSender,
             _mockRunSettings,
             _mockLogger,
             _mockStatisticalTestComputer,
@@ -84,7 +88,7 @@ public class SailDiffTests
             .Returns(expectedMarkdown);
 
         // Act
-        _sailDiff.Analyze(beforeData, afterData, settings);
+        await _sailDiff.Analyze(beforeData, afterData, settings);
 
         // Assert
         _mockStatisticalTestComputer.Received(1)
@@ -97,7 +101,7 @@ public class SailDiffTests
                 settings,
                 Arg.Is<CancellationToken>(ct => ct == CancellationToken.None));
 
-        await _mockMediator.Received(1).Publish(
+        await _mockPublisher.Received(1).Publish(
             Arg.Is<SailDiffAnalysisCompleteNotification>(n =>
                 n.TestCaseResults.SequenceEqual(testResults) && n.ResultsAsMarkdown == expectedMarkdown),
             Arg.Is<CancellationToken>(ct => ct == CancellationToken.None));
@@ -114,7 +118,7 @@ public class SailDiffTests
         await _sailDiff.Analyze(cancellationToken);
 
         // Assert
-        await _mockMediator.DidNotReceive().Send(Arg.Any<BeforeAndAfterFileLocationRequest>(), Arg.Any<CancellationToken>());
+        await _mockSender.DidNotReceive().Send(Arg.Any<BeforeAndAfterFileLocationRequest>(), Arg.Any<CancellationToken>());
     }
 
     [Fact]
@@ -128,11 +132,11 @@ public class SailDiffTests
             new List<string>(), // Empty before paths
             new List<string> { "after.json" });
 
-        _mockMediator.Send(Arg.Any<BeforeAndAfterFileLocationRequest>(), Arg.Any<CancellationToken>())
+        _mockSender.Send(Arg.Any<BeforeAndAfterFileLocationRequest>(), Arg.Any<CancellationToken>())
             .Returns(fileLocationResponse);
 
         var dataResponse = CreateReadInBeforeAndAfterDataResponse();
-        _mockMediator.Send(Arg.Any<ReadInBeforeAndAfterDataRequest>(), Arg.Any<CancellationToken>())
+        _mockSender.Send(Arg.Any<ReadInBeforeAndAfterDataRequest>(), Arg.Any<CancellationToken>())
             .Returns(dataResponse);
 
         _mockStatisticalTestComputer.ComputeTest(Arg.Any<TestData>(), Arg.Any<TestData>(), Arg.Any<SailDiffSettings>())
@@ -163,11 +167,11 @@ public class SailDiffTests
             new List<string> { "before.json" },
             new List<string>()); // Empty after paths
 
-        _mockMediator.Send(Arg.Any<BeforeAndAfterFileLocationRequest>(), Arg.Any<CancellationToken>())
+        _mockSender.Send(Arg.Any<BeforeAndAfterFileLocationRequest>(), Arg.Any<CancellationToken>())
             .Returns(fileLocationResponse);
 
         var dataResponse = CreateReadInBeforeAndAfterDataResponse();
-        _mockMediator.Send(Arg.Any<ReadInBeforeAndAfterDataRequest>(), Arg.Any<CancellationToken>())
+        _mockSender.Send(Arg.Any<ReadInBeforeAndAfterDataRequest>(), Arg.Any<CancellationToken>())
             .Returns(dataResponse);
 
         _mockStatisticalTestComputer.ComputeTest(Arg.Any<TestData>(), Arg.Any<TestData>(), Arg.Any<SailDiffSettings>())
@@ -198,11 +202,11 @@ public class SailDiffTests
             new List<string>(), // Empty before paths
             new List<string>()); // Empty after paths
 
-        _mockMediator.Send(Arg.Any<BeforeAndAfterFileLocationRequest>(), Arg.Any<CancellationToken>())
+        _mockSender.Send(Arg.Any<BeforeAndAfterFileLocationRequest>(), Arg.Any<CancellationToken>())
             .Returns(fileLocationResponse);
 
         var dataResponse = CreateReadInBeforeAndAfterDataResponse();
-        _mockMediator.Send(Arg.Any<ReadInBeforeAndAfterDataRequest>(), Arg.Any<CancellationToken>())
+        _mockSender.Send(Arg.Any<ReadInBeforeAndAfterDataRequest>(), Arg.Any<CancellationToken>())
             .Returns(dataResponse);
 
         _mockStatisticalTestComputer.ComputeTest(Arg.Any<TestData>(), Arg.Any<TestData>(), Arg.Any<SailDiffSettings>())
@@ -234,11 +238,11 @@ public class SailDiffTests
             new List<string> { "before.json" },
             new List<string> { "after.json" });
 
-        _mockMediator.Send(Arg.Any<BeforeAndAfterFileLocationRequest>(), Arg.Any<CancellationToken>())
+        _mockSender.Send(Arg.Any<BeforeAndAfterFileLocationRequest>(), Arg.Any<CancellationToken>())
             .Returns(fileLocationResponse);
 
         var dataResponse = new ReadInBeforeAndAfterDataResponse(null, CreateTestData()); // BeforeData is null
-        _mockMediator.Send(Arg.Any<ReadInBeforeAndAfterDataRequest>(), Arg.Any<CancellationToken>())
+        _mockSender.Send(Arg.Any<ReadInBeforeAndAfterDataRequest>(), Arg.Any<CancellationToken>())
             .Returns(dataResponse);
 
         var cancellationToken = CancellationToken.None;
@@ -262,11 +266,11 @@ public class SailDiffTests
             new List<string> { "before.json" },
             new List<string> { "after.json" });
 
-        _mockMediator.Send(Arg.Any<BeforeAndAfterFileLocationRequest>(), Arg.Any<CancellationToken>())
+        _mockSender.Send(Arg.Any<BeforeAndAfterFileLocationRequest>(), Arg.Any<CancellationToken>())
             .Returns(fileLocationResponse);
 
         var dataResponse = new ReadInBeforeAndAfterDataResponse(CreateTestData(), null); // AfterData is null
-        _mockMediator.Send(Arg.Any<ReadInBeforeAndAfterDataRequest>(), Arg.Any<CancellationToken>())
+        _mockSender.Send(Arg.Any<ReadInBeforeAndAfterDataRequest>(), Arg.Any<CancellationToken>())
             .Returns(dataResponse);
 
         var cancellationToken = CancellationToken.None;
@@ -290,11 +294,11 @@ public class SailDiffTests
             new List<string> { "before.json" },
             new List<string> { "after.json" });
 
-        _mockMediator.Send(Arg.Any<BeforeAndAfterFileLocationRequest>(), Arg.Any<CancellationToken>())
+        _mockSender.Send(Arg.Any<BeforeAndAfterFileLocationRequest>(), Arg.Any<CancellationToken>())
             .Returns(fileLocationResponse);
 
         var dataResponse = new ReadInBeforeAndAfterDataResponse(null, null); // Both are null
-        _mockMediator.Send(Arg.Any<ReadInBeforeAndAfterDataRequest>(), Arg.Any<CancellationToken>())
+        _mockSender.Send(Arg.Any<ReadInBeforeAndAfterDataRequest>(), Arg.Any<CancellationToken>())
             .Returns(dataResponse);
 
         var cancellationToken = CancellationToken.None;
@@ -319,11 +323,11 @@ public class SailDiffTests
             new List<string> { "before.json" },
             new List<string> { "after.json" });
 
-        _mockMediator.Send(Arg.Any<BeforeAndAfterFileLocationRequest>(), Arg.Any<CancellationToken>())
+        _mockSender.Send(Arg.Any<BeforeAndAfterFileLocationRequest>(), Arg.Any<CancellationToken>())
             .Returns(fileLocationResponse);
 
         var dataResponse = CreateReadInBeforeAndAfterDataResponse();
-        _mockMediator.Send(Arg.Any<ReadInBeforeAndAfterDataRequest>(), Arg.Any<CancellationToken>())
+        _mockSender.Send(Arg.Any<ReadInBeforeAndAfterDataRequest>(), Arg.Any<CancellationToken>())
             .Returns(dataResponse);
 
         _mockStatisticalTestComputer.ComputeTest(Arg.Any<TestData>(), Arg.Any<TestData>(), Arg.Any<SailDiffSettings>())
@@ -416,11 +420,11 @@ public class SailDiffTests
             new List<string> { "before.json" },
             new List<string> { "after.json" });
 
-        _mockMediator.Send(Arg.Any<BeforeAndAfterFileLocationRequest>(), Arg.Any<CancellationToken>())
+        _mockSender.Send(Arg.Any<BeforeAndAfterFileLocationRequest>(), Arg.Any<CancellationToken>())
             .Returns(fileLocationResponse);
 
         var dataResponse = CreateReadInBeforeAndAfterDataResponse();
-        _mockMediator.Send(Arg.Any<ReadInBeforeAndAfterDataRequest>(), Arg.Any<CancellationToken>())
+        _mockSender.Send(Arg.Any<ReadInBeforeAndAfterDataRequest>(), Arg.Any<CancellationToken>())
             .Returns(dataResponse);
 
         var testResults = new List<SailDiffResult> { CreateSailDiffResult() };
@@ -438,13 +442,13 @@ public class SailDiffTests
         await _sailDiff.Analyze(cancellationToken);
 
         // Assert
-        await _mockMediator.Received().Send(Arg.Any<BeforeAndAfterFileLocationRequest>(), cancellationToken);
-        await _mockMediator.Received().Send(Arg.Any<ReadInBeforeAndAfterDataRequest>(), cancellationToken);
+        await _mockSender.Received().Send(Arg.Any<BeforeAndAfterFileLocationRequest>(), cancellationToken);
+        await _mockSender.Received().Send(Arg.Any<ReadInBeforeAndAfterDataRequest>(), cancellationToken);
         _mockStatisticalTestComputer.Received().ComputeTest(dataResponse.BeforeData!, dataResponse.AfterData!, _mockRunSettings.SailDiffSettings);
         _mockSailDiffConsoleWindowMessageFormatter.Received()
             .FormConsoleWindowMessageForSailDiff(testResults, Arg.Any<TestIds>(), _mockRunSettings.SailDiffSettings, cancellationToken);
         _mockLogger.Received().Log(LogLevel.Information, expectedMarkdown);
-        await _mockMediator.Received().Publish(Arg.Any<SailDiffAnalysisCompleteNotification>(), cancellationToken);
+        await _mockPublisher.Received().Publish(Arg.Any<SailDiffAnalysisCompleteNotification>(), cancellationToken);
     }
 
     [Fact]
@@ -455,7 +459,7 @@ public class SailDiffTests
         _mockRunSettings.ProvidedBeforeTrackingFiles.Returns(new List<string>());
 
         var expectedException = new InvalidOperationException("Mediator error");
-        _mockMediator.Send(Arg.Any<BeforeAndAfterFileLocationRequest>(), Arg.Any<CancellationToken>())
+        _mockSender.Send(Arg.Any<BeforeAndAfterFileLocationRequest>(), Arg.Any<CancellationToken>())
             .ThrowsAsync(expectedException);
 
         var cancellationToken = CancellationToken.None;
@@ -476,11 +480,11 @@ public class SailDiffTests
             new List<string> { "before.json" },
             new List<string> { "after.json" });
 
-        _mockMediator.Send(Arg.Any<BeforeAndAfterFileLocationRequest>(), Arg.Any<CancellationToken>())
+        _mockSender.Send(Arg.Any<BeforeAndAfterFileLocationRequest>(), Arg.Any<CancellationToken>())
             .Returns(fileLocationResponse);
 
         var expectedException = new InvalidOperationException("Data request error");
-        _mockMediator.Send(Arg.Any<ReadInBeforeAndAfterDataRequest>(), Arg.Any<CancellationToken>())
+        _mockSender.Send(Arg.Any<ReadInBeforeAndAfterDataRequest>(), Arg.Any<CancellationToken>())
             .ThrowsAsync(expectedException);
 
         var cancellationToken = CancellationToken.None;
@@ -502,11 +506,11 @@ public class SailDiffTests
             new List<string> { "before.json" },
             new List<string> { "after.json" });
 
-        _mockMediator.Send(Arg.Any<BeforeAndAfterFileLocationRequest>(), Arg.Any<CancellationToken>())
+        _mockSender.Send(Arg.Any<BeforeAndAfterFileLocationRequest>(), Arg.Any<CancellationToken>())
             .Returns(fileLocationResponse);
 
         var dataResponse = CreateReadInBeforeAndAfterDataResponse();
-        _mockMediator.Send(Arg.Any<ReadInBeforeAndAfterDataRequest>(), Arg.Any<CancellationToken>())
+        _mockSender.Send(Arg.Any<ReadInBeforeAndAfterDataRequest>(), Arg.Any<CancellationToken>())
             .Returns(dataResponse);
 
         var expectedException = new InvalidOperationException("Statistical computation error");
@@ -532,11 +536,11 @@ public class SailDiffTests
             new List<string> { "before.json" },
             new List<string> { "after.json" });
 
-        _mockMediator.Send(Arg.Any<BeforeAndAfterFileLocationRequest>(), Arg.Any<CancellationToken>())
+        _mockSender.Send(Arg.Any<BeforeAndAfterFileLocationRequest>(), Arg.Any<CancellationToken>())
             .Returns(fileLocationResponse);
 
         var dataResponse = CreateReadInBeforeAndAfterDataResponse();
-        _mockMediator.Send(Arg.Any<ReadInBeforeAndAfterDataRequest>(), Arg.Any<CancellationToken>())
+        _mockSender.Send(Arg.Any<ReadInBeforeAndAfterDataRequest>(), Arg.Any<CancellationToken>())
             .Returns(dataResponse);
 
         var testResults = new List<SailDiffResult> { CreateSailDiffResult() };
@@ -567,11 +571,11 @@ public class SailDiffTests
             new List<string> { "before.json" },
             new List<string> { "after.json" });
 
-        _mockMediator.Send(Arg.Any<BeforeAndAfterFileLocationRequest>(), Arg.Any<CancellationToken>())
+        _mockSender.Send(Arg.Any<BeforeAndAfterFileLocationRequest>(), Arg.Any<CancellationToken>())
             .Returns(fileLocationResponse);
 
         var dataResponse = CreateReadInBeforeAndAfterDataResponse();
-        _mockMediator.Send(Arg.Any<ReadInBeforeAndAfterDataRequest>(), Arg.Any<CancellationToken>())
+        _mockSender.Send(Arg.Any<ReadInBeforeAndAfterDataRequest>(), Arg.Any<CancellationToken>())
             .Returns(dataResponse);
 
         var testResults = new List<SailDiffResult> { CreateSailDiffResult() };
@@ -583,7 +587,7 @@ public class SailDiffTests
             .Returns("test markdown");
 
         var expectedException = new InvalidOperationException("Publish error");
-        _mockMediator.Publish(Arg.Any<SailDiffAnalysisCompleteNotification>(), Arg.Any<CancellationToken>())
+        _mockPublisher.Publish(Arg.Any<SailDiffAnalysisCompleteNotification>(), Arg.Any<CancellationToken>())
             .ThrowsAsync(expectedException);
 
         var cancellationToken = CancellationToken.None;
@@ -605,11 +609,11 @@ public class SailDiffTests
             new List<string> { "before.json" },
             new List<string> { "after.json" });
 
-        _mockMediator.Send(Arg.Any<BeforeAndAfterFileLocationRequest>(), Arg.Any<CancellationToken>())
+        _mockSender.Send(Arg.Any<BeforeAndAfterFileLocationRequest>(), Arg.Any<CancellationToken>())
             .Returns(fileLocationResponse);
 
         var dataResponse = CreateReadInBeforeAndAfterDataResponse();
-        _mockMediator.Send(Arg.Any<ReadInBeforeAndAfterDataRequest>(), Arg.Any<CancellationToken>())
+        _mockSender.Send(Arg.Any<ReadInBeforeAndAfterDataRequest>(), Arg.Any<CancellationToken>())
             .Returns(dataResponse);
 
         var testResults = new List<SailDiffResult> { CreateSailDiffResult() };
@@ -627,11 +631,11 @@ public class SailDiffTests
         await _sailDiff.Analyze(cancellationToken);
 
         // Assert
-        await _mockMediator.Received().Send(Arg.Any<BeforeAndAfterFileLocationRequest>(), cancellationToken);
-        await _mockMediator.Received().Send(Arg.Any<ReadInBeforeAndAfterDataRequest>(), cancellationToken);
+        await _mockSender.Received().Send(Arg.Any<BeforeAndAfterFileLocationRequest>(), cancellationToken);
+        await _mockSender.Received().Send(Arg.Any<ReadInBeforeAndAfterDataRequest>(), cancellationToken);
         _mockSailDiffConsoleWindowMessageFormatter.Received()
             .FormConsoleWindowMessageForSailDiff(Arg.Any<IEnumerable<SailDiffResult>>(), Arg.Any<TestIds>(), Arg.Any<SailDiffSettings>(), cancellationToken);
-        await _mockMediator.Received().Publish(Arg.Any<SailDiffAnalysisCompleteNotification>(), cancellationToken);
+        await _mockPublisher.Received().Publish(Arg.Any<SailDiffAnalysisCompleteNotification>(), cancellationToken);
     }
 
     [Fact]
@@ -646,13 +650,13 @@ public class SailDiffTests
             new List<string> { "before.json" },
             new List<string> { "after.json" });
 
-        _mockMediator.Send(Arg.Any<BeforeAndAfterFileLocationRequest>(), Arg.Any<CancellationToken>())
+        _mockSender.Send(Arg.Any<BeforeAndAfterFileLocationRequest>(), Arg.Any<CancellationToken>())
             .Returns(fileLocationResponse);
 
         var beforeData = new TestData(["BeforeTest1", "BeforeTest2"], new List<PerformanceRunResult>());
         var afterData = new TestData(["AfterTest1", "AfterTest2"], new List<PerformanceRunResult>());
         var dataResponse = new ReadInBeforeAndAfterDataResponse(beforeData, afterData);
-        _mockMediator.Send(Arg.Any<ReadInBeforeAndAfterDataRequest>(), Arg.Any<CancellationToken>())
+        _mockSender.Send(Arg.Any<ReadInBeforeAndAfterDataRequest>(), Arg.Any<CancellationToken>())
             .Returns(dataResponse);
 
         var testResults = new List<SailDiffResult> { CreateSailDiffResult() };
@@ -691,11 +695,11 @@ public class SailDiffTests
             new List<string> { "before.json" },
             new List<string> { "after.json" });
 
-        _mockMediator.Send(Arg.Any<BeforeAndAfterFileLocationRequest>(), Arg.Any<CancellationToken>())
+        _mockSender.Send(Arg.Any<BeforeAndAfterFileLocationRequest>(), Arg.Any<CancellationToken>())
             .Returns(fileLocationResponse);
 
         var dataResponse = CreateReadInBeforeAndAfterDataResponse();
-        _mockMediator.Send(Arg.Any<ReadInBeforeAndAfterDataRequest>(), Arg.Any<CancellationToken>())
+        _mockSender.Send(Arg.Any<ReadInBeforeAndAfterDataRequest>(), Arg.Any<CancellationToken>())
             .Returns(dataResponse);
 
         var testResults = new List<SailDiffResult> { CreateSailDiffResult() };
@@ -713,7 +717,7 @@ public class SailDiffTests
         await _sailDiff.Analyze(cancellationToken);
 
         // Assert
-        await _mockMediator.Received().Publish(
+        await _mockPublisher.Received().Publish(
             Arg.Is<SailDiffAnalysisCompleteNotification>(notification =>
                 notification.TestCaseResults.SequenceEqual(testResults) &&
                 notification.ResultsAsMarkdown == expectedMarkdown),

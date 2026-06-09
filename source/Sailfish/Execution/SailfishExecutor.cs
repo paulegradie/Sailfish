@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using MediatR;
+using Sailfish.Mediation;
 using Sailfish.Analysis.SailDiff;
 using Sailfish.Analysis.ScaleFish;
 using Sailfish.Contracts.Public.Models;
@@ -19,7 +19,7 @@ internal class SailfishExecutor
     private readonly IClassExecutionSummaryCompiler _classExecutionSummaryCompiler;
     private readonly IExecutionSummaryWriter _executionSummaryWriter;
     private readonly ILogger _logger;
-    private readonly IMediator _mediator;
+    private readonly IPublisher _publisher;
     private readonly IRunSettings _runSettings;
     private readonly ISailDiffInternal _sailDiff;
     private readonly ISailFishTestExecutor _sailFishTestExecutor;
@@ -27,7 +27,7 @@ internal class SailfishExecutor
     private readonly ITestCollector _testCollector;
     private readonly ITestFilter _testFilter;
 
-    public SailfishExecutor(IMediator mediator,
+    public SailfishExecutor(IPublisher publisher,
         ISailFishTestExecutor sailFishTestExecutor,
         ITestCollector testCollector,
         ITestFilter testFilter,
@@ -41,7 +41,7 @@ internal class SailfishExecutor
         _classExecutionSummaryCompiler = classExecutionSummaryCompiler;
         _executionSummaryWriter = executionSummaryWriter;
         _logger = logger;
-        _mediator = mediator;
+        _publisher = publisher;
         _runSettings = runSettings;
         _sailDiff = sailDiff;
         _sailFishTestExecutor = sailFishTestExecutor;
@@ -82,7 +82,7 @@ internal class SailfishExecutor
 
             await RunPostMeasurementStage(
                 "publish test-run-completed notification",
-                () => _mediator.Publish(new TestRunCompletedNotification(classExecutionSummaries.ToTrackingFormat()), cancellationToken),
+                () => _publisher.Publish(new TestRunCompletedNotification(classExecutionSummaries.ToTrackingFormat()), cancellationToken),
                 analysisExceptions).ConfigureAwait(false);
 
             if (_runSettings.RunSailDiff)

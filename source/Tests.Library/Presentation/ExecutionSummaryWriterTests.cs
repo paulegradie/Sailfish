@@ -2,9 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using MediatR;
 using NSubstitute;
-using Sailfish.Contracts.Private;
 using Sailfish.Contracts.Public.Models;
 using Sailfish.Execution;
 using Sailfish.Presentation;
@@ -14,255 +12,147 @@ using Xunit;
 namespace Tests.Library.Presentation;
 
 /// <summary>
-/// Comprehensive unit tests for ExecutionSummaryWriter.
-/// Tests output coordination, notification publishing, and error handling.
+/// Unit tests for ExecutionSummaryWriter. It now orchestrates three direct writer collaborators
+/// (console, markdown, csv) instead of publishing three internal notifications through the mediator —
+/// so these tests verify the ordered, sequential delegation and fail-fast propagation.
 /// </summary>
 public class ExecutionSummaryWriterTests
 {
-    private readonly IMediator _mockMediator;
+    private readonly IConsoleSummaryWriter _consoleSummaryWriter;
+    private readonly ICsvSummaryWriter _csvSummaryWriter;
     private readonly ExecutionSummaryWriter _executionSummaryWriter;
+    private readonly IMarkdownSummaryWriter _markdownSummaryWriter;
 
     public ExecutionSummaryWriterTests()
     {
-        _mockMediator = Substitute.For<IMediator>();
-        _executionSummaryWriter = new ExecutionSummaryWriter(_mockMediator);
+        _consoleSummaryWriter = Substitute.For<IConsoleSummaryWriter>();
+        _markdownSummaryWriter = Substitute.For<IMarkdownSummaryWriter>();
+        _csvSummaryWriter = Substitute.For<ICsvSummaryWriter>();
+        _executionSummaryWriter = new ExecutionSummaryWriter(_consoleSummaryWriter, _markdownSummaryWriter, _csvSummaryWriter);
     }
 
     [Fact]
-    public void Constructor_WithValidMediator_ShouldCreateInstance()
+    public void Constructor_ShouldCreateInstance()
     {
-        // Act & Assert
         _executionSummaryWriter.ShouldNotBeNull();
         _executionSummaryWriter.ShouldBeAssignableTo<IExecutionSummaryWriter>();
     }
 
-
-
     [Fact]
-    public async Task Write_WithValidSummaries_ShouldPublishAllNotifications()
+    public async Task Write_WithValidSummaries_ShouldInvokeAllWriters()
     {
-        // Arrange
         var executionSummaries = CreateMockExecutionSummaries();
         var cancellationToken = CancellationToken.None;
 
-        // Act
         await _executionSummaryWriter.Write(executionSummaries, cancellationToken);
 
-        // Assert
-        await _mockMediator.Received(1).Publish(
-            Arg.Is<WriteToConsoleNotification>(n => n.Content == executionSummaries),
-            cancellationToken);
-
-        await _mockMediator.Received(1).Publish(
-            Arg.Is<WriteToMarkDownNotification>(n => n.ClassExecutionSummaries == executionSummaries),
-            cancellationToken);
-
-        await _mockMediator.Received(1).Publish(
-            Arg.Is<WriteToCsvNotification>(n => n.ClassExecutionSummaries == executionSummaries),
-            cancellationToken);
+        await _consoleSummaryWriter.Received(1).Write(executionSummaries, cancellationToken);
+        await _markdownSummaryWriter.Received(1).Write(executionSummaries, cancellationToken);
+        await _csvSummaryWriter.Received(1).Write(executionSummaries, cancellationToken);
     }
 
     [Fact]
-    public async Task Write_WithEmptyList_ShouldStillPublishNotifications()
+    public async Task Write_WithEmptyList_ShouldStillInvokeAllWriters()
     {
-        // Arrange
         var executionSummaries = new List<IClassExecutionSummary>();
         var cancellationToken = CancellationToken.None;
 
-        // Act
         await _executionSummaryWriter.Write(executionSummaries, cancellationToken);
 
-        // Assert
-        await _mockMediator.Received(1).Publish(
-            Arg.Is<WriteToConsoleNotification>(n => n.Content == executionSummaries),
-            cancellationToken);
-
-        await _mockMediator.Received(1).Publish(
-            Arg.Is<WriteToMarkDownNotification>(n => n.ClassExecutionSummaries == executionSummaries),
-            cancellationToken);
-
-        await _mockMediator.Received(1).Publish(
-            Arg.Is<WriteToCsvNotification>(n => n.ClassExecutionSummaries == executionSummaries),
-            cancellationToken);
+        await _consoleSummaryWriter.Received(1).Write(executionSummaries, cancellationToken);
+        await _markdownSummaryWriter.Received(1).Write(executionSummaries, cancellationToken);
+        await _csvSummaryWriter.Received(1).Write(executionSummaries, cancellationToken);
     }
 
     [Fact]
-    public async Task Write_WithCancellationToken_ShouldPassTokenToNotifications()
+    public async Task Write_WithCancellationToken_ShouldPassTokenToWriters()
     {
-        // Arrange
         var executionSummaries = CreateMockExecutionSummaries();
-        var cancellationTokenSource = new CancellationTokenSource();
-        var cancellationToken = cancellationTokenSource.Token;
+        var cancellationToken = new CancellationTokenSource().Token;
 
-        // Act
         await _executionSummaryWriter.Write(executionSummaries, cancellationToken);
 
-        // Assert
-        await _mockMediator.Received(1).Publish(
-            Arg.Any<WriteToConsoleNotification>(),
-            cancellationToken);
+        await _consoleSummaryWriter.Received(1).Write(Arg.Any<List<IClassExecutionSummary>>(), cancellationToken);
+        await _markdownSummaryWriter.Received(1).Write(Arg.Any<List<IClassExecutionSummary>>(), cancellationToken);
+        await _csvSummaryWriter.Received(1).Write(Arg.Any<List<IClassExecutionSummary>>(), cancellationToken);
+    }
 
-        await _mockMediator.Received(1).Publish(
-            Arg.Any<WriteToMarkDownNotification>(),
-            cancellationToken);
+    [Fact]
+    public async Task Write_ShouldInvokeWritersInOrder_ConsoleThenMarkdownThenCsv()
+    {
+        var executionSummaries = CreateMockExecutionSummaries();
+        var callOrder = new List<string>();
 
-        await _mockMediator.Received(1).Publish(
-            Arg.Any<WriteToCsvNotification>(),
-            cancellationToken);
+        _consoleSummaryWriter.Write(Arg.Any<List<IClassExecutionSummary>>(), Arg.Any<CancellationToken>())
+            .Returns(Task.CompletedTask).AndDoes(_ => callOrder.Add("Console"));
+        _markdownSummaryWriter.Write(Arg.Any<List<IClassExecutionSummary>>(), Arg.Any<CancellationToken>())
+            .Returns(Task.CompletedTask).AndDoes(_ => callOrder.Add("Markdown"));
+        _csvSummaryWriter.Write(Arg.Any<List<IClassExecutionSummary>>(), Arg.Any<CancellationToken>())
+            .Returns(Task.CompletedTask).AndDoes(_ => callOrder.Add("CSV"));
+
+        await _executionSummaryWriter.Write(executionSummaries, CancellationToken.None);
+
+        callOrder.ShouldBe(new[] { "Console", "Markdown", "CSV" });
+    }
+
+    [Fact]
+    public async Task Write_WhenConsoleWriterThrows_ShouldNotInvokeOthers()
+    {
+        var executionSummaries = CreateMockExecutionSummaries();
+        _consoleSummaryWriter.Write(Arg.Any<List<IClassExecutionSummary>>(), Arg.Any<CancellationToken>())
+            .Returns(Task.FromException(new InvalidOperationException("Console failed")));
+
+        await Should.ThrowAsync<InvalidOperationException>(async () =>
+            await _executionSummaryWriter.Write(executionSummaries, CancellationToken.None));
+
+        await _markdownSummaryWriter.DidNotReceive().Write(Arg.Any<List<IClassExecutionSummary>>(), Arg.Any<CancellationToken>());
+        await _csvSummaryWriter.DidNotReceive().Write(Arg.Any<List<IClassExecutionSummary>>(), Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task Write_WhenMarkdownWriterThrows_ShouldNotInvokeCsv()
+    {
+        var executionSummaries = CreateMockExecutionSummaries();
+        _markdownSummaryWriter.Write(Arg.Any<List<IClassExecutionSummary>>(), Arg.Any<CancellationToken>())
+            .Returns(Task.FromException(new InvalidOperationException("Markdown failed")));
+
+        await Should.ThrowAsync<InvalidOperationException>(async () =>
+            await _executionSummaryWriter.Write(executionSummaries, CancellationToken.None));
+
+        await _csvSummaryWriter.DidNotReceive().Write(Arg.Any<List<IClassExecutionSummary>>(), Arg.Any<CancellationToken>());
+    }
+
+    [Fact]
+    public async Task Write_WhenCsvWriterThrows_ShouldPropagate()
+    {
+        var executionSummaries = CreateMockExecutionSummaries();
+        _csvSummaryWriter.Write(Arg.Any<List<IClassExecutionSummary>>(), Arg.Any<CancellationToken>())
+            .Returns(Task.FromException(new InvalidOperationException("CSV failed")));
+
+        await Should.ThrowAsync<InvalidOperationException>(async () =>
+            await _executionSummaryWriter.Write(executionSummaries, CancellationToken.None));
     }
 
     [Fact]
     public async Task Write_WithCancelledToken_ShouldRespectCancellation()
     {
-        // Arrange
         var executionSummaries = CreateMockExecutionSummaries();
-        var cancellationTokenSource = new CancellationTokenSource();
-        cancellationTokenSource.Cancel();
+        var cts = new CancellationTokenSource();
+        cts.Cancel();
+        _consoleSummaryWriter.Write(Arg.Any<List<IClassExecutionSummary>>(), Arg.Any<CancellationToken>())
+            .Returns(Task.FromCanceled(cts.Token));
 
-        _mockMediator.Publish(Arg.Any<INotification>(), Arg.Any<CancellationToken>())
-            .Returns(Task.FromCanceled(cancellationTokenSource.Token));
-
-        // Act & Assert
         await Should.ThrowAsync<OperationCanceledException>(async () =>
-            await _executionSummaryWriter.Write(executionSummaries, cancellationTokenSource.Token));
+            await _executionSummaryWriter.Write(executionSummaries, cts.Token));
     }
 
-    [Fact]
-    public async Task Write_WhenConsoleNotificationFails_ShouldStillPublishOthers()
-    {
-        // Arrange
-        var executionSummaries = CreateMockExecutionSummaries();
-        var cancellationToken = CancellationToken.None;
+    private static List<IClassExecutionSummary> CreateMockExecutionSummaries() =>
+    [
+        CreateMockExecutionSummary("TestClass1"),
+        CreateMockExecutionSummary("TestClass2")
+    ];
 
-        _mockMediator.Publish(Arg.Any<WriteToConsoleNotification>(), Arg.Any<CancellationToken>())
-            .Returns(Task.FromException(new InvalidOperationException("Console failed")));
-
-        // Act & Assert
-        await Should.ThrowAsync<InvalidOperationException>(async () =>
-            await _executionSummaryWriter.Write(executionSummaries, cancellationToken));
-    }
-
-    [Fact]
-    public async Task Write_WhenMarkdownNotificationFails_ShouldNotPublishCsv()
-    {
-        // Arrange
-        var executionSummaries = CreateMockExecutionSummaries();
-        var cancellationToken = CancellationToken.None;
-
-        _mockMediator.Publish(Arg.Any<WriteToMarkDownNotification>(), Arg.Any<CancellationToken>())
-            .Returns(Task.FromException(new InvalidOperationException("Markdown failed")));
-
-        // Act & Assert
-        await Should.ThrowAsync<InvalidOperationException>(async () =>
-            await _executionSummaryWriter.Write(executionSummaries, cancellationToken));
-
-        // CSV notification should not be called due to exception
-        await _mockMediator.DidNotReceive().Publish(
-            Arg.Any<WriteToCsvNotification>(),
-            Arg.Any<CancellationToken>());
-    }
-
-    [Fact]
-    public async Task Write_WhenCsvNotificationFails_ShouldThrowException()
-    {
-        // Arrange
-        var executionSummaries = CreateMockExecutionSummaries();
-        var cancellationToken = CancellationToken.None;
-
-        _mockMediator.Publish(Arg.Any<WriteToCsvNotification>(), Arg.Any<CancellationToken>())
-            .Returns(Task.FromException(new InvalidOperationException("CSV failed")));
-
-        // Act & Assert
-        await Should.ThrowAsync<InvalidOperationException>(async () =>
-            await _executionSummaryWriter.Write(executionSummaries, cancellationToken));
-    }
-
-    [Fact]
-    public async Task Write_ShouldPublishNotificationsInCorrectOrder()
-    {
-        // Arrange
-        var executionSummaries = CreateMockExecutionSummaries();
-        var cancellationToken = CancellationToken.None;
-        var callOrder = new List<string>();
-
-        _mockMediator.Publish(Arg.Any<WriteToConsoleNotification>(), Arg.Any<CancellationToken>())
-            .Returns(Task.CompletedTask)
-            .AndDoes(_ => callOrder.Add("Console"));
-
-        _mockMediator.Publish(Arg.Any<WriteToMarkDownNotification>(), Arg.Any<CancellationToken>())
-            .Returns(Task.CompletedTask)
-            .AndDoes(_ => callOrder.Add("Markdown"));
-
-        _mockMediator.Publish(Arg.Any<WriteToCsvNotification>(), Arg.Any<CancellationToken>())
-            .Returns(Task.CompletedTask)
-            .AndDoes(_ => callOrder.Add("CSV"));
-
-        // Act
-        await _executionSummaryWriter.Write(executionSummaries, cancellationToken);
-
-        // Assert
-        callOrder.ShouldBe(new[] { "Console", "Markdown", "CSV" });
-    }
-
-    [Fact]
-    public async Task Write_WithMultipleSummaries_ShouldPassAllToNotifications()
-    {
-        // Arrange
-        var executionSummaries = new List<IClassExecutionSummary>
-        {
-            CreateMockExecutionSummary("TestClass1"),
-            CreateMockExecutionSummary("TestClass2"),
-            CreateMockExecutionSummary("TestClass3")
-        };
-        var cancellationToken = CancellationToken.None;
-
-        // Act
-        await _executionSummaryWriter.Write(executionSummaries, cancellationToken);
-
-        // Assert
-        await _mockMediator.Received(1).Publish(
-            Arg.Is<WriteToConsoleNotification>(n => n.Content.Count == 3),
-            cancellationToken);
-
-        await _mockMediator.Received(1).Publish(
-            Arg.Is<WriteToMarkDownNotification>(n => n.ClassExecutionSummaries.Count == 3),
-            cancellationToken);
-
-        await _mockMediator.Received(1).Publish(
-            Arg.Is<WriteToCsvNotification>(n => n.ClassExecutionSummaries.Count == 3),
-            cancellationToken);
-    }
-
-    [Fact]
-    public async Task Write_ShouldUseConfigureAwaitFalse()
-    {
-        // Arrange
-        var executionSummaries = CreateMockExecutionSummaries();
-        var cancellationToken = CancellationToken.None;
-
-        // This test verifies that ConfigureAwait(false) is used
-        // by ensuring the method completes without deadlock in a synchronous context
-        var task = _executionSummaryWriter.Write(executionSummaries, cancellationToken);
-
-        // Act & Assert
-        await task; // Should complete without deadlock
-        task.IsCompleted.ShouldBeTrue();
-    }
-
-
-
-
-
-    private List<IClassExecutionSummary> CreateMockExecutionSummaries()
-    {
-        return
-        [
-            CreateMockExecutionSummary("TestClass1"),
-            CreateMockExecutionSummary("TestClass2")
-        ];
-    }
-
-    private IClassExecutionSummary CreateMockExecutionSummary(string className)
+    private static IClassExecutionSummary CreateMockExecutionSummary(string className)
     {
         var summary = Substitute.For<IClassExecutionSummary>();
         var testClass = Substitute.For<Type>();
@@ -272,8 +162,7 @@ public class ExecutionSummaryWriterTests
         var executionSettings = Substitute.For<IExecutionSettings>();
         summary.ExecutionSettings.Returns(executionSettings);
 
-        var testCaseResults = new List<ICompiledTestCaseResult>();
-        summary.CompiledTestCaseResults.Returns(testCaseResults);
+        summary.CompiledTestCaseResults.Returns(new List<ICompiledTestCaseResult>());
 
         return summary;
     }

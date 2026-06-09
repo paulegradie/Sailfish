@@ -1,4 +1,4 @@
-using MediatR;
+using Sailfish.Mediation;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel;
 using Sailfish.Analysis.SailDiff;
 using Sailfish.Analysis.SailDiff.Formatting;
@@ -35,18 +35,18 @@ namespace Sailfish.TestAdapter.Comparison;
 internal class MethodComparisonBatchProcessor
 {
     private readonly IAdapterSailDiff _sailDiff;
-    private readonly IMediator _mediator;
+    private readonly IPublisher _publisher;
     private readonly ILogger _logger;
     private readonly ISailDiffUnifiedFormatter _unifiedFormatter;
 
     public MethodComparisonBatchProcessor(
         IAdapterSailDiff sailDiff,
-        IMediator mediator,
+        IPublisher publisher,
         ILogger logger,
         ISailDiffUnifiedFormatter unifiedFormatter)
     {
         _sailDiff = sailDiff ?? throw new ArgumentNullException(nameof(sailDiff));
-        _mediator = mediator ?? throw new ArgumentNullException(nameof(mediator));
+        _publisher = publisher ?? throw new ArgumentNullException(nameof(publisher));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         _unifiedFormatter = unifiedFormatter ?? throw new ArgumentNullException(nameof(unifiedFormatter));
     }
@@ -685,7 +685,7 @@ internal class MethodComparisonBatchProcessor
         foreach (var testCase in testCases)
         {
             var notification = CreateFrameworkNotification(testCase);
-            await _mediator.Publish(notification, cancellationToken);
+            await _publisher.Publish(notification, cancellationToken);
 
             _logger.Log(LogLevel.Information,
                 "Published enhanced framework notification for '{0}' with accumulated comparisons",

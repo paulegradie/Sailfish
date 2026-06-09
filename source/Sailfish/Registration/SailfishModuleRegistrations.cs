@@ -1,6 +1,6 @@
-using MediatR;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.DependencyInjection.Extensions;
+using Sailfish.Mediation;
 using Sailfish.Analysis;
 using Sailfish.Analysis.Ai;
 using Sailfish.Analysis.SailDiff;
@@ -44,18 +44,10 @@ internal static class SailfishModuleRegistrations
             : runSettings.CustomLogger ?? new DefaultLogger(runSettings.MinimumLogLevel);
         services.AddSingleton(logger);
 
-        // MediatR 14+ on the MS DI path calls ILoggerFactory during its license check, so we ensure logging
-        // infrastructure exists. AddLogging is idempotent — if the caller has already registered logging,
-        // this is a no-op.
-        services.AddLogging();
-
-        // MediatR — scan this assembly for handlers using the native IServiceCollection extension.
-        // The community license key is required by MediatR 14+.
-        services.AddMediatR(cfg =>
-        {
-            cfg.LicenseKey = MediatrCommunityLicenseString;
-            cfg.RegisterServicesFromAssemblyContaining(typeof(SailfishModuleRegistrations));
-        });
+        // Sailfish's in-house mediator. Registers IPublisher/ISender and scans this assembly for the
+        // framework's notification/request handlers. Replaces the former MediatR dependency (and its
+        // embedded community license key) — see Sailfish.Mediation.
+        services.AddSailfishMediation();
 
         // Run settings — singleton, passed in by caller.
         services.AddSingleton(runSettings);
@@ -87,6 +79,11 @@ internal static class SailfishModuleRegistrations
         services.AddTransient<IStatisticsCompiler, StatisticsCompiler>();
         services.AddTransient<IClassExecutionSummaryCompiler, ClassExecutionSummaryCompiler>();
         services.AddTransient<IExecutionSummaryWriter, ExecutionSummaryWriter>();
+        // Summary output writers — formerly the WriteTo{Console,MarkDown,Csv}Notification handlers, now
+        // direct collaborators of ExecutionSummaryWriter (each had a single framework-owned handler).
+        services.AddTransient<IConsoleSummaryWriter, ConsoleSummaryWriter>();
+        services.AddTransient<IMarkdownSummaryWriter, MarkdownSummaryWriter>();
+        services.AddTransient<ICsvSummaryWriter, CsvSummaryWriter>();
         services.AddTransient<IMarkdownWriter, MarkdownWriter>();
         services.AddTransient<IConsoleWriter, ConsoleWriter>();
         services.AddTransient<IPerformanceRunResultFileWriter, PerformanceRunResultFileWriter>();
@@ -166,15 +163,4 @@ internal static class SailfishModuleRegistrations
 
         return services;
     }
-
-    private const string MediatrCommunityLicenseString =
-        "eyJhbGciOiJSUzI1NiIsImtpZCI6Ikx1Y2t5UGVubnlTb2Z0d2FyZUxpY2Vuc2VLZXkvYmJiMTNhY2I1OTkwNGQ4OWI0Y2" +
-        "IxYzg1ZjA4OGNjZjkiLCJ0eXAiOiJKV1QifQ.eyJpc3MiOiJodHRwczovL2x1Y2t5cGVubnlzb2Z0d2FyZS5jb20iLCJhd" +
-        "WQiOiJMdWNreVBlbm55U29mdHdhcmUiLCJleHAiOiIxNzgzOTAwODAwIiwiaWF0IjoiMTc1MjQwOTMzMCIsImFjY291bnR" +
-        "faWQiOiIwMTk4MDNiOGZmM2I3Zjg1OWRhYTQ3ZDAxNjRmNzRhMCIsImN1c3RvbWVyX2lkIjoiY3RtXzAxazAxdnJuNnlwZ" +
-        "XZ3MW16bm04dDN3Z3IwIiwic3ViX2lkIjoiLSIsImVkaXRpb24iOiIwIiwidHlwZSI6IjIifQ.wlaAwDaMwjOph1gw7UH1" +
-        "tesVDWym25fVn1jA_xJ3yTinTIoiedDxy6STARKqWIw97d44RB2-WXT4E_bNKTLxheAEeUiycH1RzCRvfl8n5qsRbHbu8J" +
-        "PyhqdPUBP7uNDWPU60YzcsCQeeL607w3G4qTD9jUN8eXz_nMqo4MJDwdwsyUOppfuRKhHNz8CGvYGdKOtYSQFsQa5JoF9W" +
-        "sS2hvUkGnpqCzWZRCdCDh22TUzuXJklV8iYYvOrNKZ-gbEdTJligEhcHAI-sopdK0J-SzGOxJyiX4nBe3A1OduLG-S58QZ" +
-        "8g6oOIdWuTWgyhTPYE0oqsBZ5nEqsS42rnEF2cbw";
 }

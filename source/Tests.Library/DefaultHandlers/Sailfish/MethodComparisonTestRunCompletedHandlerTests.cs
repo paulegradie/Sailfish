@@ -8,7 +8,7 @@ using Sailfish.Diagnostics.Environment;
 using Sailfish.Results;
 using System.Threading;
 using System.Threading.Tasks;
-using MediatR;
+using Sailfish.Mediation;
 using NSubstitute;
 using Sailfish;
 using Sailfish.Attributes;
@@ -25,7 +25,7 @@ namespace Tests.Library.DefaultHandlers.Sailfish;
 public class MethodComparisonTestRunCompletedHandlerTests
 {
     private readonly ILogger _mockLogger;
-    private readonly IMediator _mockMediator;
+    private readonly IPublisher _mockMediator;
     private readonly MethodComparisonTestRunCompletedHandler _handler;
 
     // Methods in a comparison group always share the same SailfishVariable set in real runs, so every
@@ -37,7 +37,7 @@ public class MethodComparisonTestRunCompletedHandlerTests
     public MethodComparisonTestRunCompletedHandlerTests()
     {
         _mockLogger = Substitute.For<ILogger>();
-        _mockMediator = Substitute.For<IMediator>();
+        _mockMediator = Substitute.For<IPublisher>();
         _handler = new MethodComparisonTestRunCompletedHandler(_mockLogger, _mockMediator);
     }
 

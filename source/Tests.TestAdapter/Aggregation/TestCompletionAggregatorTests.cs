@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using MediatR;
+using Sailfish.Mediation;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel;
 using NSubstitute;
 using Sailfish.Analysis.SailDiff.Formatting;
@@ -29,13 +29,13 @@ public class TestCompletionAggregatorTests
 {
     private readonly MethodComparisonBatchProcessor _batchProcessor;
     private readonly ILogger _logger;
-    private readonly IMediator _mediator;
+    private readonly IPublisher _mediator;
     private readonly IAdapterSailDiff _sailDiff;
     private readonly ISailDiffUnifiedFormatter _unifiedFormatter;
 
     public TestCompletionAggregatorTests()
     {
-        _mediator = Substitute.For<IMediator>();
+        _mediator = Substitute.For<IPublisher>();
         _sailDiff = Substitute.For<IAdapterSailDiff>();
         _unifiedFormatter = Substitute.For<ISailDiffUnifiedFormatter>();
         _logger = Substitute.For<ILogger>();
