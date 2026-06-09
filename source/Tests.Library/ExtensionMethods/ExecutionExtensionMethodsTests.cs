@@ -67,8 +67,8 @@ public class ExecutionExtensionMethodsTests
         result.AsCsv.ShouldBeFalse();
         result.AsMarkdown.ShouldBeFalse();
         result.AsConsole.ShouldBeTrue(); // Default when no SuppressConsoleAttribute
-        result.SampleSize.ShouldBe(3); // Default from SailfishAttribute
-        result.NumWarmupIterations.ShouldBe(3); // Default from SailfishAttribute
+        result.SampleSize.ShouldBe(15); // Default from SailfishAttribute
+        result.NumWarmupIterations.ShouldBe(10); // Default from SailfishAttribute
     }
 
     [Fact]
