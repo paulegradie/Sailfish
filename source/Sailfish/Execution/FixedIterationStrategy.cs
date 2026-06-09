@@ -43,7 +43,7 @@ internal class FixedIterationStrategy : IIterationStrategy
         {
             if (timeBudget.HasValue)
             {
-                var elapsed = DateTimeOffset.Now - testStart;
+                var elapsed = DateTimeOffset.UtcNow - testStart;
                 if (elapsed >= timeBudget.Value)
                 {
                     _logger.Log(LogLevel.Warning,
