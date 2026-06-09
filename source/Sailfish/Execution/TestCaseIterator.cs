@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Linq;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
@@ -56,6 +57,18 @@ internal class TestCaseIterator : ITestCaseIterator
             return await trawlEngine.RunAsync(testInstanceContainer, trawlAttribute, cancellationToken).ConfigureAwait(false);
         }
 
+        var executionSettings = testInstanceContainer.ExecutionSettings;
+
+        // Opt-in process environment control (raise priority / pin affinity) covering warmup +
+        // measurement for this class. Best-effort and auto-reverted on dispose; never required.
+        using var envScope = executionSettings.UseEnvironmentControl || executionSettings.PinToSingleCore
+            ? new EnvironmentControlScope(executionSettings.UseEnvironmentControl, executionSettings.PinToSingleCore)
+            : null;
+        if (envScope?.PriorityRaised == true)
+            _logger.Log(LogLevel.Information, "      ---- Environment control: raised process priority");
+        if (envScope?.AffinityPinned == true)
+            _logger.Log(LogLevel.Information, "      ---- Environment control: pinned process to a single core");
+
         var calibrator = new HarnessBaselineCalibrator();
         var warmupResult = await WarmupIterations(testInstanceContainer, cancellationToken);
         if (!warmupResult.IsSuccess) return warmupResult;
@@ -67,7 +80,6 @@ internal class TestCaseIterator : ITestCaseIterator
         }
 
         // Determine which strategy to use
-        var executionSettings = testInstanceContainer.ExecutionSettings;
         var useAdaptive = executionSettings.UseAdaptiveSampling;
 
         var strategy = useAdaptive ? _adaptiveIterationStrategy : _fixedIterationStrategy;
@@ -128,6 +140,8 @@ internal class TestCaseIterator : ITestCaseIterator
             return CatchAndReturn(testInstanceContainer,
                 new Exception(iterationResult.ErrorMessage ?? "Iteration failed"));
         }
+
+        WarnIfQuantized(testInstanceContainer, executionSettings);
 
         // Log convergence information for adaptive sampling
         if (useAdaptive && iterationResult.ConvergedEarly)
@@ -268,6 +282,22 @@ internal class TestCaseIterator : ITestCaseIterator
         return new TestCaseExecutionResult(testInstanceContainer);
     }
 
+
+    // Surfaces sub-resolution measurement: when the recorded samples have collapsed onto a couple of
+    // discrete timer values, the operation is at or below the timer's effective granularity and small
+    // differences cannot be resolved. Only relevant when not already batching (OperationsPerInvoke == 1
+    // and no target iteration duration set).
+    private void WarnIfQuantized(TestInstanceContainer container, IExecutionSettings settings)
+    {
+        if (settings.OperationsPerInvoke > 1 || settings.TargetIterationDuration > TimeSpan.Zero) return;
+        var samples = container.CoreInvoker.GetPerformanceResults().ExecutionIterationPerformances;
+        if (samples.Count < 4) return;
+        var distinct = samples.Select(p => p.GetDurationFromTicks().NanoSeconds.Duration).Distinct().Count();
+        if (distinct > 2) return;
+        _logger.Log(LogLevel.Warning,
+            "      ---- Measured samples collapsed to {Distinct} distinct timer value(s): this operation is at or below the timer's effective resolution, so small differences cannot be resolved. Set OperationsPerInvoke or TargetIterationDurationMs to batch invocations into a measurable window.",
+            distinct);
+    }
 
     private TestCaseExecutionResult CatchAndReturn(TestInstanceContainer testProvider, Exception ex)
     {
