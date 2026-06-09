@@ -47,7 +47,14 @@ public sealed class PerformanceTimer
         // repeatedly, under-reporting fast benchmarks — latent until the calibrator started returning a
         // real, non-zero overhead.
         if (_overheadApplied) return;
-        _overheadApplied = true;
+
+        // Don't consume the one-shot guard before any samples exist. GetPerformanceResults() is also
+        // called at the top of the iteration strategies (to read the test-case start time for the time
+        // budget). Today that read happens before OverheadEstimate is assigned, so it's a no-op — but
+        // were the guard burned against an empty list here, overhead subtraction would be silently
+        // skipped for every real sample collected afterwards. Only arm the guard once we've actually
+        // applied the estimate to recorded samples.
+        if (ExecutionIterationPerformances.Count == 0) return;
 
         foreach (var executionIterationPerformance in ExecutionIterationPerformances)
         {
@@ -55,6 +62,8 @@ public sealed class PerformanceTimer
         }
         // accumulate how many iterations were capped by guardrail
         CappedIterationCount = ExecutionIterationPerformances.Sum(x => x.CappedCount);
+
+        _overheadApplied = true;
     }
 
     public void SetTestCaseStart()
