@@ -57,6 +57,9 @@ internal class SailfishExecutor
         {
             // Optional seeded randomization of test class execution order for reproducibility
             var testsList = testInitializationResult.Tests.ToList();
+
+            // Warn (once per assembly) if benchmarks are about to run against an unoptimized Debug build.
+            BuildOptimizationGuard.WarnIfUnoptimized(testsList, _logger);
             var seed = _runSettings.Seed ?? TryParseSeed(_runSettings.Args);
             if (seed.HasValue)
             {

@@ -37,24 +37,43 @@ public sealed class PerformanceTimer
         IsValid = false;
     }
 
+    private bool _overheadApplied;
+
     public void ApplyOverheadEstimate(int overheadEstimate)
     {
+        // Apply exactly once. GetPerformanceResults() re-invokes this on every call, and the engine reads
+        // results more than once per case (it builds the TestCaseExecutionResult, then calls ToExternal()
+        // for the completion notification). Without this guard the per-call overhead was subtracted
+        // repeatedly, under-reporting fast benchmarks — latent until the calibrator started returning a
+        // real, non-zero overhead.
+        if (_overheadApplied) return;
+
+        // Don't consume the one-shot guard before any samples exist. GetPerformanceResults() is also
+        // called at the top of the iteration strategies (to read the test-case start time for the time
+        // budget). Today that read happens before OverheadEstimate is assigned, so it's a no-op — but
+        // were the guard burned against an empty list here, overhead subtraction would be silently
+        // skipped for every real sample collected afterwards. Only arm the guard once we've actually
+        // applied the estimate to recorded samples.
+        if (ExecutionIterationPerformances.Count == 0) return;
+
         foreach (var executionIterationPerformance in ExecutionIterationPerformances)
         {
             executionIterationPerformance.ApplyOverheadEstimate(overheadEstimate);
         }
         // accumulate how many iterations were capped by guardrail
         CappedIterationCount = ExecutionIterationPerformances.Sum(x => x.CappedCount);
+
+        _overheadApplied = true;
     }
 
     public void SetTestCaseStart()
     {
-        _testCaseStart = DateTimeOffset.Now;
+        _testCaseStart = DateTimeOffset.UtcNow;
     }
 
     public void SetTestCaseStop()
     {
-        _testCaseStop = DateTimeOffset.Now;
+        _testCaseStop = DateTimeOffset.UtcNow;
     }
 
     public void StartSailfishMethodExecutionTimer()
