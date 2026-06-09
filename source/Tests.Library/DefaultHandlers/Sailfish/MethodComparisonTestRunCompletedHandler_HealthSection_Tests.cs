@@ -1,7 +1,7 @@
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using MediatR;
+using Sailfish.Mediation;
 using NSubstitute;
 using Sailfish.Attributes;
 using Sailfish.DefaultHandlers.Sailfish;
@@ -40,7 +40,7 @@ public class MethodComparisonTestRunCompletedHandlerHealthSectionTests
     public async Task Markdown_Includes_EnvironmentHealth_Section_When_Report_Present()
     {
         var logger = Substitute.For<ILogger>();
-        var mediator = Substitute.For<IMediator>();
+        var mediator = Substitute.For<IPublisher>();
         var provider = new StubProvider
         {
             Current = new EnvironmentHealthReport(new List<HealthCheckEntry>
@@ -68,7 +68,7 @@ public class MethodComparisonTestRunCompletedHandlerHealthSectionTests
     public async Task Markdown_Excludes_EnvironmentHealth_Section_When_Report_Null()
     {
         var logger = Substitute.For<ILogger>();
-        var mediator = Substitute.For<IMediator>();
+        var mediator = Substitute.For<IPublisher>();
         var provider = new StubProvider { Current = null };
 
         var handler = new MethodComparisonTestRunCompletedHandler(logger, mediator, provider);

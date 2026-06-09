@@ -1,4 +1,4 @@
-using MediatR;
+using Sailfish.Mediation;
 using Sailfish.Contracts.Public.Notifications;
 
 namespace Tests.E2E.ExceptionHandling.Handlers;

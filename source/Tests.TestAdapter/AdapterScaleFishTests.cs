@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using MediatR;
+using Sailfish.Mediation;
 using NSubstitute;
 using NSubstitute.ExceptionExtensions;
 using Sailfish.Analysis.ScaleFish;
@@ -27,23 +27,26 @@ public class AdapterScaleFishTests
     [Fact]
     public async Task AnalyzeReturnsWhenDisabled()
     {
-        var mediator = Substitute.For<IMediator>();
+        var publisher = Substitute.For<IPublisher>();
+        var sender = Substitute.For<ISender>();
         var runSettings = Substitute.For<IRunSettings>();
         var computer = Substitute.For<IComplexityComputer>();
         var converter = Substitute.For<IMarkdownTableConverter>();
         var logger = Substitute.For<ILogger>();
         runSettings.RunScaleFish.Returns(false);
 
-        var scaleFish = new AdapterScaleFish(mediator, runSettings, computer, converter, logger);
+        var scaleFish = new AdapterScaleFish(publisher, sender, runSettings, computer, converter, logger);
         await scaleFish.Analyze(CancellationToken.None);
 
-        mediator.ReceivedCalls().Count().ShouldBe(0);
+        publisher.ReceivedCalls().Count().ShouldBe(0);
+        sender.ReceivedCalls().Count().ShouldBe(0);
     }
 
     [Fact]
     public async Task AnalyzeReturnsWhenNoSummariesAreFound()
     {
-        var mediator = Substitute.For<IMediator>();
+        var publisher = Substitute.For<IPublisher>();
+        var sender = Substitute.For<ISender>();
         var runSettings = Substitute.For<IRunSettings>();
         runSettings.RunScaleFish.Returns(true);
 
@@ -52,9 +55,9 @@ public class AdapterScaleFishTests
         var logger = Substitute.For<ILogger>();
         var response = new GetLatestExecutionSummaryResponse(new List<IClassExecutionSummary>());
 
-        mediator.Send(new GetLatestExecutionSummaryRequest(), Arg.Any<CancellationToken>()).ReturnsForAnyArgs(response);
+        sender.Send(new GetLatestExecutionSummaryRequest(), Arg.Any<CancellationToken>()).ReturnsForAnyArgs(response);
 
-        var scaleFish = new AdapterScaleFish(mediator, runSettings, computer, converter, logger);
+        var scaleFish = new AdapterScaleFish(publisher, sender, runSettings, computer, converter, logger);
         await scaleFish.Analyze(CancellationToken.None);
 
         computer.AnalyzeComplexity(Arg.Any<List<IClassExecutionSummary>>()).ReceivedCalls().Count().ShouldBe(0);
@@ -64,7 +67,8 @@ public class AdapterScaleFishTests
     [Fact]
     public async Task AnalyzeReturnsWhenNoComplexityResultsAreFound()
     {
-        var mediator = Substitute.For<IMediator>();
+        var publisher = Substitute.For<IPublisher>();
+        var sender = Substitute.For<ISender>();
         var runSettings = Substitute.For<IRunSettings>();
         runSettings.RunScaleFish.Returns(true);
 
@@ -83,9 +87,9 @@ public class AdapterScaleFishTests
 
         var response = new GetLatestExecutionSummaryResponse([summary]);
 
-        mediator.Send(new GetLatestExecutionSummaryRequest(), Arg.Any<CancellationToken>()).ReturnsForAnyArgs(response);
+        sender.Send(new GetLatestExecutionSummaryRequest(), Arg.Any<CancellationToken>()).ReturnsForAnyArgs(response);
 
-        var scaleFish = new AdapterScaleFish(mediator, runSettings, computer, converter, logger);
+        var scaleFish = new AdapterScaleFish(publisher, sender, runSettings, computer, converter, logger);
         await scaleFish.Analyze(CancellationToken.None);
 
         converter.ReceivedCalls().Count().ShouldBe(0);
@@ -94,7 +98,8 @@ public class AdapterScaleFishTests
     [Fact]
     public async Task AnalyzePublishesComplexityMarkdownAndResults()
     {
-        var mediator = Substitute.For<IMediator>();
+        var publisher = Substitute.For<IPublisher>();
+        var sender = Substitute.For<ISender>();
         var runSettings = Substitute.For<IRunSettings>();
         runSettings.RunScaleFish.Returns(true);
 
@@ -117,13 +122,13 @@ public class AdapterScaleFishTests
 
         var response = new GetLatestExecutionSummaryResponse([summary]);
 
-        mediator.Send(new GetLatestExecutionSummaryRequest(), Arg.Any<CancellationToken>()).ReturnsForAnyArgs(response);
+        sender.Send(new GetLatestExecutionSummaryRequest(), Arg.Any<CancellationToken>()).ReturnsForAnyArgs(response);
 
-        var scaleFish = new AdapterScaleFish(mediator, runSettings, computer, converter, logger);
+        var scaleFish = new AdapterScaleFish(publisher, sender, runSettings, computer, converter, logger);
         await scaleFish.Analyze(CancellationToken.None);
 
         converter.ReceivedCalls().Count().ShouldBe(1);
-        var notification = mediator.ReceivedCalls().Last().GetArguments().First();
+        var notification = publisher.ReceivedCalls().Last().GetArguments().First();
         if (notification is null) Assert.Fail();
         notification.GetType().ShouldBe(typeof(ScaleFishAnalysisCompleteNotification));
         var typedNotification = notification as ScaleFishAnalysisCompleteNotification;
@@ -134,7 +139,8 @@ public class AdapterScaleFishTests
     [Fact]
     public async Task AnalyzerExceptionsAreSwallowed()
     {
-        var mediator = Substitute.For<IMediator>();
+        var publisher = Substitute.For<IPublisher>();
+        var sender = Substitute.For<ISender>();
         var runSettings = Substitute.For<IRunSettings>();
         runSettings.RunScaleFish.Returns(true);
 
@@ -153,9 +159,9 @@ public class AdapterScaleFishTests
 
         var response = new GetLatestExecutionSummaryResponse([summary]);
 
-        mediator.Send(new GetLatestExecutionSummaryRequest(), Arg.Any<CancellationToken>()).ReturnsForAnyArgs(response);
+        sender.Send(new GetLatestExecutionSummaryRequest(), Arg.Any<CancellationToken>()).ReturnsForAnyArgs(response);
 
-        var scaleFish = new AdapterScaleFish(mediator, runSettings, computer, converter, logger);
+        var scaleFish = new AdapterScaleFish(publisher, sender, runSettings, computer, converter, logger);
         await scaleFish.Analyze(CancellationToken.None);
 
         logger.ReceivedCalls().Count().ShouldBe(1);

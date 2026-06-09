@@ -1,4 +1,4 @@
-using MediatR;
+using Sailfish.Mediation;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.Adapter;
 using Sailfish.Analysis.SailDiff;

@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using MediatR;
+using Sailfish.Mediation;
 using Microsoft.Extensions.DependencyInjection;
 using NSubstitute;
 using NSubstitute.ExceptionExtensions;
@@ -33,7 +33,7 @@ public class TestCaseEnumerationTests
         var consoleWriter = Substitute.For<IConsoleWriter>();
         var iterator = Substitute.For<ITestCaseIterator>();
         var printer = Substitute.For<ITestCaseCountPrinter>();
-        var mediator = Substitute.For<IMediator>();
+        var mediator = Substitute.For<IPublisher>();
         var summaryCompiler = Substitute.For<IClassExecutionSummaryCompiler>();
         var settings = Substitute.For<IRunSettings>();
         var engine = new SailfishExecutionEngine(logger, consoleWriter, iterator, printer, mediator, summaryCompiler, settings);
@@ -72,7 +72,7 @@ public class TestCaseEnumerationTests
         var logger = Substitute.For<ILogger>();
         var consoleWriter = Substitute.For<IConsoleWriter>();
         var printer = Substitute.For<ITestCaseCountPrinter>();
-        var mediator = Substitute.For<IMediator>();
+        var mediator = Substitute.For<IPublisher>();
         var settings = Substitute.For<IRunSettings>();
 
         var runSettings = new RunSettings([
@@ -184,7 +184,7 @@ public class TestCaseEnumerationTests
         var consoleWriter = Substitute.For<IConsoleWriter>();
         var iterator = Substitute.For<ITestCaseIterator>();
         var printer = Substitute.For<ITestCaseCountPrinter>();
-        var mediator = Substitute.For<IMediator>();
+        var mediator = Substitute.For<IPublisher>();
         var summaryCompiler = Substitute.For<IClassExecutionSummaryCompiler>();
         var settings = Substitute.For<IRunSettings>();
         var engine = new SailfishExecutionEngine(logger, consoleWriter, iterator, printer, mediator, summaryCompiler, settings);
@@ -232,7 +232,7 @@ public class TestCaseEnumerationTests
         var consoleWriter = Substitute.For<IConsoleWriter>();
         var iterator = Substitute.For<ITestCaseIterator>();
         var printer = Substitute.For<ITestCaseCountPrinter>();
-        var mediator = Substitute.For<IMediator>();
+        var mediator = Substitute.For<IPublisher>();
         var summaryCompiler = Substitute.For<IClassExecutionSummaryCompiler>();
         var settings = Substitute.For<IRunSettings>();
         var engine = new SailfishExecutionEngine(logger, consoleWriter, iterator, printer, mediator, summaryCompiler, settings);

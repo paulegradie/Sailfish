@@ -7,7 +7,7 @@ using Sailfish.Diagnostics.Environment;
 
 using System.Threading;
 using System.Threading.Tasks;
-using MediatR;
+using Sailfish.Mediation;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel;
 using Sailfish.Contracts.Public.Models;
 using Sailfish.Execution;

@@ -2,7 +2,7 @@ using System;
 using System.IO;
 using System.Threading;
 using System.Threading.Tasks;
-using MediatR;
+using Sailfish.Mediation;
 using Sailfish.Contracts.Private;
 using Sailfish.Contracts.Public.Models;
 using Sailfish.Logging;

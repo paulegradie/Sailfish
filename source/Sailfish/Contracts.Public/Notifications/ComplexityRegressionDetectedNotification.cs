@@ -1,5 +1,5 @@
 using System.Collections.Generic;
-using MediatR;
+using Sailfish.Mediation;
 using Sailfish.Analysis.ScaleFish.Trends;
 
 namespace Sailfish.Contracts.Public.Notifications;

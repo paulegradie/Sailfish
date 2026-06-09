@@ -1,5 +1,5 @@
 using System.Collections.Generic;
-using MediatR;
+using Sailfish.Mediation;
 using Sailfish.Contracts.Public.Models;
 using Sailfish.Contracts.Public.Serialization.Tracking.V1;
 

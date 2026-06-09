@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using MediatR;
+using Sailfish.Mediation;
 using NSubstitute;
 using NSubstitute.ExceptionExtensions;
 using Sailfish.Attributes;
@@ -30,7 +30,7 @@ public class ClassExecutionDispatcherTests
     [Fact]
     public async Task SharedInstance_ConstructorFailure_PublishesWholeClassExceptionNotification()
     {
-        var mediator = Substitute.For<IMediator>();
+        var mediator = Substitute.For<IPublisher>();
         var engine = Substitute.For<ISailfishExecutionEngine>();
         var typeActivator = Substitute.For<ITypeActivator>();
         typeActivator
@@ -62,7 +62,7 @@ public class ClassExecutionDispatcherTests
     [Fact]
     public async Task SharedInstance_RepresentativeCaseMaterializationFailure_PublishesWholeClassExceptionNotification()
     {
-        var mediator = Substitute.For<IMediator>();
+        var mediator = Substitute.For<IPublisher>();
         var engine = Substitute.For<ISailfishExecutionEngine>();
         var typeActivator = Substitute.For<ITypeActivator>();
         typeActivator

@@ -1,5 +1,5 @@
 ﻿using System.Collections.Generic;
-using MediatR;
+using Sailfish.Mediation;
 
 namespace Sailfish.Contracts.Public.Requests;
 

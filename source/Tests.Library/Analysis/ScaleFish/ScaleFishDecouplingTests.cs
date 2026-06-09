@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using MediatR;
+using Sailfish.Mediation;
 using NSubstitute;
 using Sailfish.Analysis.ScaleFish;
 using Sailfish.Contracts.Public.Models;
@@ -27,7 +27,8 @@ public class ScaleFishDecouplingTests
         // go through the SailDiff-shared tracking-file retrieval (which has no baseline on a first run), and
         // it must publish the completion notification that Skipper hangs off — so Skipper fires on a single
         // run.
-        var mediator = Substitute.For<IMediator>();
+        var publisher = Substitute.For<IPublisher>();
+        var sender = Substitute.For<ISender>();
         var runSettings = Substitute.For<IRunSettings>();
         runSettings.RunScaleFish.Returns(true);
         runSettings.ScaleFishSettings.Returns(new ScaleFishSettings { EnableTrendTracking = false, EmitHtmlReport = false });
@@ -42,17 +43,17 @@ public class ScaleFishDecouplingTests
         markdown.ConvertScaleFishResultToMarkdown(Arg.Any<IEnumerable<ScalefishClassModel>>()).Returns("md");
 
         var scaleFish = new Sailfish.Analysis.ScaleFish.ScaleFish(
-            mediator, runSettings, computer, markdown, Substitute.For<IConsoleWriter>(), Substitute.For<ILogger>());
+            publisher, sender, runSettings, computer, markdown, Substitute.For<IConsoleWriter>(), Substitute.For<ILogger>());
 
         var currentRun = new List<IClassExecutionSummary> { Substitute.For<IClassExecutionSummary>() };
         await scaleFish.Analyze(currentRun, CancellationToken.None);
 
         // Decoupled: no tracking-file retrieval.
-        await mediator.DidNotReceive().Send(Arg.Any<GetLatestExecutionSummaryRequest>(), Arg.Any<CancellationToken>());
+        await sender.DidNotReceive().Send(Arg.Any<GetLatestExecutionSummaryRequest>(), Arg.Any<CancellationToken>());
         // It analyzed exactly the in-memory summaries it was handed.
         computer.Received(1).AnalyzeComplexityWithMeasurements(Arg.Is<List<IClassExecutionSummary>>(s => s.Count == 1));
         // Skipper hangs off this notification — it must fire on a single run.
-        await mediator.Received(1).Publish(Arg.Any<ScaleFishAnalysisCompleteNotification>(), Arg.Any<CancellationToken>());
+        await publisher.Received(1).Publish(Arg.Any<ScaleFishAnalysisCompleteNotification>(), Arg.Any<CancellationToken>());
     }
 
     [Fact]

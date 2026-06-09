@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
-using MediatR;
+using Sailfish.Mediation;
 using Microsoft.Extensions.DependencyInjection;
 using NSubstitute;
 using Sailfish.Attributes;
@@ -59,9 +59,9 @@ public class SailfishExecutionEngineDisabledDisposalTests
         }
     }
 
-    private static SailfishExecutionEngine BuildEngine(out IMediator mediator)
+    private static SailfishExecutionEngine BuildEngine(out IPublisher mediator)
     {
-        mediator = Substitute.For<IMediator>();
+        mediator = Substitute.For<IPublisher>();
         return new SailfishExecutionEngine(
             Substitute.For<ILogger>(),
             Substitute.For<IConsoleWriter>(),

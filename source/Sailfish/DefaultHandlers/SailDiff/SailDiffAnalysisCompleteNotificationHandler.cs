@@ -5,7 +5,7 @@ using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 using CsvHelper;
-using MediatR;
+using Sailfish.Mediation;
 using Sailfish.Contracts.Private.CsvMaps;
 using Sailfish.Contracts.Public.Models;
 using Sailfish.Contracts.Public.Notifications;

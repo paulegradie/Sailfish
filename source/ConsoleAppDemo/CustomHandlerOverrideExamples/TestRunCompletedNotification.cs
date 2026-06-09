@@ -1,4 +1,4 @@
-﻿using MediatR;
+﻿using Sailfish.Mediation;
 using Sailfish.Contracts.Public.Models;
 using Sailfish.Contracts.Public.Notifications;
 using Sailfish.Presentation;

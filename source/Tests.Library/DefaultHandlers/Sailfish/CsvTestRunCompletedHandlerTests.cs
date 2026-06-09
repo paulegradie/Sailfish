@@ -1,7 +1,7 @@
 using System;
 using System.Threading;
 using System.Threading.Tasks;
-using MediatR;
+using Sailfish.Mediation;
 using NSubstitute;
 using NSubstitute.ExceptionExtensions;
 using Sailfish.Attributes;
@@ -18,13 +18,13 @@ namespace Tests.Library.DefaultHandlers.Sailfish;
 public class CsvTestRunCompletedHandlerTests
 {
     private readonly ILogger _mockLogger;
-    private readonly IMediator _mockMediator;
+    private readonly IPublisher _mockMediator;
     private readonly CsvTestRunCompletedHandler _handler;
 
     public CsvTestRunCompletedHandlerTests()
     {
         _mockLogger = Substitute.For<ILogger>();
-        _mockMediator = Substitute.For<IMediator>();
+        _mockMediator = Substitute.For<IPublisher>();
         _handler = new CsvTestRunCompletedHandler(_mockLogger, _mockMediator);
     }
 

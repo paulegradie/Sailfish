@@ -1,5 +1,5 @@
 using Demo.API;
-using MediatR;
+using Sailfish.Mediation;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.DependencyInjection;
 using PerformanceTestingUserInvokedConsoleApp.CustomHandlerOverrideExamples;

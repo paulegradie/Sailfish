@@ -1,5 +1,5 @@
 using System;
-using MediatR;
+using Sailfish.Mediation;
 
 namespace Sailfish.Contracts.Private;
 

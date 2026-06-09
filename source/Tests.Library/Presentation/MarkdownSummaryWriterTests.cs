@@ -5,21 +5,23 @@ using System.Threading;
 using System.Threading.Tasks;
 using NSubstitute;
 using Sailfish; // RunSettingsBuilder
-using Sailfish.Contracts.Private;
 using Sailfish.Contracts.Public.Models;
-using Sailfish.DefaultHandlers.Sailfish;
 using Sailfish.Execution;
 using Sailfish.Presentation;
 using Sailfish.Presentation.Markdown;
 using Shouldly;
 using Xunit;
 
-namespace Tests.Library.DefaultHandlers.Sailfish;
+namespace Tests.Library.Presentation;
 
-public class SailfishWriteToMarkdownHandlerTests
+/// <summary>
+/// Unit tests for MarkdownSummaryWriter (formerly the SailfishWriteToMarkDownNotification handler;
+/// collapsed to a direct collaborator of ExecutionSummaryWriter).
+/// </summary>
+public class MarkdownSummaryWriterTests
 {
     [Fact]
-    public async Task Handle_CreatesOutputDirectory_And_CallsWriteEnhanced_WithExpectedFilePath()
+    public async Task Write_CreatesOutputDirectory_And_CallsWriteEnhanced_WithExpectedFilePath()
     {
         // Arrange
         var writer = Substitute.For<IMarkdownWriter>();
@@ -34,13 +36,12 @@ public class SailfishWriteToMarkdownHandlerTests
             .WithTag("build", "123")
             .Build();
 
-        var handler = new SailfishWriteToMarkdownHandler(writer, runSettings);
+        var markdownSummaryWriter = new MarkdownSummaryWriter(writer, runSettings);
 
         var summaries = new List<IClassExecutionSummary>
         {
             CreateStubSummary()
         };
-        var notification = new WriteToMarkDownNotification(summaries);
 
         var expectedFileName = DefaultFileSettings.AppendTagsToFilename(
             DefaultFileSettings.DefaultPerformanceResultsFileNameStem(runSettings.TimeStamp) + ".md",
@@ -50,7 +51,7 @@ public class SailfishWriteToMarkdownHandlerTests
         try
         {
             // Act
-            await handler.Handle(notification, CancellationToken.None);
+            await markdownSummaryWriter.Write(summaries, CancellationToken.None);
 
             // Assert: directory created
             Directory.Exists(tempDir).ShouldBeTrue();
@@ -70,7 +71,7 @@ public class SailfishWriteToMarkdownHandlerTests
     }
 
     [Fact]
-    public async Task Handle_WhenEnhancedNotImplemented_FallsBackToLegacyWrite()
+    public async Task Write_WhenEnhancedNotImplemented_FallsBackToLegacyWrite()
     {
         // Arrange
         var writer = Substitute.For<IMarkdownWriter>();
@@ -87,10 +88,9 @@ public class SailfishWriteToMarkdownHandlerTests
             .WithLocalOutputDirectory(tempDir)
             .Build();
 
-        var handler = new SailfishWriteToMarkdownHandler(writer, runSettings);
+        var markdownSummaryWriter = new MarkdownSummaryWriter(writer, runSettings);
 
         var summaries = new List<IClassExecutionSummary>();
-        var notification = new WriteToMarkDownNotification(summaries);
 
         var expectedFileName = DefaultFileSettings.AppendTagsToFilename(
             DefaultFileSettings.DefaultPerformanceResultsFileNameStem(runSettings.TimeStamp) + ".md",
@@ -100,7 +100,7 @@ public class SailfishWriteToMarkdownHandlerTests
         try
         {
             // Act
-            await handler.Handle(notification, CancellationToken.None);
+            await markdownSummaryWriter.Write(summaries, CancellationToken.None);
 
             // Assert: directory created
             Directory.Exists(tempDir).ShouldBeTrue();
@@ -132,4 +132,3 @@ public class SailfishWriteToMarkdownHandlerTests
         return summary;
     }
 }
-

@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using MediatR;
+using Sailfish.Mediation;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel;
 using Sailfish.Execution;
 using Sailfish.Logging;
@@ -46,16 +46,16 @@ internal sealed class TestCompletionAggregator
     private readonly MethodComparisonBatchProcessor _comparisonProcessor;
     private readonly ConcurrentDictionary<string, GroupBuffer> _groups = new(StringComparer.Ordinal);
     private readonly ILogger _logger;
-    private readonly IMediator _mediator;
+    private readonly IPublisher _publisher;
     private readonly IReadOnlyList<ITestCompletionSink> _sinks;
 
     public TestCompletionAggregator(
-        IMediator mediator,
+        IPublisher publisher,
         MethodComparisonBatchProcessor comparisonProcessor,
         ILogger logger,
         IEnumerable<ITestCompletionSink>? sinks = null)
     {
-        _mediator = mediator ?? throw new ArgumentNullException(nameof(mediator));
+        _publisher = publisher ?? throw new ArgumentNullException(nameof(publisher));
         _comparisonProcessor = comparisonProcessor ?? throw new ArgumentNullException(nameof(comparisonProcessor));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         _sinks = sinks?.ToArray() ?? Array.Empty<ITestCompletionSink>();
@@ -176,7 +176,7 @@ internal sealed class TestCompletionAggregator
 
     private async Task PublishImmediately(TestCompletionMessage message, CancellationToken cancellationToken)
     {
-        await _mediator.Publish(CreateFrameworkNotification(message), cancellationToken).ConfigureAwait(false);
+        await _publisher.Publish(CreateFrameworkNotification(message), cancellationToken).ConfigureAwait(false);
     }
 
     private static FrameworkTestCaseEndNotification CreateFrameworkNotification(TestCompletionMessage message)

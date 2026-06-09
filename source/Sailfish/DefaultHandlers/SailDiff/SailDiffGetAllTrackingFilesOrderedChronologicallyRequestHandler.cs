@@ -1,6 +1,6 @@
 using System.Threading;
 using System.Threading.Tasks;
-using MediatR;
+using Sailfish.Mediation;
 using Sailfish.Analysis;
 using Sailfish.Analysis.SailDiff;
 using Sailfish.Contracts.Public.Models;

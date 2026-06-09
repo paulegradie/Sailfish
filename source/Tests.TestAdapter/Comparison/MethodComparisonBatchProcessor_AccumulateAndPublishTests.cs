@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
-using MediatR;
+using Sailfish.Mediation;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel;
 using NSubstitute;
 using Sailfish.Analysis;
@@ -23,7 +23,7 @@ namespace Tests.TestAdapter.Comparison;
 public class MethodComparisonBatchProcessorAccumulateAndPublishTests
 {
     private readonly IAdapterSailDiff _sailDiff = Substitute.For<IAdapterSailDiff>();
-    private readonly IMediator _mediator = Substitute.For<IMediator>();
+    private readonly IPublisher _mediator = Substitute.For<IPublisher>();
     private readonly ILogger _logger = Substitute.For<ILogger>();
     private readonly ISailDiffUnifiedFormatter _formatter = Substitute.For<ISailDiffUnifiedFormatter>();
 
