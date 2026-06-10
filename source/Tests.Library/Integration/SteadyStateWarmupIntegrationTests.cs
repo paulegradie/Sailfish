@@ -10,17 +10,29 @@ using Xunit;
 
 namespace Tests.Library.Integration;
 
+/// <summary>
+/// Exercises the steady-state warmup loop (floor / window / early-stop / cap) end-to-end through
+/// TestCaseIterator, with the warmup durations supplied by a scripted <see cref="ISteadyStateWarmupTimer"/>
+/// rather than the wall clock. The previous version timed a real ~3ms spin-wait, which made "a stable
+/// method stops early" depend on host load: under CI/parallel-suite pressure the spin stretched, the
+/// detector's CV threshold blew out, and the test flaked. The scripted timer still drives the real
+/// invocation path (the method under test is genuinely called for every warmup), but the durations fed
+/// to the detector are deterministic.
+/// </summary>
 public class SteadyStateWarmupIntegrationTests
 {
     private const int Window = SteadyStateWarmupDetector.DefaultWindow; // detector window (effective minimum before a decision)
 
-    private static TestCaseIterator NewIterator()
+    private static TestCaseIterator NewIterator(ISteadyStateWarmupTimer warmupTimer)
     {
         var logger = Substitute.For<ILogger>();
         var runSettings = Sailfish.RunSettingsBuilder.CreateBuilder().Build();
         return new TestCaseIterator(runSettings, logger,
             new FixedIterationStrategy(logger),
-            new AdaptiveIterationStrategy(logger, Substitute.For<IStatisticalConvergenceDetector>()));
+            new AdaptiveIterationStrategy(logger, Substitute.For<IStatisticalConvergenceDetector>()))
+        {
+            WarmupTimer = warmupTimer
+        };
     }
 
     [Fact]
@@ -28,11 +40,11 @@ public class SteadyStateWarmupIntegrationTests
     {
         const int sampleSize = 2;
         const int maxWarmup = 50;
-        var instance = new CountingStableWork(3); // stable ~3ms/call
-        var method = typeof(CountingStableWork).GetMethod(nameof(CountingStableWork.Run))!;
+        var instance = new CountingWork();
+        var method = typeof(CountingWork).GetMethod(nameof(CountingWork.Run))!;
         var settings = new ExecutionSettings
         {
-            NumWarmupIterations = 2, // floor
+            NumWarmupIterations = 2, // floor below the window — the window governs the minimum
             SampleSize = sampleSize,
             UseSteadyStateWarmup = true,
             MaxWarmupIterations = maxWarmup,
@@ -40,12 +52,14 @@ public class SteadyStateWarmupIntegrationTests
         };
         var container = TestInstanceContainer.CreateTestInstance(instance, method, Array.Empty<string>(), Array.Empty<object>(), false, settings);
 
-        var result = await NewIterator().Iterate(container, disableOverheadEstimation: true, CancellationToken.None);
+        // Perfectly stable durations: zero drift, zero CV — steady at the first possible decision.
+        var result = await NewIterator(new ScriptedWarmupTimer(_ => 3.0))
+            .Iterate(container, disableOverheadEstimation: true, CancellationToken.None);
 
         result.IsSuccess.ShouldBeTrue();
         var warmups = instance.Calls - sampleSize; // total invocations minus measured samples
-        warmups.ShouldBeGreaterThanOrEqualTo(Window); // can't decide before the window fills
-        warmups.ShouldBeLessThan(maxWarmup);          // stopped early — did not hit the cap
+        warmups.ShouldBe(Window, "a perfectly stable signal must be declared steady at the first decision point");
+        warmups.ShouldBeLessThan(maxWarmup); // stopped early — did not hit the cap
     }
 
     [Fact]
@@ -53,8 +67,8 @@ public class SteadyStateWarmupIntegrationTests
     {
         const int sampleSize = 2;
         const int floor = 12; // floor > window, so the floor governs the minimum
-        var instance = new CountingStableWork(3);
-        var method = typeof(CountingStableWork).GetMethod(nameof(CountingStableWork.Run))!;
+        var instance = new CountingWork();
+        var method = typeof(CountingWork).GetMethod(nameof(CountingWork.Run))!;
         var settings = new ExecutionSettings
         {
             NumWarmupIterations = floor,
@@ -65,28 +79,72 @@ public class SteadyStateWarmupIntegrationTests
         };
         var container = TestInstanceContainer.CreateTestInstance(instance, method, Array.Empty<string>(), Array.Empty<object>(), false, settings);
 
-        var result = await NewIterator().Iterate(container, disableOverheadEstimation: true, CancellationToken.None);
+        var result = await NewIterator(new ScriptedWarmupTimer(_ => 3.0))
+            .Iterate(container, disableOverheadEstimation: true, CancellationToken.None);
 
         result.IsSuccess.ShouldBeTrue();
         var warmups = instance.Calls - sampleSize;
-        warmups.ShouldBeGreaterThanOrEqualTo(floor); // never stops before the configured floor
+        // Even a perfectly stable signal must not stop before the configured floor; with stable
+        // durations the first permitted decision succeeds, so the floor is also the stopping point.
+        warmups.ShouldBe(floor);
     }
 
-    private sealed class CountingStableWork
+    [Fact]
+    public async Task SteadyStateWarmup_UnstableMethod_HitsCap()
     {
-        private readonly int _ms;
+        // The counterpart guarantee — previously untestable with wall-clock timing: a signal that
+        // never stabilises (alternating 3ms / 30ms ⇒ CV far above the detector threshold at every
+        // window) must run warmup all the way to the cap, never declaring steady state.
+        const int sampleSize = 2;
+        const int maxWarmup = 20;
+        var instance = new CountingWork();
+        var method = typeof(CountingWork).GetMethod(nameof(CountingWork.Run))!;
+        var settings = new ExecutionSettings
+        {
+            NumWarmupIterations = 2,
+            SampleSize = sampleSize,
+            UseSteadyStateWarmup = true,
+            MaxWarmupIterations = maxWarmup,
+            UseAdaptiveSampling = false
+        };
+        var container = TestInstanceContainer.CreateTestInstance(instance, method, Array.Empty<string>(), Array.Empty<object>(), false, settings);
+
+        var result = await NewIterator(new ScriptedWarmupTimer(i => i % 2 == 0 ? 3.0 : 30.0))
+            .Iterate(container, disableOverheadEstimation: true, CancellationToken.None);
+
+        result.IsSuccess.ShouldBeTrue();
+        var warmups = instance.Calls - sampleSize;
+        warmups.ShouldBe(maxWarmup, "an unstable signal must never be declared steady before the cap");
+    }
+
+    /// <summary>
+    /// Drives the real invocation (so call counting stays honest) but reports scripted durations,
+    /// decoupling the warmup decision from host load.
+    /// </summary>
+    private sealed class ScriptedWarmupTimer : ISteadyStateWarmupTimer
+    {
+        private readonly Func<int, double> _durationForInvocation;
+        private int _invocationIndex;
+
+        public ScriptedWarmupTimer(Func<int, double> durationForInvocation)
+        {
+            _durationForInvocation = durationForInvocation;
+        }
+
+        public async Task<double> TimeAsync(Func<Task> invocation)
+        {
+            await invocation().ConfigureAwait(false);
+            return _durationForInvocation(_invocationIndex++);
+        }
+    }
+
+    private sealed class CountingWork
+    {
         public int Calls;
-        public CountingStableWork(int ms) => _ms = ms;
 
         public Task Run(CancellationToken ct)
         {
             Calls++;
-            var sw = System.Diagnostics.Stopwatch.StartNew();
-            while (sw.ElapsedMilliseconds < _ms)
-            {
-                if (ct.IsCancellationRequested) break;
-                Thread.SpinWait(1000);
-            }
             return Task.CompletedTask;
         }
     }
