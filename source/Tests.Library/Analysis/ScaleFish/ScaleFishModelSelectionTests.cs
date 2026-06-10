@@ -200,7 +200,7 @@ public class ScaleFishModelSelectionTests
         var result = new ComplexityEstimator().EstimateComplexity(measurements);
 
         result.ShouldNotBeNull();
-        result.ScaleFishModelFunction.Name.ShouldBe("Constant");
+        result.ScaleFishModelFunction.Name.ShouldBe(nameof(Constant));
         result.IsDistinguishable.ShouldBeTrue("k = 1 vs k = 2 yields ΔAICc ≥ 2 when residuals tie");
         result.ScaleFishModelFunction.FunctionParameters!.Bias.ShouldBe(100.0, tolerance: 1e-9);
     }
@@ -226,7 +226,7 @@ public class ScaleFishModelSelectionTests
             var result = new ComplexityEstimator().EstimateComplexity(measurements);
 
             result.ShouldNotBeNull($"seed {seed} produced no result");
-            var flagged = result.ScaleFishModelFunction.Name == "Constant"
+            var flagged = result.ScaleFishModelFunction.Name == nameof(Constant)
                           || ConstantComplexityDetector.IsLikelyConstant(result, measurements);
             flagged.ShouldBeTrue(
                 $"seed {seed}: winner {result.ScaleFishModelFunction.Name} was neither Constant nor flagged flat");

@@ -39,6 +39,8 @@ public class Constant : ScaleFishModelFunction
     {
         if (data is null || data.Length == 0)
             throw new SailfishException("At least one observation is required to fit a constant");
+        if (weights is not null && weights.Length != data.Length)
+            throw new SailfishException("weights length must match observations length");
 
         double sumW = 0, sumWy = 0;
         for (var i = 0; i < data.Length; i++)

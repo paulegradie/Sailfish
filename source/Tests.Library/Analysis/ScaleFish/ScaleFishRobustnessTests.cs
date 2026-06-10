@@ -107,6 +107,23 @@ public class ScaleFishRobustnessTests
     }
 
     [Fact]
+    public void Constant_SeedFit_RejectsMismatchedWeightsLength()
+    {
+        // The generic FitLinearInParameters path validates weights length against observations;
+        // the Constant override must honour the same contract rather than indexing out of range
+        // (or silently ignoring surplus weights).
+        var constant = new Constant();
+        var measurements = new[]
+        {
+            new ComplexityMeasurement(1, 10.0),
+            new ComplexityMeasurement(2, 10.0)
+        };
+
+        Should.Throw<Sailfish.Exceptions.SailfishException>(() => constant.SeedFit(measurements, weights: [1.0]));
+        Should.Throw<Sailfish.Exceptions.SailfishException>(() => constant.SeedFit(measurements, weights: [1.0, 1.0, 1.0]));
+    }
+
+    [Fact]
     public void EveryBuiltInFamily_ReportsItsFreeParameterCount()
     {
         // All scale-and-bias families fit two parameters; Constant fits only the level. The AICc
