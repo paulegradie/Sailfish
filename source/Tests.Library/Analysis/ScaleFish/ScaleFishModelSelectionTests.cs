@@ -1,6 +1,7 @@
 using System;
 using Sailfish.Analysis.ScaleFish;
 using Sailfish.Analysis.ScaleFish.ComplexityFunctions;
+using Sailfish.Analysis.ScaleFish.CurveFitting;
 using Shouldly;
 using Xunit;
 
@@ -98,5 +99,110 @@ public class ScaleFishModelSelectionTests
         new ComplexityEstimator()
             .EstimateComplexity(Array.Empty<ComplexityMeasurement>())
             .ShouldBeNull();
+    }
+
+    [Fact]
+    public void NLogNData_WithReplicates_IsDistinguishable()
+    {
+        // Regression for the LogLinear clone: with both x·ln(x) and x·log₂(x) in the candidate set,
+        // n·log n data always produced ΔAICc ≈ 0 between the two identical fits, so this could never
+        // be distinguishable no matter how clean the data.
+        var nlogn = new NLogN();
+        var rng = new Random(7);
+        var measurements = ScaleFishTestHelpers.BuildNoisy(
+            x => nlogn.Compute(0.0, 1.0, x),
+            ScaleFishTestHelpers.LogSpacedX(8, 1024, 6),
+            sampleSize: 30,
+            relativeNoise: 0.05,
+            rng);
+
+        var result = new ComplexityEstimator().EstimateComplexity(measurements);
+
+        result.ShouldNotBeNull();
+        result.ScaleFishModelFunction.Name.ShouldBe(nameof(NLogN));
+        result.IsDistinguishable.ShouldBeTrue("n·log n no longer ties with its own collinear clone");
+    }
+
+    [Fact]
+    public void ThreeXValues_WithReplicates_CanDistinguish()
+    {
+        // Regression for means-level AICc degeneracy: with n = 3 X values and k = 2 parameters the
+        // small-sample correction divides by n − k − 1 = 0, so every family scored +∞, the Akaike
+        // weight was NaN, and no 3-value declaration could ever be distinguishable. Replicate-level
+        // scoring uses N = Σ replicates, so the information in the per-X spread finally counts.
+        var quadratic = new Quadratic();
+        var rng = new Random(11);
+        var measurements = ScaleFishTestHelpers.BuildNoisy(
+            x => quadratic.Compute(0.0, 1.0, x),
+            new[] { 10, 100, 1000 },
+            sampleSize: 15,
+            relativeNoise: 0.05,
+            rng);
+
+        var result = new ComplexityEstimator().EstimateComplexity(measurements);
+
+        result.ShouldNotBeNull();
+        result.ScaleFishModelFunction.Name.ShouldBe(nameof(Quadratic));
+        result.IsDistinguishable.ShouldBeTrue();
+        double.IsFinite(result.BestAicc).ShouldBeTrue();
+        double.IsFinite(result.AkaikeWeight).ShouldBeTrue();
+        result.AkaikeWeight.ShouldBeGreaterThan(0.5);
+    }
+
+    [Fact]
+    public void ThreeXValues_MeansOnly_RemainsIndistinguishable()
+    {
+        // Without replicate uncertainty there is no honest way to select among two-parameter
+        // families from three means; the means-level fallback keeps reporting that.
+        var quadratic = new Quadratic();
+        var measurements = ScaleFishTestHelpers.BuildExact(quadratic, new[] { 10, 100, 1000 });
+
+        var result = new ComplexityEstimator().EstimateComplexity(measurements);
+
+        result.ShouldNotBeNull();
+        result.IsDistinguishable.ShouldBeFalse();
+    }
+
+    [Fact]
+    public void ReplicateAicc_LowerForBetterFittingParameters()
+    {
+        var measurements = new[]
+        {
+            new ComplexityMeasurement(10, 20, stdDev: 1.0, sampleSize: 10),
+            new ComplexityMeasurement(20, 40, stdDev: 1.0, sampleSize: 10),
+            new ComplexityMeasurement(40, 80, stdDev: 1.0, sampleSize: 10)
+        };
+        var inverseSquaredSes = new[] { 10.0, 10.0, 10.0 }; // SE = 1/√10 ⇒ 1/SE² = 10
+
+        var exact = new Linear { FunctionParameters = new FittedCurve(scale: 2.0, bias: 0.0) };
+        var off = new Linear { FunctionParameters = new FittedCurve(scale: 2.5, bias: 0.0) };
+
+        var exactAicc = ComplexityEstimator.ComputeReplicateAicc(exact, measurements, inverseSquaredSes, totalReplicates: 30, k: 2);
+        var offAicc = ComplexityEstimator.ComputeReplicateAicc(off, measurements, inverseSquaredSes, totalReplicates: 30, k: 2);
+
+        exactAicc.ShouldBeLessThan(offAicc);
+        // Perfect fit ⇒ χ² = 0 ⇒ AICc reduces to the parameter penalty: 2k + 2k(k+1)/(N−k−1).
+        exactAicc.ShouldBe(4.0 + 12.0 / 27.0, tolerance: 1e-9);
+    }
+
+    [Fact]
+    public void ReplicateAicc_DegenerateInputs_ReturnInfinity()
+    {
+        var measurements = new[]
+        {
+            new ComplexityMeasurement(10, 20, stdDev: 1.0, sampleSize: 1),
+            new ComplexityMeasurement(20, 40, stdDev: 1.0, sampleSize: 1)
+        };
+        var inverseSquaredSes = new[] { 1.0, 1.0 };
+
+        // Unfitted function abstains.
+        var unfitted = new Linear();
+        ComplexityEstimator.ComputeReplicateAicc(unfitted, measurements, inverseSquaredSes, totalReplicates: 2, k: 2)
+            .ShouldBe(double.PositiveInfinity);
+
+        // Total replicates ≤ k + 1 leaves the small-sample correction undefined.
+        var fitted = new Linear { FunctionParameters = new FittedCurve(scale: 2.0, bias: 0.0) };
+        ComplexityEstimator.ComputeReplicateAicc(fitted, measurements, inverseSquaredSes, totalReplicates: 3, k: 2)
+            .ShouldBe(double.PositiveInfinity);
     }
 }

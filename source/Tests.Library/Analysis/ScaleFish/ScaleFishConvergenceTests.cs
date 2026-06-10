@@ -35,9 +35,14 @@ public class ScaleFishConvergenceTests
     }
 
     [Fact]
-    public void EstimatorFindsCorrectComplexity_LogLinear()
+    public void EstimatorFindsCorrectComplexity_LogLinearData_ClassifiesAsNLogN()
     {
-        Assert<LogLinear>();
+        // LogLinear's x·log₂(x) basis is a constant multiple of NLogN's x·ln(x); the constant is
+        // absorbed into the fitted scale, so the canonical NLogN family is the correct (and only)
+        // n·log n candidate now that the collinear clone is deserialization-only.
+        var estimation = new ComplexityEstimator().EstimateComplexity(GetMeasurements<LogLinear>());
+        estimation.ShouldNotBeNull();
+        estimation.ScaleFishModelFunction.Name.ShouldBe(nameof(NLogN));
     }
 
     [Fact]

@@ -50,11 +50,24 @@ public static class ComplexityFunctionRegistry
     /// </summary>
     public static void Register<T>() where T : ScaleFishModelFunction, new()
     {
+        Register<T>(includeInFitting: true);
+    }
+
+    /// <summary>
+    /// Adds a complexity family to the catalog, optionally excluding it from the estimator's candidate
+    /// set. A family registered with <paramref name="includeInFitting"/> = false can still be
+    /// deserialized from persisted model files (and used for predictions), but is never fitted against
+    /// new measurements. The built-in <see cref="ComplexityFunctions.LogLinear"/> family uses this mode
+    /// because its basis is collinear with <see cref="ComplexityFunctions.NLogN"/> — fitting both would
+    /// make every n·log n classification appear statistically indistinguishable from itself.
+    /// </summary>
+    public static void Register<T>(bool includeInFitting) where T : ScaleFishModelFunction, new()
+    {
         // Use the runtime Name property — that's the string the JSON writer emits and the loader
         // looks up. Using typeof(T).Name would break round-trip for any family whose Name was
         // overridden to something other than the C# type name.
         var name = new T().Name;
-        var entry = new Entry(name, () => new T(), element => element.Deserialize<T>());
+        var entry = new Entry(name, () => new T(), element => element.Deserialize<T>(), includeInFitting);
         lock (SyncRoot)
         {
             Entries.RemoveAll(e => e.Name == name);
@@ -85,15 +98,16 @@ public static class ComplexityFunctionRegistry
     }
 
     /// <summary>
-    /// Returns fresh instances of every registered family. The estimator calls this each fit, so each
-    /// candidate gets its own mutable <see cref="ScaleFishModelFunction.FunctionParameters"/> — no shared
-    /// state across fits or threads.
+    /// Returns fresh instances of every registered family that participates in fitting. The estimator
+    /// calls this each fit, so each candidate gets its own mutable
+    /// <see cref="ScaleFishModelFunction.FunctionParameters"/> — no shared state across fits or threads.
+    /// Families registered as deserialization-only (see <see cref="Register{T}(bool)"/>) are excluded.
     /// </summary>
     public static IReadOnlyList<ScaleFishModelFunction> CreateFitInstances()
     {
         lock (SyncRoot)
         {
-            return Entries.Select(e => e.Factory()).ToList();
+            return Entries.Where(e => e.IncludeInFitting).Select(e => e.Factory()).ToList();
         }
     }
 
@@ -142,11 +156,20 @@ public static class ComplexityFunctionRegistry
         Register<NLogN>();
         Register<Quadratic>();
         Register<Cubic>();
-        Register<LogLinear>();
+        // LogLinear is x·log₂(x) — a constant multiple of NLogN's x·ln(x) basis, so both produce
+        // identical fits. Keeping it in the candidate set made the top two candidates tie whenever
+        // the truth was n·log n (Δ-AICc ≈ 0 ⇒ IsDistinguishable always false, Akaike weight halved,
+        // bootstrap selection-agreement split ~50/50). Registered deserialization-only so persisted
+        // models that classified as LogLinear keep loading and predicting.
+        Register<LogLinear>(includeInFitting: false);
         Register<Exponential>();
         Register<Factorial>();
         Register<SqrtN>();
     }
 
-    private sealed record Entry(string Name, Func<ScaleFishModelFunction> Factory, Func<JsonElement, ScaleFishModelFunction?> Deserializer);
+    private sealed record Entry(
+        string Name,
+        Func<ScaleFishModelFunction> Factory,
+        Func<JsonElement, ScaleFishModelFunction?> Deserializer,
+        bool IncludeInFitting);
 }

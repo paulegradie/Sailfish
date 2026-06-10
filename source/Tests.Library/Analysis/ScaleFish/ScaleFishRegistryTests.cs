@@ -31,6 +31,38 @@ public class ScaleFishRegistryTests
     }
 
     [Fact]
+    public void LogLinear_IsDeserializationOnly()
+    {
+        // Registered (old model files keep loading)…
+        ComplexityFunctionRegistry.IsRegistered(nameof(LogLinear)).ShouldBeTrue();
+        var elem = System.Text.Json.JsonSerializer.SerializeToElement(new LogLinear());
+        ComplexityFunctionRegistry.Deserialize(nameof(LogLinear), elem).ShouldNotBeNull();
+
+        // …but never a fit candidate: its basis is a constant multiple of NLogN's, and fitting both
+        // made every n·log n classification tie with its own clone (never distinguishable).
+        ComplexityFunctionRegistry.CreateFitInstances()
+            .Any(f => f.Name == nameof(LogLinear))
+            .ShouldBeFalse("LogLinear is collinear with NLogN and must not participate in fitting");
+    }
+
+    [Fact]
+    public void Register_LogLinear_OptsBackIntoFitting()
+    {
+        try
+        {
+            // The escape hatch: explicit registration restores the family as a fit candidate.
+            ComplexityFunctionRegistry.Register<LogLinear>();
+            ComplexityFunctionRegistry.CreateFitInstances()
+                .Any(f => f.Name == nameof(LogLinear))
+                .ShouldBeTrue();
+        }
+        finally
+        {
+            ComplexityFunctionRegistry.ResetToBuiltIns();
+        }
+    }
+
+    [Fact]
     public void Register_NewFamily_IncludedInFitCatalog()
     {
         try

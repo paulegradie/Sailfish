@@ -294,6 +294,17 @@ public class ComplexityEstimator : IComplexityEstimator
     /// <summary>
     /// Fits every candidate family to the measurements and ranks them by AICc, returning the point estimate
     /// (best, runner-up, akaike weight, distinguishability). Returns null when no candidate produced a valid fit.
+    ///
+    /// <para>
+    /// Scoring runs at the replicate level whenever every measurement carries replicate uncertainty
+    /// (see <see cref="ComputeReplicateAicc"/>): the per-X means are compared against each family's
+    /// predictions in units of their standard errors, and the AICc sample size is the <em>total
+    /// replicate count</em> rather than the number of distinct X values. This is what makes a typical
+    /// 3-X-value declaration with 15+ replicates per X classifiable at all — at the means level,
+    /// n = 3 with k = 2 leaves the AICc small-sample correction undefined (n − k − 1 = 0), so every
+    /// family scored +∞ and no result could ever be distinguishable. Without replicate uncertainty the
+    /// scoring falls back to the means-level <see cref="ComputeAicc"/>, preserving prior behaviour.
+    /// </para>
     /// </summary>
     internal static PointEstimate? RankCandidates(ComplexityMeasurement[]? measurements, double distinguishabilityDelta = DistinguishabilityDelta)
     {
@@ -327,12 +338,19 @@ public class ComplexityEstimator : IComplexityEstimator
 
         if (fitnessResults.Count == 0) return null;
 
+        // Replicate-aware likelihood inputs. Gated all-or-nothing (same rule as the fit's variance
+        // weights) so every candidate is scored on the same likelihood.
+        var inverseSquaredSes = TryBuildInverseSquaredStandardErrors(cleaned);
+        var totalReplicates = inverseSquaredSes is null ? 0 : cleaned.Sum(m => m.SampleSize);
+
         var n = cleaned.Length;
         var scored = fitnessResults
             .Select(r => new Scored(
                 r.Function,
                 r.Fitness,
-                ComputeAicc(r.Fitness.Ssd, n, r.Function.FreeParameterCount)))
+                inverseSquaredSes is not null
+                    ? ComputeReplicateAicc(r.Function, cleaned, inverseSquaredSes, totalReplicates, r.Function.FreeParameterCount)
+                    : ComputeAicc(r.Fitness.Ssd, n, r.Function.FreeParameterCount)))
             .OrderBy(s => double.IsFinite(s.Aicc) ? s.Aicc : double.PositiveInfinity)
             .ThenBy(s => s.Fitness.Ssd)
             .ToList();
@@ -501,8 +519,12 @@ public class ComplexityEstimator : IComplexityEstimator
     }
 
     /// <summary>
-    /// AIC with small-sample correction for OLS. n is the number of measurements, k the number of free
-    /// parameters (typically 2: scale, bias). Returns +infinity when RSS or n is degenerate.
+    /// Means-level AIC with small-sample correction for OLS. n is the number of (X, mean) points, k the
+    /// number of free parameters (typically 2: scale, bias). Returns +infinity when RSS or n is
+    /// degenerate — in particular for every family when n ≤ k + 1 (e.g. three X values with two
+    /// parameters), where the correction is undefined and no honest means-level selection exists.
+    /// Used as the fallback when measurements carry no replicate uncertainty; otherwise see
+    /// <see cref="ComputeReplicateAicc"/>.
     /// </summary>
     internal static double ComputeAicc(double rss, int n, int k)
     {
@@ -513,6 +535,84 @@ public class ComplexityEstimator : IComplexityEstimator
         var denom = n - k - 1;
         if (denom <= 0) return double.PositiveInfinity;
         return aic + 2.0 * k * (k + 1) / denom;
+    }
+
+    /// <summary>
+    /// Replicate-level AICc under a per-X Gaussian likelihood: y_ij = f(x_i) + ε_ij with
+    /// ε_ij ~ N(0, σ_i²) and σ_i² estimated from the replicate spread at each X. Decomposing the
+    /// replicate residuals into within-X and between-X parts, the within-X term and the
+    /// Σ n_i·ln(2πσ_i²) normalisation are identical for every candidate family, so the
+    /// family-dependent part of −2·logL reduces to the GLS chi-square of the means:
+    /// χ² = Σ_i (ȳ_i − f(x_i))² / SE_i², where SE_i = σ_i / √n_i. AICc = χ² + 2k + 2k(k+1)/(N − k − 1)
+    /// with N = Σ n_i (total replicates). Family-independent constants are dropped, so the absolute
+    /// value is only meaningful in differences (Δ-AICc, Akaike weights) — which is all the estimator
+    /// consumes.
+    ///
+    /// <para>
+    /// This is also the likelihood the weighted fit actually minimised (the fit's 1/SE² weights are a
+    /// normalised version of <paramref name="inverseSquaredSes"/>, and normalisation does not move the
+    /// argmin), repairing the previous mismatch where parameters were chosen by weighted least squares
+    /// but families were ranked on unweighted residuals.
+    /// </para>
+    /// </summary>
+    internal static double ComputeReplicateAicc(
+        ScaleFishModelFunction function,
+        ComplexityMeasurement[] measurements,
+        double[] inverseSquaredSes,
+        int totalReplicates,
+        int k)
+    {
+        var parameters = function.FunctionParameters;
+        if (parameters is null) return double.PositiveInfinity;
+
+        double chiSquare = 0;
+        for (var i = 0; i < measurements.Length; i++)
+        {
+            double predicted;
+            try
+            {
+                predicted = function.Compute(parameters.Bias, parameters.Scale, measurements[i].X);
+            }
+            catch
+            {
+                return double.PositiveInfinity;
+            }
+
+            if (!double.IsFinite(predicted)) return double.PositiveInfinity;
+            var residual = measurements[i].Y - predicted;
+            chiSquare += residual * residual * inverseSquaredSes[i];
+        }
+
+        if (!double.IsFinite(chiSquare)) return double.PositiveInfinity;
+
+        var denom = totalReplicates - k - 1;
+        if (denom <= 0) return double.PositiveInfinity;
+        return chiSquare + 2.0 * k + 2.0 * k * (k + 1) / denom;
+    }
+
+    /// <summary>
+    /// Raw 1/SE_i² for each measurement when every X carries usable replicate uncertainty; null
+    /// otherwise. Mirrors the all-or-nothing gate of
+    /// <see cref="ScaleFishModelFunction.BuildVarianceWeights"/> (which produces the same weights
+    /// normalised to sum to N for the fit) so the fit and the likelihood always agree on whether
+    /// replicate information is in play.
+    /// </summary>
+    private static double[]? TryBuildInverseSquaredStandardErrors(ComplexityMeasurement[] measurements)
+    {
+        if (measurements.Length == 0) return null;
+
+        var result = new double[measurements.Length];
+        for (var i = 0; i < measurements.Length; i++)
+        {
+            if (!measurements[i].HasUncertainty) return null;
+            var se = measurements[i].StandardError;
+            if (se <= 0 || !double.IsFinite(se)) return null;
+            var invSquared = 1.0 / (se * se);
+            if (!double.IsFinite(invSquared)) return null;
+            result[i] = invSquared;
+        }
+
+        return result;
     }
 
     internal static double ComputeAkaikeWeightOfBest(double[] aiccValues)
