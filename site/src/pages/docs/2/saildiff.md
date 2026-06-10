@@ -70,7 +70,7 @@ Note: the JSON value must match the enum member exactly — use `"Test"` (not `"
 
 **Alpha**
 
-Description: Significance threshold (Type I error rate). The 95% confidence intervals reported alongside each result correspond to `1 − Alpha`.
+Description: Significance threshold (Type I error rate). The 95% confidence intervals reported alongside each result correspond to `1 − Alpha`. When a run contains multiple comparisons, Benjamini-Hochberg FDR control is applied across the family and the **headline verdict is gated on the adjusted q-value** — a row only reads Regressed/Improved when it survives multiplicity correction, so the verdict and the printed q-value always agree.
 
 Default: `0.05` (matches conventional statistical practice; previous default of `0.001` made detection effectively impossible at typical Sailfish sample sizes). For release-gate runs use the `Tight` preset (`0.01`); for noisy CI hosts use `Relaxed` (`0.10`).
 
@@ -79,6 +79,20 @@ Default: `0.05` (matches conventional statistical practice; previous default of 
 Description: Disable SailDiff
 
 Default: false
+
+**EquivalenceMarginPercent**
+
+Description: Opt-in TOST (two one-sided tests) equivalence margin, in percent. When set (e.g. `5`), every comparison additionally tests whether the true before/after ratio is **demonstrably inside ±5%**, on the log scale. This splits the weakest verdict — NOT SIGNIFICANT — into two honest statements: *equivalent within the margin* (the run proved similarity) or *inconclusive at the margin* (the run lacked the statistical power to tell; compare the reported MDE against your margin and increase `SampleSize` if needed). Each one-sided test runs at `Alpha`, which keeps the overall error rate ≤ Alpha.
+
+Default: unset (equivalence testing off)
+
+```json
+"SailDiffSettings": {
+  "TestType": "WilcoxonRankSumTest",
+  "Alpha": 0.05,
+  "EquivalenceMarginPercent": 5
+}
+```
 
 
 #### Example IDE Output

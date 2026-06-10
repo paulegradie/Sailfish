@@ -60,6 +60,8 @@ public class SailDiffConsoleWindowMessageFormatter : ISailDiffConsoleWindowMessa
         stringBuilder.AppendLine($"Before: {string.Join(", ", beforeIds)}");
         stringBuilder.AppendLine($"After: {string.Join(", ", afterIds)}");
         stringBuilder.AppendLine("-----------------------------------\r");
-        stringBuilder.AppendLine($"Note: Changes are significant if the PValue is less than {sailDiffSettings.Alpha}");
+        stringBuilder.AppendLine(
+            $"Note: Changes are significant if the PValue is less than {sailDiffSettings.Alpha}. "
+            + "When multiple comparisons run together, the BH-adjusted QValue must also be at or below that threshold — verdicts are gated on it.");
     }
 }

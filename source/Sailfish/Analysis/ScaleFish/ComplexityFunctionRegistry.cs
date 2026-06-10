@@ -152,6 +152,9 @@ public static class ComplexityFunctionRegistry
 
     private static void RegisterBuiltIns()
     {
+        Register<Constant>();
+        Register<Logarithmic>();
+        Register<SqrtN>();
         Register<Linear>();
         Register<NLogN>();
         Register<Quadratic>();
@@ -164,7 +167,6 @@ public static class ComplexityFunctionRegistry
         Register<LogLinear>(includeInFitting: false);
         Register<Exponential>();
         Register<Factorial>();
-        Register<SqrtN>();
     }
 
     private sealed record Entry(

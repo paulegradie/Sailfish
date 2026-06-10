@@ -123,6 +123,15 @@ public class SailDiffResultMarkdownConverter : ISailDiffResultMarkdownConverter
             "", "", "", "", "", "", "", "", "", "%", ""
         };
 
+        // Equivalence column only when the TOST ran (opt-in via SailDiffSettings.EquivalenceMarginPercent),
+        // mirroring the conditional Exception column below.
+        if (enumeratedResults.Any(x => x.TestResultsWithOutlierAnalysis.StatisticalTestResult.Equivalence is not null))
+        {
+            selectors.Add(m => FormatEquivalence(m.TestResultsWithOutlierAnalysis.StatisticalTestResult.Equivalence));
+            headers.Add("Equivalence");
+            columnValueSuffixes.Add("");
+        }
+
         if (enumeratedResults.Any(x => !string.IsNullOrEmpty(x.TestResultsWithOutlierAnalysis.ExceptionMessage)))
         {
             selectors.Add(m => m.TestResultsWithOutlierAnalysis.ExceptionMessage);
@@ -137,6 +146,17 @@ public class SailDiffResultMarkdownConverter : ISailDiffResultMarkdownConverter
     }
 
     private static string FormatQValue(double? q) => q.HasValue ? q.Value.ToString("0.####") : string.Empty;
+
+    private static string FormatEquivalence(Sailfish.Contracts.Public.Models.EquivalenceTestResult? equivalence)
+    {
+        if (equivalence is null) return string.Empty;
+        // "Not established" rather than "not equivalent": TOST failure means the data couldn't
+        // demonstrate equivalence (a real difference OR insufficient power), not that a difference
+        // was proven.
+        return equivalence.IsEquivalent
+            ? $"Equivalent ±{equivalence.MarginPercent:0.#}% (p={equivalence.PValue:0.####})"
+            : $"Not established ±{equivalence.MarginPercent:0.#}% (p={equivalence.PValue:0.####})";
+    }
 
     private static string FormatEffectSize(Sailfish.Contracts.Public.Models.EffectSizeReport? effect)
     {
@@ -259,7 +279,15 @@ public class SailDiffResultMarkdownConverter : ISailDiffResultMarkdownConverter
         if (!isSignificant)
         {
             var noChangeIcon = context == OutputContext.Console ? "[=]" : "⚪";
-            return $"{noChangeIcon} **{result.TestCaseId.DisplayName}**: {Math.Abs(percentChange):F1}% difference from baseline (NOT SIGNIFICANT)";
+            // When the TOST ran, tell the user which kind of "not significant" this is:
+            // demonstrably within the margin, or simply underpowered to tell.
+            var equivalenceClause = stats.Equivalence switch
+            {
+                { IsEquivalent: true } eq => $" — equivalent within ±{eq.MarginPercent:0.#}%",
+                { IsEquivalent: false } eq => $" — inconclusive at ±{eq.MarginPercent:0.#}% margin",
+                _ => string.Empty
+            };
+            return $"{noChangeIcon} **{result.TestCaseId.DisplayName}**: {Math.Abs(percentChange):F1}% difference from baseline (NOT SIGNIFICANT{equivalenceClause})";
         }
 
         var direction = isImprovement ? "faster" : "slower";

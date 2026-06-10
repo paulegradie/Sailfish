@@ -87,9 +87,30 @@ public class SailDiffSettings
     /// </summary>
     public int PermutationCount { get; private set; } = 10_000;
 
+    /// <summary>
+    /// When set, every comparison additionally runs a TOST equivalence test on log-time with this
+    /// margin (e.g. 5 ⇒ "demonstrate the true ratio lies within ±5%"). Turns the weakest verdict —
+    /// "NOT SIGNIFICANT" — into one of two stronger statements: <em>equivalent within the margin</em>
+    /// (both one-sided tests reject at <see cref="Alpha"/>) or <em>inconclusive</em> (the run lacked
+    /// the power to demonstrate equivalence; compare the reported MDE against the margin). Null
+    /// (the default) disables equivalence testing.
+    /// </summary>
+    public double? EquivalenceMarginPercent { get; private set; }
+
     public void SetLogTransform(bool enabled)
     {
         LogTransform = enabled;
+    }
+
+    /// <summary>
+    /// Enables (or disables, with null) the TOST equivalence test. See
+    /// <see cref="EquivalenceMarginPercent"/>.
+    /// </summary>
+    public void SetEquivalenceMarginPercent(double? marginPercent)
+    {
+        if (marginPercent is double margin && (!double.IsFinite(margin) || margin <= 0))
+            throw new ArgumentOutOfRangeException(nameof(marginPercent), "EquivalenceMarginPercent must be a finite value > 0 (or null to disable).");
+        EquivalenceMarginPercent = marginPercent;
     }
 
     public void SetPermutationCount(int count)

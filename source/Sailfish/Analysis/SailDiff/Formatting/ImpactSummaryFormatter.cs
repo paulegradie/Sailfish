@@ -153,6 +153,19 @@ public class ImpactSummaryFormatter : IImpactSummaryFormatter
     {
         var direction = analysis.IsImprovement ? "faster" : "slower";
         var significanceText = GetSignificanceText(analysis.Significance);
+
+        // When the TOST equivalence test ran, a non-significant comparison can say something
+        // stronger than "no difference detected": either the samples are demonstrably within the
+        // configured margin, or the run lacked the power to tell — two very different conclusions
+        // that a bare NOT SIGNIFICANT collapses.
+        if (analysis.Significance == ComparisonSignificance.NoChange
+            && data.Statistics.Equivalence is { } equivalence)
+        {
+            significanceText += equivalence.IsEquivalent
+                ? $" — equivalent within ±{equivalence.MarginPercent:0.#}%"
+                : $" — inconclusive at ±{equivalence.MarginPercent:0.#}% margin";
+        }
+
         return $"{data.ComparedMethodName} is {analysis.PercentageChange:F1}% {direction} " +
                $"than baseline {data.PrimaryMethodName} ({significanceText})";
     }

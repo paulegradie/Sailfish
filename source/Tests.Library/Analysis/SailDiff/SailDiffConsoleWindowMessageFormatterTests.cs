@@ -266,7 +266,9 @@ public class SailDiffConsoleWindowMessageFormatterTests
         lines[3].Trim().ShouldBe("Before: BeforeTest");
         lines[4].Trim().ShouldBe("After: AfterTest");
         lines[5].Trim().ShouldBe("-----------------------------------");
-        lines[6].Trim().ShouldBe("Note: Changes are significant if the PValue is less than 0.001");
+        lines[6].Trim().ShouldBe(
+            "Note: Changes are significant if the PValue is less than 0.001. "
+            + "When multiple comparisons run together, the BH-adjusted QValue must also be at or below that threshold — verdicts are gated on it.");
     }
 
     private static List<SailDiffResult> CreateSampleSailDiffResults()

@@ -117,6 +117,9 @@ public static class AdapterRunSettingsLoader
 
         if (settingsConfiguration?.GlobalSettings.Round is not null) mappedSettings.SetRound(settingsConfiguration.GlobalSettings.Round);
 
+        if (settingsConfiguration?.SailDiffSettings.EquivalenceMarginPercent is not null)
+            mappedSettings.SetEquivalenceMarginPercent(settingsConfiguration.SailDiffSettings.EquivalenceMarginPercent);
+
         return mappedSettings;
     }
 

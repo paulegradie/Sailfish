@@ -42,12 +42,13 @@ public class TwoSampleWilcoxonSignedRankTest : ITwoSampleWilcoxonSignedRankTest
 
         try
         {
-            // Signed-rank requires PAIRED samples. We pass int.MaxValue as max so no random
-            // down-sample is performed; only outlier removal can shrink either side. Note that
-            // independent per-sample outlier removal can break pairing — if the resulting sizes
-            // differ, the factory throws DimensionMismatchException, which is caught below.
-            // The recommended fix is to disable outlier detection on this test, or to switch to
-            // MannWhitneyWilcoxonTest for independent benchmark samples.
+            // Signed-rank requires PAIRED samples. We pass int.MaxValue as max so no down-sampling
+            // happens beyond what is needed to re-align the sides: when independent per-sample
+            // outlier removal leaves the two samples unequal, the joint preprocessor randomly
+            // subsamples the larger side down to the smaller so the factory receives equal-length
+            // arrays. Note that both the outlier removal and that re-alignment disturb the index
+            // pairing the signed-rank test assumes — disable outlier detection for strictly paired
+            // data, or switch to MannWhitneyWilcoxonTest for independent benchmark samples.
             var (preprocessed1, preprocessed2) = _preprocessor.PreprocessJointlyWithDownSample(
                 before, after, settings.UseOutlierDetection, minArraySize: 3, maxArraySize: int.MaxValue);
             var sample1 = preprocessed1.OutlierAnalysis?.DataWithOutliersRemoved ?? preprocessed1.RawData;

@@ -107,11 +107,31 @@ public class ScaleFishRobustnessTests
     }
 
     [Fact]
-    public void EveryBuiltInFamily_FreeParameterCountIsTwo()
+    public void Constant_SeedFit_RejectsMismatchedWeightsLength()
     {
+        // The generic FitLinearInParameters path validates weights length against observations;
+        // the Constant override must honour the same contract rather than indexing out of range
+        // (or silently ignoring surplus weights).
+        var constant = new Constant();
+        var measurements = new[]
+        {
+            new ComplexityMeasurement(1, 10.0),
+            new ComplexityMeasurement(2, 10.0)
+        };
+
+        Should.Throw<Sailfish.Exceptions.SailfishException>(() => constant.SeedFit(measurements, weights: [1.0]));
+        Should.Throw<Sailfish.Exceptions.SailfishException>(() => constant.SeedFit(measurements, weights: [1.0, 1.0, 1.0]));
+    }
+
+    [Fact]
+    public void EveryBuiltInFamily_ReportsItsFreeParameterCount()
+    {
+        // All scale-and-bias families fit two parameters; Constant fits only the level. The AICc
+        // parameter penalty depends on these counts being right.
         foreach (var family in ComplexityReferences.GetComplexityFunctions())
         {
-            family.FreeParameterCount.ShouldBe(2, $"{family.Name} reports unexpected free-parameter count");
+            var expected = family is Constant ? 1 : 2;
+            family.FreeParameterCount.ShouldBe(expected, $"{family.Name} reports unexpected free-parameter count");
         }
     }
 
@@ -119,7 +139,8 @@ public class ScaleFishRobustnessTests
     public void EveryBuiltInFamily_FitsItsOwnExactData()
     {
         // Sanity check: round-trip every family. For each family F, generate exact F(x) data and confirm
-        // F.SeedFit returns scale ≈ 1, bias ≈ 0.
+        // F.SeedFit returns scale ≈ 1, bias ≈ 0. Constant has no scale — its level is the bias, and
+        // BuildExact's scale=1/bias=0 convention produces y ≡ 0 for it.
         foreach (var family in ComplexityReferences.GetComplexityFunctions())
         {
             var xs = family.Name == nameof(Factorial)
@@ -130,7 +151,10 @@ public class ScaleFishRobustnessTests
 
             var measurements = ScaleFishTestHelpers.BuildExact(family, xs);
             var fit = family.SeedFit(measurements);
-            fit.Scale.ShouldBe(1.0, tolerance: 0.05, $"{family.Name} scale off");
+            if (family is Constant)
+                fit.Bias.ShouldBe(0.0, tolerance: 1e-9, "Constant level should reproduce the flat data");
+            else
+                fit.Scale.ShouldBe(1.0, tolerance: 0.05, $"{family.Name} scale off");
         }
     }
 }

@@ -88,6 +88,27 @@ public class ConstantComplexityDetectorTests
     }
 
     /// <summary>
+    /// A winning Constant family is the strongest version of the flat signature — the detector must
+    /// flag it even when the classification is confidently distinguishable (the distinguishability
+    /// guard protects scaling fits from being second-guessed, not flat ones).
+    /// </summary>
+    [Fact]
+    public void ConstantFamilyWinner_IsFlagged_EvenWhenDistinguishable()
+    {
+        var constant = new Constant { FunctionParameters = new FittedCurve(scale: 0.0, bias: 100.0) };
+        var next = new Linear { FunctionParameters = new FittedCurve(scale: 0.0, bias: 100.0) };
+        var model = new ScaleFishModel(
+            constant, goodnessOfFit: 0.0,
+            next, nextClosestGoodnessOfFit: 0.0,
+            bestAicc: 2.0, nextBestAicc: 4.1, akaikeWeight: 0.6,
+            isDistinguishable: true, sampleSize: 6, powerLog: null);
+
+        var measurements = new List<ComplexityMeasurement> { new(4, 100), new(256, 100) };
+
+        ConstantComplexityDetector.IsLikelyConstant(model, measurements).ShouldBeTrue();
+    }
+
+    /// <summary>
     /// The guard: a fit the data can confidently separate into a growth family is never flagged, even if
     /// its measured span over the supplied range happens to be small. Distinguishability wins.
     /// </summary>

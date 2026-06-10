@@ -82,6 +82,12 @@ public static class ConstantComplexityDetector
     {
         if (model is null) throw new ArgumentNullException(nameof(model));
 
+        // The estimator can select the explicit Constant (O(1)) family. When it wins — distinguishably
+        // or not — the data is flat by classification, which is the strongest form of the signature this
+        // detector exists to surface. Short-circuit before the distinguishability guard below: that guard
+        // protects confidently-*scaling* fits from being second-guessed, not confidently-flat ones.
+        if (model.ScaleFishModelFunction is ComplexityFunctions.Constant) return true;
+
         // A fit the data can confidently separate into a specific growth family is, by definition, not the
         // ambiguous-flat signature we are looking for. Never second-guess a distinguishable classification.
         if (model.IsDistinguishable) return false;

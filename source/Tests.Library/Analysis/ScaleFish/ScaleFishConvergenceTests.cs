@@ -63,6 +63,28 @@ public class ScaleFishConvergenceTests
         Assert<SqrtN>();
     }
 
+    [Fact]
+    public void EstimatorFindsCorrectComplexity_Logarithmic()
+    {
+        Assert<Logarithmic>();
+    }
+
+    [Fact]
+    public void EstimatorFindsCorrectComplexity_Constant()
+    {
+        // Flat data: every two-parameter family can match Constant's residuals by fitting
+        // scale ≈ 0, but pays the AICc penalty for the spare parameter — the one-parameter
+        // Constant family must win.
+        var measurements = Enumerable.Range(2, 11)
+            .Select(i => new ComplexityMeasurement(i * 3, 42.0))
+            .ToArray();
+
+        var estimation = new ComplexityEstimator().EstimateComplexity(measurements);
+        estimation.ShouldNotBeNull();
+        estimation.ScaleFishModelFunction.Name.ShouldBe(nameof(Constant));
+        estimation.ScaleFishModelFunction.FunctionParameters!.Bias.ShouldBe(42.0, tolerance: 1e-9);
+    }
+
     private void Assert<TComplexityFunction>() where TComplexityFunction : ScaleFishModelFunction
     {
         var estimation = new ComplexityEstimator().EstimateComplexity(GetMeasurements<TComplexityFunction>());

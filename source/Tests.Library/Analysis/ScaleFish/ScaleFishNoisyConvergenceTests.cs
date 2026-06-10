@@ -49,6 +49,12 @@ public class ScaleFishNoisyConvergenceTests
     }
 
     [Fact]
+    public void Noisy_Logarithmic_LogSpaced_ConvergesEverySeed()
+    {
+        AssertConverges<Logarithmic>(xs: ScaleFishTestHelpers.LogSpacedX(4, 4096, 6));
+    }
+
+    [Fact]
     public void FewerPoints_LogSpaced_LinearStillConverges()
     {
         // 4 well-chosen log-spaced X values are enough to distinguish Linear from the alternatives.
