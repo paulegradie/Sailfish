@@ -110,14 +110,16 @@ public class Tier1RigorTests
     {
         // RunSettings.Seed must produce identical down-samples across runs. Pre-Tier-1, no
         // explicit seed → new Random() → wall-clock seed → non-deterministic stats even when
-        // the user had set a seed via RunSettingsBuilder.WithSeed.
+        // the user had set a seed via RunSettingsBuilder.WithSeed. (Exercised through the joint
+        // path — the solo down-sample entry point was removed with its last production caller.)
         var input = new double[] { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20 };
+        var other = new double[] { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 };
         var runSettings = Substitute.For<IRunSettings>();
         runSettings.Seed.Returns(123);
         var preprocessor = new TestPreprocessor(new SailfishOutlierDetector(), runSettings);
 
-        var firstRun = preprocessor.PreprocessWithDownSample(input, useOutlierDetection: false, maxArraySize: 10);
-        var secondRun = preprocessor.PreprocessWithDownSample(input, useOutlierDetection: false, maxArraySize: 10);
+        var (firstRun, _) = preprocessor.PreprocessJointlyWithDownSample(input, other, useOutlierDetection: false, maxArraySize: 10);
+        var (secondRun, _) = preprocessor.PreprocessJointlyWithDownSample(input, other, useOutlierDetection: false, maxArraySize: 10);
 
         secondRun.RawData.ShouldBe(firstRun.RawData);
     }
@@ -128,10 +130,11 @@ public class Tier1RigorTests
         // Sanity check that the seed actually drives variation — without this, the determinism
         // test above could pass trivially if the down-sampler ignored the seed.
         var input = new double[] { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20 };
+        var other = new double[] { 1, 2, 3, 4, 5, 6, 7, 8, 9, 10 };
         var preprocessor = new TestPreprocessor(new SailfishOutlierDetector());
 
-        var seedA = preprocessor.PreprocessWithDownSample(input, useOutlierDetection: false, maxArraySize: 10, seed: 42);
-        var seedB = preprocessor.PreprocessWithDownSample(input, useOutlierDetection: false, maxArraySize: 10, seed: 99);
+        var (seedA, _) = preprocessor.PreprocessJointlyWithDownSample(input, other, useOutlierDetection: false, maxArraySize: 10, seed: 42);
+        var (seedB, _) = preprocessor.PreprocessJointlyWithDownSample(input, other, useOutlierDetection: false, maxArraySize: 10, seed: 99);
 
         seedB.RawData.ShouldNotBe(seedA.RawData);
     }

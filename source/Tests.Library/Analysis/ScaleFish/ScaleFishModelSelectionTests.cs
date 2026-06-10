@@ -1,4 +1,5 @@
 using System;
+using System.Linq;
 using Sailfish.Analysis.ScaleFish;
 using Sailfish.Analysis.ScaleFish.ComplexityFunctions;
 using Sailfish.Analysis.ScaleFish.CurveFitting;
@@ -183,6 +184,53 @@ public class ScaleFishModelSelectionTests
         exactAicc.ShouldBeLessThan(offAicc);
         // Perfect fit ⇒ χ² = 0 ⇒ AICc reduces to the parameter penalty: 2k + 2k(k+1)/(N−k−1).
         exactAicc.ShouldBe(4.0 + 12.0 / 27.0, tolerance: 1e-9);
+    }
+
+    [Fact]
+    public void FlatReplicateData_ConstantWinsViaParameterPenalty()
+    {
+        // Identical means at every X with genuine replicate uncertainty: every family fits the data
+        // exactly (scale = 0), so χ² = 0 across the board and the ranking is decided purely by the
+        // AICc parameter penalty — the first time k matters. Constant (k = 1) must beat every
+        // two-parameter family by ΔAICc ≈ 2, i.e. distinguishably.
+        var measurements = new[] { 8, 16, 32, 64, 128, 256 }
+            .Select(x => new ComplexityMeasurement(x, 100.0, stdDev: 5.0, sampleSize: 20))
+            .ToArray();
+
+        var result = new ComplexityEstimator().EstimateComplexity(measurements);
+
+        result.ShouldNotBeNull();
+        result.ScaleFishModelFunction.Name.ShouldBe("Constant");
+        result.IsDistinguishable.ShouldBeTrue("k = 1 vs k = 2 yields ΔAICc ≥ 2 when residuals tie");
+        result.ScaleFishModelFunction.FunctionParameters!.Bias.ShouldBe(100.0, tolerance: 1e-9);
+    }
+
+    [Fact]
+    public void NoisyFlatData_SurfacesAsConstantOrFlatFit()
+    {
+        // With real noise the AIC parsimony edge is probabilistic per seed (a spurious slope can
+        // buy a two-parameter family up to ~χ²₁ of fit), so the user-facing contract is the
+        // combination: either the Constant family wins outright, or the winner is an effectively
+        // flat curve that ConstantComplexityDetector flags. Either way the user is told the
+        // variable isn't driving the runtime.
+        for (var seed = 1; seed <= 10; seed++)
+        {
+            var rng = new Random(seed);
+            var measurements = ScaleFishTestHelpers.BuildNoisy(
+                _ => 250.0,
+                new[] { 8, 16, 32, 64, 128, 256 },
+                sampleSize: 25,
+                relativeNoise: 0.05,
+                rng);
+
+            var result = new ComplexityEstimator().EstimateComplexity(measurements);
+
+            result.ShouldNotBeNull($"seed {seed} produced no result");
+            var flagged = result.ScaleFishModelFunction.Name == "Constant"
+                          || ConstantComplexityDetector.IsLikelyConstant(result, measurements);
+            flagged.ShouldBeTrue(
+                $"seed {seed}: winner {result.ScaleFishModelFunction.Name} was neither Constant nor flagged flat");
+        }
     }
 
     [Fact]

@@ -1,0 +1,181 @@
+[
+  {
+    "TestClass": "PerformanceTests.ExamplePerformanceTests.ScaleFishExample, PerformanceTests, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+    "ExecutionSettings": {
+      "AsCsv": false,
+      "AsConsole": false,
+      "AsMarkdown": false,
+      "NumWarmupIterations": 0,
+      "SampleSize": 20,
+      "DisableOverheadEstimation": false
+    },
+    "CompiledTestCaseResults": [
+      {
+        "GroupingId": "ScaleFishExample.Linear",
+        "PerformanceRunResult": {
+          "DisplayName": "ScaleFishExample.Linear(N: 5)",
+          "Mean": 66.88948900000001,
+          "Median": 67.05475,
+          "StdDev": 0.32113981950632586,
+          "Variance": 0.10313078367255556,
+          "RawExecutionResults": [
+            67.24570800000001,
+            67.062125,
+            67.06379199999999,
+            66.583167,
+            67.060625,
+            67.045333,
+            67.053541,
+            67.06512500000001,
+            66.324,
+            67.05087499999999,
+            67.064166,
+            67.050292,
+            67.060958,
+            66.32124999999999,
+            66.085792,
+            67.087125,
+            66.686458,
+            67.05475,
+            67.12370800000001,
+            67.057209
+          ],
+          "SampleSize": 20,
+          "NumWarmupIterations": 10,
+          "DataWithOutliersRemoved": [
+            67.062125,
+            67.06379199999999,
+            66.583167,
+            67.060625,
+            67.045333,
+            67.053541,
+            67.06512500000001,
+            66.324,
+            67.05087499999999,
+            67.064166,
+            67.050292,
+            67.060958,
+            66.32124999999999,
+            66.085792,
+            67.087125,
+            66.686458,
+            67.05475,
+            67.12370800000001,
+            67.057209
+          ],
+          "LowerOutliers": [
+            66.583167,
+            66.324,
+            66.32124999999999,
+            66.085792,
+            66.686458
+          ],
+          "UpperOutliers": [
+            67.24570800000001
+          ],
+          "TotalNumOutliers": 6
+        },
+        "Exception": null,
+        "TestCaseId": {
+          "TestCaseName": {
+            "Name": "ScaleFishExample.Linear",
+            "Parts": [
+              "ScaleFishExample",
+              "Linear"
+            ]
+          },
+          "TestCaseVariables": {
+            "Variables": [
+              {
+                "Name": "N",
+                "Value": 5
+              }
+            ]
+          }
+        }
+      },
+      {
+        "GroupingId": "ScaleFishExample.Linear",
+        "PerformanceRunResult": {
+          "DisplayName": "ScaleFishExample.Linear(N: 10)",
+          "Mean": 128.9866568235294,
+          "Median": 129.048958,
+          "StdDev": 0.18188737320840065,
+          "Variance": 0.03308301653265202,
+          "RawExecutionResults": [
+            129.095,
+            129.044875,
+            129.046459,
+            129.04158299999997,
+            129.06004099999998,
+            129.04904200000001,
+            129.043208,
+            128.32987500000002,
+            129.056916,
+            129.05112499999998,
+            129.066125,
+            128.789334,
+            128.948375,
+            129.094,
+            129.048958,
+            129.050625,
+            129.04095800000002,
+            129.049833,
+            129.055834,
+            129.080208
+          ],
+          "SampleSize": 20,
+          "NumWarmupIterations": 10,
+          "DataWithOutliersRemoved": [
+            129.044875,
+            129.046459,
+            129.04158299999997,
+            129.06004099999998,
+            129.04904200000001,
+            129.043208,
+            128.32987500000002,
+            129.056916,
+            129.05112499999998,
+            129.066125,
+            128.789334,
+            128.948375,
+            129.048958,
+            129.050625,
+            129.04095800000002,
+            129.049833,
+            129.055834
+          ],
+          "LowerOutliers": [
+            128.32987500000002,
+            128.789334,
+            128.948375
+          ],
+          "UpperOutliers": [
+            129.095,
+            129.094,
+            129.080208
+          ],
+          "TotalNumOutliers": 6
+        },
+        "Exception": null,
+        "TestCaseId": {
+          "TestCaseName": {
+            "Name": "ScaleFishExample.Linear",
+            "Parts": [
+              "ScaleFishExample",
+              "Linear"
+            ]
+          },
+          "TestCaseVariables": {
+            "Variables": [
+              {
+                "Name": "N",
+                "Value": 10
+              }
+            ]
+          }
+        }
+      }
+    ]
+  }
+]

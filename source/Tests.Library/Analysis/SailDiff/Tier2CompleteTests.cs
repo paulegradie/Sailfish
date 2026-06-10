@@ -156,6 +156,71 @@ public class Tier2CompleteTests
     }
 
     [Fact]
+    public void StatisticalTestComputer_DemotesVerdictsThatFailFdrControl()
+    {
+        // 10 comparisons with p = 0.005, 0.015, …, 0.095 at α = 0.05. The wrappers mark the five
+        // raw-significant pairs (p ≤ 0.05) Regressed/Improved, but BH inflates their q-values to
+        // 0.050, 0.075, 0.083, 0.0875, 0.090 — only the smallest survives FDR control. The headline
+        // verdict must agree with the printed q-value: the survivor keeps its direction, the other
+        // four demote to NoChange, and already-NoChange rows are untouched.
+        var executor = Substitute.For<IStatisticalTestExecutor>();
+        var aggregator = Substitute.For<IPerformanceRunResultAggregator>();
+
+        var beforeResults = new List<PerformanceRunResult>();
+        var afterResults = new List<PerformanceRunResult>();
+        for (var i = 0; i < 10; i++)
+        {
+            var name = $"TestClass.Method{i:D2}";
+            beforeResults.Add(MakePerf(name));
+            afterResults.Add(MakePerf(name));
+        }
+
+        aggregator
+            .Aggregate(Arg.Any<TestCaseId>(), Arg.Any<IReadOnlyCollection<PerformanceRunResult>>())
+            .Returns(x => AggregatedPerformanceResult.Aggregate((TestCaseId)x[0], [MakePerf(((TestCaseId)x[0]).DisplayName)]));
+
+        var callIndex = 0;
+        executor
+            .ExecuteStatisticalTest(Arg.Any<double[]>(), Arg.Any<double[]>(), Arg.Any<SailDiffSettings>())
+            .Returns(_ =>
+            {
+                var idx = callIndex++;
+                var rawP = 0.005 + idx * 0.010;
+                // Mirror the wrappers: direction only when raw-significant; vary it to prove
+                // demotion is direction-agnostic.
+                var description = rawP <= 0.05
+                    ? idx == 1 ? SailfishChangeDirection.Improved : SailfishChangeDirection.Regressed
+                    : SailfishChangeDirection.NoChange;
+                return BuildStatResult(rawP, description);
+            });
+
+        var computer = new StatisticalTestComputer(executor, aggregator);
+        // Single-threaded so the call-order → test-case mapping above is deterministic.
+        var settings = new SailDiffSettings(alpha: 0.05, useOutlierDetection: false, maxDegreeOfParallelism: 1);
+
+        var beforeData = new TestData(beforeResults.Select(b => b.DisplayName), beforeResults);
+        var afterData = new TestData(afterResults.Select(a => a.DisplayName), afterResults);
+
+        var results = computer.ComputeTest(beforeData, afterData, settings);
+
+        string VerdictOf(int idx) => results
+            .Single(r => r.TestCaseId.TestCaseName.Name == $"TestClass.Method{idx:D2}")
+            .TestResultsWithOutlierAnalysis.StatisticalTestResult.ChangeDescription;
+
+        // p = 0.005 → q = 0.050 ≤ α: survives with its original direction.
+        VerdictOf(0).ShouldBe(SailfishChangeDirection.Regressed);
+
+        // p = 0.015 … 0.045 were raw-significant but fail FDR control (q = 0.075 … 0.090).
+        VerdictOf(1).ShouldBe(SailfishChangeDirection.NoChange, "Improved verdicts demote too");
+        for (var idx = 2; idx <= 4; idx++)
+            VerdictOf(idx).ShouldBe(SailfishChangeDirection.NoChange, $"q for Method{idx:D2} exceeds α");
+
+        // Raw-insignificant rows were NoChange already and must stay that way.
+        for (var idx = 5; idx <= 9; idx++)
+            VerdictOf(idx).ShouldBe(SailfishChangeDirection.NoChange);
+    }
+
+    [Fact]
     public void StatisticalTestComputer_SingleComparison_QEqualsP()
     {
         // No correction is meaningful for a family of one — q should equal p.
@@ -335,7 +400,7 @@ public class Tier2CompleteTests
 
     // ─── Helpers ──────────────────────────────────────────────────────────────────────
 
-    private static TestResultWithOutlierAnalysis BuildStatResult(double pValue)
+    private static TestResultWithOutlierAnalysis BuildStatResult(double pValue, string changeDescription = "NoChange")
     {
         var stat = new StatisticalTestResult(
             meanBefore: 5.0,
@@ -344,7 +409,7 @@ public class Tier2CompleteTests
             medianAfter: 6.0,
             testStatistic: 2.0,
             pValue: pValue,
-            changeDescription: "NoChange",
+            changeDescription: changeDescription,
             sampleSizeBefore: 5,
             sampleSizeAfter: 5,
             rawDataBefore: [1.0, 2, 3, 4, 5],

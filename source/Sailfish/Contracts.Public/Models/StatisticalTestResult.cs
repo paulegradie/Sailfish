@@ -90,4 +90,12 @@ public class StatisticalTestResult
     /// non-positive mean, or too few samples).
     /// </summary>
     public double? MinimumDetectableEffectPercent { get; set; }
+
+    /// <summary>
+    /// TOST equivalence result, populated when <c>SailDiffSettings.EquivalenceMarginPercent</c> is
+    /// configured. Separates "demonstrably within ±margin" from "inconclusive" for non-significant
+    /// comparisons. <c>null</c> when equivalence testing is disabled or not computable for these
+    /// samples (non-positive values, too few observations, zero variance).
+    /// </summary>
+    public EquivalenceTestResult? Equivalence { get; set; }
 }

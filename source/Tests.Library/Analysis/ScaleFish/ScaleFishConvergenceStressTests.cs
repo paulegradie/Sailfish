@@ -15,11 +15,12 @@ namespace Tests.Library.Analysis.ScaleFish;
 public class ScaleFishConvergenceStressTests
 {
     [Theory]
-    [InlineData(typeof(Linear),     8, 1024,   25,  0.05)]
-    [InlineData(typeof(NLogN),      8, 1024,   25,  0.05)]
-    [InlineData(typeof(Quadratic),  4, 256,    25,  0.05)]
-    [InlineData(typeof(Cubic),      4, 128,    25,  0.05)]
-    [InlineData(typeof(SqrtN),      4, 4096,   25,  0.05)]
+    [InlineData(typeof(Linear),      8, 1024,   25,  0.05)]
+    [InlineData(typeof(NLogN),       8, 1024,   25,  0.05)]
+    [InlineData(typeof(Quadratic),   4, 256,    25,  0.05)]
+    [InlineData(typeof(Cubic),       4, 128,    25,  0.05)]
+    [InlineData(typeof(SqrtN),       4, 4096,   25,  0.05)]
+    [InlineData(typeof(Logarithmic), 4, 4096,   25,  0.05)]
     public void EveryFamily_ConvergesAcross25Seeds(Type familyType, int minX, int maxX, int seeds, double noise)
     {
         var instance = (ScaleFishModelFunction)Activator.CreateInstance(familyType)!;

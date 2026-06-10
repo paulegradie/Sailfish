@@ -27,13 +27,12 @@ public interface ITestPreprocessor
 {
     PreprocessedData Preprocess(double[] input, bool useOutlierDetection);
 
-    PreprocessedData PreprocessWithDownSample(
-        double[] rawData,
-        bool useOutlierDetection,
-        [Range(3, int.MaxValue)] int minArraySize = 3,
-        [Range(3, int.MaxValue)] int maxArraySize = 10,
-        int? seed = null);
-
+    /// <summary>
+    /// Outlier-aware preprocessing for tests that need the two samples kept at equal length (the
+    /// paired signed-rank test). When outlier removal (or <paramref name="maxArraySize"/>) leaves the
+    /// sides unequal, the larger side is randomly subsampled down to the smaller — deterministic when
+    /// a seed is supplied (explicitly or via <see cref="IRunSettings.Seed"/>).
+    /// </summary>
     (PreprocessedData, PreprocessedData) PreprocessJointlyWithDownSample(
         double[] sample1,
         double[] sample2,
@@ -72,25 +71,6 @@ public class TestPreprocessor : ITestPreprocessor
 
         var outlierAnalysis = _outlierDetector.DetectOutliers(rawData);
         return new PreprocessedData(rawData, outlierAnalysis);
-    }
-
-    public PreprocessedData PreprocessWithDownSample(double[] rawData,
-        bool useOutlierDetection,
-        [Range(3, int.MaxValue)] int minArraySize = 3,
-        [Range(3, int.MaxValue)] int maxArraySize = 10,
-        int? seed = null)
-    {
-        var effectiveSeed = seed ?? _runSettings?.Seed;
-        if (useOutlierDetection)
-        {
-            var outlierAnalysis = _outlierDetector.DetectOutliers(rawData);
-            var downSampled = DownSampleWithRandomUniform(outlierAnalysis.DataWithOutliersRemoved, minArraySize, maxArraySize, effectiveSeed);
-            return new PreprocessedData(rawData,
-                outlierAnalysis with { OriginalData = rawData, DataWithOutliersRemoved = downSampled });
-        }
-
-        var downSampledNoOutlierDetection = DownSampleWithRandomUniform(rawData, minArraySize, maxArraySize, effectiveSeed);
-        return new PreprocessedData(downSampledNoOutlierDetection, null);
     }
 
     public (PreprocessedData, PreprocessedData) PreprocessJointlyWithDownSample(

@@ -20,6 +20,8 @@ public class ScaleFishRegistryTests
     public void BuiltIns_RegisteredByDefault()
     {
         var names = ComplexityFunctionRegistry.RegisteredNames();
+        names.ShouldContain(nameof(Constant));
+        names.ShouldContain(nameof(Logarithmic));
         names.ShouldContain(nameof(Linear));
         names.ShouldContain(nameof(NLogN));
         names.ShouldContain(nameof(Quadratic));

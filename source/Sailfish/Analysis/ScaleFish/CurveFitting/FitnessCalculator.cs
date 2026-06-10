@@ -133,7 +133,19 @@ public class FitnessCalculator : IFitnessCalculator
 
     private static double RSquared(double[] modeledValues, double[] observedValues)
     {
-        return GoodnessOfFit.RSquared(modeledValues, observedValues);
+        var rSquared = GoodnessOfFit.RSquared(modeledValues, observedValues);
+        if (double.IsNaN(rSquared))
+        {
+            // Zero-variance inputs (perfectly flat measurements — exactly the data the Constant
+            // family exists for) make R² 0/0-undefined, and a NaN here flips FitnessResult.IsValid
+            // to false for *every* candidate, leaving flat data with no model at all. Fall back to
+            // a residual-based definition: an exact reproduction counts as a perfect fit, anything
+            // else explains none of the (non-existent) variance.
+            var ssd = Distance.SSD(modeledValues, observedValues);
+            return ssd <= 1e-30 ? 1.0 : 0.0;
+        }
+
+        return rSquared;
     }
 
     private static double Rmse(double[] modeledValues, double[] observedValues)
