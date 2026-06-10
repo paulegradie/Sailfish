@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
 using System.Threading;
@@ -28,6 +27,14 @@ internal class TestCaseIterator : ITestCaseIterator
     private readonly IIterationStrategy _fixedIterationStrategy;
     private readonly IIterationStrategy _adaptiveIterationStrategy;
     private readonly IStatisticalTestExecutor? _statExecutor;
+
+    /// <summary>
+    ///     Duration source for steady-state warmup iterations. Wall-clock by default; tests inject a
+    ///     scripted source so the warmup loop's floor/window/early-stop/cap behaviour can be asserted
+    ///     deterministically instead of depending on host load. Settable test seam (same convention as
+    ///     <see cref="Sailfish.Analysis.ScaleFish.ScaleFishModelFunction.FitnessCalculator"/>).
+    /// </summary>
+    internal ISteadyStateWarmupTimer WarmupTimer { get; set; } = new StopwatchWarmupTimer();
 
     public TestCaseIterator(
         IRunSettings runSettings,
@@ -250,10 +257,10 @@ internal class TestCaseIterator : ITestCaseIterator
                 return CatchAndReturn(testInstanceContainer, ex);
             }
 
-            var sw = Stopwatch.StartNew();
-            await testInstanceContainer.CoreInvoker.ExecutionMethod(cancellationToken, false).ConfigureAwait(false);
-            sw.Stop();
-            durations.Add(sw.Elapsed.TotalMilliseconds);
+            var elapsedMs = await WarmupTimer
+                .TimeAsync(() => testInstanceContainer.CoreInvoker.ExecutionMethod(cancellationToken, false))
+                .ConfigureAwait(false);
+            durations.Add(elapsedMs);
 
             try
             {
