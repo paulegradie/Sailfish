@@ -6,7 +6,7 @@ title: ScaleFish
 
 **Scalefish** is a **regression analysis** tool that infers the algorithmic complexity of your test method as the input scale grows.
 
-When enabled, scalefish will discover test cases with scalefish-enabled variables and fit the timing data against a catalog of complexity curves (Linear, NLogN, Quadratic, Cubic, SqrtN, LogLinear, Exponential, Factorial). It ranks the candidates using the **corrected Akaike Information Criterion (AICc)** and reports a confidence-aware classification with a continuous-exponent diagnostic.
+When enabled, scalefish will discover test cases with scalefish-enabled variables and fit the timing data against a catalog of complexity curves (Linear, NLogN, Quadratic, Cubic, SqrtN, Exponential, Factorial). It ranks the candidates using the **corrected Akaike Information Criterion (AICc)** — computed from the per-X replicate spread whenever replicate data is available, so even a 3-value declaration can produce a confident classification — and reports a confidence-aware classification with a continuous-exponent diagnostic.
 
 This outputs a model file and a results file once your run is complete. The model file can be used to make predictions.
 
@@ -49,14 +49,13 @@ Sailfish fits each variable against the following functions and picks the best/n
 | ----------- | ------------- | --------- |
 | Linear      | O(n)          | Good      |
 | NLogN       | O(nLog(n))    | Good      |
-| LogLinear   | O(nlog\_2(n)) | Okay      |
 | Quadratic   | O(n^2)        | Bad       |
 | Cubic       | O(n^3)        | Very Bad  |
 | SqrtN       | O(sqrt(n))    | Very Good |
 | Exponential | O(2^n)        | Very Bad  |
 | Factorial   | O(n!)         | Worst!    |
 
-Note: there is no `Constant` / `O(1)` model and no isolated `Logarithmic` / `O(log n)` model — pure-constant data will still report the closest fit (typically Linear with a near‑zero slope).
+Note: `LogLinear` (O(n·log₂ n)) is no longer fitted — its curve is a constant multiple of NLogN's, so fitting both made every n·log n result tie with its own clone and never register as statistically distinguishable. Models previously saved with a LogLinear classification still load and predict. There is no `Constant` / `O(1)` model and no isolated `Logarithmic` / `O(log n)` model — pure-constant data will still report the closest fit (typically Linear with a near‑zero slope).
 
 If using Sailfish as a test project, you can create a `.sailfish.json` file in the root of your test project (next to your `.csproj` file). This file can hold various configuration settings. When found, SailDiff will be automatically run. If any compatible setting is omitted, a sensible default will be used.
 

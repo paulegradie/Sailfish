@@ -42,12 +42,10 @@ public class ScaleFishConvergenceStressTests
             winnerCounts[result.ScaleFishModelFunction.Name] = current + 1;
         }
 
+        // Exact-name expectation: the LogLinear clone is deserialization-only, so each family's data
+        // has exactly one correct winner.
         var expected = familyType.Name;
-        var equivalents = expected == nameof(NLogN) || expected == nameof(LogLinear)
-            ? new HashSet<string> { nameof(NLogN), nameof(LogLinear) }
-            : new HashSet<string> { expected };
-
-        var wins = winnerCounts.Where(kv => equivalents.Contains(kv.Key)).Sum(kv => kv.Value);
+        winnerCounts.TryGetValue(expected, out var wins);
         wins.ShouldBe(
             seeds,
             $"{expected}: expected {seeds}/{seeds}, got: {string.Join(", ", winnerCounts.Select(kv => $"{kv.Key}={kv.Value}"))}");

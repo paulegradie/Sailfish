@@ -96,30 +96,13 @@ public class ScaleFishNoisyConvergenceTests
             winnerCounts[name] = current + 1;
         }
 
+        // Exact-name expectation: the LogLinear clone (x·log₂x, collinear with NLogN's x·ln x) is
+        // deserialization-only now, so n·log n data has exactly one correct winner.
         var expected = typeof(TFamily).Name;
-        var equivalents = EquivalentFamilies(expected);
+        winnerCounts.TryGetValue(expected, out var wins);
 
-        var validWins = winnerCounts
-            .Where(kv => equivalents.Contains(kv.Key))
-            .Sum(kv => kv.Value);
-
-        validWins.ShouldBe(
+        wins.ShouldBe(
             Seeds,
-            $"Expected {expected} (or equivalent) to win every seed, got: {string.Join(", ", winnerCounts.Select(kv => $"{kv.Key}={kv.Value}"))}");
-    }
-
-    /// <summary>
-    /// Returns the set of family names that are mathematically equivalent up to the scale parameter.
-    /// NLogN (natural log) and LogLinear (log base 2) differ only by the constant ln(2), which the fit
-    /// absorbs into <c>scale</c>; either is the correct answer for the other's data.
-    /// </summary>
-    private static System.Collections.Generic.HashSet<string> EquivalentFamilies(string name)
-    {
-        return name switch
-        {
-            nameof(NLogN) => new() { nameof(NLogN), nameof(LogLinear) },
-            nameof(LogLinear) => new() { nameof(NLogN), nameof(LogLinear) },
-            _ => new() { name }
-        };
+            $"Expected {expected} to win every seed, got: {string.Join(", ", winnerCounts.Select(kv => $"{kv.Key}={kv.Value}"))}");
     }
 }

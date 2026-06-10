@@ -50,7 +50,11 @@ public class ScaleFishModel
 
     /// <summary>
     /// Corrected Akaike Information Criterion (AICc) of the best-fitting family. Lower is better.
-    /// NaN when not computed (e.g. older deserialised models).
+    /// NaN when not computed (e.g. older deserialised models). When the measurements carried replicate
+    /// uncertainty this is the replicate-level (GLS chi-square) AICc; otherwise it is the means-level
+    /// OLS AICc. Family-independent constants are dropped in both forms, so only differences between
+    /// candidates (Δ-AICc, Akaike weights) are meaningful — absolute values are not comparable across
+    /// runs or Sailfish versions.
     /// </summary>
     public double BestAicc { get; init; }
 
@@ -73,7 +77,8 @@ public class ScaleFishModel
     public bool IsDistinguishable { get; init; }
 
     /// <summary>
-    /// The number of (X, Y) measurements used to fit the model. 0 when not recorded.
+    /// The number of (X, Y) mean points used to fit the model — i.e. the number of distinct X values,
+    /// not the total replicate count. 0 when not recorded.
     /// </summary>
     public int SampleSize { get; init; }
 
