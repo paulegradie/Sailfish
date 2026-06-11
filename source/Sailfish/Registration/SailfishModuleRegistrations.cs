@@ -87,7 +87,6 @@ internal static class SailfishModuleRegistrations
         services.AddTransient<IMarkdownWriter, MarkdownWriter>();
         services.AddTransient<IConsoleWriter, ConsoleWriter>();
         services.AddTransient<IPerformanceRunResultFileWriter, PerformanceRunResultFileWriter>();
-        services.AddTransient<ITrackingFileFinder, TrackingFileFinder>();
         services.AddTransient<ITrackingFileDirectoryReader, DefaultTrackingFileDirectoryReader>();
         services.AddTransient<IIterationVariableRetriever, IterationVariableRetriever>();
 

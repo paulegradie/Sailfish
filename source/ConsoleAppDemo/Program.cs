@@ -1,11 +1,21 @@
-﻿using PerformanceTestingUserInvokedConsoleApp;
+﻿using System.IO;
+using PerformanceTestingUserInvokedConsoleApp;
 using PerformanceTests;
 using PerformanceTests.ExamplePerformanceTests;
 using Sailfish;
+using Sailfish.Analysis.SailDiff;
 using Sailfish.Logging;
 using Serilog.Events;
 
-var settings = RunSettingsBuilder
+const string outputDirectory = "my_custom_directory";
+
+// SailDiff does not auto-compare against your previous run. To opt into a before/after comparison, resolve
+// the previous run's tracking file explicitly (before this run writes its own) and hand it to the builder.
+// On the first ever run there is nothing to compare against, so this is null and SailDiff just records the run.
+var trackingDirectory = Path.Combine(outputDirectory, TrackingFiles.DefaultTrackingDirectoryName);
+var previousRun = TrackingFiles.MostRecentIn(trackingDirectory);
+
+var builder = RunSettingsBuilder
     .CreateBuilder()
     .TestsFromAssembliesContaining(typeof(PerformanceTestProjectDiscoveryAnchor))
     .ProvidersFromAssembliesContaining(typeof(AppRegistrationProvider))
@@ -17,8 +27,13 @@ var settings = RunSettingsBuilder
     .WithMinimumLogLevel(LogLevel.Information)
     // .WithCustomLogger(new CustomLogger(new LoggerConfiguration().WriteTo.Console().CreateLogger()))
     // .DisableStreamingTrackingUpdates()
-    .WithLocalOutputDirectory("my_custom_directory")
-    .Build();
+    .WithLocalOutputDirectory(outputDirectory);
+
+// Opt in to the historical comparison only when a previous run exists.
+if (previousRun is not null)
+    builder = builder.WithProvidedBeforeTrackingFile(previousRun);
+
+var settings = builder.Build();
 
 var result = await SailfishRunner.Run(settings);
 var not = result.IsValid ? string.Empty : "not ";

@@ -31,6 +31,22 @@ Sailfish's internal DI container moved from Autofac to `Microsoft.Extensions.Dep
 
 See [Registering Tests Dependencies](docs/1/test-dependencies) for the current docs.
 
+### Breaking change: SailDiff no longer auto-compares against the previous run
+
+Previously, enabling SailDiff made Sailfish silently reach into the tracking directory and compare the two most-recent tracking files — so "run once, run again" auto-compared the new run against the previous one. That implicit state is gone. Tracking files are still written on every run, but a **historical (run-vs-run) comparison now happens only when you explicitly name the `before` file.** *Method-vs-method* comparison (every `[SailfishMethod]` on a `[Sailfish]` class) is unchanged and still runs automatically.
+
+**Migration — make the comparison explicit (pick one):**
+
+- **Console / library:** `RunSettingsBuilder.WithProvidedBeforeTrackingFile(path)`. To reproduce the old "compare to my last run" behaviour, resolve it deliberately:
+  ```csharp
+  var previous = TrackingFiles.MostRecentIn(Path.Combine(outputDir, TrackingFiles.DefaultTrackingDirectoryName));
+  if (previous is not null) builder = builder.WithProvidedBeforeTrackingFile(previous);
+  ```
+- **IDE / test project:** add `SailDiffSettings.ProvidedBeforeTrackingFiles` (a path array) to `.sailfish.json`.
+- **Power users:** register a custom `IRequestHandler<BeforeAndAfterFileLocationRequest, BeforeAndAfterFileLocationResponse>` (last registration wins).
+
+When SailDiff is enabled but no `before` file is provided, no comparison runs and a one-line log explains how to opt in. New public helper: `Sailfish.Analysis.SailDiff.TrackingFiles` (`MostRecentIn`, `AllIn`, `DefaultTrackingDirectoryName`). The dead, never-injected `ITrackingFileFinder`/`TrackingFileFinder` (which encoded the same auto-pick) was removed.
+
 ### SailDiff critical bug fixes (post-Tier-3 follow-up)
 
 Two latent correctness bugs surfaced by a deep code review of the SailDiff Tier 1/2/3
