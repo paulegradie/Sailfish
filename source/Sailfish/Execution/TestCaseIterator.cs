@@ -36,6 +36,13 @@ internal class TestCaseIterator : ITestCaseIterator
     /// </summary>
     internal ISteadyStateWarmupTimer WarmupTimer { get; set; } = new StopwatchWarmupTimer();
 
+    /// <summary>
+    ///     Pilot-measurement timer for OperationsPerInvoke auto-tuning. Wall-clock by default; tests inject
+    ///     a scripted source so the tuning decision (target duration → chosen OPI) is deterministic rather
+    ///     than dependent on host load. Same test-seam convention as <see cref="WarmupTimer"/>.
+    /// </summary>
+    internal Tuning.IOperationsPerInvokeTimer OpiTimer { get; set; } = new Tuning.StopwatchOperationsPerInvokeTimer();
+
     public TestCaseIterator(
         IRunSettings runSettings,
         ILogger logger,
@@ -117,7 +124,7 @@ internal class TestCaseIterator : ITestCaseIterator
             {
                 try
                 {
-                    var tuner = new OperationsPerInvokeTuner();
+                    var tuner = new OperationsPerInvokeTuner(OpiTimer);
                     var tuned = await tuner.TuneAsync(testInstanceContainer, executionSettings.TargetIterationDuration, _logger, cancellationToken).ConfigureAwait(false);
                     if (tuned > executionSettings.OperationsPerInvoke)
                     {
