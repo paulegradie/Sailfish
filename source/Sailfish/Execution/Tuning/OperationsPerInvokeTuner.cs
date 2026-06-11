@@ -1,6 +1,5 @@
 using Sailfish.Logging;
 using System;
-using System.Diagnostics;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -14,6 +13,15 @@ internal class OperationsPerInvokeTuner
 
     // The aggregate estimate window must be large enough to time reliably above the Stopwatch floor.
     private const double MinMeasurableMs = 2.0;
+
+    private readonly IOperationsPerInvokeTimer _timer;
+
+    public OperationsPerInvokeTuner(IOperationsPerInvokeTimer? timer = null)
+    {
+        // Wall-clock by default — identical behaviour to the previous inline Stopwatch timing. Tests
+        // inject a scripted source so the tuning decision is deterministic under load.
+        _timer = timer ?? new StopwatchOperationsPerInvokeTimer();
+    }
 
     public async Task<int> TuneAsync(
         TestInstanceContainer container,
@@ -83,14 +91,8 @@ internal class OperationsPerInvokeTuner
         return ops;
     }
 
-    private static async Task<double> MeasureAggregateAsync(TestInstanceContainer container, int operations, CancellationToken ct)
+    private Task<double> MeasureAggregateAsync(TestInstanceContainer container, int operations, CancellationToken ct)
     {
-        var sw = Stopwatch.StartNew();
-        for (var i = 0; i < operations; i++)
-        {
-            await container.CoreInvoker.ExecutionMethod(ct, timed: false).ConfigureAwait(false);
-        }
-        sw.Stop();
-        return sw.Elapsed.TotalMilliseconds;
+        return _timer.TimeBatchAsync(() => container.CoreInvoker.ExecutionMethod(ct, timed: false), operations);
     }
 }
