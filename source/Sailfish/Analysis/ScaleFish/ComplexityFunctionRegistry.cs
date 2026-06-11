@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json;
+using System.Threading;
 using Sailfish.Analysis.ScaleFish.ComplexityFunctions;
 
 namespace Sailfish.Analysis.ScaleFish;
@@ -26,11 +27,29 @@ namespace Sailfish.Analysis.ScaleFish;
 /// ComplexityFunctionRegistry.Register&lt;LogLog&gt;();
 /// </code>
 /// </para>
+///
+/// <para>
+/// The catalog is process-global. Code that needs to mutate it temporarily — above all tests, which
+/// may run in parallel with other tests reading the catalog — should do so inside
+/// <see cref="BeginIsolatedScope"/>, which confines every registry operation on the current async
+/// flow to a private copy.
+/// </para>
 /// </summary>
 public static class ComplexityFunctionRegistry
 {
     private static readonly object SyncRoot = new();
-    private static readonly List<Entry> Entries = new();
+    private static readonly List<Entry> GlobalEntries = new();
+
+    /// <summary>
+    /// When set on the current async flow, all registry operations target this list instead of
+    /// <see cref="GlobalEntries"/>. See <see cref="BeginIsolatedScope"/>.
+    /// </summary>
+    private static readonly AsyncLocal<List<Entry>?> ScopedEntries = new();
+
+    private static List<Entry> CurrentEntries => ScopedEntries.Value ?? GlobalEntries;
+
+    /// <summary>True when the current async flow is inside <see cref="BeginIsolatedScope"/>. Diagnostic.</summary>
+    internal static bool IsScopeActive => ScopedEntries.Value is not null;
 
     static ComplexityFunctionRegistry()
     {
@@ -70,8 +89,9 @@ public static class ComplexityFunctionRegistry
         var entry = new Entry(name, () => new T(), element => element.Deserialize<T>(), includeInFitting);
         lock (SyncRoot)
         {
-            Entries.RemoveAll(e => e.Name == name);
-            Entries.Add(entry);
+            var entries = CurrentEntries;
+            entries.RemoveAll(e => e.Name == name);
+            entries.Add(entry);
         }
     }
 
@@ -82,7 +102,7 @@ public static class ComplexityFunctionRegistry
     {
         lock (SyncRoot)
         {
-            return Entries.RemoveAll(e => e.Name == name) > 0;
+            return CurrentEntries.RemoveAll(e => e.Name == name) > 0;
         }
     }
 
@@ -93,7 +113,7 @@ public static class ComplexityFunctionRegistry
     {
         lock (SyncRoot)
         {
-            return Entries.Any(e => e.Name == name);
+            return CurrentEntries.Any(e => e.Name == name);
         }
     }
 
@@ -107,7 +127,7 @@ public static class ComplexityFunctionRegistry
     {
         lock (SyncRoot)
         {
-            return Entries.Where(e => e.IncludeInFitting).Select(e => e.Factory()).ToList();
+            return CurrentEntries.Where(e => e.IncludeInFitting).Select(e => e.Factory()).ToList();
         }
     }
 
@@ -120,7 +140,7 @@ public static class ComplexityFunctionRegistry
         Entry? entry;
         lock (SyncRoot)
         {
-            entry = Entries.FirstOrDefault(e => e.Name == name);
+            entry = CurrentEntries.FirstOrDefault(e => e.Name == name);
         }
         if (entry is null) return null;
         return entry.Deserializer(element);
@@ -133,21 +153,52 @@ public static class ComplexityFunctionRegistry
     {
         lock (SyncRoot)
         {
-            return Entries.Select(e => e.Name).ToList();
+            return CurrentEntries.Select(e => e.Name).ToList();
         }
     }
 
     /// <summary>
-    /// Removes any custom registrations and restores the built-in catalog to its default state.
-    /// Intended for test cleanup — production code should not call this.
+    /// Removes any custom registrations and restores the built-in catalog to its default state. Applies
+    /// to the catalog the current async flow sees: inside <see cref="BeginIsolatedScope"/> it resets the
+    /// scope's private copy; otherwise the process-global catalog. Prefer an isolated scope for test
+    /// cleanup — resetting the global catalog from a test races every concurrently-running test that
+    /// reads it.
     /// </summary>
     public static void ResetToBuiltIns()
     {
         lock (SyncRoot)
         {
-            Entries.Clear();
+            CurrentEntries.Clear();
         }
         RegisterBuiltIns();
+    }
+
+    /// <summary>
+    /// Begins an isolated registry scope on the current async flow: the catalog is copied, and every
+    /// registry operation performed while the scope is active — registrations, unregistrations, resets,
+    /// and reads — applies to that private copy. Other threads and async flows (e.g. other tests running
+    /// in parallel) continue to see the unmodified catalog; disposing restores whatever the flow saw
+    /// before. Scopes nest.
+    ///
+    /// <para>
+    /// This exists because the catalog is process-global mutable state: a test that registers a custom
+    /// family while another test concurrently fits measurements would otherwise race — the second test's
+    /// candidate set silently changes mid-run. Wrap any temporary registration in a scope:
+    /// <code>
+    /// using var scope = ComplexityFunctionRegistry.BeginIsolatedScope();
+    /// ComplexityFunctionRegistry.Register&lt;MyFamily&gt;();
+    /// // ... exercise the estimator — only this async flow sees MyFamily ...
+    /// </code>
+    /// </para>
+    /// </summary>
+    public static IDisposable BeginIsolatedScope()
+    {
+        lock (SyncRoot)
+        {
+            var previous = ScopedEntries.Value;
+            ScopedEntries.Value = new List<Entry>(CurrentEntries);
+            return new IsolatedScope(previous);
+        }
     }
 
     private static void RegisterBuiltIns()
@@ -167,6 +218,24 @@ public static class ComplexityFunctionRegistry
         Register<LogLinear>(includeInFitting: false);
         Register<Exponential>();
         Register<Factorial>();
+    }
+
+    private sealed class IsolatedScope : IDisposable
+    {
+        private readonly List<Entry>? _previous;
+        private bool _disposed;
+
+        public IsolatedScope(List<Entry>? previous)
+        {
+            _previous = previous;
+        }
+
+        public void Dispose()
+        {
+            if (_disposed) return;
+            _disposed = true;
+            ScopedEntries.Value = _previous;
+        }
     }
 
     private sealed record Entry(

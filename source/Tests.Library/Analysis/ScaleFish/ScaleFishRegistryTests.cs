@@ -1,5 +1,7 @@
 using System;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using Sailfish.Analysis.ScaleFish;
 using Sailfish.Analysis.ScaleFish.ComplexityFunctions;
 using Shouldly;
@@ -12,7 +14,11 @@ namespace Tests.Library.Analysis.ScaleFish;
 /// by default, user code can register custom families and they participate in the AICc ranking, and the
 /// JSON converter can deserialise custom families.
 ///
-/// Every test that mutates the registry must reset it on exit via <c>ResetToBuiltIns</c>.
+/// Every test that mutates the catalog does so inside <see cref="ComplexityFunctionRegistry.BeginIsolatedScope"/>,
+/// so the mutations are confined to this test's async flow. The test suite runs collections in parallel;
+/// mutating the process-global catalog here would race every concurrently-running test that fits
+/// measurements (observed as a one-off failure of ScaleFishParallelBootstrapTests.RepeatedParallelRuns_AreIdentical
+/// under load).
 /// </summary>
 public class ScaleFishRegistryTests
 {
@@ -50,112 +56,82 @@ public class ScaleFishRegistryTests
     [Fact]
     public void Register_LogLinear_OptsBackIntoFitting()
     {
-        try
-        {
-            // The escape hatch: explicit registration restores the family as a fit candidate.
-            ComplexityFunctionRegistry.Register<LogLinear>();
-            ComplexityFunctionRegistry.CreateFitInstances()
-                .Any(f => f.Name == nameof(LogLinear))
-                .ShouldBeTrue();
-        }
-        finally
-        {
-            ComplexityFunctionRegistry.ResetToBuiltIns();
-        }
+        using var scope = ComplexityFunctionRegistry.BeginIsolatedScope();
+
+        // The escape hatch: explicit registration restores the family as a fit candidate.
+        ComplexityFunctionRegistry.Register<LogLinear>();
+        ComplexityFunctionRegistry.CreateFitInstances()
+            .Any(f => f.Name == nameof(LogLinear))
+            .ShouldBeTrue();
     }
 
     [Fact]
     public void Register_NewFamily_IncludedInFitCatalog()
     {
-        try
-        {
-            ComplexityFunctionRegistry.Register<TestQuintic>();
-            ComplexityFunctionRegistry.IsRegistered(nameof(TestQuintic)).ShouldBeTrue();
+        using var scope = ComplexityFunctionRegistry.BeginIsolatedScope();
 
-            var families = ComplexityFunctionRegistry.CreateFitInstances();
-            families.Any(f => f.Name == nameof(TestQuintic)).ShouldBeTrue();
-            // Each call returns fresh instances (independent FunctionParameters).
-            var first = ComplexityFunctionRegistry.CreateFitInstances().Single(f => f.Name == nameof(TestQuintic));
-            var second = ComplexityFunctionRegistry.CreateFitInstances().Single(f => f.Name == nameof(TestQuintic));
-            ReferenceEquals(first, second).ShouldBeFalse();
-        }
-        finally
-        {
-            ComplexityFunctionRegistry.ResetToBuiltIns();
-        }
+        ComplexityFunctionRegistry.Register<TestQuintic>();
+        ComplexityFunctionRegistry.IsRegistered(nameof(TestQuintic)).ShouldBeTrue();
+
+        var families = ComplexityFunctionRegistry.CreateFitInstances();
+        families.Any(f => f.Name == nameof(TestQuintic)).ShouldBeTrue();
+        // Each call returns fresh instances (independent FunctionParameters).
+        var first = ComplexityFunctionRegistry.CreateFitInstances().Single(f => f.Name == nameof(TestQuintic));
+        var second = ComplexityFunctionRegistry.CreateFitInstances().Single(f => f.Name == nameof(TestQuintic));
+        ReferenceEquals(first, second).ShouldBeFalse();
     }
 
     [Fact]
     public void Register_NewFamily_WinsOnExactMatch()
     {
-        try
-        {
-            ComplexityFunctionRegistry.Register<TestQuintic>();
+        using var scope = ComplexityFunctionRegistry.BeginIsolatedScope();
 
-            // Generate noise-free x^5 data — the custom Quintic family should win against all built-ins.
-            var measurements = Enumerable.Range(2, 6)
-                .Select(i => (double)(i * 2))
-                .Select(x => new ComplexityMeasurement(x, Math.Pow(x, 5)))
-                .ToArray();
+        ComplexityFunctionRegistry.Register<TestQuintic>();
 
-            var result = new ComplexityEstimator().EstimateComplexity(measurements);
-            result.ShouldNotBeNull();
-            result.ScaleFishModelFunction.Name.ShouldBe(nameof(TestQuintic));
-        }
-        finally
-        {
-            ComplexityFunctionRegistry.ResetToBuiltIns();
-        }
+        // Generate noise-free x^5 data — the custom Quintic family should win against all built-ins.
+        var measurements = Enumerable.Range(2, 6)
+            .Select(i => (double)(i * 2))
+            .Select(x => new ComplexityMeasurement(x, Math.Pow(x, 5)))
+            .ToArray();
+
+        var result = new ComplexityEstimator().EstimateComplexity(measurements);
+        result.ShouldNotBeNull();
+        result.ScaleFishModelFunction.Name.ShouldBe(nameof(TestQuintic));
     }
 
     [Fact]
     public void Unregister_RemovesFamilyFromCatalog()
     {
-        try
-        {
-            ComplexityFunctionRegistry.Register<TestQuintic>();
-            ComplexityFunctionRegistry.Unregister(nameof(TestQuintic)).ShouldBeTrue();
-            ComplexityFunctionRegistry.IsRegistered(nameof(TestQuintic)).ShouldBeFalse();
-            // Idempotent: subsequent removes are no-ops.
-            ComplexityFunctionRegistry.Unregister(nameof(TestQuintic)).ShouldBeFalse();
-        }
-        finally
-        {
-            ComplexityFunctionRegistry.ResetToBuiltIns();
-        }
+        using var scope = ComplexityFunctionRegistry.BeginIsolatedScope();
+
+        ComplexityFunctionRegistry.Register<TestQuintic>();
+        ComplexityFunctionRegistry.Unregister(nameof(TestQuintic)).ShouldBeTrue();
+        ComplexityFunctionRegistry.IsRegistered(nameof(TestQuintic)).ShouldBeFalse();
+        // Idempotent: subsequent removes are no-ops.
+        ComplexityFunctionRegistry.Unregister(nameof(TestQuintic)).ShouldBeFalse();
     }
 
     [Fact]
     public void Register_SameName_ReplacesPreviousEntry()
     {
-        try
-        {
-            ComplexityFunctionRegistry.Register<TestQuintic>();
-            // Registering the same type twice is a no-op semantically (replaces) — should still be a single entry.
-            ComplexityFunctionRegistry.Register<TestQuintic>();
-            ComplexityFunctionRegistry.RegisteredNames().Count(n => n == nameof(TestQuintic)).ShouldBe(1);
-        }
-        finally
-        {
-            ComplexityFunctionRegistry.ResetToBuiltIns();
-        }
+        using var scope = ComplexityFunctionRegistry.BeginIsolatedScope();
+
+        ComplexityFunctionRegistry.Register<TestQuintic>();
+        // Registering the same type twice is a no-op semantically (replaces) — should still be a single entry.
+        ComplexityFunctionRegistry.Register<TestQuintic>();
+        ComplexityFunctionRegistry.RegisteredNames().Count(n => n == nameof(TestQuintic)).ShouldBe(1);
     }
 
     [Fact]
     public void ResetToBuiltIns_RestoresExactSet()
     {
-        try
-        {
-            ComplexityFunctionRegistry.Register<TestQuintic>();
-            ComplexityFunctionRegistry.IsRegistered(nameof(TestQuintic)).ShouldBeTrue();
-            ComplexityFunctionRegistry.ResetToBuiltIns();
-            ComplexityFunctionRegistry.IsRegistered(nameof(TestQuintic)).ShouldBeFalse();
-            ComplexityFunctionRegistry.IsRegistered(nameof(Linear)).ShouldBeTrue();
-        }
-        finally
-        {
-            ComplexityFunctionRegistry.ResetToBuiltIns();
-        }
+        using var scope = ComplexityFunctionRegistry.BeginIsolatedScope();
+
+        ComplexityFunctionRegistry.Register<TestQuintic>();
+        ComplexityFunctionRegistry.IsRegistered(nameof(TestQuintic)).ShouldBeTrue();
+        ComplexityFunctionRegistry.ResetToBuiltIns();
+        ComplexityFunctionRegistry.IsRegistered(nameof(TestQuintic)).ShouldBeFalse();
+        ComplexityFunctionRegistry.IsRegistered(nameof(Linear)).ShouldBeTrue();
     }
 
     [Fact]
@@ -163,24 +139,117 @@ public class ScaleFishRegistryTests
     {
         // A custom family whose `Name` deliberately diverges from its C# type name. The registry must
         // key by the runtime Name (what the JSON writer emits) so the converter can find it on load.
+        using var scope = ComplexityFunctionRegistry.BeginIsolatedScope();
+
+        ComplexityFunctionRegistry.Register<RenamedFamily>();
+
+        ComplexityFunctionRegistry.IsRegistered("CustomLogLog").ShouldBeTrue("key should be the runtime Name");
+        ComplexityFunctionRegistry.IsRegistered(nameof(RenamedFamily)).ShouldBeFalse("type-name key must not leak");
+
+        // Deserialize should succeed for the runtime Name…
+        var elem = System.Text.Json.JsonSerializer.SerializeToElement(new RenamedFamily());
+        ComplexityFunctionRegistry.Deserialize("CustomLogLog", elem).ShouldNotBeNull();
+
+        // …and return null when called with the type name (no false positives).
+        ComplexityFunctionRegistry.Deserialize(nameof(RenamedFamily), elem).ShouldBeNull();
+    }
+
+    // ─── Scope isolation ───────────────────────────────────────────────────────────────
+
+    [Fact]
+    public void IsolatedScope_MutationsAreInvisibleToOtherFlows()
+    {
+        using var scope = ComplexityFunctionRegistry.BeginIsolatedScope();
+        ComplexityFunctionRegistry.IsScopeActive.ShouldBeTrue("scope must be active on the registering flow");
+        ComplexityFunctionRegistry.Register<TestQuintic>();
+        ComplexityFunctionRegistry.IsRegistered(nameof(TestQuintic)).ShouldBeTrue("the registering flow sees its own mutation");
+
+        // Observe the catalog from a flow that did NOT inherit this scope's ExecutionContext —
+        // exactly how a concurrently-running test sees it. A dedicated thread with flow suppressed
+        // is the only airtight probe: Task.Run + a blocking wait can INLINE the task onto this very
+        // thread, where an unflowed delegate executes under the thread's ambient (scoped) context.
+        var seenElsewhere = true;
+        using (ExecutionContext.SuppressFlow())
+        {
+            var probe = new Thread(() => seenElsewhere = ComplexityFunctionRegistry.IsRegistered(nameof(TestQuintic)));
+            probe.Start();
+            probe.Join();
+        }
+
+        seenElsewhere.ShouldBeFalse("scoped registrations must not leak into other async flows");
+    }
+
+    [Fact]
+    public void IsolatedScope_DisposeRestoresThePreviousView()
+    {
+        ComplexityFunctionRegistry.IsRegistered(nameof(TestQuintic)).ShouldBeFalse();
+
+        using (ComplexityFunctionRegistry.BeginIsolatedScope())
+        {
+            ComplexityFunctionRegistry.Register<TestQuintic>();
+
+            // Nested scope snapshots the outer scope's view and discards its own changes on dispose.
+            using (ComplexityFunctionRegistry.BeginIsolatedScope())
+            {
+                ComplexityFunctionRegistry.IsRegistered(nameof(TestQuintic)).ShouldBeTrue("nested scope inherits the outer view");
+                ComplexityFunctionRegistry.Unregister(nameof(TestQuintic)).ShouldBeTrue();
+                ComplexityFunctionRegistry.IsRegistered(nameof(TestQuintic)).ShouldBeFalse();
+            }
+
+            ComplexityFunctionRegistry.IsRegistered(nameof(TestQuintic)).ShouldBeTrue("outer scope unaffected by the nested scope's mutations");
+        }
+
+        ComplexityFunctionRegistry.IsRegistered(nameof(TestQuintic)).ShouldBeFalse("flow returns to the global view after the last scope disposes");
+    }
+
+    [Fact]
+    public async Task ConcurrentScopedMutation_DoesNotPerturbEstimationDeterminism()
+    {
+        // Regression for the observed flake: a registry-mutating test running in parallel with a
+        // determinism test changed the candidate catalog between that test's two estimations. With
+        // scoped mutation, a hammering mutator must be invisible: two estimations on identical data
+        // must classify identically while the mutation loop runs.
+        var rng = new Random(99);
+        var measurements = ScaleFishTestHelpers.BuildNoisy(
+            x => 2.0 * x + 5.0,
+            new[] { 8, 16, 32, 64, 128, 256 },
+            sampleSize: 12,
+            relativeNoise: 0.05,
+            rng);
+
+        using var hammerStarted = new ManualResetEventSlim(false);
+        using var stopHammer = new CancellationTokenSource();
+        var hammer = Task.Run(() =>
+        {
+            using var hammerScope = ComplexityFunctionRegistry.BeginIsolatedScope();
+            hammerStarted.Set();
+            while (!stopHammer.Token.IsCancellationRequested)
+            {
+                ComplexityFunctionRegistry.Register<TestQuintic>();
+                ComplexityFunctionRegistry.Unregister(nameof(TestQuintic));
+                ComplexityFunctionRegistry.ResetToBuiltIns();
+            }
+        });
+
         try
         {
-            ComplexityFunctionRegistry.Register<RenamedFamily>();
+            hammerStarted.Wait(TimeSpan.FromSeconds(5)).ShouldBeTrue("mutation hammer failed to start");
 
-            ComplexityFunctionRegistry.IsRegistered("CustomLogLog").ShouldBeTrue("key should be the runtime Name");
-            ComplexityFunctionRegistry.IsRegistered(nameof(RenamedFamily)).ShouldBeFalse("type-name key must not leak");
+            var estimator = new ComplexityEstimator();
+            var first = estimator.EstimateComplexity(measurements);
+            var second = estimator.EstimateComplexity(measurements);
 
-            // Deserialize should succeed for the runtime Name…
-            var elem = System.Text.Json.JsonSerializer.SerializeToElement(new RenamedFamily());
-            ComplexityFunctionRegistry.Deserialize("CustomLogLog", elem).ShouldNotBeNull();
-
-            // …and return null when called with the type name (no false positives).
-            ComplexityFunctionRegistry.Deserialize(nameof(RenamedFamily), elem).ShouldBeNull();
+            first.ShouldNotBeNull();
+            second.ShouldNotBeNull();
+            second.ScaleFishModelFunction.Name.ShouldBe(first.ScaleFishModelFunction.Name);
+            second.BestAicc.ShouldBe(first.BestAicc);
+            second.AkaikeWeight.ShouldBe(first.AkaikeWeight);
+            second.IsDistinguishable.ShouldBe(first.IsDistinguishable);
         }
         finally
         {
-            ComplexityFunctionRegistry.Unregister("CustomLogLog");
-            ComplexityFunctionRegistry.ResetToBuiltIns();
+            stopHammer.Cancel();
+            await hammer;
         }
     }
 
