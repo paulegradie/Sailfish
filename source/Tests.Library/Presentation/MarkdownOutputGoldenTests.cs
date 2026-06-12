@@ -141,6 +141,7 @@ public class MarkdownOutputGoldenTests
             var handler = new MethodComparisonTestRunCompletedHandler(
                 logger,
                 mediator,
+                Tests.Common.MethodComparisonAnalyzerTestFactory.Create(),
                 healthProvider,
                 runSettings,
                 manifestProvider,

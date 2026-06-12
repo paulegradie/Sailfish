@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 using Sailfish.Contracts.Public.Serialization.Tracking.V1;
 
@@ -38,7 +39,7 @@ public class MethodComparisonTestRunCompletedHandlerTests
     {
         _mockLogger = Substitute.For<ILogger>();
         _mockMediator = Substitute.For<IPublisher>();
-        _handler = new MethodComparisonTestRunCompletedHandler(_mockLogger, _mockMediator);
+        _handler = new MethodComparisonTestRunCompletedHandler(_mockLogger, _mockMediator, Tests.Common.MethodComparisonAnalyzerTestFactory.Create());
     }
 
     #region Constructor Tests
@@ -48,7 +49,7 @@ public class MethodComparisonTestRunCompletedHandlerTests
     {
         // Act & Assert
         Should.Throw<ArgumentNullException>(() =>
-            new MethodComparisonTestRunCompletedHandler(null!, _mockMediator));
+            new MethodComparisonTestRunCompletedHandler(null!, _mockMediator, Tests.Common.MethodComparisonAnalyzerTestFactory.Create()));
     }
 
     [Fact]
@@ -56,7 +57,7 @@ public class MethodComparisonTestRunCompletedHandlerTests
     {
         // Act & Assert
         Should.Throw<ArgumentNullException>(() =>
-            new MethodComparisonTestRunCompletedHandler(_mockLogger, null!));
+            new MethodComparisonTestRunCompletedHandler(_mockLogger, null!, Tests.Common.MethodComparisonAnalyzerTestFactory.Create()));
     }
 
     #endregion
@@ -720,6 +721,7 @@ public class MethodComparisonTestRunCompletedHandlerTests
         var richHandler = new MethodComparisonTestRunCompletedHandler(
             _mockLogger,
             _mockMediator,
+            Tests.Common.MethodComparisonAnalyzerTestFactory.Create(),
             healthProvider,
             runSettings,
             manifestProvider);
@@ -767,6 +769,7 @@ public class MethodComparisonTestRunCompletedHandlerTests
 	        var richHandler = new MethodComparisonTestRunCompletedHandler(
 	            _mockLogger,
 	            _mockMediator,
+	            Tests.Common.MethodComparisonAnalyzerTestFactory.Create(),
 	            healthProvider,
 	            runSettings,
 	            manifestProvider);
@@ -799,7 +802,15 @@ public class MethodComparisonTestRunCompletedHandlerTests
         [Fact]
         public void CreateNxNComparisonMatrix_WithSignificantDifference_IncludesHeaderDiagonalCIQAndLabels()
         {
-            // Arrange: two methods with strong difference and non-zero SE to produce CI and tiny q
+            // Arrange: two methods with realistic, well-separated samples so the configured SailDiff test
+            // (Wilcoxon on the raw samples) finds a significant difference. Both carry within-group spread
+            // (non-zero SE → a ratio CI) and never overlap (every Beta sample > every Alpha sample → the
+            // rank-sum is maximally significant). This mirrors what a real run produces.
+            // N=30 (the rank-sum's exact-distribution path, ≤30) with cleanly separated samples: every Beta
+            // value exceeds every Alpha value, so the exact p is tiny-but-positive (the exact path doesn't
+            // underflow to 0 the way the large-sample normal approximation can), giving a real q-value.
+            var alphaSamples = Enumerable.Range(0, 30).Select(i => 9.0 + i * 0.05).ToArray();
+            var betaSamples = Enumerable.Range(0, 30).Select(i => 10.5 + i * 0.05).ToArray();
             var methods = new List<CompiledTestCaseResultTrackingFormat>
             {
                 CompiledTestCaseResultTrackingFormatBuilder.Create()
@@ -807,19 +818,21 @@ public class MethodComparisonTestRunCompletedHandlerTests
                     .WithPerformanceRunResult(
                         PerformanceRunResultTrackingFormatBuilder.Create()
                             .WithMean(10.0)
-                            .WithStdDev(1.0)
-                            .WithSampleSize(100)
-                            .WithDataWithOutliersRemoved(new double[100])
+                            .WithStdDev(0.58)
+                            .WithSampleSize(30)
+                            .WithRawExecutionResults(alphaSamples)
+                            .WithDataWithOutliersRemoved(alphaSamples)
                             .Build())
                     .Build(),
                 CompiledTestCaseResultTrackingFormatBuilder.Create()
                     .WithTestCaseId(TestCaseIdBuilder.Create().WithTestCaseVariables(SharedComparisonVariables).WithTestCaseName("Beta").Build())
                     .WithPerformanceRunResult(
                         PerformanceRunResultTrackingFormatBuilder.Create()
-                            .WithMean(10.5)
-                            .WithStdDev(1.0)
-                            .WithSampleSize(100)
-                            .WithDataWithOutliersRemoved(new double[100])
+                            .WithMean(11.0)
+                            .WithStdDev(0.58)
+                            .WithSampleSize(30)
+                            .WithRawExecutionResults(betaSamples)
+                            .WithDataWithOutliersRemoved(betaSamples)
                             .Build())
                     .Build(),
             };
@@ -851,6 +864,7 @@ public class MethodComparisonTestRunCompletedHandlerTests
                             .WithMean(10.0)
                             .WithStdDev(0.0)
                             .WithSampleSize(1)
+                            .WithRawExecutionResults(new[] { 1.0 }) // <3 raw samples => the configured test can't run
                             .WithDataWithOutliersRemoved(new []{ 1.0 }) // N=1 => SE=0
                             .Build())
                     .Build(),
@@ -861,6 +875,7 @@ public class MethodComparisonTestRunCompletedHandlerTests
                             .WithMean(20.0)
                             .WithStdDev(0.0)
                             .WithSampleSize(1)
+                            .WithRawExecutionResults(new[] { 1.0 }) // <3 raw samples => the configured test can't run
                             .WithDataWithOutliersRemoved(new []{ 1.0 })
                             .Build())
                     .Build(),

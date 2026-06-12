@@ -2,6 +2,7 @@ using Sailfish.Mediation;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel;
 using Sailfish.Analysis.SailDiff;
 using Sailfish.Analysis.SailDiff.Formatting;
+using Sailfish.Contracts.Public;
 using Sailfish.Contracts.Public.Models;
 using Sailfish.Execution;
 using Sailfish.Logging;
@@ -38,17 +39,23 @@ internal class MethodComparisonBatchProcessor
     private readonly IPublisher _publisher;
     private readonly ILogger _logger;
     private readonly ISailDiffUnifiedFormatter _unifiedFormatter;
+    private readonly IMethodComparisonAnalyzer _analyzer;
+    private readonly IRunSettings _runSettings;
 
     public MethodComparisonBatchProcessor(
         IAdapterSailDiff sailDiff,
         IPublisher publisher,
         ILogger logger,
-        ISailDiffUnifiedFormatter unifiedFormatter)
+        ISailDiffUnifiedFormatter unifiedFormatter,
+        IMethodComparisonAnalyzer analyzer,
+        IRunSettings runSettings)
     {
         _sailDiff = sailDiff ?? throw new ArgumentNullException(nameof(sailDiff));
         _publisher = publisher ?? throw new ArgumentNullException(nameof(publisher));
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         _unifiedFormatter = unifiedFormatter ?? throw new ArgumentNullException(nameof(unifiedFormatter));
+        _analyzer = analyzer ?? throw new ArgumentNullException(nameof(analyzer));
+        _runSettings = runSettings ?? throw new ArgumentNullException(nameof(runSettings));
     }
 
     /// <summary>
@@ -155,6 +162,12 @@ internal class MethodComparisonBatchProcessor
                 continue;
             }
 
+            // Significance for the whole cohort comes from the shared analyzer — the configured SailDiff
+            // test on the raw samples with ONE BH-FDR pass across the cohort's pairs. The per-pair compare
+            // calls below still drive the displayed statistics, but their verdict is re-gated on this
+            // family q-value so the IDE agrees with the markdown/CSV (which use the same analyzer).
+            var cohortAnalysis = AnalyzeCohort(members);
+
             // A method flagged [SailfishMethod(IsBaseline = true)] is carried as ComparisonRole="Baseline"
             // (set during discovery in TestCaseItemCreator and forwarded through the message mappers).
             var baselines = members.Where(IsBaselineRole).ToList();
@@ -166,7 +179,7 @@ internal class MethodComparisonBatchProcessor
                 var baseline = baselines[0];
                 foreach (var contender in members.Where(m => !ReferenceEquals(m, baseline)))
                 {
-                    CompareBaselineToContender(baseline, contender, groupName);
+                    CompareBaselineToContender(baseline, contender, groupName, cohortAnalysis);
                 }
             }
             else
@@ -183,7 +196,7 @@ internal class MethodComparisonBatchProcessor
                 for (var i = 0; i < members.Count; i++)
                 for (var j = i + 1; j < members.Count; j++)
                 {
-                    CompareNxNPair(members[i], members[j], groupName);
+                    CompareNxNPair(members[i], members[j], groupName, cohortAnalysis);
                 }
             }
         }
@@ -238,13 +251,15 @@ internal class MethodComparisonBatchProcessor
     private void CompareBaselineToContender(
         TestCompletionMessage baseline,
         TestCompletionMessage contender,
-        string groupName)
+        string groupName,
+        MethodComparisonResult cohortAnalysis)
     {
         try
         {
             // before = baseline, after = contender ⇒ MeanBefore is the baseline's mean (no swap needed).
             var comparisonResult = ComputeDiff(baseline, contender, groupName);
             StorePairwisePValue(baseline, contender, comparisonResult);
+            RegateVerdictWithFamilyFdr(comparisonResult, cohortAnalysis, baseline, contender);
 
             var output = FormatOriented(comparisonResult, groupName, primary: baseline, compared: contender, swap: false);
 
@@ -269,13 +284,15 @@ internal class MethodComparisonBatchProcessor
     private void CompareNxNPair(
         TestCompletionMessage methodA,
         TestCompletionMessage methodB,
-        string groupName)
+        string groupName,
+        MethodComparisonResult cohortAnalysis)
     {
         try
         {
             // before = A, after = B ⇒ MeanBefore is A's mean.
             var comparisonResult = ComputeDiff(methodA, methodB, groupName);
             StorePairwisePValue(methodA, methodB, comparisonResult);
+            RegateVerdictWithFamilyFdr(comparisonResult, cohortAnalysis, methodA, methodB);
 
             // A's row: A is the reference (no swap). B's row: B is the reference (swap before/after).
             var outputA = FormatOriented(comparisonResult, groupName, primary: methodA, compared: methodB, swap: false);
@@ -291,6 +308,50 @@ internal class MethodComparisonBatchProcessor
         {
             _logger.Log(LogLevel.Error, ex,
                 "Failed to perform comparison for group '{0}': {1}", groupName, ex.Message);
+        }
+    }
+
+    /// <summary>
+    /// Builds the cohort members and runs the shared analyzer once — the configured SailDiff test on the
+    /// raw samples with a single BH-FDR pass across the cohort's pairs — so the IDE verdict is computed the
+    /// same way as the markdown/CSV.
+    /// </summary>
+    private MethodComparisonResult AnalyzeCohort(List<TestCompletionMessage> members)
+    {
+        var comparisonMembers = members
+            .Select(m => new MethodComparisonMember(
+                m.TestCaseId,
+                ExtractMethodName(m.TestCaseId),
+                IsBaselineRole(m),
+                CreatePerformanceRunResultFromMessage(m)))
+            .ToList();
+
+        return _analyzer.Analyze(comparisonMembers, _runSettings.SailDiffSettings);
+    }
+
+    /// <summary>
+    /// Re-gates a pair's headline verdict on the cohort's BH-FDR q-value. The per-pair test statistic and
+    /// p-value are already identical to the analyzer's (same test, same samples); the only thing the
+    /// per-pair path lacks is the family multiplicity correction. Since q ≥ p, FDR can only demote a verdict
+    /// to "No Change" — never flip its direction — so a not-significant family verdict simply resets the
+    /// headline. This is what makes the IDE agree with the markdown/CSV.
+    /// </summary>
+    private static void RegateVerdictWithFamilyFdr(
+        TestCaseSailDiffResult? comparisonResult,
+        MethodComparisonResult cohortAnalysis,
+        TestCompletionMessage primary,
+        TestCompletionMessage compared)
+    {
+        var stat = comparisonResult?.SailDiffResults?.FirstOrDefault()?.TestResultsWithOutlierAnalysis?.StatisticalTestResult;
+        if (stat is null || stat.Failed) return;
+
+        var pair = cohortAnalysis.Find(primary.TestCaseId, compared.TestCaseId);
+        if (pair is null) return;
+
+        stat.QValue = pair.QValue;
+        if (pair.Verdict == MethodComparisonVerdict.Similar && stat.ChangeDescription != SailfishChangeDirection.NoChange)
+        {
+            stat.ChangeDescription = SailfishChangeDirection.NoChange;
         }
     }
 

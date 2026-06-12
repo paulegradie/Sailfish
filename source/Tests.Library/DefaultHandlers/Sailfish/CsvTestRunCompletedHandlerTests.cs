@@ -25,21 +25,21 @@ public class CsvTestRunCompletedHandlerTests
     {
         _mockLogger = Substitute.For<ILogger>();
         _mockMediator = Substitute.For<IPublisher>();
-        _handler = new CsvTestRunCompletedHandler(_mockLogger, _mockMediator);
+        _handler = new CsvTestRunCompletedHandler(_mockLogger, _mockMediator, Tests.Common.MethodComparisonAnalyzerTestFactory.Create());
     }
 
     [Fact]
     public void Constructor_ThrowsArgumentNullException_WhenLoggerIsNull()
     {
         // Act & Assert
-        Should.Throw<ArgumentNullException>(() => new CsvTestRunCompletedHandler(null!, _mockMediator));
+        Should.Throw<ArgumentNullException>(() => new CsvTestRunCompletedHandler(null!, _mockMediator, Tests.Common.MethodComparisonAnalyzerTestFactory.Create()));
     }
 
     [Fact]
     public void Constructor_ThrowsArgumentNullException_WhenMediatorIsNull()
     {
         // Act & Assert
-        Should.Throw<ArgumentNullException>(() => new CsvTestRunCompletedHandler(_mockLogger, null!));
+        Should.Throw<ArgumentNullException>(() => new CsvTestRunCompletedHandler(_mockLogger, null!, Tests.Common.MethodComparisonAnalyzerTestFactory.Create()));
     }
 
     [Fact]

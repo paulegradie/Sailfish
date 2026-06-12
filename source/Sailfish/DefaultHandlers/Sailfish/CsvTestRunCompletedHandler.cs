@@ -12,6 +12,7 @@ using Sailfish.Contracts.Public.Notifications;
 using Sailfish.Contracts.Public.Serialization.Tracking.V1;
 using Sailfish.Logging;
 using Sailfish.Presentation;
+using Sailfish.Analysis.SailDiff;
 using Sailfish.Analysis.SailDiff.Statistics;
 using Sailfish.Contracts.Public.Models;
 
@@ -26,6 +27,7 @@ internal class CsvTestRunCompletedHandler : INotificationHandler<TestRunComplete
 {
     private readonly ILogger _logger;
     private readonly IPublisher _publisher;
+    private readonly IMethodComparisonAnalyzer _analyzer;
     private readonly IRunSettings? _runSettings;
 
     /// <summary>
@@ -33,10 +35,12 @@ internal class CsvTestRunCompletedHandler : INotificationHandler<TestRunComplete
     /// </summary>
     /// <param name="logger">The logger for diagnostic output.</param>
     /// <param name="publisher">The publisher for publishing notifications.</param>
-    public CsvTestRunCompletedHandler(ILogger logger, IPublisher publisher)
+    /// <param name="analyzer">The shared method-comparison analyzer (single source of truth for the verdict).</param>
+    public CsvTestRunCompletedHandler(ILogger logger, IPublisher publisher, IMethodComparisonAnalyzer analyzer)
     {
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         _publisher = publisher ?? throw new ArgumentNullException(nameof(publisher));
+        _analyzer = analyzer ?? throw new ArgumentNullException(nameof(analyzer));
         _runSettings = null;
     }
 
@@ -46,8 +50,8 @@ internal class CsvTestRunCompletedHandler : INotificationHandler<TestRunComplete
     /// instead of defaulting to 0.05. The DI container selects this overload when all
     /// dependencies are available (multiple ctors → the container picks the longest constructor it can satisfy).
     /// </summary>
-    public CsvTestRunCompletedHandler(ILogger logger, IPublisher publisher, IRunSettings runSettings)
-        : this(logger, publisher)
+    public CsvTestRunCompletedHandler(ILogger logger, IPublisher publisher, IMethodComparisonAnalyzer analyzer, IRunSettings runSettings)
+        : this(logger, publisher, analyzer)
     {
         _runSettings = runSettings;
     }
@@ -253,7 +257,7 @@ internal class CsvTestRunCompletedHandler : INotificationHandler<TestRunComplete
                         var name = GetMethodName(tr.TestCaseId?.DisplayName ?? "Unknown");
                         var id = tr.TestCaseId?.DisplayName ?? name;
                         var isBaseline = GetComparisonInfoForResult(tr, m.TestClass).IsBaseline;
-                        return new { Name = name, Id = id, Mean = mean, SE = se, N = n, IsBaseline = isBaseline };
+                        return new { Name = name, Id = id, Result = pr, Mean = mean, SE = se, N = n, IsBaseline = isBaseline };
                     })
                     .Where(s => s.Mean > 0)
                     .ToList();
@@ -292,23 +296,17 @@ internal class CsvTestRunCompletedHandler : INotificationHandler<TestRunComplete
                     }
                 }
 
-                // Compute p-values over the selected pairs and apply BH-FDR
-                var pMap = new Dictionary<(string A, string B), double>();
-                foreach (var (i, j) in pairs)
-                {
-                    var a = stats[i];
-                    var b = stats[j];
-                    var p = MultipleComparisons.LogRatioPValue(a.Mean, a.SE, a.N, b.Mean, b.SE, b.N);
-                    if (!double.IsNaN(p) && p > 0)
-                    {
-                        pMap[MultipleComparisons.NormalizePair(a.Id, b.Id)] = p;
-                    }
-                }
-                var qMap = pMap.Count > 0
-                    ? MultipleComparisons.BenjaminiHochbergAdjust(pMap)
-                    : new Dictionary<(string A, string B), double>();
+                // Significance comes from the shared analyzer (configured SailDiff test on the raw samples +
+                // one BH-FDR pass over the selected pairs) so the CSV agrees with the IDE and markdown.
+                var settings = _runSettings?.SailDiffSettings ?? new SailDiffSettings();
+                var comparisonMembers = stats
+                    .Select(s => new MethodComparisonMember(s.Id, s.Name, s.IsBaseline, s.Result!.ToPerformanceRunResult()))
+                    .ToList();
+                var qMap = new Dictionary<(string A, string B), double>();
+                foreach (var pair in _analyzer.Analyze(comparisonMembers, settings).Pairs)
+                    qMap[MultipleComparisons.NormalizePair(pair.Primary.Id, pair.Compared.Id)] = pair.QValue;
 
-                var alpha = _runSettings?.SailDiffSettings?.Alpha ?? SailDiffSignificance.FallbackAlpha;
+                var alpha = settings.Alpha;
                 var confidenceLevel = 1.0 - alpha;
 
                 // Emit one row per selected pair

@@ -15,6 +15,7 @@ using Sailfish.Diagnostics.Environment;
 using Sailfish.Logging;
 using Sailfish.Presentation;
 using Sailfish.Results;
+using Sailfish.Analysis.SailDiff;
 using Sailfish.Analysis.SailDiff.Statistics;
 
 using Sailfish.Execution;
@@ -30,6 +31,7 @@ internal class MethodComparisonTestRunCompletedHandler : INotificationHandler<Te
 {
     private readonly ILogger _logger;
     private readonly IPublisher _publisher;
+    private readonly IMethodComparisonAnalyzer _analyzer;
     private readonly IEnvironmentHealthReportProvider? _healthProvider;
     private readonly IRunSettings? _runSettings;
     private readonly IReproducibilityManifestProvider? _manifestProvider;
@@ -42,10 +44,12 @@ internal class MethodComparisonTestRunCompletedHandler : INotificationHandler<Te
     /// </summary>
     /// <param name="logger">The logger for diagnostic output.</param>
     /// <param name="publisher">The publisher for publishing notifications.</param>
-    public MethodComparisonTestRunCompletedHandler(ILogger logger, IPublisher publisher)
+    /// <param name="analyzer">The shared method-comparison analyzer (single source of truth for the verdict).</param>
+    public MethodComparisonTestRunCompletedHandler(ILogger logger, IPublisher publisher, IMethodComparisonAnalyzer analyzer)
     {
         _logger = logger ?? throw new ArgumentNullException(nameof(logger));
         _publisher = publisher ?? throw new ArgumentNullException(nameof(publisher));
+        _analyzer = analyzer ?? throw new ArgumentNullException(nameof(analyzer));
         _healthProvider = null; // backward compatible path
         _runSettings = null;
         _manifestProvider = null;
@@ -55,8 +59,8 @@ internal class MethodComparisonTestRunCompletedHandler : INotificationHandler<Te
     /// <summary>
     /// Preferred constructor that can optionally receive environment health report provider via DI.
     /// </summary>
-    public MethodComparisonTestRunCompletedHandler(ILogger logger, IPublisher publisher, IEnvironmentHealthReportProvider healthProvider)
-        : this(logger, publisher)
+    public MethodComparisonTestRunCompletedHandler(ILogger logger, IPublisher publisher, IMethodComparisonAnalyzer analyzer, IEnvironmentHealthReportProvider healthProvider)
+        : this(logger, publisher, analyzer)
     {
         _healthProvider = healthProvider;
     }
@@ -64,11 +68,12 @@ internal class MethodComparisonTestRunCompletedHandler : INotificationHandler<Te
     public MethodComparisonTestRunCompletedHandler(
         ILogger logger,
         IPublisher publisher,
+        IMethodComparisonAnalyzer analyzer,
         IEnvironmentHealthReportProvider healthProvider,
         IRunSettings runSettings,
         IReproducibilityManifestProvider manifestProvider,
         ITimerCalibrationResultProvider timerProvider)
-        : this(logger, publisher, healthProvider)
+        : this(logger, publisher, analyzer, healthProvider)
     {
         _runSettings = runSettings;
         _manifestProvider = manifestProvider;
@@ -78,16 +83,17 @@ internal class MethodComparisonTestRunCompletedHandler : INotificationHandler<Te
     /// <summary>
     /// Fallback constructor used when the health/reporting services are available but
     /// <see cref="ITimerCalibrationResultProvider"/> is not registered. If all
-    /// six constructor dependencies are available, the 6-parameter overload above is
+    /// dependencies are available, the longest overload above is
     /// preferred by the DI activator (longest satisfiable constructor wins).
     /// </summary>
     public MethodComparisonTestRunCompletedHandler(
         ILogger logger,
         IPublisher publisher,
+        IMethodComparisonAnalyzer analyzer,
         IEnvironmentHealthReportProvider healthProvider,
         IRunSettings runSettings,
         IReproducibilityManifestProvider manifestProvider)
-        : this(logger, publisher, healthProvider)
+        : this(logger, publisher, analyzer, healthProvider)
     {
         _runSettings = runSettings;
         _manifestProvider = manifestProvider;
@@ -542,13 +548,15 @@ internal class MethodComparisonTestRunCompletedHandler : INotificationHandler<Te
         if (methods.Count < 2) return string.Empty;
         try
         {
-            // Build stats from tracking format (use cleaned data length for N when available)
+            // Build display stats (cleaned-data length for N when available). Result carries the raw
+            // samples the analyzer's statistical test runs on.
             var stats = methods
                 .Where(m => m.PerformanceRunResult != null)
                 .Select(m => new
                 {
                     Id = m.TestCaseId?.DisplayName ?? m.PerformanceRunResult!.DisplayName,
                     Name = GetMethodName(m.TestCaseId?.DisplayName ?? m.PerformanceRunResult!.DisplayName),
+                    Result = m.PerformanceRunResult!,
                     Mean = m.PerformanceRunResult!.Mean,
                     StdDev = m.PerformanceRunResult!.StdDev,
                     N = Math.Max(1, (m.PerformanceRunResult!.DataWithOutliersRemoved?.Length ?? -1) > 0
@@ -559,6 +567,7 @@ internal class MethodComparisonTestRunCompletedHandler : INotificationHandler<Te
                 {
                     x.Id,
                     x.Name,
+                    x.Result,
                     x.Mean,
                     x.N,
                     SE = (x.N > 1 && x.StdDev > 0) ? x.StdDev / Math.Sqrt(x.N) : 0.0
@@ -568,26 +577,17 @@ internal class MethodComparisonTestRunCompletedHandler : INotificationHandler<Te
 
             if (stats.Count < 2) return string.Empty;
 
-            // Compute pairwise p-values on log-ratio and apply BH-FDR
-            var pMap = new Dictionary<(string A, string B), double>();
-            for (var i = 0; i < stats.Count; i++)
-            {
-                for (var j = i + 1; j < stats.Count; j++)
-                {
-                    var a = stats[i];
-                    var b = stats[j];
-                    var p = MultipleComparisons.LogRatioPValue(a.Mean, a.SE, a.N, b.Mean, b.SE, b.N);
-                    if (!double.IsNaN(p) && p > 0)
-                    {
-                        pMap[MultipleComparisons.NormalizePair(a.Id, b.Id)] = p;
-                    }
-                }
-            }
-            var qMap = pMap.Count > 0
-                ? MultipleComparisons.BenjaminiHochbergAdjust(pMap)
-                : new Dictionary<(string, string), double>();
+            // Significance comes from the shared analyzer — the configured SailDiff test (Wilcoxon by
+            // default) on the raw samples, with one BH-FDR pass over this cohort — so the IDE, markdown and
+            // CSV report the same p/q/verdict. The ratio + CI rendered below remains the (display) effect size.
+            var settings = _runSettings?.SailDiffSettings ?? new SailDiffSettings();
+            var members = stats.Select(s => new MethodComparisonMember(s.Id, s.Name, false, s.Result.ToPerformanceRunResult())).ToList();
+            var analysis = _analyzer.Analyze(members, settings);
+            var qMap = new Dictionary<(string A, string B), double>();
+            foreach (var pair in analysis.Pairs)
+                qMap[MultipleComparisons.NormalizePair(pair.Primary.Id, pair.Compared.Id)] = pair.QValue;
 
-            var alpha = _runSettings?.SailDiffSettings?.Alpha ?? SailDiffSignificance.FallbackAlpha;
+            var alpha = settings.Alpha;
             var confidenceLevel = 1.0 - alpha;
             var sb = new StringBuilder();
             sb.AppendLine($"### 🔢 NxN Comparison Matrix (q-values via BH-FDR, α={alpha:0.###})");
@@ -688,21 +688,18 @@ internal class MethodComparisonTestRunCompletedHandler : INotificationHandler<Te
             var contenders = stats.Where(s => !ReferenceEquals(s.Result, baseline)).ToList();
             if (contenders.Count == 0) return string.Empty;
 
-            // BH-FDR over the N−1 baseline-vs-contender p-values
-            var pMap = new Dictionary<(string A, string B), double>();
-            foreach (var c in contenders)
-            {
-                var p = MultipleComparisons.LogRatioPValue(baselineStat.Mean, baselineStat.SE, baselineStat.N, c.Mean, c.SE, c.N);
-                if (!double.IsNaN(p) && p > 0)
-                {
-                    pMap[MultipleComparisons.NormalizePair(baselineStat.Id, c.Id)] = p;
-                }
-            }
-            var qMap = pMap.Count > 0
-                ? MultipleComparisons.BenjaminiHochbergAdjust(pMap)
-                : new Dictionary<(string, string), double>();
+            // Significance comes from the shared analyzer — configured SailDiff test on the raw samples
+            // with one BH-FDR pass over the N−1 baseline-vs-contender pairs — so every surface agrees.
+            var settings = _runSettings?.SailDiffSettings ?? new SailDiffSettings();
+            var members = stats
+                .Select(s => new MethodComparisonMember(s.Id, s.Name, ReferenceEquals(s.Result, baseline), s.Result.PerformanceRunResult!.ToPerformanceRunResult()))
+                .ToList();
+            var analysis = _analyzer.Analyze(members, settings);
+            var qMap = new Dictionary<(string A, string B), double>();
+            foreach (var pair in analysis.Pairs)
+                qMap[MultipleComparisons.NormalizePair(pair.Primary.Id, pair.Compared.Id)] = pair.QValue;
 
-            var alpha = _runSettings?.SailDiffSettings?.Alpha ?? SailDiffSignificance.FallbackAlpha;
+            var alpha = settings.Alpha;
             var confidenceLevel = 1.0 - alpha;
             var sb = new StringBuilder();
             sb.AppendLine($"### 📐 Baseline-vs-Contender (baseline = `{baselineStat.Name}`, q-values via BH-FDR, α={alpha:0.###})");
