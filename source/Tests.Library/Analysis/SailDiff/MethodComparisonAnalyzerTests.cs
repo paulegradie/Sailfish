@@ -31,7 +31,9 @@ public class MethodComparisonAnalyzerTests
         var mean = samples.Average();
         var variance = samples.Length > 1 ? samples.Select(x => (x - mean) * (x - mean)).Sum() / (samples.Length - 1) : 0.0;
         var stdDev = Math.Sqrt(variance);
-        var median = samples.OrderBy(x => x).ElementAt(samples.Length / 2);
+        var ordered = samples.OrderBy(x => x).ToArray();
+        var mid = ordered.Length / 2;
+        var median = ordered.Length % 2 == 0 ? (ordered[mid - 1] + ordered[mid]) / 2.0 : ordered[mid];
         var result = new PerformanceRunResult(
             name, mean, stdDev, variance, median,
             samples, samples.Length, 0,

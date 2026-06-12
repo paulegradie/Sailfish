@@ -311,7 +311,7 @@ public class MethodComparisonBatchProcessorBaselineInversionTests
             {
                 MeanMs = meanMs,
                 MedianMs = meanMs,
-                SampleSize = 5,
+                SampleSize = 10,
                 StandardDeviation = meanMs * 0.01,
                 Variance = 1.0,
                 // 10 samples with a small (±~5%) deterministic spread. The methods are far apart (e.g. 8ms

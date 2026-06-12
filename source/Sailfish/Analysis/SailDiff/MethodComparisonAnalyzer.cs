@@ -58,8 +58,12 @@ public sealed record MethodComparisonResult(
     /// </summary>
     public MethodComparisonPairResult? Find(string idA, string idB)
     {
-        var key = MultipleComparisons.NormalizePair(idA, idB);
-        return Pairs.FirstOrDefault(p => MultipleComparisons.NormalizePair(p.Primary.Id, p.Compared.Id) == key);
+        // Canonicalize ids the same way ComputeTest re-keys its results (TestCaseId.DisplayName appends
+        // "()" to a bare name), so the lookup is robust to that round-trip — not just to argument ordering.
+        static string Canonicalize(string id) => new TestCaseId(id).DisplayName;
+        var key = MultipleComparisons.NormalizePair(Canonicalize(idA), Canonicalize(idB));
+        return Pairs.FirstOrDefault(p =>
+            MultipleComparisons.NormalizePair(Canonicalize(p.Primary.Id), Canonicalize(p.Compared.Id)) == key);
     }
 }
 
@@ -194,7 +198,8 @@ public sealed class MethodComparisonAnalyzer : IMethodComparisonAnalyzer
     private static int SampleCount(PerformanceRunResult r)
     {
         var cleaned = r.DataWithOutliersRemoved?.Length ?? 0;
-        return cleaned > 0 ? cleaned : Math.Max(0, r.SampleSize);
+        // Floor at 1 (never 0) to match the ratio/CI fallback the markdown/CSV surfaces used before this.
+        return cleaned > 0 ? cleaned : Math.Max(1, r.SampleSize);
     }
 
     private static double StandardError(PerformanceRunResult r, int n)
