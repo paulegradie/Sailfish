@@ -1,5 +1,11 @@
 ﻿## What's Changed in v0.0.118 (unreleased)
 
+### Method comparison: one verdict everywhere
+
+Method-vs-method comparison (every `[SailfishMethod]` on a `[Sailfish]` class) used to be judged *differently depending on where you looked*: the IDE ran the configured SailDiff test (Wilcoxon by default) on the raw samples with no multiplicity correction, while the console/markdown/CSV computed a parametric log-ratio approximation off summary statistics and gated the label on a BH-FDR q-value. The same two methods could get a different p-value and a different Improved/Slower/Similar label in the IDE vs the generated report.
+
+Both surfaces now share a single `IMethodComparisonAnalyzer`: significance comes from the **configured SailDiff test on the raw samples with one BH-FDR pass per comparison group**, so the p-value, q-value and verdict are **identical on every surface** (IDE, console, markdown, CSV). The ratio + confidence interval remains the separately-reported effect size. The IDE additionally gains the family-wise FDR correction it previously lacked. As part of this, a maximally-separated comparison (whose exact p-value is literally `0`) is correctly reported as significant rather than being mislabelled "Similar". No public API was removed; method-comparison numbers/labels may shift because the statistic and multiplicity control are now consistent.
+
 ### Breaking change: dependency injection container is now Microsoft.Extensions.DependencyInjection
 
 Sailfish's internal DI container moved from Autofac to `Microsoft.Extensions.DependencyInjection` (the standard .NET DI abstraction). The Autofac-typed public surface is gone — the `Autofac` package is no longer a dependency.

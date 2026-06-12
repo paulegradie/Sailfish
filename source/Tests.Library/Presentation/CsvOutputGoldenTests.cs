@@ -86,7 +86,7 @@ public class CsvOutputGoldenTests
                 .Do(ci => actualCsv = ci.ArgAt<WriteMethodComparisonCsvNotification>(0).CsvContent);
 
             var logger = new TestLogger();
-            var handler = new CsvTestRunCompletedHandler(logger, mediator);
+            var handler = new CsvTestRunCompletedHandler(logger, mediator, Tests.Common.MethodComparisonAnalyzerTestFactory.Create());
 
             var notification = CreateNotification();
             await handler.Handle(notification, CancellationToken.None);

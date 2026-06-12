@@ -27,6 +27,8 @@ Method comparisons generate:
 - **Improved / Slower / Similar labels** at α = 0.05
 - **Consolidated outputs**: both markdown and CSV formats with `[WriteToMarkdown]` and `[WriteToCsv]`
 
+The **verdict is computed identically on every surface** — the IDE test output, the console, the markdown report and the CSV all run the configured SailDiff test (Wilcoxon Rank-Sum by default) on the raw samples, with a single BH-FDR pass across each comparison group. The same two methods therefore always get the same p-value, q-value and Improved/Slower/Similar label wherever you read them. The ratio + confidence interval is reported separately as the effect size (it answers "by how much", independent of the significance call).
+
 ## Enabling / Configuring SailDiff
 
 If using Sailfish as a test project, you can create a `.sailfish.json` file in the root of your test project (next to your `.csproj` file). This file can hold various configuration settings. If any compatible setting is omitted, a sensible default will be used.

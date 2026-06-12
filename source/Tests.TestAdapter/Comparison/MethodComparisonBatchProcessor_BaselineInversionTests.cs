@@ -119,7 +119,7 @@ public class MethodComparisonBatchProcessorBaselineInversionTests
             CompletedAt = DateTime.UtcNow,
         };
 
-        var sut = new MethodComparisonBatchProcessor(_sailDiff, _mediator, _logger, _formatter);
+        var sut = new MethodComparisonBatchProcessor(_sailDiff, _mediator, _logger, _formatter, Tests.Common.MethodComparisonAnalyzerTestFactory.Create(), Tests.Common.MethodComparisonAnalyzerTestFactory.CreateRunSettings());
 
         // Act
         await sut.ProcessBatch(batch, CancellationToken.None);
@@ -311,11 +311,14 @@ public class MethodComparisonBatchProcessorBaselineInversionTests
             {
                 MeanMs = meanMs,
                 MedianMs = meanMs,
-                SampleSize = 5,
+                SampleSize = 10,
                 StandardDeviation = meanMs * 0.01,
                 Variance = 1.0,
-                RawExecutionResults = new[] { meanMs, meanMs, meanMs },
-                DataWithOutliersRemoved = new[] { meanMs, meanMs, meanMs },
+                // 10 samples with a small (±~5%) deterministic spread. The methods are far apart (e.g. 8ms
+                // vs 1ms), so the configured rank-sum test cleanly finds significance — whereas 3 identical
+                // samples never could (the smallest achievable rank-sum p at N=3 is 0.1).
+                RawExecutionResults = Enumerable.Range(0, 10).Select(k => meanMs * (0.95 + k * 0.01)).ToArray(),
+                DataWithOutliersRemoved = Enumerable.Range(0, 10).Select(k => meanMs * (0.95 + k * 0.01)).ToArray(),
                 UpperOutliers = Array.Empty<double>(),
                 LowerOutliers = Array.Empty<double>(),
                 TotalNumOutliers = 0,

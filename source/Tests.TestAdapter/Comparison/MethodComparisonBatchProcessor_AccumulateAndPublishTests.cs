@@ -29,7 +29,7 @@ public class MethodComparisonBatchProcessorAccumulateAndPublishTests
 
     private MethodComparisonBatchProcessor CreateSut()
     {
-        return new MethodComparisonBatchProcessor(_sailDiff, _mediator, _logger, _formatter);
+        return new MethodComparisonBatchProcessor(_sailDiff, _mediator, _logger, _formatter, Tests.Common.MethodComparisonAnalyzerTestFactory.Create(), Tests.Common.MethodComparisonAnalyzerTestFactory.CreateRunSettings());
     }
 
     private static TestCompletionMessage CreateMessage(string className, string methodName, string group, double meanMs)

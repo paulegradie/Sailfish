@@ -119,6 +119,7 @@ internal static class SailfishModuleRegistrations
         services.AddTransient<ITrackingFileSerialization, TrackingFileSerialization>();
         services.AddTransient<ITypeActivator, TypeActivator>();
         services.AddTransient<IStatisticalTestComputer, StatisticalTestComputer>();
+        services.AddTransient<IMethodComparisonAnalyzer, MethodComparisonAnalyzer>();
         services.AddTransient<ITestPreprocessor, TestPreprocessor>();
         services.AddTransient<IStatisticalTestExecutor, StatisticalTestExecutor>();
         services.AddTransient<IPerformanceRunResultAggregator, PerformanceRunResultAggregator>();

@@ -50,7 +50,7 @@ public class MethodComparisonTestRunCompletedHandlerHealthSectionTests
             })
         };
 
-        var handler = new MethodComparisonTestRunCompletedHandler(logger, mediator, provider);
+        var handler = new MethodComparisonTestRunCompletedHandler(logger, mediator, Tests.Common.MethodComparisonAnalyzerTestFactory.Create(), provider);
         var notification = CreateNotificationWithWriteToMarkdown();
 
         await handler.Handle(notification, CancellationToken.None);
@@ -71,7 +71,7 @@ public class MethodComparisonTestRunCompletedHandlerHealthSectionTests
         var mediator = Substitute.For<IPublisher>();
         var provider = new StubProvider { Current = null };
 
-        var handler = new MethodComparisonTestRunCompletedHandler(logger, mediator, provider);
+        var handler = new MethodComparisonTestRunCompletedHandler(logger, mediator, Tests.Common.MethodComparisonAnalyzerTestFactory.Create(), provider);
         var notification = CreateNotificationWithWriteToMarkdown();
 
         await handler.Handle(notification, CancellationToken.None);

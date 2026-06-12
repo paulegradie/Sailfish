@@ -36,7 +36,9 @@ public class TestCaseCompletedNotificationHandlerTests
             Substitute.For<IAdapterSailDiff>(),
             publisher,
             Substitute.For<ILogger>(),
-            Substitute.For<ISailDiffUnifiedFormatter>());
+            Substitute.For<ISailDiffUnifiedFormatter>(),
+            Tests.Common.MethodComparisonAnalyzerTestFactory.Create(),
+            Tests.Common.MethodComparisonAnalyzerTestFactory.CreateRunSettings());
         return new TestCompletionAggregator(publisher, batchProcessor, Substitute.For<ILogger>());
     }
 

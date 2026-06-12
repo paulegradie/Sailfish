@@ -42,7 +42,7 @@ public class TestCompletionAggregatorTests
 
         // The REAL comparison processor — the behaviour-bearing code we are preserving. It and the aggregator
         // share one mediator so every framework publish (immediate or enhanced) is counted in one place.
-        _batchProcessor = new MethodComparisonBatchProcessor(_sailDiff, _mediator, _logger, _unifiedFormatter);
+        _batchProcessor = new MethodComparisonBatchProcessor(_sailDiff, _mediator, _logger, _unifiedFormatter, Tests.Common.MethodComparisonAnalyzerTestFactory.Create(), Tests.Common.MethodComparisonAnalyzerTestFactory.CreateRunSettings());
     }
 
     private TestCompletionAggregator NewAggregator(params ITestCompletionSink[] sinks)
