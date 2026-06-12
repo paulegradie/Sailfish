@@ -27,24 +27,29 @@ internal class SailDiffBeforeAndAfterFileLocationHandler : IRequestHandler<Befor
         CancellationToken cancellationToken)
     {
         await Task.Yield();
-        var trackingFiles = _trackingFileDirectoryReader.FindTrackingFilesInDirectoryOrderedByLastModified(_runSettings.GetRunSettingsTrackingDirectoryPath());
-        if (trackingFiles.Count == 0) return new BeforeAndAfterFileLocationResponse(new List<string>(), new List<string>());
 
-        if (request.ProvidedBeforeTrackingFiles.Any())
-        {
-            var filesFound = request.ProvidedBeforeTrackingFiles.Select(file => (file, File.Exists(file))).ToList();
-            if (!filesFound.Select(x => x.Item2).All(x => x))
-            {
-                var missingFiles = string.Join("\n - ", filesFound.Where(x => x.Item2 == false).Select(x => x.file));
-                throw new SailfishException(
-                    $"Not all {nameof(BeforeAndAfterFileLocationRequest.ProvidedBeforeTrackingFiles)} were found. Missing: {missingFiles}");
-            }
+        // Explicit opt-in only. A before/after comparison happens solely when the caller has named the
+        // 'before' tracking file(s) — via RunSettingsBuilder.WithProvidedBeforeTrackingFile(s), the
+        // .sailfish.json SailDiffSettings.ProvidedBeforeTrackingFiles array, or a custom IRequestHandler for
+        // this request. Sailfish deliberately does NOT reach back and auto-pick the previous run's tracking
+        // file: no 'before' provided means no comparison. To compare against your previous run, resolve it
+        // explicitly with TrackingFiles.MostRecentIn(...) and pass it to WithProvidedBeforeTrackingFile(...).
+        var providedBeforeTrackingFiles = request.ProvidedBeforeTrackingFiles.ToList();
+        if (providedBeforeTrackingFiles.Count == 0)
+            return new BeforeAndAfterFileLocationResponse(new List<string>(), new List<string>());
 
-            return new BeforeAndAfterFileLocationResponse(filesFound.Select(x => x.file), new List<string> { trackingFiles.First() });
-        }
+        var missingFiles = providedBeforeTrackingFiles.Where(file => !File.Exists(file)).ToList();
+        if (missingFiles.Count > 0)
+            throw new SailfishException(
+                $"Not all {nameof(BeforeAndAfterFileLocationRequest.ProvidedBeforeTrackingFiles)} were found. Missing: {string.Join("\n - ", missingFiles)}");
 
-        return trackingFiles.Count < 2
-            ? new BeforeAndAfterFileLocationResponse(new List<string>(), new List<string>())
-            : new BeforeAndAfterFileLocationResponse(new List<string> { trackingFiles[1] }, new List<string> { trackingFiles[0] });
+        // 'after' = the current run's freshly-written tracking file (the newest in the tracking directory).
+        var trackingDirectory = _runSettings.GetRunSettingsTrackingDirectoryPath();
+        var trackingFiles = Directory.Exists(trackingDirectory)
+            ? _trackingFileDirectoryReader.FindTrackingFilesInDirectoryOrderedByLastModified(trackingDirectory)
+            : new List<string>();
+        var afterFiles = trackingFiles.Count > 0 ? new List<string> { trackingFiles.First() } : new List<string>();
+
+        return new BeforeAndAfterFileLocationResponse(providedBeforeTrackingFiles, afterFiles);
     }
 }

@@ -90,8 +90,10 @@ internal class SailDiff : ISailDiffInternal, ISailDiff
 
             if (!beforeAndAfterFileLocations.AfterFilePaths.Any()) message.Append("No 'After' file locations discovered. ");
 
+            // Sailfish does not auto-compare against the previous run — a comparison happens only when you name
+            // the 'before' file. Point the user at the explicit opt-in paths instead of silently doing nothing.
             message.Append(
-                $"If file locations are not provided, data must be provided via the {nameof(ReadInBeforeAndAfterDataRequest)} handler.");
+                $"SailDiff is enabled but no comparison ran. Name a 'before' tracking file via RunSettingsBuilder.WithProvidedBeforeTrackingFile(...), the .sailfish.json SailDiffSettings.ProvidedBeforeTrackingFiles array, or a custom {nameof(BeforeAndAfterFileLocationRequest)}/{nameof(ReadInBeforeAndAfterDataRequest)} handler. Tip: TrackingFiles.MostRecentIn(dir) returns your previous run's file.");
             var msg = message.ToString();
             _logger.Log(LogLevel.Warning, "{Message}", msg);
         }

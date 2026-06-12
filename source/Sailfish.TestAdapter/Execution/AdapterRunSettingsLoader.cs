@@ -58,6 +58,12 @@ public static class AdapterRunSettingsLoader
                 emitConsoleSummary: ai.EmitConsoleSummary ?? true,
                 useResponseCache: ai.UseResponseCache ?? true));
 
+        // Explicit historical comparison: SailDiff only compares against an earlier run when the user names the
+        // 'before' tracking file(s). There is no auto-pick of the previous run.
+        var providedBeforeTrackingFiles = parsedSettings.SailDiffSettings.ProvidedBeforeTrackingFiles;
+        if (providedBeforeTrackingFiles is { Length: > 0 })
+            runSettingsBuilder = runSettingsBuilder.WithProvidedBeforeTrackingFiles(providedBeforeTrackingFiles);
+
         var testSettings = MapToTestSettings(parsedSettings);
         var scaleFishSettings = MapToScaleFishSettings(parsedSettings);
         var trawlSettings = MapToTrawlSettings(parsedSettings);

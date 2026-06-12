@@ -56,6 +56,17 @@ internal class AdapterSailDiff : IAdapterSailDiff
             .Send(new BeforeAndAfterFileLocationRequest(_runSettings.ProvidedBeforeTrackingFiles), cancellationToken)
             .ConfigureAwait(false);
 
+        if (!beforeAndAfterFileLocations.BeforeFilePaths.Any() || !beforeAndAfterFileLocations.AfterFilePaths.Any())
+        {
+            // Sailfish does not auto-compare against the previous run; a historical (run-vs-run) comparison runs
+            // only when a 'before' tracking file is named. In the IDE, set SailDiffSettings.ProvidedBeforeTrackingFiles
+            // in .sailfish.json (or register a custom BeforeAndAfterFileLocationRequest handler). Method-vs-method
+            // comparison is a separate feature and continues to run automatically.
+            _logger.Log(LogLevel.Information,
+                "SailDiff: no 'before' tracking file provided, so no historical (run-vs-run) comparison ran. Set SailDiffSettings.ProvidedBeforeTrackingFiles in .sailfish.json to compare against an earlier run.");
+            return;
+        }
+
         var beforeAndAfterData = await _sender
             .Send(
                 new ReadInBeforeAndAfterDataRequest(beforeAndAfterFileLocations.BeforeFilePaths,

@@ -8,10 +8,10 @@ title: SailDiff
 
 SailDiff operates in two main modes:
 
-1. **Historical Comparisons**: Compare current test runs against previously saved tracking data
-2. **Method Comparisons**: Compare multiple methods within a single test run — automatic for every `[SailfishMethod]` on a `[Sailfish]` class
+1. **Historical Comparisons**: Compare the current run against a *specific, explicitly provided* tracking file from an earlier run. Sailfish does **not** auto-compare against your previous run — you name the `before` file yourself (see [Choosing what to compare](#choosing-what-to-compare-against) below).
+2. **Method Comparisons**: Compare multiple methods within a single test run — automatic for every `[SailfishMethod]` on a `[Sailfish]` class.
 
-When enabled, SailDiff will produce various measurements describing the differences between test runs or methods. Results are presented via multiple output formats:
+When a comparison runs, SailDiff produces various measurements describing the differences between runs or methods. Results are presented via multiple output formats:
 
 - **Test Output Window**: Real-time results during test execution
 - **Consolidated Markdown**: Session-based markdown files with comprehensive comparison data
@@ -29,7 +29,9 @@ Method comparisons generate:
 
 ## Enabling / Configuring SailDiff
 
-If using Sailfish as a test project, you can create a `.sailfish.json` file in the root of your test project (next to your `.csproj` file). This file can hold various configuration settings. When found, SailDiff will be automatically run. If any compatible setting is omitted, a sensible default will be used.
+If using Sailfish as a test project, you can create a `.sailfish.json` file in the root of your test project (next to your `.csproj` file). This file can hold various configuration settings. If any compatible setting is omitted, a sensible default will be used.
+
+**Note:** Method comparisons run automatically. A **historical** (run-vs-run) comparison happens only when you name a `before` tracking file via `SailDiffSettings.ProvidedBeforeTrackingFiles` (documented below). Without it, each run is simply recorded to a tracking file and no run-vs-run comparison is produced — Sailfish never silently reaches back and compares against your previous run.
 
 **Example `.sailfish.json`**
 
@@ -94,6 +96,20 @@ Default: unset (equivalence testing off)
 }
 ```
 
+**ProvidedBeforeTrackingFiles**
+
+Description: The explicit `before` tracking file(s) to compare this run against. This is how you opt into a **historical** (run-vs-run) comparison from the IDE — Sailfish does not auto-select your previous run. Paths may be absolute or relative to the working directory. When set, each named file is used as a `before` dataset and the current run becomes `after`; when omitted, no run-vs-run comparison is produced.
+
+Default: unset (no historical comparison)
+
+```json
+"SailDiffSettings": {
+  "ProvidedBeforeTrackingFiles": [
+    "SailfishIDETestOutput/sailfish_tracking_output/PerformanceTracking_20260101_120000.json.tracking"
+  ]
+}
+```
+
 
 #### Example IDE Output
 
@@ -139,9 +155,35 @@ var runSettings = RunSettingsBuilder
     .Build();
 ```
 
-## Customizing the SailDiff inputs
+## Choosing what to compare against
 
-By default, Sailfish will look for the most recent file in the default tracking directory when you execute a test run via a console app.
+A historical comparison runs **only** when you explicitly tell SailDiff which `before` tracking file to use. Sailfish writes a tracking file on every run, but it never auto-selects a previous run to compare against. There are four ways to provide the `before` file:
+
+**1. Builder (console / library)** — pass the file with `WithProvidedBeforeTrackingFile` (or `WithProvidedBeforeTrackingFiles`):
+
+```csharp
+var runSettings = RunSettingsBuilder
+    .CreateBuilder()
+    .WithSailDiff()
+    .WithProvidedBeforeTrackingFile("path/to/PerformanceTracking_….json.tracking")
+    .Build();
+```
+
+**2. Compare against your previous run** — resolve the most recent tracking file explicitly with the `TrackingFiles` helper, then pass it in. This is the deliberate, one-line replacement for the old automatic behaviour:
+
+```csharp
+// using Sailfish.Analysis.SailDiff;
+var trackingDir = Path.Combine(outputDir, TrackingFiles.DefaultTrackingDirectoryName);
+var previousRun = TrackingFiles.MostRecentIn(trackingDir); // null on the first ever run
+
+var builder = RunSettingsBuilder.CreateBuilder().WithSailDiff().WithLocalOutputDirectory(outputDir);
+if (previousRun is not null) builder = builder.WithProvidedBeforeTrackingFile(previousRun);
+var runSettings = builder.Build();
+```
+
+**3. `.sailfish.json` (IDE / test project)** — set `SailDiffSettings.ProvidedBeforeTrackingFiles` (see above).
+
+**4. Custom handler** — supply the inputs yourself by overriding one of the mediator request handlers below (last registration wins, so your handler replaces the default).
 
 The flow of the analysis is
 
@@ -171,44 +213,41 @@ sailDiff.Analyze(beforeData, afterData, new SailDiffSettings());
 
 Notes:
 - Bypasses file I/O; you provide both the test IDs and the `PerformanceRunResult` sequences.
-- The file-based flow remains fully supported. For custom file locations or aggregated inputs, use the MediatR hooks shown below.
+- The file-based flow remains fully supported. For custom file locations or aggregated inputs, use the mediator hooks shown below.
 
 ### Reading Tracking Data from a Custom Location
 
 ```csharp
+// using Sailfish.Analysis.SailDiff; // for the public TrackingFiles helper
 internal class SailfishBeforeAndAfterFileLocationHandler
     : IRequestHandler<BeforeAndAfterFileLocationRequest, BeforeAndAfterFileLocationResponse>
 {
     private readonly IRunSettings runSettings;
-    private readonly ITrackingFileDirectoryReader trackingFileDirectoryReader;
 
-    public SailfishBeforeAndAfterFileLocationHandler(
-        IRunSettings runSettings,
-        ITrackingFileDirectoryReader trackingFileDirectoryReader)
+    public SailfishBeforeAndAfterFileLocationHandler(IRunSettings runSettings)
     {
         this.runSettings = runSettings;
-        this.trackingFileDirectoryReader = trackingFileDirectoryReader;
     }
 
     public Task<BeforeAndAfterFileLocationResponse> Handle(
         BeforeAndAfterFileLocationRequest request,
         CancellationToken cancellationToken)
     {
-        var trackingFiles = trackingFileDirectoryReader
-            .FindTrackingFilesInDirectoryOrderedByLastModified(
-                runSettings.GetRunSettingsTrackingDirectoryPath(),
-                ascending: false);
-
-        // Consider reading data from a:
+        // Provide the 'before' (and 'after') datasets however you like — read from a:
         // - database
         // - cloud storage container
         // - cloud log processing tool
         // - network drive
         // - local directory
+        //
+        // TrackingFiles.AllIn(...) lists local tracking files newest-first. As one possible policy,
+        // this handler compares the two most recent runs — but the choice is entirely yours.
+        var files = TrackingFiles.AllIn(runSettings.GetRunSettingsTrackingDirectoryPath());
 
-        return Task.FromResult(new BeforeAndAfterFileLocationResponse(
-            trackingFiles.BeforeFilePaths.Where(x => !string.IsNullOrEmpty(x)),
-            trackingFiles.AfterFilePaths.Where(x => !string.IsNullOrEmpty(x))));
+        var before = files.Skip(1).Take(1); // the previous run
+        var after = files.Take(1);           // the current run
+
+        return Task.FromResult(new BeforeAndAfterFileLocationResponse(before, after));
     }
 }
 ```
