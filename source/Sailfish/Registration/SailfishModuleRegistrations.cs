@@ -161,6 +161,11 @@ internal static class SailfishModuleRegistrations
         services.AddTransient<ISkipperConsoleFormatter, SkipperConsoleFormatter>();
         services.AddTransient<ISkipperAnalysisRunner, SkipperAnalysisRunner>();
 
+        // Per-run flag recording whether Skipper actually engaged (a trigger reached a real agent with
+        // content). Singleton so it survives across the run's notifications; read by the adapter to warn when
+        // AI was enabled but never fired. See ISkipperActivitySink.
+        services.AddSingleton<ISkipperActivitySink, SkipperActivitySink>();
+
         return services;
     }
 }

@@ -1,4 +1,5 @@
 using System.IO;
+using Microsoft.VisualStudio.TestPlatform.ObjectModel.Logging;
 using Sailfish.Contracts.Public.Models;
 using Sailfish.Exceptions;
 using Sailfish.TestAdapter.Discovery;
@@ -7,14 +8,40 @@ using SailDiffSettings = Sailfish.Analysis.SailDiff.SailDiffSettings;
 using RuntimeScaleFishSettings = Sailfish.Analysis.ScaleFish.ScaleFishSettings;
 using RuntimeTrawlSettings = Sailfish.Trawl.TrawlSettings;
 using CoreAiAnalysisSettings = Sailfish.Analysis.Ai.AiAnalysisSettings;
+using TrackingFiles = Sailfish.Analysis.SailDiff.TrackingFiles;
+using DefaultFileSettings = Sailfish.Presentation.DefaultFileSettings;
 
 namespace Sailfish.TestAdapter.Execution;
 
 public static class AdapterRunSettingsLoader
 {
+    /// <summary>
+    ///     Loads the adapter run settings from <c>.sailfish.json</c>, falling back to defaults when none is found.
+    ///     Prefer the overload that takes the test assembly location and a message logger so discovery can also
+    ///     search the assembly's output directory and so the loaded-file / not-found outcome is observable.
+    /// </summary>
     public static IRunSettings RetrieveAndLoadAdapterRunSettings()
     {
-        var parsedSettings = ParseSettings();
+        return RetrieveAndLoadAdapterRunSettings(null, null);
+    }
+
+    /// <summary>
+    ///     Loads the adapter run settings from <c>.sailfish.json</c>.
+    /// </summary>
+    /// <param name="testAssemblyLocation">
+    ///     Path to the test assembly (e.g. the test DLL). When provided, discovery also searches the assembly's
+    ///     own directory upward — not only upward from the working directory — so the file is found regardless of
+    ///     the test host's working directory (and the <c>&lt;None CopyToOutputDirectory&gt;</c> convention, where
+    ///     <c>.sailfish.json</c> sits beside the test DLL, works).
+    /// </param>
+    /// <param name="messageLogger">
+    ///     Optional VSTest message logger. When provided, the loader logs which <c>.sailfish.json</c> was loaded
+    ///     (info) or warns (once) that none was found and defaults are in effect — so AI analysis being off is
+    ///     never a silent surprise.
+    /// </param>
+    public static IRunSettings RetrieveAndLoadAdapterRunSettings(string? testAssemblyLocation, IMessageLogger? messageLogger)
+    {
+        var parsedSettings = ParseSettings(testAssemblyLocation, messageLogger);
 
         if (parsedSettings.GlobalSettings.DisableEverything) throw new SailfishException("Everything is disabled!");
 
@@ -51,18 +78,18 @@ public static class AdapterRunSettingsLoader
             runSettingsBuilder = runSettingsBuilder.WithDistributionHtmlReport(parsedSettings.GlobalSettings.EmitDistributionHtmlReport.Value);
 
         // Skipper AI analysis is opt-in via .sailfish.json. A Skipper transport must also be registered through
-        // IRegisterSailfishServices (services.AddSkipperTransport<T>()); without one, enabling this is a harmless no-op.
+        // IRegisterSailfishServices (services.AddSkipperTransport<T>()); without one, enabling this is a no-op
+        // (the adapter warns about it after the run — see TestExecutor — rather than failing silently).
         if (parsedSettings.AiAnalysisSettings is { Enabled: true } ai)
             runSettingsBuilder = runSettingsBuilder.WithAiAnalysis(new CoreAiAnalysisSettings(
                 writeReviewArtifact: ai.WriteReviewArtifact ?? true,
                 emitConsoleSummary: ai.EmitConsoleSummary ?? true,
                 useResponseCache: ai.UseResponseCache ?? true));
 
-        // Explicit historical comparison: SailDiff only compares against an earlier run when the user names the
-        // 'before' tracking file(s). There is no auto-pick of the previous run.
-        var providedBeforeTrackingFiles = parsedSettings.SailDiffSettings.ProvidedBeforeTrackingFiles;
-        if (providedBeforeTrackingFiles is { Length: > 0 })
-            runSettingsBuilder = runSettingsBuilder.WithProvidedBeforeTrackingFiles(providedBeforeTrackingFiles);
+        // Historical (run-vs-run) comparison is explicit by default: SailDiff compares against an earlier run
+        // only when the user names the 'before' file(s). The opt-in AutoCompareToPreviousRun flag is the
+        // deliberate way to get the "run twice → SailDiff" workflow without naming a file by hand.
+        ConfigureHistoricalComparison(ref runSettingsBuilder, parsedSettings, messageLogger);
 
         var testSettings = MapToTestSettings(parsedSettings);
         var scaleFishSettings = MapToScaleFishSettings(parsedSettings);
@@ -74,6 +101,45 @@ public static class AdapterRunSettingsLoader
             .WithTrawl(trawlSettings)
             .Build();
         return runSettings;
+    }
+
+    /// <summary>
+    ///     Wires up the 'before' tracking file(s) for a historical comparison. An explicit
+    ///     <c>ProvidedBeforeTrackingFiles</c> always wins. Otherwise, when <c>AutoCompareToPreviousRun</c> is
+    ///     enabled, the most recent prior tracking file is resolved here — <em>before</em> this run writes its
+    ///     own file, so "most recent" is genuinely the previous run.
+    /// </summary>
+    private static void ConfigureHistoricalComparison(
+        ref RunSettingsBuilder runSettingsBuilder,
+        SettingsConfiguration parsedSettings,
+        IMessageLogger? messageLogger)
+    {
+        var providedBeforeTrackingFiles = parsedSettings.SailDiffSettings.ProvidedBeforeTrackingFiles;
+        if (providedBeforeTrackingFiles is { Length: > 0 })
+        {
+            runSettingsBuilder = runSettingsBuilder.WithProvidedBeforeTrackingFiles(providedBeforeTrackingFiles);
+            return;
+        }
+
+        if (parsedSettings.SailDiffSettings.AutoCompareToPreviousRun != true) return;
+
+        var outputDir = string.IsNullOrEmpty(parsedSettings.GlobalSettings.ResultsDirectory)
+            ? DefaultFileSettings.DefaultOutputDirectory
+            : parsedSettings.GlobalSettings.ResultsDirectory;
+        var trackingDir = Path.Combine(outputDir, TrackingFiles.DefaultTrackingDirectoryName);
+        var previousRun = TrackingFiles.MostRecentIn(trackingDir);
+
+        if (previousRun is not null)
+        {
+            runSettingsBuilder = runSettingsBuilder.WithProvidedBeforeTrackingFile(previousRun);
+            Log(messageLogger, TestMessageLevel.Informational,
+                $"Sailfish: AutoCompareToPreviousRun is on — comparing this run against the most recent prior tracking file: {previousRun}");
+        }
+        else
+        {
+            Log(messageLogger, TestMessageLevel.Informational,
+                "Sailfish: AutoCompareToPreviousRun is on but no prior tracking file was found, so there is no run-vs-run comparison this run (expected on the first run).");
+        }
     }
 
     private static RuntimeScaleFishSettings MapToScaleFishSettings(SettingsConfiguration settingsConfiguration)
@@ -129,29 +195,61 @@ public static class AdapterRunSettingsLoader
         return mappedSettings;
     }
 
-    private static SettingsConfiguration ParseSettings()
+    private static SettingsConfiguration ParseSettings(string? testAssemblyLocation, IMessageLogger? messageLogger)
     {
-        FileInfo settingsFile;
-        try
+        var settingsFile = LocateSettingsFile(testAssemblyLocation);
+        if (settingsFile is null)
         {
-            settingsFile = DirectoryRecursion.RecurseUpwardsUntilFileIsFound(
-                ".sailfish.json",
-#pragma warning disable RS1035
-                Directory.GetCurrentDirectory(),
-#pragma warning restore RS1035
-                6);
-        }
-        catch (TestAdapterException)
-        {
-            // No .sailfish.json is present anywhere up the tree — that is an expected,
-            // supported configuration. Fall back to defaults silently.
+            // No .sailfish.json anywhere up the tree from the working directory or the test assembly — that is
+            // an expected, supported configuration, but it is the silent path that makes AI analysis appear to
+            // do nothing. Warn once (not debug) so it is observable, then fall back to defaults.
+            Log(messageLogger, TestMessageLevel.Warning,
+                "Sailfish: no .sailfish.json was found (searched upward from the working directory" +
+                (string.IsNullOrEmpty(testAssemblyLocation) ? "" : " and the test assembly directory") +
+                "); using built-in defaults. Skipper AI analysis stays OFF unless a .sailfish.json sets " +
+                "AiAnalysisSettings.Enabled = true.");
             return new SettingsConfiguration();
         }
 
-        // If the file exists but cannot be parsed (malformed JSON, IO error, etc.) we
-        // intentionally let the exception propagate. TestExecutor.HandleStartupException
-        // surfaces it to the test framework so the user can see and fix their config —
-        // silently falling back to defaults previously hid these problems entirely.
+        Log(messageLogger, TestMessageLevel.Informational, $"Sailfish: loaded settings from {settingsFile.FullName}");
+
+        // If the file exists but cannot be parsed (malformed JSON, IO error, etc.) we intentionally let the
+        // exception propagate. TestExecutor.HandleStartupException surfaces it to the test framework so the user
+        // can see and fix their config — silently falling back to defaults previously hid these problems.
         return SailfishSettingsParser.Parse(settingsFile.FullName);
+    }
+
+    /// <summary>
+    ///     Locates <c>.sailfish.json</c>, searching upward from the working directory first (historical
+    ///     behaviour) and then, as a fallback, upward from the test assembly's own directory (the output dir).
+    ///     Returns null when neither search finds it.
+    /// </summary>
+    private static FileInfo? LocateSettingsFile(string? testAssemblyLocation)
+    {
+#pragma warning disable RS1035
+        var fromWorkingDirectory = TryRecurseUpwards(Directory.GetCurrentDirectory());
+#pragma warning restore RS1035
+        if (fromWorkingDirectory is not null) return fromWorkingDirectory;
+
+        return string.IsNullOrEmpty(testAssemblyLocation)
+            ? null
+            : TryRecurseUpwards(testAssemblyLocation!);
+    }
+
+    private static FileInfo? TryRecurseUpwards(string startPath)
+    {
+        try
+        {
+            return DirectoryRecursion.RecurseUpwardsUntilFileIsFound(".sailfish.json", startPath, 6);
+        }
+        catch (TestAdapterException)
+        {
+            return null;
+        }
+    }
+
+    private static void Log(IMessageLogger? messageLogger, TestMessageLevel level, string message)
+    {
+        messageLogger?.SendMessage(level, message);
     }
 }

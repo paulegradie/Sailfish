@@ -10,6 +10,7 @@ using Sailfish.Analysis;
 using Sailfish.Analysis.SailDiff.Formatting;
 using Sailfish.Analysis.SailDiff.Statistics.Tests;
 using Sailfish.Contracts.Public.Models;
+using Sailfish.Contracts.Public.Notifications;
 using Sailfish.Execution;
 using Sailfish.Logging;
 using Sailfish.TestAdapter.Execution;
@@ -245,5 +246,35 @@ public class MethodComparisonBatchProcessorAccumulateAndPublishTests
         ((List<string>)a.Metadata["AccumulatedComparisons"]).Count.ShouldBe(2);
         ((List<string>)b.Metadata["AccumulatedComparisons"]).Count.ShouldBe(2);
         ((List<string>)c.Metadata["AccumulatedComparisons"]).Count.ShouldBe(2);
+    }
+
+    [Fact]
+    public async Task ProcessBatch_WithComparisonGroup_PublishesMethodComparisonAnalysisForSkipper()
+    {
+        // Arrange — deliverable #5: a completed ComparisonGroup must feed the Skipper AI layer.
+        var sut = CreateSut();
+        _sailDiff.ComputeTestCaseDiff(default!, default!, default!, default!, default!).ReturnsForAnyArgs(CreateFakeDiff());
+        _formatter.Format(default!, default!).ReturnsForAnyArgs(new SailDiffFormattedOutput { FullOutput = "x" });
+
+        var m1 = CreateMessage("TestClass1", "BeforeMethod", "GroupX", 10.0);
+        var m2 = CreateMessage("TestClass1", "AfterMethod", "GroupX", 12.0);
+        AttachClassExecutionSummary(m1, m2);
+
+        var batch = new TestCaseBatch
+        {
+            BatchId = "Comparison_TestClass1_GroupX",
+            TestCases = new List<TestCompletionMessage> { m1, m2 },
+            Status = BatchStatus.Complete,
+            CreatedAt = DateTime.UtcNow,
+            CompletedAt = DateTime.UtcNow,
+        };
+
+        // Act
+        await sut.ProcessBatch(batch, CancellationToken.None);
+
+        // Assert — exactly one comparison notification, naming the group and carrying its pair(s).
+        await _mediator.Received(1).Publish(
+            Arg.Is<MethodComparisonAnalysisCompleteNotification>(n => n.GroupName == "GroupX" && n.Pairs.Count > 0),
+            Arg.Any<CancellationToken>());
     }
 }

@@ -4,6 +4,7 @@ using Sailfish.Analysis.SailDiff;
 using Sailfish.Analysis.SailDiff.Formatting;
 using Sailfish.Contracts.Public;
 using Sailfish.Contracts.Public.Models;
+using Sailfish.Contracts.Public.Notifications;
 using Sailfish.Execution;
 using Sailfish.Logging;
 using Sailfish.TestAdapter.Execution;
@@ -151,6 +152,10 @@ internal class MethodComparisonBatchProcessor
             .GroupBy(tc => ExtractVariableSection(tc.TestCaseId), StringComparer.Ordinal)
             .ToList();
 
+        // Accumulate every cohort's pairwise results so the whole group can be handed to the Skipper AI
+        // layer once (one review per comparison group, not per cohort).
+        var groupPairs = new List<MethodComparisonPairResult>();
+
         foreach (var cohort in cohorts)
         {
             var members = cohort.ToList();
@@ -167,6 +172,7 @@ internal class MethodComparisonBatchProcessor
             // calls below still drive the displayed statistics, but their verdict is re-gated on this
             // family q-value so the IDE agrees with the markdown/CSV (which use the same analyzer).
             var cohortAnalysis = AnalyzeCohort(members);
+            groupPairs.AddRange(cohortAnalysis.Pairs);
 
             // A method flagged [SailfishMethod(IsBaseline = true)] is carried as ComparisonRole="Baseline"
             // (set during discovery in TestCaseItemCreator and forwarded through the message mappers).
@@ -209,6 +215,58 @@ internal class MethodComparisonBatchProcessor
 
         // Republish all enhanced FrameworkTestCaseEndNotification messages
         await PublishEnhancedFrameworkNotificationsForGroup(testCases, cancellationToken);
+
+        // Hand the completed group to the Skipper AI layer (opt-in; the handler no-ops when AI is off or no
+        // transport is registered). This is what lets "explain this comparison" work on the most common
+        // comparison users run — the in-run baseline/N-candidates ComparisonGroup.
+        await PublishComparisonAnalysisForSkipper(groupName, groupPairs, cancellationToken);
+    }
+
+    /// <summary>
+    ///     Publishes the completed comparison group's pairwise results as a
+    ///     <see cref="MethodComparisonAnalysisCompleteNotification" /> so the Skipper AI layer can reason over
+    ///     it. Published unconditionally (cheap, additive); the Skipper handler gates on
+    ///     <c>RunAiAnalysis</c> + a registered transport, mirroring how SailDiff/ScaleFish feed Skipper.
+    /// </summary>
+    private async Task PublishComparisonAnalysisForSkipper(
+        string groupName,
+        List<MethodComparisonPairResult> pairs,
+        CancellationToken cancellationToken)
+    {
+        if (pairs.Count == 0) return;
+
+        try
+        {
+            var markdown = BuildComparisonMarkdown(groupName, pairs);
+            await _publisher.Publish(
+                new MethodComparisonAnalysisCompleteNotification(groupName, pairs, markdown),
+                cancellationToken);
+        }
+        catch (Exception ex)
+        {
+            // Strictly additive: a failure feeding the AI layer must never affect the comparison output.
+            _logger.Log(LogLevel.Warning, ex,
+                "Failed to publish method-comparison analysis for AI on group '{0}': {1}", groupName, ex.Message);
+        }
+    }
+
+    /// <summary>
+    ///     Renders a concise grounding table for the AI narrative — one row per pair, baseline vs contender
+    ///     with mean, ratio, q-value and verdict. The agent reasons over these authoritative figures.
+    /// </summary>
+    private static string BuildComparisonMarkdown(string groupName, List<MethodComparisonPairResult> pairs)
+    {
+        var sb = new System.Text.StringBuilder();
+        sb.AppendLine($"### Method comparison: {groupName}");
+        sb.AppendLine("| Compared | Baseline | Mean (compared) | Mean (baseline) | Ratio (compared/baseline) | q-value | Verdict |");
+        sb.AppendLine("|----------|----------|-----------------|-----------------|---------------------------|---------|---------|");
+        foreach (var p in pairs)
+        {
+            sb.AppendLine(
+                $"| {ExtractMethodName(p.Compared.Id)} | {ExtractMethodName(p.Primary.Id)} | {p.ComparedMean:0.###}ms | {p.PrimaryMean:0.###}ms | {p.Ratio:0.###}x | {p.QValue:0.###e-0} | {p.Verdict} |");
+        }
+
+        return sb.ToString();
     }
 
     private static bool HasComparisonMetadata(TestCompletionMessage message)

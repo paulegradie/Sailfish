@@ -29,4 +29,11 @@ public class SailDiffSettings
     // relative to the working directory). Leave null/empty for no historical comparison.
     [JsonPropertyName("ProvidedBeforeTrackingFiles")]
     public string[]? ProvidedBeforeTrackingFiles { get; set; }
+
+    // Opt-in convenience for the "run twice → SailDiff" workflow under the adapter. When true and no
+    // ProvidedBeforeTrackingFiles is set, this run is compared against the most recent prior tracking file
+    // (resolved before this run writes its own). Default (null/false) preserves the explicit-only behaviour;
+    // ProvidedBeforeTrackingFiles always takes precedence when both are set.
+    [JsonPropertyName("AutoCompareToPreviousRun")]
+    public bool? AutoCompareToPreviousRun { get; set; }
 }
