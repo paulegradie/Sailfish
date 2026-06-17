@@ -5,6 +5,7 @@ using Sailfish.Contracts.Public.Notifications;
 using Sailfish.Diagnostics.Environment;
 using Sailfish.Results;
 using Sailfish.Analysis.ScaleFish;
+using Sailfish.Analysis.SailDiff;
 using Sailfish.Analysis.SailDiff.Formatting;
 
 namespace Sailfish.Analysis.Ai;
@@ -14,6 +15,8 @@ internal interface IPerformanceNarrativeContextBuilder
     PerformanceNarrativeContext Build(SailDiffAnalysisCompleteNotification notification, double alpha);
 
     PerformanceNarrativeContext BuildScaling(ScaleFishAnalysisCompleteNotification notification);
+
+    PerformanceNarrativeContext BuildComparison(MethodComparisonAnalysisCompleteNotification notification);
 }
 
 /// <summary>
@@ -68,6 +71,59 @@ internal sealed class PerformanceNarrativeContextBuilder : IPerformanceNarrative
             notification.ScaleFishResultMarkdown ?? string.Empty,
             BuildEnvironment(),
             verdicts);
+    }
+
+    public PerformanceNarrativeContext BuildComparison(MethodComparisonAnalysisCompleteNotification notification)
+    {
+        var comparisons = notification.Pairs
+            .Select(ToCaseContext)
+            .ToList();
+
+        return new PerformanceNarrativeContext(comparisons, notification.ResultsAsMarkdown ?? string.Empty, BuildEnvironment());
+    }
+
+    /// <summary>
+    ///     Lifts one method-comparison pair into the grounded packet. Orientation matches the analyzer:
+    ///     primary/baseline is "before", compared/contender is "after". The verdict reuses the unified
+    ///     method-comparison verdict (a Slower contender is a regression relative to its baseline), and the
+    ///     ratio (compared/primary) is carried as the effect size.
+    /// </summary>
+    private static SailDiffCaseContext ToCaseContext(MethodComparisonPairResult pair)
+    {
+        var verdict = pair.Verdict switch
+        {
+            MethodComparisonVerdict.Improved => SkipperVerdict.Improved,
+            MethodComparisonVerdict.Slower => SkipperVerdict.Regressed,
+            _ => SkipperVerdict.NotSignificant
+        };
+
+        var changeDescription = pair.Verdict switch
+        {
+            MethodComparisonVerdict.Improved => "Faster than baseline",
+            MethodComparisonVerdict.Slower => "Slower than baseline",
+            _ => "No significant difference from baseline"
+        };
+
+        var percentChangeMean = pair.PrimaryMean != 0
+            ? (pair.ComparedMean - pair.PrimaryMean) / pair.PrimaryMean * 100.0
+            : 0.0;
+
+        return new SailDiffCaseContext(
+            $"{pair.Compared.MethodName} vs {pair.Primary.MethodName}",
+            verdict,
+            pair.PrimaryMean,
+            pair.ComparedMean,
+            pair.PrimaryMedian,
+            pair.ComparedMedian,
+            percentChangeMean,
+            pair.PValue,
+            pair.QValue,
+            changeDescription,
+            pair.PrimarySampleSize,
+            pair.ComparedSampleSize,
+            Failed: false,
+            EffectSizeName: "Ratio (compared/baseline)",
+            EffectSizeValue: pair.Ratio);
     }
 
     private static IReadOnlyList<ComplexityProjection> Project(ScaleFishModelFunction function)

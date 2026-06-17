@@ -43,7 +43,13 @@ Sailfish benchmarks run as ordinary tests: install the **`Sailfish.TestAdapter`*
 
 There's no `RunSettingsBuilder` in this path — the adapter runs in its own process and never sees programmatic registration — so Skipper is configured by **file**, not code. Three things must be true before the play button will produce a Skipper verdict.
 
-**1. SailDiff and/or ScaleFish must be enabled.** Skipper explains *their* output, so at least one has to produce a comparison. In the **`.sailfish.json`** at (or above) your test directory:
+**1. Something must produce an analysis for Skipper to explain.** Skipper explains *other* analyses, so at least one has to fire. There are three triggers — and two of them work in a **single run**:
+
+- **ScaleFish** (BigO) — add a `[SailfishVariable(scaleFish: true, …)]` (or `[SailfishRangeVariable(scaleFish: true, …)]`) variable. Fires on a **single** run.
+- **A method-comparison group** — two or more `[SailfishMethod]`s sharing a `ComparisonGroup` (optionally one marked `IsBaseline`). Fires on a **single** run.
+- **Run-vs-run SailDiff** — compares this run against an earlier one. This one needs an explicit baseline (see "the run-twice loop" below); it does *not* auto-pick the previous run.
+
+In the **`.sailfish.json`** at (or above) your test directory, leave SailDiff/ScaleFish enabled (they are by default):
 
 ```jsonc
 {
@@ -73,13 +79,23 @@ public class RegistrationProvider : IRegisterSailfishServices
 }
 ```
 
-For the reference `ClaudeCliSkipperTransport`, the `claude` CLI must be installed and on your `PATH`. Without *any* registered transport, `Enabled: true` is a harmless no-op.
+For the reference `ClaudeCliSkipperTransport`, the `claude` CLI must be installed and on your `PATH`. Without *any* registered transport, `Enabled: true` is a harmless no-op — but the adapter now **warns** you about it instead of staying silent (see [When Skipper produces nothing](#when-skipper-produces-nothing)).
 
-**The loop is run-twice.** SailDiff compares your latest run against the previous one, so a single run has nothing to diff:
+**The run-twice loop (run-vs-run SailDiff).** Sailfish does **not** auto-compare a run against the previous one — a historical comparison happens only when you name a baseline. For the classic "run, change, run again, explain the diff" loop under the adapter, opt in once in `.sailfish.json`:
+
+```jsonc
+{
+  "SailDiffSettings": { "AutoCompareToPreviousRun": true }
+}
+```
+
+With that set:
 
 1. Click the play button once — this records the **baseline** (no comparison yet).
 2. Change your code.
-3. Click play again — SailDiff produces the before/after, and Skipper explains it.
+3. Click play again — SailDiff compares against the most recent prior run, and Skipper explains it.
+
+To pin a *fixed* baseline instead, name the tracking file(s) explicitly with `SailDiffSettings.ProvidedBeforeTrackingFiles` (which always takes precedence over `AutoCompareToPreviousRun`). If you only want a **single-run** explanation, reach for a ScaleFish variable or a method-comparison group instead — neither needs a baseline.
 
 {% callout title="Run one test, not the whole suite" type="note" %}
 The agent is invoked **once per analyzed comparison** — running the entire suite fans out into one call per test (and, for the reference agent, one `claude` invocation each). While you iterate, click the play button on a **single** benchmark. The Skipper verdict prints to the **test output window**, right beneath the SailDiff table; the `skipper-review_*.json` and `skipper-report_*.md` artifacts land in your results directory (`GlobalSettings.ResultsDirectory`).
@@ -173,7 +189,7 @@ Chips: 🔴 regressed · 🟢 improved · ⚪ not significant · 🟡 inconclusi
 | `skipper-review_<timestamp>_<kind>.json` | The structured review — machine-readable, for a CI bot or orchestrator to consume. |
 | `skipper-report_<timestamp>_<kind>.md` | The deep human-readable write-up: call path, cited code, suggested fix. |
 
-`<kind>` is `saildiff` or `scalefish`, so a run that does both never overwrites itself.
+`<kind>` is `saildiff`, `scalefish`, or `comparison-<group>` (one per method-comparison group), so several analyses in one run never overwrite each other.
 
 ## Reliability-aware verdicts
 
@@ -183,20 +199,19 @@ Skipper's context packet includes an **environment snapshot** drawn from Sailfis
 
 Each comparison also carries its effect size and the **minimum detectable effect** — so Skipper can tell you when a run was simply underpowered to catch the change you care about.
 
-## Two questions Skipper answers
+## Three questions Skipper answers
 
-- **"Why did this change?"** — from SailDiff. Skipper reads the implicated method, follows it into the system under test, and explains the cause (an allocation in a loop, an N+1 query, a lost fast-path) with citations.
+- **"Why did this change?"** — from run-vs-run SailDiff. Skipper reads the implicated method, follows it into the system under test, and explains the cause (an allocation in a loop, an N+1 query, a lost fast-path) with citations.
+- **"Which of these implementations is faster, and why?"** — from a method-comparison group (one baseline, N candidates). Skipper explains the winner and the gap on the most common comparison you run — in a single run, no baseline file required.
 - **"Why does this scale like that, and what happens at 10× the data?"** — from ScaleFish. Skipper takes the best-fit complexity class (and whether it's statistically distinguishable from the runner-up) and projects the fitted curve to larger N: *"O(n²), R²=0.98 — at 10,000 items expect ~500ms."*
 
-## Workflow: rerun in place
+## When Skipper produces nothing
 
-The most natural local loop is the simplest one. Sailfish's tracking files capture each run, and SailDiff automatically compares your **latest run against the previous one** — so you just:
+Skipper used to fail *silently* — you'd enable it and simply see nothing, with no clue why. It no longer does: when AI analysis is enabled but produces no output, the adapter logs a single **warning** (visible in the test output / `dotnet test` log) telling you exactly what's missing:
 
-1. Run your benchmarks.
-2. Change your code.
-3. Run again.
-
-SailDiff produces the before/after, and Skipper explains it — no file paths to type, nothing to wire up. (You can still point SailDiff at specific prior tracking files when you want a fixed baseline; rerun-in-place is simply the zero-friction default.)
+- **No `.sailfish.json` was found** — discovery searches upward from the working directory *and* from the test assembly's own output directory; if neither has one, defaults are used and AI stays off. (Tip: a `<None Update=".sailfish.json" CopyToOutputDirectory="PreserveNewest" />` entry keeps the file beside the test DLL so it's always found.)
+- **AI is enabled but no transport is registered** — register one with `services.AddSkipperTransport<T>()`.
+- **AI is enabled with a transport, but nothing triggered it this run** — add a ScaleFish variable, a method-comparison group, or a run-vs-run baseline (see the trigger list above).
 
 ## Settings
 

@@ -9,6 +9,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.Adapter;
 using Microsoft.VisualStudio.TestPlatform.ObjectModel.Logging;
+using Sailfish.Analysis.Ai;
 using Sailfish.Diagnostics.Environment;
 using Sailfish.Exceptions;
 using Sailfish.Logging;
@@ -86,7 +87,11 @@ public class TestExecutor : ITestExecutor
         var services = new ServiceCollection();
         try
         {
-            var runSettings = AdapterRunSettingsLoader.RetrieveAndLoadAdapterRunSettings();
+            // Pass the test assembly path so discovery can also search the assembly's output directory (not only
+            // upward from the working directory), and the frameworkHandle so the loaded-file / not-found outcome
+            // is observable (warns when no .sailfish.json is found). See AdapterRunSettingsLoader.
+            var runSettings = AdapterRunSettingsLoader.RetrieveAndLoadAdapterRunSettings(
+                testCases.FirstOrDefault()?.Source, frameworkHandle);
             services.AddSailfish(runSettings);
             services.AddSailfishTestAdapter(frameworkHandle);
 
@@ -106,6 +111,7 @@ public class TestExecutor : ITestExecutor
 
         var provider = services.BuildServiceProvider();
 
+        var ranToCompletion = false;
         try
         {
             // Environment health check (informational).
@@ -198,6 +204,7 @@ public class TestExecutor : ITestExecutor
 
             // Execute tests.
             _testExecution.ExecuteTests(testCases, provider, frameworkHandle, _cancellationTokenSource.Token);
+            ranToCompletion = true;
         }
         catch (Exception ex)
         {
@@ -206,10 +213,55 @@ public class TestExecutor : ITestExecutor
         finally
         {
             // Flush the aggregator: publish any comparison group that never completed (deterministic, end-of-run).
+            // This can fire the last comparison-group Skipper triggers, so warn about AI inactivity afterwards.
             FlushComparisonAggregator(provider);
+
+            // Surface why AI analysis produced nothing, instead of leaving the user staring at silence.
+            if (ranToCompletion) WarnIfAiConfiguredButInactive(provider, frameworkHandle);
 
             // Dispose provider — releases all singletons and any other IDisposable services it owns.
             provider.Dispose();
+        }
+    }
+
+    /// <summary>
+    ///     Emits a single, actionable warning when Skipper AI analysis was enabled but produced nothing — the
+    ///     core UX failure this addresses. Two cases: (1) enabled but no <see cref="ISkipperTransport" /> is
+    ///     registered, and (2) enabled with a transport but no trigger (ScaleFish / method comparison / run-vs-run
+    ///     SailDiff) was produced this run, so Skipper had nothing to explain. Best-effort: diagnostics must never
+    ///     affect the run.
+    /// </summary>
+    internal static void WarnIfAiConfiguredButInactive(IServiceProvider provider, IFrameworkHandle frameworkHandle)
+    {
+        try
+        {
+            var runSettings = provider.GetService<Sailfish.Contracts.Public.Models.IRunSettings>();
+            if (runSettings?.RunAiAnalysis != true) return; // AI not enabled — nothing to warn about.
+
+            string? message = null;
+            if (provider.GetService<ISailfishAgent>() is NoOpSailfishAgent)
+            {
+                message =
+                    "Sailfish AI analysis (Skipper) is enabled in .sailfish.json, but no Skipper transport is registered, so it was skipped. " +
+                    "Register one from your test project via IRegisterSailfishServices: services.AddSkipperTransport<YourTransport>().";
+            }
+            else if (provider.GetService<ISkipperActivitySink>() is { Triggered: false })
+            {
+                message =
+                    "Sailfish AI analysis (Skipper) is enabled and a transport is registered, but it did not fire this run because no analysis produced a result to explain. " +
+                    "Skipper runs on a ScaleFish complexity result (add a [SailfishVariable(scaleFish: true, ...)] variable), a completed method-comparison group, " +
+                    "or a run-vs-run SailDiff (set SailDiffSettings.ProvidedBeforeTrackingFiles or AutoCompareToPreviousRun in .sailfish.json).";
+            }
+
+            if (message is null) return;
+
+            frameworkHandle.SendMessage(TestMessageLevel.Warning, message);
+            provider.GetService<ILogger>()?.Log(LogLevel.Warning, message);
+        }
+        catch (Exception ex)
+        {
+            provider.GetService<ILogger>()?.Log(LogLevel.Warning, ex,
+                "Failed to evaluate Skipper AI diagnostics: {0}", ex.Message);
         }
     }
 

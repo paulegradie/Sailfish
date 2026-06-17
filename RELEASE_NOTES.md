@@ -1,5 +1,16 @@
 ﻿## What's Changed in v0.0.118 (unreleased)
 
+### Fix: the VS Test Adapter now runs ScaleFish + AI (Skipper), like the programmatic runner
+
+Running benchmarks through the VS Test Adapter (`dotnet test` / Test Explorer / the gutter "play" button) **silently skipped ScaleFish and the Skipper AI layer**, even when fully configured — AI worked only via the programmatic `SailfishRunner.Run`. The adapter's run-completion path published its results notification but never invoked the SailDiff/ScaleFish analyzers (the call was dropped years ago), so the ScaleFish/SailDiff completion notifications that drive Skipper never fired. The adapter now mirrors `SailfishExecutor.Run`: after benchmarks are measured it runs SailDiff and ScaleFish, so BigO output, run-vs-run comparison, and the `skipper-report_*.md` / `skipper-review_*.json` artifacts are produced on the IDE path exactly as they are programmatically.
+
+Alongside the fix:
+
+- **No more silent no-ops.** When AI analysis is enabled but produces nothing, the adapter logs a single **warning** explaining why — no `.sailfish.json` was found, no Skipper transport is registered, or nothing triggered Skipper this run (and what would).
+- **Robust `.sailfish.json` discovery.** Discovery now also searches the **test assembly's own directory** (not just upward from the working directory), and logs which file was loaded (or that none was). A `<None CopyToOutputDirectory>` entry that keeps the file beside the test DLL now works.
+- **Opt-in run-vs-run baseline.** A new `SailDiffSettings.AutoCompareToPreviousRun` flag in `.sailfish.json` (default off) makes "run twice → SailDiff" work under the adapter by comparing against the most recent prior tracking file. Explicit `ProvidedBeforeTrackingFiles` still takes precedence; the explicit-only default introduced earlier in v0.0.118 is unchanged.
+- **Method-comparison groups now feed Skipper.** A completed in-run `ComparisonGroup` (the most common comparison) publishes a new `MethodComparisonAnalysisCompleteNotification` and triggers a Skipper "explain this comparison" review (artifact kind `comparison-<group>`).
+
 ### Method comparison: one verdict everywhere
 
 Method-vs-method comparison (every `[SailfishMethod]` on a `[Sailfish]` class) used to be judged *differently depending on where you looked*: the IDE ran the configured SailDiff test (Wilcoxon by default) on the raw samples with no multiplicity correction, while the console/markdown/CSV computed a parametric log-ratio approximation off summary statistics and gated the label on a BH-FDR q-value. The same two methods could get a different p-value and a different Improved/Slower/Similar label in the IDE vs the generated report.

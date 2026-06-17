@@ -21,6 +21,7 @@ internal interface ISkipperAnalysisRunner
 internal sealed class SkipperAnalysisRunner : ISkipperAnalysisRunner
 {
     private readonly ISailfishAgent agent;
+    private readonly ISkipperActivitySink activitySink;
     private readonly IConsoleWriter consoleWriter;
     private readonly ISkipperConsoleFormatter consoleFormatter;
     private readonly ILogger logger;
@@ -37,6 +38,7 @@ internal sealed class SkipperAnalysisRunner : ISkipperAnalysisRunner
         ISkipperResponseCache responseCache,
         IConsoleWriter consoleWriter,
         ISkipperConsoleFormatter consoleFormatter,
+        ISkipperActivitySink activitySink,
         ILogger logger)
     {
         this.runSettings = runSettings;
@@ -46,6 +48,7 @@ internal sealed class SkipperAnalysisRunner : ISkipperAnalysisRunner
         this.responseCache = responseCache;
         this.consoleWriter = consoleWriter;
         this.consoleFormatter = consoleFormatter;
+        this.activitySink = activitySink;
         this.logger = logger;
     }
 
@@ -55,6 +58,10 @@ internal sealed class SkipperAnalysisRunner : ISkipperAnalysisRunner
 
         var hasContent = context.Comparisons.Count > 0 || context.Scaling is { Count: > 0 };
         if (!hasContent) return;
+
+        // A real trigger with analyzable content reached a real agent. Record it so the adapter can tell
+        // "AI engaged" from "AI was enabled but had nothing to act on" and warn accordingly (see #2).
+        activitySink.RecordTriggered();
 
         try
         {
