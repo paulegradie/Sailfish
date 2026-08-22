@@ -1,0 +1,55 @@
+# Sailfish
+
+> A .NET performance-testing library: write benchmarks like unit tests, run them in-process or via an IDE test adapter, and get per-invocation timing distributions with statistical analysis (SailDiff), complexity estimation (ScaleFish), load testing (Trawl), and optional AI explanations (Skipper).
+
+The complete documentation as a single file for LLM ingestion: [llms-full.txt](https://paulgradie.com/Sailfish/llms-full.txt)
+
+## Introduction
+
+- [Getting Started](https://paulgradie.com/Sailfish/docs/0/getting-started)
+- [Quick Start](https://paulgradie.com/Sailfish/docs/0/quick-start)
+- [Installation](https://paulgradie.com/Sailfish/docs/0/installation)
+- [Essential Information](https://paulgradie.com/Sailfish/docs/0/essential-information)
+- [When To Use Sailfish](https://paulgradie.com/Sailfish/docs/0/when-to-use-sailfish)
+- [Sailfish vs BenchmarkDotNet](https://paulgradie.com/Sailfish/docs/0/sailfish-vs-benchmarkdotnet)
+- [License](https://paulgradie.com/Sailfish/docs/0/license)
+
+## Sailfish Basics
+
+- [Required Attributes](https://paulgradie.com/Sailfish/docs/1/required-attributes)
+- [Method Comparisons](https://paulgradie.com/Sailfish/docs/1/method-comparisons)
+- [Variables](https://paulgradie.com/Sailfish/docs/1/sailfish-variables)
+- [The Test Lifecycle](https://paulgradie.com/Sailfish/docs/1/sailfish-test-lifecycle)
+- [Test Dependencies](https://paulgradie.com/Sailfish/docs/1/test-dependencies)
+- [Adaptive Sampling](https://paulgradie.com/Sailfish/docs/1/adaptive-sampling)
+- [Configuration Recipes](https://paulgradie.com/Sailfish/docs/1/presets)
+- [Iteration Tuning](https://paulgradie.com/Sailfish/docs/1/iteration-tuning)
+- [Measurement & Overhead](https://paulgradie.com/Sailfish/docs/1/measurement-and-overhead)
+- [Steady-State Warmup](https://paulgradie.com/Sailfish/docs/1/steady-state-warmup)
+- [Confidence Intervals](https://paulgradie.com/Sailfish/docs/1/confidence-intervals)
+- [Outlier Handling](https://paulgradie.com/Sailfish/docs/1/outlier-handling)
+- [Environment Health Check](https://paulgradie.com/Sailfish/docs/1/environment-health)
+- [Anti-DCE](https://paulgradie.com/Sailfish/docs/1/anti-dce)
+- [Precision Time Budget](https://paulgradie.com/Sailfish/docs/1/precision-time-budget)
+- [Reproducibility Manifest](https://paulgradie.com/Sailfish/docs/1/reproducibility-manifest)
+
+## Outputs
+
+- [Reading the Console Output](https://paulgradie.com/Sailfish/docs/1/console-output)
+- [Output Attributes](https://paulgradie.com/Sailfish/docs/1/output-attributes)
+- [Markdown Output](https://paulgradie.com/Sailfish/docs/1/markdown-output)
+- [CSV Output](https://paulgradie.com/Sailfish/docs/1/csv-output)
+
+## Features
+
+- [Sailfish](https://paulgradie.com/Sailfish/docs/2/sailfish)
+- [SailDiff](https://paulgradie.com/Sailfish/docs/2/saildiff)
+- [ScaleFish](https://paulgradie.com/Sailfish/docs/2/scalefish)
+- [Skipper (AI)](https://paulgradie.com/Sailfish/docs/2/skipper)
+- [Trawl (Load Testing)](https://paulgradie.com/Sailfish/docs/2/trawl)
+
+## Advanced Sailfish
+
+- [Extensibility](https://paulgradie.com/Sailfish/docs/3/extensibility)
+- [Example App](https://paulgradie.com/Sailfish/docs/3/example-app)
+

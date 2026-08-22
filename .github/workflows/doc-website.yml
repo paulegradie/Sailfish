@@ -72,7 +72,9 @@ jobs:
         run: npm ci
 
       - name: Build with Next.js
-        run: npx --no-install next build
+        # `npm run build` (not `next build` directly) so the prebuild hook regenerates
+        # the LLM spec (public/llms-full.txt, public/llms.txt) before the build.
+        run: npm run build
 
       - name: Static HTML export with Next.js
         run: npx --no-install next export

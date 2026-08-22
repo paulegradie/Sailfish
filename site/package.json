@@ -3,7 +3,10 @@
   "version": "1.1.10",
   "private": true,
   "scripts": {
+    "generate:llms": "node scripts/generate-llms-spec.mjs",
+    "predev": "node scripts/generate-llms-spec.mjs",
     "dev": "next dev",
+    "prebuild": "node scripts/generate-llms-spec.mjs",
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
