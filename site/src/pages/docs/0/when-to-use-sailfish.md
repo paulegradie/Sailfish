@@ -32,7 +32,7 @@ Use [Adaptive Sampling](/docs/1/adaptive-sampling) to achieve consistent precisi
 We measured, rather than argue. The same three workloads — an EF Core query, SHA-256 hashing, and a nanosecond-scale operation — were run through both tools at 10,000 samples per series and plotted as violin distributions. The evidence behind the guidance on this page:
 
 - **Accuracy is equivalent.** Measured like-for-like (one sample per invocation, n = 10,000), the two engines' medians land 0.5% apart on a stationary CPU workload, each with a ±0.17% confidence interval.
-- **Sailfish natively answers the request-scoped question.** For an EF Core query, BenchmarkDotNet's default hot-loop mean was 51 µs while the per-call distribution had a median of 76 µs and a p99 of 326 µs — the SLA-relevant tail only exists in per-invocation measurement, which is Sailfish's native mode.
+- **Sailfish natively answers the request-scoped question.** For an EF Core query, BenchmarkDotNet's default hot-loop mean was 51 µs while the per-call distribution had a median of 76 µs and a p99 of 326 µs. To be plain: stock BenchmarkDotNet never times individual calls — it batched this query 4,096 invocations per measurement and recorded batch averages, so a real per-call p95/p99 cannot be computed from its output. Per-call timing must be explicitly configured in BDN (and it warns when you do); it is Sailfish's default.
 - **The statistics cost a fraction of the time.** The same 30,000 samples: Sailfish 34 s, BenchmarkDotNet 126 s — and at stock defaults, 3.8 s vs 71 s.
 - **BenchmarkDotNet remains the right tool below ~1 µs**, where batched invocation is the only low-variance way to resolve nanosecond costs.
 
