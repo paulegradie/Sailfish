@@ -26,3 +26,9 @@ The same can be said for benchmarking. Sometimes you need to measure extremely q
 {% callout title="Tip: Adaptive Sampling" type="note" %}
 Use [Adaptive Sampling](/docs/1/adaptive-sampling) to achieve consistent precision while minimizing runtime, especially in CI.
 {% /callout %}
+
+## How does it compare to BenchmarkDotNet?
+
+We measured. The same three workloads — an EF Core query, SHA-256 hashing, and a nanosecond-scale operation — were run through both tools at 10,000 samples per series and plotted as violin distributions. Measured like-for-like, the two engines agree to within 0.5%; what differs is the question each tool answers and the cost of asking it.
+
+See the full analysis, plots and guidance: [Sailfish vs BenchmarkDotNet](/docs/0/sailfish-vs-benchmarkdotnet).

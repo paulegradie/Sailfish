@@ -23,6 +23,7 @@ const navigation = [
             { title: 'Installation', href: '/docs/0/installation' },
             { title: 'Essential Information', href: '/docs/0/essential-information' },
             { title: 'When To Use Sailfish', href: '/docs/0/when-to-use-sailfish' },
+            { title: 'Sailfish vs BenchmarkDotNet', href: '/docs/0/sailfish-vs-benchmarkdotnet' },
             { title: 'License', href: '/docs/0/license' },
         ],
     },
