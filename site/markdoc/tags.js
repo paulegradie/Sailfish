@@ -1,6 +1,22 @@
+import { useRouter } from 'next/router'
+
 import { Callout } from '@/components/Callout'
 import { QuickLink, QuickLinks } from '@/components/QuickLinks'
 import { Terminal } from '@/components/Terminal'
+
+// Plain <img> elements don't get Next's basePath applied (the production site
+// deploys under /Sailfish), so root-relative srcs must be prefixed at render time.
+function Figure({ src, alt = '', caption }) {
+  const { basePath } = useRouter()
+  const resolvedSrc = src.startsWith('/') ? `${basePath}${src}` : src
+  return (
+    <figure>
+      {/* eslint-disable-next-line @next/next/no-img-element */}
+      <img src={resolvedSrc} alt={alt} />
+      <figcaption>{caption}</figcaption>
+    </figure>
+  )
+}
 
 const tags = {
   terminal: {
@@ -28,13 +44,7 @@ const tags = {
       alt: { type: String },
       caption: { type: String },
     },
-    render: ({ src, alt = '', caption }) => (
-      <figure>
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src={src} alt={alt} />
-        <figcaption>{caption}</figcaption>
-      </figure>
-    ),
+    render: Figure,
   },
   'quick-links': {
     render: QuickLinks,
