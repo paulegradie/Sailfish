@@ -11,6 +11,15 @@ The short version:
 
 Measured like-for-like, the two engines agree (see the CpuHash plot below). What differs is methodology, output, and workflow.
 
+## What we learned
+
+Four findings, each backed by a plot below:
+
+1. **Measured like-for-like, the two engines agree.** With both tools timing one invocation per sample at n = 10,000, the CPU-bound workload's medians land **0.5% apart** (Sailfish 24.46 µs, BDN 24.58 µs), each with a ±0.17% confidence interval. Sailfish's measurement engine is as trustworthy as BenchmarkDotNet's — the tools differ in methodology and workflow, not accuracy.
+2. **For EF Core / SQL queries, the tools answer different questions.** BDN's default batching reports a hot-loop figure of **51 µs**; per-call reality is a distribution — **median 76 µs, p95 219 µs, p99 326 µs**. Only per-invocation measurement shows the tail you'd quote in an SLA conversation, and that is Sailfish's native mode.
+3. **The same statistics cost Sailfish a fraction of the time.** Collecting these 30,000 samples: **Sailfish 34 s, BenchmarkDotNet 126 s** (3.7×). At out-of-the-box defaults the gap was 3.8 s vs 71 s (~18×). Scaling n from 100 to 10,000 tightened median confidence intervals from ~5% to 0.2–3%.
+4. **Sample size changes the answer for stateful code.** The EF query keeps getting faster for thousands of invocations as caches warm (BDN per-invocation drifted from ~266 µs early in its run to ~115 µs late; Sailfish 133 → 96 µs). That's a property of the workload, not either tool — see [Sample size changes the answer](#sample-size-changes-the-answer) below.
+
 ## The experiment
 
 Three workloads, chosen to span the measurement scale, were implemented once as static methods in a shared assembly. Both tools invoked **the exact same code** — only the measurement harness differed:
@@ -81,9 +90,46 @@ Collecting the 30,000 per-invocation samples took **Sailfish 34 s** and **Benchm
 | Service-level code in the µs–ms range | **Sailfish** — same accuracy, faster suites, test-project workflow, SailDiff regression verdicts |
 | Sub-microsecond hot-path code, allocation hunting, disassembly | **BenchmarkDotNet** — batched invocation is the only low-variance way to resolve nanoseconds |
 
-{% callout title="Sample size changes the answer for stateful code" type="warning" %}
-Workloads that touch caches (like database queries) keep getting faster for thousands of invocations — in this experiment the EF query drifted from ~266 µs early in a run to ~115 µs late. Whichever tool you use, decide which regime you are measuring — "first calls after startup" or "steady state under traffic" — and hold your warm-up policy constant. In Sailfish that policy is explicit: `NumWarmupIterations` and [steady-state warmup](/docs/1/steady-state-warmup).
+Two further considerations from this experiment:
+
+- **The speed advantage compounds in automated loops.** 30,000 samples in 34 s vs 126 s means roughly 4× more hypotheses tested per unit time when a person — or an AI agent — is iterating on a query. Sailfish also runs in-process and hands back raw samples as objects through its API (this harness consumed `RawExecutionResults` directly), where BenchmarkDotNet requires child processes, a Release build, and parsing multi-megabyte artifact files. For tool-in-the-loop workflows, that is a materially simpler contract.
+- **Within one suite, hold tool and warm-up policy constant.** On stationary workloads the tools agree; on warming workloads (EF), warm-up policy dominates the absolute number. Track deltas within one tool and one configuration rather than comparing absolutes across tools.
+
+## Sample size changes the answer
+
+Scaling this experiment from 100 to 10,000 samples did two very different things at once, and separating them matters:
+
+**It tightened the statistics.** Median 95% confidence intervals went from ~5% wide at n = 100 to 0.2% (CpuHash) and ~3% (EfCoreQuery — wide only because of drift). p99 and p99.9 became estimable. This is the ordinary √n payoff, and it is what made the engine-parity result visible.
+
+**It changed what was being measured.** More invocations = a hotter process:
+
+| Series | median at n = 100 | median at n = 10,000 |
+| --- | --- | --- |
+| EfCoreQuery · Sailfish | 199.6 µs | 76.2 µs |
+| EfCoreQuery · BDN per-invocation | 162.4 µs | 128.4 µs |
+| TinyOp · Sailfish | 1.37 µs | 123 ns |
+| CpuHash · Sailfish | 21.8 µs | 24.5 µs |
+| CpuHash · BDN per-invocation | 24.1 µs | 24.6 µs |
+
+The EF query keeps warming for thousands of calls (caches, allocator), and the tiny op needs thousands of invocations before the JIT fully tiers up. CpuHash — stationary — barely moved, and both tools shifted together (a run-to-run environment change that hit both equally).
+
+{% callout title="Decide your regime, then hold it constant" type="warning" %}
+Whichever tool you use, decide which regime you are measuring — "first calls after startup" or "steady state under traffic" — and hold your warm-up policy and sample size constant between runs. In Sailfish that policy is explicit: `NumWarmupIterations` and [steady-state warmup](/docs/1/steady-state-warmup).
 {% /callout %}
+
+## Reproducing this experiment
+
+The full harness — shared workloads, both runners, the merge and plot scripts, and the raw samples behind these charts — lives in the repository at [`benchmarks/sailfish-vs-benchmarkdotnet`](https://github.com/paulegradie/Sailfish/tree/main/benchmarks/sailfish-vs-benchmarkdotnet). To re-run it:
+
+```bash
+cd benchmarks/sailfish-vs-benchmarkdotnet
+dotnet run --project SailfishRun -c Release -- ./compare-output
+dotnet run --project BdnRun -c Release -- ./compare-output
+python3 analysis/merge_csvs.py ./compare-output
+python3 analysis/make_svgs.py ./compare-output/samples.json
+```
+
+The last step regenerates the SVG plots on this page from your machine's data. (The two runners are separate processes by necessity: BenchmarkDotNet pins Perfolizer 0.5.3 exactly while Sailfish requires ≥ 0.7.1, so the two tools cannot be referenced from one project.)
 
 ## Caveats
 
