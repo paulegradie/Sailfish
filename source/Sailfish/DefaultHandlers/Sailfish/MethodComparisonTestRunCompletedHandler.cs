@@ -612,9 +612,10 @@ internal class MethodComparisonTestRunCompletedHandler : INotificationHandler<Te
                     var col = stats[j];
                     var (ratio, lo, hi) = MultipleComparisons.ComputeRatioCi(row.Mean, row.SE, row.N, col.Mean, col.SE, col.N, confidenceLevel);
                     qMap.TryGetValue(MultipleComparisons.NormalizePair(row.Id, col.Id), out var q);
-                    var sig = SailDiffSignificance.IsSignificantPositive(q, alpha);
-                    var label = sig ? (ratio < 1.0 ? "Improved" : "Slower") : "Similar";
-                    var cell = $"{FormatRatio(ratio, lo, hi)}{(q > 0 ? $" q={FormatP(q)}" : "")} {label}";
+                    // Per-cell orientation (the matrix renders both (row,col) and (col,row)), so derive the
+                    // verdict from THIS cell's ratio via the shared rule rather than the stored pair verdict.
+                    var label = MethodComparisonDisplay.Label(MethodComparisonDisplay.Verdict(q, alpha, ratio));
+                    var cell = $"{FormatRatio(ratio, lo, hi)}{(q > 0 ? $" q={MethodComparisonDisplay.FormatPValue(q)}" : "")} {label}";
                     sb.Append($" {cell} |");
                 }
                 sb.AppendLine();
@@ -629,12 +630,6 @@ internal class MethodComparisonTestRunCompletedHandler : INotificationHandler<Te
                 var r = $"{ratio:0.###}x";
                 if (lo.HasValue && hi.HasValue) return $"{r} [{lo.Value:0.###}–{hi.Value:0.###}]";
                 return r;
-            }
-
-            static string FormatP(double p)
-            {
-                if (p < 1e-3) return p.ToString("0.0e-0");
-                return p.ToString("0.###");
             }
 
         }
@@ -711,10 +706,9 @@ internal class MethodComparisonTestRunCompletedHandler : INotificationHandler<Te
             {
                 var (ratio, lo, hi) = MultipleComparisons.ComputeRatioCi(baselineStat.Mean, baselineStat.SE, baselineStat.N, c.Mean, c.SE, c.N, confidenceLevel);
                 qMap.TryGetValue(MultipleComparisons.NormalizePair(baselineStat.Id, c.Id), out var q);
-                var sig = SailDiffSignificance.IsSignificantPositive(q, alpha);
-                var label = sig ? (ratio < 1.0 ? "Improved" : "Slower") : "Similar";
+                var label = MethodComparisonDisplay.Label(MethodComparisonDisplay.Verdict(q, alpha, ratio));
                 var ciStr = (lo.HasValue && hi.HasValue) ? $"[{lo.Value:0.###}–{hi.Value:0.###}]" : "—";
-                var qStr = q > 0 ? FormatP(q) : "—";
+                var qStr = q > 0 ? MethodComparisonDisplay.FormatPValue(q) : "—";
                 sb.AppendLine($"| `{c.Name}` | {c.Mean:0.###}ms | {ratio:0.###}x | {ciStr} | {qStr} | {label} |");
             }
 
@@ -722,54 +716,11 @@ internal class MethodComparisonTestRunCompletedHandler : INotificationHandler<Te
             sb.AppendLine("_Ratio is contender/baseline. 'Improved' means significantly faster than baseline; 'Slower' significantly slower; 'Similar' not significant after FDR._");
             return sb.ToString();
 
-            static string FormatP(double p)
-            {
-                if (p < 1e-3) return p.ToString("0.0e-0");
-                return p.ToString("0.###");
-            }
-
         }
         catch (Exception ex)
         {
             _logger.Log(LogLevel.Warning, ex, "Failed to create baseline comparison table");
             return string.Empty;
-        }
-    }
-
-    /// <summary>
-    /// Calculates the performance comparison between two methods.
-    /// </summary>
-    /// <param name="method1">The first method (row method).</param>
-    /// <param name="method2">The second method (column method).</param>
-    /// <returns>A string describing the relative performance (e.g., "2.3x faster", "1.8x slower").</returns>
-    private string CalculatePerformanceComparison(CompiledTestCaseResultTrackingFormat method1, CompiledTestCaseResultTrackingFormat method2)
-    {
-        try
-        {
-            var mean1 = method1.PerformanceRunResult?.Mean ?? 0;
-            var mean2 = method2.PerformanceRunResult?.Mean ?? 0;
-
-            if (mean1 <= 0 || mean2 <= 0) return "N/A";
-
-            var ratio = mean2 / mean1;
-
-            if (ratio > 1.0)
-            {
-                return $"{ratio:F1}x slower";
-            }
-            else if (ratio < 1.0)
-            {
-                var inverseRatio = mean1 / mean2;
-                return $"{inverseRatio:F1}x faster";
-            }
-            else
-            {
-                return "~same";
-            }
-        }
-        catch
-        {
-            return "N/A";
         }
     }
 

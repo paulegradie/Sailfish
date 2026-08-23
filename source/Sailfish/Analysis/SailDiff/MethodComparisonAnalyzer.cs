@@ -186,12 +186,10 @@ public sealed class MethodComparisonAnalyzer : IMethodComparisonAnalyzer
         return new MethodComparisonResult(results, baselineMode, baselineId);
     }
 
-    // ratio = compared / primary, so ratio < 1 means the contender is faster than the primary ⇒ Improved.
+    // Verdict (sig-after-FDR, then direction from the ratio) lives in MethodComparisonDisplay so the analyzer
+    // and every render surface share one definition. ratio = compared / primary, so ratio < 1 ⇒ Improved.
     private static MethodComparisonVerdict DetermineVerdict(double qValue, double alpha, double ratio)
-    {
-        if (!SailDiffSignificance.IsSignificantPositive(qValue, alpha)) return MethodComparisonVerdict.Similar;
-        return ratio < 1.0 ? MethodComparisonVerdict.Improved : MethodComparisonVerdict.Slower;
-    }
+        => MethodComparisonDisplay.Verdict(qValue, alpha, ratio);
 
     // Effective N: the post-outlier-removal sample count when available, else the raw sample size. Matches
     // the N the surfaces already used for the ratio CI.

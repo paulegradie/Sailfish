@@ -321,14 +321,14 @@ internal class CsvTestRunCompletedHandler : INotificationHandler<TestRunComplete
                     var hi = ci.Upper;
 
                     qMap.TryGetValue(MultipleComparisons.NormalizePair(row.Id, col.Id), out var q);
-                    var sig = SailDiffSignificance.IsSignificantPositive(q, alpha);
-                    var label = sig ? (ratio < 1.0 ? "Improved" : "Slower") : "Similar";
+                    var verdict = MethodComparisonDisplay.Verdict(q, alpha, ratio);
+                    var label = MethodComparisonDisplay.Label(verdict);
 
                     var loStr = lo.HasValue ? lo.Value.ToString("0.###") : "";
                     var hiStr = hi.HasValue ? hi.Value.ToString("0.###") : "";
-                    var qStr = q > 0 ? FormatP(q) : "";
+                    var qStr = q > 0 ? MethodComparisonDisplay.FormatPValue(q) : "";
 
-                    var changeDesc = label == "Improved" ? "Improved" : label == "Slower" ? "Regressed" : "No Change";
+                    var changeDesc = MethodComparisonDisplay.ChangeDescription(verdict);
                     sb.AppendLine($"{columnLabel},{row.Name},{col.Name},{row.Mean:0.###},{col.Mean:0.###},{ratio:0.###},{loStr},{hiStr},{qStr},{label},{changeDesc}");
                 }
             }
@@ -343,76 +343,6 @@ internal class CsvTestRunCompletedHandler : INotificationHandler<TestRunComplete
             return;
         }
 
-        static string FormatP(double p)
-        {
-            if (p < 1e-3) return p.ToString("0.0e-0");
-            return p.ToString("0.###");
-        }
-
-    }
-
-    /// <summary>
-    /// Calculates the performance comparison between two methods.
-    /// </summary>
-    /// <param name="method1">The first method.</param>
-    /// <param name="method2">The second method.</param>
-    /// <returns>A string describing the relative performance (e.g., "2.3x faster", "1.8x slower").</returns>
-    private string CalculatePerformanceComparison(CompiledTestCaseResultTrackingFormat method1, CompiledTestCaseResultTrackingFormat method2)
-    {
-        try
-        {
-            var mean1 = method1.PerformanceRunResult?.Mean ?? 0;
-            var mean2 = method2.PerformanceRunResult?.Mean ?? 0;
-
-            if (mean1 <= 0 || mean2 <= 0) return "N/A";
-
-            var ratio = mean2 / mean1;
-
-            if (ratio > 1.0)
-            {
-                return $"{ratio:F1}x slower";
-            }
-            else if (ratio < 1.0)
-            {
-                var inverseRatio = mean1 / mean2;
-                return $"{inverseRatio:F1}x faster";
-            }
-            else
-            {
-                return "~same";
-            }
-        }
-        catch
-        {
-            return "N/A";
-        }
-    }
-
-    /// <summary>
-    /// Determines the change description based on performance comparison.
-    /// </summary>
-    /// <param name="mean1">Mean time of first method.</param>
-    /// <param name="mean2">Mean time of second method.</param>
-    /// <returns>Change description (Improved, Regressed, or No Change).</returns>
-    private string DetermineChangeDescription(double mean1, double mean2)
-    {
-        if (mean1 <= 0 || mean2 <= 0) return "Unknown";
-
-        var ratio = mean2 / mean1;
-        const double threshold = 0.05; // 5% threshold for significance
-
-        if (ratio > (1.0 + threshold))
-        {
-            return "Regressed"; // Method2 is slower than Method1
-        }
-        else if (ratio < (1.0 - threshold))
-        {
-            return "Improved"; // Method2 is faster than Method1
-        }
-        else
-        {
-            return "No Change";
-        }
     }
 
     /// <summary>
