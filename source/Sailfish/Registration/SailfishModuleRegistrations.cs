@@ -114,7 +114,6 @@ internal static class SailfishModuleRegistrations
         services.AddTransient<ISailDiffInternal, SailDiff>();
         services.AddTransient<ISailDiff, SailDiff>();
         services.AddTransient<IScaleFishInternal, ScaleFish>();
-        services.AddTransient<IScaleFish, ScaleFish>();
 
         services.AddTransient<ITrackingFileSerialization, TrackingFileSerialization>();
         services.AddTransient<ITypeActivator, TypeActivator>();
