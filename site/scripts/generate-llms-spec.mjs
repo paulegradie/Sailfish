@@ -1,24 +1,23 @@
 #!/usr/bin/env node
-// Generates the "Copy for LLM" spec served by the docs site:
-//   public/llms-full.txt  — the entire docs corpus as one LLM-ready markdown document
-//   public/llms.txt       — a short index (https://llmstxt.org convention) linking each page
+// Generates the "Copy for LLM" files served by the docs site:
+//   public/llms-full.txt  — a concise, hand-curated API reference (the thing the "Copy for LLM"
+//                           button copies). Deliberately NOT the whole doc site verbatim: it is
+//                           the minimum an agent needs to write and run Sailfish benchmarks.
+//   public/llms.txt       — a short index (https://llmstxt.org convention) linking every docs page.
 //
-// Runs automatically before `npm run build` / `npm run dev` (see package.json pre* hooks).
-// The generated files are also committed so they are reviewable and present regardless of
-// how the site is built. Keep DOC_SECTIONS in sync with the sidebar in src/components/Layout.jsx.
+// Runs before `npm run build` / `npm run dev` (see package.json pre* hooks) and the output is
+// committed so it is reviewable. When the API changes, update REFERENCE below; when a docs page is
+// added/removed/renamed, update DOC_SECTIONS to match the sidebar in src/components/Layout.jsx.
 
-import { readFileSync, writeFileSync, mkdirSync } from 'node:fs'
+import { writeFileSync, mkdirSync } from 'node:fs'
 import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 
 const HERE = dirname(fileURLToPath(import.meta.url))
-const SITE = join(HERE, '..')
-const PAGES = join(SITE, 'src', 'pages')
-const PUBLIC = join(SITE, 'public')
+const PUBLIC = join(HERE, '..', 'public')
 const SITE_URL = 'https://paulgradie.com/Sailfish'
 
-// Ordered to mirror the docs sidebar. releasenotes (docs/4) is intentionally omitted:
-// a changelog is noise for an agent learning how to use the library.
+// Sidebar mirror — used only to build the llms.txt index of links. (docs/4 release notes omitted.)
 const DOC_SECTIONS = [
   {
     title: 'Introduction',
@@ -81,154 +80,193 @@ const DOC_SECTIONS = [
   },
 ]
 
-// A hand-written, authoritative quick reference placed at the very top of the full spec so an
-// agent is immediately productive without having to infer the API from prose.
-const PREAMBLE = `# Sailfish — LLM Reference
+// The curated reference. Concise on purpose (~2k tokens): the API surface an agent needs, not the
+// prose docs. Every default here is taken from source (SailfishAttribute / SailfishMethodAttribute /
+// RunSettingsBuilder). For the full prose docs, follow the page links in llms.txt.
+const REFERENCE = `# Sailfish — LLM API Reference
 
-> Sailfish is a .NET performance-testing library. You write benchmarks like unit tests
-> (attribute-decorated classes/methods), run them in-process or via an IDE test adapter,
-> and get per-invocation timing distributions plus statistical analysis (SailDiff),
-> complexity estimation (ScaleFish), load testing (Trawl), and optional AI explanations
-> (Skipper). This document is the complete documentation concatenated for LLM consumption.
-> Target framework support: net8.0+ (the library ships net9.0 and net10.0 assemblies).
+Sailfish is a .NET performance-testing library. You write benchmarks like unit tests
+(attribute-decorated classes and methods), run them either through an IDE test adapter
+(\`dotnet test\`) or programmatically in-process, and get per-invocation timing
+*distributions* plus statistical analysis. It ships net8.0+ assemblies (net9.0, net10.0).
 
-## Quick reference
+This is a concise API reference. Full prose docs, one page per topic, are linked from
+${SITE_URL}/llms.txt. When to reach for Sailfish vs BenchmarkDotNet: use Sailfish for
+request-scoped code (EF Core / SQL queries, HTTP handlers) where you want the per-call
+latency distribution and p95/p99 tail — that is Sailfish's native, default measurement.
+Use BenchmarkDotNet for sub-microsecond hot-path code, where batched invocation is needed
+to resolve nanosecond costs. Measured like-for-like the two engines agree to within ~0.5%.
 
-Install:
+## Install
 
 \`\`\`bash
-dotnet add package Sailfish
-# For the IDE test adapter (tests appear like xUnit/NUnit in the Test Explorer):
-dotnet add package Sailfish.TestAdapter
+dotnet add package Sailfish              # the library (programmatic use)
+dotnet add package Sailfish.TestAdapter  # optional: tests show up in the IDE Test Explorer / dotnet test
 \`\`\`
 
-Minimal benchmark class:
+## Writing a benchmark
+
+A benchmark is a class marked \`[Sailfish]\` with one or more \`[SailfishMethod]\` methods.
+The timed region is the body of a \`[SailfishMethod]\`. Setup/teardown hooks are not timed.
 
 \`\`\`csharp
 using Sailfish.Attributes;
 
 [Sailfish(SampleSize = 100, NumWarmupIterations = 10)]
-public class MyBenchmark
+public class QueryBenchmarks
 {
-    [SailfishGlobalSetup]        // runs once per class (SharedInstance lifetime, the default)
-    public void GlobalSetup() { /* expensive setup: build DI, seed a DB, etc. */ }
+    private MyDbContext _db = null!;
 
-    [SailfishMethodSetup]        // runs before each method
+    [SailfishGlobalSetup]              // once per class (see lifetimes below)
+    public void GlobalSetup() => _db = BuildContext();
+
+    [SailfishMethodSetup]             // before each [SailfishMethod]
     public void MethodSetup() { }
 
-    [SailfishMethod]             // a benchmarked method; timed region is the method body
-    public async Task MyScenario(CancellationToken ct) { /* code under test */ }
+    [SailfishMethod]                  // a benchmarked method; may be async and take a CancellationToken
+    public async Task RecentOrders(CancellationToken ct) =>
+        await _db.Orders.Where(o => o.CustomerId == 57).Take(20).ToListAsync(ct);
 
     [SailfishMethodTeardown] public void MethodTeardown() { }
-    [SailfishGlobalTeardown] public void GlobalTeardown() { }
+    [SailfishGlobalTeardown] public void GlobalTeardown() => _db.Dispose();
 }
 \`\`\`
 
-Key attributes and defaults:
+### \`[Sailfish]\` (class attribute) properties and defaults
 
-- \`[Sailfish(...)]\` marks a benchmark class. Common properties:
-  \`SampleSize\` (measured iterations), \`NumWarmupIterations\` (default 10),
-  \`Disabled\`, \`DisableOverheadEstimation\`, \`DisableComparison\`,
-  \`Lifetime\` (\`SailfishLifetime.SharedInstance\` default, or \`PerCase\`),
-  \`UseAdaptiveSampling\` (default false; with \`MinimumSampleSize\`/\`MaximumSampleSize\`/\`TargetCoefficientOfVariation\`),
-  \`UseSteadyStateWarmup\` (default false; with \`MaxWarmupIterations\`),
-  \`OutlierStrategy\` (default \`RemoveUpper\`), \`OperationsPerInvoke\` (default 1),
-  \`ConfidenceLevel\` (default 0.95).
-- \`[SailfishMethod]\` marks a benchmarked method. It may take a \`CancellationToken\` and be async.
-- Lifecycle: \`[SailfishGlobalSetup]\`, \`[SailfishMethodSetup]\`, \`[SailfishIterationSetup]\`,
-  \`[SailfishIterationTeardown]\`, \`[SailfishMethodTeardown]\`, \`[SailfishGlobalTeardown]\`.
-- Parameterization: \`[SailfishVariable(1, 10, 100)]\` on a public property fans the test across values;
-  \`[SailfishRangeVariable(...)]\` generates a range.
-- Output: \`[WriteToMarkdown]\`, \`[WriteToCsv]\` on the class.
+- \`SampleSize\` = 15 — number of measured (timed) iterations per method.
+- \`NumWarmupIterations\` = 10 — untimed warmups before measuring (floor when steady-state warmup is on).
+- \`Disabled\` = false — skip the whole class.
+- \`Lifetime\` = \`SailfishLifetime.SharedInstance\` — one instance + one GlobalSetup per class
+  (expensive setup runs once). \`PerCase\` = fresh instance and DI scope per test case (strict isolation).
+- \`DisableOverheadEstimation\` = false — subtract measured harness overhead from each sample.
+- \`DisableComparison\` = false — by default every \`[SailfishMethod]\` in the class joins one implicit
+  comparison group (see Method comparisons). Set true to opt the class out.
+- \`OperationsPerInvoke\` = 1 — if the method body does N operations, set N to report per-operation time.
+- \`OutlierStrategy\` = \`RemoveUpper\` — outlier handling (\`None\` / \`RemoveUpper\` / \`RemoveLower\` / \`RemoveAll\`).
+- \`ForceGcBetweenIterations\` = true — force a GC between iterations so collection pauses fall outside samples.
+- \`ConfidenceLevel\` = 0.95.
+- \`UseAdaptiveSampling\` = false — stop early once results are statistically stable. Companions:
+  \`MinimumSampleSize\` = 10, \`MaximumSampleSize\` = 1000, \`TargetCoefficientOfVariation\` = 0.05.
+- \`UseSteadyStateWarmup\` = false — warm up until per-iteration timing stops trending (JIT/OSR settled)
+  instead of a fixed count. Companion: \`MaxWarmupIterations\` = 50.
+- \`UseEnvironmentControl\` = false, \`PinToSingleCore\` = false — opt-in environment stabilization.
 
-Running programmatically (in-process):
+### Lifecycle attributes (all methods, run in this order)
+
+\`[SailfishGlobalSetup]\` → (per method) \`[SailfishMethodSetup]\` → (per iteration)
+\`[SailfishIterationSetup]\` → **\`[SailfishMethod]\` (timed)** → \`[SailfishIterationTeardown]\` →
+\`[SailfishMethodTeardown]\` → \`[SailfishGlobalTeardown]\`. Any hook may be async and/or take a
+\`CancellationToken\`.
+
+### \`[SailfishMethod]\` (method attribute) properties
+
+- \`Order\` = int.MaxValue — optional ordering.
+- \`Disabled\` = false, \`DisableComplexity\` = false, \`DisableOverheadEstimation\` = false.
+- \`ComparisonGroup\` = null — advanced: name a group so only same-named methods are compared.
+- \`IsBaseline\` = false — mark the baseline of a comparison group (produces an N−1 table vs that method;
+  at most one per group). With no baseline, every pair is compared (N×N).
+
+### Parameterizing (variables)
+
+Put a public settable property on the class and decorate it; Sailfish runs the whole class once per value.
+
+\`\`\`csharp
+[SailfishVariable(1, 10, 100)] public int N { get; set; }         // discrete values
+// Overloads accept string[], double[], long[], decimal[]. A leading bool enables ScaleFish:
+[SailfishVariable(true, 1, 10, 100)] public int Size { get; set; } // feed ScaleFish complexity estimation
+[SailfishRangeVariable(start: 0, count: 5, step: 2)] public int R { get; set; } // 0,2,4,6,8
+\`\`\`
+
+### Output attributes (class-level)
+
+\`[WriteToMarkdown]\` and \`[WriteToCsv]\` emit consolidated markdown / CSV reports for the run.
+
+## Running
+
+### Via the test adapter (IDE / dotnet test)
+
+Install \`Sailfish.TestAdapter\`; benchmarks then appear like xUnit/NUnit tests.
+
+\`\`\`bash
+dotnet test
+dotnet test --filter "FullyQualifiedName~QueryBenchmarks"   # standard filters work
+\`\`\`
+
+Configure with a \`.sailfish.json\` next to the test \`.csproj\` (any omitted setting uses its default):
+
+\`\`\`json
+{ "SailDiffSettings": { "TestType": "WilcoxonRankSumTest", "Alpha": 0.05 } }
+\`\`\`
+
+### Programmatically (in-process)
 
 \`\`\`csharp
 using Sailfish;
 
 var settings = RunSettingsBuilder.CreateBuilder()
-    .TestsFromAssembliesContaining(typeof(MyBenchmark))
-    .ProvidersFromAssembliesContaining(typeof(MyBenchmark))
-    .WithSailDiff()      // statistical before/after + method comparisons
-    .WithScaleFish()     // complexity estimation
+    .TestsFromAssembliesContaining(typeof(QueryBenchmarks))
+    .ProvidersFromAssembliesContaining(typeof(QueryBenchmarks)) // IRegisterSailfishServices for DI
+    .WithSailDiff()                 // statistical comparison + verdicts
+    .WithScaleFish()                // complexity estimation
     .WithLocalOutputDirectory("performance_output")
     .Build();
 
 var result = await SailfishRunner.Run(settings);
-// result.IsValid; result.Exceptions; result.ExecutionSummaries
-// Per-invocation raw samples (milliseconds):
-//   summary.GetSuccessfulTestCases() -> tc.PerformanceRunResult.RawExecutionResults
+if (!result.IsValid) foreach (var ex in result.Exceptions!) Console.WriteLine(ex);
 \`\`\`
 
-Running via the test adapter: install \`Sailfish.TestAdapter\`, then \`dotnet test\` (or use the IDE
-Test Explorer). Filters work: \`dotnet test --filter "FullyQualifiedName~MyBenchmark"\`.
-Configure via a \`.sailfish.json\` next to the test \`.csproj\`.
+Useful \`RunSettingsBuilder\` methods: \`WithTestNames(params string[])\`,
+\`WithGlobalSampleSize(int)\`, \`WithGlobalNumWarmupIterations(int)\`,
+\`WithGlobalAdaptiveSampling(double targetCv, int maxSampleSize)\`,
+\`WithSailDiff()\` / \`WithSailDiff(SailDiffSettings)\`, \`WithScaleFish()\`, \`WithAiAnalysis()\`,
+\`WithTrawl(TrawlSettings)\`, \`WithMinimumLogLevel(LogLevel)\`, \`CreateTrackingFiles(bool)\`,
+\`WithLocalOutputDirectory(string)\`.
 
-Choosing Sailfish vs BenchmarkDotNet: use Sailfish for request-scoped code (DB/EF Core queries,
-API handlers) where you want the per-call latency distribution and p95/p99 tail — that is
-Sailfish's native, default measurement. Use BenchmarkDotNet for sub-microsecond hot-path code,
-where batched invocation is required to resolve nanosecond costs. Measured like-for-like the two
-engines agree to within ~0.5%.
+### Reading results programmatically
 
----
+\`\`\`csharp
+foreach (var summary in result.ExecutionSummaries)
+    foreach (var tc in summary.GetSuccessfulTestCases())
+    {
+        var perf = tc.PerformanceRunResult!;
+        double[] rawSamplesMs = perf.RawExecutionResults;   // per-invocation times (milliseconds), unfiltered
+        double mean = perf.Mean, median = perf.Median, stdDev = perf.StdDev;
+        // perf.DataWithOutliersRemoved, perf.ConfidenceIntervals, etc. are also available.
+    }
+\`\`\`
 
+## Analysis features
+
+- **SailDiff** — statistical comparison. Two uses: (1) method comparisons — every \`[SailfishMethod]\`
+  in a class is compared automatically (Improved/Slower/Similar at α=0.05, BH-FDR adjusted, with a
+  ratio + 95% CI effect size); the verdict is identical across IDE, console, markdown and CSV.
+  (2) historical comparison — explicitly provide a previous run's tracking file
+  (\`WithProvidedBeforeTrackingFile\` / \`.sailfish.json\`); Sailfish does not auto-compare to your last run.
+- **ScaleFish** — complexity estimation. Fans a \`[SailfishVariable]\` (bool-enabled overload) across
+  sizes and fits O(1)/O(n)/O(n log n)/O(n²)/… to the measurements. Enable with \`.WithScaleFish()\`.
+- **Trawl** — load testing. Drives a benchmark as concurrent virtual users. Enable with \`.WithTrawl(...)\`
+  or the builder's \`WithTrawlVirtualUsers\` / \`WithTrawlMaxDuration\`.
+- **Skipper (AI)** — optional AI narrative explaining SailDiff/ScaleFish results via a configured
+  transport. Enable with \`.WithAiAnalysis()\`.
+
+## Outputs
+
+Per run Sailfish can emit: the console table (descriptive stats + comparison verdicts), consolidated
+markdown and CSV (via \`[WriteToMarkdown]\`/\`[WriteToCsv]\`), tracking files (raw results for later
+historical comparison), and optional distribution plots. Duration display unit is milliseconds.
 `
 
-function stripFrontmatter(md) {
-  const m = md.match(/^---\n([\s\S]*?)\n---\n?/)
-  if (!m) return { title: null, body: md }
-  const titleMatch = m[1].match(/title:\s*['"]?(.*?)['"]?\s*$/m)
-  return { title: titleMatch ? titleMatch[1] : null, body: md.slice(m[0].length) }
-}
+// ---- write llms-full.txt (the curated reference) ----
+const full = REFERENCE.replace(/\n{3,}/g, '\n\n').trimEnd() + '\n'
 
-// Convert the site's Markdoc tags to plain markdown that reads cleanly as text.
-function markdocToMarkdown(md) {
-  return md
-    // {% terminal title="X" %}\n```...```\n{% /terminal %} -> keep the fenced block, title as a comment
-    .replace(/\{%\s*terminal[^%]*%\}\s*/g, '')
-    .replace(/\s*\{%\s*\/terminal\s*%\}/g, '')
-    // {% callout title="T" type="X" %} body {% /callout %} -> **T (note)**\n body
-    .replace(/\{%\s*callout\s+title="([^"]*)"[^%]*%\}/g, '\n**$1**\n')
-    .replace(/\{%\s*\/callout\s*%\}/g, '\n')
-    // {% figure src="s" alt="a" caption="c" /%} -> [Figure: c (s)]
-    .replace(/\{%\s*figure\s+([^%]*?)\/%\}/g, (_, attrs) => {
-      const cap = attrs.match(/caption="([^"]*)"/)
-      const src = attrs.match(/src="([^"]*)"/)
-      return `\n[Figure: ${cap ? cap[1] : ''}${src ? ` — ${SITE_URL}${src[1]}` : ''}]\n`
-    })
-    // drop quick-link navigation cards (home page only)
-    .replace(/\{%\s*quick-links\s*%\}[\s\S]*?\{%\s*\/quick-links\s*%\}/g, '')
-    .replace(/\{%[^%]*%\}/g, '') // any residual tags
-    .replace(/\n{3,}/g, '\n\n')
-    .trim()
-}
-
-function readPage(slug) {
-  const raw = readFileSync(join(PAGES, `${slug}.md`), 'utf8')
-  const { title, body } = stripFrontmatter(raw)
-  return { title, body: markdocToMarkdown(body) }
-}
-
-// ---- build llms-full.txt ----
-let full = PREAMBLE
-for (const section of DOC_SECTIONS) {
-  full += `\n# ${section.title}\n`
-  for (const [slug, navTitle] of section.pages) {
-    const { title, body } = readPage(slug)
-    full += `\n## ${title || navTitle}\n\nSource: ${SITE_URL}/${slug}\n\n${body}\n`
-  }
-}
-full = full.replace(/\n{3,}/g, '\n\n').trimEnd() + '\n'
-
-// ---- build llms.txt (index) ----
+// ---- write llms.txt (index of all docs pages) ----
 let index = `# Sailfish\n\n`
-index += `> A .NET performance-testing library: write benchmarks like unit tests, run them in-process or via an IDE test adapter, and get per-invocation timing distributions with statistical analysis (SailDiff), complexity estimation (ScaleFish), load testing (Trawl), and optional AI explanations (Skipper).\n\n`
-index += `The complete documentation as a single file for LLM ingestion: [llms-full.txt](${SITE_URL}/llms-full.txt)\n\n`
+index += `> A .NET performance-testing library: write benchmarks like unit tests, run them via an IDE test adapter or in-process, and get per-invocation timing distributions with statistical analysis (SailDiff), complexity estimation (ScaleFish), load testing (Trawl), and optional AI explanations (Skipper).\n\n`
+index += `A concise, LLM-ready API reference is at [llms-full.txt](${SITE_URL}/llms-full.txt). Full prose documentation, page by page:\n\n`
 for (const section of DOC_SECTIONS) {
   index += `## ${section.title}\n\n`
-  for (const [slug, navTitle] of section.pages) {
-    index += `- [${navTitle}](${SITE_URL}/${slug})\n`
-  }
+  for (const [slug, navTitle] of section.pages) index += `- [${navTitle}](${SITE_URL}/${slug})\n`
   index += '\n'
 }
 
@@ -237,4 +275,5 @@ writeFileSync(join(PUBLIC, 'llms-full.txt'), full)
 writeFileSync(join(PUBLIC, 'llms.txt'), index)
 
 const kb = (s) => `${(Buffer.byteLength(s) / 1024).toFixed(1)} KB`
-console.log(`generated public/llms-full.txt (${kb(full)}) and public/llms.txt (${kb(index)})`)
+const approxTokens = Math.round(full.length / 4)
+console.log(`generated public/llms-full.txt (${kb(full)}, ~${approxTokens} tokens) and public/llms.txt (${kb(index)})`)
