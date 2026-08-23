@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { useRouter } from 'next/router'
 import clsx from 'clsx'
+import { CopyForLLM } from '@/components/CopyForLLM'
 import { Hero } from '@/components/Hero'
 import { MobileNavigation } from '@/components/MobileNavigation'
 import { Navigation } from '@/components/Navigation'
@@ -171,16 +172,23 @@ export function Layout({ children, title }) {
                 <div className="min-w-0 max-w-[860px] flex-auto px-4 py-16 lg:max-w-[980px] lg:pr-0 lg:pl-8 xl:max-w-[1100px] xl:px-16 2xl:px-20">
                     <article>
                         {(title || section) && (
-                            <header className="mb-9 space-y-1">
-                                {section && (
-                                    <p className="font-display text-sm font-medium text-primary-500">
-                                        {section.title}
-                                    </p>
-                                )}
-                                {title && (
-                                    <h1 className="font-display text-3xl tracking-tight text-slate-900 dark:text-white">
-                                        {title}
-                                    </h1>
+                            <header className="mb-9 flex items-start justify-between gap-4">
+                                <div className="space-y-1">
+                                    {section && (
+                                        <p className="font-display text-sm font-medium text-primary-500">
+                                            {section.title}
+                                        </p>
+                                    )}
+                                    {title && (
+                                        <h1 className="font-display text-3xl tracking-tight text-slate-900 dark:text-white">
+                                            {title}
+                                        </h1>
+                                    )}
+                                </div>
+                                {!isHomePage && (
+                                    <div className="mt-1 shrink-0">
+                                        <CopyForLLM />
+                                    </div>
                                 )}
                             </header>
                         )}
