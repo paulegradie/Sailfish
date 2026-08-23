@@ -1,8 +1,8 @@
 # Sailfish
 
-> A .NET performance-testing library: write benchmarks like unit tests, run them in-process or via an IDE test adapter, and get per-invocation timing distributions with statistical analysis (SailDiff), complexity estimation (ScaleFish), load testing (Trawl), and optional AI explanations (Skipper).
+> A .NET performance-testing library: write benchmarks like unit tests, run them via an IDE test adapter or in-process, and get per-invocation timing distributions with statistical analysis (SailDiff), complexity estimation (ScaleFish), load testing (Trawl), and optional AI explanations (Skipper).
 
-The complete documentation as a single file for LLM ingestion: [llms-full.txt](https://paulgradie.com/Sailfish/llms-full.txt)
+A concise, LLM-ready API reference is at [llms-full.txt](https://paulgradie.com/Sailfish/llms-full.txt). Full prose documentation, page by page:
 
 ## Introduction
 
