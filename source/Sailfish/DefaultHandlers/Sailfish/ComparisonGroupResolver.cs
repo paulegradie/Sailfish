@@ -28,18 +28,20 @@ internal sealed class ComparisonGroupResolver
     {
         var methodName = displayName;
 
-        // Remove class name prefix if present
-        var dotIndex = methodName.LastIndexOf('.');
-        if (dotIndex > 0)
-        {
-            methodName = methodName.Substring(dotIndex + 1);
-        }
-
-        // Remove any variable parameters from the display name
+        // Remove the variable/parameter section FIRST — a variable value can itself contain a '.'
+        // (e.g. a double or string like "Method(N: 1.5)"), which would otherwise be mistaken for the
+        // class-name separator below and truncate the method name to a fragment.
         var parenIndex = methodName.IndexOf('(');
         if (parenIndex > 0)
         {
             methodName = methodName.Substring(0, parenIndex);
+        }
+
+        // Then remove the class-name prefix if present.
+        var dotIndex = methodName.LastIndexOf('.');
+        if (dotIndex > 0)
+        {
+            methodName = methodName.Substring(dotIndex + 1);
         }
 
         return methodName;
@@ -141,9 +143,12 @@ internal sealed class ComparisonGroupResolver
 
         if (method != null) return method;
 
+        // Fallback: a case-insensitive match on the PARSED method name. (The exact, case-sensitive lookup
+        // above already handled the ordinal case.) We deliberately do not fall back to
+        // displayName.StartsWith(m.Name) — the display name begins with the class name, so that matched any
+        // method whose name is a prefix of the class name (class "ReadmeExample" ⇒ a method "Read"),
+        // resolving the wrong method's group/baseline flags.
         var allMethods = testClass.GetMethods(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static | BindingFlags.FlattenHierarchy);
-        return allMethods.FirstOrDefault(m =>
-            string.Equals(m.Name, methodName, StringComparison.Ordinal) ||
-            displayName.StartsWith(m.Name, StringComparison.Ordinal));
+        return allMethods.FirstOrDefault(m => string.Equals(m.Name, methodName, StringComparison.OrdinalIgnoreCase));
     }
 }

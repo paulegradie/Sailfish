@@ -26,9 +26,32 @@ public class ComparisonGroupResolverTests
     [InlineData("ReadmeExample.TestMethod", "TestMethod")]
     [InlineData("TestMethod(N: 1)", "TestMethod")]
     [InlineData("TestMethod", "TestMethod")]
+    // A '.' inside a variable value must not be mistaken for the class-name separator.
+    [InlineData("ReadmeExample.TestMethod(N: 1.5)", "TestMethod")]
+    [InlineData("TestMethod(D: 1.5, S: a.b)", "TestMethod")]
     public void GetMethodName_StripsClassPrefixAndVariableSuffix(string displayName, string expected)
     {
         ComparisonGroupResolver.GetMethodName(displayName).ShouldBe(expected);
+    }
+
+    [Fact]
+    public void ResolveMethod_MatchesCaseInsensitively()
+    {
+        // Fallback path: a case-differing method name still resolves to its group (the documented intent).
+        var result = ResultFor($"{nameof(ImplicitGroupClass)}.methoda(N: 1)");
+
+        _resolver.HasComparisonGroup(result, typeof(ImplicitGroupClass)).ShouldBeTrue();
+    }
+
+    [Fact]
+    public void UnresolvableMethod_DoesNotFalselyMatchAPrefixNamedMethod()
+    {
+        // "PrefixExample" starts with the method name "Prefix"; the old displayName.StartsWith(m.Name)
+        // fallback would wrongly resolve an unknown method to "Prefix" and report its group.
+        var result = ResultFor($"{nameof(PrefixExample)}.Ghost(N: 1)");
+
+        _resolver.HasComparisonGroup(result, typeof(PrefixExample)).ShouldBeFalse();
+        _resolver.GetComparisonGroup(result, typeof(PrefixExample)).ShouldBeNull();
     }
 
     [Fact]
@@ -103,5 +126,16 @@ public class ComparisonGroupResolverTests
 
         [SailfishMethod]
         public void Contender() { }
+    }
+
+    // Class name starts with the method name "Prefix", to exercise the wrong-method fallback hazard.
+    [Sailfish]
+    private class PrefixExample
+    {
+        [SailfishMethod(ComparisonGroup = "P")]
+        public void Prefix() { }
+
+        [SailfishMethod(ComparisonGroup = "R")]
+        public void Runner() { }
     }
 }
