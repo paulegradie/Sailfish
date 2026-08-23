@@ -80,7 +80,7 @@ const DOC_SECTIONS = [
   },
 ]
 
-// The curated reference. Concise on purpose (~7k tokens): the API surface an agent needs, not the
+// The curated reference. Concise on purpose (~2k tokens): the API surface an agent needs, not the
 // prose docs. Every default here is taken from source (SailfishAttribute / SailfishMethodAttribute /
 // RunSettingsBuilder). For the full prose docs, follow the page links in llms.txt.
 const REFERENCE = `# Sailfish — LLM API Reference
