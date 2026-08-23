@@ -40,13 +40,27 @@ export function CopyForLLM() {
     ta.style.opacity = '0'
     document.body.appendChild(ta)
     ta.select()
-    document.execCommand('copy')
-    document.body.removeChild(ta)
+    let ok = false
+    try {
+      // execCommand returns false when the copy was unsupported or rejected; treat that as a failure
+      // rather than silently reporting success.
+      ok = document.execCommand('copy')
+    } finally {
+      document.body.removeChild(ta)
+    }
+    if (!ok) throw new Error('Clipboard copy was rejected by the browser')
   }, [])
 
   const onCopy = useCallback(async () => {
     try {
-      const text = specRef.current ?? (await fetch(specUrl).then((r) => r.text()))
+      // fetch() resolves even on 4xx/5xx, so guard on r.ok (mirroring the prefetch) — otherwise an
+      // error page body would be copied and reported as success.
+      const text =
+        specRef.current ??
+        (await fetch(specUrl).then((r) => {
+          if (!r.ok) throw new Error(`HTTP ${r.status}`)
+          return r.text()
+        }))
       specRef.current = text
       await writeToClipboard(text)
       setState('copied')
