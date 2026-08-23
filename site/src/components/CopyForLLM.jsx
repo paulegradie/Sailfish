@@ -12,21 +12,33 @@ export function CopyForLLM() {
   const specUrl = `${basePath}/llms-full.txt`
   const specRef = useRef(null)
   const [state, setState] = useState('idle') // 'idle' | 'copied' | 'error'
+  // Whether the spec is prefetched and cached. The copy path only runs once this is true, so the
+  // clipboard write never has to await the network mid-gesture (see onCopy).
+  const [ready, setReady] = useState(false)
+
+  // Fetch the spec and cache it. fetch() resolves even on 4xx/5xx, so guard on r.ok — otherwise an
+  // error page body would be cached and later copied as if it were the spec.
+  const loadSpec = useCallback(async () => {
+    const r = await fetch(specUrl)
+    if (!r.ok) throw new Error(`HTTP ${r.status}`)
+    const text = await r.text()
+    specRef.current = text
+    return text
+  }, [specUrl])
 
   useEffect(() => {
     let cancelled = false
-    fetch(specUrl)
-      .then((r) => (r.ok ? r.text() : Promise.reject(new Error(`HTTP ${r.status}`))))
-      .then((text) => {
-        if (!cancelled) specRef.current = text
+    loadSpec()
+      .then(() => {
+        if (!cancelled) setReady(true)
       })
       .catch(() => {
-        /* fetched again on click if this failed */
+        /* left un-ready; the first click will load it (without copying) then re-arm */
       })
     return () => {
       cancelled = true
     }
-  }, [specUrl])
+  }, [loadSpec])
 
   const writeToClipboard = useCallback(async (text) => {
     if (navigator.clipboard?.writeText) {
@@ -52,27 +64,40 @@ export function CopyForLLM() {
   }, [])
 
   const onCopy = useCallback(async () => {
+    // If the spec isn't cached yet (prefetch still in flight or it failed), load it now WITHOUT
+    // touching the clipboard. Awaiting the network before the copy would let the click's transient
+    // user activation expire and the browser would block writeText/execCommand. The user copies on
+    // the next click, when the write runs synchronously from cache inside a fresh activation.
+    if (specRef.current == null) {
+      try {
+        await loadSpec()
+        setReady(true)
+        setState('idle')
+      } catch {
+        setState('error')
+        setTimeout(() => setState('idle'), 3000)
+      }
+      return
+    }
+
     try {
-      // fetch() resolves even on 4xx/5xx, so guard on r.ok (mirroring the prefetch) — otherwise an
-      // error page body would be copied and reported as success.
-      const text =
-        specRef.current ??
-        (await fetch(specUrl).then((r) => {
-          if (!r.ok) throw new Error(`HTTP ${r.status}`)
-          return r.text()
-        }))
-      specRef.current = text
-      await writeToClipboard(text)
+      await writeToClipboard(specRef.current)
       setState('copied')
       setTimeout(() => setState('idle'), 2000)
     } catch {
       setState('error')
       setTimeout(() => setState('idle'), 3000)
     }
-  }, [specUrl, writeToClipboard])
+  }, [loadSpec, writeToClipboard])
 
   const label =
-    state === 'copied' ? 'Copied!' : state === 'error' ? 'Copy failed' : 'Copy for LLM'
+    state === 'copied'
+      ? 'Copied!'
+      : state === 'error'
+      ? 'Copy failed'
+      : ready
+      ? 'Copy for LLM'
+      : 'Preparing…'
 
   return (
     <div className="not-prose flex items-center gap-2">
