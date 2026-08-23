@@ -36,6 +36,7 @@ internal class MethodComparisonTestRunCompletedHandler : INotificationHandler<Te
     private readonly IRunSettings? _runSettings;
     private readonly IReproducibilityManifestProvider? _manifestProvider;
     private readonly ITimerCalibrationResultProvider? _timerProvider;
+    private readonly ComparisonGroupResolver _comparisonGroups;
 
 
 
@@ -54,6 +55,7 @@ internal class MethodComparisonTestRunCompletedHandler : INotificationHandler<Te
         _runSettings = null;
         _manifestProvider = null;
         _timerProvider = null;
+        _comparisonGroups = new ComparisonGroupResolver(logger);
     }
 
     /// <summary>
@@ -322,8 +324,8 @@ internal class MethodComparisonTestRunCompletedHandler : INotificationHandler<Te
         // DisableComparison = true). Per-class scoping prevents same-named groups across classes
         // from being merged (which would miscount baselines and trigger an unintended N×N fallback).
         var comparisonGroups = allTestResults
-            .Where(tr => HasComparisonGroup(tr.TestResult, tr.TestClass))
-            .GroupBy(tr => new ComparisonGroupKey(tr.TestClass, GetComparisonGroup(tr.TestResult, tr.TestClass)))
+            .Where(tr => _comparisonGroups.HasComparisonGroup(tr.TestResult, tr.TestClass))
+            .GroupBy(tr => new ComparisonGroupKey(tr.TestClass, _comparisonGroups.GetComparisonGroup(tr.TestResult, tr.TestClass)))
             .Where(g => g.Key.GroupName != null)
             .ToList();
 
@@ -385,7 +387,7 @@ internal class MethodComparisonTestRunCompletedHandler : INotificationHandler<Te
 
         // Add section for non-comparison methods
         var nonComparisonMethods = allTestResults
-            .Where(tr => !HasComparisonGroup(tr.TestResult, tr.TestClass))
+            .Where(tr => !_comparisonGroups.HasComparisonGroup(tr.TestResult, tr.TestClass))
             .Select(tr => tr.TestResult)
             .ToList();
 
@@ -426,7 +428,7 @@ internal class MethodComparisonTestRunCompletedHandler : INotificationHandler<Te
     {
         // Determine baselines (zero, one, or — incorrectly — many) within this variable set.
         var baselines = methods
-            .Where(m => GetComparisonInfoForResult(m, testClass).IsBaseline)
+            .Where(m => _comparisonGroups.GetComparisonInfoForResult(m, testClass).IsBaseline)
             .ToList();
 
         string comparisonContent;
@@ -510,7 +512,7 @@ internal class MethodComparisonTestRunCompletedHandler : INotificationHandler<Te
                         .Concat(pr.LowerOutliers ?? Array.Empty<double>())
                         .ToArray();
                     return new DistributionPlotRenderer.Series(
-                        GetMethodName(m.TestCaseId?.DisplayName ?? pr.DisplayName),
+                        ComparisonGroupResolver.GetMethodName(m.TestCaseId?.DisplayName ?? pr.DisplayName),
                         pr.DataWithOutliersRemoved,
                         pr.Mean,
                         pr.Median,
@@ -555,7 +557,7 @@ internal class MethodComparisonTestRunCompletedHandler : INotificationHandler<Te
                 .Select(m => new
                 {
                     Id = m.TestCaseId?.DisplayName ?? m.PerformanceRunResult!.DisplayName,
-                    Name = GetMethodName(m.TestCaseId?.DisplayName ?? m.PerformanceRunResult!.DisplayName),
+                    Name = ComparisonGroupResolver.GetMethodName(m.TestCaseId?.DisplayName ?? m.PerformanceRunResult!.DisplayName),
                     Result = m.PerformanceRunResult!,
                     Mean = m.PerformanceRunResult!.Mean,
                     StdDev = m.PerformanceRunResult!.StdDev,
@@ -612,9 +614,10 @@ internal class MethodComparisonTestRunCompletedHandler : INotificationHandler<Te
                     var col = stats[j];
                     var (ratio, lo, hi) = MultipleComparisons.ComputeRatioCi(row.Mean, row.SE, row.N, col.Mean, col.SE, col.N, confidenceLevel);
                     qMap.TryGetValue(MultipleComparisons.NormalizePair(row.Id, col.Id), out var q);
-                    var sig = SailDiffSignificance.IsSignificantPositive(q, alpha);
-                    var label = sig ? (ratio < 1.0 ? "Improved" : "Slower") : "Similar";
-                    var cell = $"{FormatRatio(ratio, lo, hi)}{(q > 0 ? $" q={FormatP(q)}" : "")} {label}";
+                    // Per-cell orientation (the matrix renders both (row,col) and (col,row)), so derive the
+                    // verdict from THIS cell's ratio via the shared rule rather than the stored pair verdict.
+                    var label = MethodComparisonDisplay.Label(MethodComparisonDisplay.Verdict(q, alpha, ratio));
+                    var cell = $"{FormatRatio(ratio, lo, hi)}{(q > 0 ? $" q={MethodComparisonDisplay.FormatPValue(q)}" : "")} {label}";
                     sb.Append($" {cell} |");
                 }
                 sb.AppendLine();
@@ -629,12 +632,6 @@ internal class MethodComparisonTestRunCompletedHandler : INotificationHandler<Te
                 var r = $"{ratio:0.###}x";
                 if (lo.HasValue && hi.HasValue) return $"{r} [{lo.Value:0.###}–{hi.Value:0.###}]";
                 return r;
-            }
-
-            static string FormatP(double p)
-            {
-                if (p < 1e-3) return p.ToString("0.0e-0");
-                return p.ToString("0.###");
             }
 
         }
@@ -663,7 +660,7 @@ internal class MethodComparisonTestRunCompletedHandler : INotificationHandler<Te
                 {
                     Result = m,
                     Id = m.TestCaseId?.DisplayName ?? m.PerformanceRunResult!.DisplayName,
-                    Name = GetMethodName(m.TestCaseId?.DisplayName ?? m.PerformanceRunResult!.DisplayName),
+                    Name = ComparisonGroupResolver.GetMethodName(m.TestCaseId?.DisplayName ?? m.PerformanceRunResult!.DisplayName),
                     Mean = m.PerformanceRunResult!.Mean,
                     StdDev = m.PerformanceRunResult!.StdDev,
                     N = Math.Max(1, (m.PerformanceRunResult!.DataWithOutliersRemoved?.Length ?? -1) > 0
@@ -711,22 +708,15 @@ internal class MethodComparisonTestRunCompletedHandler : INotificationHandler<Te
             {
                 var (ratio, lo, hi) = MultipleComparisons.ComputeRatioCi(baselineStat.Mean, baselineStat.SE, baselineStat.N, c.Mean, c.SE, c.N, confidenceLevel);
                 qMap.TryGetValue(MultipleComparisons.NormalizePair(baselineStat.Id, c.Id), out var q);
-                var sig = SailDiffSignificance.IsSignificantPositive(q, alpha);
-                var label = sig ? (ratio < 1.0 ? "Improved" : "Slower") : "Similar";
+                var label = MethodComparisonDisplay.Label(MethodComparisonDisplay.Verdict(q, alpha, ratio));
                 var ciStr = (lo.HasValue && hi.HasValue) ? $"[{lo.Value:0.###}–{hi.Value:0.###}]" : "—";
-                var qStr = q > 0 ? FormatP(q) : "—";
+                var qStr = q > 0 ? MethodComparisonDisplay.FormatPValue(q) : "—";
                 sb.AppendLine($"| `{c.Name}` | {c.Mean:0.###}ms | {ratio:0.###}x | {ciStr} | {qStr} | {label} |");
             }
 
             sb.AppendLine();
             sb.AppendLine("_Ratio is contender/baseline. 'Improved' means significantly faster than baseline; 'Slower' significantly slower; 'Similar' not significant after FDR._");
             return sb.ToString();
-
-            static string FormatP(double p)
-            {
-                if (p < 1e-3) return p.ToString("0.0e-0");
-                return p.ToString("0.###");
-            }
 
         }
         catch (Exception ex)
@@ -736,169 +726,4 @@ internal class MethodComparisonTestRunCompletedHandler : INotificationHandler<Te
         }
     }
 
-    /// <summary>
-    /// Calculates the performance comparison between two methods.
-    /// </summary>
-    /// <param name="method1">The first method (row method).</param>
-    /// <param name="method2">The second method (column method).</param>
-    /// <returns>A string describing the relative performance (e.g., "2.3x faster", "1.8x slower").</returns>
-    private string CalculatePerformanceComparison(CompiledTestCaseResultTrackingFormat method1, CompiledTestCaseResultTrackingFormat method2)
-    {
-        try
-        {
-            var mean1 = method1.PerformanceRunResult?.Mean ?? 0;
-            var mean2 = method2.PerformanceRunResult?.Mean ?? 0;
-
-            if (mean1 <= 0 || mean2 <= 0) return "N/A";
-
-            var ratio = mean2 / mean1;
-
-            if (ratio > 1.0)
-            {
-                return $"{ratio:F1}x slower";
-            }
-            else if (ratio < 1.0)
-            {
-                var inverseRatio = mean1 / mean2;
-                return $"{inverseRatio:F1}x faster";
-            }
-            else
-            {
-                return "~same";
-            }
-        }
-        catch
-        {
-            return "N/A";
-        }
-    }
-
-    /// <summary>
-    /// Extracts the method name from a test case display name.
-    /// </summary>
-    /// <param name="displayName">The full test case display name.</param>
-    /// <returns>The method name portion.</returns>
-    private string GetMethodName(string displayName)
-    {
-        // Handle display names like "ReadmeExample.TestMethod(N: 1)"
-        var methodName = displayName;
-
-        // Remove class name prefix if present
-        var dotIndex = methodName.LastIndexOf('.');
-        if (dotIndex > 0)
-        {
-            methodName = methodName.Substring(dotIndex + 1);
-        }
-
-        // Remove any variable parameters from the display name
-        var parenIndex = methodName.IndexOf('(');
-        if (parenIndex > 0)
-        {
-            methodName = methodName.Substring(0, parenIndex);
-        }
-
-        return methodName;
-    }
-
-    /// <summary>
-    /// Returns true when the test result belongs to a comparison group — either an explicit
-    /// <c>ComparisonGroup</c> on the method, or the implicit class-wide group (when the enclosing
-    /// <c>[Sailfish]</c> class does not set <c>DisableComparison = true</c>).
-    /// </summary>
-    private bool HasComparisonGroup(CompiledTestCaseResultTrackingFormat testResult, Type testClass)
-    {
-        return GetComparisonGroup(testResult, testClass) != null;
-    }
-
-    /// <summary>
-    /// Returns the comparison-group label for a test result:
-    ///   <list type="bullet">
-    ///     <item><description><c>null</c> — the method is not in any comparison group (e.g. its class is <c>DisableComparison = true</c> and the method has no explicit group).</description></item>
-    ///     <item><description>empty string — the method is in the implicit class-wide group.</description></item>
-    ///     <item><description>non-empty string — the method's explicit <c>ComparisonGroup</c>.</description></item>
-    ///   </list>
-    /// </summary>
-    private string? GetComparisonGroup(CompiledTestCaseResultTrackingFormat testResult, Type testClass)
-    {
-        try
-        {
-            var method = ResolveMethod(testResult, testClass);
-            return method != null ? ReadComparisonInfo(method, testClass).Group : null;
-        }
-        catch (Exception ex)
-        {
-            _logger.Log(LogLevel.Warning, ex,
-                "Failed to get comparison group for test '{0}': {1}",
-                testResult.TestCaseId?.DisplayName ?? "Unknown", ex.Message);
-            return null;
-        }
-    }
-
-    /// <summary>
-    /// Resolves the comparison group (with implicit-group semantics) + baseline flag for a method.
-    /// See <see cref="GetComparisonGroup"/> for the group-string semantics.
-    /// </summary>
-    private static (string? Group, bool IsBaseline) ReadComparisonInfo(MethodInfo method, Type testClass)
-    {
-        var methodAttr = method.GetCustomAttribute<SailfishMethodAttribute>();
-        if (methodAttr is null) return (null, false);
-
-        // Explicit ComparisonGroup wins regardless of class-level setting.
-        if (!string.IsNullOrEmpty(methodAttr.ComparisonGroup))
-        {
-            return (methodAttr.ComparisonGroup, methodAttr.IsBaseline);
-        }
-
-        // No explicit group → method joins the implicit class-wide group unless the class opted out.
-        var classAttr = testClass.GetCustomAttribute<SailfishAttribute>();
-        if (classAttr is not null && !classAttr.DisableComparison)
-        {
-            // Empty-string sentinel = implicit class-wide group.
-            return (string.Empty, methodAttr.IsBaseline);
-        }
-
-        return (null, methodAttr.IsBaseline);
-    }
-
-    /// <summary>
-    /// Returns the comparison info (group + baseline flag) for a single test result, doing the same
-    /// method lookup as <see cref="GetComparisonGroup"/>.
-    /// </summary>
-    private (string? Group, bool IsBaseline) GetComparisonInfoForResult(
-        CompiledTestCaseResultTrackingFormat testResult, Type testClass)
-    {
-        try
-        {
-            var method = ResolveMethod(testResult, testClass);
-            return method != null ? ReadComparisonInfo(method, testClass) : (null, false);
-        }
-        catch (Exception ex)
-        {
-            _logger.Log(LogLevel.Warning, ex,
-                "Failed to resolve comparison info for test '{0}': {1}",
-                testResult.TestCaseId?.DisplayName ?? "Unknown", ex.Message);
-            return (null, false);
-        }
-    }
-
-    /// <summary>
-    /// Finds the <see cref="MethodInfo"/> on <paramref name="testClass"/> that corresponds to the
-    /// test case display name, accounting for variable-suffixed names and case differences.
-    /// </summary>
-    private MethodInfo? ResolveMethod(CompiledTestCaseResultTrackingFormat testResult, Type testClass)
-    {
-        var displayName = testResult.TestCaseId?.DisplayName ?? "Unknown";
-        var methodName = GetMethodName(displayName);
-
-        var method = testClass.GetMethod(
-            methodName,
-            BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static | BindingFlags.FlattenHierarchy);
-
-        if (method != null) return method;
-
-        var allMethods = testClass.GetMethods(BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static | BindingFlags.FlattenHierarchy);
-        return allMethods.FirstOrDefault(m =>
-            string.Equals(m.Name, methodName, StringComparison.Ordinal) ||
-            displayName.StartsWith(m.Name, StringComparison.Ordinal));
-    }
 }

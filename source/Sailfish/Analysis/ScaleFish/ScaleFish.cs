@@ -9,7 +9,6 @@ using Sailfish.Analysis.ScaleFish.Trends;
 using Sailfish.Contracts.Public.Models;
 using Sailfish.Contracts.Public.Notifications;
 using Sailfish.Contracts.Public.Requests;
-using Sailfish.Contracts.Public.Serialization.Tracking.V1;
 using Sailfish.Execution;
 using Sailfish.Logging;
 using Sailfish.Presentation;
@@ -17,12 +16,7 @@ using Sailfish.Presentation.Console;
 
 namespace Sailfish.Analysis.ScaleFish;
 
-public interface IScaleFish
-{
-    void Analyze(ClassExecutionSummaryTrackingFormat summaryTrackingFormat);
-}
-
-internal class ScaleFish : IScaleFish, IScaleFishInternal
+internal class ScaleFish : IScaleFishInternal
 {
     private readonly IComplexityComputer _complexityComputer;
     private readonly IConsoleWriter _consoleWriter;
@@ -47,11 +41,6 @@ internal class ScaleFish : IScaleFish, IScaleFishInternal
         _publisher = publisher;
         _sender = sender;
         _runSettings = runSettings;
-    }
-
-    public void Analyze(ClassExecutionSummaryTrackingFormat summaryTrackingFormat)
-    {
-        throw new NotImplementedException();
     }
 
     // IAnalyzeFromFile entry point — retained for compatibility (ad-hoc / IDE callers). Reads the most
