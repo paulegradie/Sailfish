@@ -155,6 +155,9 @@ jobs:
     name: Nuget Package Test
     needs: [test, set_version]
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      id-token: write
     strategy:
       matrix:
         project: ["Sailfish", "Sailfish.TestAdapter", "Sailfish.Analyzers"]
@@ -210,9 +213,23 @@ jobs:
           path: ${{matrix.project}}.${{ needs.set_version.outputs.version }}.nupkg
           retention-days: 1
 
-      - name: Push Packages to Nuget
+      - name: Log in to NuGet
         if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-        run: dotnet nuget push ${{matrix.project}}.${{ needs.set_version.outputs.version }}.nupkg --source https://www.nuget.org --api-key ${{secrets.NUGET_API_KEY}} --skip-duplicate
+        uses: NuGet/login@v1
+        id: nuget_login
+        with:
+          user: ${{ vars.NUGET_USER }}
+
+      - name: Push Packages to NuGet
+        if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+        env:
+          NUGET_API_KEY: ${{ steps.nuget_login.outputs.NUGET_API_KEY }}
+        run: |
+          dotnet nuget push \
+            "${{ matrix.project }}.${{ needs.set_version.outputs.version }}.nupkg" \
+            --source https://api.nuget.org/v3/index.json \
+            --api-key "$NUGET_API_KEY" \
+            --skip-duplicate
 
   create_release:
     name: Create GitHub Release
